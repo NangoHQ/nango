@@ -35,6 +35,131 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
 
+const deployMockProviderConfig = {
+    id: 1,
+    unique_key: 'google',
+    display_name: null,
+    provider: 'google',
+    oauth_client_id: '123',
+    oauth_client_secret: '123',
+    post_connection_scripts: null,
+    environment_id: 1,
+    created_at: new Date(),
+    updated_at: new Date(),
+    missing_fields: [],
+    forward_webhooks: true,
+    shared_credentials_id: null
+};
+const deployJsContent = 'compiled-js-content';
+const deployTsContent = 'source-ts-content';
+const deployJsLocalFileName = 'contacts-google.js';
+const deployTsLocalFileName = 'google/syncs/contacts.ts';
+const deployBaseFlow: CleanedIncomingFlowConfig = {
+    syncName: 'contacts',
+    type: 'sync',
+    providerConfigKey: 'google',
+    fileBody: { js: deployJsContent, ts: deployTsContent },
+    models: ['Contact'],
+    runs: null,
+    version: '1',
+    track_deletes: false,
+    endpoints: []
+};
+
+function buildDeployExistingConfig(version: string): DBSyncConfig {
+    return {
+        id: 99,
+        environment_id: 1,
+        sync_name: 'contacts',
+        type: 'sync',
+        file_location: `dev/account/1/environment/1/config/1/contacts-v${version}.js`,
+        nango_config_id: 1,
+        models: ['Contact'],
+        model_schema: [],
+        active: true,
+        runs: null,
+        auto_start: true,
+        track_deletes: false,
+        version,
+        enabled: true,
+        webhook_subscriptions: null,
+        attributes: {},
+        source: 'repo',
+        metadata: {},
+        input: null,
+        sync_type: 'full',
+        models_json_schema: null,
+        sdk_version: null,
+        features: [],
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted: false
+    };
+}
+
+function setupDeployTestMocks({
+    jsChanged,
+    tsChanged = false,
+    previousVersion = '1',
+    captureSyncConfigs = false
+}: {
+    jsChanged: boolean;
+    tsChanged?: boolean;
+    previousVersion?: string;
+    captureSyncConfigs?: boolean;
+}) {
+    const capturedSyncConfigs: Record<string, unknown>[] = [];
+    const existingConfig = buildDeployExistingConfig(previousVersion);
+
+    vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(deployMockProviderConfig as any);
+    vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(existingConfig);
+    vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+    vi.spyOn(db.knex, 'from').mockReturnValue({
+        where: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockResolvedValue([{ id: existingConfig.id, enabled: true }])
+            })
+        })
+    } as any);
+    vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
+        const mockTrx = {
+            raw: vi.fn().mockResolvedValue(undefined),
+            from: vi.fn().mockReturnValue({
+                update: vi.fn().mockReturnValue({ whereIn: vi.fn().mockResolvedValue(undefined) }),
+                insert: vi.fn().mockImplementation((data: unknown) => {
+                    if (captureSyncConfigs) {
+                        capturedSyncConfigs.push(...(Array.isArray(data) ? data : [data]));
+                    }
+                    return { returning: vi.fn().mockResolvedValue([{ id: 100 }]) };
+                })
+            })
+        };
+        await callback(mockTrx);
+    });
+    vi.spyOn(onEventScriptService, 'update').mockResolvedValue([]);
+
+    vi.spyOn(remoteFileService, 'checkIfChanged').mockImplementation(({ objectKey }) => {
+        return Promise.resolve(objectKey.endsWith('.ts') ? tsChanged : jsChanged);
+    });
+
+    const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockResolvedValue(existingConfig.file_location as any);
+
+    return { uploadSpy, capturedSyncConfigs };
+}
+
+async function deployTestFlow(flow: CleanedIncomingFlowConfig) {
+    return DeployConfigService.deploy({
+        account: getTestTeam(),
+        environment: getTestEnvironment(),
+        flows: [flow],
+        nangoYamlBody: '',
+        logContextGetter,
+        orchestrator: mockOrchestrator,
+        sdkVersion: '0.0.0',
+        source: 'repo'
+    });
+}
+
 describe('Sync config create', () => {
     const environment = getTestEnvironment();
     const account = getTestTeam();
@@ -583,202 +708,126 @@ describe('Sync config models_json_schema handling', () => {
     });
 });
 
-describe('Deploy file upload skip logic', () => {
-    const environment = getTestEnvironment();
-    const account = getTestTeam();
-
+describe('Deploy file upload and version resolution', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
     });
 
-    const mockProviderConfig = {
-        id: 1,
-        unique_key: 'google',
-        display_name: null,
-        provider: 'google',
-        oauth_client_id: '123',
-        oauth_client_secret: '123',
-        post_connection_scripts: null,
-        environment_id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-        missing_fields: [],
-        forward_webhooks: true,
-        shared_credentials_id: null
-    };
+    describe('file upload skip logic', () => {
+        it('legacy - only js provided - js changed - js uploaded', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ jsChanged: true });
 
-    const previousJsFileLocation = 'dev/account/1/environment/1/config/1/contacts-v1.js';
+            await deployTestFlow({ ...deployBaseFlow, fileBody: deployJsContent as unknown as CleanedIncomingFlowConfig['fileBody'] });
 
-    const mockExistingConfig: DBSyncConfig = {
-        id: 99,
-        environment_id: 1,
-        sync_name: 'contacts',
-        type: 'sync',
-        file_location: previousJsFileLocation,
-        nango_config_id: 1,
-        models: ['Contact'],
-        model_schema: [],
-        active: true,
-        runs: null,
-        auto_start: true,
-        track_deletes: false,
-        version: '1',
-        enabled: true,
-        webhook_subscriptions: null,
-        attributes: {},
-        source: 'repo',
-        metadata: {},
-        input: null,
-        sync_type: 'full',
-        models_json_schema: null,
-        sdk_version: null,
-        features: [],
-        created_at: new Date(),
-        updated_at: new Date(),
-        deleted: false
-    };
-
-    const jsContent = 'compiled-js-content';
-    const tsContent = 'source-ts-content';
-    const jsLocalFileName = 'contacts-google.js';
-    const tsLocalFileName = 'google/syncs/contacts.ts';
-
-    function setupDeployMocks({ jsChanged, tsChanged }: { jsChanged: boolean; tsChanged?: boolean }) {
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
-        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
-        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
-        vi.spyOn(db.knex, 'from').mockReturnValue({
-            where: vi.fn().mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    orderBy: vi.fn().mockResolvedValue([{ id: mockExistingConfig.id, enabled: true }])
-                })
-            })
-        } as any);
-        vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
-            const mockTrx = {
-                raw: vi.fn().mockResolvedValue(undefined),
-                from: vi.fn().mockReturnValue({
-                    update: vi.fn().mockReturnValue({ whereIn: vi.fn().mockResolvedValue(undefined) }),
-                    insert: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 100 }]) })
-                })
-            };
-            await callback(mockTrx);
-        });
-        vi.spyOn(onEventScriptService, 'update').mockResolvedValue([]);
-
-        vi.spyOn(remoteFileService, 'checkIfChanged').mockImplementation(async ({ objectKey }) => {
-            return Promise.resolve(objectKey.endsWith('.ts') ? (tsChanged ?? false) : jsChanged);
+            expect(uploadSpy).toHaveBeenCalledTimes(1);
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployJsContent,
+                destinationPath: expect.stringContaining('contacts-v1.js'),
+                destinationLocalFileName: deployJsLocalFileName
+            });
         });
 
-        return vi.spyOn(remoteFileService, 'upload').mockResolvedValue(previousJsFileLocation as any);
-    }
+        it('legacy - only js provided - js not changed - js not uploaded', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ jsChanged: false });
 
-    async function deployFlow(flow: CleanedIncomingFlowConfig) {
-        return DeployConfigService.deploy({
-            account,
-            environment,
-            flows: [flow],
-            nangoYamlBody: '',
-            logContextGetter,
-            orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0',
-            source: 'repo'
+            await deployTestFlow({ ...deployBaseFlow, fileBody: deployJsContent as unknown as CleanedIncomingFlowConfig['fileBody'] });
+
+            expect(uploadSpy).not.toHaveBeenCalled();
         });
-    }
 
-    const baseFlow: CleanedIncomingFlowConfig = {
-        syncName: 'contacts',
-        type: 'sync',
-        providerConfigKey: 'google',
-        fileBody: { js: jsContent, ts: tsContent },
-        models: ['Contact'],
-        runs: null,
-        version: '1',
-        track_deletes: false,
-        endpoints: []
-    };
+        it('both js and ts provided - neither changed - neither uploaded', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ jsChanged: false, tsChanged: false });
 
-    it('legacy - only js provided - js changed - js uploaded', async () => {
-        const uploadSpy = setupDeployMocks({ jsChanged: true });
+            await deployTestFlow(deployBaseFlow);
 
-        await deployFlow({ ...baseFlow, fileBody: jsContent as unknown as CleanedIncomingFlowConfig['fileBody'] });
+            expect(uploadSpy).not.toHaveBeenCalled();
+        });
 
-        expect(uploadSpy).toHaveBeenCalledTimes(1);
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: jsContent,
-            destinationPath: expect.stringContaining('contacts-v1.js'),
-            destinationLocalFileName: jsLocalFileName
+        it('both js and ts provided - js changed - both uploaded', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ jsChanged: true, tsChanged: false });
+
+            await deployTestFlow(deployBaseFlow);
+
+            expect(uploadSpy).toHaveBeenCalledTimes(2);
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployJsContent,
+                destinationPath: expect.stringContaining('contacts-v1.js'),
+                destinationLocalFileName: deployJsLocalFileName
+            });
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployTsContent,
+                destinationPath: expect.stringContaining('contacts.ts'),
+                destinationLocalFileName: deployTsLocalFileName
+            });
+        });
+
+        it('both js and ts provided - ts changed - both uploaded', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ jsChanged: false, tsChanged: true });
+
+            await deployTestFlow(deployBaseFlow);
+
+            expect(uploadSpy).toHaveBeenCalledTimes(2);
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployJsContent,
+                destinationPath: expect.stringContaining('contacts-v1.js'),
+                destinationLocalFileName: deployJsLocalFileName
+            });
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployTsContent,
+                destinationPath: expect.stringContaining('contacts.ts'),
+                destinationLocalFileName: deployTsLocalFileName
+            });
+        });
+
+        it('both js and ts provided - both changed - both uploaded', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ jsChanged: true, tsChanged: true });
+
+            await deployTestFlow(deployBaseFlow);
+
+            expect(uploadSpy).toHaveBeenCalledTimes(2);
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployJsContent,
+                destinationPath: expect.stringContaining('contacts-v1.js'),
+                destinationLocalFileName: deployJsLocalFileName
+            });
+            expect(uploadSpy).toHaveBeenCalledWith({
+                content: deployTsContent,
+                destinationPath: expect.stringContaining('contacts.ts'),
+                destinationLocalFileName: deployTsLocalFileName
+            });
         });
     });
 
-    it('legacy - only js provided - js not changed - js not uploaded', async () => {
-        const uploadSpy = setupDeployMocks({ jsChanged: false });
+    describe('version resolution', () => {
+        it.each([
+            { previousVersion: '1', newVersion: '1', fileChanged: false, shouldUpload: false, expectedVersion: '1' },
+            { previousVersion: '1', newVersion: '1', fileChanged: true, shouldUpload: true, expectedVersion: '1' },
+            { previousVersion: '1', newVersion: '2', fileChanged: false, shouldUpload: true, expectedVersion: '2' },
+            { previousVersion: '1', newVersion: '2', fileChanged: true, shouldUpload: true, expectedVersion: '2' },
+            { previousVersion: '1', newVersion: '', fileChanged: false, shouldUpload: false, expectedVersion: '1' },
+            { previousVersion: '1', newVersion: '', fileChanged: true, shouldUpload: true, expectedVersion: '2' }
+        ])(
+            'previous=$previousVersion new=$newVersion changed=$fileChanged → upload=$shouldUpload version=$expectedVersion',
+            async ({ previousVersion, newVersion, fileChanged, shouldUpload, expectedVersion }) => {
+                const { uploadSpy, capturedSyncConfigs } = setupDeployTestMocks({
+                    previousVersion,
+                    jsChanged: fileChanged,
+                    tsChanged: fileChanged,
+                    captureSyncConfigs: true
+                });
 
-        await deployFlow({ ...baseFlow, fileBody: jsContent as unknown as CleanedIncomingFlowConfig['fileBody'] });
+                const { success } = await deployTestFlow({ ...deployBaseFlow, version: newVersion });
 
-        expect(uploadSpy).not.toHaveBeenCalled();
-    });
-
-    it('both js and ts provided - neither changed - neither uploaded', async () => {
-        const uploadSpy = setupDeployMocks({ jsChanged: false, tsChanged: false });
-
-        await deployFlow(baseFlow);
-
-        expect(uploadSpy).not.toHaveBeenCalled();
-    });
-
-    it('both js and ts provided - js changed - both uploaded', async () => {
-        const uploadSpy = setupDeployMocks({ jsChanged: true, tsChanged: false });
-
-        await deployFlow(baseFlow);
-
-        expect(uploadSpy).toHaveBeenCalledTimes(2);
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: jsContent,
-            destinationPath: expect.stringContaining('contacts-v1.js'),
-            destinationLocalFileName: jsLocalFileName
-        });
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: tsContent,
-            destinationPath: expect.stringContaining('contacts.ts'),
-            destinationLocalFileName: tsLocalFileName
-        });
-    });
-
-    it('both js and ts provided - ts changed - both uploaded', async () => {
-        const uploadSpy = setupDeployMocks({ jsChanged: false, tsChanged: true });
-
-        await deployFlow(baseFlow);
-
-        expect(uploadSpy).toHaveBeenCalledTimes(2);
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: jsContent,
-            destinationPath: expect.stringContaining('contacts-v1.js'),
-            destinationLocalFileName: jsLocalFileName
-        });
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: tsContent,
-            destinationPath: expect.stringContaining('contacts.ts'),
-            destinationLocalFileName: tsLocalFileName
-        });
-    });
-
-    it('both js and ts provided - both changed - both uploaded', async () => {
-        const uploadSpy = setupDeployMocks({ jsChanged: true, tsChanged: true });
-
-        await deployFlow(baseFlow);
-
-        expect(uploadSpy).toHaveBeenCalledTimes(2);
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: jsContent,
-            destinationPath: expect.stringContaining('contacts-v1.js'),
-            destinationLocalFileName: jsLocalFileName
-        });
-        expect(uploadSpy).toHaveBeenCalledWith({
-            content: tsContent,
-            destinationPath: expect.stringContaining('contacts.ts'),
-            destinationLocalFileName: tsLocalFileName
-        });
+                expect(success).toBe(true);
+                if (shouldUpload) {
+                    expect(uploadSpy).toHaveBeenCalled();
+                } else {
+                    expect(uploadSpy).not.toHaveBeenCalled();
+                }
+                expect(capturedSyncConfigs).toHaveLength(1);
+                expect(capturedSyncConfigs[0]?.['version']).toBe(expectedVersion);
+            }
+        );
     });
 });
 
