@@ -20,6 +20,7 @@ const {
     mockGetProxyConfiguration,
     mockProxyRequest,
     mockReport,
+    mockLogWarn,
     mockIsIntegrationAllowed,
     mockHmacCheck,
     mockValidateConnection,
@@ -38,6 +39,7 @@ const {
         mockGetProxyConfiguration: vi.fn(),
         mockProxyRequest: vi.fn(),
         mockReport: vi.fn(),
+        mockLogWarn: vi.fn(),
         mockIsIntegrationAllowed: vi.fn(),
         mockHmacCheck: vi.fn(),
         mockValidateConnection: vi.fn(),
@@ -144,7 +146,7 @@ describe('postPublicAwsSigV4Authorization', () => {
             error: vi.fn(),
             failed: vi.fn(),
             enrichOperation: vi.fn(),
-            warn: vi.fn(),
+            warn: mockLogWarn,
             log: vi.fn(),
             info: vi.fn(),
             success: vi.fn()
@@ -256,9 +258,12 @@ describe('postPublicAwsSigV4Authorization', () => {
         expect(send).toHaveBeenCalledWith({
             error: {
                 code: 'connection_test_failed',
-                message:
-                    "GetCallerIdentity ARN 'arn:aws:sts::123456789012:assumed-role/UnexpectedRole/session' does not match expected role 'arn:aws:iam::123456789012:role/NangoAccessRole'"
+                message: 'GetCallerIdentity ARN does not match expected role'
             }
+        });
+        expect(mockLogWarn).toHaveBeenCalledWith('GetCallerIdentity ARN does not match expected role', {
+            expectedRoleArn: 'arn:aws:iam::123456789012:role/NangoAccessRole',
+            actualArn: 'arn:aws:sts::123456789012:assumed-role/UnexpectedRole/session'
         });
         expect(next).not.toHaveBeenCalled();
     });
