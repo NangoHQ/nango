@@ -17,13 +17,10 @@ import { Spinner } from '@/components/ui/Spinner';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
+import { buildPullCommand } from '@/utils/scripts';
 
 import type { NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
-
-function buildPullCommand(provider: string, templateName: string, templateType: NangoFunctionTemplate['type']): string {
-    return `nango pull --catalog ${provider} ${templateName} ${templateType === 'action' ? '-a' : '-s'}`;
-}
 
 interface TemplateDetailProps {
     template: NangoFunctionTemplate;
@@ -79,7 +76,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                             <div className="flex flex-col gap-1.5">
                                 <LineSnippet
                                     className="bg-bg-surface border border-border-muted min-w-0"
-                                    snippet={buildPullCommand(provider, template.name, template.type)}
+                                    snippet={buildPullCommand({ integration: provider, name: template.name, type: template.type, source: { catalog: true } })}
                                 />
                                 <StyledLink
                                     to="https://nango.dev/docs/reference/functions/functions-cli"
