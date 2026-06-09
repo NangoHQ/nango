@@ -37,7 +37,12 @@ export class UsageBillingClient {
     // once the shadow path is removed.
     public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
-        const cached = await this.redis.get(cacheKey);
+        let cached: string | null = null;
+        try {
+            cached = await this.redis.get(cacheKey);
+        } catch {
+            // ignore cache get errors and proceed to fetch from API
+        }
         if (cached) {
             try {
                 const parsed: BillingUsageMetrics = JSON.parse(cached);

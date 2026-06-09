@@ -100,7 +100,11 @@ export async function exec(): Promise<void> {
             span.setTag('error', err);
         } finally {
             if (lock) {
-                locking.release(lock);
+                try {
+                    await locking.tryRelease(lock, 1000);
+                } catch (err) {
+                    logger.error('Error releasing lock', { lock: lock.key, error: err });
+                }
             }
         }
     });
