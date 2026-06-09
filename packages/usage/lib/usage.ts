@@ -78,6 +78,22 @@ export function resolveBillingUsageSource(accountId: number, requestedSource: 'c
     return respected ?? (shouldUseClickhouseFor(accountId) ? 'clickhouse' : 'orb');
 }
 
+async function resolveEnvironmentNamesInBreakdown(
+    usage: BillingUsageMetrics,
+    breakdown: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined
+): Promise<void> {
+    const metrics = (Object.keys(breakdown ?? {}) as UsageMetric[]).filter((m) => breakdown?.[m] === 'environment_id');
+    if (metrics.length === 0) return;
+    const series = metrics.flatMap((m) => usage[m]?.breakdown ?? []).filter((s) => s.group && s.group.value !== 'rest');
+    const envIds = series.map((s) => Number(s.group!.value)).filter(Number.isFinite);
+    if (envIds.length === 0) return;
+    const names = await environmentService.getEnvironmentNamesByIds(envIds);
+    for (const s of series) {
+        const name = names.get(Number(s.group!.value));
+        if (name) s.group!.value = name;
+    }
+}
+
 export interface UsageStatus {
     accountId: number;
     metric: UsageMetric;
@@ -593,6 +609,7 @@ export class UsageTracker implements IUsageTracker {
                 breakdown: toRunningAvgUsage(br.value)
             };
         }
+        await resolveEnvironmentNamesInBreakdown(result, breakdown);
         return Ok(result);
     }
 
