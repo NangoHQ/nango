@@ -5,6 +5,8 @@ on:
     - cron: '0 9 1 * *'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   update-versions:
     runs-on: ubuntu-latest
@@ -67,6 +69,13 @@ jobs:
 
       - name: Check if versions changed
         id: changed
+        env:
+          NEW_POSTGRES: ${{ steps.versions.outputs.POSTGRES }}
+          NEW_REDIS: ${{ steps.versions.outputs.REDIS }}
+          NEW_ELASTICSEARCH: ${{ steps.versions.outputs.ELASTICSEARCH }}
+          NEW_OPENSEARCH: ${{ steps.versions.outputs.OPENSEARCH }}
+          NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
+          NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
         run: |
           source .env.example 2>/dev/null || true
 
@@ -78,12 +87,12 @@ jobs:
           echo "PREV_CLICKHOUSE=$CLICKHOUSE_VERSION"       >> $GITHUB_ENV
 
           CHANGED=false
-          [ "$POSTGRES_VERSION"      != "${{ steps.versions.outputs.POSTGRES }}"       ] && CHANGED=true
-          [ "$REDIS_VERSION"         != "${{ steps.versions.outputs.REDIS }}"           ] && CHANGED=true
-          [ "$ELASTICSEARCH_VERSION" != "${{ steps.versions.outputs.ELASTICSEARCH }}"   ] && CHANGED=true
-          [ "$OPENSEARCH_VERSION"    != "${{ steps.versions.outputs.OPENSEARCH }}"      ] && CHANGED=true
-          [ "$ACTIVEMQ_VERSION"      != "${{ steps.versions.outputs.ACTIVEMQ }}"        ] && CHANGED=true
-          [ "$CLICKHOUSE_VERSION"    != "${{ steps.versions.outputs.CLICKHOUSE }}"      ] && CHANGED=true
+          [ "$POSTGRES_VERSION"      != "$NEW_POSTGRES"      ] && CHANGED=true
+          [ "$REDIS_VERSION"         != "$NEW_REDIS"         ] && CHANGED=true
+          [ "$ELASTICSEARCH_VERSION" != "$NEW_ELASTICSEARCH" ] && CHANGED=true
+          [ "$OPENSEARCH_VERSION"    != "$NEW_OPENSEARCH"    ] && CHANGED=true
+          [ "$ACTIVEMQ_VERSION"      != "$NEW_ACTIVEMQ"      ] && CHANGED=true
+          [ "$CLICKHOUSE_VERSION"    != "$NEW_CLICKHOUSE"    ] && CHANGED=true
 
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
