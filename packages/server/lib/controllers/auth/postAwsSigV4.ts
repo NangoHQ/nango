@@ -436,6 +436,7 @@ async function verifyAwsCredentials({
                     expectedRoleArn,
                     actualArn
                 });
+                throw new Error(`GetCallerIdentity ARN '${actualArn}' does not match expected role '${expectedRoleArn}'`);
             }
         }
     }

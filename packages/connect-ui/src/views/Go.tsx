@@ -110,13 +110,11 @@ export const Go: React.FC = () => {
     const [connectionFailed, setConnectionFailed] = useState(false);
     const [showErrorDetails, setShowErrorDetails] = useState(false);
 
-    const preconfiguredCredentials = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.credentials || {} : {};
     const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
-    const preconfigured = { ...preconfiguredCredentials, ...preconfiguredParams };
     const initialExternalId = useMemo(() => {
-        const value = (preconfiguredParams['external_id'] as string | undefined) || (preconfiguredCredentials['external_id'] as string | undefined);
+        const value = preconfiguredParams['external_id'] as string | undefined;
         return value && value.length > 0 ? value : generateExternalId();
-    }, [preconfiguredParams, preconfiguredCredentials]);
+    }, [preconfiguredParams]);
     const [awsExternalId] = useState(initialExternalId);
     const [externalIdCopied, setExternalIdCopied] = useState(false);
     const externalIdCopyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -208,9 +206,6 @@ export const Go: React.FC = () => {
             }
             order += 1;
             orderedFields[`credentials.${name}`] = order;
-            if (typeof preconfiguredCredentials[name] !== 'undefined') {
-                hiddenFields += 1;
-            }
         }
 
         // Modify base form with credentials specific
@@ -227,8 +222,7 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[fullName] = order;
             }
-            const isPreconfigured = typeof preconfiguredCredentials[name] !== 'undefined';
-            if (isPreconfigured || schema.hidden) {
+            if (schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -265,16 +259,16 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[fullName] = order;
             }
-            if (preconfigured[name] ?? schema.hidden) {
+            if (schema.hidden) {
                 hiddenFields += 1;
             }
         }
 
-        if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfigured).length > 0) {
+        if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfiguredParams).length > 0) {
             // For OAUTH2, allow users to override client credentials if preconfigured with empty values
             const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override', 'oauth_refresh_token_override'];
             for (const key of allowedOverrides) {
-                if (key in preconfigured && !additionalFields[key] && !(key in baseForm.shape)) {
+                if (key in preconfiguredParams && !additionalFields[key] && !(key in baseForm.shape)) {
                     baseForm.shape[key] = z.string().optional();
                     order += 1;
                     orderedFields[`credentials.${key}`] = order;
@@ -299,7 +293,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider, preconfiguredCredentials, preconfiguredParams]);
+    }, [provider, preconfiguredParams]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -620,7 +614,7 @@ export const Go: React.FC = () => {
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
                                     const labelOverride = type === 'credentials' ? integration?.credentials_label?.[key] : undefined;
-                                    const source = type === 'credentials' ? preconfiguredCredentials : preconfiguredParams;
+                                    const source = type === 'credentials' ? {} : preconfiguredParams;
                                     const isPreconfigured = typeof source[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
@@ -643,7 +637,7 @@ export const Go: React.FC = () => {
                                                             'bg-elevated p-5',
                                                             (isPreconfigured &&
                                                                 (provider.auth_mode !== 'OAUTH2' ||
-                                                                    preconfigured[key] !== '' ||
+                                                                    source[key] !== '' ||
                                                                     ![
                                                                         'oauth_client_id_override',
                                                                         'oauth_client_secret_override',

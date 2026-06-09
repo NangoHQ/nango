@@ -240,7 +240,6 @@ async function fetchAwsTemporaryCredentialsCustom({
         const response = await axios.post(settings.stsEndpoint.url, payload, { headers });
         const creds = normalizeStsResponse(response.data);
         if (!creds) {
-            logger.error('STS endpoint returned invalid payload', response.data);
             return Err(
                 new NangoError('aws_sigv4_sts_request_failed', { message: 'Custom STS endpoint returned a response but credentials could not be parsed' })
             );

@@ -37,8 +37,7 @@ export const bodySchema = z
                             .looseObject({
                                 oauth_scopes_override: z.string().optional()
                             })
-                            .optional(),
-                        credentials: z.record(z.string(), z.string()).optional()
+                            .optional()
                     })
                     .strict()
             )
@@ -205,8 +204,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                           {
                               user_scopes: value.user_scopes,
                               authorization_params: value.authorization_params,
-                              connectionConfig: value.connection_config,
-                              credentials: value.credentials
+                              connectionConfig: value.connection_config
                           }
                       ])
                   )

@@ -363,6 +363,7 @@ paths:
                                                                     enum: [sync, action, on-event]
                                                                 name:
                                                                     type: string
+
     /connection:
         get:
             summary: List connections (deprecated)

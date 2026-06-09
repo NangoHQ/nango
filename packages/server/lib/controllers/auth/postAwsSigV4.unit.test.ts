@@ -218,4 +218,48 @@ describe('postPublicAwsSigV4Authorization', () => {
         });
         expect(next).not.toHaveBeenCalled();
     });
+
+    it('returns connection_test_failed when GetCallerIdentity returns a different role', async () => {
+        mockProxyRequest.mockResolvedValue(
+            Ok({
+                data: '<GetCallerIdentityResponse><GetCallerIdentityResult><Arn>arn:aws:sts::123456789012:assumed-role/UnexpectedRole/session</Arn></GetCallerIdentityResult></GetCallerIdentityResponse>'
+            })
+        );
+
+        const req = {
+            body: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole', region: 'us-east-1' },
+            query: { public_key: '550e8400-e29b-41d4-a716-446655440000' },
+            params: { providerConfigKey: 'aws-sigv4' },
+            route: { path: '/auth/aws-sigv4/:providerConfigKey' },
+            originalUrl: '/auth/aws-sigv4/aws-sigv4',
+            header: vi.fn()
+        } as unknown as Request;
+
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = {
+            locals: {
+                account: { id: 1 },
+                environment: { id: 2 },
+                connectSession: null,
+                authType: 'publicKey',
+                endUser: null
+            },
+            status,
+            send
+        } as unknown as Response;
+        const next = vi.fn();
+
+        await postPublicAwsSigV4Authorization(req, res, next);
+
+        expect(status).toHaveBeenCalledWith(400);
+        expect(send).toHaveBeenCalledWith({
+            error: {
+                code: 'connection_test_failed',
+                message:
+                    "GetCallerIdentity ARN 'arn:aws:sts::123456789012:assumed-role/UnexpectedRole/session' does not match expected role 'arn:aws:iam::123456789012:role/NangoAccessRole'"
+            }
+        });
+        expect(next).not.toHaveBeenCalled();
+    });
 });

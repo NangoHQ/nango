@@ -118,8 +118,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                           {
                               user_scopes: value.user_scopes,
                               authorization_params: value.authorization_params,
-                              connectionConfig: value.connection_config,
-                              credentials: value.credentials
+                              connectionConfig: value.connection_config
                           }
                       ])
                   )

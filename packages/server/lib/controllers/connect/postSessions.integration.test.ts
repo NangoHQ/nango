@@ -170,8 +170,7 @@ describe(`POST ${endpoint}`, () => {
                 end_user: { id: endUserId, email: 'a@b.com' },
                 integrations_config_defaults: {
                     github: {
-                        connection_config: {},
-                        credentials: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+                        connection_config: {}
                     }
                 }
             }
