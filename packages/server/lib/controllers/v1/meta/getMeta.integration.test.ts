@@ -1,8 +1,8 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
+import { envsForTests as usageEnvs } from '@nangohq/usage';
 
-import { envs } from '../../../env.js';
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 const route = '/api/v1/meta';
@@ -18,8 +18,8 @@ describe(`GET ${route}`, () => {
     });
 
     afterEach(() => {
-        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
-        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
+        (usageEnvs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
+        (usageEnvs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
     });
 
     it('should be protected', async () => {
@@ -40,7 +40,7 @@ describe(`GET ${route}`, () => {
 
     it('returns billingUsageSource=clickhouse when the account is in the rollout allowlist', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
-        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = String(account.id);
+        (usageEnvs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = String(account.id);
         const session = await authenticateUser(api, user);
         // @ts-expect-error type declares `env` but the controller rejects any query param
         const res = await api.fetch(route, { method: 'GET', session });
