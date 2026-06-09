@@ -44,14 +44,21 @@ export async function sendInviteEmail({
     email,
     account,
     user,
-    invitation
+    invitation,
+    isExistingUser = false
 }: {
     email: string;
     account: DBTeam;
     user: Pick<DBUser, 'name'>;
     invitation: DBInvitation;
+    isExistingUser?: boolean;
 }) {
     const emailClient = EmailClient.getInstance();
+    const inviteLink = isExistingUser ? `${basePublicUrl}/signin?next=/signup/${invitation.token}` : `${basePublicUrl}/signup/${invitation.token}`;
+    const callToAction = isExistingUser
+        ? `Log in to accept the invitation by clicking <a href="${inviteLink}">here</a>.`
+        : `Join this team by clicking <a href="${inviteLink}">here</a> and completing your signup.`;
+
     await emailClient.send(
         email,
         `You're Invited! Join "${account.name}" on Nango`,
@@ -59,7 +66,7 @@ export async function sendInviteEmail({
 
 <p>${he.encode(user.name)} invites you to join "${he.encode(account.name)}" on Nango.</p>
 
-<p>Join this team by clicking <a href="${basePublicUrl}/signup/${invitation.token}">here</a> and completing your signup.</p>
+<p>${callToAction}</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 
