@@ -1,10 +1,33 @@
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { FIXTURE_ACCOUNTS } from './usageBreakdownFixtureData';
 import { apiFetch } from '@/utils/api';
 
 import type { AnyBreakdownDimension } from './usageBreakdown';
 import type { ApiBillingUsageMetric, BillingUsageMetric, GetConnections, GetIntegrations, UsageMetric } from '@nangohq/types';
+
+// Lazy-loaded module cache — the data file is ~333KB of captured prod data that must
+// not ship in the main bundle. Only populated when useFixtureData() fires with shouldLoad=true.
+type FixtureDataModule = typeof import('./usageBreakdownFixtureData');
+let _fixtureData: FixtureDataModule | null = null;
+
+/**
+ * Triggers a one-time lazy load of the fixture data file and returns the module once
+ * ready (null while loading). Safe to call from multiple components — the import is
+ * cached at the module level after the first successful load.
+ */
+export function useFixtureData(shouldLoad: boolean): FixtureDataModule | null {
+    const [loaded, setLoaded] = useState(() => _fixtureData !== null);
+    useEffect(() => {
+        if (shouldLoad && !_fixtureData) {
+            void import('./usageBreakdownFixtureData').then((m) => {
+                _fixtureData = m;
+                setLoaded(true);
+            });
+        }
+    }, [shouldLoad]);
+    return loaded ? _fixtureData : null;
+}
 
 const CUMULATIVE_METRICS: readonly UsageMetric[] = ['connections', 'records'];
 
@@ -20,9 +43,6 @@ const METRIC_LABELS: Record<UsageMetric, string> = {
     webhook_forwards: 'Webhook forwarding'
 };
 
-/** Accounts available in the fixtures dropdown (id + label). */
-export const FIXTURE_ACCOUNT_OPTIONS = FIXTURE_ACCOUNTS.map((a) => ({ id: a.id, label: a.label }));
-export const DEFAULT_FIXTURE_ACCOUNT_ID = FIXTURE_ACCOUNTS[0]?.id ?? '';
 /** URL query param holding the selected fixture account (shared by the selector and the panels). */
 export const FIXTURE_ACCOUNT_PARAM = 'fixtureAccount';
 
@@ -41,7 +61,8 @@ export function getCapturedFixtureEntries(
     metric: UsageMetric,
     dimension: AnyBreakdownDimension
 ): BillingUsageMetric[] | undefined {
-    const account = FIXTURE_ACCOUNTS.find((a) => a.id === accountId) ?? FIXTURE_ACCOUNTS[0];
+    const accounts = _fixtureData?.FIXTURE_ACCOUNTS ?? [];
+    const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
     const series = account?.breakdowns[monthKey(month)]?.[metric]?.[dimension];
     if (!series || series.length === 0) {
         return undefined;
@@ -69,7 +90,8 @@ export function getCapturedFixtureEntries(
  * the true daily total / running average). Returns undefined if not captured.
  */
 export function getCapturedBaseMetric(accountId: string, month: Date, metric: UsageMetric): ApiBillingUsageMetric | undefined {
-    const account = FIXTURE_ACCOUNTS.find((a) => a.id === accountId) ?? FIXTURE_ACCOUNTS[0];
+    const accounts = _fixtureData?.FIXTURE_ACCOUNTS ?? [];
+    const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
     if (!account) {
         return undefined;
     }

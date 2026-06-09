@@ -7,17 +7,15 @@ import {
     DEFAULT_TOP_N,
     DIMENSION_LABELS,
     HIDDEN_BREAKDOWN_DIMENSIONS,
-    USAGE_BREAKDOWN_AVAILABLE_FROM_LABEL,
     formatDimensionValue,
-    isBreakdownAvailableForMonth,
     metricsSupportingDimension
 } from '../usageBreakdown';
 import {
-    DEFAULT_FIXTURE_ACCOUNT_ID,
     FIXTURE_ACCOUNT_PARAM,
     buildFixtureBreakdownEntries,
     getCapturedBaseMetric,
     getCapturedFixtureEntries,
+    useFixtureData,
     useFixtureDimensionValues
 } from '../usageBreakdownFixtures';
 import { ChartCard } from '@/components/patterns/ChartCard';
@@ -54,9 +52,10 @@ interface UsageChartCardProps {
 export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, selectedMonth, globalBreakdown, onApplyToAll }) => {
     const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
     const fixturesFlag = useFeatureFlagsStore((s) => s.usageBreakdownFixtures);
-    const allowMay = useFeatureFlagsStore((s) => s.usageBreakdownAllowMay);
-    const monthAvailable = isBreakdownAvailableForMonth(selectedMonth, allowMay);
-    const showControls = breakdownFlag && monthAvailable;
+    // The month picker is bounded to breakdown-eligible months (June 2026+), so the
+    // dev flag is the only gate left for the breakdown controls.
+    const showControls = breakdownFlag;
+    const fixtureData = useFixtureData(showControls && fixturesFlag);
 
     const dimensions: readonly AnyBreakdownDimension[] = (BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[]).filter(
         (d) => !HIDDEN_BREAKDOWN_DIMENSIONS.includes(d)
@@ -68,14 +67,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const dimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
 
     // Which captured prod account's fixtures to load (chosen via the dropdown by the month picker).
-    const [fixtureAccount] = useQueryState(FIXTURE_ACCOUNT_PARAM, parseAsString.withDefault(DEFAULT_FIXTURE_ACCOUNT_ID).withOptions({ history: 'replace' }));
+    const [fixtureAccount] = useQueryState(FIXTURE_ACCOUNT_PARAM, parseAsString.withDefault('').withOptions({ history: 'replace' }));
 
-    // When fixtures are active (flag on + eligible month), the whole dashboard reflects
-    // the chosen fixture account — including the non-breakdown panels' base totals.
+    // When fixtures are active (flag on + eligible month + data loaded), the whole dashboard
+    // reflects the chosen fixture account — including the non-breakdown panels' base totals.
     const fixturesActive = showControls && fixturesFlag;
     const mockBase = useMemo(
-        () => (fixturesActive ? getCapturedBaseMetric(fixtureAccount, selectedMonth, metric) : undefined),
-        [fixturesActive, fixtureAccount, selectedMonth, metric]
+        () => (fixturesActive && fixtureData ? getCapturedBaseMetric(fixtureAccount, selectedMonth, metric) : undefined),
+        [fixturesActive, fixtureData, fixtureAccount, selectedMonth, metric]
     );
     const baseData = mockBase ?? data;
 
@@ -93,8 +92,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // Fixtures: prefer real prod data captured for this month; fall back to a
     // synthesized distribution (real env names) for months we didn't capture.
     const capturedEntries = useMemo(
-        () => (fixturesOn && dimension !== null ? getCapturedFixtureEntries(fixtureAccount, selectedMonth, metric, dimension) : undefined),
-        [fixturesOn, dimension, metric, selectedMonth, fixtureAccount]
+        () => (fixturesOn && dimension !== null && fixtureData ? getCapturedFixtureEntries(fixtureAccount, selectedMonth, metric, dimension) : undefined),
+        [fixturesOn, dimension, metric, selectedMonth, fixtureAccount, fixtureData]
     );
     const needSynth = fixturesOn && dimension !== null && !capturedEntries;
     const { values: fixtureValues, isLoading: fixtureValuesLoading } = useFixtureDimensionValues(env, dimension, needSynth);
@@ -170,16 +169,12 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         </div>
     ) : undefined;
 
-    // Flag on but the selected month predates the breakdown cutover: explain the absence of controls.
-    const notice = breakdownFlag && !monthAvailable ? `Detailed breakdowns are available from ${USAGE_BREAKDOWN_AVAILABLE_FROM_LABEL}.` : undefined;
-
     return (
         <ChartCard
             data={baseData}
             isLoading={mockBase ? false : isLoading}
             timeframe={timeframe}
             headerActions={headerActions}
-            notice={notice}
             breakdownSeries={breakdownSeries}
             breakdownLoading={fixturesOn ? fixtureValuesLoading : breakdownQuery.isLoading}
             breakdownError={fixturesOn ? false : breakdownQuery.isError}

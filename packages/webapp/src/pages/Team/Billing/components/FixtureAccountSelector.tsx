@@ -1,6 +1,6 @@
 import { parseAsString, useQueryState } from 'nuqs';
 
-import { DEFAULT_FIXTURE_ACCOUNT_ID, FIXTURE_ACCOUNT_OPTIONS, FIXTURE_ACCOUNT_PARAM } from '../usageBreakdownFixtures';
+import { FIXTURE_ACCOUNT_PARAM, useFixtureData } from '../usageBreakdownFixtures';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
@@ -12,16 +12,17 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  */
 export const FixtureAccountSelector: React.FC = () => {
     const fixturesFlag = useFeatureFlagsStore((s) => s.usageBreakdownFixtures);
-    const [account, setAccount] = useQueryState(
-        FIXTURE_ACCOUNT_PARAM,
-        parseAsString.withDefault(DEFAULT_FIXTURE_ACCOUNT_ID).withOptions({ history: 'replace' })
-    );
+    const fixtureData = useFixtureData(fixturesFlag);
+    const options = fixtureData?.FIXTURE_ACCOUNTS.map((a) => ({ id: a.id, label: a.label })) ?? [];
+    const defaultId = fixtureData?.FIXTURE_ACCOUNTS[0]?.id ?? '';
 
-    if (!fixturesFlag || FIXTURE_ACCOUNT_OPTIONS.length === 0) {
+    const [account, setAccount] = useQueryState(FIXTURE_ACCOUNT_PARAM, parseAsString.withDefault('').withOptions({ history: 'replace' }));
+
+    if (!fixturesFlag || options.length === 0) {
         return null;
     }
 
-    const value = FIXTURE_ACCOUNT_OPTIONS.some((o) => o.id === account) ? account : DEFAULT_FIXTURE_ACCOUNT_ID;
+    const value = options.some((o) => o.id === account) ? account : defaultId;
 
     return (
         <div className="flex items-center gap-2">
@@ -31,7 +32,7 @@ export const FixtureAccountSelector: React.FC = () => {
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
-                    {FIXTURE_ACCOUNT_OPTIONS.map((o) => (
+                    {options.map((o) => (
                         <SelectItem key={o.id} value={o.id}>
                             {o.label}
                         </SelectItem>
