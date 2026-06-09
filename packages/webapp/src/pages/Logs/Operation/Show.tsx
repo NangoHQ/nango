@@ -13,7 +13,8 @@ import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { CopyButton } from "@/components/ui/CopyButton";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useThemeStore } from '@/lib/theme';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
