@@ -2,15 +2,17 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo } from 'react';
 
+import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { Button } from '@/components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });
 
-// Earliest month with usage data we surface. Granular ClickHouse data only goes
-// back to June 2026 (daily_raw_* ingestion began ~2026-05-12 with a mid-May gap,
-// so May is partial), and we no longer expose the partial earlier months at all.
+// Earliest month the ClickHouse-backed (breakdown) view has data for: granular
+// daily_raw_* ingestion began ~2026-05-12 with a mid-May gap, so May is partial.
+// We floor the picker here only while that view is active; legacy Orb-backed
+// accounts keep their full history.
 const EARLIEST_USAGE_MONTH = new Date(Date.UTC(2026, 5, 1)); // June 2026
 const EARLIEST_USAGE_MONTH_LABEL = EARLIEST_USAGE_MONTH.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
@@ -22,8 +24,12 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     // Sync selected month with URL query params
     const [monthParam, setMonthParam] = useQueryState('month', parseMonth);
 
-    // Convert URL param to Date, defaulting to current month, and never resolve
-    // earlier than the earliest month we have data for (clamps stale/tampered URLs).
+    // The June 2026 floor only applies while the breakdown (ClickHouse) view is
+    // active — that's the data that starts then. Legacy Orb accounts keep full history.
+    const breakdownEnabled = useBreakdownEnabled();
+
+    // Convert URL param to Date, defaulting to current month. When the breakdown view
+    // is active, never resolve earlier than the floor (clamps stale/tampered URLs).
     const selectedMonth = useMemo(() => {
         const currentMonth = () => {
             const now = new Date();
@@ -36,8 +42,8 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
                 month = new Date(Date.UTC(year, m - 1, 1));
             }
         }
-        return month.getTime() < EARLIEST_USAGE_MONTH.getTime() ? EARLIEST_USAGE_MONTH : month;
-    }, [monthParam]);
+        return breakdownEnabled && month.getTime() < EARLIEST_USAGE_MONTH.getTime() ? EARLIEST_USAGE_MONTH : month;
+    }, [monthParam, breakdownEnabled]);
 
     // Notify parent when month changes
     useEffect(() => {
@@ -74,8 +80,9 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
         return selectedMonth < currentMonth;
     }, [selectedMonth]);
 
-    // Disable previous button at the earliest month with data (June 2026).
-    const canGoPrevious = useMemo(() => selectedMonth.getTime() > EARLIEST_USAGE_MONTH.getTime(), [selectedMonth]);
+    // Disable the previous button at the June 2026 floor, but only while the breakdown
+    // view is active; otherwise legacy history stays navigable.
+    const canGoPrevious = useMemo(() => !breakdownEnabled || selectedMonth.getTime() > EARLIEST_USAGE_MONTH.getTime(), [breakdownEnabled, selectedMonth]);
 
     const previousButton = (
         <Button variant="ghost" size="icon" onClick={handlePreviousMonth} disabled={!canGoPrevious}>
