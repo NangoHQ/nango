@@ -108,7 +108,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                             className={cn(
                                 'h-10 flex items-center bg-surface-panel-inset rounded-md',
                                 !selectedPreset && 'border border-border-default',
-                                rangeInputErrorMessage && 'border border-alert-red'
+                                rangeInputErrorMessage && 'border border-border-danger'
                             )}
                         >
                             <div className="w-12 shrink-0 flex justify-center items-center h-full p-1 bg-surface-panel-muted rounded-md font-medium">
@@ -124,7 +124,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                 />
                             </form>
                         </div>
-                        {rangeInputErrorMessage && <span className="text-alert-red text-sm">{rangeInputErrorMessage}</span>}
+                        {rangeInputErrorMessage && <span className="text-text-danger text-sm">{rangeInputErrorMessage}</span>}
                     </div>
                     <div className="flex flex-col gap-2 w-80">
                         {presets.map((preset) => {

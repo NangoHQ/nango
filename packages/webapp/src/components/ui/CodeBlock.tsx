@@ -81,7 +81,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                                 </>
                             ) : (
                                 <>
-                                    <Play className="size-4 text-brand-500" />
+                                    <Play className="size-4 text-text-brand" />
                                     Run
                                 </>
                             )}

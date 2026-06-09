@@ -27,7 +27,7 @@ const FormLabelWithTooltip: React.FC<{
     return (
         <FormLabel className="flex gap-2 items-center">
             {children}
-            {required && <span className="text-alert-400">*</span>}
+            {required && <span className="text-text-danger">*</span>}
             {tooltip && <InfoTooltip side="right">{tooltip}</InfoTooltip>}
         </FormLabel>
     );

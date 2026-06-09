@@ -114,7 +114,7 @@ export const InvoicingAddressFields: React.FC = () => {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex gap-1 items-center">
-                                    Country <span className="text-alert-400">*</span>
+                                    Country <span className="text-text-danger">*</span>
                                 </FormLabel>
                                 <Select value={field.value || undefined} onValueChange={field.onChange}>
                                     <FormControl>

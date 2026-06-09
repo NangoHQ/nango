@@ -78,7 +78,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                         render={({ field }) => (
                             <FormItem className="col-span-1">
                                 <FormLabel className="flex gap-1 items-center">
-                                    Country <span className="text-alert-400">*</span>
+                                    Country <span className="text-text-danger">*</span>
                                 </FormLabel>
                                 <Select value={field.value || undefined} onValueChange={field.onChange}>
                                     <FormControl>
@@ -104,7 +104,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                         render={({ field }) => (
                             <FormItem className="col-span-1">
                                 <FormLabel className="flex gap-1 items-center">
-                                    Type <span className="text-alert-400">*</span>
+                                    Type <span className="text-text-danger">*</span>
                                 </FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange}>
                                     <FormControl>
@@ -130,7 +130,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                         render={({ field, fieldState }) => (
                             <FormItem>
                                 <FormLabel className="flex gap-1 items-center">
-                                    Value <span className="text-alert-400">*</span>
+                                    Value <span className="text-text-danger">*</span>
                                 </FormLabel>
                                 <FormControl>
                                     <Input placeholder={`e.g. ${valuePlaceholder}`} {...field} />
@@ -140,7 +140,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                 ) : (
                                     docType &&
                                     docFormat && (
-                                        <p className={`text-body-small-regular ${taxIdValue ? 'text-text-muted' : 'text-alert-400'}`}>
+                                        <p className={`text-body-small-regular ${taxIdValue ? 'text-text-muted' : 'text-text-danger'}`}>
                                             Enter your {docType} in the format {docFormat}
                                         </p>
                                     )

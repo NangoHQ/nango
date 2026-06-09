@@ -106,7 +106,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex gap-1 items-center">
-                                        Legal entity name <span className="text-alert-400">*</span>
+                                        Legal entity name <span className="text-text-danger">*</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input placeholder="Acme Inc." {...field} />
@@ -121,7 +121,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex gap-1 items-center">
-                                        Billing email <span className="text-alert-400">*</span>
+                                        Billing email <span className="text-text-danger">*</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input type="email" placeholder="billing@company.com" {...field} />

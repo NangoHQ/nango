@@ -23,7 +23,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
     const chartConfig = {
         total: {
             label: 'Total',
-            color: 'var(--color-brand-500)'
+            color: 'var(--color-text-brand)'
         }
     };
 

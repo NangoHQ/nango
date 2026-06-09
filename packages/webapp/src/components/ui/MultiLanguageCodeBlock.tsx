@@ -72,7 +72,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             </SelectContent>
                         </Select>
                     ) : (
-                        <Tag variant="default" size="sm">
+                        <Tag variant="default">
                             {snippets[0].language}
                         </Tag>
                     )}
@@ -85,7 +85,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                                 </>
                             ) : (
                                 <>
-                                    <Play className="w-4 h-4 text-brand-500" />
+                                    <Play className="w-4 h-4 text-text-brand" />
                                     Run
                                 </>
                             )}

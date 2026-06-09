@@ -227,7 +227,7 @@ export function FilterMultiSelect<T extends string = string>({
                         </InputGroup>
                     </div>
                 )}
-                {isMaxed && <div className="px-3 py-1.5 text-xs text-amber-500 border-b border-grayscale-700">Can&apos;t select more filters</div>}
+                {isMaxed && <div className="px-3 py-1.5 text-xs text-amber-500 border-b border-border-muted">Can&apos;t select more filters</div>}
                 <div ref={listboxRef} role="listbox" className="max-h-[415px] overflow-y-auto" onKeyDown={handleListboxKeyDown}>
                     {filteredOptions.map((opt) => (
                         <div key={opt.value}>
