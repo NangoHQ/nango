@@ -13,7 +13,6 @@ const tagVariants = cva('inline-flex items-center justify-center px-2 py-px w-fi
             info: 'bg-status-info-bg text-status-info-text',
             warning: 'bg-status-warning-bg text-status-warning-text',
             disabled: 'bg-surface-panel-inset text-text-disabled',
-            default: 'bg-status-neutral-bg text-status-neutral-text',
             neutral: 'bg-surface-panel-inset text-text-secondary'
         }
     },
