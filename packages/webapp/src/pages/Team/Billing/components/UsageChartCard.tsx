@@ -2,7 +2,6 @@ import { Layers } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
-import { useBreakdownFixtures } from '../fixtures/useBreakdownFixtures';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, DIMENSION_LABELS, formatDimensionValue, metricsSupportingDimension } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { ChartCard } from '@/components/patterns/ChartCard';
@@ -22,7 +21,6 @@ interface UsageChartCardProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
-    selectedMonth: Date;
     /** The current global breakdown dimension ('none' or a dim). Decides when this panel's "Apply to all" shows. */
     globalBreakdown: string;
     /** Make this panel's dimension the global one and apply it to every metric that supports it. */
@@ -53,7 +51,7 @@ function toChartSeries(entries: BillingUsageMetric[], dimension: AnyBreakdownDim
  * breakdown view is enabled — a dimension dropdown that stacks a per-dimension
  * breakdown. The headline total comes from the base metric (or a fixture override).
  */
-export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, selectedMonth, globalBreakdown, onApplyToAll }) => {
+export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, globalBreakdown, onApplyToAll }) => {
     const showControls = useBreakdownEnabled();
 
     // This panel's selected dimension (default 'none'), persisted in the URL.
@@ -62,13 +60,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const dimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
     const inBreakdownMode = showControls && dimension !== null;
 
-    // Dev-only: fixtures may drive this panel from captured prod data instead of the API.
-    const fixtures = useBreakdownFixtures({ enabled: showControls, metric, dimension, env, timeframe, selectedMonth, data });
-    const baseData = fixtures.baseMetric ?? data;
-    const usingFixtures = inBreakdownMode && fixtures.flagOn;
-
-    const breakdownQuery = useApiGetBillingUsageBreakdown(env, timeframe, metric, dimension, DEFAULT_TOP_N, { enabled: inBreakdownMode && !fixtures.flagOn });
-    const breakdownEntries = fixtures.entries ?? breakdownQuery.data?.data.usage[metric]?.breakdown;
+    const breakdownQuery = useApiGetBillingUsageBreakdown(env, timeframe, metric, dimension, DEFAULT_TOP_N, { enabled: inBreakdownMode });
+    const breakdownEntries = breakdownQuery.data?.data.usage[metric]?.breakdown;
 
     const breakdownSeries = useMemo<ChartSeries[] | undefined>(() => {
         if (!showControls || dimension === null) return undefined;
@@ -110,14 +103,13 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
 
     return (
         <ChartCard
-            data={baseData}
-            isLoading={fixtures.baseMetric ? false : isLoading}
+            data={data}
+            isLoading={isLoading}
             timeframe={timeframe}
             headerActions={headerActions}
             breakdownSeries={breakdownSeries}
-            breakdownLoading={usingFixtures ? fixtures.loading : breakdownQuery.isLoading}
-            breakdownError={usingFixtures ? false : breakdownQuery.isError}
-            totalOverride={fixtures.total}
+            breakdownLoading={breakdownQuery.isLoading}
+            breakdownError={breakdownQuery.isError}
         />
     );
 };

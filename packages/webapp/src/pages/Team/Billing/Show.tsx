@@ -7,7 +7,6 @@ import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
-import { FixtureAccountSelector } from './fixtures/FixtureAccountSelector';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
@@ -40,7 +39,6 @@ export const TeamBilling: React.FC = () => {
                 <h2 className="text-text-primary text-2xl font-semibold">Billing & usage</h2>
                 {isUsageTab && (
                     <div className="flex items-center gap-4">
-                        <FixtureAccountSelector />
                         <MonthSelector onMonthChange={setSelectedMonth} />
                     </div>
                 )}
