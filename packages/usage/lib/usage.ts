@@ -78,25 +78,19 @@ export function resolveBillingUsageSource(accountId: number, requestedSource: 'c
     return respected ?? (shouldUseClickhouseFor(accountId) ? 'clickhouse' : 'orb');
 }
 
-async function resolveEnvironmentNamesInBreakdown(usage: BillingUsageMetrics): Promise<void> {
-    const envIds = new Set<number>();
-    for (const m of Object.keys(usage) as UsageMetric[]) {
-        for (const series of usage[m]?.breakdown ?? []) {
-            if (series.group?.key === 'environment_id' && series.group.value !== 'rest') {
-                const id = Number(series.group.value);
-                if (Number.isFinite(id)) envIds.add(id);
-            }
-        }
-    }
-    if (envIds.size === 0) return;
-    const names = await environmentService.getEnvironmentNamesByIds([...envIds]);
-    for (const m of Object.keys(usage) as UsageMetric[]) {
-        for (const series of usage[m]?.breakdown ?? []) {
-            if (series.group?.key === 'environment_id' && series.group.value !== 'rest') {
-                const name = names.get(Number(series.group.value));
-                if (name) series.group.value = name;
-            }
-        }
+async function resolveEnvironmentNamesInBreakdown(
+    usage: BillingUsageMetrics,
+    breakdown: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined
+): Promise<void> {
+    const metrics = (Object.keys(breakdown ?? {}) as UsageMetric[]).filter((m) => breakdown?.[m] === 'environment_id');
+    if (metrics.length === 0) return;
+    const series = metrics.flatMap((m) => usage[m]?.breakdown ?? []).filter((s) => s.group && s.group.value !== 'rest');
+    const envIds = series.map((s) => Number(s.group!.value)).filter(Number.isFinite);
+    if (envIds.length === 0) return;
+    const names = await environmentService.getEnvironmentNamesByIds(envIds);
+    for (const s of series) {
+        const name = names.get(Number(s.group!.value));
+        if (name) s.group!.value = name;
     }
 }
 
@@ -615,7 +609,7 @@ export class UsageTracker implements IUsageTracker {
                 breakdown: toRunningAvgUsage(br.value)
             };
         }
-        await resolveEnvironmentNamesInBreakdown(result);
+        await resolveEnvironmentNamesInBreakdown(result, breakdown);
         return Ok(result);
     }
 
