@@ -1,42 +1,41 @@
 import { Tag } from '@/components/ui/Tag';
 
-import type { TagSize } from '@/components/ui/Tag';
 import type { SearchOperationsData } from '@nangohq/types';
 
-export const StatusTag: React.FC<{ state: SearchOperationsData['state']; size?: TagSize }> = ({ state, size }) => {
+export const StatusTag: React.FC<{ state: SearchOperationsData['state'] }> = ({ state }) => {
     if (state === 'success') {
         return (
-            <Tag variant={'success'} size={size}>
+            <Tag variant={'success'}>
                 Success
             </Tag>
         );
     } else if (state === 'running') {
         return (
-            <Tag variant={'info'} size={size}>
+            <Tag variant={'info'}>
                 Running
             </Tag>
         );
     } else if (state === 'cancelled') {
         return (
-            <Tag variant={'disabled'} size={size}>
+            <Tag variant={'disabled'}>
                 Cancelled
             </Tag>
         );
     } else if (state === 'failed') {
         return (
-            <Tag variant={'alert'} size={size}>
+            <Tag variant={'alert'}>
                 Failed
             </Tag>
         );
     } else if (state === 'timeout') {
         return (
-            <Tag variant={'disabled'} size={size}>
+            <Tag variant={'disabled'}>
                 Timeout
             </Tag>
         );
     } else if (state === 'waiting') {
         return (
-            <Tag variant={'disabled'} size={size}>
+            <Tag variant={'disabled'}>
                 Waiting
             </Tag>
         );
