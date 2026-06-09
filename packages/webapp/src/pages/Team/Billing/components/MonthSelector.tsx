@@ -3,6 +3,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });
@@ -11,6 +12,7 @@ const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace
 // back to June 2026 (daily_raw_* ingestion began ~2026-05-12 with a mid-May gap,
 // so May is partial), and we no longer expose the partial earlier months at all.
 const EARLIEST_USAGE_MONTH = new Date(Date.UTC(2026, 5, 1)); // June 2026
+const EARLIEST_USAGE_MONTH_LABEL = EARLIEST_USAGE_MONTH.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 interface MonthSelectorProps {
     onMonthChange?: (month: Date) => void;
@@ -75,11 +77,27 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     // Disable previous button at the earliest month with data (June 2026).
     const canGoPrevious = useMemo(() => selectedMonth.getTime() > EARLIEST_USAGE_MONTH.getTime(), [selectedMonth]);
 
+    const previousButton = (
+        <Button variant="ghost" size="icon" onClick={handlePreviousMonth} disabled={!canGoPrevious}>
+            <ChevronLeft />
+        </Button>
+    );
+
     return (
         <div className="self-end flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={handlePreviousMonth} disabled={!canGoPrevious}>
-                <ChevronLeft />
-            </Button>
+            {canGoPrevious ? (
+                previousButton
+            ) : (
+                <Tooltip>
+                    {/* Span wrapper so the disabled button still surfaces the tooltip on hover/focus. */}
+                    <TooltipTrigger asChild>
+                        <span className="inline-flex" tabIndex={0}>
+                            {previousButton}
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{`Usage tracking is only available from ${EARLIEST_USAGE_MONTH_LABEL}.`}</TooltipContent>
+                </Tooltip>
+            )}
             <span className="text-text-primary text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
             <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={!canGoNext}>
                 <ChevronRight />
