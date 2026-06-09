@@ -78,6 +78,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                     isLoading={isLoading}
                     env={env}
                     timeframe={timeframe}
+                    selectedMonth={selectedMonth}
                     globalBreakdown={globalBreakdown}
                     onApplyToAll={applyToAll}
                 />

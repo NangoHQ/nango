@@ -8,3 +8,6 @@ config/events/*.json
 managed-manifest.json
 docs/**
 !docs/spec.yaml
+
+# Generated dev-only fixture data (large single-line JSON string)
+packages/webapp/src/pages/Team/Billing/fixtures/usageBreakdownFixtureData.ts
