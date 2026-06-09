@@ -18,6 +18,7 @@ import {
     useFixtureData,
     useFixtureDimensionValues
 } from '../usageBreakdownFixtures';
+import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { ChartCard } from '@/components/patterns/ChartCard';
 import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, colorForValue } from '@/components/patterns/usageChartColors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -50,11 +51,11 @@ interface UsageChartCardProps {
  * dimensional breakdown. The headline total always comes from the base metric.
  */
 export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, selectedMonth, globalBreakdown, onApplyToAll }) => {
-    const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
     const fixturesFlag = useFeatureFlagsStore((s) => s.usageBreakdownFixtures);
-    // The month picker is bounded to breakdown-eligible months (June 2026+), so the
-    // dev flag is the only gate left for the breakdown controls.
-    const showControls = breakdownFlag;
+    // Breakdown shows when the account's billing-usage source is ClickHouse (the
+    // rollout signal from /api/v1/meta) or the local dev flag opts in. The month
+    // picker is already bounded to breakdown-eligible months (June 2026+).
+    const showControls = useBreakdownEnabled();
     const fixtureData = useFixtureData(showControls && fixturesFlag);
 
     const dimensions: readonly AnyBreakdownDimension[] = (BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[]).filter(

@@ -4,13 +4,13 @@ import { useCallback, useMemo } from 'react';
 
 import { UsageChartCard } from './UsageChartCard';
 import { metricsSupportingDimension } from '../usageBreakdown';
+import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
-import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { UsageMetric } from '@nangohq/types';
@@ -44,8 +44,8 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     // When the breakdown feature is active, pin the whole dashboard (including
     // headline totals) to ClickHouse so totals match the per-panel breakdowns;
     // otherwise keep the env / localStorage default source.
-    const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
-    const sourceOverride = breakdownFlag ? 'clickhouse' : undefined;
+    const breakdownEnabled = useBreakdownEnabled();
+    const sourceOverride = breakdownEnabled ? 'clickhouse' : undefined;
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, sourceOverride);
 
