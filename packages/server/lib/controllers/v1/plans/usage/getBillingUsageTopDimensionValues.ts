@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { environmentService } from '@nangohq/shared';
+import { connectionService, environmentService } from '@nangohq/shared';
 import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -34,7 +34,8 @@ const querySchema = z
         env: z.string(),
         from: z.iso.datetime(),
         to: z.iso.datetime(),
-        limit: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional()
+        limit: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional(),
+        search: z.string().optional()
     })
     .and(metricAndDimensionSchema)
     .refine((data) => new Date(data.from) <= new Date(data.to), {
@@ -67,6 +68,13 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
     if (query.dimension === 'environment_id') {
         const names = await environmentService.getEnvironmentNamesByIds(result.value.values.map(Number));
         values = result.value.values.map((id) => ({ id, label: names.get(Number(id)) ?? id }));
+    } else if (query.dimension === 'connection_id') {
+        if (query.search) {
+            values = await connectionService.searchConnectionsForFilter(query.search, account.id, query.limit ?? TOP_N_BREAKDOWN_DEFAULT);
+        } else {
+            const labelMap = await connectionService.getConnectionLabels(result.value.values, account.id);
+            values = result.value.values.map((id) => ({ id, label: labelMap.get(id) ?? id }));
+        }
     } else {
         values = result.value.values.map((id) => ({ id, label: id }));
     }

@@ -135,6 +135,7 @@ export interface BillingUsageMetric {
     group?: {
         key: string;
         value: string;
+        label?: string;
     };
     /**
      * The top-N + 'rest' breakdown collapses every dim value outside the top
