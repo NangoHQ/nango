@@ -1,0 +1,85 @@
+---
+title: 'Formstack Documents'
+sidebarTitle: 'Formstack Documents'
+description: 'Access the Formstack Documents API in 2 minutes'
+---
+
+<Tabs>
+  <Tab title="Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) and configure a new `Formstack Documents` integration.
+      </Step>
+      <Step title="Authorize Formstack Documents">
+        Go to [Connections](https://app.nango.dev/dev/connections), add a test connection, and enter your Formstack Documents API Key and API Secret. Nango uses these credentials to authenticate requests to the Formstack Documents API.
+      </Step>
+      <Step title="Call the Formstack Documents API">
+        Use the proxy to make your first request to the `documents` endpoint:
+        <Tabs>
+          <Tab title="cURL">
+
+            ```bash
+            curl -X GET "https://api.nango.dev/proxy/documents" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json"
+            ```
+
+          </Tab>
+
+          <Tab title="Node">
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/documents',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+
+          </Tab>
+        </Tabs>
+      </Step>
+    </Steps>
+
+    Once connected, you can inspect requests and responses in the [Logs](https://app.nango.dev/dev/logs) tab.
+
+    <Tip>
+      Next step: embed the auth flow in your app so users can connect their own Formstack Documents accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="Useful links">
+
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Formstack Documents using Connect UI](/integrations/all/formstack-documents/connect) |
+    | General | [Formstack Documents product page](https://www.intellistack.com/formstack#formstackProducts) |
+    | Developer | [Formstack Documents API docs](https://www.webmerge.me/developers) |
+    | Legacy | API requests are still served from `webmerge.me` endpoints |
+
+  </Tab>
+
+  <Tab title="API gotchas">
+    The API is branded as Formstack Documents, but the public developer docs and API base URL still use the legacy `Webmerge` naming. In the native product, merge requests can sometimes run without API credentials when the account does not require them or when the user is already logged in. For this Nango provider, standard API requests use the REST API base URL `https://www.webmerge.me/api`.
+
+    <Note>
+      Legacy merge URLs such as `/merge/{documentId}/{documentKey}` and `/route/{routeId}/{routeKey}` live on the root `https://www.webmerge.me` host rather than under `/api`. If you proxy those endpoints through Nango, set `Base-Url-Override: https://www.webmerge.me` on the request.
+    </Note>
+
+    <Tip>
+      Recommended for security: enable **Advanced Settings -> Require API Key for all merge requests (custom integrations only)** in Formstack Documents. This helps ensure custom integration merge requests require API credentials unless the request is executed by a logged-in user in the app.
+    </Tip>
+  </Tab>
+</Tabs>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
