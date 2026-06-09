@@ -1,10 +1,9 @@
 import { Info } from 'lucide-react';
-import { parseAsString, useQueryState, useQueryStates } from 'nuqs';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { UsageChartCard } from './UsageChartCard';
-import { metricsSupportingDimension } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
+import { useGlobalBreakdown } from '../useGlobalBreakdown';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -12,15 +11,10 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 
-import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { UsageMetric } from '@nangohq/types';
 
 // Render order for the usage panels.
 const METRICS: UsageMetric[] = ['connections', 'proxy', 'function_compute_gbms', 'function_executions', 'function_logs', 'records', 'webhook_forwards'];
-
-// nuqs keyMap for every panel's `<metric>.breakdown` param, so "Apply to all" can
-// set them in one go. Built once.
-const breakdownKeyMap = Object.fromEntries(METRICS.map((m) => [`${m}.breakdown`, parseAsString.withDefault('none').withOptions({ history: 'replace' })]));
 
 interface UsageProps {
     selectedMonth: Date;
@@ -44,26 +38,11 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     // Pin the whole dashboard to ClickHouse when breakdown is active so headline
     // totals match the per-panel breakdowns (which always query ClickHouse).
     const breakdownEnabled = useBreakdownEnabled();
-    const sourceOverride = breakdownEnabled ? 'clickhouse' : undefined;
+    const source = breakdownEnabled ? 'clickhouse' : undefined;
 
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, sourceOverride);
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source);
 
-    // The global breakdown: the dimension "Apply to all" last propagated. A panel
-    // shows its "Apply to all" button when its own selection diverges from this.
-    const [globalBreakdown, setGlobalBreakdown] = useQueryState('breakdown', parseAsString.withDefault('none').withOptions({ history: 'replace' }));
-    const [, setBreakdowns] = useQueryStates(breakdownKeyMap);
-
-    // "Apply to all": make a panel's dimension the global one and copy it to every
-    // metric that supports it.
-    const applyToAll = useCallback(
-        (dimension: AnyBreakdownDimension) => {
-            void setGlobalBreakdown(dimension);
-            const updates: Record<string, string> = {};
-            for (const m of metricsSupportingDimension(dimension)) updates[`${m}.breakdown`] = dimension;
-            void setBreakdowns(updates);
-        },
-        [setGlobalBreakdown, setBreakdowns]
-    );
+    const { globalBreakdown, applyToAll } = useGlobalBreakdown(METRICS);
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;

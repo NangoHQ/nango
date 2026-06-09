@@ -5,7 +5,7 @@
  * string to stay compact; this file is in .prettierignore. NOT for production — gated
  * behind the dev flag. Regenerate by re-capturing against a prod-proxied dev server.
  */
-import type { AnyBreakdownDimension } from './usageBreakdown';
+import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { UsageMetric } from '@nangohq/types';
 
 /** One captured series: `usage` is [day (YYYY-MM-DD), quantity] pairs (sparse). */

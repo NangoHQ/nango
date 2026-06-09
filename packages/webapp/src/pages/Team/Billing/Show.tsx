@@ -3,11 +3,11 @@ import { Helmet } from 'react-helmet';
 
 import { permissions } from '@nangohq/authz';
 
-import { FixtureAccountSelector } from './components/FixtureAccountSelector';
 import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
+import { FixtureAccountSelector } from './fixtures/FixtureAccountSelector';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';

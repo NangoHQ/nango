@@ -20,24 +20,11 @@ export const BREAKDOWN_DIMENSIONS = {
 export type AnyBreakdownDimension = BreakdownDimensions[UsageMetric];
 
 /**
- * Dimensions the backend accepts but we hide from the breakdown dropdowns.
- * Currently empty. NOTE: `environment_id` renders as the raw Postgres PK (e.g.
- * "105") because the backend doesn't yet resolve it to the env name — add it
- * back here (or land the backend swap) before customer rollout. See the plan's
- * follow-up TODOs.
- */
-export const HIDDEN_BREAKDOWN_DIMENSIONS: readonly AnyBreakdownDimension[] = [];
-
-/**
- * Metrics whose data model supports the given dimension (and that aren't hidden).
- * Used by the per-panel "Apply to all" action to fan a breakdown out only to the
- * panels where it's meaningful — e.g. Integration applies to all 7, but Model
- * only to records.
+ * Metrics whose data model supports the given dimension. Used by "Apply to all"
+ * to fan a breakdown out only to the panels where it's meaningful — e.g.
+ * Integration applies to all 7, but Model only to records.
  */
 export function metricsSupportingDimension(dimension: AnyBreakdownDimension): UsageMetric[] {
-    if (HIDDEN_BREAKDOWN_DIMENSIONS.includes(dimension)) {
-        return [];
-    }
     return (Object.keys(BREAKDOWN_DIMENSIONS) as UsageMetric[]).filter((m) => (BREAKDOWN_DIMENSIONS[m] as readonly string[]).includes(dimension));
 }
 
@@ -54,9 +41,8 @@ export const DIMENSION_LABELS: Record<AnyBreakdownDimension, string> = {
 
 /**
  * Display label for a dimension value. Only `success` needs mapping: the backend
- * emits the boolean strings `'true'`/`'false'`, which we show as Success/Failed
- * to match the wording used on the logs screen. Other dimensions are shown
- * verbatim (`environment_id` is already resolved to a name server-side).
+ * emits the boolean strings `'true'`/`'false'`, which we show as Success/Failed to
+ * match the logs screen. Other dimensions are shown verbatim.
  */
 export function formatDimensionValue(dimension: AnyBreakdownDimension, value: string): string {
     if (dimension === 'success') {
@@ -66,9 +52,5 @@ export function formatDimensionValue(dimension: AnyBreakdownDimension, value: st
     return value;
 }
 
-/**
- * Top-N dimension values requested per breakdown; the long tail collapses into a
- * single 'rest' bucket. Fixed for now (no user-facing picker) — the backend caps
- * it server-side. Reintroduce a presets array here if a Top-N control comes back.
- */
+/** Top-N dimension values requested per breakdown; the long tail collapses into a single 'rest' bucket. */
 export const DEFAULT_TOP_N = 10;

@@ -1,13 +1,19 @@
-import { useEffect, useState } from 'react';
+// INTERNAL — dev/testing only. This module (and everything in this `fixtures/`
+// directory) backs the `usageBreakdownFixtures` dev flag, which previews the
+// breakdown UI with captured prod data. None of it runs in production.
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 
 import { apiFetch } from '@/utils/api';
 
-import type { AnyBreakdownDimension } from './usageBreakdown';
+import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { ApiBillingUsageMetric, BillingUsageMetric, GetConnections, GetIntegrations, UsageMetric } from '@nangohq/types';
 
 // Lazy-loaded module cache — the data file is ~333KB of captured prod data that must
 // not ship in the main bundle. Only populated when useFixtureData() fires with shouldLoad=true.
+// `typeof import()` is the right type for a lazily-imported module; a static `import type`
+// would pull it back into the bundle graph, defeating the purpose.
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type FixtureDataModule = typeof import('./usageBreakdownFixtureData');
 let _fixtureData: FixtureDataModule | null = null;
 
