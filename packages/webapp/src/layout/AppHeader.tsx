@@ -9,7 +9,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useThemeStore } from '@/lib/theme';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
@@ -24,7 +24,7 @@ export const AppHeader: React.FC = () => {
     const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
 
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
-    const darkMode = useThemeStore((s) => s.darkMode);
+    const darkMode = useThemeStore(darkModeSelector);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
     const isDevToolsEnabled = useIsDevToolsEnabled();
 
