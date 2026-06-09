@@ -5,7 +5,7 @@ import { cn } from '@/utils/utils';
 
 import type { VariantProps } from 'class-variance-authority';
 
-const tagVariants = cva('inline-flex items-center justify-center px-2 py-px w-fit whitespace-nowrap shrink-0 uppercase', {
+const tagVariants = cva('inline-flex items-center justify-center px-2 py-px w-fit whitespace-nowrap shrink-0 uppercase rounded text-body-small-regular', {
     variants: {
         variant: {
             success: 'bg-status-success-bg text-status-success-text',
@@ -14,23 +14,16 @@ const tagVariants = cva('inline-flex items-center justify-center px-2 py-px w-fi
             warning: 'bg-status-warning-bg text-status-warning-text',
             disabled: 'bg-surface-panel-inset text-text-disabled',
             default: 'bg-status-neutral-bg text-status-neutral-text',
-            neutral: 'bg-surface-panel-inset text-text-secondary border border-border-muted'
-        },
-        size: {
-            md: 'rounded text-body-extra-small-semi',
-            sm: 'rounded-sm text-[11px] font-normal'
+            neutral: 'bg-surface-panel-inset text-text-secondary'
         }
     },
     defaultVariants: {
-        variant: 'neutral',
-        size: 'md'
+        variant: 'neutral'
     }
 });
 
-function Tag({ className, variant, size, ...props }: React.ComponentProps<'span'> & VariantProps<typeof tagVariants>) {
-    return <span data-slot="tag" className={cn(tagVariants({ variant, size }), className)} {...props} />;
+function Tag({ className, variant, ...props }: React.ComponentProps<'span'> & VariantProps<typeof tagVariants>) {
+    return <span data-slot="tag" className={cn(tagVariants({ variant }), className)} {...props} />;
 }
-
-export type TagSize = NonNullable<VariantProps<typeof tagVariants>['size']>;
 
 export { Tag, tagVariants };

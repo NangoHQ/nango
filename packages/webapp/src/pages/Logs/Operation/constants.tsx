@@ -35,7 +35,7 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
         header: 'Type',
         size: 80,
         cell: ({ row }) => {
-            return <Tag size="sm">{row.original.type === 'log' ? 'Message' : 'HTTP'}</Tag>;
+            return <Tag>{row.original.type === 'log' ? 'Message' : 'HTTP'}</Tag>;
         }
     },
     {
