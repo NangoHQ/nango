@@ -44,7 +44,11 @@ class Gate {
     }
 
     async exit(lock: Lock) {
-        await this.locking.release(lock);
+        try {
+            await this.locking.tryRelease(lock, 1000);
+        } catch (err) {
+            logger.error('Error releasing lock', { lock: lock.key, error: err });
+        }
     }
 }
 
@@ -136,7 +140,12 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
 
     const abort = setInterval(async () => {
-        const shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
+        let shouldAbort = false;
+        try {
+            shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
+        } catch (err) {
+            logger.error('Error checking abort flag', { taskId: request.taskId, error: err });
+        }
         if (shouldAbort) {
             logger.info('Aborting task', { taskId: request.taskId });
             abortController.abort();

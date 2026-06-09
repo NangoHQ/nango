@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
@@ -49,5 +49,31 @@ describe('Locking', () => {
             locking.release(lock);
         }, 500);
         await expect(locking.tryAcquire(KEY, 200, 1000)).resolves.not.toThrow();
+    });
+
+    it('should acquire and release a lock with tryRelease', async () => {
+        const lock = await locking.acquire(KEY, 1000);
+        await locking.tryRelease(lock, 1000);
+    });
+
+    it('should throw an error if releaseTimeoutMs is not positive', async () => {
+        const lock = await locking.acquire(KEY, 1000);
+        await expect(locking.tryRelease(lock, 0)).rejects.toThrowError(`releaseTimeoutMs must be greater than 0`);
+    });
+
+    it('should retry and release a lock after transient failures', async () => {
+        let deleteAttempts = 0;
+        const originalDelete = store.delete.bind(store);
+        vi.spyOn(store, 'delete').mockImplementation(async (key: string) => {
+            deleteAttempts++;
+            if (deleteAttempts < 3) {
+                throw new Error('transient redis error');
+            }
+            return originalDelete(key);
+        });
+        const lock = await locking.acquire(KEY, 1000);
+        await locking.tryRelease(lock, 1000);
+        expect(deleteAttempts).toBe(3);
+        vi.restoreAllMocks();
     });
 });
