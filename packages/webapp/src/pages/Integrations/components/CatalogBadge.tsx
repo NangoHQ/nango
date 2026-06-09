@@ -9,7 +9,7 @@ const badgeVariants = cva('w-fit font-mono px-2 py-0.5 rounded bg-surface-canvas
         variant: {
             dark: 'bg-surface-canvas  text-text-secondary',
             light: 'bg-surface-panel-inset  text-text-strong',
-            red: 'bg-status-danger-bg text-status-danger-border',
+            red: 'bg-status-danger-bg text-status-danger-text',
             success: 'bg-status-success-bg text-status-success-text',
             warning: 'bg-status-warning-bg text-status-warning-text',
             error: 'bg-status-danger-bg text-status-danger-text',
