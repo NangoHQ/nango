@@ -13,7 +13,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Fetch latest Docker image versions
         id: versions
@@ -23,14 +23,26 @@ jobs:
             local filter=$2
             local suffix=$3
             local library_name=$4
+            local url="https://hub.docker.com/v2/repositories/${library_name}/${image}/tags?page_size=100&name=${filter}"
+            local all_tags=""
 
-            curl -sf "https://hub.docker.com/v2/repositories/${library_name}/${image}/tags?page_size=100&name=${filter}" \
-              | jq -r --arg suffix "$suffix" '
-                  .results[].name
-                  | select(test("^[0-9]+\\.[0-9]+(\\.[0-9]+)?" + $suffix + "$"))
-                ' \
-              | sort -V \
-              | tail -n1
+            for page in {1..5}; do
+              [ -z "$url" ] || [ "$url" = "null" ] && break
+              
+              local response
+              response=$(curl -sf "$url") || return 1
+              
+              local page_tags
+              page_tags=$(echo "$response" | jq -r --arg suffix "$suffix" '
+                .results[].name
+                | select(test("^[0-9]+\\.[0-9]+(\\.[0-9]+)?" + $suffix + "$"))
+              ')
+              
+              all_tags=$(printf "%s\n%s" "$all_tags" "$page_tags")
+              url=$(echo "$response" | jq -r '.next // empty')
+            done
+
+            echo "$all_tags" | sed '/^$/d' | sort -V | tail -n1
           }
 
           POSTGRES=$(fetch_latest "postgres"       "16."  "-alpine" "library")
@@ -39,6 +51,12 @@ jobs:
           OPENSEARCH_RAW=$(fetch_latest "opensearch" "2." "" "opensearchproject") 
           ACTIVEMQ_RAW=$(fetch_latest "activemq-classic" "5." "" "apache")  
           CLICKHOUSE_RAW=$(fetch_latest "clickhouse-server" "26." "" "clickhouse")
+
+          if [ -z "$POSTGRES" ] || [ -z "$REDIS" ] || [ -z "$ELASTICSEARCH" ] || \
+             [ -z "$OPENSEARCH_RAW" ] || [ -z "$ACTIVEMQ_RAW" ] || [ -z "$CLICKHOUSE_RAW" ]; then
+            echo "::error::Error crítico: One or more Docker images returned an empty tag. Aborting to avoid PRs with invalid versions."
+            exit 1
+          fi
 
           echo "POSTGRES=$POSTGRES"             >> $GITHUB_OUTPUT
           echo "REDIS=$REDIS"                   >> $GITHUB_OUTPUT
@@ -71,27 +89,41 @@ jobs:
 
       - name: Update .env.example
         if: steps.changed.outputs.changed == 'true'
+        env:
+          NEW_POSTGRES: ${{ steps.versions.outputs.POSTGRES }}
+          NEW_REDIS: ${{ steps.versions.outputs.REDIS }}
+          NEW_ELASTICSEARCH: ${{ steps.versions.outputs.ELASTICSEARCH }}
+          NEW_OPENSEARCH: ${{ steps.versions.outputs.OPENSEARCH }}
+          NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
+          NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
         run: |
-          sed -i "s|POSTGRES_VERSION=.*|POSTGRES_VERSION=${{ steps.versions.outputs.POSTGRES }}|"             .env.example
-          sed -i "s|REDIS_VERSION=.*|REDIS_VERSION=${{ steps.versions.outputs.REDIS }}|"                       .env.example
-          sed -i "s|ELASTICSEARCH_VERSION=.*|ELASTICSEARCH_VERSION=${{ steps.versions.outputs.ELASTICSEARCH }}|" .env.example
-          sed -i "s|OPENSEARCH_VERSION=.*|OPENSEARCH_VERSION=${{ steps.versions.outputs.OPENSEARCH }}|"        .env.example
-          sed -i "s|ACTIVEMQ_VERSION=.*|ACTIVEMQ_VERSION=${{ steps.versions.outputs.ACTIVEMQ }}|"              .env.example
-          sed -i "s|CLICKHOUSE_VERSION=.*|CLICKHOUSE_VERSION=${{ steps.versions.outputs.CLICKHOUSE }}|"        .env.example
+          sed -i "s|POSTGRES_VERSION=.*|POSTGRES_VERSION=${NEW_POSTGRES}|"             .env.example
+          sed -i "s|REDIS_VERSION=.*|REDIS_VERSION=${NEW_REDIS}|"                       .env.example
+          sed -i "s|ELASTICSEARCH_VERSION=.*|ELASTICSEARCH_VERSION=${NEW_ELASTICSEARCH}|" .env.example
+          sed -i "s|OPENSEARCH_VERSION=.*|OPENSEARCH_VERSION=${NEW_OPENSEARCH}|"        .env.example
+          sed -i "s|ACTIVEMQ_VERSION=.*|ACTIVEMQ_VERSION=${NEW_ACTIVEMQ}|"              .env.example
+          sed -i "s|CLICKHOUSE_VERSION=.*|CLICKHOUSE_VERSION=${NEW_CLICKHOUSE}|"        .env.example
 
       - name: Update tests/versions.ts defaults
         if: steps.changed.outputs.changed == 'true'
+        env:
+          NEW_POSTGRES: ${{ steps.versions.outputs.POSTGRES }}
+          NEW_REDIS: ${{ steps.versions.outputs.REDIS }}
+          NEW_ELASTICSEARCH: ${{ steps.versions.outputs.ELASTICSEARCH }}
+          NEW_OPENSEARCH: ${{ steps.versions.outputs.OPENSEARCH }}
+          NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
+          NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
         run: |
-          sed -i "s|POSTGRES.*??.*'.*'|POSTGRES:      process.env['POSTGRES_VERSION']      ?? '${{ steps.versions.outputs.POSTGRES }}'|"             tests/versions.ts
-          sed -i "s|REDIS.*??.*'.*'|REDIS:         process.env['REDIS_VERSION']         ?? '${{ steps.versions.outputs.REDIS }}'|"                   tests/versions.ts
-          sed -i "s|ELASTICSEARCH.*??.*'.*'|ELASTICSEARCH: process.env['ELASTICSEARCH_VERSION'] ?? '${{ steps.versions.outputs.ELASTICSEARCH }}'|"   tests/versions.ts
-          sed -i "s|OPENSEARCH.*??.*'.*'|OPENSEARCH:    process.env['OPENSEARCH_VERSION']    ?? '${{ steps.versions.outputs.OPENSEARCH }}'|"          tests/versions.ts
-          sed -i "s|ACTIVEMQ.*??.*'.*'|ACTIVEMQ:      process.env['ACTIVEMQ_VERSION']      ?? '${{ steps.versions.outputs.ACTIVEMQ }}'|"              tests/versions.ts
-          sed -i "s|CLICKHOUSE.*??.*'.*'|CLICKHOUSE:    process.env['CLICKHOUSE_VERSION']    ?? '${{ steps.versions.outputs.CLICKHOUSE }}'|"          tests/versions.ts
+          sed -i "s|POSTGRES.*??.*'.*'|POSTGRES:      process.env['POSTGRES_VERSION']      ?? '${NEW_POSTGRES}'|"             tests/versions.ts
+          sed -i "s|REDIS.*??.*'.*'|REDIS:         process.env['REDIS_VERSION']         ?? '${NEW_REDIS}'|"                   tests/versions.ts
+          sed -i "s|ELASTICSEARCH.*??.*'.*'|ELASTICSEARCH: process.env['ELASTICSEARCH_VERSION'] ?? '${NEW_ELASTICSEARCH}'|"   tests/versions.ts
+          sed -i "s|OPENSEARCH.*??.*'.*'|OPENSEARCH:    process.env['OPENSEARCH_VERSION']    ?? '${NEW_OPENSEARCH}'|"          tests/versions.ts
+          sed -i "s|ACTIVEMQ.*??.*'.*'|ACTIVEMQ:      process.env['ACTIVEMQ_VERSION']      ?? '${NEW_ACTIVEMQ}'|"              tests/versions.ts
+          sed -i "s|CLICKHOUSE.*??.*'.*'|CLICKHOUSE:    process.env['CLICKHOUSE_VERSION']    ?? '${NEW_CLICKHOUSE}'|"          tests/versions.ts
 
       - name: Open PR
         if: steps.changed.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@00f43a059d0a793a540b6167c1340b66b2675005 # v7.0.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore(docker): update image versions"
