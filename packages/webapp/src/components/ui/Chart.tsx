@@ -4,7 +4,7 @@ import * as RechartsPrimitive from 'recharts';
 import { cn } from '@/utils/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: '', dark: '.dark' } as const;
+const THEMES = { light: '', dark: "[data-theme='dark']" } as const;
 
 export type ChartConfig = Record<
     string,

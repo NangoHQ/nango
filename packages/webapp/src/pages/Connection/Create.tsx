@@ -167,7 +167,7 @@ export const ConnectionCreate: React.FC = () => {
                     <div className="flex flex-col gap-10">
                         <h1 className="text-2xl">Embed in your app</h1>
                         <a
-                            className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-strong focus:outline-0"
+                            className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-strong focus:outline-0"
                             href="https://nango.dev/docs/guides/auth/auth-guide"
                             target="_blank"
                             rel="noreferrer"
@@ -176,7 +176,7 @@ export const ConnectionCreate: React.FC = () => {
                                 <div className="flex gap-3 items-start">
                                     <h2>Authorize users from your app</h2>
                                 </div>
-                                <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                                <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
                                     <IconBook stroke={1} size={18} />
                                 </div>
                             </header>

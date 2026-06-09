@@ -174,7 +174,7 @@ export function MultiSelect<T extends string = string>({
                                     className={cn(
                                         'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-state-hover text-text-secondary hover:text-text-strong',
                                         isSelected &&
-                                            'border-[0.5px] border-bg-elevated bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
+                                            'border-[0.5px] border-surface-page bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-2">
