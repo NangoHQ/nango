@@ -5,22 +5,22 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert.js';
-import { EmptyCard } from '@/components-v2/EmptyCard.js';
-import { Badge } from '@/components-v2/ui/badge';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { ComboboxSelect } from '@/components-v2/ui/combobox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/dropdown-menu';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Skeleton } from '@/components-v2/ui/skeleton.js';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Badge } from '@/components/ui/Badge';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { ComboboxSelect } from '@/components/ui/Combobox';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunctions } from '@/hooks/useIntegrationFunctions';
 import { useStore } from '@/store';
 
-import type { ComboboxOption } from '@/components-v2/ui/combobox';
+import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { ApiIntegration, DeployedNangoActionFunction, DeployedNangoFunction, DeployedNangoSyncFunction, FunctionType } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;

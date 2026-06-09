@@ -6,14 +6,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { TemplateDetail } from './TemplateDetail';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
-import { EmptyCard } from '@/components-v2/EmptyCard';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { AlertButton } from '@/components-v2/ui/alert';
-import { Badge } from '@/components-v2/ui/badge';
-import { ComboboxSelect } from '@/components-v2/ui/combobox';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { AlertButton } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/Badge';
+import { ComboboxSelect } from '@/components/ui/Combobox';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
@@ -24,7 +24,7 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { cn } from '@/utils/utils';
 
-import type { ComboboxOption } from '@/components-v2/ui/combobox';
+import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { ApiError, NangoFunctionTemplate } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action'] as const;
