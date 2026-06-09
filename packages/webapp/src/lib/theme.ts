@@ -22,13 +22,20 @@ export function applyTheme(theme: Theme): void {
     root.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
+function getStoredTheme(): Theme {
+    try {
+        const raw = localStorage.getItem(LocalStorageKeys.Theme);
+        const s = raw ? (JSON.parse(raw) as { state?: { theme?: Theme; darkMode?: boolean } }) : null;
+        return s?.state?.theme ?? (s?.state?.darkMode === false ? 'light' : 'dark');
+    } catch {
+        return 'dark';
+    }
+}
+
 // Eagerly apply the persisted theme before the first React render.
+// Module code runs synchronously before ReactDOM.render().
 try {
-    const raw = localStorage.getItem(LocalStorageKeys.Theme);
-    const s = raw ? (JSON.parse(raw) as { state?: { theme?: Theme; darkMode?: boolean } }) : null;
-    // Support old boolean `darkMode` from before migration
-    const theme: Theme = s?.state?.theme ?? (s?.state?.darkMode === false ? 'light' : 'dark');
-    applyTheme(theme);
+    applyTheme(getStoredTheme());
 } catch {
     // Keep the dark default already set on <html class="dark"> in index.html
 }
@@ -40,17 +47,14 @@ interface ThemeState {
     setTheme: (theme: Theme) => void;
     /** Toggle between dark and light, ignoring/overriding system. */
     toggleDarkMode: () => void;
-    /** Current effective dark value (system resolves to OS preference). */
-    darkMode: boolean;
 }
 
 export const useThemeStore = create<ThemeState>()(
     persist(
         (set, get) => ({
-            theme: 'dark',
-            get darkMode() {
-                return resolveTheme(get().theme);
-            },
+            // Initialize from localStorage so first render has the correct value
+            // (avoids a flash when persist hydrates asynchronously)
+            theme: getStoredTheme(),
             setTheme: (theme) => set({ theme }),
             toggleDarkMode: () => {
                 const currentlyDark = resolveTheme(get().theme);
@@ -71,6 +75,9 @@ export const useThemeStore = create<ThemeState>()(
         }
     )
 );
+
+/** Derived selector: current effective dark value (system resolves to OS preference). */
+export const darkModeSelector = (s: ThemeState) => resolveTheme(s.theme);
 
 // --- Hook ---
 
