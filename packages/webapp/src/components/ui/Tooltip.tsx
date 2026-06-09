@@ -40,8 +40,8 @@ const tooltipContentVariants = cva(
 const tooltipPrimitiveVariants = cva('z-80 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]', {
     variants: {
         variant: {
-            primary: 'bg-surface-panel-inset fill-bg-subtle',
-            secondary: 'bg-surface-canvas fill-bg-surface'
+            primary: 'fill-surface-panel-inset',
+            secondary: 'fill-surface-canvas'
         }
     },
     defaultVariants: {
