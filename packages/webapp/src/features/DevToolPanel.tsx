@@ -4,15 +4,30 @@ import { create } from 'zustand';
 
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
+import { useTeam } from '@/hooks/useTeam';
+import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 /**
- * True when the dev tool panel should be available:
+ * True when the dev tool panel is available based on the current hostname:
  * - local Vite dev server
  * - *.app-development.nango.dev (development deployment and PR previews)
  */
-export const isDevToolsEnabled =
+const isDevToolsEnabledByHostname =
     import.meta.env.DEV || window.location.hostname === 'app-development.nango.dev' || window.location.hostname.endsWith('.app-development.nango.dev');
+
+/**
+ * Returns true when the dev tool panel should be available — either on a dev
+ * hostname or when the signed-in account is the Nango admin team.
+ *
+ * Defaults to false until the team query resolves, so there is no flash on
+ * first paint for non-admin accounts.
+ */
+export function useIsDevToolsEnabled(): boolean {
+    const env = useStore((s) => s.env);
+    const { data } = useTeam(env);
+    return isDevToolsEnabledByHostname || (data?.data.isAdminTeam ?? false);
+}
 
 // Toggle with: Ctrl+Shift+D
 export const DEV_PANEL_SHORTCUT = 'KeyD';
