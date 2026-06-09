@@ -516,7 +516,7 @@ export class Scheduler {
     }): Promise<Result<Task>> {
         const newState: TaskState = 'CANCELLED';
         const cancelled: Result<Task> = await this.db.transaction(async (trx) => {
-            const res = await tasks.transitionState(this.db, {
+            const res = await tasks.transitionState(trx, {
                 taskId: taskId,
                 newState,
                 output: { reason }
