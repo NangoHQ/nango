@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -85,7 +85,7 @@ export const UserSettings: React.FC = () => {
                                                 }, 100);
                                             }}
                                         >
-                                            <Pencil size={14} />
+                                            <Edit />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent sideOffset={10}>Edit</TooltipContent>
@@ -96,7 +96,7 @@ export const UserSettings: React.FC = () => {
                     {edit && (
                         <div className="flex justify-end gap-2 items-center">
                             <Button
-                                variant={'tertiary'}
+                                variant={'secondary'}
                                 onClick={() => {
                                     setName(user.name);
                                     setEdit(false);
