@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -17,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useGetIntegrationFunctions } from '@/hooks/useIntegrationFunctions';
+import { useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useStore } from '@/store';
 import { isSyncOrAction } from '@/utils/scripts';
 
@@ -73,6 +74,10 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
 
+    // Prefetch templates so the count is ready and the catalog page opens warm (the Templates page shares this query key).
+    const { data: templatesResponse } = useGetIntegrationTemplates({ env, providerConfigKey: integration.unique_key });
+    const templatesCount = templatesResponse?.data.length;
+
     const onBrowseTemplates = useCallback(() => {
         navigate(`/${env}/integrations/${integration.unique_key}/templates`);
     }, [env, integration.unique_key, navigate]);
@@ -104,9 +109,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <h3 className="text-title-body text-text-primary">No functions deployed in this integration yet</h3>
                     <p className="text-text-secondary text-body-medium-regular text-center">Browse the template catalog or build your own custom functions.</p>
                     <div className="flex items-center gap-2">
-                        <Button type="button" onClick={onBrowseTemplates}>
-                            <LibraryBig /> Browse templates
-                        </Button>
+                        <ConditionalTooltip condition={templatesCount === 0} content="There are no templates available for this provider yet.">
+                            <Button type="button" onClick={onBrowseTemplates} disabled={templatesCount === 0}>
+                                <LibraryBig /> Browse {templatesCount ? `${templatesCount} ` : ''}templates
+                            </Button>
+                        </ConditionalTooltip>
                         <ButtonLink to="https://nango.dev/docs/guides/functions/functions-guide" target="_blank" variant="secondary">
                             <Code /> Build custom
                         </ButtonLink>
@@ -141,17 +148,25 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-64">
-                                <DropdownMenuItem onSelect={onBrowseTemplates}>
-                                    <div className="flex items-center gap-4">
-                                        <LibraryBig />
-                                        <div>
-                                            <span className="text-text-primary text-body-medium-medium">Browse catalog</span>
-                                            <p className="text-text-secondary text-body-small-regular">
-                                                Browse a list of pre-built functions that may fit your use case.
-                                            </p>
+                                <ConditionalTooltip
+                                    condition={templatesCount === 0}
+                                    content="There are no templates available for this provider yet."
+                                    side="left"
+                                >
+                                    <DropdownMenuItem onSelect={onBrowseTemplates} disabled={templatesCount === 0}>
+                                        <div className="flex items-center gap-4">
+                                            <LibraryBig />
+                                            <div>
+                                                <span className="text-text-primary text-body-medium-medium">
+                                                    Browse {templatesCount ? `${templatesCount} ` : ''}templates
+                                                </span>
+                                                <p className="text-text-secondary text-body-small-regular">
+                                                    Browse a list of pre-built functions that may fit your use case.
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </DropdownMenuItem>
+                                    </DropdownMenuItem>
+                                </ConditionalTooltip>
                                 <DropdownMenuItem asChild>
                                     <a
                                         href="https://nango.dev/docs/guides/functions/functions-guide#guide"
