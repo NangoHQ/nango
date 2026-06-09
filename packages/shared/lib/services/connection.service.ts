@@ -1994,6 +1994,58 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+
+    async getConnectionLabels(connectionIds: string[], accountId: number): Promise<Map<string, string>> {
+        if (connectionIds.length === 0) return new Map();
+        const rows = await db.knex
+            .select<{ connection_id: string; tags: Record<string, string> | null; display_name: string | null; email: string | null }[]>(
+                'nc.connection_id',
+                'nc.tags',
+                'eu.display_name',
+                'eu.email'
+            )
+            .from('_nango_connections as nc')
+            .join('_nango_environments as ne', 'ne.id', 'nc.environment_id')
+            .leftJoin('end_users as eu', 'eu.id', 'nc.end_user_id')
+            .where('ne.account_id', accountId)
+            .whereIn('nc.connection_id', connectionIds)
+            .where('nc.deleted', false);
+        const map = new Map<string, string>();
+        for (const row of rows) {
+            if (map.has(row.connection_id)) continue;
+            const label = row.tags?.['end_user_display_name'] || row.display_name || row.email || null;
+            if (label) map.set(row.connection_id, label);
+        }
+        return map;
+    }
+
+    async searchConnectionsForFilter(search: string, accountId: number, limit: number): Promise<{ id: string; label: string }[]> {
+        const pattern = `%${search}%`;
+        const rows = await db.knex
+            .select<{ connection_id: string; tags: Record<string, string> | null; display_name: string | null; email: string | null }[]>(
+                'nc.connection_id',
+                'nc.tags',
+                'eu.display_name',
+                'eu.email'
+            )
+            .from('_nango_connections as nc')
+            .join('_nango_environments as ne', 'ne.id', 'nc.environment_id')
+            .leftJoin('end_users as eu', 'eu.id', 'nc.end_user_id')
+            .where('ne.account_id', accountId)
+            .where('nc.deleted', false)
+            .where((qb) => {
+                void qb
+                    .whereRaw('nc.connection_id ILIKE ?', [pattern])
+                    .orWhereRaw('eu.display_name ILIKE ?', [pattern])
+                    .orWhereRaw('eu.email ILIKE ?', [pattern])
+                    .orWhereRaw("nc.tags->>'end_user_display_name' ILIKE ?", [pattern]);
+            })
+            .limit(limit);
+        return rows.map((row) => ({
+            id: row.connection_id,
+            label: row.tags?.['end_user_display_name'] || row.display_name || row.email || row.connection_id
+        }));
+    }
 }
 
 export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {

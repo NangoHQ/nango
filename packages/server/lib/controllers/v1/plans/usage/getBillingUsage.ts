@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { billing } from '@nangohq/billing';
+import { connectionService } from '@nangohq/shared';
 import { BREAKDOWN_DIMENSIONS, FILTER_PARAM_TYPE_FOR_DIM, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -200,6 +201,26 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     if (usage.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
         return;
+    }
+
+    const connectionIds = new Set<string>();
+    for (const metric of Object.values(usage.value)) {
+        for (const entry of metric?.breakdown ?? []) {
+            if (!entry.isRest && entry.group?.key === 'connection_id') {
+                connectionIds.add(entry.group.value);
+            }
+        }
+    }
+    if (connectionIds.size > 0) {
+        const labelMap = await connectionService.getConnectionLabels([...connectionIds], account.id);
+        for (const metric of Object.values(usage.value)) {
+            for (const entry of metric?.breakdown ?? []) {
+                if (!entry.isRest && entry.group?.key === 'connection_id' && entry.group.value) {
+                    const resolved = labelMap.get(entry.group.value);
+                    if (resolved) entry.group.label = resolved;
+                }
+            }
+        }
     }
 
     res.status(200).send({

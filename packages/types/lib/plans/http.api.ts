@@ -77,6 +77,9 @@ export type GetBillingUsageTopDimensionValues = Endpoint<{
             to: string;
             // Number of values to return. Defaults to 10, server-capped.
             limit?: string | undefined;
+            // Typeahead search string. When provided with dimension=connection_id,
+            // bypasses ClickHouse and searches Postgres by display name or connection_id.
+            search?: string | undefined;
         };
     }[UsageMetric];
     Success: {

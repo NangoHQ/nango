@@ -124,13 +124,16 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         // biggest stacks at the bottom and 'rest' always comes last.
         const ranked = breakdownEntries.filter((e) => !e.isRest).sort((a, b) => b.total - a.total);
         const series: ChartSeries[] = ranked.map((entry, i) => {
-            const label = entry.group ? formatDimensionValue(dimension, entry.group.value) : '—';
+            const label = entry.group ? (entry.group.label ?? formatDimensionValue(dimension, entry.group.value)) : '—';
+            // Color is keyed on the raw value (not the display label) so it
+            // stays stable even if the customer's display name changes.
+            const colorKey = entry.group ? formatDimensionValue(dimension, entry.group.value) : label;
             return {
                 key: `s${i}`,
                 label,
                 // Status (success) gets semantic red/green; every other dimension uses a stable
                 // per-value color so the same value matches across charts.
-                color: dimension === 'success' ? (entry.group?.value === 'false' ? FAILED_SERIES_COLOR : SUCCESS_SERIES_COLOR) : colorForValue(label),
+                color: dimension === 'success' ? (entry.group?.value === 'false' ? FAILED_SERIES_COLOR : SUCCESS_SERIES_COLOR) : colorForValue(colorKey),
                 usage: entry.usage
             };
         });
