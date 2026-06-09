@@ -1,0 +1,29 @@
+packages/server/lib/controllers/functions/resultCallbacks.unit.test.ts
+  s_15d8a2cce8712c::t_59649e5f000bca 1-47,49-75,77-109,111-127,129-153
+  s_15d8a2cce8712c::t_dc2065874b4b43 48,76,110
+  s_15d8a2cce8712c::t_1392a47bc0bd67 128
+packages/server/lib/controllers/functions/deploy/postDeployResult.ts
+  s_15d8a2cce8712c::t_dcc0ec0c4bd963 7,48-66
+packages/server/lib/controllers/functions/dryrun/postDryrunResult.ts
+  s_15d8a2cce8712c::t_dcc0ec0c4bd963 7,48-66
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_15d8a2cce8712c::t_59649e5f000bca 174-175
+packages/sandbox/lib/functions/async-deploy-script.js
+  s_15d8a2cce8712c::t_dcc0ec0c4bd963 32-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "f0fa05979666e820f58c3dea8999c2bb52c2da8e",
+  "prompts": {},
+  "sessions": {
+    "s_15d8a2cce8712c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9837-52d8-72f1-bdb2-135470bffe92",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
