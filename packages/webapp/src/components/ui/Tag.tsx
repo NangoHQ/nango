@@ -5,7 +5,7 @@ import { cn } from '@/utils/utils';
 
 import type { VariantProps } from 'class-variance-authority';
 
-const tagVariants = cva('inline-flex items-center justify-center rounded px-2 py-px w-fit whitespace-nowrap shrink-0 text-body-extra-small-semi uppercase', {
+const tagVariants = cva('inline-flex items-center justify-center px-2 py-px w-fit whitespace-nowrap shrink-0 uppercase', {
     variants: {
         variant: {
             success: 'bg-status-success-bg text-status-success-text',
@@ -17,8 +17,8 @@ const tagVariants = cva('inline-flex items-center justify-center rounded px-2 py
             neutral: 'bg-surface-panel-inset text-text-secondary border border-border-muted'
         },
         size: {
-            md: '',
-            sm: 'text-[12px] font-normal rounded-sm'
+            md: 'rounded text-body-extra-small-semi',
+            sm: 'rounded-sm text-[11px] font-normal'
         }
     },
     defaultVariants: {
