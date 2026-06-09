@@ -3,7 +3,7 @@ import { parseAsString, useQueryState, useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
 import { UsageChartCard } from './UsageChartCard';
-import { isBreakdownAvailableForMonth, metricsSupportingDimension } from '../usageBreakdown';
+import { metricsSupportingDimension } from '../usageBreakdown';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -41,12 +41,11 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    // When the breakdown feature is active for an eligible month, pin the whole
-    // dashboard (including headline totals) to ClickHouse so totals match the
-    // per-panel breakdowns; otherwise keep the env / localStorage default source.
+    // When the breakdown feature is active, pin the whole dashboard (including
+    // headline totals) to ClickHouse so totals match the per-panel breakdowns;
+    // otherwise keep the env / localStorage default source.
     const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
-    const allowMay = useFeatureFlagsStore((s) => s.usageBreakdownAllowMay);
-    const sourceOverride = breakdownFlag && isBreakdownAvailableForMonth(selectedMonth, allowMay) ? 'clickhouse' : undefined;
+    const sourceOverride = breakdownFlag ? 'clickhouse' : undefined;
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, sourceOverride);
 

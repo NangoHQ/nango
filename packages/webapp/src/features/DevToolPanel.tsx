@@ -1,4 +1,4 @@
-import { BarChart3, CalendarClock, FlaskConical, Sun, X } from 'lucide-react';
+import { BarChart3, FlaskConical, Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
@@ -36,7 +36,6 @@ export const DevToolPanel: React.FC = () => {
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const usageBreakdownFixtures = useFeatureFlagsStore((s) => s.usageBreakdownFixtures);
-    const usageBreakdownAllowMay = useFeatureFlagsStore((s) => s.usageBreakdownAllowMay);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
 
     useEffect(() => {
@@ -89,13 +88,6 @@ export const DevToolPanel: React.FC = () => {
                             <span className="text-sm text-text-primary">Usage breakdown fixtures</span>
                         </div>
                         <Switch checked={usageBreakdownFixtures} onCheckedChange={(v) => setFlag('usageBreakdownFixtures', v)} />
-                    </li>
-                    <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <CalendarClock className="size-4 shrink-0 text-text-secondary" />
-                            <span className="text-sm text-text-primary">Allow breakdown in May</span>
-                        </div>
-                        <Switch checked={usageBreakdownAllowMay} onCheckedChange={(v) => setFlag('usageBreakdownAllowMay', v)} />
                     </li>
                 </ul>
             </div>
