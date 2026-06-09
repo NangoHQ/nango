@@ -10892,6 +10892,31 @@ leadmagic:
             pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-your-api-key'
 
+leadfeeder:
+    display_name: Leadfeeder
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.leadfeeder.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/accounts
+    docs: https://nango.dev/docs/api-integrations/leadfeeder
+    docs_connect: https://nango.dev/docs/api-integrations/leadfeeder/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Leadfeeder account.
+            example: a3f8c2b1****************************8805
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-obtain-your-api-key'
+
 lessonly:
     display_name: Lessonly
     categories:
