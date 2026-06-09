@@ -115,6 +115,17 @@ export const ChartCard: React.FC<ChartCardProps> = ({
         []
     );
 
+    // Hide/isolate/hover state is keyed by positional series keys (s0, s1, …) that are
+    // reused across datasets, so reset it whenever the set of series changes (e.g.
+    // switching breakdown dimension) — otherwise stale state lands on the wrong values.
+    // Keyed on the labels so a same-dimension refetch keeps the state.
+    const seriesSignature = (breakdownSeries ?? []).map((s) => s.label).join(' ');
+    useEffect(() => {
+        setHidden((prev) => (prev.size === 0 ? prev : new Set()));
+        setIsolated(null);
+        setHoveredKey(null);
+    }, [seriesSignature]);
+
     // A series is hidden in the chart when another series is isolated, or it's individually hidden.
     const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
 
@@ -279,7 +290,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // What occupies the chart body: a per-panel breakdown spinner/error, the empty state, or the chart.
     const showBreakdownSpinner = isBreakdown && breakdownLoading;
     const showBreakdownError = isBreakdown && !breakdownLoading && breakdownError;
-    const hasBreakdownSeries = isBreakdown && (breakdownSeries?.length ?? 0) > 0 && (breakdownSeries?.some((s) => s.usage.some((u) => u.quantity > 0)) ?? false);
+    const hasBreakdownSeries =
+        isBreakdown && (breakdownSeries?.length ?? 0) > 0 && (breakdownSeries?.some((s) => s.usage.some((u) => u.quantity > 0)) ?? false);
     // A breakdown with series renders even when the base metric is empty (e.g. fixtures on a zero-usage metric).
     const effectiveEmpty = isEmpty && !hasBreakdownSeries;
     // Headline number: an explicit override (fixtures) wins, otherwise the real base total when present.
