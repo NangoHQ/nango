@@ -6,31 +6,18 @@ import { REST_SERIES_KEY } from './usageChartColors';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/Chart';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { Skeleton } from '../ui/Skeleton';
-import { cn } from '@/utils/utils';
+import { cn, formatQuantity } from '@/utils/utils';
 
 import type { ApiBillingUsageMetric } from '@nangohq/types';
 import type { TooltipProps } from 'recharts';
 
-export function formatQuantity(quantity: number): string {
-    return quantity.toLocaleString('en-US', {
-        maximumFractionDigits: 2
-    });
+// The headline shows the precise total (e.g. "2,172.43"); axis ticks use the
+// shared compact formatter (formatQuantity → "50M") so big numbers don't clip.
+function formatExact(quantity: number): string {
+    return quantity.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
-// Compact form for axis ticks so large values (e.g. function time in the billions)
-// don't get clipped: 50_000_000 → "50M", 1_200_000_000 → "1.2B".
-const compactFormatter = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
-export function formatCompact(value: number): string {
-    return compactFormatter.format(value);
-}
-
-/**
- * One series in a breakdown chart. `key` must be a CSS-safe identifier (the
- * shadcn chart wrapper derives `--color-<key>` from it), so callers pass
- * synthetic keys (`s0`, `s1`, …, `rest`) and carry the real dimension value in
- * `label`. Colors are applied directly to the chart elements, not via the
- * `--color-<key>` indirection.
- */
+/** One stacked series in a breakdown chart. `key` is a synthetic CSS-safe id (s0, s1, … / rest); the real value lives in `label`, and `color` is applied directly to the chart elements. */
 export interface ChartSeries {
     key: string;
     label: string;
@@ -322,7 +309,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                             </div>
                             {headlineTotal !== undefined && (
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-text-secondary text-body-medium-regular">{formatQuantity(headlineTotal)}</span>
+                                    <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
                                     {isCumulative && <span className="text-text-tertiary text-body-small-regular">monthly average</span>}
                                 </div>
                             )}
@@ -348,7 +335,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                     tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
                                     tick={renderDayTick}
                                 />
-                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatCompact(value)} padding={{ top: 20 }} />
+                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
                                 <ChartTooltip
                                     // Over a band → just that series; above the stack → the full per-day list.
                                     // (Hover clearing is debounced, so seams between bands don't flash the full list.)

@@ -9,12 +9,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });
 
-// Earliest month the ClickHouse-backed (breakdown) view has data for: granular
-// daily_raw_* ingestion began ~2026-05-12 with a mid-May gap, so May is partial.
-// We floor the picker here only while that view is active; legacy Orb-backed
-// accounts keep their full history.
+// Earliest month the breakdown (ClickHouse) view has data for; the picker is
+// floored here only while that view is active.
 const EARLIEST_USAGE_MONTH = new Date(Date.UTC(2026, 5, 1)); // June 2026
-const EARLIEST_USAGE_MONTH_LABEL = EARLIEST_USAGE_MONTH.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 interface MonthSelectorProps {
     onMonthChange?: (month: Date) => void;
@@ -102,7 +99,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
                             {previousButton}
                         </span>
                     </TooltipTrigger>
-                    <TooltipContent>{`Usage tracking is only available from ${EARLIEST_USAGE_MONTH_LABEL}.`}</TooltipContent>
+                    <TooltipContent>Usage tracking is only available from June 2026.</TooltipContent>
                 </Tooltip>
             )}
             <span className="text-text-primary text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>

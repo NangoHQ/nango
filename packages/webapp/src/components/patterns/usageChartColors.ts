@@ -1,12 +1,8 @@
 /**
- * Categorical palette for usage breakdown charts (the original design-system hues
- * plus a few extras). Ordered so the most distinct colors come first: since each
- * chart shows top-10 + "Rest", the near-duplicate hues (teal ≈ the green tokens,
- * rose ≈ pink) are placed last so they only appear once a breakdown exceeds 10
- * series — keeping a typical top-10 free of look-alike colors. Colors cycle past
- * the end; the 'rest' rollup renders neutral slate, outside this palette.
- * (12 colors is near the limit of distinct categorical hues — the real fix for
- * many integrations is per-integration brand colors; see plan follow-ups.)
+ * Categorical palette for usage breakdown charts: the design-system chart hues
+ * plus a few extras, ordered most-distinct-first (one color per top-N series).
+ * Colors cycle once exhausted; the 'rest' rollup renders neutral slate, outside
+ * this palette.
  */
 const SERIES_COLORS = [
     'var(--color-chart-series-1)', // cyan
@@ -18,9 +14,7 @@ const SERIES_COLORS = [
     '#ff8f70', // coral
     '#9dd36f', // lime
     '#7bc8f6', // sky
-    '#b7a0e8', // violet
-    '#f0a96b', // apricot (≈ coral — kept past top-10)
-    '#5fc6c4' // teal (≈ mint — kept past top-10)
+    '#b7a0e8' // violet
 ] as const;
 
 /** Internal data/series key for the long-tail 'rest' bucket (avoids collision with a real dimension value named "rest"). */

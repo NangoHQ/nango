@@ -99,10 +99,7 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, sourceOverride?: 'clickhouse' | 'orb') {
-    // Read at hook-call time so it's part of the query key — otherwise React
-    // Query keeps showing stale data until the natural refetch fires.
-    const source = sourceOverride;
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, source?: 'clickhouse' | 'orb') {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
         queryKey: [...GetBillingUsageQueryKey, timeframe, source],
@@ -131,12 +128,10 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
 }
 
 /**
- * Per-panel usage breakdown. Fires one request scoped to a single metric
- * (`metrics=<metric>`) with a `breakdown[<metric>]=<dimension>` spec, returning
- * the top-N dimension-value series plus a single 'rest' rollup under
- * `usage[metric].breakdown`. Breakdown is a ClickHouse-only feature, so the
- * request forces `source=clickhouse` (honoured under the dev gate). The caller
- * keeps using `useApiGetBillingUsage` for the panel's headline total.
+ * Fetches one metric's breakdown: the top-N values of `dimension` plus a 'rest'
+ * rollup, under `usage[metric].breakdown`. Always queries ClickHouse (breakdowns
+ * don't exist on the Orb path). The panel's headline total still comes from
+ * `useApiGetBillingUsage`.
  */
 export function useApiGetBillingUsageBreakdown<M extends UsageMetric>(
     env: string,
