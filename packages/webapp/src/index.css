@@ -13,8 +13,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@plugin '@tailwindcss/forms';
-
 @theme {
     --font-*: initial;
     --font-sans: Geist, sans-serif;
