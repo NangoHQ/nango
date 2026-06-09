@@ -968,6 +968,45 @@ describe('PostgresStore', () => {
                 expect(next_cursor).toBeNull();
             });
         });
+
+        describe('bounded decrypt concurrency (RECORDS_DECRYPT_CONCURRENCY)', () => {
+            const originalConcurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+            afterAll(() => {
+                (envs as any).RECORDS_DECRYPT_CONCURRENCY = originalConcurrency;
+            });
+
+            // The decrypt loop processes records in chunks of RECORDS_DECRYPT_CONCURRENCY. The
+            // concern is that splitting a page into concurrent chunks could drop, duplicate or
+            // reorder records. We read the same dataset at several concurrencies (1 forces one
+            // record per chunk, the others straddle the chunk boundary) and assert the result is
+            // identical to a serial baseline, so any reordering across chunks would fail.
+            it('Should return the same records in the same order regardless of concurrency', async () => {
+                const numOfRecords = 25;
+                const { connectionId, model } = await upsertNRecords(numOfRecords);
+
+                const orderAt = async (concurrency: number) => {
+                    (envs as any).RECORDS_DECRYPT_CONCURRENCY = concurrency;
+                    const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
+                    expect(response.isOk()).toBe(true);
+                    return response.unwrap().records;
+                };
+
+                const baseline = await orderAt(1);
+
+                // Completeness + correctness on the baseline.
+                expect(baseline.length).toBe(numOfRecords);
+                expect(new Set(baseline.map((r) => r['id'])).size).toBe(numOfRecords);
+                for (const r of baseline) {
+                    expect(r['name']).toBe(`record ${r['id']}`);
+                }
+
+                const baselineIds = baseline.map((r) => r['id']);
+                for (const concurrency of [3, 7, numOfRecords + 1]) {
+                    const ids = (await orderAt(concurrency)).map((r) => r['id']);
+                    expect(ids).toEqual(baselineIds);
+                }
+            });
+        });
     }, 60_000);
 
     describe('deleteOutdatedRecords', () => {

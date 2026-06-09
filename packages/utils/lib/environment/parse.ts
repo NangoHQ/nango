@@ -423,6 +423,11 @@ export const ENVS = z.object({
     RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
     // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
     RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
+    // Max number of records decrypted concurrently in getRecords. decryptAsync offloads to the
+    // libuv threadpool (UV_THREADPOOL_SIZE, default 4), so awaiting one record at a time leaves
+    // the other threads idle. Bounding the fan-out keeps every thread busy without materializing
+    // a whole page of decrypted blobs at once (which would defeat the per-record GC drop below).
+    RECORDS_DECRYPT_CONCURRENCY: z.coerce.number().int().positive().optional().default(10),
 
     // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),
