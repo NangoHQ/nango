@@ -1,7 +1,17 @@
-import type { FunctionType } from '@nangohq/types';
+import type { DeployedNangoActionFunction, DeployedNangoFunction, DeployedNangoSyncFunction, FunctionType } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 type PullSource = { catalog: true } | { env: string };
+
+export function isSyncOrAction(fn: DeployedNangoFunction): fn is DeployedNangoSyncFunction | DeployedNangoActionFunction {
+    return fn.type === 'sync' || fn.type === 'action';
+}
+
+/** Path of a function's source file within the integration-templates repo, e.g. `integrations/github/syncs/foo.ts`. */
+export function functionRepoPath({ provider, name, type }: { provider: string; name: string; type: FunctionType }): string {
+    const dir = type === 'action' ? 'actions' : 'syncs';
+    return `integrations/${provider}/${dir}/${name}.ts`;
+}
 
 /**
  * Builds the `nango pull` CLI command for a function. Use `{ catalog: true }` to pull an

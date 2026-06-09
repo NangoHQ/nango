@@ -1,14 +1,13 @@
 import { Cloud, Code, FolderGit2, Info, LibraryBig, Plus, Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDebounce } from 'react-use';
 
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { ComboboxSelect } from '@/components/ui/Combobox';
+import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
@@ -16,12 +15,14 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/In
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunctions } from '@/hooks/useIntegrationFunctions';
 import { useStore } from '@/store';
+import { isSyncOrAction } from '@/utils/scripts';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiIntegration, DeployedNangoActionFunction, DeployedNangoFunction, DeployedNangoSyncFunction, FunctionType } from '@nangohq/types';
+import type { ApiIntegration, DeployedNangoFunction, FunctionType } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -42,10 +43,6 @@ function isTypeFilterValue(value: string): value is TypeFilterValue {
     return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
 }
 
-function isSyncOrAction(fn: DeployedNangoFunction): fn is DeployedNangoSyncFunction | DeployedNangoActionFunction {
-    return fn.type === 'sync' || fn.type === 'action';
-}
-
 interface FunctionsTabProps {
     integration: ApiIntegration;
 }
@@ -55,8 +52,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const env = useStore((state) => state.env);
 
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
-    const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-    useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
+    const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
     const typeFilter: TypeFilterValue | undefined = rawType && isTypeFilterValue(rawType) ? rawType : undefined;
@@ -88,15 +84,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         [env, integration.unique_key, navigate]
     );
 
-    // Mirrors the empty-pages-then-more-pages behavior used in Connection/List.tsx — though here the
-    // server applies the filter so we shouldn't get empty pages in practice. Kept as a safety net.
     const functions: DeployedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
-    useEffect(() => {
-        if (functions.length === 0 && hasNextPage && !isFetchingNextPage && !isLoading) {
-            void fetchNextPage();
-        }
-    }, [functions.length, hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
 
     if (error) {
         return <CriticalErrorAlert message="Something went wrong while loading the functions" />;
@@ -112,7 +101,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 <Skeleton className="w-full h-50" />
             ) : showEmptyNoFilters ? (
                 <EmptyCard>
-                    <h3 className="text-title-body text-text-primary">No functions deployed in this integrationyet</h3>
+                    <h3 className="text-title-body text-text-primary">No functions deployed in this integration yet</h3>
                     <p className="text-text-secondary text-body-medium-regular text-center">Browse the template catalog or build your own custom functions.</p>
                     <div className="flex items-center gap-2">
                         <Button type="button" onClick={onBrowseTemplates}>
@@ -137,20 +126,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 <Search />
                             </InputGroupAddon>
                         </InputGroup>
-                        <ComboboxSelect<TypeFilterValue>
-                            allowMultiple
-                            label={typeFilter ? 'Type' : 'All types'}
-                            dropdownTitle="Filter by type"
+                        <SingleSelectFilter<TypeFilterValue>
+                            value={typeFilter ?? null}
+                            onChange={(value) => void setType(value)}
                             options={TYPE_OPTIONS}
-                            selected={typeFilter ? [typeFilter] : []}
-                            onSelectedChange={(next) => {
-                                // Endpoint only accepts a single `type`; collapse to the most recently picked value.
-                                const newlyAdded = next.find((value) => value !== typeFilter);
-                                void setType(newlyAdded ?? null);
-                            }}
-                            onClearAll={() => void setType(null)}
-                            reorderOnSelect={false}
-                            showSearch={false}
+                            placeholderLabel="All types"
+                            selectedLabel="Type"
+                            dropdownTitle="Filter by type"
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -162,7 +144,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 <DropdownMenuItem onSelect={onBrowseTemplates}>
                                     <div className="flex items-center gap-4">
                                         <LibraryBig />
-                                        <div className="">
+                                        <div>
                                             <span className="text-text-primary text-body-medium-medium">Browse catalog</span>
                                             <p className="text-text-secondary text-body-small-regular">
                                                 Browse a list of pre-built functions that may fit your use case.
@@ -178,7 +160,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         className="flex items-center gap-4"
                                     >
                                         <Code />
-                                        <div className="">
+                                        <div>
                                             <span className="text-text-primary text-body-medium-medium">Build custom</span>
                                             <p className="text-text-secondary text-body-small-regular">
                                                 Bring your own code or leverage AI agents to build for your use case.

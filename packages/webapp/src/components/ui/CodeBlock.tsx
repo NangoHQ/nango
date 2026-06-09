@@ -71,7 +71,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
-                    {headerElement && headerElement}
+                    {headerElement}
                     {displayLanguage && (
                         <Badge variant="gray" className="uppercase">
                             {icon && icon}

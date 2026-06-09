@@ -29,7 +29,7 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
-import { buildPullCommand } from '@/utils/scripts';
+import { buildPullCommand, functionRepoPath, isSyncOrAction } from '@/utils/scripts';
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
@@ -168,8 +168,7 @@ export const FunctionsOne: React.FC = () => {
         return <PageNotFound />;
     }
 
-    const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
-    const gitUrl = `${githubRepo}/tree/main/integrations/${gitDir}.ts`;
+    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: integrationData.integration.provider, name: func.name, type: func.type })}`;
 
     return (
         <DashboardLayout>
@@ -213,8 +212,8 @@ export const FunctionsOne: React.FC = () => {
                                     Playground <ExternalLink />
                                 </Button>
                             </ConditionalTooltip>
-                            {func.source !== 'repo' && (func.type === 'sync' || func.type === 'action') && (
-                                <IconButton
+                            {func.source !== 'repo' && isSyncOrAction(func) && (
+                                <Button
                                     variant="ghost"
                                     size="2xs"
                                     label="Delete function"
@@ -233,9 +232,9 @@ export const FunctionsOne: React.FC = () => {
                                     }
                                 >
                                     <Trash2 />
-                                </IconButton>
+                                </Button>
                             )}
-                            {(func.type === 'sync' || func.type === 'action') && <FunctionSwitch flow={func} integration={integrationData.integration} />}
+                            {isSyncOrAction(func) && <FunctionSwitch flow={func} integration={integrationData.integration} />}
                         </div>
                     </div>
 

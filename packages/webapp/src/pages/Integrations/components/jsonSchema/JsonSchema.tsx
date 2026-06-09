@@ -9,7 +9,7 @@ import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToStri
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
-export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7; invertColors?: boolean }> = ({ schema, invertColors = false }) => {
+export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ schema }) => {
     if (!isObjectSchema(schema)) {
         return (
             <div className="flex flex-col gap-1.5">
@@ -23,7 +23,7 @@ export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7; invertCol
         <div className="flex flex-col gap-1.5">
             {Object.entries(schema.properties || {}).map(([name, property]) => (
                 <TopLevelWrapper key={name}>
-                    <JsonSchema name={name} schema={property as JSONSchema7} isRequired={schema.required?.includes(name)} depth={invertColors ? 1 : 0} />
+                    <JsonSchema name={name} schema={property as JSONSchema7} isRequired={schema.required?.includes(name)} depth={0} />
                 </TopLevelWrapper>
             ))}
         </div>
