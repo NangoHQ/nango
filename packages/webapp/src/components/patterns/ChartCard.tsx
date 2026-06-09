@@ -1,4 +1,4 @@
-import { Check, Info, Loader2, X } from 'lucide-react';
+import { Check, Loader2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 
@@ -44,8 +44,6 @@ interface ChartCardProps {
     timeframe: { start: string; end: string };
     /** Right-aligned controls in the header (e.g. the breakdown dropdown). */
     headerActions?: React.ReactNode;
-    /** Optional inline notice under the header (e.g. "breakdowns available from …"). */
-    notice?: React.ReactNode;
     /** When provided, the chart renders these stacked series instead of the single total. */
     breakdownSeries?: ChartSeries[];
     breakdownLoading?: boolean;
@@ -82,7 +80,6 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     data,
     timeframe,
     headerActions,
-    notice,
     breakdownSeries,
     breakdownLoading,
     breakdownError,
@@ -223,10 +220,17 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // series (same as clicking its legend label).
     const dimByHover = (key: string) => hoveredKey !== null && hoveredKey !== key;
 
+    // Stacking follows declaration order (the first series sits at the bottom). Pin
+    // the neutral "Rest" bucket to the bottom of the stack for both bars and areas,
+    // with the sized non-rest series above it (largest first). The legend and tooltip
+    // keep their own ordering.
+    const baseSeries = breakdownSeries ?? [];
+    const stackSeries = [...baseSeries.filter((s) => s.key === REST_SERIES_KEY), ...baseSeries.filter((s) => s.key !== REST_SERIES_KEY)];
+
     // Animations are disabled so swapping breakdown/dimension/top swaps the data
     // instantly rather than playing a slow morph between unrelated datasets.
     const chartElements = isBreakdown
-        ? (breakdownSeries ?? []).map((s) =>
+        ? stackSeries.map((s) =>
               isCumulative ? (
                   <Area
                       key={s.key}
@@ -283,9 +287,12 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // Wait for the base metric to load before drawing — otherwise the chart briefly
     // renders with the wrong type (bars before `view_mode` is known) next to the spinner.
     const showChart = !isLoading && !effectiveEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || hasBreakdownSeries);
+    // Resolved (post-load) empty state. We collapse the card and drop the breakdown
+    // control here: with no data, slicing it by a dimension can't change anything.
+    const showEmpty = effectiveEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError;
 
     return (
-        <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
+        <div className={cn('bg-bg-elevated rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
                 <div className="flex flex-col items-start justify-center h-11">
                     {isLoading || !data ? (
@@ -310,15 +317,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                         </>
                     )}
                 </div>
-                {headerActions && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
+                {headerActions && !showEmpty && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
             </header>
-
-            {notice && (
-                <div className="px-6 pt-3 flex items-center gap-1.5 text-text-secondary text-body-small-regular flex-shrink-0">
-                    <Info className="size-3.5 shrink-0" />
-                    <span>{notice}</span>
-                </div>
-            )}
 
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden flex flex-col">
                 {showChart && (
@@ -436,7 +436,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                     </div>
                 )}
 
-                {effectiveEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError && (
+                {showEmpty && (
                     <div className="flex flex-col items-center justify-center flex-1">
                         <span className="text-text-secondary text-body-medium-regular">No data</span>
                     </div>
