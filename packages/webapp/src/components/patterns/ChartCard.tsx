@@ -279,7 +279,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // What occupies the chart body: a per-panel breakdown spinner/error, the empty state, or the chart.
     const showBreakdownSpinner = isBreakdown && breakdownLoading;
     const showBreakdownError = isBreakdown && !breakdownLoading && breakdownError;
-    const hasBreakdownSeries = isBreakdown && (breakdownSeries?.length ?? 0) > 0;
+    const hasBreakdownSeries = isBreakdown && (breakdownSeries?.length ?? 0) > 0 && (breakdownSeries?.some((s) => s.usage.some((u) => u.quantity > 0)) ?? false);
     // A breakdown with series renders even when the base metric is empty (e.g. fixtures on a zero-usage metric).
     const effectiveEmpty = isEmpty && !hasBreakdownSeries;
     // Headline number: an explicit override (fixtures) wins, otherwise the real base total when present.
