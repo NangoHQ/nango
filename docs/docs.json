@@ -916,6 +916,7 @@
               "integrations/all/adp-workforce-now",
               "integrations/all/adp-workforce-now-next-gen",
               "integrations/all/adyen",
+              "api-integrations/adyntel",
               "integrations/all/affinity",
               "integrations/all/affinity-v2",
               "integrations/all/aimfox",

@@ -7,6 +7,7 @@ import {
     ProxyError,
     absoluteUrlFromRedirectRequestOptions,
     buildCanonicalParams,
+    buildProxyBody,
     buildProxyHeaders,
     buildProxyURL,
     deriveIntegrationConfigProxy,
@@ -1751,5 +1752,146 @@ describe('deriveIntegrationConfigProxy (private-api-generic style)', () => {
 
         // The base is not stripped (no path boundary), so the request stays under the configured host, not evil.com.
         expect(new URL(axiosConfig.url as string).host).toBe('api.example.com');
+    });
+});
+
+describe('buildProxyBody', () => {
+    it('returns null when provider has no proxy.body defined', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com' } }
+        });
+        expect(buildProxyBody({ config, connection: getTestConnection() })).toBeNull();
+    });
+
+    it('returns null when proxy.body is empty', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: {} } }
+        });
+        expect(buildProxyBody({ config, connection: getTestConnection() })).toBeNull();
+    });
+
+    it('includes literal values that contain no $ placeholders', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: { grant_type: 'client_credentials' } } }
+        });
+        const result = buildProxyBody({ config, connection: getTestConnection() });
+        expect(result).toEqual({ grant_type: 'client_credentials' });
+    });
+
+    it('interpolates ${apiKey} for API_KEY credentials', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: { token: '${apiKey}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+        expect(result).toEqual({ token: 'my-secret-key' });
+    });
+
+    it('interpolates ${access_token} for OAUTH2 credentials', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'OAUTH2', proxy: { base_url: 'https://example.com', body: { bearer: '${access_token}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-tok', raw: {} } })
+        });
+        expect(result).toEqual({ bearer: 'oauth-tok' });
+    });
+
+    it('interpolates ${username} and ${password} for BASIC credentials', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: { base_url: 'https://example.com', body: { user: '${username}', pass: '${password}' } }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'BASIC', username: 'alice', password: 'secret' } })
+        });
+        expect(result).toEqual({ user: 'alice', pass: 'secret' });
+    });
+
+    it('interpolates ${credentials.token} for TWO_STEP credentials', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'TWO_STEP', proxy: { base_url: 'https://example.com', body: { session: '${credentials.token}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'TWO_STEP', token: 'sess-abc' } as any })
+        });
+        expect(result).toEqual({ session: 'sess-abc' });
+    });
+
+    it('omits a key whose placeholder cannot be resolved', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'OAUTH2', proxy: { base_url: 'https://example.com', body: { token: '${apiKey}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'tok', raw: {} } })
+        });
+        expect(result).toBeNull();
+    });
+
+    it('interpolates connectionConfig values', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://example.com', body: { account: '${connectionConfig.account_id}' } }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ connection_config: { account_id: 'acct-123' } })
+        });
+        expect(result).toEqual({ account: 'acct-123' });
+    });
+
+    it('omits a connectionConfig key when the value is missing from connection_config', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://example.com', body: { account: '${connectionConfig.account_id}' } }
+            }
+        });
+        const result = buildProxyBody({ config, connection: getTestConnection({ connection_config: {} }) });
+        expect(result).toBeNull();
+    });
+
+    it('mixes literal, credential, and connectionConfig values in one body', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: { grant_type: 'password', api_key: '${apiKey}', tenant: '${connectionConfig.tenant_id}' }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'key-abc' },
+                connection_config: { tenant_id: 'tenant-xyz' }
+            })
+        });
+        expect(result).toEqual({ grant_type: 'password', api_key: 'key-abc', tenant: 'tenant-xyz' });
+    });
+
+    it('skips non-string values in proxy.body', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: { count: 42 as unknown as string, label: 'static' }
+                }
+            }
+        });
+        const result = buildProxyBody({ config, connection: getTestConnection() });
+        expect(result).toEqual({ label: 'static' });
     });
 });

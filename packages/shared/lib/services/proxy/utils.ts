@@ -127,6 +127,14 @@ export function getAxiosConfiguration({
         axiosConfig.data = proxyConfig.data;
     }
 
+    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
+    if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
+        axiosConfig.data =
+            axiosConfig.data && typeof axiosConfig.data === 'object' && !Array.isArray(axiosConfig.data)
+                ? { ...axiosConfig.data, ...injectedBody }
+                : injectedBody;
+    }
+
     if (proxyConfig.decompress || proxyConfig.provider.proxy?.decompress === true) {
         axiosConfig.decompress = true;
     }
@@ -381,6 +389,37 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         }
     }
     return url.toString();
+}
+
+export function buildProxyBody({
+    config,
+    connection
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+}): Record<string, string> | null {
+    if (!config.provider?.proxy?.body) {
+        return null;
+    }
+
+    const body: Record<string, string> = {};
+    const replacers = {
+        connectionConfig: connection.connection_config,
+        credentials: connection.credentials,
+        ...(connection.credentials as unknown as Record<string, string>)
+    };
+
+    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+        if (typeof value !== 'string') {
+            continue;
+        }
+        const interpolated = interpolateIfNeeded(value, replacers);
+        if (!interpolated.includes('${')) {
+            body[key] = interpolated;
+        }
+    }
+
+    return Object.keys(body).length > 0 ? body : null;
 }
 
 function getRawBody(method: string, data: unknown): string {
