@@ -171,5 +171,7 @@ describe('remote function deploy client', () => {
     it('builds a callback script that reports deploy compile exit codes as compilation errors', () => {
         expect(buildAsyncDeployScript()).toContain("code: deploy.exitCode === compileExitCode ? 'compilation_error' : 'deployment_error'");
         expect(buildAsyncDeployScript()).toContain("'Nango-Is-Script': 'true'");
+        expect(buildAsyncDeployScript()).toContain('Failed to report deployment result');
+        expect(buildAsyncDeployScript()).toContain('Callback error: ');
     });
 });

@@ -29,9 +29,12 @@ try {
     await postResult({ status: 'success', output: deploy.stdout.trimEnd() });
     process.exit(0);
 } catch (err) {
-    await postResult({ status: 'failed', error: { code: 'deployment_error', message: err instanceof Error ? err.message : String(err) } }).catch(
-        () => undefined
-    );
+    const message = err instanceof Error ? err.message : String(err);
+    await postResult({ status: 'failed', error: { code: 'deployment_error', message } }).catch((callbackErr) => {
+        console.log('Failed to report deployment result');
+        console.log('Deployment error: ' + message);
+        console.log('Callback error: ' + (callbackErr instanceof Error ? callbackErr.message : String(callbackErr)));
+    });
     process.exit(1);
 }
 

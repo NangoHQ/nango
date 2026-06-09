@@ -4,7 +4,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { normalizeFunctionErrorCode } from '../errors.js';
 import { functionDeploymentParamsSchema, functionDeploymentResultBodySchema } from '../validation.js';
-import { verifyDeploymentResultSandboxToken } from './helpers.js';
+import { toFunctionDeploymentError, verifyDeploymentResultSandboxToken } from './helpers.js';
 
 import type { PostFunctionDeploymentResult } from '@nangohq/types';
 
@@ -45,15 +45,25 @@ export const postFunctionDeploymentResult = asyncWrapper<PostFunctionDeploymentR
 
     const body = valBody.data;
     if (body.status === 'success') {
-        const output = parseDeploySuccessOutput(body.output);
-        await markFunctionDeploymentSuccess({
-            environmentId: environment.id,
-            id: current.id,
-            output: output.output,
-            deployed: output.deployed,
-            deployedFunctions: output.deployedFunctions,
-            durationMs: body.duration_ms
-        });
+        try {
+            const output = parseDeploySuccessOutput(body.output);
+            await markFunctionDeploymentSuccess({
+                environmentId: environment.id,
+                id: current.id,
+                output: output.output,
+                deployed: output.deployed,
+                deployedFunctions: output.deployedFunctions,
+                durationMs: body.duration_ms
+            });
+        } catch (err) {
+            await markFunctionDeploymentFailed({
+                environmentId: environment.id,
+                id: current.id,
+                output: body.output,
+                durationMs: body.duration_ms,
+                error: toFunctionDeploymentError(err)
+            });
+        }
     } else {
         await markFunctionDeploymentFailed({
             environmentId: environment.id,
