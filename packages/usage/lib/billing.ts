@@ -38,10 +38,12 @@ export class UsageBillingClient {
     public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
         let cached: string | null = null;
+        let cacheReadFailed = false;
         try {
             cached = await this.redis.get(cacheKey);
         } catch {
-            // ignore cache get errors and proceed to fetch from API
+            cacheReadFailed = true;
+            metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'error' });
         }
         if (cached) {
             try {
@@ -52,7 +54,9 @@ export class UsageBillingClient {
                 // ignore parse errors and proceed to fetch from API
             }
         }
-        metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
+        if (!cacheReadFailed) {
+            metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
+        }
 
         const tags = { dashboard: opts?.timeframe ? 'true' : 'false' };
 

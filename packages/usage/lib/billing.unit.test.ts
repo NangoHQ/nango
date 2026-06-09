@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+import { Ok, metrics } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 
@@ -22,6 +22,7 @@ describe('UsageBillingClient', () => {
     it('falls through to API when redis.get throws', async () => {
         const usageMetrics = { proxy: { total: 1 } };
         getUsageMock.mockResolvedValue(Ok(usageMetrics as any));
+        const incrementSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => {});
 
         const redis = {
             get: vi.fn().mockRejectedValue(new Error('redis down')),
@@ -37,5 +38,9 @@ describe('UsageBillingClient', () => {
             expect(res.value.value).toEqual(usageMetrics);
         }
         expect(getUsageMock).toHaveBeenCalledWith('sub-1', undefined);
+        expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'error' });
+        expect(incrementSpy).not.toHaveBeenCalledWith(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
+
+        incrementSpy.mockRestore();
     });
 });

@@ -19,7 +19,7 @@ describe('UsageCache', () => {
         const store = {
             multi: () => ({
                 hGetAll: () => ({
-                    exec: () => Promise.resolve([[{ count: 'bad', revalidateAfter: 'not-a-number' }]])
+                    exec: () => Promise.resolve([{ count: 'bad', revalidateAfter: 'not-a-number' }])
                 })
             }),
             del: vi.fn().mockRejectedValue(new Error('redis down'))
