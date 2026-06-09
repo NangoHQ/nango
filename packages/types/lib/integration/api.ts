@@ -265,7 +265,14 @@ export type PatchIntegration = Endpoint<{
               // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
               integrationConfig?: Record<string, string> | undefined;
           }
+        | { custom: Record<string, string | null> }
         | IntegrationAuthBody;
+    Error:
+        | ApiError<'missing_aws_sigv4_config'>
+        | ApiError<'invalid_aws_sigv4_config'>
+        | ApiError<'missing_aws_sigv4_service'>
+        | ApiError<'missing_aws_sigv4_sts_endpoint'>
+        | ApiError<'missing_aws_sigv4_builtin_credentials'>;
     Success: {
         data: {
             success: boolean;

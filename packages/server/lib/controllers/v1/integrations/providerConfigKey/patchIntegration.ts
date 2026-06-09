@@ -1,4 +1,4 @@
-import { configService, connectionService, getProvider } from '@nangohq/shared';
+import { awsSigV4Client, configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
@@ -73,6 +73,41 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     // Forward webhooks
     if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
         integration.forward_webhooks = body.forward_webhooks;
+    }
+
+    if ('custom' in body && body.custom) {
+        let nextCustom: Record<string, string> = { ...(integration.custom || {}) };
+        for (const [key, value] of Object.entries(body.custom)) {
+            if (value === null || value === '') {
+                const { [key]: _removed, ...rest } = nextCustom;
+                nextCustom = rest;
+                continue;
+            }
+            if (key === awsSigV4Client.AWS_SIGV4_CUSTOM_KEY) {
+                let parsedConfig: Record<string, any>;
+                try {
+                    parsedConfig = JSON.parse(value);
+                } catch {
+                    res.status(400).send({ error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' } });
+                    return;
+                }
+
+                // Strip onboarding-only fields and carry over secrets the UI left blank, then validate.
+                // Secrets stay inside the (encrypted) custom blob and are redacted by the API formatter on read.
+                const prepared = awsSigV4Client.prepareAwsSigV4Config(parsedConfig, integration.custom?.[key]);
+                const simulated = { ...integration, custom: { ...nextCustom, [key]: prepared } } as Parameters<typeof awsSigV4Client.getAwsSigV4Settings>[0];
+                const validation = awsSigV4Client.getAwsSigV4Settings(simulated);
+                if (validation.isErr()) {
+                    res.status(400).send({ error: { code: validation.error.type, message: validation.error.message } } as PatchIntegration['Errors']);
+                    return;
+                }
+
+                nextCustom[key] = prepared;
+                continue;
+            }
+            nextCustom[key] = value;
+        }
+        integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : null;
     }
 
     // Credentials
