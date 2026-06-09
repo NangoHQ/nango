@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { billing } from '@nangohq/billing';
+import { environmentService } from '@nangohq/shared';
 import { BREAKDOWN_DIMENSIONS, FILTER_PARAM_TYPE_FOR_DIM, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -9,7 +10,7 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { usageTracker } from '../../../../utils/usage.js';
 
-import type { GetBillingUsage, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
+import type { BillingUsageMetrics, GetBillingUsage, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 
 // z.enum(BREAKDOWN_DIMENSIONS[m]) — output type is the per-metric dim union,
 // matching `BreakdownDimensions[m]` from @nangohq/types. Single source of
@@ -202,6 +203,8 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         return;
     }
 
+    await resolveEnvironmentNamesInBreakdown(usage.value);
+
     res.status(200).send({
         data: {
             customer: customerRes.value,
@@ -209,3 +212,29 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         }
     });
 });
+
+// `group.value` arrives as a stringified Int64 for the `environment_id`
+// dimension (the CH column type). Swap in the env name so the dashboard
+// renders human-readable legends instead of raw IDs. Bounded by TOP_N per
+// metric × number-of-metrics, so the lookup is tiny.
+async function resolveEnvironmentNamesInBreakdown(usage: BillingUsageMetrics): Promise<void> {
+    const envIds = new Set<number>();
+    for (const m of Object.keys(usage) as UsageMetric[]) {
+        for (const series of usage[m]?.breakdown ?? []) {
+            if (series.group?.key === 'environment_id' && series.group.value !== 'rest') {
+                const id = Number(series.group.value);
+                if (Number.isFinite(id)) envIds.add(id);
+            }
+        }
+    }
+    if (envIds.size === 0) return;
+    const names = await environmentService.getEnvironmentNamesByIds([...envIds]);
+    for (const m of Object.keys(usage) as UsageMetric[]) {
+        for (const series of usage[m]?.breakdown ?? []) {
+            if (series.group?.key === 'environment_id' && series.group.value !== 'rest') {
+                const name = names.get(Number(series.group.value));
+                if (name) series.group.value = name;
+            }
+        }
+    }
+}
