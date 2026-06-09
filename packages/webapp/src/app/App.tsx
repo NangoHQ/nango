@@ -4,7 +4,7 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
 import { router } from './router';
-import { DevToolPanel, isDevToolsEnabled } from '@/features/DevToolPanel';
+import { DevToolPanel, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useTheme } from '@/lib/theme';
@@ -14,6 +14,7 @@ import { LocalStorageKeys } from '@/utils/local-storage';
 
 const App = () => {
     const env = useStore((state) => state.env);
+    const isDevToolsEnabled = useIsDevToolsEnabled();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     // Sync persisted theme preference to the DOM
     useTheme();

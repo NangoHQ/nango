@@ -158,7 +158,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     }
 
     if ('integrationConfig' in body && body.integrationConfig) {
-        const result = resolveIntegrationConfig(provider, body.integrationConfig, { patch: true });
+        const result = resolveIntegrationConfig(provider, body.integrationConfig, { patch: true, existing: integration.custom });
         if (result.isErr()) {
             res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
             return;

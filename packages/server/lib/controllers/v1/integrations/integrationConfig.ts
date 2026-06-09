@@ -1,6 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import type { Provider } from '@nangohq/types';
+import type { Provider, SimplifiedJSONSchema } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface IntegrationConfigFieldError {
@@ -21,6 +21,28 @@ function hasValue(value: string | undefined): value is string {
     return value !== undefined && value !== '';
 }
 
+export function isIntegrationConfigFieldVisible(
+    field: string,
+    schema: Record<string, SimplifiedJSONSchema>,
+    values: Record<string, string | undefined>,
+    seen = new Set<string>()
+): boolean {
+    const definition = schema[field];
+    if (!definition?.visible_when) {
+        return true;
+    }
+    if (seen.has(field)) {
+        return true;
+    }
+    seen.add(field);
+
+    const { field: controller, equals } = definition.visible_when;
+    if (controller in schema && !isIntegrationConfigFieldVisible(controller, schema, values, seen)) {
+        return false;
+    }
+    return values[controller] === equals;
+}
+
 /**
  * Resolves the values submitted for a provider's `integration_config` schema: validates them, applies
  * defaults, and returns the cleaned set ready to be merged into the integration's `custom` field.
@@ -31,7 +53,7 @@ function hasValue(value: string | undefined): value is string {
 export function resolveIntegrationConfig(
     provider: Provider,
     submitted: Record<string, string>,
-    options?: { patch?: boolean }
+    options?: { patch?: boolean; existing?: Record<string, string> | null | undefined }
 ): Result<Record<string, string>, IntegrationConfigError> {
     const patch = options?.patch ?? false;
     const schema = provider.integration_config;
@@ -42,6 +64,10 @@ export function resolveIntegrationConfig(
     const errors: IntegrationConfigFieldError[] = [];
     const values: Record<string, string> = {};
 
+    // Effective values used to evaluate `visible_when`: submitted overrides what's already stored, so a
+    // patch that flips a controller (e.g. stsMode) re-evaluates visibility against the new value.
+    const effective: Record<string, string | undefined> = { ...(options?.existing ?? {}), ...submitted };
+
     // Reject keys that are not part of the provider's schema so a typo'd field surfaces instead of being dropped.
     for (const key of Object.keys(submitted)) {
         if (!Object.prototype.hasOwnProperty.call(schema, key)) {
@@ -50,6 +76,12 @@ export function resolveIntegrationConfig(
     }
 
     for (const [field, definition] of Object.entries(schema)) {
+        // A field gated off by `visible_when` is neither required nor validated — it doesn't apply to
+        // this configuration (e.g. built-in AWS credentials when stsMode=custom).
+        if (!isIntegrationConfigFieldVisible(field, schema, effective)) {
+            continue;
+        }
+
         const provided = field in submitted;
         if (patch && !provided) {
             continue;

@@ -12,6 +12,7 @@ import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
 
 import type { ApiEnvironment, GetIntegration, SimplifiedJSONSchema } from '@nangohq/types';
 
@@ -23,10 +24,14 @@ function buildValidator(definition: SimplifiedJSONSchema): (value: string) => st
             return definition.optional ? null : 'Must not be empty';
         }
         if (definition.format === 'uri') {
+            let protocol: string | undefined;
             try {
-                new URL(value);
+                protocol = new URL(value).protocol;
             } catch {
                 return 'Must be a valid URL';
+            }
+            if (protocol !== 'http:' && protocol !== 'https:') {
+                return 'Must be an http(s) URL';
             }
         }
         if (definition.pattern) {
@@ -58,10 +63,17 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
 
     const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
 
+    const schemaMap = template.integration_config ?? {};
+
     const fields = useMemo<FieldEntry[]>(
         () => Object.entries(template.integration_config ?? {}).sort((a, b) => (a[1].order ?? 0) - (b[1].order ?? 0)),
         [template.integration_config]
     );
+
+    // Only show fields that apply to the current configuration. Each field saves independently, so
+    // visibility is evaluated against the already-stored values; changing a discriminator (e.g. stsMode)
+    // saves it, then its dependent fields appear on refetch.
+    const visibleFields = fields.filter(([name]) => isIntegrationConfigFieldVisible(name, schemaMap, integration.custom ?? {}));
 
     const saveField = async (name: string, value: string) => {
         try {
@@ -74,9 +86,26 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
         }
     };
 
+    // Secrets come back masked ("***"); the editable starts blank and an unchanged/blank secret is not
+    // re-submitted, so the stored value is preserved (the resolver keeps omitted fields in patch mode).
+    const secretInitialValue = (definition: SimplifiedJSONSchema, stored: string | undefined) => {
+        if (definition.secret && stored === '***') {
+            return '';
+        }
+        return stored ?? definition.default_value ?? '';
+    };
+
+    const onFieldSave = (definition: SimplifiedJSONSchema, name: string) => (value: string) => {
+        if (definition.secret && (value === '' || value === '***')) {
+            // Unchanged secret — leave the stored value as-is.
+            return Promise.resolve();
+        }
+        return saveField(name, value);
+    };
+
     return (
         <div className="flex flex-col gap-10">
-            {fields.map(([name, definition]) => (
+            {visibleFields.map(([name, definition]) => (
                 <div key={name} className="flex flex-col gap-2">
                     <div className="flex gap-2 items-center">
                         <Label htmlFor={name}>{definition.title}</Label>
@@ -87,11 +116,11 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
                     ) : (
                         <EditableInput
                             id={name}
-                            initialValue={integration.custom?.[name] ?? definition.default_value ?? ''}
+                            initialValue={secretInitialValue(definition, integration.custom?.[name])}
                             secret={Boolean(definition.secret)}
-                            placeholder={definition.example}
+                            placeholder={definition.secret && integration.custom?.[name] === '***' ? '•••••• (set — leave blank to keep)' : definition.example}
                             validate={buildValidator(definition)}
-                            onSave={(value) => saveField(name, value)}
+                            onSave={onFieldSave(definition, name)}
                             canEdit={canEdit}
                             canRead={canEdit}
                         />
