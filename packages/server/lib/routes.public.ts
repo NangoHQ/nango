@@ -35,7 +35,9 @@ import { postPublicConnection } from './controllers/connection/postConnection.js
 import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
 import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionDeploymentResult } from './controllers/functions/deploy/postDeployResult.js';
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
@@ -105,6 +107,7 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 };
 const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
+const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
 
 export const publicAPI = express.Router();
 
@@ -286,6 +289,8 @@ publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryru
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
 publicAPI.route('/functions/deployments').post(functionDeployAuth, postFunctionDeployment);
+publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
+publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

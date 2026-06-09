@@ -13,8 +13,9 @@ const mocks = vi.hoisted(() => {
         kill
     };
     const create = vi.fn();
+    const envs = { E2B_API_KEY: 'e2b-key' as string | undefined };
 
-    return { RateLimitError, create, kill, run, sandbox, write };
+    return { RateLimitError, create, envs, kill, run, sandbox, write };
 });
 
 vi.mock('e2b', () => ({
@@ -31,6 +32,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
     return { ...actual, isLocal: false };
 });
+vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
@@ -50,14 +52,13 @@ const request = {
 
 describe('remote function dryrun client', () => {
     beforeEach(() => {
-        vi.stubEnv('E2B_API_KEY', 'e2b-key');
+        mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);
         mocks.write.mockResolvedValue(undefined);
         mocks.kill.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
-        vi.unstubAllEnvs();
         vi.clearAllMocks();
     });
 

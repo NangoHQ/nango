@@ -1,40 +1,40 @@
-import { getFunctionDryrunRow, markFunctionDryrunFailed, markFunctionDryrunSuccess, parseDryrunSuccessOutput } from '@nangohq/sandbox';
+import { getFunctionDeploymentRow, markFunctionDeploymentFailed, markFunctionDeploymentSuccess, parseDeploySuccessOutput } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { normalizeFunctionErrorCode } from '../errors.js';
-import { functionDryrunParamsSchema, functionDryrunResultBodySchema } from '../validation.js';
-import { toFunctionDryrunError, verifyDryrunResultSandboxToken } from './helpers.js';
+import { functionDeploymentParamsSchema, functionDeploymentResultBodySchema } from '../validation.js';
+import { toFunctionDeploymentError, verifyDeploymentResultSandboxToken } from './helpers.js';
 
-import type { PostFunctionDryrunResult } from '@nangohq/types';
+import type { PostFunctionDeploymentResult } from '@nangohq/types';
 
-export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(async (req, res) => {
+export const postFunctionDeploymentResult = asyncWrapper<PostFunctionDeploymentResult>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
-    const valParams = functionDryrunParamsSchema.safeParse(req.params);
+    const valParams = functionDeploymentParamsSchema.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
         return;
     }
 
-    if (!verifyDryrunResultSandboxToken(res, valParams.data.id)) {
+    if (!verifyDeploymentResultSandboxToken(res, valParams.data.id)) {
         return;
     }
 
-    const valBody = functionDryrunResultBodySchema.safeParse(req.body);
+    const valBody = functionDeploymentResultBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
     }
 
     const { environment } = res.locals;
-    const current = await getFunctionDryrunRow({ environmentId: environment.id, id: valParams.data.id });
+    const current = await getFunctionDeploymentRow({ environmentId: environment.id, id: valParams.data.id });
     if (!current) {
-        res.status(404).send({ error: { code: 'dryrun_not_found', message: `Dryrun '${valParams.data.id}' was not found` } });
+        res.status(404).send({ error: { code: 'deployment_not_found', message: `Deployment '${valParams.data.id}' was not found` } });
         return;
     }
 
@@ -46,32 +46,32 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
     const body = valBody.data;
     if (body.status === 'success') {
         try {
-            const output = parseDryrunSuccessOutput(body.output);
-            await markFunctionDryrunSuccess({
+            const output = parseDeploySuccessOutput(body.output);
+            await markFunctionDeploymentSuccess({
                 environmentId: environment.id,
                 id: current.id,
                 output: output.output,
-                result: output.result,
-                hasResult: output.hasResult,
+                deployed: output.deployed,
+                deployedFunctions: output.deployedFunctions,
                 durationMs: body.duration_ms
             });
         } catch (err) {
-            await markFunctionDryrunFailed({
+            await markFunctionDeploymentFailed({
                 environmentId: environment.id,
                 id: current.id,
                 output: body.output,
                 durationMs: body.duration_ms,
-                error: toFunctionDryrunError(err)
+                error: toFunctionDeploymentError(err)
             });
         }
     } else {
-        await markFunctionDryrunFailed({
+        await markFunctionDeploymentFailed({
             environmentId: environment.id,
             id: current.id,
             output: body.output,
             durationMs: body.duration_ms,
             error: {
-                code: normalizeFunctionErrorCode(body.error.code),
+                code: normalizeFunctionErrorCode(body.error.code, 'deployment_error'),
                 message: body.error.message,
                 ...(body.error.payload !== undefined ? { payload: body.error.payload } : {})
             }

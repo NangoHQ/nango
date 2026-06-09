@@ -1,22 +1,20 @@
 import db from '@nangohq/database';
-import { FunctionError, remoteFunctionDryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { FunctionError, remoteFunctionDeploySandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
-import type { FunctionDryrunError } from '@nangohq/sandbox';
+import type { FunctionDeploymentError } from '@nangohq/sandbox';
 import type { Response } from 'express';
-
-export const defaultFunctionName = 'function';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
-export async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number, dryrunId: string) {
+export async function createDeploySandboxApiKey(parentApiKeyId: number, environmentId: number, deploymentId: string) {
     return await sandboxApiKeyService.createSandboxApiKey(db.knex, {
         parentApiKeyId,
         environmentId,
-        purpose: 'dryrun',
-        dryrunId,
-        expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+        purpose: 'deploy',
+        deploymentId,
+        expiresAt: new Date(Date.now() + remoteFunctionDeploySandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
 }
 
@@ -29,16 +27,16 @@ export function requireCustomerKeyId<T>(res: Response<T, Required<RequestLocals>
     return res.locals['apiKeyId'];
 }
 
-export function verifyDryrunResultSandboxToken<T>(res: Response<T, Required<RequestLocals>>, dryrunId: string): boolean {
-    if (res.locals['sandboxTokenPurpose'] !== 'dryrun' || res.locals['sandboxTokenDryrunId'] !== dryrunId) {
-        res.status(403).send({ error: { code: 'forbidden', message: 'This sandbox token is not authorized for this dryrun' } } as T);
+export function verifyDeploymentResultSandboxToken<T>(res: Response<T, Required<RequestLocals>>, deploymentId: string): boolean {
+    if (res.locals['sandboxTokenPurpose'] !== 'deploy' || res.locals['sandboxTokenDeploymentId'] !== deploymentId) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'This sandbox token is not authorized for this deployment' } } as T);
         return false;
     }
 
     return true;
 }
 
-export function toFunctionDryrunError(err: unknown): FunctionDryrunError {
+export function toFunctionDeploymentError(err: unknown): FunctionDeploymentError {
     if (err instanceof FunctionError) {
         return {
             code: err.code,
@@ -48,7 +46,7 @@ export function toFunctionDryrunError(err: unknown): FunctionDryrunError {
     }
 
     return {
-        code: 'dryrun_error',
+        code: 'deployment_error',
         message: stringifyError(err)
     };
 }

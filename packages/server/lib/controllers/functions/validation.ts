@@ -25,13 +25,13 @@ export const functionDryrunBodySchema = z
     })
     .strict();
 
-export const functionDryrunParamsSchema = z
+const functionAsyncJobParamsSchema = z
     .object({
         id: z.string().uuid()
     })
     .strict();
 
-export const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
+const functionAsyncJobResultBodySchema = z.discriminatedUnion('status', [
     z
         .object({
             status: z.literal('success'),
@@ -55,6 +55,9 @@ export const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
         .strict()
 ]);
 
+export const functionDryrunParamsSchema = functionAsyncJobParamsSchema;
+export const functionDryrunResultBodySchema = functionAsyncJobResultBodySchema;
+
 export const functionDeploymentBodySchema = z
     .object({
         type: z.literal('function'),
@@ -66,3 +69,6 @@ export const functionDeploymentBodySchema = z
         allow_destructive: z.boolean().default(false)
     })
     .strict();
+
+export const functionDeploymentParamsSchema = functionAsyncJobParamsSchema;
+export const functionDeploymentResultBodySchema = functionAsyncJobResultBodySchema;
