@@ -13,7 +13,6 @@ import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { CopyButton } from "@/components/ui/CopyButton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 
@@ -103,12 +102,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-screen">
             <header className="flex gap-2 flex-col border-b border-b-border-muted pb-5">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
-                    <div className="mr-9">
-                        <CopyButton text={window.location.href} iconType="link" />
-                    </div>
-                </div>
+                <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
                 <div className="flex gap-3 items-center">
                     <div className="flex">
                         <StatusTag state={operation.state} size="sm" />
