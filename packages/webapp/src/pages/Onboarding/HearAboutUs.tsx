@@ -27,15 +27,15 @@ export const HearAboutUs: React.FC = () => {
     const { data, isLoading, error } = useOnboardingHearAboutUs();
     const { mutateAsync: postHearAboutUs, isPending } = usePostOnboardingHearAboutUs();
 
-    // useEffect(() => {
-    //     if (error) {
-    //         navigate('/', { replace: true });
-    //         return;
-    //     }
-    //     if (data && !data.data.showHearAboutUs) {
-    //         navigate('/', { replace: true });
-    //     }
-    // }, [data, error, navigate]);
+    useEffect(() => {
+        if (error) {
+            navigate('/', { replace: true });
+            return;
+        }
+        if (data && !data.data.showHearAboutUs) {
+            navigate('/', { replace: true });
+        }
+    }, [data, error, navigate]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
         analyticsTrack('signup_hear_about', { source });
