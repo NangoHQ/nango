@@ -72,7 +72,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             </SelectContent>
                         </Select>
                     ) : (
-                        <Tag variant="default">
+                        <Tag variant="neutral">
                             {snippets[0].language}
                         </Tag>
                     )}
