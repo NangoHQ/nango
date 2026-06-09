@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { Badge } from './Badge.js';
 import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
-import { useThemeStore } from '../../lib/theme.js';
+import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
@@ -41,7 +41,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     constrainHeight = true,
     ...props
 }) => {
-    const darkMode = useThemeStore((s) => s.darkMode);
+    const darkMode = useThemeStore(darkModeSelector);
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);

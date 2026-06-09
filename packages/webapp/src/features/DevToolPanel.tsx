@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { useTeam } from '@/hooks/useTeam';
-import { useThemeStore } from '@/lib/theme';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
@@ -52,7 +52,7 @@ export const DevToolPanel: React.FC = () => {
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
     const theme = useThemeStore((s) => s.theme);
-    const darkMode = useThemeStore((s) => s.darkMode);
+    const darkMode = useThemeStore(darkModeSelector);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
     useEffect(() => {

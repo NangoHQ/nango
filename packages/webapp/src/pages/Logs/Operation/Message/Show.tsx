@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
 import { LevelTag } from '../../components/LevelTag';
 import { Tag } from '@/components/ui/Tag';
-import { useThemeStore } from '@/lib/theme';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 
 import type { MessageRow } from '@nangohq/types';
 
@@ -52,7 +52,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         return millisecondsToRuntime(message.durationMs);
     }, [message]);
 
-    const darkMode = useThemeStore((s) => s.darkMode);
+    const darkMode = useThemeStore(darkModeSelector);
 
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-full">
