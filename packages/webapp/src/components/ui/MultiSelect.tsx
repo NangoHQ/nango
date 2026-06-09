@@ -146,7 +146,7 @@ export function MultiSelect<T extends string = string>({
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="flex w-[var(--radix-popover-trigger-width)] min-w-[312px] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-surface-panel-inset p-1 pb-0"
+                className="flex w-[var(--radix-popover-trigger-width)] min-w-[312px] flex-col items-start overflow-hidden rounded-[4px] border border-border-muted bg-surface-overlay shadow-lg p-1 pb-0"
             >
                 <div className="border-b border-border-muted w-full">
                     <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
