@@ -1094,6 +1094,7 @@
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
               "integrations/all/digitalocean",
+              "api-integrations/diffbot",
               "api-integrations/digits",
               "api-integrations/digits-mcp",
               "api-integrations/discord",
