@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { type Theme, useThemeStore } from '@/lib/theme';
-import { cn } from '@/utils/utils';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();
@@ -70,7 +69,7 @@ export const UserSettings: React.FC = () => {
             <div className="flex flex-col gap-12 mt-16">
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>
-                    <InputGroup className={cn('h-[42px]', !edit && 'bg-surface-input border-dark-800')}>
+                    <InputGroup className="h-[42px]">
                         <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
                         <InputGroupAddon align="inline-end">
                             {!edit && (
