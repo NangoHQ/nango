@@ -17,9 +17,7 @@ export function resolveTheme(theme: Theme): boolean {
 
 export function applyTheme(theme: Theme): void {
     const dark = resolveTheme(theme);
-    const root = document.documentElement;
-    root.classList.toggle('dark', dark);
-    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
 function getStoredTheme(): Theme {
@@ -37,7 +35,7 @@ function getStoredTheme(): Theme {
 try {
     applyTheme(getStoredTheme());
 } catch {
-    // Keep the dark default already set on <html class="dark"> in index.html
+    // Keep the dark default already set via data-theme in index.html
 }
 
 // --- Store ---

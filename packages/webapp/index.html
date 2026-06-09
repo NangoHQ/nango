@@ -20,11 +20,9 @@
                     var theme = state && state.theme ? state.theme : (state && state.darkMode === false ? 'light' : 'dark');
                     var dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
                     if (dark) {
-                        document.documentElement.classList.add('dark');
                         document.documentElement.setAttribute('data-theme', 'dark');
                     }
                 } catch (e) {
-                    document.documentElement.classList.add('dark');
                     document.documentElement.setAttribute('data-theme', 'dark');
                 }
             })();
@@ -34,7 +32,7 @@
         <meta name="nango-env-hash" content="%VITE_HASH%" />
     </head>
 
-    <body class="bg-nav-gradient">
+    <body class="bg-surface-canvas">
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <script type="module" src="/src/index.tsx"></script>
