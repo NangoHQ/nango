@@ -99,33 +99,10 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-// Dev-tools toggle for flipping the billing-usage source per-request.
-// Set in the browser console with:
-//   localStorage.setItem('nango.billingUsageSource', 'clickhouse')   // or 'orb'
-//   localStorage.removeItem('nango.billingUsageSource')              // back to env default
-// Then reload the page (or wait for the next refetch). The server treats
-// missing as "use the env-level default" — no flipping in prod unless you
-// explicitly set the localStorage value.
-const BILLING_USAGE_SOURCE_KEY = 'nango.billingUsageSource';
-
-function readBillingUsageSourceOverride(): 'clickhouse' | 'orb' | null {
-    try {
-        const v = localStorage.getItem(BILLING_USAGE_SOURCE_KEY);
-        return v === 'clickhouse' || v === 'orb' ? v : null;
-    } catch {
-        return null;
-    }
-}
-
 export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, sourceOverride?: 'clickhouse' | 'orb') {
-    // An explicit `sourceOverride` (e.g. the breakdown dashboard pinning the page
-    // to ClickHouse so the headline totals match the breakdowns) takes precedence;
-    // otherwise fall back to the dev-tools localStorage override.
-    //
-    // Read source at hook-call time so it's part of the query key — otherwise
-    // React Query keeps showing data from the previous backend until the natural
-    // refetch when the source changes.
-    const source = sourceOverride ?? readBillingUsageSourceOverride();
+    // Read at hook-call time so it's part of the query key — otherwise React
+    // Query keeps showing stale data until the natural refetch fires.
+    const source = sourceOverride;
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
         queryKey: [...GetBillingUsageQueryKey, timeframe, source],

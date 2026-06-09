@@ -41,9 +41,8 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    // When the breakdown feature is active, pin the whole dashboard (including
-    // headline totals) to ClickHouse so totals match the per-panel breakdowns;
-    // otherwise keep the env / localStorage default source.
+    // Pin the whole dashboard to ClickHouse when breakdown is active so headline
+    // totals match the per-panel breakdowns (which always query ClickHouse).
     const breakdownEnabled = useBreakdownEnabled();
     const sourceOverride = breakdownEnabled ? 'clickhouse' : undefined;
 
