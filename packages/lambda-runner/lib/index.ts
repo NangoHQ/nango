@@ -45,7 +45,7 @@ class Gate {
 
     async exit(lock: Lock) {
         try {
-            await this.locking.tryRelease(lock, 1000);
+            await this.locking.release(lock);
         } catch (err) {
             logger.error('Error releasing lock', { lock: lock.key, error: err });
         }

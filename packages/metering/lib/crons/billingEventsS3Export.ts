@@ -257,7 +257,7 @@ async function withLock(fn: () => Promise<void>): Promise<void> {
         await fn();
     } finally {
         try {
-            await locking.tryRelease(lock, 1000);
+            await locking.release(lock);
         } catch (err) {
             logger.error('Error releasing lock', { lock: lock.key, error: err });
         }

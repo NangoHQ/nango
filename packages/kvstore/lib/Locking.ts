@@ -59,23 +59,6 @@ export class Locking {
         }
     }
 
-    public async tryRelease(lock: Lock, releaseTimeoutMs: number): Promise<void> {
-        if (releaseTimeoutMs <= 0) {
-            throw new Error(`releaseTimeoutMs must be greater than 0`);
-        }
-
-        const start = Date.now();
-        while (Date.now() - start < releaseTimeoutMs) {
-            try {
-                await this.release(lock);
-                return;
-            } catch {
-                await new Promise((resolve) => setTimeout(resolve, 50));
-            }
-        }
-        throw new Error(`Releasing lock for key: ${lock.key} timed out after ${releaseTimeoutMs}ms`);
-    }
-
     public async hasLock(key: string): Promise<boolean> {
         return await this.store.exists(key);
     }
@@ -85,7 +68,7 @@ export class Locking {
         try {
             return await fn();
         } finally {
-            await this.tryRelease(lock, acquisitionTimeoutMs);
+            await this.release(lock);
         }
     }
 }

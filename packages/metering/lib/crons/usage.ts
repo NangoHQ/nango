@@ -60,7 +60,7 @@ export async function exec(): Promise<void> {
             logger.error('Failed to export usage metrics', err);
             if (lock) {
                 try {
-                    await locking.tryRelease(lock, 1000);
+                    await locking.release(lock);
                 } catch (releaseErr) {
                     logger.error('Error releasing lock', { lock: lock.key, error: releaseErr });
                 }

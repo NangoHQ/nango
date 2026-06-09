@@ -525,7 +525,7 @@ export async function refreshCredentialsIfNeeded({
         } finally {
             if (lock) {
                 try {
-                    await locking.tryRelease(lock, 1000);
+                    await locking.release(lock);
                 } catch (err) {
                     logger.error('Error releasing lock', { lock: lock.key, error: err });
                 }

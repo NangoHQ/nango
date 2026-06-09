@@ -37,7 +37,7 @@ export async function exec(): Promise<void> {
         }
     } finally {
         try {
-            await locking.tryRelease(lock, 1000);
+            await locking.release(lock);
         } catch (err) {
             logger.error('Error releasing lock', { lock: lock.key, error: err });
         }
