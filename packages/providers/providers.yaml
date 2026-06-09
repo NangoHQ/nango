@@ -5611,6 +5611,30 @@ digits-mcp:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
 
+discolike:
+    display_name: DiscoLike
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.discolike.com
+        headers:
+            x-discolike-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/count
+    docs: https://nango.dev/docs/api-integrations/discolike
+    docs_connect: https://nango.dev/docs/api-integrations/discolike/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your DiscoLike API key.
+            doc_section: '#step-1-obtain-your-api-key'
+            example: 123e4567-e89b-12d3-a456-426614174000
+            format: uuid
+
 discord:
     display_name: Discord
     categories:
