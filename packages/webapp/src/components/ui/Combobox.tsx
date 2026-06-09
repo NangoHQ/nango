@@ -349,7 +349,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 align={props.allowMultiple ? 'end' : 'start'}
                 sideOffset={0}
                 className={cn(
-                    'z-[70] flex w-[var(--radix-popover-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-surface-panel-inset p-1 pb-0',
+                    'z-[70] flex w-[var(--radix-popover-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border border-border-muted bg-surface-overlay shadow-lg p-1 pb-0',
                     props.allowMultiple && 'min-w-[312px]',
                     contentClassName
                 )}
