@@ -1,20 +1,20 @@
 import { Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDebounce } from 'react-use';
 
 import { TemplateDetail } from './TemplateDetail';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { AlertButton } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
-import { ComboboxSelect } from '@/components/ui/Combobox';
+import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
@@ -55,8 +55,7 @@ export const Templates: React.FC = () => {
     const templates = templatesResponse?.data;
 
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
-    const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-    useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
+    const debouncedSearch = useDebouncedValue(search);
 
     const [rawTypeFilter, setTypeFilter] = useQueryState('typeFilter', parseAsString.withDefault(''));
     const typeFilter: TypeFilterValue | undefined = rawTypeFilter && isOneOf(TYPE_FILTER_VALUES, rawTypeFilter) ? rawTypeFilter : undefined;
@@ -186,19 +185,13 @@ export const Templates: React.FC = () => {
                                     <Search />
                                 </InputGroupAddon>
                             </InputGroup>
-                            <ComboboxSelect<TypeFilterValue>
-                                allowMultiple
-                                label={typeFilter ? 'Type' : 'All types'}
-                                dropdownTitle="Filter by type"
+                            <SingleSelectFilter<TypeFilterValue>
+                                value={typeFilter ?? null}
+                                onChange={(value) => void setTypeFilter(value)}
                                 options={TYPE_OPTIONS}
-                                selected={typeFilter ? [typeFilter] : []}
-                                onSelectedChange={(next) => {
-                                    const newlyAdded = next.find((value) => value !== typeFilter);
-                                    void setTypeFilter(newlyAdded ?? null);
-                                }}
-                                onClearAll={() => void setTypeFilter(null)}
-                                reorderOnSelect={false}
-                                showSearch={false}
+                                placeholderLabel="All types"
+                                selectedLabel="Type"
+                                dropdownTitle="Filter by type"
                             />
                         </div>
 
