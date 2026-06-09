@@ -390,7 +390,16 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                 {breakdownSeries.map((s) => {
                                     const dimmed = isSeriesHidden(s.key);
                                     return (
-                                        <div key={s.key} className="flex min-w-0 items-center gap-1.5">
+                                        // Hovering a legend item highlights its band (dims the others), same as
+                                        // hovering the band itself. Skip when the series is hidden/dimmed.
+                                        <div
+                                            key={s.key}
+                                            className="flex min-w-0 items-center gap-1.5"
+                                            onMouseEnter={() => {
+                                                if (!dimmed) hoverSeries(s.key);
+                                            }}
+                                            onMouseLeave={() => unhoverSeries()}
+                                        >
                                             {/* Hover the swatch to reveal an ✕; click it to toggle this series off/on. */}
                                             <button
                                                 type="button"
