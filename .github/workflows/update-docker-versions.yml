@@ -123,12 +123,16 @@ jobs:
           NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
           NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
         run: |
-          sed -i "s|POSTGRES.*??.*'.*'|POSTGRES:      process.env['POSTGRES_VERSION']      ?? '${NEW_POSTGRES}'|"             tests/versions.ts
-          sed -i "s|REDIS.*??.*'.*'|REDIS:         process.env['REDIS_VERSION']         ?? '${NEW_REDIS}'|"                   tests/versions.ts
-          sed -i "s|ELASTICSEARCH.*??.*'.*'|ELASTICSEARCH: process.env['ELASTICSEARCH_VERSION'] ?? '${NEW_ELASTICSEARCH}'|"   tests/versions.ts
-          sed -i "s|OPENSEARCH.*??.*'.*'|OPENSEARCH:    process.env['OPENSEARCH_VERSION']    ?? '${NEW_OPENSEARCH}'|"          tests/versions.ts
-          sed -i "s|ACTIVEMQ.*??.*'.*'|ACTIVEMQ:      process.env['ACTIVEMQ_VERSION']      ?? '${NEW_ACTIVEMQ}'|"              tests/versions.ts
-          sed -i "s|CLICKHOUSE.*??.*'.*'|CLICKHOUSE:    process.env['CLICKHOUSE_VERSION']    ?? '${NEW_CLICKHOUSE}'|"          tests/versions.ts
+          cat > tests/versions.ts << EOF
+          export const IMAGE_VERSIONS = {
+              POSTGRES:      process.env['POSTGRES_VERSION']      ?? '${NEW_POSTGRES}',
+              REDIS:         process.env['REDIS_VERSION']         ?? '${NEW_REDIS}',
+              ELASTICSEARCH: process.env['ELASTICSEARCH_VERSION'] ?? '${NEW_ELASTICSEARCH}',
+              OPENSEARCH:    process.env['OPENSEARCH_VERSION']    ?? '${NEW_OPENSEARCH}',
+              ACTIVEMQ:      process.env['ACTIVEMQ_VERSION']      ?? '${NEW_ACTIVEMQ}',
+              CLICKHOUSE:    process.env['CLICKHOUSE_VERSION']    ?? '${NEW_CLICKHOUSE}',
+          };
+          EOF
 
       - name: Open PR
         if: steps.changed.outputs.changed == 'true'

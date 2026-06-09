@@ -1,3 +1,5 @@
+// Default versions are kept in sync by .github/workflows/update-docker-versions.yml
+// To update, modify .env.example and the workflow will regenerate this file.
 export const IMAGE_VERSIONS = {
     POSTGRES:      process.env['POSTGRES_VERSION']      || '16.14-alpine',
     REDIS:         process.env['REDIS_VERSION']         || '7.2-alpine',
