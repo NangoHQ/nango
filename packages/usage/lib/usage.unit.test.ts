@@ -345,12 +345,15 @@ describe('shouldUseClickhouseFor', () => {
     });
 
     it('ignores non-numeric junk in the CSV without falsely matching', () => {
-        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = 'abc,,15714,123abc,';
+        // Includes scientific (1e5 → 100000), hex (0x10 → 16) and decimal (1.5)
+        // forms that Number() would happily coerce — all must be rejected.
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = 'abc,,15714,123abc,1e5,0x10,1.5,';
         (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
         expect(shouldUseClickhouseFor(15714)).toBe(true);
         expect(shouldUseClickhouseFor(0)).toBe(false);
-        // Strict numeric parse: '123abc' must NOT silently match account 123.
         expect(shouldUseClickhouseFor(123)).toBe(false);
+        expect(shouldUseClickhouseFor(100000)).toBe(false);
+        expect(shouldUseClickhouseFor(16)).toBe(false);
     });
 
     it('returns true when accountId falls inside the percentage bucket', () => {

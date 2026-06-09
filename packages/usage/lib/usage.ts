@@ -58,9 +58,9 @@ function getRolloutAllowlist(): Set<number> {
         cachedAllowlist = new Set();
         for (const part of csv.split(',')) {
             const trimmed = part.trim();
-            if (!trimmed) continue;
-            const id = Number(trimmed);
-            if (Number.isFinite(id)) cachedAllowlist.add(id);
+            // Strict digit-only to keep scientific/hex/decimal forms from
+            // silently casting to an unintended account id.
+            if (/^\d+$/.test(trimmed)) cachedAllowlist.add(Number(trimmed));
         }
     }
     return cachedAllowlist;
