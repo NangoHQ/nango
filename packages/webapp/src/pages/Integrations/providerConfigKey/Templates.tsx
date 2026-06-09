@@ -14,6 +14,7 @@ import { ComboboxSelect } from '@/components/ui/Combobox';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
@@ -95,8 +96,9 @@ export const Templates: React.FC = () => {
     }, [filteredTemplates, selectedName, selectedType]);
 
     const { mutateAsync: deployFlow, isPending: isDeploying } = usePreBuiltDeployFlow(env, integrationData?.integration.unique_key ?? '');
+    const { confirm, DialogComponent } = useConfirmDialog();
 
-    const onDeploy = async () => {
+    const deploySelected = async () => {
         if (!selected || !integrationData) return;
         try {
             await deployFlow({
@@ -119,6 +121,24 @@ export const Templates: React.FC = () => {
             const message = err instanceof APIError ? (err.json as ApiError<string>).error.message : undefined;
             toast({ title: 'Failed to deploy template', description: message, variant: 'error' });
         }
+    };
+
+    const onDeploy = async () => {
+        if (!selected || !integrationData) return;
+
+        // Deploying a sync enables it immediately, triggering a sync run for every connection on this integration.
+        if (selected.type === 'sync') {
+            void confirm({
+                title: 'Deploy sync?',
+                description: 'It will start syncing potentially for multiple connections. This will impact your billing.',
+                confirmButtonText: 'Deploy',
+                confirmVariant: 'primary',
+                onConfirm: deploySelected
+            });
+            return;
+        }
+
+        await deploySelected();
     };
 
     if (integrationError || templatesError) {
@@ -242,6 +262,8 @@ export const Templates: React.FC = () => {
                     ) : null}
                 </div>
             </div>
+
+            {DialogComponent}
         </DashboardLayout>
     );
 };
