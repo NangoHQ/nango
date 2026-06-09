@@ -8,32 +8,63 @@ function makeSocketError(): Error {
     return Object.assign(new Error('other side closed'), { code: 'UND_ERR_SOCKET' });
 }
 
+function makeUndSocketError(): Error {
+    const cause = Object.assign(new Error('other side closed'), { code: 'UND_ERR_SOCKET' });
+    return Object.assign(new TypeError('fetch failed'), { cause });
+}
+
 afterEach(() => {
     vi.unstubAllGlobals();
 });
 
 describe('httpFetch', () => {
-    describe('UND_ERR_SOCKET', () => {
-        it('retries and succeeds when fetch eventually resolves', async () => {
-            const fetchMock = vi
-                .fn()
-                .mockRejectedValueOnce(makeSocketError())
-                .mockRejectedValueOnce(makeSocketError())
-                .mockResolvedValueOnce(new Response('ok', { status: 200 }));
-            vi.stubGlobal('fetch', fetchMock);
+    describe('retryable network errors', () => {
+        describe('error with code on root', () => {
+            it('retries and succeeds when fetch eventually resolves', async () => {
+                const fetchMock = vi
+                    .fn()
+                    .mockRejectedValueOnce(makeSocketError())
+                    .mockRejectedValueOnce(makeSocketError())
+                    .mockResolvedValueOnce(new Response('ok', { status: 200 }));
+                vi.stubGlobal('fetch', fetchMock);
 
-            const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
+                const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
 
-            expect(fetchMock).toHaveBeenCalledTimes(3);
-            expect(res.status).toBe(200);
+                expect(fetchMock).toHaveBeenCalledTimes(3);
+                expect(res.status).toBe(200);
+            });
+
+            it('returns 502 after all retries exhausted', async () => {
+                vi.stubGlobal('fetch', vi.fn().mockRejectedValue(makeSocketError()));
+
+                const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
+
+                expect(res.status).toBe(502);
+            });
         });
 
-        it('returns 502 after all retries exhausted', async () => {
-            vi.stubGlobal('fetch', vi.fn().mockRejectedValue(makeSocketError()));
+        describe('UND_ERR_SOCKET', () => {
+            it('retries and succeeds when fetch eventually resolves', async () => {
+                const fetchMock = vi
+                    .fn()
+                    .mockRejectedValueOnce(makeUndSocketError())
+                    .mockRejectedValueOnce(makeUndSocketError())
+                    .mockResolvedValueOnce(new Response('ok', { status: 200 }));
+                vi.stubGlobal('fetch', fetchMock);
 
-            const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
+                const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
 
-            expect(res.status).toBe(502);
+                expect(fetchMock).toHaveBeenCalledTimes(3);
+                expect(res.status).toBe(200);
+            });
+
+            it('returns 502 after all retries exhausted', async () => {
+                vi.stubGlobal('fetch', vi.fn().mockRejectedValue(makeUndSocketError()));
+
+                const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
+
+                expect(res.status).toBe(502);
+            });
         });
     });
 
