@@ -20,6 +20,7 @@ import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -76,6 +77,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const connectUI = useRef<ConnectUI>();
+    const isDarkMode = useThemeStore(darkModeSelector);
     const hasConnected = useRef<AuthResult | undefined>();
     const { mutate, cache } = useSWRConfig();
     const [isShareLinkLoading, setIsShareLinkLoading] = useState(false);
@@ -168,7 +170,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
-            onEvent
+            onEvent,
+            themeOverride: isDarkMode ? 'dark' : 'light'
         });
 
         // We defer the token creation so the iframe can open and display a loading screen

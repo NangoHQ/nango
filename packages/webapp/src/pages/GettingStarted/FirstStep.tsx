@@ -12,6 +12,7 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
 import { StyledLink } from '@/components/ui/StyledLink';
 
@@ -35,6 +36,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     const { toast } = useToast();
     const { mutateAsync: deleteConnection, isPending: isDeletingConnection } = useDeleteConnection();
     const connectUI = useRef<ConnectUI>();
+    const isDarkMode = useThemeStore(darkModeSelector);
 
     const onClickConnect = () => {
         if (!environmentAndAccount || !user) {
@@ -51,7 +53,8 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
-            onEvent
+            onEvent,
+            themeOverride: isDarkMode ? 'dark' : 'light'
         });
 
         // We defer the token creation so the iframe can open and display a loading screen
