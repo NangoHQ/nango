@@ -102,7 +102,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
 
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-screen">
-            <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
+            <header className="flex gap-2 flex-col border-b border-b-border-muted pb-5">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
                     <div className="mr-9">
