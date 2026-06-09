@@ -1,10 +1,11 @@
-import { BarChart3, Sun, X } from 'lucide-react';
+import { BarChart3, Moon, Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { useTeam } from '@/hooks/useTeam';
+import { useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
@@ -55,6 +56,8 @@ export const DevToolPanel: React.FC = () => {
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
+    const darkMode = useThemeStore((s) => s.darkMode);
+    const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -80,6 +83,18 @@ export const DevToolPanel: React.FC = () => {
                 <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-strong">
                     <X className="size-3.5" />
                 </Button>
+            </div>
+
+            {/* Theme */}
+            <div className="p-3 border-b border-border-muted">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">Theme</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        {darkMode ? <Moon className="size-4 shrink-0 text-text-secondary" /> : <Sun className="size-4 shrink-0 text-text-secondary" />}
+                        <span className="text-sm text-text-strong">{darkMode ? 'Dark' : 'Light'} mode</span>
+                    </div>
+                    <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+                </div>
             </div>
 
             {/* Feature flags */}
