@@ -27,15 +27,15 @@ export const HearAboutUs: React.FC = () => {
     const { data, isLoading, error } = useOnboardingHearAboutUs();
     const { mutateAsync: postHearAboutUs, isPending } = usePostOnboardingHearAboutUs();
 
-    useEffect(() => {
-        if (error) {
-            navigate('/', { replace: true });
-            return;
-        }
-        if (data && !data.data.showHearAboutUs) {
-            navigate('/', { replace: true });
-        }
-    }, [data, error, navigate]);
+    // useEffect(() => {
+    //     if (error) {
+    //         navigate('/', { replace: true });
+    //         return;
+    //     }
+    //     if (data && !data.data.showHearAboutUs) {
+    //         navigate('/', { replace: true });
+    //     }
+    // }, [data, error, navigate]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
         analyticsTrack('signup_hear_about', { source });
@@ -77,13 +77,7 @@ export const HearAboutUs: React.FC = () => {
 
             <div className="flex w-full flex-col gap-4">
                 {HEAR_ABOUT_OPTIONS.map(({ label, value }) => (
-                    <Button
-                        variant="secondary"
-                        key={value}
-                        loading={isPending}
-                        onClick={() => submit(value)}
-                        className="w-full bg-surface-panel-inset p-3 h-auto justify-start"
-                    >
+                    <Button variant="secondary" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
                         {label}
                     </Button>
                 ))}
