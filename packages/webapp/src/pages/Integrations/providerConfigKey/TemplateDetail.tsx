@@ -17,7 +17,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
-import { buildPullCommand } from '@/utils/scripts';
+import { buildPullCommand, functionRepoPath } from '@/utils/scripts';
 
 import type { NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -30,21 +30,29 @@ interface TemplateDetailProps {
 }
 
 export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onDeploy, isDeploying }) => {
-    const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${provider}/${template.type === 'action' ? 'actions' : 'syncs'}/${template.name}.ts`;
+    const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/${functionRepoPath({ provider, name: template.name, type: template.type })}`;
 
     const inputSchema = useMemo<JSONSchema7 | null>(() => {
-        if (!template.input || !template.json_schema) return null;
+        if (!template.input || !template.json_schema) {
+            return null;
+        }
         const schema = template.json_schema.definitions?.[template.input] ?? null;
-        if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
+        if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) {
+            return null;
+        }
         return schema as JSONSchema7;
     }, [template]);
 
     const outputSchemas = useMemo<{ name: string; schema: JSONSchema7 }[]>(() => {
-        if (!template.returns || !template.json_schema) return [];
+        if (!template.returns || !template.json_schema) {
+            return [];
+        }
         return template.returns
             .map((name) => {
                 const schema = template.json_schema?.definitions?.[name] ?? null;
-                if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
+                if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) {
+                    return null;
+                }
                 return { name, schema: schema as JSONSchema7 };
             })
             .filter((item): item is { name: string; schema: JSONSchema7 } => item !== null);
@@ -189,7 +197,7 @@ interface CodeTabProps {
 // Rendered inside <TabsContent value="code">, which Radix unmounts when the tab is inactive.
 // Mounting here means the GitHub fetch only fires when the user opens the Code tab.
 const CodeTab: React.FC<CodeTabProps> = ({ provider, templateType, templateName, githubUrl }) => {
-    const rawCodeUrl = `${INTEGRATION_TEMPLATES_RAW_URL}/main/integrations/${provider}/${templateType === 'action' ? 'actions' : 'syncs'}/${templateName}.ts`;
+    const rawCodeUrl = `${INTEGRATION_TEMPLATES_RAW_URL}/main/${functionRepoPath({ provider, name: templateName, type: templateType })}`;
     const {
         data: code,
         isLoading,
