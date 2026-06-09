@@ -29,7 +29,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
                 'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-strong',
 
                 // Error state.
-                'has-[[data-slot][aria-invalid=true]]:!focus-error has-[[data-slot][aria-invalid=true]]:!border-border-danger',
+                'has-[[data-slot][aria-invalid=true]]:!focus-error has-[[data-slot][aria-invalid=true]]:!border-text-danger',
 
                 className
             )}
