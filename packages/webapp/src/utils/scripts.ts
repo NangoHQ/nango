@@ -1,4 +1,18 @@
+import type { FunctionType } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+type PullSource = { catalog: true } | { env: string };
+
+/**
+ * Builds the `nango pull` CLI command for a function. Use `{ catalog: true }` to pull an
+ * un-deployed catalog template (keyed by provider) or `{ env }` to pull a deployed function
+ * from an environment.
+ */
+export function buildPullCommand({ integration, name, type, source }: { integration: string; name: string; type: FunctionType; source: PullSource }): string {
+    const typeFlag = type === 'action' ? '-a' : type === 'on-event' ? '--on-event' : '-s';
+    const sourceFlag = 'catalog' in source ? '--catalog' : `--env ${source.env}`;
+    return `nango pull ${integration} ${name} ${sourceFlag} ${typeFlag}`;
+}
 
 export function getSyncResponse(model: JSONSchema7) {
     const record = propertiesToTypescriptExamples(model).join('\n      ');
