@@ -29,6 +29,7 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { buildPullCommand } from '@/utils/scripts';
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
@@ -255,28 +256,35 @@ export const FunctionsOne: React.FC = () => {
                     </div>
                 </CardHeader>
 
-                {func.source === 'catalog' && (
-                    <CardSubheader>
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-text-strong text-body-medium-semi">Customize this template</span>
-                                <Link
-                                    to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
-                                    target="_blank"
-                                    className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
-                                >
-                                    Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                                </Link>
-                            </div>
-                            <div className="inline-flex gap-3">
-                                <LineSnippet snippet={`nango clone ${gitDir}`} />
-                                <ButtonLink to={gitUrl} target="_blank" variant="outline" size="xl">
+                <CardSubheader>
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-text-primary text-body-medium-semi">Customize this function</span>
+                            <Link
+                                to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                                target="_blank"
+                                className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
+                            >
+                                Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                            </Link>
+                        </div>
+                        <div className="inline-flex gap-3">
+                            <LineSnippet
+                                snippet={buildPullCommand({
+                                    integration: integrationData.integration.unique_key,
+                                    name: func.name,
+                                    type: func.type,
+                                    source: { env }
+                                })}
+                            />
+                            {func.source === 'catalog' && (
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
                                     View code <ExternalLink />
                                 </ButtonLink>
-                            </div>
+                            )}
                         </div>
-                    </CardSubheader>
-                )}
+                    </div>
+                </CardSubheader>
 
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
