@@ -1,8 +1,11 @@
 /**
  * Categorical palette for usage breakdown charts: the design-system chart hues
- * plus a few extras, ordered most-distinct-first (one color per top-N series).
- * Colors cycle once exhausted; the 'rest' rollup renders neutral slate, outside
- * this palette.
+ * (--color-chart-series-*) plus a few interim hex extras, ordered most-distinct-
+ * first (one color per top-N series). Colors cycle once exhausted; the 'rest'
+ * rollup renders neutral slate, outside this palette.
+ *
+ * The raw hex extras are interim — to be promoted to design-system
+ * --chart-series-* tokens (with light/dark theming) in a follow-up: NAN-5927.
  */
 const SERIES_COLORS = [
     'var(--color-chart-series-1)', // cyan
@@ -23,9 +26,9 @@ export const REST_SERIES_KEY = '__rest__';
 /** Neutral fill for the 'rest' bucket. */
 export const REST_SERIES_COLOR = '#64748b'; // muted slate — neutral for the long-tail rollup without the flat gray
 
-/** Semantic fills for the success/Status dimension, matching the logs screen's red/green. */
-export const SUCCESS_SERIES_COLOR = 'var(--color-icon-success)';
-export const FAILED_SERIES_COLOR = 'var(--color-icon-danger)';
+// Semantic fills for the success/Status dimension, matching the logs screen's red/green.
+const SUCCESS_SERIES_COLOR = 'var(--color-icon-success)';
+const FAILED_SERIES_COLOR = 'var(--color-icon-danger)';
 
 // Stable value → color map, shared across every breakdown chart on the page so the
 // SAME dimension value (e.g. integration "attio") always gets the SAME color —
@@ -34,8 +37,15 @@ export const FAILED_SERIES_COLOR = 'var(--color-icon-danger)';
 // first-seen order and cycle once the palette is exhausted.
 const colorByValue = new Map<string, string>();
 
-/** Stable color for a dimension value, consistent across all charts (and the session). */
-export function colorForValue(value: string): string {
+/**
+ * Color for a breakdown series value. The Status dimension gets the semantic
+ * red/green from the logs screen; every other dimension gets a stable palette
+ * color (same value → same color across all charts in the session).
+ */
+export function colorForValue(value: string, dimension?: string): string {
+    if (dimension === 'success') {
+        return value === 'Failed' ? FAILED_SERIES_COLOR : SUCCESS_SERIES_COLOR;
+    }
     const existing = colorByValue.get(value);
     if (existing) {
         return existing;

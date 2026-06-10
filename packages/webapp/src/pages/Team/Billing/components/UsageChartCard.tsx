@@ -1,16 +1,15 @@
-import { Layers } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
-import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, DIMENSION_LABELS, formatDimensionValue, metricsSupportingDimension } from '../usageBreakdown';
+import { BreakdownControls } from './BreakdownControls';
+import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, metricsSupportingDimension } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { ChartCard } from '@/components/patterns/ChartCard';
-import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, colorForValue } from '@/components/patterns/usageChartColors';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { REST_SERIES_COLOR, REST_SERIES_KEY, colorForValue } from '@/components/patterns/usageChartColors';
 import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
-import type { ChartSeries } from '@/components/patterns/ChartCard';
+import type { ChartSeries } from '@/components/patterns/chart';
 import type { ApiBillingUsageMetric, BillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 const NONE = 'none';
@@ -27,29 +26,26 @@ interface UsageChartCardProps {
     onApplyToAll: (dimension: AnyBreakdownDimension) => void;
 }
 
-/** Map breakdown entries to stacked chart series: largest first, semantic colors for Status, 'rest' last. */
+/** Map breakdown entries to stacked chart series: largest usage first, with the 'rest' rollup last. */
 function toChartSeries(entries: BillingUsageMetric[], dimension: AnyBreakdownDimension): ChartSeries[] {
     const ranked = entries.filter((e) => !e.isRest).sort((a, b) => b.total - a.total);
     const series: ChartSeries[] = ranked.map((entry, i) => {
         const label = entry.group ? formatDimensionValue(dimension, entry.group.value) : '—';
-        return {
-            key: `s${i}`,
-            color: dimension === 'success' ? (entry.group?.value === 'false' ? FAILED_SERIES_COLOR : SUCCESS_SERIES_COLOR) : colorForValue(label),
-            label,
-            usage: entry.usage
-        };
+        return { key: `s${i}`, color: colorForValue(label, dimension), label, usage: entry.usage };
     });
     const rest = entries.find((e) => e.isRest);
     if (rest) {
+        // Appended last so the legend lists it after the named series; ChartCard then
+        // renders it at the bottom of the stack.
         series.push({ key: REST_SERIES_KEY, label: 'Rest', color: REST_SERIES_COLOR, usage: rest.usage });
     }
     return series;
 }
 
 /**
- * One billing usage panel. Renders the base single-series chart, and — when the
- * breakdown view is enabled — a dimension dropdown that stacks a per-dimension
- * breakdown. The headline total comes from the base metric (or a fixture override).
+ * One billing usage panel: the base single-series chart, plus — when the breakdown
+ * view is enabled — a dimension dropdown that stacks a per-dimension breakdown. The
+ * headline total always comes from the base metric.
  */
 export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, globalBreakdown, onApplyToAll }) => {
     const showControls = useBreakdownEnabled();
@@ -73,32 +69,13 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const canApplyToAll = dimension !== null && dimension !== globalBreakdown && metricsSupportingDimension(dimension).length > 1;
 
     const headerActions = showControls ? (
-        <div className="flex items-center gap-2">
-            {canApplyToAll && (
-                <button
-                    type="button"
-                    onClick={() => dimension && onApplyToAll(dimension)}
-                    className="flex items-center gap-1 text-text-tertiary text-body-small-regular hover:text-text-primary"
-                    title="Apply this breakdown to every metric that supports it"
-                >
-                    <Layers className="size-3.5" />
-                    Apply to all
-                </button>
-            )}
-            <Select value={dimension ?? NONE} onValueChange={(v) => void setDimParam(v === NONE ? null : v)}>
-                <SelectTrigger size="sm">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="end">
-                    <SelectItem value={NONE}>No breakdown</SelectItem>
-                    {dimensions.map((d) => (
-                        <SelectItem key={d} value={d}>
-                            {DIMENSION_LABELS[d]}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
+        <BreakdownControls
+            dimensions={dimensions}
+            dimension={dimension}
+            onChange={(d) => void setDimParam(d)}
+            canApplyToAll={canApplyToAll}
+            onApplyToAll={() => dimension && onApplyToAll(dimension)}
+        />
     ) : undefined;
 
     return (
