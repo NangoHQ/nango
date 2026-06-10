@@ -1762,9 +1762,6 @@ export class PostgresStore implements RecordsStore {
         await trx(RECORDS_SEEN_TABLE).insert({
             connection_id: connectionId,
             model,
-            sync_job_id: syncJobId,
-            // Dual-write the bigint replacement alongside the int4 column. Reads switch to
-            // generation in Phase 2d; sync_job_id stops being written in Phase 2f.
             generation: syncJobId,
             record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
         });
