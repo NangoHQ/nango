@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useIntegrationTimeline } from '@/hooks/useHealth';
 
 export const TimelineModal = ({ integrationId, onClose }: { integrationId: string; onClose: () => void }) => {
-    const { data: timeline, isLoading } = useIntegrationTimeline(integrationId);
+    const { data: timeline, isLoading, error } = useIntegrationTimeline(integrationId);
 
     return (
         <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
@@ -13,6 +13,8 @@ export const TimelineModal = ({ integrationId, onClose }: { integrationId: strin
                 <DialogHeader>
                     <DialogTitle>Execution Timeline: {integrationId}</DialogTitle>
                 </DialogHeader>
+
+                {error && <div className="p-8 text-center text-pink-600">Failed to load execution timeline.</div>}
 
                 {isLoading && (
                     <div className="flex flex-col gap-1 mt-4">
@@ -46,7 +48,7 @@ export const TimelineModal = ({ integrationId, onClose }: { integrationId: strin
                                             {event.status}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>{event.duration_ms ? `${event.duration_ms} ms` : '-'}</TableCell>
+                                    <TableCell>{event.duration_ms != null ? `${event.duration_ms} ms` : '-'}</TableCell>
                                     <TableCell className="max-w-xs truncate" title={event.error_message || ''}>
                                         {event.error_type || '-'}
                                     </TableCell>

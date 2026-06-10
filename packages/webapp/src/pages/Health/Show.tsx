@@ -78,7 +78,7 @@ export const IntegrationHealth = () => {
                                 </TableCell>
                                 <TableCell>{metric.success_count_24h}</TableCell>
                                 <TableCell>{metric.failure_count_24h}</TableCell>
-                                <TableCell>{metric.avg_runtime_ms ? `${Math.round(metric.avg_runtime_ms)} ms` : '-'}</TableCell>
+                                <TableCell>{metric.avg_runtime_ms != null ? `${Math.round(metric.avg_runtime_ms)} ms` : '-'}</TableCell>
                                 <TableCell>{metric.last_success_at ? new Date(metric.last_success_at).toLocaleString() : '-'}</TableCell>
                                 <TableCell>{metric.top_error_type || '-'}</TableCell>
                             </TableRow>

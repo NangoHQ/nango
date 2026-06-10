@@ -1,6 +1,8 @@
 import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
+import { getLocking } from '@nangohq/kvstore';
+import type { Lock } from '@nangohq/kvstore';
 import { getLogger, report } from '@nangohq/utils';
 
 const logger = getLogger('cron.aggregateHealthMetrics');
@@ -11,7 +13,18 @@ export function aggregateHealthMetrics(): void {
         `*/${cronMinutes} * * * *`,
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         async () => {
+            const ttlMs = cronMinutes * 60 * 1000 - 1000;
+            const locking = await getLocking();
+            let lock: Lock | undefined;
+
             try {
+                try {
+                    lock = await locking.acquire('lock:aggregateHealthMetrics:cron', ttlMs);
+                } catch (err) {
+                    logger.info('Could not acquire lock, skipping health metrics aggregation');
+                    return;
+                }
+
                 logger.info(`Starting health metrics aggregation`);
 
                 const query = `
@@ -84,6 +97,10 @@ export function aggregateHealthMetrics(): void {
                 logger.info(`✅ Aggregation completed`);
             } catch (err) {
                 report(new Error('cron_failed_to_aggregate_health_metrics', { cause: err }));
+            } finally {
+                if (lock) {
+                    locking.release(lock);
+                }
             }
         },
         { runOnInit: true }

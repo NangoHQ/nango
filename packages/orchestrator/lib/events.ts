@@ -296,8 +296,8 @@ export class TaskEventsHandler extends PgEventEmitter {
         // Calculate duration for terminal states
         let duration_ms: number | undefined = undefined;
         if (status === 'SUCCESS' || status === 'FAILURE') {
-            const start = task.lastStateTransitionAt;
-            const end = new Date();
+            const start = task.createdAt;
+            const end = task.lastStateTransitionAt;
             duration_ms = Math.max(0, end.getTime() - start.getTime());
         }
 
@@ -322,7 +322,7 @@ export class TaskEventsHandler extends PgEventEmitter {
             error_message: status === 'FAILURE' ? (task.output ? JSON.stringify(task.output).slice(0, 1000) : null) : null
         };
 
-        this.db
+        void this.db
             .from('execution_events')
             .insert(event)
             .catch((err: unknown) => {
