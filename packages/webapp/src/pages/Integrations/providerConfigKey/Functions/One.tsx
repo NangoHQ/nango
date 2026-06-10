@@ -175,12 +175,13 @@ export const FunctionsOne: React.FC = () => {
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
-                        <div className="inline-flex items-center gap-2">
+                        <div className="inline-flex items-center gap-3">
                             {func.enabled && debugMode && (
                                 <Button onClick={downloadCode} variant="ghost" size="icon">
                                     <Download />
                                 </Button>
                             )}
+
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
                                 <Button
                                     variant="secondary"
