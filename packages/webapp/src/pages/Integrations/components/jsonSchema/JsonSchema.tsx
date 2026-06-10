@@ -147,7 +147,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                 <div
                     className={cn(
                         'group w-full p-4 flex flex-row items-center justify-between rounded focus-default cursor-pointer transition-all',
-                        depth % 2 === 0 ? 'bg-surface-page' : 'bg-surface-canvas'
+                        depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel'
                     )}
                 >
                     <div className="inline-flex gap-1 items-center">
@@ -158,7 +158,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                 </div>
             </Collapsible.Trigger>
             <Collapsible.Content asChild>
-                <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-surface-page' : 'bg-surface-canvas')}>
+                <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel')}>
                     {Object.entries(properties || {}).map(([name, property]) => (
                         <div key={name} className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}>
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
@@ -177,5 +177,5 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
 };
 
 const TopLevelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <div className="p-4 bg-surface-page rounded flex flex-col gap-3">{children}</div>;
+    return <div className="p-4 bg-surface-panel rounded flex flex-col gap-3">{children}</div>;
 };
