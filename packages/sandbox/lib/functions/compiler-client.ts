@@ -8,6 +8,7 @@ import { getCommandOutput } from './command-output.js';
 import { FunctionError } from './helpers.js';
 import { remoteFunctionCompileTimeoutMs, remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createFunctionSandbox } from './sandbox.js';
+import { envs } from '../env.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
 interface FunctionFilePathRequest {
@@ -43,7 +44,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
         return invokeLocalCompiler(request);
     }
 
-    const apiKey = process.env['E2B_API_KEY'];
+    const apiKey = envs.E2B_API_KEY;
     if (!apiKey) {
         throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
     }

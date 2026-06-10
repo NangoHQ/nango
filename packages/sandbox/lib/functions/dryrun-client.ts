@@ -8,6 +8,7 @@ import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { FunctionError } from './helpers.js';
 import { remoteFunctionCompileTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs, remoteFunctionDryrunTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createFunctionSandbox } from './sandbox.js';
+import { envs } from '../env.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
@@ -51,7 +52,7 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
         return prepareLocalAsyncDryrun(request);
     }
 
-    const apiKey = process.env['E2B_API_KEY'];
+    const apiKey = envs.E2B_API_KEY;
     if (!apiKey) {
         throw new Error('E2B_API_KEY is required for the E2B dryrun runtime');
     }
@@ -92,7 +93,7 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
                 await sandbox.commands.run('node /tmp/nango-function-dryrun.mjs', {
                     cwd: remoteFunctionProjectPath,
                     background: true,
-                    timeoutMs: 30_000,
+                    timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
                         NANGO_SECRET_KEY: request.nango_secret_key,

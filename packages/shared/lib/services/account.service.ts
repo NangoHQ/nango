@@ -34,6 +34,7 @@ interface AccountContext {
         apiKeyId?: number;
         purpose?: 'dryrun' | 'deploy';
         dryrunId?: string;
+        deploymentId?: string;
     };
 }
 
@@ -469,6 +470,22 @@ class AccountService {
 
             const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
             const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+            const auth =
+                verified.purpose === 'dryrun'
+                    ? {
+                          source: 'sandbox_token' as const,
+                          scopes: buildSandboxApiKeyScopes(row.auth_scopes),
+                          apiKeyId: row.auth_api_key_id,
+                          purpose: verified.purpose,
+                          dryrunId: verified.dryrun_id
+                      }
+                    : {
+                          source: 'sandbox_token' as const,
+                          scopes: buildSandboxApiKeyScopes(row.auth_scopes),
+                          apiKeyId: row.auth_api_key_id,
+                          purpose: verified.purpose,
+                          deploymentId: verified.deployment_id
+                      };
 
             return Ok({
                 account: {
@@ -497,13 +514,7 @@ class AccountService {
                       }
                     : null,
                 secret: defaultSecret,
-                auth: {
-                    source: 'sandbox_token' as const,
-                    scopes: buildSandboxApiKeyScopes(row.auth_scopes),
-                    apiKeyId: row.auth_api_key_id,
-                    purpose: verified.purpose,
-                    ...(verified.dryrun_id ? { dryrunId: verified.dryrun_id } : {})
-                }
+                auth
             });
         } catch (err) {
             return Err(err);
