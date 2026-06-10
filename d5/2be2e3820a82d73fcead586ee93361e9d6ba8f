@@ -1,0 +1,103 @@
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_0bc521b83bf53d::t_e4894d7058b847 14
+  s_0bc521b83bf53d::t_e5dc607d920ee4 78
+packages/sandbox/lib/functions/dryrun-client.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 47,72,88-89
+  s_0bc521b83bf53d::t_723d07edb48807 6,54-55
+packages/sandbox/lib/functions/compiler-client.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 5
+packages/sandbox/lib/providers/docker.ts
+  s_0bc521b83bf53d::t_d8087231c81767 2,9-11,26,48,52-53,81,104-105,107,111-119,122-123
+  s_0bc521b83bf53d::t_05335265e7ca26 120-121
+  s_0bc521b83bf53d::t_5e205149776d8e 4
+packages/server/lib/controllers/functions/errors.ts
+  s_0bc521b83bf53d::t_d98c14ae0a62b1 76,91
+  s_0bc521b83bf53d::t_07486ad3a29be6 72,77
+packages/sandbox/lib/functions/timeouts.ts
+  s_0bc521b83bf53d::t_5855b1ef5f15a5 1-9
+packages/sandbox/lib/providers/factory.ts
+  s_0bc521b83bf53d::t_d7535be6cd71ce 11-12
+packages/sandbox/lib/functions/compiler-client.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 38,52
+  s_0bc521b83bf53d::t_723d07edb48807 3,45-46,65
+packages/sandbox/lib/functions/compiler-client.e2b.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 39
+packages/utils/lib/environment/parse.ts
+  s_0bc521b83bf53d::t_9b9aac9816172f 622
+  s_0bc521b83bf53d::t_d7535be6cd71ce 623
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 92
+  s_0bc521b83bf53d::t_e4894d7058b847 14
+packages/sandbox/lib/functions/command-builders.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 5
+packages/sandbox/lib/index.ts
+  s_0bc521b83bf53d::t_dd38e509fe2799 13
+packages/server/lib/controllers/functions/deploy/helpers.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 2,17
+packages/sandbox/lib/functions/command-output.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 5
+packages/sandbox/lib/functions/sandbox.ts
+  s_0bc521b83bf53d::t_2ed508de6d4120 25
+packages/sandbox/lib/sandbox-service.ts
+  s_0bc521b83bf53d::t_2ed508de6d4120 47
+packages/sandbox/lib/providers/e2b.ts
+  s_0bc521b83bf53d::t_2ed508de6d4120 35
+  s_0bc521b83bf53d::t_05335265e7ca26 162-163
+  s_0bc521b83bf53d::t_4a022b4059468a 2,17-18,63,67-68,74,88,105,140-142,148,154-161,164-165
+packages/server/lib/controllers/functions/resultCallbacks.unit.test.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 40-41
+packages/server/lib/controllers/functions/dryrun/helpers.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 2,19
+packages/sandbox/lib/providers/docker-utils.ts
+  s_0bc521b83bf53d::t_28a57a1dd7773b 1-12,14-16,18-26,28-50
+packages/sandbox/lib/functions/async-jobs.service.integration.test.ts
+  s_0bc521b83bf53d::t_8438887238701b 25
+  s_0bc521b83bf53d::t_e5dc607d920ee4 181,207,376,381,401,406
+packages/server/lib/controllers/functions/helpers.unit.test.ts
+  s_0bc521b83bf53d::t_d1e3a544fd05e0 1-25
+packages/sandbox/lib/functions/deploy-client.ts
+  s_0bc521b83bf53d::t_e5dc607d920ee4 48,62,80,98,121
+  s_0bc521b83bf53d::t_723d07edb48807 9,56-57,105-106
+packages/sandbox/lib/functions/dryrun-client.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 53
+packages/server/lib/controllers/functions/errors.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 18
+  s_0bc521b83bf53d::t_fbbb2413e6b3fa 74,83
+packages/sandbox/lib/providers/types.ts
+  s_0bc521b83bf53d::t_dd38e509fe2799 17-20,27-29
+packages/utils/lib/environment/parse.unit.test.ts
+  s_0bc521b83bf53d::t_9b9aac9816172f 36
+  s_0bc521b83bf53d::t_d7535be6cd71ce 37-38
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 70
+packages/sandbox/lib/functions/async-jobs.service.ts
+  s_0bc521b83bf53d::t_8438887238701b 4
+  s_0bc521b83bf53d::t_e5dc607d920ee4 440-441
+packages/sandbox/lib/functions/sandbox.unit.test.ts
+  s_0bc521b83bf53d::t_2ed508de6d4120 14,73,81,91
+packages/server/lib/controllers/functions/helpers.ts
+  s_0bc521b83bf53d::t_5855b1ef5f15a5 1-5
+packages/sandbox/lib/providers/docker.unit.test.ts
+  s_0bc521b83bf53d::t_5e205149776d8e 11
+  s_0bc521b83bf53d::t_0987d854d90b49 53
+  s_0bc521b83bf53d::t_cf6c01b302792a 67-83
+  s_0bc521b83bf53d::t_317095ca8db0a8 46-52,54-65
+packages/sandbox/lib/functions/shell.unit.test.ts
+  s_0bc521b83bf53d::t_1927c3361afd19 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "d52be2e3820a82d73fcead586ee93361e9d6ba8f",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
