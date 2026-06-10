@@ -8,13 +8,19 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Button } from '@/components/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { useThemeStore } from '@/lib/theme';
+
+import type { Theme } from '@/lib/theme';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();
 
     const { user, loading, error, mutate } = useUser();
+    const theme = useThemeStore((s) => s.theme);
+    const setTheme = useThemeStore((s) => s.setTheme);
     const ref = useRef<HTMLInputElement>(null);
     const [name, setName] = useState(() => user?.name || '');
     const [edit, setEdit] = useState(false);
@@ -107,6 +113,19 @@ export const UserSettings: React.FC = () => {
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-text-strong">Email</h3>
                     <p className="text-text-strong text-sm">{user.email}</p>
+                </div>
+                <div className="flex flex-col gap-5">
+                    <h3 className="font-semibold text-sm text-text-strong">Theme</h3>
+                    <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
+                        <SelectTrigger className="w-48">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="system">System</SelectItem>
+                            <SelectItem value="light">Light</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
         </DashboardLayout>
