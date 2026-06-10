@@ -36,7 +36,7 @@ import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
 
-describe('remote function compiler client E2B errors', () => {
+describe('sandboxed function compiler client E2B errors', () => {
     beforeEach(() => {
         mocks.envs.E2B_API_KEY = 'e2b-key';
     });

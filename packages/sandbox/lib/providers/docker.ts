@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto';
+import { posix as path } from 'node:path';
 
+import { execDockerFileAsync, isExecTimeoutError, readContainerFile, rewriteDockerHostForLocalhost, writeContainerFile } from './docker-utils.js';
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from './errors.js';
-import { remoteFunctionLocalImage } from '../functions/runtime.js';
-import { execDockerFileAsync, isExecTimeoutError, readContainerFile, rewriteDockerHostForLocalhost, writeContainerFile } from '../local/docker.js';
 
 import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
+
+const image = 'agent-sandboxes/blank-workspace:local';
+const workspacePath = '/home/user/nango-integrations';
 
 export class DockerSandboxProvider implements SandboxProvider {
     public readonly name = 'docker';
@@ -20,7 +23,7 @@ export class DockerSandboxProvider implements SandboxProvider {
                 containerName,
                 '--add-host',
                 'host.docker.internal:host-gateway',
-                remoteFunctionLocalImage,
+                image,
                 'sleep',
                 String(Math.ceil(params.timeoutMs / 1000))
             ],
@@ -42,12 +45,12 @@ class DockerSandbox implements Sandbox {
 
     async writeFiles(files: SandboxFile[]): Promise<void> {
         for (const file of files) {
-            await writeContainerFile(this.id, file.path, file.contents);
+            await writeContainerFile(this.id, resolvePath(file.path), file.contents);
         }
     }
 
-    async readTextFile(path: string): Promise<string> {
-        return readContainerFile(this.id, path);
+    async readTextFile(filePath: string): Promise<string> {
+        return readContainerFile(this.id, resolvePath(filePath));
     }
 
     async runCommand(params: SandboxCommandParams): Promise<SandboxCommandResult> {
@@ -75,9 +78,7 @@ class DockerSandbox implements Sandbox {
         if (options.detached) {
             args.push('-d');
         }
-        if (params.cwd) {
-            args.push('-w', params.cwd);
-        }
+        args.push('-w', resolvePath(params.cwd));
         for (const [key, value] of Object.entries(rewriteLocalhostEnvs(params.envs ?? {}))) {
             args.push('-e', `${key}=${value}`);
         }
@@ -100,10 +101,24 @@ function toDockerCommandError(error: unknown): Error {
     }
 
     const err = error as Record<string, unknown>;
-    const stdout = typeof err['stdout'] === 'string' ? err['stdout'] : undefined;
-    const stderr = typeof err['stderr'] === 'string' ? err['stderr'] : undefined;
+    const stdout = typeof err['stdout'] === 'string' ? stripWorkspacePath(err['stdout']) : undefined;
+    const stderr = typeof err['stderr'] === 'string' ? stripWorkspacePath(err['stderr']) : undefined;
     const exitCode = typeof err['code'] === 'number' ? err['code'] : 1;
-    const message = typeof err['message'] === 'string' ? err['message'] : 'Docker sandbox command failed';
+    const message = typeof err['message'] === 'string' ? stripWorkspacePath(err['message']) : 'Docker sandbox command failed';
 
     return new SandboxCommandExitError(message, { stdout, stderr, exitCode });
+}
+
+function resolvePath(value: string | undefined): string {
+    if (!value || value === '.') {
+        return workspacePath;
+    }
+
+    return path.isAbsolute(value) ? value : path.join(workspacePath, value);
+}
+
+function stripWorkspacePath(value: string): string;
+function stripWorkspacePath(value: undefined): undefined;
+function stripWorkspacePath(value: string | undefined): string | undefined {
+    return value?.replaceAll(`${workspacePath}/`, '').replaceAll(workspacePath, '.');
 }

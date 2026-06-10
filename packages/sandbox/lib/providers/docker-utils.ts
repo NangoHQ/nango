@@ -2,8 +2,6 @@ import { execFile, spawn } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { getCommandOutput } from '../functions/command-output.js';
-
 import type { ExecFileOptions } from 'node:child_process';
 
 const execFileAsync = promisify(execFile);
@@ -15,10 +13,6 @@ export async function execDockerFileAsync(args: string[], options?: ExecFileOpti
 
 export function rewriteDockerHostForLocalhost(nangoHost: string): string {
     return nangoHost.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, (_, _host, port) => `http://host.docker.internal${port ?? ''}`);
-}
-
-export function getExecErrorOutput(error: unknown): string {
-    return getCommandOutput(error, String(error));
 }
 
 export function isExecTimeoutError(error: unknown): boolean {

@@ -50,7 +50,7 @@ const request = {
     nango_host: 'https://api.example.test'
 };
 
-describe('remote function dryrun client', () => {
+describe('sandboxed function dryrun client', () => {
     beforeEach(() => {
         mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);

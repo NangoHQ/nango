@@ -8,8 +8,8 @@ import { envs } from '../env.js';
 import type { SandboxProvider, SandboxProviderName } from './types.js';
 
 export function resolveDefaultSandboxProviderName(): SandboxProviderName {
-    if (envs.FUNCTION_SANDBOX_PROVIDER) {
-        return envs.FUNCTION_SANDBOX_PROVIDER;
+    if (envs.SANDBOX_PROVIDER) {
+        return envs.SANDBOX_PROVIDER;
     }
 
     return isLocal ? 'docker' : 'e2b';

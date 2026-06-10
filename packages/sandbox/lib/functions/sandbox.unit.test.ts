@@ -11,7 +11,7 @@ import {
 
 import type { FunctionError } from './helpers.js';
 
-describe('remote function sandbox helpers', () => {
+describe('sandbox helpers', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -70,7 +70,7 @@ describe('remote function sandbox helpers', () => {
         expect(paginator.nextItems).toHaveBeenCalledTimes(2);
     });
 
-    it('cleans up a remote function sandbox by id', async () => {
+    it('cleans up a sandbox by id', async () => {
         const kill = vi.spyOn(Sandbox, 'kill').mockResolvedValueOnce(true);
 
         await cleanupFunctionSandbox({ sandboxId: 'sandbox-id', apiKey: 'e2b-key' });
@@ -78,7 +78,7 @@ describe('remote function sandbox helpers', () => {
         expect(kill).toHaveBeenCalledWith('sandbox-id', { apiKey: 'e2b-key' });
     });
 
-    it('skips function sandbox cleanup when there is no remote sandbox to kill', async () => {
+    it('skips sandbox cleanup when there is no remote sandbox to kill', async () => {
         const kill = vi.spyOn(Sandbox, 'kill').mockResolvedValue(true);
 
         await cleanupFunctionSandbox({ sandboxId: null, apiKey: 'e2b-key' });
@@ -88,7 +88,7 @@ describe('remote function sandbox helpers', () => {
         expect(kill).not.toHaveBeenCalled();
     });
 
-    it('does not throw when remote function sandbox cleanup fails', async () => {
+    it('does not throw when sandbox cleanup fails', async () => {
         const kill = vi.spyOn(Sandbox, 'kill').mockRejectedValueOnce(new Error('sandbox not found'));
 
         await expect(cleanupFunctionSandbox({ sandboxId: 'sandbox-id', apiKey: 'e2b-key' })).resolves.toBeUndefined();

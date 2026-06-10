@@ -33,9 +33,9 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS).toBe(5_000);
     });
 
-    it('should parse the function sandbox provider', () => {
-        const res = parseEnvs(ENVS, { FUNCTION_SANDBOX_PROVIDER: 'agentcore' });
-        expect(res.FUNCTION_SANDBOX_PROVIDER).toBe('agentcore');
+    it('should parse the sandbox provider', () => {
+        const res = parseEnvs(ENVS, { SANDBOX_PROVIDER: 'agentcore' });
+        expect(res.SANDBOX_PROVIDER).toBe('agentcore');
     });
 
     it('should coerce boolean and number', () => {

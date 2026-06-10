@@ -1,8 +1,6 @@
-import path from 'node:path';
-
 import { getCommandOutput } from './command-output.js';
 import { FunctionError } from './helpers.js';
-import { remoteFunctionCompileTimeoutMs, remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { compileSandboxTimeoutMs, compileTimeoutMs } from './timeouts.js';
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
 import { sandboxService } from '../sandbox-service.js';
 
@@ -37,22 +35,21 @@ export class CompilerError extends FunctionError {
 export async function invokeCompiler(request: CompileRequest): Promise<CompileResult> {
     const sandbox = await sandboxService.create({
         purpose: 'compile',
-        timeoutMs: remoteFunctionCompilerSandboxTimeoutMs
+        timeoutMs: compileSandboxTimeoutMs
     });
 
     try {
         const { tsFilePath, cjsFilePath } = getCompilerFilePaths();
 
         await sandbox.writeFiles([
-            { path: path.join(remoteFunctionProjectPath, tsFilePath), contents: request.code },
-            { path: path.join(remoteFunctionProjectPath, 'index.ts'), contents: buildCompilerIndexTs() }
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildCompilerIndexTs() }
         ]);
 
         try {
             await sandbox.runCommand({
                 command: 'nango compile',
-                cwd: remoteFunctionProjectPath,
-                timeoutMs: remoteFunctionCompileTimeoutMs,
+                timeoutMs: compileTimeoutMs,
                 envs: { NO_COLOR: '1' }
             });
         } catch (err) {
@@ -65,7 +62,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
             throw err;
         }
 
-        const bundledJs = await sandbox.readTextFile(path.join(remoteFunctionProjectPath, cjsFilePath));
+        const bundledJs = await sandbox.readTextFile(cjsFilePath);
 
         return {
             bundledJs,

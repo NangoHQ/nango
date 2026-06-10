@@ -22,7 +22,7 @@ export async function cleanupFunctionSandbox(params: { sandboxId: string | null 
         try {
             await new E2BSandboxProvider().cleanup({ sandboxId: params.sandboxId, apiKey: params.apiKey });
         } catch (err) {
-            logger.warning('Failed to clean up function sandbox', { sandboxId: params.sandboxId, err });
+            logger.warning('Failed to clean up sandbox', { sandboxId: params.sandboxId, err });
         }
         return;
     }
