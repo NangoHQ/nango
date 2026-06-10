@@ -110,7 +110,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             case 'JWT':
             case 'BILL':
             case 'TWO_STEP':
-            case 'SIGNATURE': {
+            case 'SIGNATURE':
+            case 'AWS_SIGV4': {
                 res = await refreshCredentials(props, provider as RefreshableProvider);
                 break;
             }

@@ -968,6 +968,45 @@ describe('PostgresStore', () => {
                 expect(next_cursor).toBeNull();
             });
         });
+
+        describe('bounded decrypt concurrency (RECORDS_DECRYPT_CONCURRENCY)', () => {
+            const originalConcurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+            afterAll(() => {
+                (envs as any).RECORDS_DECRYPT_CONCURRENCY = originalConcurrency;
+            });
+
+            // The decrypt loop processes records in chunks of RECORDS_DECRYPT_CONCURRENCY. The
+            // concern is that splitting a page into concurrent chunks could drop, duplicate or
+            // reorder records. We read the same dataset at several concurrencies (1 forces one
+            // record per chunk, the others straddle the chunk boundary) and assert the result is
+            // identical to a serial baseline, so any reordering across chunks would fail.
+            it('Should return the same records in the same order regardless of concurrency', async () => {
+                const numOfRecords = 25;
+                const { connectionId, model } = await upsertNRecords(numOfRecords);
+
+                const orderAt = async (concurrency: number) => {
+                    (envs as any).RECORDS_DECRYPT_CONCURRENCY = concurrency;
+                    const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
+                    expect(response.isOk()).toBe(true);
+                    return response.unwrap().records;
+                };
+
+                const baseline = await orderAt(1);
+
+                // Completeness + correctness on the baseline.
+                expect(baseline.length).toBe(numOfRecords);
+                expect(new Set(baseline.map((r) => r['id'])).size).toBe(numOfRecords);
+                for (const r of baseline) {
+                    expect(r['name']).toBe(`record ${r['id']}`);
+                }
+
+                const baselineIds = baseline.map((r) => r['id']);
+                for (const concurrency of [3, 7, numOfRecords + 1]) {
+                    const ids = (await orderAt(concurrency)).map((r) => r['id']);
+                    expect(ids).toEqual(baselineIds);
+                }
+            });
+        });
     }, 60_000);
 
     describe('deleteOutdatedRecords', () => {
@@ -2216,8 +2255,8 @@ describe('PostgresStore', () => {
         });
     });
 
-    describe('records_seen dual-write (Phase 2b)', () => {
-        it('should write the same value to sync_job_id and generation', async () => {
+    describe('records_seen write (Phase 2g: sync_job_id dropped)', () => {
+        it('should write generation', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = 'model-' + rnd.string();
@@ -2225,13 +2264,12 @@ describe('PostgresStore', () => {
             const syncJobId = rnd.number();
             await upsertRecords({ records: [{ id: '1', name: 'a' }], connectionId, environmentId, model, syncId, syncJobId });
 
-            const { rows } = await db.raw<{ rows: { sync_job_id: number; generation: string }[] }>(
-                `SELECT sync_job_id, generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
+            const { rows } = await db.raw<{ rows: { generation: string }[] }>(
+                `SELECT generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
                 [connectionId, model]
             );
             expect(rows).toHaveLength(1);
-            expect(rows[0]?.sync_job_id).toBe(syncJobId);
-            // node-pg returns bigint as string; coerce both sides for the compare.
+            // node-pg returns bigint as string; coerce for the compare.
             expect(Number(rows[0]?.generation)).toBe(syncJobId);
         });
     });
