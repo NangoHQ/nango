@@ -19761,6 +19761,72 @@ theirstack:
             pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
             doc_section: '#step-1-generate-your-api-key'
 
+thomson-reuters-legal-tracker:
+    display_name: Thomson Reuters Legal Tracker
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/onepass/oauth2/token
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/legal-tracker
+    docs: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker
+    docs_connect: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The regional API hostname for your Thomson Reuters account.
+            enum:
+                - api.thomsonreuters.com
+                - api.thomsonreuters.co.uk
+                - api.thomsonreuters.ca
+                - api.thomsonreuters.au
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID from the App Management.
+            doc_section: '#step-1-obtain-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret from the App Management.
+            secret: true
+            doc_section: '#step-1-obtain-your-client-credentials'
+
+thomson-reuters-legal-tracker-tr-account:
+    display_name: Thomson Reuters Legal Tracker (TR Account)
+    alias: thomson-reuters-legal-tracker
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.thomsonreuters.com/oauth/token
+    token_request_auth_method: basic
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_params:
+        grant_type: client_credentials
+        audience: 506f6a92-4fd1-43c1-bf18-4e3735ea55aa
+    docs: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account
+    docs_connect: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your TR Account client ID.
+            doc_section: '#step-1-obtain-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your TR Account client secret.
+            secret: true
+            doc_section: '#step-1-obtain-your-client-credentials'
+
 terraform:
     display_name: Terraform
     categories:
