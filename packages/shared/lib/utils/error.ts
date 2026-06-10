@@ -645,6 +645,16 @@ export class NangoError extends NangoInternalError {
                 this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
                 break;
 
+            case 'followupboss_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token request failed.';
+                break;
+
+            case 'followupboss_refresh_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token refresh failed.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
