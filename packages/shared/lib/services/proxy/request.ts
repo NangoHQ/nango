@@ -95,7 +95,9 @@ export class ProxyRequest {
                     const headersNeedOAuthAppCredentials =
                         proxyHeaders &&
                         Object.values(proxyHeaders).some((v) => typeof v === 'string' && (v.includes('${clientId}') || v.includes('${clientSecret}')));
-                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials) {
+
+                    const needsIntegrationConfig = Boolean(this.config.provider.integration_config);
+                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials || needsIntegrationConfig) {
                         this.integrationConfig = await this.getIntegrationConfig();
                     }
 

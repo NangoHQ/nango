@@ -8,7 +8,7 @@ import knex from 'knex';
 
 import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
 
-import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_ROUTING_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { deepMergeRecordData } from '../../helpers/merge.js';
@@ -126,17 +126,41 @@ export class PostgresStore implements RecordsStore {
                 const next = day.add(1, 'day');
                 const partitionName = `records_seen_${suffix}`;
                 const indexName = `${partitionName}_connection_model_generation`;
-                // Create the (connection_id, model, generation) child index inline so every new
-                // partition is born ready for the read-path switch in a later phase. Two separate
-                // statements so the parent's ACCESS EXCLUSIVE from CREATE TABLE PARTITION OF is
-                // released before the child index build runs — the partition is empty, so the
-                // (non-CONCURRENTLY) index build is fast and the child's ACCESS EXCLUSIVE stays
-                // catalog-only.
+                // Atomic check-then-create. This code is called from the write path on every
+                // insertSeenEntry; the SELECT EXISTS short-circuits the hot path (existing
+                // partition → bail, no locks on records_seen). Only when the partition is
+                // actually new do we run CREATE TABLE PARTITION OF + CREATE INDEX inside the
+                // same transaction: the partition is empty at that point so the (non-
+                // CONCURRENTLY) index build is microseconds and the parent's brief
+                // ACCESS EXCLUSIVE window only affects concurrent new-partition attempts.
+                // Crucially this skips CREATE INDEX on pre-existing partitions (e.g. today's
+                // partition at deploy time) that have data and would block writes during a
+                // multi-second build.
+                //
+                // IF NOT EXISTS on both DDL statements is the defensive belt for the narrow
+                // race where two concurrent transactions both see "not exists" from their
+                // SELECT and queue up on the parent's ACCESS EXCLUSIVE — the second one's
+                // CREATE TABLE / CREATE INDEX no-ops silently once the first commits.
                 promise = this.db
-                    .raw(
-                        `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-                    )
-                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, generation)', [indexName, partitionName]))
+                    .transaction(async (trx) => {
+                        const { rows } = await trx.raw<{ rows: { exists: boolean }[] }>(
+                            `SELECT EXISTS (
+                                SELECT 1
+                                FROM pg_class c
+                                JOIN pg_namespace n ON n.oid = c.relnamespace
+                                WHERE n.nspname = current_schema()
+                                  AND c.relname = ?
+                                  AND c.relkind = 'r'
+                            ) AS exists`,
+                            [partitionName]
+                        );
+                        if (rows[0]?.exists) return;
+
+                        await trx.raw(
+                            `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                        );
+                        await trx.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, generation)', [indexName, partitionName]);
+                    })
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
@@ -366,25 +390,37 @@ export class PostgresStore implements RecordsStore {
 
             const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
             try {
-                // TODO: decrypt in batch
-                for (const item of recordsMetadata) {
-                    const data = dataById.get(item.id) ?? item.json ?? {};
-                    // Drop the only remaining reference to the encrypted blob so V8 can
-                    // reclaim it when GC fires under heap pressure.
-                    dataById.delete(item.id);
-                    const decryptedData = await decryptRecordData({ ...item, json: data });
-                    results.push({
-                        ...decryptedData,
-                        id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
-                        _nango_metadata: {
-                            first_seen_at: item.first_seen_at,
-                            last_modified_at: item.last_modified_at,
-                            last_action: item.last_action,
-                            deleted_at: item.deleted_at,
-                            pruned_at: item.pruned_at,
-                            cursor: Cursor.new(item)
-                        }
-                    });
+                // decryptRecordData offloads to the libuv threadpool, so awaiting one record at a
+                // time leaves the other threads idle. We process in bounded chunks instead: each
+                // chunk decrypts concurrently (saturating the threadpool) while never holding more
+                // than RECORDS_DECRYPT_CONCURRENCY encrypted blobs / decrypted results live at once,
+                // preserving the per-record GC drop. Results stay in recordsMetadata order, which
+                // the cursor below depends on.
+                const concurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+                for (let start = 0; start < recordsMetadata.length; start += concurrency) {
+                    const chunk = recordsMetadata.slice(start, start + concurrency);
+                    const decryptedChunk = await Promise.all(
+                        chunk.map(async (item) => {
+                            const data = dataById.get(item.id) ?? item.json ?? {};
+                            // Drop the only remaining reference to the encrypted blob so V8 can
+                            // reclaim it when GC fires under heap pressure.
+                            dataById.delete(item.id);
+                            const decryptedData = await decryptRecordData({ ...item, json: data });
+                            return {
+                                ...decryptedData,
+                                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                                _nango_metadata: {
+                                    first_seen_at: item.first_seen_at,
+                                    last_modified_at: item.last_modified_at,
+                                    last_action: item.last_action,
+                                    deleted_at: item.deleted_at,
+                                    pruned_at: item.pruned_at,
+                                    cursor: Cursor.new(item)
+                                }
+                            };
+                        })
+                    );
+                    results.push(...decryptedChunk);
                 }
             } finally {
                 decryptSpan.finish();
@@ -532,7 +568,7 @@ export class PostgresStore implements RecordsStore {
                                 r.external_id,
                                 r.data_hash,
                                 r.sync_id,
-                                r.sync_job_id,
+                                null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                 r.deleted_at ?? null,
                                 ...(hasUpdatedAt ? [r.updated_at ?? null] : [])
                             ]);
@@ -927,7 +963,7 @@ export class PostgresStore implements RecordsStore {
                                             json: trx.raw('NULL'),
                                             data_hash: r.data_hash,
                                             sync_id: r.sync_id,
-                                            sync_job_id: r.sync_job_id,
+                                            sync_job_id: null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                             pruned_at: null, // clear pruned_at when record is updated
                                             updated_at: r.updated_at
                                         }))
@@ -1678,6 +1714,39 @@ export class PostgresStore implements RecordsStore {
             return Ok(null);
         } catch (err) {
             return Err(new Error(`Failed to find auto-delete candidate`, { cause: err }));
+        }
+    }
+
+    async getOrCreateRouting<K extends string>({
+        connectionId,
+        model,
+        storeKey,
+        ifExists
+    }: {
+        connectionId: number;
+        model: string;
+        storeKey: K;
+        ifExists: K;
+    }): Promise<Result<K>> {
+        try {
+            const result = await this.db.raw<{ rows: { store_key: string }[] }>(
+                `INSERT INTO "${RECORDS_ROUTING_TABLE}" (connection_id, model, store_key)
+                 VALUES (
+                     :connectionId,
+                     :model,
+                     CASE WHEN EXISTS (SELECT 1 FROM "${RECORDS_TABLE}" WHERE connection_id = :connectionId AND model = :model)
+                          THEN :ifExists
+                          ELSE :storeKey
+                     END
+                 )
+                 ON CONFLICT (connection_id, model) DO UPDATE SET store_key = "${RECORDS_ROUTING_TABLE}".store_key
+                 RETURNING store_key`,
+                { connectionId, model, storeKey, ifExists }
+            );
+            const [row] = result.rows;
+            return Ok(row!.store_key as K);
+        } catch (err) {
+            return Err(new Error('Failed to get or create routing', { cause: err }));
         }
     }
 

@@ -17,12 +17,12 @@
         "mailgun.js": "12.0.1",
         "nodemailer": "8.0.5",
         "uuid": "9.0.0",
-        "ws": "8.18.3"
+        "ws": "8.21.0"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@types/uuid": "9.0.0",
         "@types/ws": "8.18.1",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     }
 }

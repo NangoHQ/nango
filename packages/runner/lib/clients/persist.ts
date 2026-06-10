@@ -17,7 +17,8 @@ import type {
     MergingStrategy,
     PostRecordsSuccess,
     PutCheckpointSuccess,
-    PutRecordsSuccess
+    PutRecordsSuccess,
+    RunnerTelemetry
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -32,15 +33,23 @@ export class PersistClient {
         this.userAgent = getUserAgent('sdk');
     }
 
+    /**
+     * @param data - Request payload. Serialized to JSON internally.
+     * @param body - Pre-serialized JSON string. Takes precedence over `data` when provided,
+     *   skipping serialization. Use when the caller needs the serialized form for other purposes
+     *   (e.g. byte-counting) to avoid serializing twice.
+     */
     private async fetch<R>({
         method,
         path,
         data,
+        body: preSerializedBody,
         params
     }: {
         method: string;
         path: string;
         data?: unknown;
+        body?: string;
         params?: Record<string, string | string[]>;
     }): Promise<Result<R>> {
         if (path.length > 0 && !path.startsWith('/')) {
@@ -62,13 +71,14 @@ export class PersistClient {
         const queryString = searchParams.toString();
         const url = queryString ? `${this.baseUrl}${path}?${queryString}` : `${this.baseUrl}${path}`;
 
+        const body = preSerializedBody ?? (data ? JSON.stringify(data) : null);
         const response = await httpFetch(url, {
             method,
             headers: {
                 Authorization: `Bearer ${this.secretKey}`,
                 'Content-Type': 'application/json'
             },
-            body: data ? JSON.stringify(data) : null,
+            body,
             userAgent: this.userAgent
         });
 
@@ -123,23 +133,18 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
         merging: MergingStrategy;
-    }): Promise<Result<PostRecordsSuccess>> {
-        const res = await this.fetch<PostRecordsSuccess>({
+    }): Promise<{ result: Result<PostRecordsSuccess>; bytesSent: number }> {
+        const body = JSON.stringify({ model, records, providerConfigKey, connectionId, activityLogId, merging });
+        const bytesSent = Buffer.byteLength(body, 'utf8');
+        const result = await this.fetch<PostRecordsSuccess>({
             method: 'POST',
             path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
-            data: {
-                model,
-                records,
-                providerConfigKey,
-                connectionId,
-                activityLogId,
-                merging
-            }
+            body
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to save records: ${res.error.message}`));
+        if (result.isErr()) {
+            return { result: Err(new Error(`Failed to save records: ${result.error.message}`)), bytesSent: 0 };
         }
-        return res;
+        return { result, bytesSent };
     }
 
     public async putRecords<T = any>({
@@ -164,23 +169,18 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
         merging: MergingStrategy;
-    }): Promise<Result<PutRecordsSuccess>> {
-        const res = await this.fetch<PutRecordsSuccess>({
+    }): Promise<{ result: Result<PutRecordsSuccess>; bytesSent: number }> {
+        const body = JSON.stringify({ model, records, providerConfigKey, connectionId, activityLogId, merging });
+        const bytesSent = Buffer.byteLength(body, 'utf8');
+        const result = await this.fetch<PutRecordsSuccess>({
             method: 'PUT',
             path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
-            data: {
-                model,
-                records,
-                providerConfigKey,
-                connectionId,
-                activityLogId,
-                merging
-            }
+            body
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to update records: ${res.error.message}`));
+        if (result.isErr()) {
+            return { result: Err(new Error(`Failed to update records: ${result.error.message}`)), bytesSent: 0 };
         }
-        return res;
+        return { result, bytesSent };
     }
 
     public async deleteRecords<T = any>({
@@ -205,23 +205,18 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
         merging: MergingStrategy;
-    }): Promise<Result<DeleteRecordsSuccess>> {
-        const res = await this.fetch<DeleteRecordsSuccess>({
+    }): Promise<{ result: Result<DeleteRecordsSuccess>; bytesSent: number }> {
+        const body = JSON.stringify({ model, records, providerConfigKey, connectionId, activityLogId, merging });
+        const bytesSent = Buffer.byteLength(body, 'utf8');
+        const result = await this.fetch<DeleteRecordsSuccess>({
             method: 'DELETE',
             path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
-            data: {
-                model,
-                records,
-                providerConfigKey,
-                connectionId,
-                activityLogId,
-                merging
-            }
+            body
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to delete records: ${res.error.message}`));
+        if (result.isErr()) {
+            return { result: Err(new Error(`Failed to delete records: ${result.error.message}`)), bytesSent: 0 };
         }
-        return res;
+        return { result, bytesSent };
     }
 
     public async deleteHardAllRecords({
@@ -395,6 +390,18 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to delete checkpoint: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async postRunnerTelemetry(environmentId: number, events: RunnerTelemetry[]): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/telemetry`,
+            data: { events }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to publish runner telemetry: ${res.error.message}`));
         }
         return res;
     }

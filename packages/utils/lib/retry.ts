@@ -115,6 +115,7 @@ export const networkError = [
     'ECONNREFUSED',
     'EHOSTUNREACH',
     'EAI_AGAIN',
+    'UND_ERR_SOCKET',
     ...parseCommaSeparatedEnvList(process.env['NANGO_RETRYABLE_NETWORK_ERRORS'])
 ];
 export const nonRetryableNetworkError = ['ENOTFOUND', 'ERRADDRINUSE'];

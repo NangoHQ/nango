@@ -43,7 +43,7 @@ export const patchPublicPruneRecords = asyncWrapper<PatchPublicPruneRecords>(asy
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, plan } = res.locals;
     const headers: PatchPublicPruneRecords['Headers'] = valHeaders.data;
     const body: PatchPublicPruneRecords['Body'] = valBody.data;
 
@@ -64,7 +64,8 @@ export const patchPublicPruneRecords = asyncWrapper<PatchPublicPruneRecords>(asy
         mode: 'prune',
         limit: body.limit || 1000,
         batchSize: 1000,
-        toCursorIncluded: body.until_cursor
+        toCursorIncluded: body.until_cursor,
+        plan
     });
 
     if (result.isErr()) {

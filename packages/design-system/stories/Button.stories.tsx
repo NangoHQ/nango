@@ -1,9 +1,9 @@
-import { Button } from '@/components-v2/ui/Button';
+import { Button } from '@/components/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Button',
+    title: 'Components/UI/Button',
     parameters: { layout: 'padded' }
 };
 export default meta;

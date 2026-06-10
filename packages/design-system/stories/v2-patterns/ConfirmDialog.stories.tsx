@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { ConfirmDialog } from '@/components-v2/patterns/ConfirmDialog';
-import { Button } from '@/components-v2/ui/Button';
+import { ConfirmDialog } from '@/components/patterns/ConfirmDialog';
+import { Button } from '@/components/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/ConfirmDialog',
+    title: 'Components/Patterns/ConfirmDialog',
     parameters: { layout: 'padded' }
 };
 export default meta;

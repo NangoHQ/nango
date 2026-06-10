@@ -10,17 +10,17 @@ import { permissions } from '@nangohq/authz';
 
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Avatar } from '@/components-v2/ui/Avatar';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { ComboboxSelect } from '@/components-v2/ui/Combobox';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { StatusWithIcon } from '@/components-v2/ui/StatusWithIcon';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Avatar } from '@/components/ui/Avatar';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { ComboboxSelect } from '@/components/ui/Combobox';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
@@ -30,7 +30,7 @@ import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
 
-import type { ComboboxOption } from '@/components-v2/ui/Combobox';
+import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 

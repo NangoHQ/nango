@@ -5,15 +5,40 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockSend = vi.fn();
 const mockDestroy = vi.fn();
 
-vi.mock('@aws-sdk/client-sqs', () => ({
-    SQSClient: vi.fn().mockImplementation(() => ({
-        send: mockSend,
-        destroy: mockDestroy
-    })),
-    GetQueueUrlCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input })),
-    ReceiveMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input })),
-    DeleteMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input }))
-}));
+vi.mock('@aws-sdk/client-sqs', () => {
+    class MockSQSClient {
+        send = mockSend;
+        destroy = mockDestroy;
+    }
+
+    class MockGetQueueUrlCommand {
+        input: Record<string, unknown>;
+        constructor(input: Record<string, unknown>) {
+            this.input = input;
+        }
+    }
+
+    class MockReceiveMessageCommand {
+        input: Record<string, unknown>;
+        constructor(input: Record<string, unknown>) {
+            this.input = input;
+        }
+    }
+
+    class MockDeleteMessageCommand {
+        input: Record<string, unknown>;
+        constructor(input: Record<string, unknown>) {
+            this.input = input;
+        }
+    }
+
+    return {
+        SQSClient: vi.fn(MockSQSClient),
+        GetQueueUrlCommand: vi.fn(MockGetQueueUrlCommand),
+        ReceiveMessageCommand: vi.fn(MockReceiveMessageCommand),
+        DeleteMessageCommand: vi.fn(MockDeleteMessageCommand)
+    };
+});
 
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal();

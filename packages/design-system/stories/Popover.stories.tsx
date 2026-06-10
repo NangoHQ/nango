@@ -1,11 +1,11 @@
-import { Button } from '@/components-v2/ui/Button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
+import { Button } from '@/components/ui/Button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Popover> = {
     component: Popover,
-    title: 'Components v2/UI/Popover',
+    title: 'Components/UI/Popover',
     parameters: { layout: 'centered' }
 };
 export default meta;

@@ -296,7 +296,8 @@ describe('Persist API', () => {
             const allRecords = (
                 await records.getRecords({
                     connectionId: seed.connection.id,
-                    model
+                    model,
+                    plan: null
                 })
             ).unwrap();
             const firstRecord = allRecords.records[0];
@@ -326,7 +327,8 @@ describe('Persist API', () => {
             const allRecords = (
                 await records.getRecords({
                     connectionId: seed.connection.id,
-                    model
+                    model,
+                    plan: null
                 })
             ).unwrap();
             const lastRecord = allRecords.records[allRecords.records.length - 1];
@@ -773,6 +775,7 @@ const insertRecords = async (seed: testSeed, model: string, toInsert: Unencrypte
         connectionId: seed.connection.id,
         environmentId: seed.env.id,
         model,
-        records: formatted
+        records: formatted,
+        plan: null
     });
 };

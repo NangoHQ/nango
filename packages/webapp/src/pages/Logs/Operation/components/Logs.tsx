@@ -7,26 +7,22 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
-import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
-import { PeriodSelector } from '../../../../components/ui/PeriodSelector';
-import { SimpleTooltip } from '../../../../components/ui/SimpleTooltip';
-import { Skeleton } from '../../../../components/ui/Skeleton';
-import Spinner from '../../../../components/ui/Spinner';
-import * as Table from '../../../../components/ui/Table';
-import { Button } from '../../../../components/ui/button/Button';
-import { Input } from '../../../../components/ui/input/Input';
 import { useStore } from '../../../../store';
 import { apiFetch } from '../../../../utils/api';
 import { calculateTableSizing } from '../../../../utils/table';
 import { formatQuantity } from '../../../../utils/utils';
 import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
-
-const drawerWidth = '834px';
 
 const fullPeriod: PeriodPreset = {
     name: 'full',
@@ -190,15 +186,16 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
     return (
         <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h4>
+                <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner />}</h4>
                 <div className="flex gap-2 text-white text-xs">
                     <div>
                         {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
                     </div>
                     {operation.operation.type === 'sync' && operation.operation.action === 'run' && (
                         <div>
-                            <SimpleTooltip
-                                tooltipContent={
+                            <ConditionalTooltip
+                                condition={true}
+                                content={
                                     <>
                                         Successfull HTTP logs are sampled to 10% to reduce noise.
                                         <br /> Other logs are not sampled
@@ -206,33 +203,32 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                 }
                             >
                                 (sampling is on)
-                            </SimpleTooltip>
+                            </ConditionalTooltip>
                         </div>
                     )}
                 </div>
             </div>
             <header className="flex gap-2 items-center">
-                <Input
-                    before={<IconZoom stroke={1} size={18} />}
-                    after={
-                        search && (
-                            <Button
-                                variant={'icon'}
-                                size={'sm'}
+                <InputGroup className="grow border-border-gray-400">
+                    <InputGroupAddon>
+                        <IconZoom stroke={1} size={18} />
+                    </InputGroupAddon>
+                    <InputGroupInput value={search} placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} />
+                    {search && (
+                        <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                                variant={'ghost'}
+                                size={'icon-xs'}
                                 onClick={() => {
                                     setDebouncedSearch('');
                                     setSearch('');
                                 }}
                             >
                                 <IconX stroke={1} size={16} />
-                            </Button>
-                        )
-                    }
-                    value={search}
-                    placeholder="Search logs..."
-                    className="grow border-border-gray-400"
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+                            </InputGroupButton>
+                        </InputGroupAddon>
+                    )}
+                </InputGroup>
                 <div className="border border-transparent">
                     <PeriodSelector
                         period={period}
@@ -249,78 +245,75 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <Table.Table className="grid">
-                    <Table.Header className="grid sticky top-0 z-10 bg-grayscale-900 ">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-primary">
+                    <thead className="grid sticky top-0 z-10 bg-grayscale-900">
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <Table.Row key={headerGroup.id} className="flex w-full">
+                            <tr key={headerGroup.id} className="flex w-full">
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <Table.Head
+                                        <th
                                             key={header.id}
-                                            className="flex"
+                                            className="flex bg-grayscale-900 px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                             style={{
                                                 width: header.getSize() ? header.getSize() : 'auto'
                                             }}
                                         >
                                             {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </Table.Head>
+                                        </th>
                                     );
                                 })}
-                            </Table.Row>
+                            </tr>
                         ))}
-                    </Table.Header>
+                    </thead>
 
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectMessage={setMessage} />}
 
                     {isLoading && (
-                        <Table.Body>
-                            <Table.Row>
+                        <tbody>
+                            <tr>
                                 {table.getAllColumns().map((col, i) => {
                                     return (
-                                        <Table.Cell key={i}>
+                                        <td key={i} className="px-3 py-2.5">
                                             <Skeleton style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
-                                        </Table.Cell>
+                                        </td>
                                     );
                                 })}
-                            </Table.Row>
-                        </Table.Body>
+                            </tr>
+                        </tbody>
                     )}
 
                     {!isFetching && flatData.length <= 0 && (
-                        <Table.Body className="h-10">
-                            <Table.Row className="hover:bg-transparent flex absolute w-full">
-                                <Table.Cell colSpan={columns.length} className="text-center p-0 pt-4 w-full">
+                        <tbody className="h-10">
+                            <tr className="hover:bg-transparent flex absolute w-full">
+                                <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
                                     <div className="text-grayscale-400">No results.</div>
-                                </Table.Cell>
-                            </Table.Row>
-                        </Table.Body>
+                                </td>
+                            </tr>
+                        </tbody>
                     )}
-                </Table.Table>
+                </table>
             </div>
 
-            <Drawer
-                direction="right"
-                snapPoints={[drawerWidth]}
-                handleOnly={true}
-                noBodyStyles={true}
-                nested
-                open={Boolean(message)}
-                onOpenChange={() => setMessage(undefined)}
-            >
-                <DrawerContent>
-                    <div className={`w-[834px] relative h-screen select-text`}>
+            <Sheet open={Boolean(message)} onOpenChange={() => setMessage(undefined)}>
+                <SheetContent
+                    side="right"
+                    hideCloseButton
+                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400"
+                >
+                    <SheetTitle className="sr-only">Message Details</SheetTitle>
+                    <div className="relative h-full select-text">
                         <div className="absolute top-[26px] left-4">
-                            <DrawerClose
+                            <SheetClose
                                 title="Close"
                                 className="w-10 h-10 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white"
                             >
                                 <IconArrowLeft stroke={1} size={24} />
-                            </DrawerClose>
+                            </SheetClose>
                         </div>
                         {message && <ShowMessage message={message} />}
                     </div>
-                </DrawerContent>
-            </Drawer>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 };
@@ -344,11 +337,11 @@ const TableBody: React.FC<{
     });
 
     return (
-        <Table.Body className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = rows[virtualRow.index];
                 return <LogRow key={row.original.id} row={row} virtualRow={virtualRow} rowVirtualizer={rowVirtualizer} onSelectMessage={onSelectMessage} />;
             })}
-        </Table.Body>
+        </tbody>
     );
 };
