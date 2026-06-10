@@ -1,4 +1,4 @@
-import { parseAsString, useQueryState, useQueryStates } from 'nuqs';
+import { parseAsString, useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
 import { metricsSupportingDimension } from './usageBreakdown';
@@ -9,26 +9,32 @@ import type { UsageMetric } from '@nangohq/types';
 const breakdownParam = parseAsString.withDefault('none').withOptions({ history: 'replace' });
 
 /**
- * Owns the "Apply to all" breakdown state. `globalBreakdown` is the dimension last
- * fanned out (a panel shows its "Apply to all" button when its selection diverges
- * from it); `applyToAll` writes that dimension to every metric panel that supports
- * it in one URL update.
+ * Owns the "Apply to all" breakdown state. `applyToAll` writes a dimension to every
+ * supporting metric in one URL update. `isDivergingFromGlobal` checks whether any
+ * OTHER supporting panel currently has a different selection — the accurate signal for
+ * when to show the "Apply to all" button (vs. the old last-applied tracker, which
+ * stayed stale after individual panels were changed post-apply).
  */
 export function useGlobalBreakdown(metrics: readonly UsageMetric[]) {
     const perMetricParams = useMemo(() => Object.fromEntries(metrics.map((m) => [`${m}.breakdown`, breakdownParam])), [metrics]);
-
-    const [globalBreakdown, setGlobalBreakdown] = useQueryState('breakdown', breakdownParam);
-    const [, setBreakdowns] = useQueryStates(perMetricParams);
+    const [breakdowns, setBreakdowns] = useQueryStates(perMetricParams);
 
     const applyToAll = useCallback(
         (dimension: AnyBreakdownDimension) => {
-            void setGlobalBreakdown(dimension);
             const updates: Record<string, string> = {};
             for (const m of metricsSupportingDimension(dimension)) updates[`${m}.breakdown`] = dimension;
             void setBreakdowns(updates);
         },
-        [setGlobalBreakdown, setBreakdowns]
+        [setBreakdowns]
     );
 
-    return { globalBreakdown, applyToAll };
+    const isDivergingFromGlobal = useCallback(
+        (metric: UsageMetric, dimension: AnyBreakdownDimension) =>
+            metricsSupportingDimension(dimension)
+                .filter((m) => m !== metric)
+                .some((m) => (breakdowns[`${m}.breakdown`] ?? 'none') !== dimension),
+        [breakdowns]
+    );
+
+    return { isDivergingFromGlobal, applyToAll };
 }

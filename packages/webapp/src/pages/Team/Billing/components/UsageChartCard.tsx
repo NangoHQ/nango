@@ -19,8 +19,8 @@ interface UsageChartCardProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
-    /** The current global breakdown dimension ('none' or a dim). Decides when this panel's "Apply to all" shows. */
-    globalBreakdown: string;
+    /** Returns true if applying `dimension` from this panel would change at least one other supporting panel. */
+    isDivergingFromGlobal: (metric: UsageMetric, dimension: AnyBreakdownDimension) => boolean;
     /** Make this panel's dimension the global one and apply it to every metric that supports it. */
     onApplyToAll: (dimension: AnyBreakdownDimension) => void;
 }
@@ -46,7 +46,7 @@ function toChartSeries(entries: BillingUsageMetric[], dimension: AnyBreakdownDim
  * view is enabled — a dimension dropdown that stacks a per-dimension breakdown. The
  * headline total always comes from the base metric.
  */
-export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, globalBreakdown, onApplyToAll }) => {
+export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, isDivergingFromGlobal, onApplyToAll }) => {
     const showControls = useBreakdownEnabled();
 
     // This panel's selected dimension (default 'none'), persisted in the URL.
@@ -63,9 +63,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         return breakdownEntries ? toChartSeries(breakdownEntries, dimension) : [];
     }, [showControls, dimension, breakdownEntries]);
 
-    // "Apply to all" shows when this panel's dimension diverges from the global one and
-    // more than one metric supports it.
-    const canApplyToAll = dimension !== null && dimension !== globalBreakdown && metricsSupportingDimension(dimension).length > 1;
+    // "Apply to all" shows when at least one other supporting panel has a different selection.
+    const canApplyToAll = dimension !== null && metricsSupportingDimension(dimension).length > 1 && isDivergingFromGlobal(metric, dimension);
 
     const headerActions = showControls ? (
         <BreakdownControls

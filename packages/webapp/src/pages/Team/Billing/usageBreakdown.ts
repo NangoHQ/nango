@@ -54,3 +54,6 @@ export function formatDimensionValue(dimension: AnyBreakdownDimension, value: st
 
 /** Top-N dimension values requested per breakdown; the long tail collapses into a single 'rest' bucket. */
 export const DEFAULT_TOP_N = 10;
+
+/** Earliest month with ClickHouse granular data; the month picker is floored here while the breakdown view is active. */
+export const EARLIEST_USAGE_MONTH = new Date(Date.UTC(2026, 5, 1)); // June 2026

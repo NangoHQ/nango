@@ -64,7 +64,9 @@ export function useChartData(data: ApiBillingUsageMetric | undefined, breakdownS
     }, [breakdownSeries, timeframe.start, timeframe.end, todayDateKey]);
 
     // "No data this month" is a property of the base metric, independent of breakdown.
-    const isEmpty = baseChartData.every((d) => !d.total);
+    // Guard on `data` being defined — an empty array is vacuously "every" falsy, which
+    // would collapse the card to its empty state before the first response arrives.
+    const isEmpty = data !== undefined && baseChartData.every((d) => !d.total);
 
     return { todayDateKey, baseChartData, breakdownChartData, isEmpty };
 }

@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo } from 'react';
 
+import { EARLIEST_USAGE_MONTH } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { Button } from '@/components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
@@ -9,9 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });
 
-// Earliest month the breakdown (ClickHouse) view has data for; the picker is
-// floored here only while that view is active.
-const EARLIEST_USAGE_MONTH = new Date(Date.UTC(2026, 5, 1)); // June 2026
+const EARLIEST_USAGE_MONTH_LABEL = EARLIEST_USAGE_MONTH.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 interface MonthSelectorProps {
     onMonthChange?: (month: Date) => void;
@@ -99,7 +98,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
                             {previousButton}
                         </span>
                     </TooltipTrigger>
-                    <TooltipContent>Usage tracking is only available from June 2026.</TooltipContent>
+                    <TooltipContent>Usage tracking is only available from {EARLIEST_USAGE_MONTH_LABEL}.</TooltipContent>
                 </Tooltip>
             )}
             <span className="text-text-primary text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>

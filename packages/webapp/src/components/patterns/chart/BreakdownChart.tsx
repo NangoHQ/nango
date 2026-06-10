@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 
 import { REST_SERIES_KEY } from './usageChartColors';
@@ -95,44 +96,50 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
     // Today's day number is rendered brighter than the rest so the current date stands out
     // on the axis itself. Reuses recharts' <Text> so it sits where the default ticks do; the
     // inline style is the only thing that beats the ChartContainer's tick-fill rule.
-    const renderDayTick = (tickProps: {
-        x?: number;
-        y?: number;
-        className?: string;
-        fill?: string;
-        textAnchor?: 'start' | 'middle' | 'end' | 'inherit';
-        verticalAnchor?: 'start' | 'middle' | 'end';
-        payload?: { value: string };
-    }) => {
-        const { payload, x, y, className, fill, textAnchor, verticalAnchor } = tickProps;
-        const isToday = payload?.value === todayDateKey;
-        return (
-            <Text
-                x={x}
-                y={y}
-                className={className}
-                fill={fill}
-                textAnchor={textAnchor}
-                verticalAnchor={verticalAnchor}
-                style={isToday ? { fill: 'var(--color-text-primary)' } : undefined}
-            >
-                {payload ? dayOfMonth(payload.value) : ''}
-            </Text>
-        );
-    };
+    const renderDayTick = useCallback(
+        (tickProps: {
+            x?: number;
+            y?: number;
+            className?: string;
+            fill?: string;
+            textAnchor?: 'start' | 'middle' | 'end' | 'inherit';
+            verticalAnchor?: 'start' | 'middle' | 'end';
+            payload?: { value: string };
+        }) => {
+            const { payload, x, y, className, fill, textAnchor, verticalAnchor } = tickProps;
+            const isToday = payload?.value === todayDateKey;
+            return (
+                <Text
+                    x={x}
+                    y={y}
+                    className={className}
+                    fill={fill}
+                    textAnchor={textAnchor}
+                    verticalAnchor={verticalAnchor}
+                    style={isToday ? { fill: 'var(--color-text-primary)' } : undefined}
+                >
+                    {payload ? dayOfMonth(payload.value) : ''}
+                </Text>
+            );
+        },
+        [todayDateKey]
+    );
 
     // Over a band → just that series; above the stack → the full per-day list. Rows are
     // sorted by the day's value (Rest last) since the payload arrives in month-total order.
-    const renderTooltip = (props: TooltipProps<number, string>) => {
-        const present = props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0);
-        const sorted = present?.slice().sort((a, b) => {
-            if (a.dataKey === REST_SERIES_KEY) return 1;
-            if (b.dataKey === REST_SERIES_KEY) return -1;
-            return (b.value ?? 0) - (a.value ?? 0);
-        });
-        const shown = hoveredKey ? sorted?.filter((p) => p.dataKey === hoveredKey) : sorted;
-        return <ChartTooltipContent active={props.active} label={props.label} payload={shown} labelFormatter={(value) => formatTooltipDate(value)} />;
-    };
+    const renderTooltip = useCallback(
+        (props: TooltipProps<number, string>) => {
+            const present = props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0);
+            const sorted = present?.slice().sort((a, b) => {
+                if (a.dataKey === REST_SERIES_KEY) return 1;
+                if (b.dataKey === REST_SERIES_KEY) return -1;
+                return (b.value ?? 0) - (a.value ?? 0);
+            });
+            const shown = hoveredKey ? sorted?.filter((p) => p.dataKey === hoveredKey) : sorted;
+            return <ChartTooltipContent active={props.active} label={props.label} payload={shown} labelFormatter={(value) => formatTooltipDate(value)} />;
+        },
+        [hoveredKey]
+    );
 
     return (
         <ChartContainer config={config} className="flex-1 min-h-0 w-full">

@@ -42,7 +42,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source);
 
-    const { globalBreakdown, applyToAll } = useGlobalBreakdown(METRICS);
+    const { isDivergingFromGlobal, applyToAll } = useGlobalBreakdown(METRICS);
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;
@@ -78,7 +78,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                     isLoading={isLoading}
                     env={env}
                     timeframe={timeframe}
-                    globalBreakdown={globalBreakdown}
+                    isDivergingFromGlobal={isDivergingFromGlobal}
                     onApplyToAll={applyToAll}
                 />
             ))}
