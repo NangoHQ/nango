@@ -17,9 +17,7 @@ export function resolveTheme(theme: Theme): boolean {
 
 export function applyTheme(theme: Theme): void {
     const dark = resolveTheme(theme);
-    const root = document.documentElement;
-    root.classList.toggle('dark', dark);
-    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
 function getStoredTheme(): Theme {
@@ -37,7 +35,7 @@ function getStoredTheme(): Theme {
 try {
     applyTheme(getStoredTheme());
 } catch {
-    // Keep the dark default already set on <html class="dark"> in index.html
+    // Keep the dark default already set via data-theme in index.html
 }
 
 // --- Store ---
@@ -83,13 +81,15 @@ export const darkModeSelector = (s: ThemeState) => resolveTheme(s.theme);
 
 /**
  * Syncs the persisted theme preference to the DOM.
- * Also re-applies when the OS preference changes (relevant for 'system').
+ * - Re-applies when the OS preference changes (relevant for 'system').
+ * - Syncs theme changes made in other tabs via the storage event.
  * Mount once at the app root.
  */
 export function useTheme(): void {
     const theme = useThemeStore((s) => s.theme);
     const setTheme = useThemeStore((s) => s.setTheme);
 
+    // Apply to DOM and track OS preference changes when on 'system'
     useEffect(() => {
         applyTheme(theme);
 
@@ -101,5 +101,26 @@ export function useTheme(): void {
         const handler = () => applyTheme('system');
         mq.addEventListener('change', handler);
         return () => mq.removeEventListener('change', handler);
-    }, [theme, setTheme]);
+    }, [theme]);
+
+    // Sync theme changes from other tabs
+    useEffect(() => {
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key !== LocalStorageKeys.Theme || !e.newValue) {
+                return;
+            }
+            try {
+                const parsed = JSON.parse(e.newValue) as { state?: { theme?: Theme } };
+                const incoming = parsed?.state?.theme;
+                if (incoming && incoming !== useThemeStore.getState().theme) {
+                    setTheme(incoming);
+                }
+            } catch {
+                // ignore malformed storage values
+            }
+        };
+
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
+    }, [setTheme]);
 }
