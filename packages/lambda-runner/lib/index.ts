@@ -46,8 +46,8 @@ class Gate {
     async exit(lock: Lock) {
         try {
             await this.locking.release(lock);
-        } catch (err) {
-            logger.error('Error releasing lock', { lock: lock.key, error: err });
+        } catch {
+            // best-effort release; lock TTL is the safety net
         }
     }
 }
@@ -143,8 +143,8 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         let shouldAbort = false;
         try {
             shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
-        } catch (err) {
-            logger.error('Error checking abort flag', { taskId: request.taskId, error: err });
+        } catch {
+            // best-effort abort poll; retry on next interval
         }
         if (shouldAbort) {
             logger.info('Aborting task', { taskId: request.taskId });

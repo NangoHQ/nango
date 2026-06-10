@@ -29,7 +29,7 @@ describe('UsageBillingClient', () => {
             set: vi.fn()
         };
         const client = new UsageBillingClient(redis as any);
-        (client as any).throttle = async (_key: string, fn: () => Promise<unknown>) => fn();
+        vi.spyOn((client as any).throttler, 'removeTokens').mockRejectedValue(new Error('redis down'));
 
         const res = await client.getUsage('sub-1');
         expect(res.isOk()).toBe(true);

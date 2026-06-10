@@ -128,35 +128,14 @@ export class CircuitBreakerRedis implements CircuitBreaker {
                 untilMs: now + this.cooldownDurationMs
             });
         } else {
-            // Success in half-open = clear failure counter, then remove state (back to closed/normal)
-            const counterDeleted = await this.deleteFailureCounter(key);
-            if (counterDeleted) {
-                await this.removeState(key);
-            } else {
-                // Counter not cleared — stay in expired HALF_OPEN so the next request retries
-                // cleanup instead of running CLOSED with a stale failure count.
-                await this.setState(key, {
-                    state: 'HALF_OPEN',
-                    untilMs: now
-                });
-            }
-        }
-        return res;
-    }
-
-    private async deleteFailureCounter(key: string): Promise<boolean> {
-        const maxAttempts = 3;
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 await this.failureLimiter.delete(key);
-                return true;
             } catch {
-                if (attempt < maxAttempts - 1) {
-                    await new Promise((resolve) => setTimeout(resolve, 50));
-                }
+                // ignore, counter has a TTL
             }
+            await this.removeState(key);
         }
-        return false;
+        return res;
     }
 
     private async getState(key: string): Promise<CircuitStateData | null> {

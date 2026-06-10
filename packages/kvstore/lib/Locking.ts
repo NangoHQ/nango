@@ -60,13 +60,4 @@ export class Locking {
     public async hasLock(key: string): Promise<boolean> {
         return await this.store.exists(key);
     }
-
-    public async withLock<T>(key: string, ttlMs: number, acquisitionTimeoutMs: number, fn: () => Promise<T>): Promise<T> {
-        const lock = await this.tryAcquire(key, ttlMs, acquisitionTimeoutMs);
-        try {
-            return await fn();
-        } finally {
-            await this.release(lock);
-        }
-    }
 }

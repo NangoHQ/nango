@@ -94,12 +94,12 @@ export class UsageBillingClient {
     private async throttle<T>(key: string, fn: () => Promise<T>): Promise<T> {
         try {
             await this.throttler.removeTokens(1, key);
-            return await fn();
         } catch (err) {
             if (err instanceof RateLimiterRes) {
                 throw new Error('rate_limit_exceeded', { cause: err });
             }
-            throw err;
+            // Redis unavailable — proceed without rate limiting
         }
+        return await fn();
     }
 }
