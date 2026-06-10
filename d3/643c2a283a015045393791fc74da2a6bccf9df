@@ -1,0 +1,43 @@
+packages/sandbox/lib/index.ts
+  s_0bc521b83bf53d::t_7b11e3c1d62327 15
+packages/sandbox/lib/providers/e2b.ts
+  s_0bc521b83bf53d::t_9c83c0c1c3bf35 16
+  s_0bc521b83bf53d::t_7b11e3c1d62327 14,94
+packages/sandbox/lib/providers/e2b.unit.test.ts
+  s_0bc521b83bf53d::t_bc21376e811a10 1-32
+packages/sandbox/lib/functions/dryrun-client.unit.test.ts
+  s_0bc521b83bf53d::t_7b11e3c1d62327 38
+packages/server/lib/controllers/functions/deploy/postDeployResult.ts
+  s_0bc521b83bf53d::t_43187bf6a85078 5-6,49,89
+packages/sandbox/lib/sandbox-service.ts
+  s_0bc521b83bf53d::t_9c83c0c1c3bf35 9
+packages/metering/lib/daemons/e2b-sandboxes.daemon.ts
+  s_0bc521b83bf53d::t_7b11e3c1d62327 1,14
+packages/sandbox/lib/functions/compiler-client.e2b.unit.test.ts
+  s_0bc521b83bf53d::t_7b11e3c1d62327 35
+packages/server/lib/controllers/functions/resultCallbacks.unit.test.ts
+  s_0bc521b83bf53d::t_43187bf6a85078 16,39-41,61,95,129
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_0bc521b83bf53d::t_7b11e3c1d62327 56
+packages/server/lib/controllers/functions/dryrun/postDryrunResult.ts
+  s_0bc521b83bf53d::t_43187bf6a85078 1,43,83
+packages/sandbox/lib/sandbox-service.unit.test.ts
+  s_0bc521b83bf53d::t_3188d1d886387f 7
+  s_0bc521b83bf53d::t_bc21376e811a10 1-6,8-23,25,32-34,36,38,41-43,45-46,48,52-56,58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "d3643c2a283a015045393791fc74da2a6bccf9df",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
