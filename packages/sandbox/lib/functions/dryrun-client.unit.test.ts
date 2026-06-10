@@ -85,7 +85,7 @@ describe('remote function dryrun client', () => {
         expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-dryrun.mjs', {
             cwd: '/home/user/nango-integrations',
             background: true,
-            timeoutMs: 30_000,
+            timeoutMs: 0,
             envs: expect.objectContaining({
                 NANGO_DRYRUN_CALLBACK_URL: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result',
                 NANGO_DRYRUN_ARGS: JSON.stringify([

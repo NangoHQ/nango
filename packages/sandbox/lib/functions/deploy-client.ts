@@ -83,7 +83,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
                 await sandbox.commands.run('node /tmp/nango-function-deploy.mjs', {
                     cwd: remoteFunctionProjectPath,
                     background: true,
-                    timeoutMs: 30_000,
+                    timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
                         NANGO_SECRET_KEY: request.nango_secret_key,
