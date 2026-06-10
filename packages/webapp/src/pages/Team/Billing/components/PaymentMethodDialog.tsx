@@ -7,7 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Skeleton } from '@/components/ui/Skeleton';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { useThemeStore } from '@/lib/theme';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe';
 
@@ -21,7 +21,7 @@ export const PaymentMethodDialog: React.FC<{
     children?: React.ReactElement;
 }> = ({ replace, open: openProp, onOpenChange, onSuccess, children }) => {
     const env = useStore((state) => state.env);
-    const darkMode = useThemeStore(darkModeSelector);
+    const darkMode = useThemeStore((s) => s.darkMode);
 
     const [clientSecret, setClientSecret] = useState<string | null>(null);
 

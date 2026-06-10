@@ -25,7 +25,7 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { usePermissions } from '@/hooks/usePermissions';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { useThemeStore } from '@/lib/theme';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -77,7 +77,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const connectUI = useRef<ConnectUI>();
-    const isDarkMode = useThemeStore(darkModeSelector);
+    const isDarkMode = useThemeStore((s) => s.darkMode);
     const hasConnected = useRef<AuthResult | undefined>();
     const { mutate, cache } = useSWRConfig();
     const [isShareLinkLoading, setIsShareLinkLoading] = useState(false);
