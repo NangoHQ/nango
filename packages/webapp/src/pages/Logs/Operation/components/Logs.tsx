@@ -241,6 +241,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </div>
             </header>
             <div
+                className="scrollbar-app"
                 style={{ height: '100%', overflow: 'auto', position: 'relative' }}
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}

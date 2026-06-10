@@ -171,7 +171,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
                 {payload ? (
                     <div
-                        className="text-gray-400 text-sm bg-pure-black py-2 resize-y overflow-auto"
+                        className="scrollbar-app text-gray-400 text-sm bg-pure-black py-2 resize-y overflow-auto"
                         style={{
                             minHeight: '100px',
                             height: '30vh',
