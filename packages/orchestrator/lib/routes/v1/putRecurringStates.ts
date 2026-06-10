@@ -22,7 +22,6 @@ export type PutRecurringStates = Endpoint<{
 
 const bodySchema = z
     .object({
-        // Bounded so a single bulk call can't lock an unbounded number of schedules at once.
         names: z.array(z.string().min(1)).min(1).max(1000),
         state: z.enum(['STARTED', 'PAUSED', 'DELETED'] satisfies ScheduleState[])
     })

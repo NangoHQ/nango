@@ -10,7 +10,6 @@ import type { ActiveLog } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
-// Cap a single bulk-unschedule call at the orchestrator endpoint's per-call limit.
 const UNSCHEDULE_BATCH_SIZE = 1000;
 
 export interface DeleteSyncInput {
@@ -23,8 +22,8 @@ export interface DeleteSyncInput {
 
 /**
  * Self-contained batch deletion of syncs. Unschedules the batch in bulk up-front (grouped by environment,
- * since a schedule name encodes its env) — so no schedule is orphaned even when called out of context —
- * then deletes each sync's jobs and active_logs, dispatches its `deleteRecords` task, and hard-deletes it.
+ * since a schedule name encodes its env) then deletes each sync's jobs and active_logs,
+ * dispatches its `deleteRecords` task, and hard-deletes it.
  *
  * Unschedule precedes teardown so a crash leaves the rows to be re-paged and re-unscheduled idempotently.
  */
@@ -46,14 +45,17 @@ export async function deleteSyncs(syncs: DeleteSyncInput[], opts: BatchDeleteSha
     }
     for (const [environmentId, syncIds] of syncIdsByEnv) {
         for (let i = 0; i < syncIds.length; i += UNSCHEDULE_BATCH_SIZE) {
-            await orchestrator.deleteSyncs({ syncIds: syncIds.slice(i, i + UNSCHEDULE_BATCH_SIZE), environmentId });
+            const res = await orchestrator.deleteSyncs({ syncIds: syncIds.slice(i, i + UNSCHEDULE_BATCH_SIZE), environmentId });
+            if (res.isErr()) {
+                throw res.error;
+            }
         }
     }
 
     for (const sync of syncs) {
         logger.info('Deleting sync...', sync.id);
 
-        // Read before deleting jobs — the generation source. No job → the sync never ran → no records.
+        // The generation source. No job → the sync never ran → no records.
         const lastJob = await getLatestSyncJob(sync.id);
 
         if (sync.environmentId !== null && sync.models.length > 0 && lastJob) {

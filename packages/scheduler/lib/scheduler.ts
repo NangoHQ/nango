@@ -573,75 +573,105 @@ export class Scheduler {
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
-        return this.db.transaction(async (trx) => {
-            // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-            const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
-            if (found.isErr()) {
-                return Err(found.error);
-            }
-            if (!found.value[0]) {
-                return Err(`Schedule '${scheduleName}' not found`);
-            }
-            const schedule = found.value[0];
-
-            if (schedule.state === state) {
-                // No-op if the schedule is already in the desired state
-                return Ok(schedule);
-            }
-
-            const cancelledTasks = [];
-            if (state === 'DELETED' || state === 'PAUSED') {
-                const runningTasks = await tasks.search(trx, {
-                    scheduleId: schedule.id,
-                    states: ['CREATED', 'STARTED']
-                });
-                if (runningTasks.isErr()) {
-                    return Err(`Error fetching tasks for schedule '${scheduleName}': ${stringifyError(runningTasks.error)}`);
+        let cancelledTasks: Task[] = [];
+        try {
+            const schedule = await this.db.transaction(async (trx) => {
+                const transitioned = await this.transitionScheduleStateInTrx(trx, { scheduleName, state });
+                if (transitioned.isErr()) {
+                    throw transitioned.error;
                 }
-                for (const task of runningTasks.value) {
-                    const newState = 'CANCELLED';
-                    const t = await tasks.transitionState(trx, { taskId: task.id, newState, output: { reason: `schedule ${state}` } });
-                    if (t.isErr()) {
-                        return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
-                    }
-                    const scheduleRes = await schedules.scheduleNextExecution(trx, { taskIds: [task.id], taskState: newState });
-                    if (scheduleRes.isErr()) {
-                        return Err(`Error updating last scheduled task state for task '${task.id}': ${stringifyError(scheduleRes.error)}`);
-                    }
-                    cancelledTasks.push(t.value);
+                if (!transitioned.value.schedule) {
+                    throw new Error(`Schedule '${scheduleName}' not found`);
                 }
-            }
-
-            const res = await schedules.transitionState(trx, schedule.id, state);
-            if (res.isErr()) {
-                return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
-            }
+                cancelledTasks = transitioned.value.cancelledTasks;
+                return transitioned.value.schedule;
+            });
+            // Fire callbacks only after the transaction has committed.
             cancelledTasks.forEach((task) => this.onCallbacks[task.state](task));
-            return res;
-        });
+            return Ok(schedule);
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error(stringifyError(err)));
+        }
     }
 
     /**
-     * Set the state of many schedules in one call (e.g. unscheduling a deleted function's syncs in bulk).
-     * A missing schedule is treated as success — it is already effectively in the deleted state. Errors are
-     * aggregated so a single bad schedule doesn't hide the rest.
+     * Set the state of many schedules atomically — used to unschedule a deleted function's syncs in one batch.
+     * The whole batch runs in a single transaction: if any schedule fails to transition, the transaction rolls
+     * back so none are changed, and an error is returned (all-or-nothing, so a failing batch is easy to track
+     * and safe to retry). A missing schedule is tolerated (it is already effectively in the target state).
      */
     public async setScheduleStates({ scheduleNames, state }: { scheduleNames: string[]; state: ScheduleState }): Promise<Result<void>> {
-        const errors: string[] = [];
-        for (const scheduleName of scheduleNames) {
-            const res = await this.setScheduleState({ scheduleName, state });
-            if (res.isErr()) {
-                const message = res.error instanceof Error ? res.error.message : String(res.error);
-                if (message.includes('not found')) {
-                    continue;
+        let cancelledTasks: Task[] = [];
+        try {
+            await this.db.transaction(async (trx) => {
+                const collected: Task[] = [];
+                for (const scheduleName of scheduleNames) {
+                    const transitioned = await this.transitionScheduleStateInTrx(trx, { scheduleName, state });
+                    if (transitioned.isErr()) {
+                        throw transitioned.error; // roll back the whole batch
+                    }
+                    collected.push(...transitioned.value.cancelledTasks);
                 }
-                errors.push(`${scheduleName}: ${message}`);
+                cancelledTasks = collected;
+            });
+            cancelledTasks.forEach((task) => this.onCallbacks[task.state](task));
+            return Ok(undefined);
+        } catch (err) {
+            return Err(new Error(`Failed to set state for batch of ${scheduleNames.length} schedule(s): ${stringifyError(err)}`));
+        }
+    }
+
+    /**
+     * Transition one schedule's state within an existing transaction (locking it, cancelling its running tasks
+     * when paused/deleted). Returns `schedule: null` for a missing schedule so callers decide whether that's an
+     * error (single) or a tolerated no-op (batch). Cancelled tasks are returned so callbacks fire post-commit.
+     */
+    private async transitionScheduleStateInTrx(
+        trx: knex.Knex.Transaction,
+        { scheduleName, state }: { scheduleName: string; state: ScheduleState }
+    ): Promise<Result<{ schedule: Schedule | null; cancelledTasks: Task[] }>> {
+        // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
+        const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
+        if (found.isErr()) {
+            return Err(found.error);
+        }
+        const schedule = found.value[0];
+        if (!schedule) {
+            return Ok({ schedule: null, cancelledTasks: [] });
+        }
+        if (schedule.state === state) {
+            // No-op if the schedule is already in the desired state
+            return Ok({ schedule, cancelledTasks: [] });
+        }
+
+        const cancelledTasks: Task[] = [];
+        if (state === 'DELETED' || state === 'PAUSED') {
+            const runningTasks = await tasks.search(trx, {
+                scheduleId: schedule.id,
+                states: ['CREATED', 'STARTED']
+            });
+            if (runningTasks.isErr()) {
+                return Err(`Error fetching tasks for schedule '${scheduleName}': ${stringifyError(runningTasks.error)}`);
+            }
+            for (const task of runningTasks.value) {
+                const newState = 'CANCELLED';
+                const t = await tasks.transitionState(trx, { taskId: task.id, newState, output: { reason: `schedule ${state}` } });
+                if (t.isErr()) {
+                    return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
+                }
+                const scheduleRes = await schedules.scheduleNextExecution(trx, { taskIds: [task.id], taskState: newState });
+                if (scheduleRes.isErr()) {
+                    return Err(`Error updating last scheduled task state for task '${task.id}': ${stringifyError(scheduleRes.error)}`);
+                }
+                cancelledTasks.push(t.value);
             }
         }
-        if (errors.length > 0) {
-            return Err(new Error(`Failed to set state for ${errors.length}/${scheduleNames.length} schedule(s): ${errors.join('; ')}`));
+
+        const res = await schedules.transitionState(trx, schedule.id, state);
+        if (res.isErr()) {
+            return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
         }
-        return Ok(undefined);
+        return Ok({ schedule: res.value, cancelledTasks });
     }
 
     /**
