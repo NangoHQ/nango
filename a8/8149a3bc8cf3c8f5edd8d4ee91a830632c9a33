@@ -1,0 +1,25 @@
+packages/sandbox/lib/functions/dryrun-client.ts
+  s_06f7e7f4a5a284::t_21a1d5a76a955e 96
+packages/sandbox/lib/functions/dryrun-client.unit.test.ts
+  s_06f7e7f4a5a284::t_690c0eaade9d65 88
+packages/sandbox/lib/functions/deploy-client.ts
+  s_06f7e7f4a5a284::t_21a1d5a76a955e 86
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_06f7e7f4a5a284::t_690c0eaade9d65 101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a88149a3bc8cf3c8f5edd8d4ee91a830632c9a33",
+  "prompts": {},
+  "sessions": {
+    "s_06f7e7f4a5a284": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb0d1-d401-72e1-9d10-0657caacba83",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
