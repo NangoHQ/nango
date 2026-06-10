@@ -36,7 +36,7 @@ const validate = validateRequest<PutRecords>(recordsRequestParser);
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PutRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId }: PutRecords['Params'] = res.locals.parsedParams;
     const { model, records, providerConfigKey, activityLogId, merging }: PutRecords['Body'] = res.locals.parsedBody;
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const result = await persistRecords({
         persistType: 'update',
         accountId: account.id,
@@ -48,7 +48,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutRecords, 
         model,
         records,
         activityLogId,
-        merging
+        merging,
+        plan
     });
     if (result.isOk()) {
         res.status(200).send({ nextMerging: result.value });

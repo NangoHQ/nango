@@ -42,7 +42,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
     } = res.locals;
 
     let logCtx: LogContextStateless | undefined = undefined;
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     if (activityLogId) {
         logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     }
@@ -52,7 +52,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
         model,
         cursor,
         externalIds,
-        limit
+        limit,
+        plan
     });
 
     if (result.isOk()) {

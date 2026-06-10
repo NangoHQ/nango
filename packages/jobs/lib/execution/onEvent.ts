@@ -123,7 +123,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(plan),
             startedAt: new Date(),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs

@@ -14,9 +14,9 @@ import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
-import { Badge } from '@/components-v2/ui/Badge';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Badge } from '@/components/ui/Badge';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 
 import type { ReactNode } from 'react';

@@ -39,7 +39,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",
-        "axios": "1.15.2",
+        "axios": "1.16.1",
         "body-parser": "2.2.1",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.7",
@@ -68,7 +68,7 @@
         "simple-oauth2": "5.1.0",
         "ua-parser-js": "2.0.2",
         "uuid": "9.0.0",
-        "ws": "8.18.2",
+        "ws": "8.21.0",
         "zod": "4.0.5"
     },
     "devDependencies": {
@@ -94,6 +94,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     }
 }

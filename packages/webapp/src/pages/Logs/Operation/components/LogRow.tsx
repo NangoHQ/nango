@@ -1,6 +1,5 @@
 import { flexRender } from '@tanstack/react-table';
 
-import * as Table from '../../../../components/ui/Table';
 import { cn } from '../../../../utils/utils';
 
 import type { SearchMessagesData } from '@nangohq/types';
@@ -14,32 +13,31 @@ export const LogRow: React.FC<{
     onSelectMessage: (msg: SearchMessagesData) => void;
 }> = ({ row, virtualRow, rowVirtualizer, onSelectMessage }) => {
     return (
-        <Table.Row
+        <tr
             data-state={row.getIsSelected() && 'selected'}
             className={cn(
-                'focus:bg-grayscale-900 hover:cursor-pointer flex absolute w-full border-b-border-gray-400 border-l-2!',
+                'text-s text-gray-400 transition-colors focus:bg-grayscale-900 hover:cursor-pointer flex absolute w-full border-b-border-gray-400 border-l-2!',
                 row.original.level === 'error' && 'hover:border-l-red-500 focus:border-l-red-500',
                 row.original.level === 'warn' && 'hover:border-l-yellow-400 focus:border-l-yellow-400',
                 row.original.level === 'info' && 'hover:border-l-blue-400 focus:border-l-blue-400',
                 row.original.level === 'debug' && 'hover:border-l-gray-400 focus:border-l-gray-400'
             )}
-            data-index={virtualRow.index} //needed for dynamic row height measurement
-            ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
+            data-index={virtualRow.index}
+            ref={(node) => rowVirtualizer.measureElement(node)}
             style={{
-                transform: `translateY(${virtualRow.start}px)` //this should always be a `style` as it changes on scroll
+                transform: `translateY(${virtualRow.start}px)`
             }}
             tabIndex={0}
             role="button"
             onClick={() => {
-                console.log('on click salope');
                 onSelectMessage(row.original);
             }}
         >
             {row.getVisibleCells().map((cell) => (
-                <Table.Cell key={cell.id} style={{ width: cell.column.columnDef.size }}>
+                <td key={cell.id} className="flex items-center px-3 py-2.5 align-middle" style={{ width: cell.column.columnDef.size }}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </Table.Cell>
+                </td>
             ))}
-        </Table.Row>
+        </tr>
     );
 };

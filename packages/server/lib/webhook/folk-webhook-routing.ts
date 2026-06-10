@@ -15,7 +15,9 @@ import type { IntegrationConfig } from '@nangohq/types';
 function validate(integration: IntegrationConfig, headers: Record<string, string>, rawBody: string): boolean {
     const secret = integration.custom?.['webhookSecret'];
     if (!secret) {
-        return false;
+        // Folk webhooks are registered at the connection level, so checking against an integration secret only works if there is only a single connection for this integration.
+        // In practice, the platform does not currently support validating Folk webhooks so we will allow requests through here until we add connection level webhook validation.
+        return true;
     }
 
     const msgId = headers['webhook-id'];

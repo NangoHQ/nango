@@ -97,10 +97,17 @@
     --color-text-tertiary: var(--color-gray-600);
     --color-border-muted: var(--color-gray-300);
     --color-border-default: var(--color-gray-200);
+    --color-dropdown-bg-default: var(--color-gray-75);
+    --color-dropdown-bg-hover: var(--color-gray-150);
+    --color-dropdown-bg-press: var(--color-gray-250);
+    --color-focus-ring: var(--color-brand-500);
 
     --color-error: var(--color-red-700);
 
     --shadow-focus: 0 0 0 3px rgba(0, 178, 227, 0.2);
+
+    --text-s: 12px;
+    --text-s--line-height: 18px;
 }
 
 @layer theme {
@@ -117,6 +124,9 @@
             --color-text-tertiary: var(--color-gray-500);
             --color-border-muted: var(--color-gray-700);
             --color-border-default: var(--color-gray-800);
+            --color-dropdown-bg-default: var(--color-gray-825);
+            --color-dropdown-bg-hover: var(--color-gray-850);
+            --color-dropdown-bg-press: var(--color-gray-1000);
 
             --color-error: var(--color-red-500);
         }
@@ -125,4 +135,18 @@
 
 body {
     font-size: 14px;
+}
+
+@utility focus-default {
+    @variant focus-visible {
+        outline: 1px solid var(--color-focus-ring);
+        outline-offset: 0;
+        box-shadow: 0 0 0 3px rgba(0, 178, 227, 0.2);
+    }
+}
+
+@utility focus-shadow {
+    @variant focus {
+        box-shadow: 0 0 0 3px rgba(0, 178, 227, 0.2);
+    }
 }

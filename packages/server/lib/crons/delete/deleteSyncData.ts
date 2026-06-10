@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
-import { hardDeleteJobs, hardDeleteSync } from '@nangohq/shared';
+import { getPlanSafe, hardDeleteJobs, hardDeleteSync } from '@nangohq/shared';
 
 import { batchDelete } from './batchDelete.js';
 
@@ -36,6 +36,7 @@ export async function deleteSyncData(sync: Sync, syncConfig: DBSyncConfig | null
     });
 
     if (syncConfig) {
+        const plan = await getPlanSafe(db.knex, { environmentId: syncConfig.environment_id });
         for (const model of syncConfig.models) {
             await batchDelete({
                 name: 'records < sync',
@@ -48,7 +49,8 @@ export async function deleteSyncData(sync: Sync, syncConfig: DBSyncConfig | null
                         environmentId: syncConfig.environment_id,
                         model,
                         mode: 'hard',
-                        batchSize: limit
+                        batchSize: limit,
+                        plan
                     });
                     if (res.isOk() && res.value.count) {
                         logger.info('deleted', res.value.count, 'records for model', model);

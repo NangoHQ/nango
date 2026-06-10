@@ -42,7 +42,7 @@ const paramsSchema = z
         environmentId: z.coerce.number().int().positive(),
         nangoConnectionId: z.coerce.number().int().positive(),
         syncId: z.string(),
-        syncJobId: z.coerce.number().int().positive()
+        syncJobId: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER)
     })
     .strict();
 
@@ -54,13 +54,14 @@ const validate = validateRequest<DeleteOutdatedRecords>({
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId, environmentId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     const result = await records.deleteOutdatedRecords({
         environmentId,
         connectionId: nangoConnectionId,
         model,
-        generation: syncJobId
+        generation: syncJobId,
+        plan
     });
     if (result.isOk()) {
         const deleted = result.value.length;

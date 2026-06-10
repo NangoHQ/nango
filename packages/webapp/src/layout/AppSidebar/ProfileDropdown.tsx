@@ -2,9 +2,9 @@ import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRou
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu';
-import { SidebarMenu, SidebarMenuItem } from '@/components-v2/ui/Sidebar';
-import { isDevToolsEnabled, useDevPanelStore } from '@/features/DevToolPanel';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
+import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
@@ -20,6 +20,7 @@ export const ProfileDropdown: React.FC = () => {
     const { user } = useUser();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
+    const isDevToolsEnabled = useIsDevToolsEnabled();
 
     const items = useMemo(() => {
         const list = [

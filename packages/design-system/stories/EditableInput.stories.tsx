@@ -1,10 +1,10 @@
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { EditableInput } from '@/components/patterns/EditableInput';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof EditableInput> = {
     component: EditableInput,
-    title: 'Components v2/Patterns/EditableInput',
+    title: 'Components/Patterns/EditableInput',
     parameters: { layout: 'padded' }
 };
 export default meta;

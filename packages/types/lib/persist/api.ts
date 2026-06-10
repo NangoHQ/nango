@@ -19,6 +19,31 @@ export type PostLog = Endpoint<{
     Success: never;
 }>;
 
+type WithTags<T> = T & { integrationId: string; connectionId: string; syncId?: string | undefined };
+
+export type RunnerDataTransferTelemetry = WithTags<{
+    type: 'data_transfer';
+    callsite: 'proxy' | 'uncontrolled_fetch' | 'persist_records' | 'persist_logs';
+    bytesSent: number;
+    bytesReceived: number;
+}>;
+
+// NOTE: discriminated union on `type`; add more telemetry types as needed.
+export type RunnerTelemetry = RunnerDataTransferTelemetry;
+
+export type PostRunnerTelemetry = Endpoint<{
+    Method: 'POST';
+    Path: '/environment/:environmentId/runner/telemetry';
+    Params: {
+        environmentId: number;
+    };
+    Body: {
+        events: RunnerTelemetry[];
+    };
+    Error: ApiError<'post_runner_telemetry_failed'>;
+    Success: never;
+}>;
+
 export interface PostRecordsSuccess {
     nextMerging: MergingStrategy;
 }

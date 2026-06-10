@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 
@@ -7,7 +7,20 @@ import { loggedFetch } from './http.js';
 import type { BufferTransport } from '@nangohq/logs';
 
 describe('loggedFetch', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
     it('should get and log success', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi
+                .fn()
+                .mockResolvedValue(
+                    new Response(JSON.stringify({ code: 200, description: 'OK' }), { status: 200, headers: { 'content-type': 'application/json' } })
+                )
+        );
+
         const buffer = logContextGetter.getBuffer({ accountId: 1 });
         const fetchRes = await loggedFetch(
             {
@@ -35,6 +48,16 @@ describe('loggedFetch', () => {
     });
 
     it('should get and log failure', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue(
+                new Response(JSON.stringify({ code: 500, description: 'Internal Server Error' }), {
+                    status: 500,
+                    headers: { 'content-type': 'application/json' }
+                })
+            )
+        );
+
         const buffer = logContextGetter.getBuffer({ accountId: 1 });
         const fetchRes = await loggedFetch(
             {
@@ -65,6 +88,8 @@ describe('loggedFetch', () => {
     });
 
     it('should handle network error', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed', { cause: new Error('getaddrinfo ENOTFOUND doesnotexists.dev') })));
+
         const buffer = logContextGetter.getBuffer({ accountId: 1 });
         const fetchRes = await loggedFetch(
             {

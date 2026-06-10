@@ -66,6 +66,7 @@ import { DispatchQueuePublisher } from './publisher.js';
 import type { PreparedDispatchMessage } from './publisher.js';
 import type { SQSClient, SendMessageBatchCommandOutput } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { Mock } from 'vitest';
 
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
@@ -100,10 +101,12 @@ function buildPreparedMessage({
     };
 }
 
+type SqsSendFn = (command: unknown) => Promise<SendMessageBatchCommandOutput>;
+
 function makeSqsMock(
     responder: (command: SendMessageBatchCommand, callIndex: number) => SendMessageBatchCommandOutput | Promise<SendMessageBatchCommandOutput>
-): { sqs: SQSClient; send: ReturnType<typeof vi.fn> } {
-    const send = vi.fn();
+): { sqs: SQSClient; send: Mock<SqsSendFn> } {
+    const send = vi.fn<SqsSendFn>();
     let callIndex = 0;
     send.mockImplementation(async (command: unknown) => {
         if (!(command instanceof SendMessageBatchCommand)) {

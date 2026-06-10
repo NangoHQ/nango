@@ -1,9 +1,9 @@
 import { isTest } from '@nangohq/utils';
 
 import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
-import { client } from '../es/client.js';
 import { indexOperations } from '../es/schema.js';
-import { ResponseError } from '../utils.js';
+import { client } from '../storage/client.js';
+import { throwLogsNotFound } from '../utils.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type {
@@ -177,7 +177,7 @@ export async function getOperation(opts: { id: OperationRow['id']; indexName?: s
         }
     });
     if (res.hits.hits.length <= 0) {
-        throw new ResponseError({ statusCode: 404, warnings: [], meta: {} as any });
+        throwLogsNotFound();
     }
     return res.hits.hits[0]!._source!;
 }
@@ -290,11 +290,20 @@ export async function listFilters(opts: {
     };
 }
 
-export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
+async function updateOperationsByQuery(params: { wait?: boolean; query: estypes.QueryDslQueryContainer; script: { source: string } }): Promise<void> {
+    const wait = params.wait === true;
     await client.updateByQuery({
         index: indexOperations.index,
-        wait_for_completion: opts.wait === true,
-        refresh: opts.wait === true,
+        wait_for_completion: wait,
+        refresh: wait,
+        query: params.query,
+        script: params.script
+    });
+}
+
+export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
+    await updateOperationsByQuery({
+        ...(opts.wait !== undefined ? { wait: opts.wait } : {}),
         query: {
             bool: {
                 filter: [
@@ -317,10 +326,8 @@ export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promis
 }
 
 export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {
-    await client.updateByQuery({
-        index: indexOperations.index,
-        wait_for_completion: opts.wait === true,
-        refresh: opts.wait === true,
+    await updateOperationsByQuery({
+        ...(opts.wait !== undefined ? { wait: opts.wait } : {}),
         query: {
             bool: {
                 filter: [

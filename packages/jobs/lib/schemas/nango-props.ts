@@ -48,7 +48,7 @@ export const nangoPropsSchema = z.looseObject({
         // deleted_at: z.coerce.date().optional().nullable(),
     }),
     syncId: z.string().uuid().optional(),
-    syncJobId: z.number().optional(),
+    syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     activityLogId: operationIdRegex,
     secretKey: z.string().min(1),
     debug: z.boolean(),
@@ -60,7 +60,8 @@ export const nangoPropsSchema = z.looseObject({
         validateWebhookInput: z.boolean().default(false),
         validateWebhookOutput: z.boolean().default(false),
         validateSyncRecords: z.boolean().default(false),
-        validateSyncMetadata: z.boolean().default(false)
+        validateSyncMetadata: z.boolean().default(false),
+        exportRunnerTelemetry: z.boolean().default(false)
     }),
     logger: z
         .looseObject({

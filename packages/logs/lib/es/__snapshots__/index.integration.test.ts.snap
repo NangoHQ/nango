@@ -1,6 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`mapping > should create one index automatically on operation 1`] = `
+exports[`mapping > should create one index automatically on operation > elasticsearch-analysis 1`] = `
+{
+  "analyzer": {
+    "default": {
+      "type": "standard",
+    },
+    "default_search": {
+      "type": "standard",
+    },
+  },
+}
+`;
+
+exports[`mapping > should create one index automatically on operation > elasticsearch-lifecycle 1`] = `
+{
+  "name": "test_policy_retention_operations",
+}
+`;
+
+exports[`mapping > should create one index automatically on operation > elasticsearch-mapping 1`] = `
 {
   "mappings": {
     "dynamic": "false",
@@ -185,20 +204,7 @@ exports[`mapping > should create one index automatically on operation 1`] = `
 }
 `;
 
-exports[`mapping > should create one index automatically on operation 2`] = `
-{
-  "analyzer": {
-    "default": {
-      "type": "standard",
-    },
-    "default_search": {
-      "type": "standard",
-    },
-  },
-}
-`;
-
-exports[`mapping > should create one index automatically on operation 3`] = `
+exports[`mapping > should create one index automatically on operation > elasticsearch-sort 1`] = `
 {
   "field": [
     "createdAt",
@@ -208,11 +214,5 @@ exports[`mapping > should create one index automatically on operation 3`] = `
     "desc",
     "desc",
   ],
-}
-`;
-
-exports[`mapping > should create one index automatically on operation 4`] = `
-{
-  "name": "test_policy_retention_operations",
 }
 `;
