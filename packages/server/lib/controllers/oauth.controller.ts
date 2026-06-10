@@ -936,7 +936,9 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
 
+            const providerAuthParams = interpolateObjectValues(provider.authorization_params || {}, connectionConfig);
             const authParams = {
+                ...providerAuthParams,
                 response_type: 'code',
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256'
