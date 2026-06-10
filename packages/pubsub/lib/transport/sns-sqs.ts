@@ -1,13 +1,15 @@
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { PublishBatchCommand, PublishCommand, PublishBatchRequestEntry, SNSClient } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, Ok, chunk, getLogger, matchWith, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';
 
-import type { SubscribeProps, Transport } from './transport.js';
+import { PublishFailure } from './transport.js';
+
+import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -26,6 +28,27 @@ const sqsMessageAttributesSchema = z.record(z.string(), z.looseObject({ StringVa
 
 function subscriptionKey<TSubject extends Event['subject']>(consumerGroup: string, subject: TSubject): `${string}:${TSubject}` {
     return `${consumerGroup}:${subject}`;
+}
+
+function publishConcurrency(concurrency: number | undefined): number {
+    const n = concurrency ?? 10;
+    if (!Number.isFinite(n)) {
+        return 10;
+    }
+    return Math.max(1, Math.min(10, Math.floor(n)));
+}
+
+function toSnsEntry(event: Event): Result<PublishBatchRequestEntry, PublishFailure> {
+    return serde
+        .serialize(event)
+        .map((encoded: Buffer<ArrayBufferLike>) => ({
+            Id: event.idempotencyKey,
+            Message: encoded.toString('base64'),
+            MessageAttributes: {
+                subject: { DataType: 'String', StringValue: event.subject }
+            }
+        }))
+        .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, e instanceof Error ? e.message : String(e)));
 }
 
 function subscribeConcurrency(concurrency: number | undefined): number {
@@ -146,6 +169,61 @@ export class SnsSqs implements Transport {
             logger.error(`Failed to publish message to SNS for subject ${event.subject}`, { error: err });
             return Err(new Error(`Failed to publish message to SNS for subject ${event.subject}`, { cause: err }));
         }
+    }
+
+    public async publishBatch<S extends Event['subject']>({ subject, events, concurrency }: PublishBatchProps<S>): Promise<Result<PublishBatchResult>> {
+        if (!this.isConnected) {
+            return Err(new Error('SNS+SQS publisher not connected'));
+        }
+
+        // runtime sanity check for homogeneous subject
+        if (events.find((e) => e.subject !== subject)) {
+            return Err(new Error(`All events must be of the provided subject: "${subject}"`));
+        }
+
+        const topicArn = this.topicArns[subject];
+        if (!topicArn) {
+            logger.error(`No SNS topic ARN configured for subject ${subject}`, { topicArn });
+            return Err(new Error(`No SNS topic ARN configured for subject "${subject}"`));
+        }
+
+        const failed: PublishFailure[] = [];
+        const entries: PublishBatchRequestEntry[] = [];
+
+        events.map(toSnsEntry).forEach(
+            matchWith(
+                (entry) => entries.push(entry),
+                (err) => failed.push(err)
+            )
+        );
+
+        const batches = chunk(
+            entries,
+            { count: 0 },
+            (acc, _) => ({ count: acc.count + 1 }),
+            (acc, _) => acc.count >= 10
+        );
+
+        const successful: string[] = [];
+
+        await runWithConcurrencyLimit(batches, publishConcurrency(concurrency), async (batch, _) => {
+            const cmd = new PublishBatchCommand({
+                TopicArn: topicArn,
+                PublishBatchRequestEntries: batch
+            });
+
+            await this.sns
+                .send(cmd)
+                .then((response) => {
+                    successful.push(...(response.Successful ?? []).map((s) => s.Id!));
+                    failed.push(...(response.Failed ?? []).map((f) => new PublishFailure(f.Id!, `(code=${f.Code}) ${f.Message}`)));
+                })
+                .catch((err) => {
+                    failed.push(...batch.map((f) => new PublishFailure(f.Id!, err.message)));
+                });
+        });
+
+        return Ok({ successful, failed });
     }
 
     public subscribe<TSubject extends Event['subject']>(props: SubscribeProps<TSubject>): void {
