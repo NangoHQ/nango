@@ -25,8 +25,8 @@ export const InvoicingAddressFields: React.FC = () => {
     };
 
     return (
-        <Card className="bg-surface-canvas rounded border border-border-muted py-0 gap-0">
-            <CardHeader className="bg-surface-page h-10 flex flex-row items-center justify-between px-6">
+        <Card className="bg-surface-page rounded border border-border-muted py-0 gap-0">
+            <CardHeader className="bg-surface-panel h-10 flex flex-row items-center justify-between px-6">
                 <CardTitle className="text-text-strong !text-heading-sm flex items-center gap-2">
                     Billing address
                     <OptionalTag />

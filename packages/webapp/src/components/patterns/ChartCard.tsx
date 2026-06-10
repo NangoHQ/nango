@@ -88,7 +88,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         );
 
     return (
-        <div className="bg-surface-page rounded border border-transparent h-[424px] flex flex-col">
+        <div className="bg-surface-panel rounded border border-transparent h-[424px] flex flex-col">
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0">
                 <div className="flex flex-col items-start justify-center h-11">
                     {isLoading || !data ? (

@@ -135,7 +135,7 @@ export const IntegrationsList = () => {
             )}
 
             {data?.data && data.data.length === 0 && (
-                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                     <h3 className="text-title-body text-text-strong">No available integrations</h3>
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
@@ -149,7 +149,7 @@ export const IntegrationsList = () => {
             )}
 
             {data?.data && data.data.length > 0 && integrations && integrations.length === 0 && (
-                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                     <h3 className="text-title-body text-text-strong">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>

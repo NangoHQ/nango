@@ -19,7 +19,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
                 <div
                     ref={ref}
                     className={cn(
-                        'relative w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-surface-canvas min-w-3xl',
+                        'relative w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-surface-page min-w-3xl',
                         fullWidth ? 'p-0' : 'p-11'
                     )}
                     {...props}

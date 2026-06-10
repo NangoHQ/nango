@@ -424,14 +424,14 @@ export const ConnectionList = () => {
                             </Table>
 
                             {showEmptyStateWithFilters && (
-                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                                     <p className="text-text-secondary text-body-medium-regular">No connections found.</p>
                                 </div>
                             )}
                         </>
                     )}
                     {showEmptyStateNoFilters && (
-                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                             <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
