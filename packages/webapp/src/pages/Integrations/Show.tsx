@@ -116,7 +116,7 @@ export const IntegrationsList = () => {
                 </PermissionGate>
             </header>
 
-            <InputGroup className="bg-surface-panel-inset">
+            <InputGroup>
                 <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
