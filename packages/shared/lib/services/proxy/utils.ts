@@ -93,6 +93,14 @@ export function getAxiosConfiguration({
     }
 
     const url = buildProxyURL({ config: proxyConfig, connection });
+
+    // Merge proxy.body into proxyConfig.data before building headers so that any
+    // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
+    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
+    if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
+        proxyConfig = { ...proxyConfig, data: mergeInjectedBody(proxyConfig.data, injectedBody) };
+    }
+
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
@@ -125,14 +133,6 @@ export function getAxiosConfiguration({
 
     if (proxyConfig.data && methodDataAllowed.includes(proxyConfig.method)) {
         axiosConfig.data = proxyConfig.data;
-    }
-
-    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
-    if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
-        axiosConfig.data =
-            axiosConfig.data && typeof axiosConfig.data === 'object' && !Array.isArray(axiosConfig.data)
-                ? { ...axiosConfig.data, ...injectedBody }
-                : injectedBody;
     }
 
     if (proxyConfig.decompress || proxyConfig.provider.proxy?.decompress === true) {
@@ -420,6 +420,31 @@ export function buildProxyBody({
     }
 
     return Object.keys(body).length > 0 ? body : null;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        !Buffer.isBuffer(value) &&
+        !(value instanceof FormData) &&
+        !(value instanceof URLSearchParams)
+    );
+}
+
+function mergeInjectedBody(existing: unknown, injected: Record<string, string>): unknown {
+    if (!existing) return injected;
+    if (isPlainObject(existing)) return { ...existing, ...injected };
+    if (existing instanceof FormData) {
+        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        return existing;
+    }
+    if (existing instanceof URLSearchParams) {
+        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        return existing;
+    }
+    return existing;
 }
 
 function getRawBody(method: string, data: unknown): string {
