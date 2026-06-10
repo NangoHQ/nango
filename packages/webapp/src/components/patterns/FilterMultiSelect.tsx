@@ -200,7 +200,7 @@ export function FilterMultiSelect<T extends string = string>({
             <PopoverContent className={cn('p-2 bg-surface-overlay border border-border-muted shadow-lg', width)} align="end">
                 {showSearch && (
                     <div className="pb-2">
-                        <InputGroup className="bg-surface-canvas border-border-default">
+                        <InputGroup className="border-border-default">
                             <InputGroupAddon>
                                 <Search className="w-4 h-4" />
                             </InputGroupAddon>
