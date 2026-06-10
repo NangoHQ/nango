@@ -50,6 +50,7 @@ export class Scheduler {
         onError,
         config = defaultSchedulerConfig,
         onEvent = () => {},
+        continueOnError = false,
         logger: injectedLogger
     }: {
         db: knex.Knex;
@@ -57,6 +58,11 @@ export class Scheduler {
         onError: (err: Error) => void;
         config?: SchedulerConfig;
         onEvent?: (event: SchedulerEvent) => void;
+        /**
+         * When true, a daemon that throws on a tick reports via `onError` and keeps ticking (self-healing)
+         * instead of stopping. Use when `onError` only logs; leave false when `onError` is fatal (e.g. exits the process).
+         */
+        continueOnError?: boolean;
         logger?: StrictLogger;
     }) {
         this.ac = new AbortController();
@@ -84,7 +90,8 @@ export class Scheduler {
                 this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
                 this.onCallbacks[task.state](task);
             },
-            onError
+            onError,
+            continueOnError
         });
         this.scheduling = new SchedulingDaemon({
             db,
@@ -96,14 +103,16 @@ export class Scheduler {
                 this.onCallbacks[task.state](task);
             },
             onEvent: safeOnEvent,
-            onError
+            onError,
+            continueOnError
         });
         this.cleaning = new CleaningDaemon({
             db,
             abortSignal: this.ac.signal,
             tickIntervalMs: config.daemons.cleaningTickIntervalMs,
             olderThanDays: config.daemons.cleaningOlderThanDays,
-            onError
+            onError,
+            continueOnError
         });
     }
 
@@ -303,6 +312,19 @@ export class Scheduler {
      * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
      */
     public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
+        return this.atBatch(propsList);
+    }
+
+    /**
+     * Schedule a batch of tasks in a single transaction. Each task becomes dequeue-able at/after its
+     * own `startsAfter`, defaulting to the insert time (computed inside the transaction, so a slow or
+     * large batch doesn't eat into the created→started timeout) when omitted.
+     *
+     * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
+     * with the originating props. Mapping discards back to specific requests (and deciding what to
+     * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
+     */
+    public async atBatch(propsList: (ImmediateProps & { startsAfter?: Date })[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
         if (propsList.length === 0) {
             return Ok({ created: [], discarded: [] });
         }
@@ -311,7 +333,7 @@ export class Scheduler {
             const now = new Date();
             const taskPropsList: tasks.TaskProps[] = propsList.map((props) => ({
                 ...props,
-                startsAfter: now,
+                startsAfter: props.startsAfter ?? now,
                 scheduleId: null
             }));
 
