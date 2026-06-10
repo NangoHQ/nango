@@ -1,14 +1,23 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import { createSync, getFunctionFileLocations, seeders } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { Ok, getLogger } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from './batchDelete.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
 import { tasks } from '../../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
+import type * as serverUtils from '../../utils/utils.js';
+
+vi.mock('../../utils/utils.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof serverUtils>();
+    return {
+        ...actual,
+        getOrchestrator: () => ({ deleteSyncs: () => Promise.resolve(Ok(undefined)) })
+    };
+});
 
 const { createConfigSeed, createConnectionSeed, createEnvironmentSeed, createSyncJobSeeds, createSyncSeeds } = seeders;
 

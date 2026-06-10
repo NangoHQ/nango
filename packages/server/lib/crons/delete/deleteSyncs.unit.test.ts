@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 const order: string[] = [];
 
@@ -78,6 +78,15 @@ describe('deleteSyncs', () => {
         expect(deleteSyncsClient).toHaveBeenCalledTimes(2);
         expect(deleteSyncsClient).toHaveBeenCalledWith({ syncIds: ['s1', 's3'], environmentId: 10 });
         expect(deleteSyncsClient).toHaveBeenCalledWith({ syncIds: ['s2'], environmentId: 20 });
+    });
+
+    it('aborts teardown (throws, no hard-delete) when the bulk unschedule fails', async () => {
+        deleteSyncsClient.mockReset().mockResolvedValue(Err(new Error('orchestrator down')));
+
+        await expect(deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'] }], opts)).rejects.toThrow('orchestrator down');
+
+        // Nothing torn down — the sync's schedule may still be live, so we must not hard-delete it.
+        expect(hardDeleteSync).not.toHaveBeenCalled();
     });
 
     it('is a no-op for an empty batch (never calls the orchestrator)', async () => {
