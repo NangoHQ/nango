@@ -1,0 +1,28 @@
+packages/sandbox/lib/providers/e2b.unit.test.ts
+  s_0bc521b83bf53d::t_e83171482c22b2 2,4-30,33-72,76
+  s_0bc521b83bf53d::t_bff300231f57b8 31-32
+packages/sandbox/lib/providers/e2b.ts
+  s_0bc521b83bf53d::t_421aead915d609 81,95
+packages/sandbox/lib/sandbox-service.ts
+  s_0bc521b83bf53d::t_e83171482c22b2 50
+packages/sandbox/lib/sandbox-service.unit.test.ts
+  s_0bc521b83bf53d::t_e83171482c22b2 61-62,65
+packages/sandbox/lib/providers/docker.ts
+  s_0bc521b83bf53d::t_421aead915d609 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "112fe219da7097e892b0241ba3b56e43c5711783",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
