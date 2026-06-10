@@ -47,7 +47,7 @@ export class SandboxService {
 export const sandboxService = new SandboxService();
 
 export function toExecutionEnvironmentUnavailableError(error: unknown): FunctionError | null {
-    if (!isExecutionEnvironmentUnavailableError(error)) {
+    if (!(error instanceof SandboxUnavailableError)) {
         return null;
     }
 
@@ -56,34 +56,4 @@ export function toExecutionEnvironmentUnavailableError(error: unknown): Function
         message: executionEnvironmentUnavailableMessage,
         status: 503
     });
-}
-
-function isExecutionEnvironmentUnavailableError(error: unknown): boolean {
-    if (error instanceof SandboxUnavailableError) {
-        return true;
-    }
-
-    if (hasHttpStatus(error, 429)) {
-        return true;
-    }
-
-    const message = stringifyError(error).toLowerCase();
-
-    return (
-        message.includes('rate limit') ||
-        message.includes('too many sandboxes') ||
-        message.includes('concurrent sandbox') ||
-        message.includes('concurrency limit') ||
-        message.includes('sandbox limit') ||
-        message.includes('quota')
-    );
-}
-
-function hasHttpStatus(error: unknown, status: number): boolean {
-    if (!error || typeof error !== 'object') {
-        return false;
-    }
-
-    const err = error as Record<string, unknown>;
-    return err['status'] === status || err['statusCode'] === status || err['code'] === status;
 }

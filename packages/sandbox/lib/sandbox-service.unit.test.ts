@@ -58,21 +58,11 @@ describe('SandboxService', () => {
         await expect(service.cleanup({ sandboxId: 'sandbox-id' })).resolves.toBeUndefined();
     });
 
-    it('maps sandbox capacity-shaped errors without exposing provider details', () => {
-        expect(toExecutionEnvironmentUnavailableError({ status: 429, message: 'too many sandboxes in parallel' })).toMatchObject({
-            code: 'execution_environment_unavailable',
-            message: executionEnvironmentUnavailableMessage,
-            status: 503
-        } satisfies Partial<FunctionError>);
-
-        expect(toExecutionEnvironmentUnavailableError(new Error('Concurrent sandboxes quota exceeded'))).toMatchObject({
-            code: 'execution_environment_unavailable',
-            message: executionEnvironmentUnavailableMessage,
-            status: 503
-        } satisfies Partial<FunctionError>);
+    it('does not map provider-shaped errors directly', () => {
+        expect(toExecutionEnvironmentUnavailableError({ status: 429, message: 'too many sandboxes in parallel' })).toBeNull();
     });
 
-    it('leaves unrelated sandbox errors unchanged', () => {
+    it('leaves unrelated errors unchanged', () => {
         expect(toExecutionEnvironmentUnavailableError(new Error('Sandbox failed to write file'))).toBeNull();
     });
 });

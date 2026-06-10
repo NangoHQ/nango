@@ -78,7 +78,7 @@ class E2BSandbox implements Sandbox {
     async runCommand(params: SandboxCommandParams): Promise<SandboxCommandResult> {
         try {
             const result = await this.sandbox.commands.run(params.command, {
-                cwd: resolvePath(params.cwd),
+                cwd: workspacePath,
                 timeoutMs: params.timeoutMs,
                 ...(params.envs !== undefined ? { envs: params.envs } : {})
             });
@@ -92,7 +92,7 @@ class E2BSandbox implements Sandbox {
     async startCommand(params: SandboxCommandParams): Promise<void> {
         try {
             await this.sandbox.commands.run(params.command, {
-                cwd: resolvePath(params.cwd),
+                cwd: workspacePath,
                 background: true,
                 timeoutMs: params.timeoutMs,
                 ...(params.envs !== undefined ? { envs: params.envs } : {})
