@@ -303,7 +303,7 @@ export const ConnectionList = () => {
                             <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="bg-surface-canvas h-10">
+                                <InputGroup className="h-10">
                                     <InputGroupInput
                                         className="pr-2.5"
                                         type="text"
