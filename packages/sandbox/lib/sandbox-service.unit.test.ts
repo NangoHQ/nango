@@ -35,7 +35,7 @@ describe('SandboxService', () => {
 
         await service.cleanup({ sandboxId: 'sandbox-id' });
 
-        expect(cleanup).toHaveBeenCalledWith({ sandboxId: 'sandbox-id' });
+        expect(cleanup).toHaveBeenCalledWith('sandbox-id');
     });
 
     it('skips cleanup when there is no sandbox to clean up', async () => {

@@ -3,8 +3,8 @@ export class SandboxCommandExitError extends Error {
     public readonly stderr: string | undefined;
     public readonly exitCode: number;
 
-    constructor(message: string, params: { stdout?: string | undefined; stderr?: string | undefined; exitCode?: number | undefined } = {}) {
-        super(message);
+    constructor(message: string, params: { stdout?: string | undefined; stderr?: string | undefined; exitCode?: number | undefined; cause?: unknown } = {}) {
+        super(message, { cause: params.cause });
         this.name = 'SandboxCommandExitError';
         this.stdout = params.stdout;
         this.stderr = params.stderr;

@@ -4,7 +4,7 @@ import { FunctionError } from './functions/helpers.js';
 import { SandboxUnavailableError } from './providers/errors.js';
 import { createSandboxProvider } from './providers/factory.js';
 
-import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxProvider } from './providers/types.js';
+import type { CreateSandboxParams, Sandbox, SandboxProvider } from './providers/types.js';
 
 const logger = getLogger('SandboxService');
 
@@ -27,18 +27,13 @@ export class SandboxService {
         }
     }
 
-    async cleanup(params: { sandboxId: string | null | undefined; apiKey?: string | undefined }): Promise<void> {
+    async cleanup(params: { sandboxId: string | null | undefined }): Promise<void> {
         if (!params.sandboxId || params.sandboxId === 'local') {
             return;
         }
 
-        const cleanupParams: CleanupSandboxParams = {
-            sandboxId: params.sandboxId,
-            ...(params.apiKey !== undefined ? { apiKey: params.apiKey } : {})
-        };
-
         try {
-            await this.provider.cleanup(cleanupParams);
+            await this.provider.cleanup(params.sandboxId);
         } catch (err) {
             logger.warning('Failed to clean up sandbox', {
                 sandboxId: params.sandboxId,

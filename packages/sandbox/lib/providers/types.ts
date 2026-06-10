@@ -8,11 +8,6 @@ export interface CreateSandboxParams {
     metadata?: Record<string, string> | undefined;
 }
 
-export interface CleanupSandboxParams {
-    sandboxId: string;
-    apiKey?: string | undefined;
-}
-
 export interface SandboxFile {
     /**
      * Relative paths are resolved inside the provider's workspace.
@@ -50,5 +45,5 @@ export interface Sandbox {
 export interface SandboxProvider {
     readonly name: SandboxProviderName;
     create(params: CreateSandboxParams): Promise<Sandbox>;
-    cleanup(params: CleanupSandboxParams): Promise<void>;
+    cleanup(sandboxId: string): Promise<void>;
 }
