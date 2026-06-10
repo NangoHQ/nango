@@ -49,7 +49,7 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });
-        limiter = new RateLimiterRedis({ storeClient: redisClient, ...opts });
+        limiter = new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...opts });
     } else {
         limiter = new RateLimiterMemory(opts);
     }

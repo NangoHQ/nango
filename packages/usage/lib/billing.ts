@@ -21,6 +21,7 @@ export class UsageBillingClient {
         this.redis = redis;
         const limiter = new RateLimiterRedis({
             storeClient: redis,
+            useRedisPackage: true,
             keyPrefix: 'billing',
             points: envs.USAGE_BILLING_API_MAX_RPS,
             duration: 1

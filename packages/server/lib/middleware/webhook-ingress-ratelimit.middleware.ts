@@ -109,7 +109,7 @@ async function buildLimiter(): Promise<RateLimiterAbstract> {
         logger.error(`Redis (webhook-ingress rate-limiter) error: ${err}`);
     });
 
-    return new RateLimiterRedis({ storeClient: redisClient, ...opts });
+    return new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...opts });
 }
 
 function getDefaultLimiter(): Promise<RateLimiterAbstract> {

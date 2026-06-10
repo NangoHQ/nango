@@ -229,8 +229,8 @@ const serviceCreationThrottler = await (async () => {
         });
         if (redisClient) {
             return new CombinedThrottler([
-                new RateLimiterRedis({ storeClient: redisClient, ...minuteThrottlerOpts }),
-                new RateLimiterRedis({ storeClient: redisClient, ...hourThrottlerOpts })
+                new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...minuteThrottlerOpts }),
+                new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...hourThrottlerOpts })
             ]);
         }
     }
