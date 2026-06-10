@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo } from 'react';
 
-import { EARLIEST_USAGE_MONTH } from '../usageBreakdown';
+import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { Button } from '@/components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });
 
-const EARLIEST_USAGE_MONTH_LABEL = EARLIEST_USAGE_MONTH.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const EARLIEST_USAGE_MONTH_LABEL = new Date(EARLIEST_USAGE_MONTH_MS).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 interface MonthSelectorProps {
     onMonthChange?: (month: Date) => void;
@@ -38,7 +38,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
                 month = new Date(Date.UTC(year, m - 1, 1));
             }
         }
-        return breakdownEnabled && month.getTime() < EARLIEST_USAGE_MONTH.getTime() ? EARLIEST_USAGE_MONTH : month;
+        return breakdownEnabled && month.getTime() < EARLIEST_USAGE_MONTH_MS ? new Date(EARLIEST_USAGE_MONTH_MS) : month;
     }, [monthParam, breakdownEnabled]);
 
     // Notify parent when month changes
@@ -78,7 +78,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
 
     // Disable the previous button at the June 2026 floor, but only while the breakdown
     // view is active; otherwise legacy history stays navigable.
-    const canGoPrevious = useMemo(() => !breakdownEnabled || selectedMonth.getTime() > EARLIEST_USAGE_MONTH.getTime(), [breakdownEnabled, selectedMonth]);
+    const canGoPrevious = useMemo(() => !breakdownEnabled || selectedMonth.getTime() > EARLIEST_USAGE_MONTH_MS, [breakdownEnabled, selectedMonth]);
 
     const previousButton = (
         <Button variant="ghost" size="icon" onClick={handlePreviousMonth} disabled={!canGoPrevious}>
