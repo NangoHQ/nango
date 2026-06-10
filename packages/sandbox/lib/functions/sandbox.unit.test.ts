@@ -1,7 +1,13 @@
 import { RateLimitError, Sandbox } from 'e2b';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createFunctionSandbox, executionEnvironmentUnavailableMessage, getRunningSandboxCount, toExecutionEnvironmentUnavailableError } from './sandbox.js';
+import {
+    cleanupFunctionSandbox,
+    createFunctionSandbox,
+    executionEnvironmentUnavailableMessage,
+    getRunningSandboxCount,
+    toExecutionEnvironmentUnavailableError
+} from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
 
@@ -62,6 +68,32 @@ describe('remote function sandbox helpers', () => {
             query: { state: ['running'] }
         });
         expect(paginator.nextItems).toHaveBeenCalledTimes(2);
+    });
+
+    it('cleans up a remote function sandbox by id', async () => {
+        const kill = vi.spyOn(Sandbox, 'kill').mockResolvedValueOnce(true);
+
+        await cleanupFunctionSandbox({ sandboxId: 'sandbox-id', apiKey: 'e2b-key' });
+
+        expect(kill).toHaveBeenCalledWith('sandbox-id', { apiKey: 'e2b-key' });
+    });
+
+    it('skips function sandbox cleanup when there is no remote sandbox to kill', async () => {
+        const kill = vi.spyOn(Sandbox, 'kill').mockResolvedValue(true);
+
+        await cleanupFunctionSandbox({ sandboxId: null, apiKey: 'e2b-key' });
+        await cleanupFunctionSandbox({ sandboxId: 'local', apiKey: 'e2b-key' });
+        await cleanupFunctionSandbox({ sandboxId: 'sandbox-id', apiKey: undefined });
+
+        expect(kill).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when remote function sandbox cleanup fails', async () => {
+        const kill = vi.spyOn(Sandbox, 'kill').mockRejectedValueOnce(new Error('sandbox not found'));
+
+        await expect(cleanupFunctionSandbox({ sandboxId: 'sandbox-id', apiKey: 'e2b-key' })).resolves.toBeUndefined();
+
+        expect(kill).toHaveBeenCalledWith('sandbox-id', { apiKey: 'e2b-key' });
     });
 
     it('maps sandbox capacity-shaped errors without exposing provider details', () => {
