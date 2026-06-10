@@ -3,7 +3,7 @@ export const CardLayout: React.FC<{ children: React.ReactNode }> = ({ children }
 };
 
 export const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <header className="flex flex-col gap-6 px-11 py-8 bg-surface-page border border-b-0 border-border-muted rounded-t-md">{children}</header>;
+    return <header className="flex flex-col gap-6 px-11 py-8 bg-surface-panel border border-b-0 border-border-muted rounded-t-md">{children}</header>;
 };
 
 export const CardSubheader: React.FC<{ children: React.ReactNode }> = ({ children }) => {

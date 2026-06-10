@@ -223,7 +223,7 @@ export const ConnectUISettings = () => {
                         </form.Subscribe>
 
                         {(!canCustomizeTheme || !canDisableWatermark) && (
-                            <div className="bg-surface-page p-6 flex flex-col gap-6">
+                            <div className="bg-surface-panel p-6 flex flex-col gap-6">
                                 <div className="flex text-body-medium-regular gap-2 items-center">
                                     <Lock size="16" />
                                     <span>Advanced Customization</span>

@@ -73,7 +73,7 @@ export default function UsageCard() {
         ))
     );
 
-    const baseClassName = 'flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-surface-canvas border-[0.5px] border-border-muted';
+    const baseClassName = 'flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-surface-panel border-[0.5px] border-border-muted';
 
     if (!canManageBilling) {
         return <div className={baseClassName}>{content}</div>;

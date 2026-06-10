@@ -34,7 +34,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
 
                             <div
                                 className={cn(
-                                    'flex-1 p-6 flex flex-row gap-5 bg-surface-page rounded min-w-0',
+                                    'flex-1 p-6 flex flex-row gap-5 bg-surface-panel rounded min-w-0',
                                     step.branded && 'bg-status-info-bg border-none',
                                     isBlocked && 'opacity-50 pointer-events-none'
                                 )}

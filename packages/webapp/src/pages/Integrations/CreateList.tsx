@@ -141,7 +141,7 @@ const ProviderList = ({ providers, onSelectProvider, loading }: ProviderListProp
 
     if (!providers || providers.length === 0) {
         return (
-            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                 <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
             </div>
         );
@@ -181,7 +181,7 @@ const Provider = ({
     return (
         <div
             onClick={onClick}
-            className="p-4 w-full inline-flex items-center justify-between bg-surface-page rounded border border-transparent cursor-pointer transition-colors hover:bg-surface-canvas hover:border-border-disabled"
+            className="p-4 w-full inline-flex items-center justify-between bg-surface-page rounded border border-transparent cursor-pointer transition-colors hover:bg-state-hover hover:border-border-disabled"
             data-index={virtualRow?.index}
             ref={rowVirtualizer ? (node) => rowVirtualizer.measureElement(node) : undefined}
             style={
