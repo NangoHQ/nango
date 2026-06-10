@@ -2255,8 +2255,8 @@ describe('PostgresStore', () => {
         });
     });
 
-    describe('records_seen write (Phase 2f: generation only)', () => {
-        it('should write generation and leave sync_job_id NULL', async () => {
+    describe('records_seen write (Phase 2g: sync_job_id dropped)', () => {
+        it('should write generation', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             const model = 'model-' + rnd.string();
@@ -2264,12 +2264,11 @@ describe('PostgresStore', () => {
             const syncJobId = rnd.number();
             await upsertRecords({ records: [{ id: '1', name: 'a' }], connectionId, environmentId, model, syncId, syncJobId });
 
-            const { rows } = await db.raw<{ rows: { sync_job_id: number | null; generation: string }[] }>(
-                `SELECT sync_job_id, generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
+            const { rows } = await db.raw<{ rows: { generation: string }[] }>(
+                `SELECT generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
                 [connectionId, model]
             );
             expect(rows).toHaveLength(1);
-            expect(rows[0]?.sync_job_id).toBeNull();
             // node-pg returns bigint as string; coerce for the compare.
             expect(Number(rows[0]?.generation)).toBe(syncJobId);
         });
