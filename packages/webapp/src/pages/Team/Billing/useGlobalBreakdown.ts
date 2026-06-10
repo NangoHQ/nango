@@ -15,25 +15,31 @@ const breakdownParam = parseAsString.withDefault('none').withOptions({ history: 
  * when to show the "Apply to all" button (vs. the old last-applied tracker, which
  * stayed stale after individual panels were changed post-apply).
  */
+export type GlobalBreakdownSelection = AnyBreakdownDimension | null;
+
 export function useGlobalBreakdown(metrics: readonly UsageMetric[]) {
     const perMetricParams = useMemo(() => Object.fromEntries(metrics.map((m) => [`${m}.breakdown`, breakdownParam])), [metrics]);
     const [breakdowns, setBreakdowns] = useQueryStates(perMetricParams);
 
     const applyToAll = useCallback(
-        (dimension: AnyBreakdownDimension) => {
-            const updates: Record<string, string> = {};
-            for (const m of metricsSupportingDimension(dimension)) updates[`${m}.breakdown`] = dimension;
+        (dimension: GlobalBreakdownSelection) => {
+            const supportingMetrics = dimension === null ? metrics : metricsSupportingDimension(dimension);
+            const updates: Record<string, string | null> = {};
+            for (const m of supportingMetrics) updates[`${m}.breakdown`] = dimension;
             void setBreakdowns(updates);
         },
-        [setBreakdowns]
+        [metrics, setBreakdowns]
     );
 
     const isDivergingFromGlobal = useCallback(
-        (metric: UsageMetric, dimension: AnyBreakdownDimension) =>
-            metricsSupportingDimension(dimension)
+        (metric: UsageMetric, dimension: GlobalBreakdownSelection) => {
+            const targetValue = dimension ?? 'none';
+            const supportingMetrics = dimension === null ? metrics : metricsSupportingDimension(dimension);
+            return supportingMetrics
                 .filter((m) => m !== metric)
-                .some((m) => (breakdowns[`${m}.breakdown`] ?? 'none') !== dimension),
-        [breakdowns]
+                .some((m) => (breakdowns[`${m}.breakdown`] ?? 'none') !== targetValue);
+        },
+        [breakdowns, metrics]
     );
 
     return { isDivergingFromGlobal, applyToAll };

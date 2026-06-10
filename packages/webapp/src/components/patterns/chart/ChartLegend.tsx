@@ -17,20 +17,20 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
         <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-3 gap-y-1.5 pt-3 max-h-[88px] overflow-y-auto flex-shrink-0 text-xs">
             {series.map((s) => {
                 const dimmed = isSeriesHidden(s.key);
+                // Highlight this series' band when hovering its swatch or label — not the empty
+                // grid-cell space to the right of a short label. Skipped when the series is hidden.
+                const onEnter = () => {
+                    if (!dimmed) hoverSeries(s.key);
+                };
+                const onLeave = () => unhoverSeries();
                 return (
-                    // Hovering a legend row highlights its band (dims the others), same as hovering the band.
-                    <div
-                        key={s.key}
-                        className="flex min-w-0 items-center gap-1.5"
-                        onMouseEnter={() => {
-                            if (!dimmed) hoverSeries(s.key);
-                        }}
-                        onMouseLeave={() => unhoverSeries()}
-                    >
+                    <div key={s.key} className="flex min-w-0 items-center gap-1.5">
                         {/* Hover the swatch to reveal ✕/✓; click to toggle this series off/on. */}
                         <button
                             type="button"
                             onClick={() => toggleHidden(s.key)}
+                            onMouseEnter={onEnter}
+                            onMouseLeave={onLeave}
                             className="group/swatch relative flex size-4 shrink-0 items-center justify-center"
                             aria-pressed={hidden.has(s.key)}
                             aria-label={`${hidden.has(s.key) ? 'Show' : 'Hide'} ${s.label}`}
@@ -53,6 +53,8 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                         <button
                             type="button"
                             onClick={() => toggleIsolate(s.key)}
+                            onMouseEnter={onEnter}
+                            onMouseLeave={onLeave}
                             className={cn(
                                 'min-w-0 truncate transition-colors',
                                 dimmed ? 'text-text-tertiary line-through hover:text-text-secondary' : 'text-text-secondary hover:text-text-primary'
