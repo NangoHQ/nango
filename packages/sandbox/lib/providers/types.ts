@@ -51,5 +51,4 @@ export interface SandboxProvider {
     readonly name: SandboxProviderName;
     create(params: CreateSandboxParams): Promise<Sandbox>;
     cleanup(params: CleanupSandboxParams): Promise<void>;
-    getRunningCount?(params?: { requestTimeoutMs?: number | undefined }): Promise<number>;
 }

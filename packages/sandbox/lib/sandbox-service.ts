@@ -6,16 +6,12 @@ import { createSandboxProvider } from './providers/factory.js';
 
 import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxProvider } from './providers/types.js';
 
-const logger = getLogger('FunctionSandbox');
+const logger = getLogger('SandboxService');
 
 export const executionEnvironmentUnavailableMessage = 'The function execution environment is temporarily unavailable. Please try again shortly.';
 
 export class SandboxService {
     constructor(private readonly provider: SandboxProvider = createSandboxProvider()) {}
-
-    get providerName(): SandboxProvider['name'] {
-        return this.provider.name;
-    }
 
     async create(params: CreateSandboxParams): Promise<Sandbox> {
         try {

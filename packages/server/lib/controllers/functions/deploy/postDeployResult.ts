@@ -1,9 +1,9 @@
 import {
-    cleanupFunctionSandbox,
     getFunctionDeploymentRow,
     markFunctionDeploymentFailed,
     markFunctionDeploymentSuccess,
-    parseDeploySuccessOutput
+    parseDeploySuccessOutput,
+    sandboxService
 } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -46,7 +46,7 @@ export const postFunctionDeploymentResult = asyncWrapper<PostFunctionDeploymentR
 
     if (current.status === 'success' || current.status === 'failed') {
         res.status(200).send({ ok: true });
-        await cleanupFunctionSandbox({ sandboxId: current.sandbox_id });
+        await sandboxService.cleanup({ sandboxId: current.sandbox_id });
         return;
     }
 
@@ -86,5 +86,5 @@ export const postFunctionDeploymentResult = asyncWrapper<PostFunctionDeploymentR
     }
 
     res.status(200).send({ ok: true });
-    await cleanupFunctionSandbox({ sandboxId: current.sandbox_id });
+    await sandboxService.cleanup({ sandboxId: current.sandbox_id });
 });

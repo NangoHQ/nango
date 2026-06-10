@@ -32,7 +32,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { invokeCompiler } from './compiler-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+import { executionEnvironmentUnavailableMessage } from '../sandbox-service.js';
 
 import type { FunctionError } from './helpers.js';
 
