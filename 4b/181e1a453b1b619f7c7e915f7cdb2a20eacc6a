@@ -1,0 +1,20 @@
+packages/server/lib/controllers/functions/errors.ts
+  s_0bc521b83bf53d::t_d9e7e35e97dfef 78
+  s_0bc521b83bf53d::t_7fe638823624d2 75-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "4b181e1a453b1b619f7c7e915f7cdb2a20eacc6a",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
