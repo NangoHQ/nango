@@ -11,7 +11,7 @@ import type { DBPlan } from '@nangohq/types';
 type StoreKey = 'a' | 'b';
 
 const plan = { id: 1, account_id: 1 } as unknown as DBPlan;
-const routeToA = new Routing<StoreKey>(() => 'a');
+const routeToA = new Routing<StoreKey>(async () => 'a'); // eslint-disable-line @typescript-eslint/require-await
 
 function makeStore(overrides: Partial<RecordsStore> = {}): RecordsStore {
     return overrides as unknown as RecordsStore;
@@ -74,7 +74,7 @@ describe('RecordsRouter', () => {
                 .mockResolvedValue(
                     Ok({ addedKeys: [], updatedKeys: [], unchangedKeys: [], nonUniqueKeys: [], activatedKeys: [], nextMerging: { strategy: 'override' } })
                 );
-            const routing = new Routing<StoreKey>((ctx) => (ctx.connectionId === 1 ? 'a' : 'b'));
+            const routing = new Routing<StoreKey>(async (ctx) => (ctx.connectionId === 1 ? 'a' : 'b')); // eslint-disable-line @typescript-eslint/require-await
             const router = new RecordsRouter<StoreKey>({
                 stores: { a: makeStore({ upsert: upsertA }), b: makeStore({ upsert: upsertB }) },
                 routing

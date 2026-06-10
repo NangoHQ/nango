@@ -16,16 +16,45 @@ export type SandboxApiKeyPurpose = (typeof sandboxApiKeyPurposes)[number];
 const sandboxApiKeyAlgorithm: Algorithm = 'HS256';
 const sandboxApiKeyType = 'JWT';
 const sandboxApiKeyKidPattern = /^[1-9]\d*$/;
-const sandboxApiKeyPurposesSet = new Set<string>(sandboxApiKeyPurposes);
 
-interface SandboxApiKeyPayload {
+interface SandboxApiKeyPayloadBase {
     kid: number;
     aud: typeof sandboxApiKeyAudience;
-    purpose: SandboxApiKeyPurpose;
-    dryrun_id?: string;
     exp: number;
     iat: number;
 }
+
+interface SandboxDryrunApiKeyPayload extends SandboxApiKeyPayloadBase {
+    purpose: 'dryrun';
+    dryrun_id: string;
+}
+
+interface SandboxDeployApiKeyPayload extends SandboxApiKeyPayloadBase {
+    purpose: 'deploy';
+    deployment_id: string;
+}
+
+type SandboxApiKeyPayload = SandboxDryrunApiKeyPayload | SandboxDeployApiKeyPayload;
+type SandboxApiKeyJwtPayload = Omit<SandboxDryrunApiKeyPayload, 'kid'> | Omit<SandboxDeployApiKeyPayload, 'kid'>;
+
+interface CreateSandboxApiKeyTokenBase {
+    parentApiKeyId: number;
+    signingSecret: string;
+    expiresAt: Date;
+    issuedAt?: number;
+}
+
+interface CreateDryrunSandboxApiKeyTokenArgs extends CreateSandboxApiKeyTokenBase {
+    purpose: 'dryrun';
+    dryrunId: string;
+}
+
+interface CreateDeploySandboxApiKeyTokenArgs extends CreateSandboxApiKeyTokenBase {
+    purpose: 'deploy';
+    deploymentId: string;
+}
+
+type CreateSandboxApiKeyTokenArgs = CreateDryrunSandboxApiKeyTokenArgs | CreateDeploySandboxApiKeyTokenArgs;
 
 export const sandboxApiKeyBaseScopes = [
     'environment:connections:read',
@@ -88,44 +117,29 @@ export function decryptSandboxSigningSecret(
     return encryptionManager.decryptSync(key.sandbox_signing_secret, key.sandbox_signing_secret_iv, key.sandbox_signing_secret_tag);
 }
 
-export function createSandboxApiKeyToken({
-    parentApiKeyId,
-    signingSecret,
-    purpose,
-    dryrunId,
-    expiresAt,
-    issuedAt = Date.now()
-}: {
-    parentApiKeyId: number;
-    signingSecret: string;
-    purpose: SandboxApiKeyPurpose;
-    dryrunId?: string;
-    expiresAt: Date;
-    issuedAt?: number;
-}): string {
+export function createSandboxApiKeyToken(args: CreateSandboxApiKeyTokenArgs): string {
+    const { parentApiKeyId, signingSecret, expiresAt, issuedAt = Date.now() } = args;
     const expiresAtMs = expiresAt.getTime();
     if (!Number.isFinite(expiresAtMs) || expiresAtMs <= issuedAt) {
         throw new Error('Sandbox API key expiresAt must be in the future');
     }
 
-    const token = jwt.sign(
-        {
-            aud: sandboxApiKeyAudience,
-            purpose,
-            ...(dryrunId ? { dryrun_id: dryrunId } : {}),
-            iat: Math.floor(issuedAt / 1000),
-            exp: Math.ceil(expiresAtMs / 1000)
-        },
-        signingSecret,
-        {
-            algorithm: sandboxApiKeyAlgorithm,
-            header: {
-                typ: sandboxApiKeyType,
-                alg: sandboxApiKeyAlgorithm,
-                kid: String(parentApiKeyId)
-            }
+    const basePayload = {
+        aud: sandboxApiKeyAudience,
+        purpose: args.purpose,
+        iat: Math.floor(issuedAt / 1000),
+        exp: Math.ceil(expiresAtMs / 1000)
+    };
+    const payload = args.purpose === 'dryrun' ? { ...basePayload, dryrun_id: args.dryrunId } : { ...basePayload, deployment_id: args.deploymentId };
+
+    const token = jwt.sign(payload, signingSecret, {
+        algorithm: sandboxApiKeyAlgorithm,
+        header: {
+            typ: sandboxApiKeyType,
+            alg: sandboxApiKeyAlgorithm,
+            kid: String(parentApiKeyId)
         }
-    );
+    });
 
     return `${sandboxApiKeyPrefix}${token}`;
 }
@@ -154,14 +168,16 @@ export function verifySandboxApiKeyToken({
             return null;
         }
 
-        return {
+        const basePayload = {
             kid: parsed.parentApiKeyId,
             aud: verified.aud,
-            purpose: verified.purpose,
-            ...(verified.dryrun_id ? { dryrun_id: verified.dryrun_id } : {}),
             exp: verified.exp,
             iat: verified.iat
         };
+
+        return verified.purpose === 'dryrun'
+            ? { ...basePayload, purpose: verified.purpose, dryrun_id: verified.dryrun_id }
+            : { ...basePayload, purpose: verified.purpose, deployment_id: verified.deployment_id };
     } catch {
         return null;
     }
@@ -191,15 +207,23 @@ export function parseSandboxApiKeyToken(token: string): { parentApiKeyId: number
     return { parentApiKeyId, jwt: rawJwt };
 }
 
-function isSandboxApiKeyJwtPayload(payload: JwtPayload): payload is JwtPayload & Pick<SandboxApiKeyPayload, 'aud' | 'purpose' | 'dryrun_id' | 'exp' | 'iat'> {
-    return (
+function isSandboxApiKeyJwtPayload(payload: JwtPayload): payload is JwtPayload & SandboxApiKeyJwtPayload {
+    if (
         payload.aud === sandboxApiKeyAudience &&
         typeof payload['purpose'] === 'string' &&
-        sandboxApiKeyPurposesSet.has(payload['purpose']) &&
-        (payload['dryrun_id'] === undefined || typeof payload['dryrun_id'] === 'string') &&
         typeof payload.exp === 'number' &&
         typeof payload.iat === 'number' &&
         Number.isSafeInteger(payload.exp) &&
         Number.isSafeInteger(payload.iat)
-    );
+    ) {
+        if (payload['purpose'] === 'dryrun') {
+            return typeof payload['dryrun_id'] === 'string' && payload['deployment_id'] === undefined;
+        }
+
+        if (payload['purpose'] === 'deploy') {
+            return typeof payload['deployment_id'] === 'string' && payload['dryrun_id'] === undefined;
+        }
+    }
+
+    return false;
 }

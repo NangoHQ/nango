@@ -969,6 +969,7 @@
               "api-integrations/aws-inspector2",
               "api-integrations/aws-multi-service",
               "integrations/all/aws-scim",
+              "integrations/all/aws-sigv4",
               "integrations/all/avoma",
               "api-integrations/axiom",
               "integrations/all/azure-blob-storage",

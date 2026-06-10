@@ -1660,7 +1660,8 @@ class OAuthController {
                     authorizationCode,
                     session.callbackUrl,
                     session.codeVerifier!,
-                    connectionConfig
+                    connectionConfig,
+                    session.id
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
