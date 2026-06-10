@@ -72,8 +72,10 @@ function sanitizeMessage(message: string): string {
         return `__URL_PLACEHOLDER_${replacementKey}__`;
     });
 
+    // Sandbox providers strip their known workspace paths to relative paths first.
+    // Anything absolute still reaching this fallback is redacted to avoid leaking host or provider directory layout.
     return messageWithUrlPlaceholders
-        .replace(/(^|[\s"'(])(\/[^\s"')]+)/g, (_, prefix: string) => `${prefix}${redactAbsolutePath()}`)
+        .replace(/(^|[\s"'(])(\/[^\s"')]+)/g, (_, prefix: string) => `${prefix}<path>`)
         .replace(/__URL_PLACEHOLDER_(\d+)__/g, (_, index: string) => urlReplacements[Number(index)] ?? '<url>')
         .replace(/\b[A-Z][A-Z0-9_]{4,}\b/g, (match) => (process.env[match] !== undefined ? '<env>' : match))
         .slice(0, maxFunctionErrorMessageLength);
@@ -86,8 +88,4 @@ function removeUrlOrigin(value: string): string {
     } catch {
         return '<url>';
     }
-}
-
-function redactAbsolutePath(): string {
-    return '<path>';
 }
