@@ -37,7 +37,7 @@ export async function cleanupFunctionSandbox({
     try {
         await Sandbox.kill(sandboxId, { apiKey });
     } catch (err) {
-        logger.warning('Failed to clean up function sandbox', { sandboxId, err });
+        logger.warning('Failed to clean up function sandbox', { sandboxId, err: stringifyError(err) });
     }
 }
 
