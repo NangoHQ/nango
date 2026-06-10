@@ -1,0 +1,30 @@
+packages/sandbox/lib/functions/sandbox.ts
+  s_06f7e7f4a5a284::t_369b7e0a57ff88 9,28-42
+  s_06f7e7f4a5a284::t_7acc443dcd5fe2 21-27
+packages/server/lib/controllers/functions/deploy/postDeployResult.ts
+  s_06f7e7f4a5a284::t_7acc443dcd5fe2 1-7
+  s_06f7e7f4a5a284::t_61939d64dab239 49,89
+packages/server/lib/controllers/functions/resultCallbacks.unit.test.ts
+  s_06f7e7f4a5a284::t_333f5631c728d9 16,30,59,64,93,100,127
+packages/sandbox/lib/functions/sandbox.unit.test.ts
+  s_06f7e7f4a5a284::t_7acc443dcd5fe2 4-10
+  s_06f7e7f4a5a284::t_9bfe36893883bd 73-96
+packages/server/lib/controllers/functions/dryrun/postDryrunResult.ts
+  s_06f7e7f4a5a284::t_61939d64dab239 1,43,83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "742b6724d2bad99be63af4f984965c977ad5273a",
+  "prompts": {},
+  "sessions": {
+    "s_06f7e7f4a5a284": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb0d1-d401-72e1-9d10-0657caacba83",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
