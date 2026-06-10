@@ -34,11 +34,16 @@ export function useChartInteractions(seriesSignature: string) {
         []
     );
 
-    useEffect(() => {
+    // Reset during render (not in a passive effect) when the set of series changes — the
+    // positional keys (s0, s1, …) get reused, so a post-paint reset would let one frame
+    // inherit stale hidden/isolated state and flash the wrong series.
+    const [prevSignature, setPrevSignature] = useState(seriesSignature);
+    if (seriesSignature !== prevSignature) {
+        setPrevSignature(seriesSignature);
         setHidden((prev) => (prev.size === 0 ? prev : new Set()));
         setIsolated(null);
         setHoveredKey(null);
-    }, [seriesSignature]);
+    }
 
     const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
 

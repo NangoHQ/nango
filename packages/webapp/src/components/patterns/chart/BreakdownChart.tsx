@@ -87,7 +87,18 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
             });
         }
         if (isCumulative) {
-            return [<Area key="total" dataKey="total" fill="var(--color-total)" type="basis" strokeWidth={2} dot={false} isAnimationActive={false} />];
+            return [
+                <Area
+                    key="total"
+                    dataKey="total"
+                    fill="var(--color-total)"
+                    stroke="var(--color-total)"
+                    type="basis"
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                />
+            ];
         }
         return [<Bar key="total" dataKey="total" fill="var(--color-total)" isAnimationActive={false} />];
     };

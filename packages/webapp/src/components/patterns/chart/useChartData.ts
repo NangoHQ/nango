@@ -39,11 +39,12 @@ function daysInTimeframe(timeframe: { start: string; end: string }): string[] {
  * only future days are blanked. (String compare is safe: both are YYYY-MM-DD, UTC.)
  */
 export function useChartData(data: ApiBillingUsageMetric | undefined, breakdownSeries: ChartSeries[] | undefined, timeframe: { start: string; end: string }) {
-    const todayDateKey = useMemo(() => {
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0);
-        return today.toISOString().split('T')[0];
-    }, []);
+    // Computed each render (not memoized on []) so a dashboard left open past midnight
+    // rolls over to the new day. The value is stable within a day, so the memos below
+    // (keyed on it) don't recompute until the date actually changes.
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const todayDateKey = today.toISOString().split('T')[0];
 
     const baseChartData = useMemo(() => {
         if (!data) return [];

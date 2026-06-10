@@ -32,7 +32,8 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                             type="button"
                             onClick={() => toggleHidden(s.key)}
                             className="group/swatch relative flex size-4 shrink-0 items-center justify-center"
-                            aria-label={`Toggle ${s.label}`}
+                            aria-pressed={hidden.has(s.key)}
+                            aria-label={`${hidden.has(s.key) ? 'Show' : 'Hide'} ${s.label}`}
                             title={`Toggle ${s.label}`}
                         >
                             <span
