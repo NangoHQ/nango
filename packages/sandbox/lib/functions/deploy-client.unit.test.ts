@@ -53,7 +53,7 @@ vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildAsyncDeployScript, invokeDeploy, prepareAsyncDeploy } from './deploy-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+import { executionEnvironmentUnavailableMessage } from '../sandbox-service.js';
 
 import type { FunctionError } from './helpers.js';
 

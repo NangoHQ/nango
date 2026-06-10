@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => {
     }
 
     return {
-        cleanupFunctionSandbox: vi.fn(),
+        cleanupSandbox: vi.fn(),
         FunctionError,
         getFunctionDeploymentRow: vi.fn(),
         getFunctionDryrunRow: vi.fn(),
@@ -27,7 +27,6 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock('@nangohq/sandbox', () => ({
-    cleanupFunctionSandbox: mocks.cleanupFunctionSandbox,
     FunctionError: mocks.FunctionError,
     getFunctionDeploymentRow: mocks.getFunctionDeploymentRow,
     getFunctionDryrunRow: mocks.getFunctionDryrunRow,
@@ -37,6 +36,9 @@ vi.mock('@nangohq/sandbox', () => ({
     markFunctionDryrunSuccess: mocks.markFunctionDryrunSuccess,
     parseDeploySuccessOutput: mocks.parseDeploySuccessOutput,
     parseDryrunSuccessOutput: mocks.parseDryrunSuccessOutput,
+    sandboxService: {
+        cleanup: mocks.cleanupSandbox
+    },
     deploySandboxTimeoutMs: 330_000,
     dryrunSandboxTimeoutMs: 630_000,
     sandboxApiKeyService: {
@@ -56,7 +58,7 @@ describe('function result callbacks', () => {
         mocks.markFunctionDeploymentSuccess.mockResolvedValue({});
         mocks.markFunctionDryrunFailed.mockResolvedValue({});
         mocks.markFunctionDryrunSuccess.mockResolvedValue({});
-        mocks.cleanupFunctionSandbox.mockResolvedValue(undefined);
+        mocks.cleanupSandbox.mockResolvedValue(undefined);
     });
 
     it('marks deployments as failed when success result processing fails', async () => {
@@ -90,7 +92,7 @@ describe('function result callbacks', () => {
                 message: expect.stringContaining('Failed to parse deploy output')
             })
         });
-        expect(mocks.cleanupFunctionSandbox).toHaveBeenCalledWith({ sandboxId: 'deployment-sandbox' });
+        expect(mocks.cleanupSandbox).toHaveBeenCalledWith({ sandboxId: 'deployment-sandbox' });
         expect(status).toHaveBeenCalledWith(200);
         expect(send).toHaveBeenCalledWith({ ok: true });
     });
@@ -124,7 +126,7 @@ describe('function result callbacks', () => {
                 message: expect.stringContaining('Failed to save dryrun result')
             })
         });
-        expect(mocks.cleanupFunctionSandbox).toHaveBeenCalledWith({ sandboxId: 'dryrun-sandbox' });
+        expect(mocks.cleanupSandbox).toHaveBeenCalledWith({ sandboxId: 'dryrun-sandbox' });
         expect(status).toHaveBeenCalledWith(200);
         expect(send).toHaveBeenCalledWith({ ok: true });
     });

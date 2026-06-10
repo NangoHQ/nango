@@ -11,9 +11,9 @@ import { envs } from '../env.js';
 import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
 import type { SandboxListOpts } from 'e2b';
 
-export type E2BRawSandbox = Awaited<ReturnType<typeof E2B.create>>;
+type E2BRawSandbox = Awaited<ReturnType<typeof E2B.create>>;
 
-const logger = getLogger('FunctionSandbox');
+const logger = getLogger('E2BSandboxProvider');
 const template = envs.E2B_SANDBOX_COMPILER_TEMPLATE;
 const workspacePath = '/home/user/nango-integrations';
 
@@ -37,15 +37,6 @@ export class E2BSandboxProvider implements SandboxProvider {
         }
 
         await E2B.kill(sandboxId, { apiKey });
-    }
-
-    async getRunningCount(params: { requestTimeoutMs?: number | undefined } = {}): Promise<number> {
-        const apiKey = envs.E2B_API_KEY;
-        if (!apiKey) {
-            throw new Error('E2B_API_KEY is required to count running E2B sandboxes');
-        }
-
-        return getRunningE2BSandboxCount({ apiKey, requestTimeoutMs: params.requestTimeoutMs });
     }
 }
 
@@ -100,7 +91,7 @@ class E2BSandbox implements Sandbox {
     }
 }
 
-export async function createE2BRawSandbox({ apiKey, purpose, timeoutMs, metadata = {} }: CreateSandboxParams & { apiKey: string }): Promise<E2BRawSandbox> {
+async function createE2BRawSandbox({ apiKey, purpose, timeoutMs, metadata = {} }: CreateSandboxParams & { apiKey: string }): Promise<E2BRawSandbox> {
     try {
         return await E2B.create(template, {
             timeoutMs,
