@@ -5,8 +5,8 @@ import { buildDeployArgs } from './command-builders.js';
 import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { FunctionError } from './helpers.js';
-import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { buildShellCommand } from './shell.js';
+import { deploySandboxTimeoutMs, deployTimeoutMs } from './timeouts.js';
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
 import { sandboxService } from '../sandbox-service.js';
 
@@ -45,7 +45,7 @@ export interface PreparedAsyncDeploy {
 export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<PreparedAsyncDeploy> {
     const sandbox = await sandboxService.create({
         purpose: 'deploy',
-        timeoutMs: remoteFunctionDeploySandboxTimeoutMs,
+        timeoutMs: deploySandboxTimeoutMs,
         metadata: { deploymentId: request.deployment_id }
     });
 
@@ -53,13 +53,13 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
         const { tsFilePath } = getFilePaths(request);
 
         await sandbox.writeFiles([
-            { path: `${remoteFunctionProjectPath}/${tsFilePath}`, contents: request.code },
-            { path: `${remoteFunctionProjectPath}/index.ts`, contents: buildIndexTs(request) },
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildIndexTs(request) },
             { path: '/tmp/nango-function-deploy.mjs', contents: buildAsyncDeployScript() }
         ]);
 
         const startedAt = new Date();
-        const executionTimeoutAt = new Date(startedAt.getTime() + remoteFunctionDeploySandboxTimeoutMs);
+        const executionTimeoutAt = new Date(startedAt.getTime() + deploySandboxTimeoutMs);
 
         return {
             sandboxId: sandbox.id,
@@ -68,7 +68,6 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
             start: async () => {
                 await sandbox.startCommand({
                     command: 'node /tmp/nango-function-deploy.mjs',
-                    cwd: remoteFunctionProjectPath,
                     timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
@@ -78,7 +77,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
                         NANGO_DEPLOY_SOURCE: 'standalone',
                         NANGO_DEPLOY_CALLBACK_URL: request.callback_url,
                         NANGO_DEPLOY_ARGS: JSON.stringify(buildDeployArgs(request)),
-                        NANGO_DEPLOY_TIMEOUT_MS: String(remoteFunctionDeployTimeoutMs),
+                        NANGO_DEPLOY_TIMEOUT_MS: String(deployTimeoutMs),
                         NANGO_DEPLOY_COMPILE_EXIT_CODE: String(NangoCliExitCode.CompileError)
                     }
                 });
@@ -96,15 +95,15 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
 export async function invokeDeploy(request: DeployRequest): Promise<DeployResult> {
     const sandbox = await sandboxService.create({
         purpose: 'deploy',
-        timeoutMs: remoteFunctionDeploySandboxTimeoutMs
+        timeoutMs: deploySandboxTimeoutMs
     });
 
     try {
         const { tsFilePath } = getFilePaths(request);
 
         await sandbox.writeFiles([
-            { path: `${remoteFunctionProjectPath}/${tsFilePath}`, contents: request.code },
-            { path: `${remoteFunctionProjectPath}/index.ts`, contents: buildIndexTs(request) }
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildIndexTs(request) }
         ]);
 
         const commandEnvs = {
@@ -119,8 +118,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         try {
             const result = await sandbox.runCommand({
                 command,
-                cwd: remoteFunctionProjectPath,
-                timeoutMs: remoteFunctionDeployTimeoutMs,
+                timeoutMs: deployTimeoutMs,
                 envs: commandEnvs
             });
             return { output: result.stdout };

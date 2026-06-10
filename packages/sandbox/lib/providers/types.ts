@@ -14,12 +14,19 @@ export interface CleanupSandboxParams {
 }
 
 export interface SandboxFile {
+    /**
+     * Relative paths are resolved inside the provider's workspace.
+     * Absolute paths are written as-is for provider-specific scratch files.
+     */
     path: string;
     contents: string;
 }
 
 export interface SandboxCommandParams {
     command: string;
+    /**
+     * Defaults to the provider workspace. Relative paths are resolved from it.
+     */
     cwd?: string | undefined;
     timeoutMs: number;
     envs?: Record<string, string> | undefined;

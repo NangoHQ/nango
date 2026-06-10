@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildDryrunArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
-import { remoteFunctionCompileTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs, remoteFunctionDryrunTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { compileTimeoutMs, dryrunSandboxTimeoutMs, dryrunTimeoutMs } from './timeouts.js';
 import { sandboxService } from '../sandbox-service.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
@@ -44,15 +44,15 @@ export interface PreparedAsyncDryrun {
 export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<PreparedAsyncDryrun> {
     const sandbox = await sandboxService.create({
         purpose: 'dryrun',
-        timeoutMs: remoteFunctionDryrunSandboxTimeoutMs,
+        timeoutMs: dryrunSandboxTimeoutMs,
         metadata: { dryrunId: request.dryrun_id }
     });
 
     try {
         const { tsFilePath } = getFilePaths(request);
         const files = [
-            { path: `${remoteFunctionProjectPath}/${tsFilePath}`, contents: request.code },
-            { path: `${remoteFunctionProjectPath}/index.ts`, contents: buildIndexTs(request) },
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildIndexTs(request) },
             { path: '/tmp/nango-function-dryrun.mjs', contents: buildAsyncDryrunScript() }
         ];
 
@@ -69,7 +69,7 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
         await sandbox.writeFiles(files);
 
         const startedAt = new Date();
-        const executionTimeoutAt = new Date(startedAt.getTime() + remoteFunctionDryrunSandboxTimeoutMs);
+        const executionTimeoutAt = new Date(startedAt.getTime() + dryrunSandboxTimeoutMs);
 
         return {
             sandboxId: sandbox.id,
@@ -78,7 +78,6 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
             start: async () => {
                 await sandbox.startCommand({
                     command: 'node /tmp/nango-function-dryrun.mjs',
-                    cwd: remoteFunctionProjectPath,
                     timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
@@ -86,8 +85,8 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
                         NANGO_HOSTPORT: request.nango_host,
                         NANGO_DRYRUN_CALLBACK_URL: request.callback_url,
                         NANGO_DRYRUN_ARGS: JSON.stringify(buildDryrunArgs(request)),
-                        NANGO_DRYRUN_COMPILE_TIMEOUT_MS: String(remoteFunctionCompileTimeoutMs),
-                        NANGO_DRYRUN_TIMEOUT_MS: String(remoteFunctionDryrunTimeoutMs),
+                        NANGO_DRYRUN_COMPILE_TIMEOUT_MS: String(compileTimeoutMs),
+                        NANGO_DRYRUN_TIMEOUT_MS: String(dryrunTimeoutMs),
                         NANGO_DRYRUN_COMPILE_EXIT_CODE: String(NangoCliExitCode.CompileError)
                     }
                 });

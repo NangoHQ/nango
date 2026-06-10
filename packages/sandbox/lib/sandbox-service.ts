@@ -44,7 +44,7 @@ export class SandboxService {
         try {
             await this.provider.cleanup(cleanupParams);
         } catch (err) {
-            logger.warning('Failed to clean up function sandbox', {
+            logger.warning('Failed to clean up sandbox', {
                 sandboxId: params.sandboxId,
                 provider: this.provider.name,
                 err: stringifyError(err)

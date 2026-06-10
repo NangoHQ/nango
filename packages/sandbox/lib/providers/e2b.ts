@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { posix as path } from 'node:path';
 
 import { CommandExitError, RateLimitError, Sandbox as E2B, TimeoutError } from 'e2b';
 
@@ -6,7 +7,6 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 
 import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 import { envs } from '../env.js';
-import { remoteFunctionCompilerTemplate } from '../functions/runtime.js';
 
 import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
 import type { SandboxListOpts } from 'e2b';
@@ -14,6 +14,8 @@ import type { SandboxListOpts } from 'e2b';
 export type E2BRawSandbox = Awaited<ReturnType<typeof E2B.create>>;
 
 const logger = getLogger('FunctionSandbox');
+const template = envs.E2B_SANDBOX_COMPILER_TEMPLATE;
+const workspacePath = '/home/user/nango-integrations';
 
 export class E2BSandboxProvider implements SandboxProvider {
     public readonly name = 'e2b';
@@ -30,7 +32,7 @@ export class E2BSandboxProvider implements SandboxProvider {
 
     async cleanup({ sandboxId, apiKey = envs.E2B_API_KEY }: CleanupSandboxParams): Promise<void> {
         if (!apiKey) {
-            logger.warning('Skipping function sandbox cleanup because E2B_API_KEY is not set', { sandboxId });
+            logger.warning('Skipping sandbox cleanup because E2B_API_KEY is not set', { sandboxId });
             return;
         }
 
@@ -58,18 +60,18 @@ class E2BSandbox implements Sandbox {
 
     async writeFiles(files: SandboxFile[]): Promise<void> {
         for (const file of files) {
-            await this.sandbox.files.write(file.path, file.contents);
+            await this.sandbox.files.write(resolvePath(file.path), file.contents);
         }
     }
 
-    async readTextFile(path: string): Promise<string> {
-        return String(await this.sandbox.files.read(path));
+    async readTextFile(filePath: string): Promise<string> {
+        return String(await this.sandbox.files.read(resolvePath(filePath)));
     }
 
     async runCommand(params: SandboxCommandParams): Promise<SandboxCommandResult> {
         try {
             const result = await this.sandbox.commands.run(params.command, {
-                ...(params.cwd !== undefined ? { cwd: params.cwd } : {}),
+                cwd: resolvePath(params.cwd),
                 timeoutMs: params.timeoutMs,
                 ...(params.envs !== undefined ? { envs: params.envs } : {})
             });
@@ -83,7 +85,7 @@ class E2BSandbox implements Sandbox {
     async startCommand(params: SandboxCommandParams): Promise<void> {
         try {
             await this.sandbox.commands.run(params.command, {
-                ...(params.cwd !== undefined ? { cwd: params.cwd } : {}),
+                cwd: resolvePath(params.cwd),
                 background: true,
                 timeoutMs: params.timeoutMs,
                 ...(params.envs !== undefined ? { envs: params.envs } : {})
@@ -100,7 +102,7 @@ class E2BSandbox implements Sandbox {
 
 export async function createE2BRawSandbox({ apiKey, purpose, timeoutMs, metadata = {} }: CreateSandboxParams & { apiKey: string }): Promise<E2BRawSandbox> {
     try {
-        return await E2B.create(remoteFunctionCompilerTemplate, {
+        return await E2B.create(template, {
             timeoutMs,
             allowInternetAccess: true,
             metadata: { ...metadata, purpose, requestId: randomUUID() },
@@ -135,18 +137,32 @@ export async function getRunningE2BSandboxCount({ apiKey, requestTimeoutMs }: { 
 
 function toSandboxCommandError(error: unknown): Error {
     if (error instanceof CommandExitError) {
-        return new SandboxCommandExitError(error.message, {
-            stdout: error.stdout,
-            stderr: error.stderr,
+        return new SandboxCommandExitError(stripWorkspacePath(error.message), {
+            stdout: stripWorkspacePath(error.stdout),
+            stderr: stripWorkspacePath(error.stderr),
             exitCode: error.exitCode
         });
     }
 
     if (error instanceof TimeoutError) {
-        return new SandboxCommandTimeoutError(error.message, { cause: error });
+        return new SandboxCommandTimeoutError(stripWorkspacePath(error.message), { cause: error });
     }
 
     return error instanceof Error ? error : new Error(String(error));
+}
+
+function resolvePath(value: string | undefined): string {
+    if (!value || value === '.') {
+        return workspacePath;
+    }
+
+    return path.isAbsolute(value) ? value : path.join(workspacePath, value);
+}
+
+function stripWorkspacePath(value: string): string;
+function stripWorkspacePath(value: undefined): undefined;
+function stripWorkspacePath(value: string | undefined): string | undefined {
+    return value?.replaceAll(`${workspacePath}/`, '').replaceAll(workspacePath, '.');
 }
 
 function isExecutionEnvironmentUnavailableError(error: unknown): boolean {

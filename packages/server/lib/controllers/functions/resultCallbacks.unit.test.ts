@@ -37,8 +37,8 @@ vi.mock('@nangohq/sandbox', () => ({
     markFunctionDryrunSuccess: mocks.markFunctionDryrunSuccess,
     parseDeploySuccessOutput: mocks.parseDeploySuccessOutput,
     parseDryrunSuccessOutput: mocks.parseDryrunSuccessOutput,
-    remoteFunctionDeploySandboxTimeoutMs: 330_000,
-    remoteFunctionDryrunSandboxTimeoutMs: 630_000,
+    deploySandboxTimeoutMs: 330_000,
+    dryrunSandboxTimeoutMs: 630_000,
     sandboxApiKeyService: {
         createSandboxApiKey: vi.fn()
     }
