@@ -438,7 +438,7 @@ function ComboboxContent({
                     data-slot="combobox-content"
                     data-chips={!!anchor}
                     className={cn(
-                        'group/combobox-content relative max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[min(var(--available-width),100vw)] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-surface-canvas text-text-strong shadow-md ring-1 ring-border-muted duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+                        'group/combobox-content relative max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[min(var(--available-width),100vw)] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-surface-overlay text-text-strong shadow-md ring-1 ring-border-muted duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                         className
                     )}
                     {...props}
