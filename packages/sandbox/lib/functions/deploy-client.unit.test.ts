@@ -98,7 +98,7 @@ describe('remote function deploy client', () => {
         expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-deploy.mjs', {
             cwd: '/home/user/nango-integrations',
             background: true,
-            timeoutMs: 30_000,
+            timeoutMs: 0,
             envs: expect.objectContaining({
                 NANGO_DEPLOY_CALLBACK_URL: 'https://api.example.test/functions/deployments/7b539769-6d39-4442-89fc-33fbac96ea66/result',
                 NANGO_DEPLOY_ARGS: JSON.stringify([

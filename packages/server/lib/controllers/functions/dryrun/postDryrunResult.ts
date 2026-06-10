@@ -1,4 +1,4 @@
-import { getFunctionDryrunRow, markFunctionDryrunFailed, markFunctionDryrunSuccess, parseDryrunSuccessOutput } from '@nangohq/sandbox';
+import { cleanupFunctionSandbox, getFunctionDryrunRow, markFunctionDryrunFailed, markFunctionDryrunSuccess, parseDryrunSuccessOutput } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -40,6 +40,7 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
 
     if (current.status === 'success' || current.status === 'failed') {
         res.status(200).send({ ok: true });
+        await cleanupFunctionSandbox({ sandboxId: current.sandbox_id });
         return;
     }
 
@@ -79,4 +80,5 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
     }
 
     res.status(200).send({ ok: true });
+    await cleanupFunctionSandbox({ sandboxId: current.sandbox_id });
 });

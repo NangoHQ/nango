@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => {
     }
 
     return {
+        cleanupFunctionSandbox: vi.fn(),
         FunctionError,
         getFunctionDeploymentRow: vi.fn(),
         getFunctionDryrunRow: vi.fn(),
@@ -26,6 +27,7 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock('@nangohq/sandbox', () => ({
+    cleanupFunctionSandbox: mocks.cleanupFunctionSandbox,
     FunctionError: mocks.FunctionError,
     getFunctionDeploymentRow: mocks.getFunctionDeploymentRow,
     getFunctionDryrunRow: mocks.getFunctionDryrunRow,
@@ -54,11 +56,12 @@ describe('function result callbacks', () => {
         mocks.markFunctionDeploymentSuccess.mockResolvedValue({});
         mocks.markFunctionDryrunFailed.mockResolvedValue({});
         mocks.markFunctionDryrunSuccess.mockResolvedValue({});
+        mocks.cleanupFunctionSandbox.mockResolvedValue(undefined);
     });
 
     it('marks deployments as failed when success result processing fails', async () => {
         const deploymentId = '7b539769-6d39-4442-89fc-33fbac96ea66';
-        mocks.getFunctionDeploymentRow.mockResolvedValue({ id: deploymentId, status: 'running' });
+        mocks.getFunctionDeploymentRow.mockResolvedValue({ id: deploymentId, status: 'running', sandbox_id: 'deployment-sandbox' });
         mocks.parseDeploySuccessOutput.mockImplementation(() => {
             throw new Error('Failed to parse deploy output');
         });
@@ -87,13 +90,14 @@ describe('function result callbacks', () => {
                 message: expect.stringContaining('Failed to parse deploy output')
             })
         });
+        expect(mocks.cleanupFunctionSandbox).toHaveBeenCalledWith({ sandboxId: 'deployment-sandbox' });
         expect(status).toHaveBeenCalledWith(200);
         expect(send).toHaveBeenCalledWith({ ok: true });
     });
 
     it('marks dryruns as failed when success result processing fails', async () => {
         const dryrunId = '7b539769-6d39-4442-89fc-33fbac96ea66';
-        mocks.getFunctionDryrunRow.mockResolvedValue({ id: dryrunId, status: 'running' });
+        mocks.getFunctionDryrunRow.mockResolvedValue({ id: dryrunId, status: 'running', sandbox_id: 'dryrun-sandbox' });
         mocks.parseDryrunSuccessOutput.mockReturnValue({ output: 'Executing -> function\nDone', result: { ok: true }, hasResult: true });
         mocks.markFunctionDryrunSuccess.mockRejectedValue(new Error('Failed to save dryrun result'));
 
@@ -120,6 +124,7 @@ describe('function result callbacks', () => {
                 message: expect.stringContaining('Failed to save dryrun result')
             })
         });
+        expect(mocks.cleanupFunctionSandbox).toHaveBeenCalledWith({ sandboxId: 'dryrun-sandbox' });
         expect(status).toHaveBeenCalledWith(200);
         expect(send).toHaveBeenCalledWith({ ok: true });
     });
