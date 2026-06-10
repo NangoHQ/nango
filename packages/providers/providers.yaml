@@ -19735,7 +19735,7 @@ tempo:
             title: Jira Cloud Subdomain
             description: The subdomain of your Jira Cloud instance.
             example: acme
-            pattern: '^[a-zA-Z0-9-]+$'
+            pattern: '^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'
             doc_section: '#step-1-finding-your-jira-subdomain'
             order: 2
         subdomain:
