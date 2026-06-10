@@ -54,3 +54,8 @@ export function colorForValue(value: string, dimension?: string): string {
     colorByValue.set(value, color);
     return color;
 }
+
+/** Test-only: clear the cross-chart color assignments so unit tests aren't order-dependent. */
+export function resetUsageChartColorsForTests(): void {
+    colorByValue.clear();
+}

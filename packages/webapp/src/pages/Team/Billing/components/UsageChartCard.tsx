@@ -2,14 +2,16 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
 import { BreakdownControls } from './BreakdownControls';
-import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, metricsSupportingDimension } from '../usageBreakdown';
+import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, metricsSupportingDimension } from '../usageBreakdown';
+import { toChartSeries } from '../usageChartSeries';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { ChartCard, REST_SERIES_COLOR, REST_SERIES_KEY, colorForValue } from '@/components/patterns/chart';
+import { ChartCard } from '@/components/patterns/chart';
 import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
+import type { GlobalBreakdownSelection } from '../useGlobalBreakdown';
 import type { ChartSeries } from '@/components/patterns/chart';
-import type { ApiBillingUsageMetric, BillingUsageMetric, UsageMetric } from '@nangohq/types';
+import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 const NONE = 'none';
 
@@ -19,26 +21,10 @@ interface UsageChartCardProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
-    /** Returns true if applying `dimension` from this panel would change at least one other supporting panel. */
-    isDivergingFromGlobal: (metric: UsageMetric, dimension: AnyBreakdownDimension) => boolean;
-    /** Make this panel's dimension the global one and apply it to every metric that supports it. */
-    onApplyToAll: (dimension: AnyBreakdownDimension) => void;
-}
-
-/** Map breakdown entries to stacked chart series: largest usage first, with the 'rest' rollup last. */
-function toChartSeries(entries: BillingUsageMetric[], dimension: AnyBreakdownDimension): ChartSeries[] {
-    const ranked = entries.filter((e) => !e.isRest).sort((a, b) => b.total - a.total);
-    const series: ChartSeries[] = ranked.map((entry, i) => {
-        const label = entry.group ? formatDimensionValue(dimension, entry.group.value) : '—';
-        return { key: `s${i}`, color: colorForValue(label, dimension), label, usage: entry.usage };
-    });
-    const rest = entries.find((e) => e.isRest);
-    if (rest) {
-        // Appended last so the legend lists it after the named series; ChartCard then
-        // renders it at the bottom of the stack.
-        series.push({ key: REST_SERIES_KEY, label: 'Rest', color: REST_SERIES_COLOR, usage: rest.usage });
-    }
-    return series;
+    /** Returns true if applying this panel's selection would change at least one other applicable panel. */
+    isDivergingFromGlobal: (metric: UsageMetric, dimension: GlobalBreakdownSelection) => boolean;
+    /** Apply this panel's selection to every applicable metric. */
+    onApplyToAll: (dimension: GlobalBreakdownSelection) => void;
 }
 
 /**
@@ -63,8 +49,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         return breakdownEntries ? toChartSeries(breakdownEntries, dimension) : [];
     }, [showControls, dimension, breakdownEntries]);
 
-    // "Apply to all" shows when at least one other supporting panel has a different selection.
-    const canApplyToAll = dimension !== null && metricsSupportingDimension(dimension).length > 1 && isDivergingFromGlobal(metric, dimension);
+    // "Apply to all" shows when at least one other applicable panel has a different selection.
+    const canApplyToAll = (dimension === null || metricsSupportingDimension(dimension).length > 1) && isDivergingFromGlobal(metric, dimension);
 
     const headerActions = showControls ? (
         <BreakdownControls
@@ -72,7 +58,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             dimension={dimension}
             onChange={(d) => void setDimParam(d)}
             canApplyToAll={canApplyToAll}
-            onApplyToAll={() => dimension && onApplyToAll(dimension)}
+            onApplyToAll={() => onApplyToAll(dimension)}
         />
     ) : undefined;
 
