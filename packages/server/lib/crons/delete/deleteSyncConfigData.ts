@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { getFunctionFileLocations, hardDeleteEndpoints, hardDeleteSyncConfig } from '@nangohq/shared';
 
 import { batchDelete } from './batchDelete.js';
-import { deleteSyncData } from './deleteSyncData.js';
+import { deleteSyncs } from './deleteSyncs.js';
 import { tasks } from '../../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
@@ -47,9 +47,10 @@ export async function deleteSyncConfigData({ syncConfigId, environmentId }: Dele
             deleteFn: async () => {
                 const syncs = await db.knex.from<Sync>('_nango_syncs').select('id', 'nango_connection_id').where({ sync_config_id: version.id }).limit(limit);
 
-                for (const sync of syncs) {
-                    await deleteSyncData({ syncId: sync.id, nangoConnectionId: sync.nango_connection_id, environmentId, models: version.models }, opts);
-                }
+                await deleteSyncs(
+                    syncs.map((sync) => ({ id: sync.id, nangoConnectionId: sync.nango_connection_id, environmentId, models: version.models })),
+                    opts
+                );
 
                 return syncs.length;
             }

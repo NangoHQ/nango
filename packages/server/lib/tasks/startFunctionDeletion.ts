@@ -1,12 +1,9 @@
-import { deleteSyncConfig, getSyncsBySyncConfigId, syncManager } from '@nangohq/shared';
+import { deleteSyncConfig } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { tasks } from './index.js';
-import { getOrchestrator } from '../utils/utils.js';
 
 import type { Result } from '@nangohq/utils';
-
-const orchestrator = getOrchestrator();
 
 export interface FunctionDeletionParams {
     syncConfigId: number;
@@ -16,20 +13,16 @@ export interface FunctionDeletionParams {
 }
 
 /**
- * Enqueues the durable `deleteFunction` task, then soft-deletes the config and its syncs to stop
- * execution immediately.
+ * Enqueues the durable `deleteFunction` task and soft-deletes the config. Soft-deleting the config
+ * neutralizes execution immediately (a scheduled run loads the config, finds it gone, and bails);
+ * the task then unschedules (in bulk, per batch) and hard-deletes the syncs (and their active error
+ * notifications). O(1) so it scales to functions with millions of connections.
  **/
 export async function startFunctionDeletion({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
     const res = await tasks.enqueue('deleteFunction', { syncConfigId, environmentId, models });
     // Only continue if enqueueing the task was successful.
     if (res.isErr()) {
         return Err(res.error);
-    }
-
-    // Fetch the live syncs before soft-deleting the config (the query requires an active config).
-    const syncs = await getSyncsBySyncConfigId(environmentId, syncConfigId);
-    for (const sync of syncs) {
-        await syncManager.softDeleteSync(sync.id, environmentId, orchestrator);
     }
 
     await deleteSyncConfig(syncConfigId);

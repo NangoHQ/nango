@@ -22,7 +22,7 @@ import { deleteConnectionData } from './delete/deleteConnectionData.js';
 import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
 import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
 import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
-import { deleteSyncData } from './delete/deleteSyncData.js';
+import { deleteSyncs } from './delete/deleteSyncs.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
 
@@ -145,18 +145,16 @@ export async function exec(): Promise<void> {
                 if (syncs.isErr()) {
                     throw syncs.error;
                 }
-                for (const { sync, syncConfig } of syncs.value) {
-                    // null environmentId when the config is already gone → unschedule and records are skipped.
-                    await deleteSyncData(
-                        {
-                            syncId: sync.id,
-                            nangoConnectionId: sync.nango_connection_id,
-                            environmentId: syncConfig?.environment_id ?? null,
-                            models: syncConfig?.models ?? []
-                        },
-                        opts
-                    );
-                }
+                // null environmentId when the config is already gone → unschedule and records are skipped.
+                await deleteSyncs(
+                    syncs.value.map(({ sync, syncConfig }) => ({
+                        id: sync.id,
+                        nangoConnectionId: sync.nango_connection_id,
+                        environmentId: syncConfig?.environment_id ?? null,
+                        models: syncConfig?.models ?? []
+                    })),
+                    opts
+                );
 
                 return syncs.value.length;
             }

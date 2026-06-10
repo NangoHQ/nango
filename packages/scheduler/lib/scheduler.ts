@@ -622,6 +622,29 @@ export class Scheduler {
     }
 
     /**
+     * Set the state of many schedules in one call (e.g. unscheduling a deleted function's syncs in bulk).
+     * A missing schedule is treated as success — it is already effectively in the deleted state. Errors are
+     * aggregated so a single bad schedule doesn't hide the rest.
+     */
+    public async setScheduleStates({ scheduleNames, state }: { scheduleNames: string[]; state: ScheduleState }): Promise<Result<void>> {
+        const errors: string[] = [];
+        for (const scheduleName of scheduleNames) {
+            const res = await this.setScheduleState({ scheduleName, state });
+            if (res.isErr()) {
+                const message = res.error instanceof Error ? res.error.message : String(res.error);
+                if (message.includes('not found')) {
+                    continue;
+                }
+                errors.push(`${scheduleName}: ${message}`);
+            }
+        }
+        if (errors.length > 0) {
+            return Err(new Error(`Failed to set state for ${errors.length}/${scheduleNames.length} schedule(s): ${errors.join('; ')}`));
+        }
+        return Ok(undefined);
+    }
+
+    /**
      * Set schedule frequency
      * @param scheduleName - Schedule name
      * @param frequencyMs - Frequency in milliseconds
