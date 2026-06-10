@@ -1,5 +1,3 @@
-import { stringifyError } from '@nangohq/utils';
-
 import type { KVStore } from './KVStore.js';
 
 export interface Lock {
@@ -40,7 +38,7 @@ export class Locking {
         try {
             await this.store.set(key, '1', { canOverride: false, ttlMs: ttlMs });
         } catch (err) {
-            throw new Error(`Failed to acquire lock for key: ${key} ${stringifyError(err)}`);
+            throw new Error(`Failed to acquire lock for key: ${key}`, { cause: err });
         }
         return { key };
     }
@@ -55,7 +53,7 @@ export class Locking {
         try {
             await this.store.delete(lock.key);
         } catch (err) {
-            throw new Error(`Failed to release lock for key: ${lock.key} ${stringifyError(err)}`);
+            throw new Error(`Failed to release lock for key: ${lock.key}`, { cause: err });
         }
     }
 
