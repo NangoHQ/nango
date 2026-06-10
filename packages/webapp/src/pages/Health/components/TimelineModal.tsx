@@ -14,20 +14,18 @@ export const TimelineModal = ({ integrationId, onClose }: { integrationId: strin
                     <DialogTitle>Execution Timeline: {integrationId}</DialogTitle>
                 </DialogHeader>
 
-                {error && <div className="p-8 text-center text-pink-600">Failed to load execution timeline.</div>}
-
-                {isLoading && (
+                {error ? (
+                    <div className="p-8 text-center text-pink-600">Failed to load execution timeline.</div>
+                ) : isLoading ? (
                     <div className="flex flex-col gap-1 mt-4">
                         <Skeleton className="h-10 w-full" />
                         {Array.from({ length: 5 }).map((_, i) => (
                             <Skeleton className="h-12 w-full" key={i} />
                         ))}
                     </div>
-                )}
-
-                {timeline && timeline.length === 0 && <div className="p-8 text-center text-text-secondary">No recent executions found.</div>}
-
-                {timeline && timeline.length > 0 && (
+                ) : timeline && timeline.length === 0 ? (
+                    <div className="p-8 text-center text-text-secondary">No recent executions found.</div>
+                ) : timeline && timeline.length > 0 ? (
                     <Table className="mt-4">
                         <TableHeader>
                             <TableRow>
@@ -56,7 +54,7 @@ export const TimelineModal = ({ integrationId, onClose }: { integrationId: strin
                             ))}
                         </TableBody>
                     </Table>
-                )}
+                ) : null}
             </DialogContent>
         </Dialog>
     );

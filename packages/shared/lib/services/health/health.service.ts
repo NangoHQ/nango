@@ -13,7 +13,7 @@ class HealthService {
 
     async getExecutionTimeline(environmentId: number, integrationId: string, limit = 50, offset = 0): Promise<ExecutionEvent[]> {
         const safeLimit = Math.min(Math.max(1, limit), 100);
-        const safeOffset = Math.max(0, offset);
+        const safeOffset = Math.min(Math.max(0, offset), 10000);
         return db.knex
             .from<ExecutionEvent>('execution_events')
             .where({ environment_id: environmentId, integration_id: integrationId })

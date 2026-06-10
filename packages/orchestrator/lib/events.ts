@@ -322,11 +322,16 @@ export class TaskEventsHandler extends PgEventEmitter {
             error_message: status === 'FAILURE' ? (task.output ? JSON.stringify(task.output).slice(0, 1000) : null) : null
         };
 
-        void this.db
-            .from('execution_events')
-            .insert(event)
-            .catch((err: unknown) => {
-                logger.error('Failed to insert execution event:', err);
-            });
+        void retryWithBackoff(
+            () => this.db.from('execution_events').insert(event),
+            {
+                startingDelay: 100,
+                timeMultiple: 3,
+                numOfAttempts: 3
+            }
+        ).catch((err: unknown) => {
+            logger.error('Failed to insert execution event after retries:', err);
+            metrics.increment(metrics.Types.ORCH_EXECUTION_EVENTS_DROPPED);
+        });
     }
 }
