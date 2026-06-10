@@ -46,9 +46,9 @@ class ConnectionController {
                 return;
             }
 
-            const { environment, account: team } = res.locals;
+            const { environment, account } = res.locals;
             const connectionId = req.params['connectionId'] as string;
-            const expectedConnectionId = generateSlackConnectionId(team.uuid, environment.id);
+            const expectedConnectionId = generateSlackConnectionId(account.uuid, environment.id);
 
             if (connectionId !== expectedConnectionId) {
                 res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
@@ -80,7 +80,7 @@ class ConnectionController {
 
             const preDeletionHook = () =>
                 preConnectionDeletion({
-                    team,
+                    team: account,
                     environment,
                     connection,
                     logContextGetter
