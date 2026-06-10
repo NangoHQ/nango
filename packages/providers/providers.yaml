@@ -16428,7 +16428,7 @@ roam-scim:
 robinhood-mcp:
     display_name: Robinhood (MCP)
     categories:
-        - finance
+        - payment
         - mcp
     auth_mode: MCP_OAUTH2
     client_registration: dynamic
