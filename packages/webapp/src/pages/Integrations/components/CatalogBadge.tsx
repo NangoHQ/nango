@@ -4,7 +4,7 @@ import { cn } from '@/utils/utils';
 
 import type { VariantProps } from 'class-variance-authority';
 
-const badgeVariants = cva('w-fit font-mono text-body-small-semi px-2 py-0.5 rounded bg-surface-canvas', {
+const badgeVariants = cva('w-fit font-mono text-body-small-regular px-2 py-0.5 rounded bg-surface-canvas', {
     variants: {
         variant: {
             dark: 'bg-surface-canvas  text-text-secondary',
