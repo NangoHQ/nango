@@ -78,7 +78,7 @@ class DockerSandbox implements Sandbox {
         if (options.detached) {
             args.push('-d');
         }
-        args.push('-w', resolvePath(params.cwd));
+        args.push('-w', workspacePath);
         for (const [key, value] of Object.entries(rewriteLocalhostEnvs(params.envs ?? {}))) {
             args.push('-e', `${key}=${value}`);
         }

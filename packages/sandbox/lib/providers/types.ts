@@ -19,10 +19,6 @@ export interface SandboxFile {
 
 export interface SandboxCommandParams {
     command: string;
-    /**
-     * Defaults to the provider workspace. Relative paths are resolved from it.
-     */
-    cwd?: string | undefined;
     timeoutMs: number;
     envs?: Record<string, string> | undefined;
 }
