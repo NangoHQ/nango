@@ -40,10 +40,12 @@ class EnvironmentController {
                 return;
             }
 
+            const { account, environment: callerEnvironment } = res.locals;
+            const expectedConnectionId = `account-${account.uuid}-${callerEnvironment.id}`;
             const { connection_id: connectionId } = req.query;
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
+            if (connectionId !== expectedConnectionId) {
+                res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
                 return;
             }
 
@@ -62,7 +64,7 @@ class EnvironmentController {
                 return;
             }
 
-            const digest = hmacService.computeDigest({ key: environment.hmac_key!, values: [integration_key, connectionId as string] });
+            const digest = hmacService.computeDigest({ key: environment.hmac_key!, values: [integration_key, expectedConnectionId] });
 
             res.status(200).send({ hmac_digest: digest, public_key: environment.public_key, integration_key });
         } catch (err) {

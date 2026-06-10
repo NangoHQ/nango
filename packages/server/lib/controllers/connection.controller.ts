@@ -39,9 +39,10 @@ class ConnectionController {
 
             const { environment, account: team } = res.locals;
             const connectionId = req.params['connectionId'] as string;
+            const expectedConnectionId = `account-${team.uuid}-${environment.id}`;
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
+            if (connectionId !== expectedConnectionId) {
+                res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
                 return;
             }
 
