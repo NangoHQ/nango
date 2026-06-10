@@ -5558,7 +5558,7 @@ dialpad-sandbox:
 diffbot:
     display_name: Diffbot
     categories:
-        - ai
+        - analytics
     auth_mode: API_KEY
     proxy:
         base_url: https://api.diffbot.com
