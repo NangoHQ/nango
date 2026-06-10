@@ -10,8 +10,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
             type={type}
             data-slot="input"
             className={cn(
-                'bg-surface-canvas border border-border-muted text-text-strong !text-body-medium-regular placeholder:text-text-muted focus:border-border-default',
-                'file:text-neutral-950  flex h-9 w-full min-w-0 rounded px-3 py-1 transition-colors focus-default-input file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-body-medium-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+                'bg-surface-canvas border border-border-input text-text-strong !text-body-medium-regular placeholder:text-text-muted hover:border-border-input-hover focus:border-border-input-hover',
+                'file:text-neutral-950  flex h-9 w-full min-w-0 rounded px-3 py-1 transition-colors outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-body-medium-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
                 'aria-invalid:border-text-danger',
                 className
             )}
