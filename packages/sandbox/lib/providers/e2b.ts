@@ -8,7 +8,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 import { envs } from '../env.js';
 
-import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
+import type { CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
 import type { SandboxListOpts } from 'e2b';
 
 type E2BRawSandbox = Awaited<ReturnType<typeof E2B.create>>;
@@ -45,7 +45,8 @@ export class E2BSandboxProvider implements SandboxProvider {
         }
     }
 
-    async cleanup({ sandboxId, apiKey = envs.E2B_API_KEY }: CleanupSandboxParams): Promise<void> {
+    async cleanup(sandboxId: string): Promise<void> {
+        const apiKey = envs.E2B_API_KEY;
         if (!apiKey) {
             logger.warning('Skipping sandbox cleanup because E2B_API_KEY is not set', { sandboxId });
             return;
@@ -128,7 +129,8 @@ function toSandboxCommandError(error: unknown): Error {
         return new SandboxCommandExitError(stripWorkspacePath(error.message), {
             stdout: stripWorkspacePath(error.stdout),
             stderr: stripWorkspacePath(error.stderr),
-            exitCode: error.exitCode
+            exitCode: error.exitCode,
+            cause: error
         });
     }
 

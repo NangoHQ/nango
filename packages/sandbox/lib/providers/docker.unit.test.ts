@@ -39,7 +39,7 @@ describe('DockerSandboxProvider', () => {
     it('cleans up local sandboxes by container id', async () => {
         const provider = new DockerSandboxProvider();
 
-        await provider.cleanup({ sandboxId: 'nango-dryrun-12345678' });
+        await provider.cleanup('nango-dryrun-12345678');
 
         expect(mocks.execDockerFileAsync).toHaveBeenCalledWith(['rm', '-f', 'nango-dryrun-12345678']);
     });
@@ -68,17 +68,17 @@ describe('DockerSandboxProvider', () => {
     it('strips provider workspace paths from command errors', async () => {
         const provider = new DockerSandboxProvider();
         const sandbox = await provider.create({ purpose: 'compile', timeoutMs: 30_000 });
-        mocks.execDockerFileAsync.mockRejectedValueOnce(
-            Object.assign(new Error('Failed at /home/user/nango-integrations/github/actions/foo.ts'), {
-                stdout: '/home/user/nango-integrations/github/actions/foo.ts:1:1',
-                stderr: '',
-                code: 1
-            })
-        );
+        const commandError = Object.assign(new Error('Failed at /home/user/nango-integrations/github/actions/foo.ts'), {
+            stdout: '/home/user/nango-integrations/github/actions/foo.ts:1:1',
+            stderr: '',
+            code: 1
+        });
+        mocks.execDockerFileAsync.mockRejectedValueOnce(commandError);
 
         await expect(sandbox.runCommand({ command: 'nango compile', timeoutMs: 10_000 })).rejects.toMatchObject({
             message: 'Failed at github/actions/foo.ts',
-            stdout: 'github/actions/foo.ts:1:1'
+            stdout: 'github/actions/foo.ts:1:1',
+            cause: commandError
         });
     });
 });

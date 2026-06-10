@@ -4,7 +4,7 @@ import { posix as path } from 'node:path';
 import { execDockerFileAsync, isExecTimeoutError, readContainerFile, rewriteDockerHostForLocalhost, writeContainerFile } from './docker-utils.js';
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from './errors.js';
 
-import type { CleanupSandboxParams, CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
+import type { CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
 
 const image = 'agent-sandboxes/blank-workspace:local';
 const workspacePath = '/home/user/nango-integrations';
@@ -33,7 +33,7 @@ export class DockerSandboxProvider implements SandboxProvider {
         return new DockerSandbox(containerName);
     }
 
-    async cleanup({ sandboxId }: CleanupSandboxParams): Promise<void> {
+    async cleanup(sandboxId: string): Promise<void> {
         await execDockerFileAsync(['rm', '-f', sandboxId]);
     }
 }
@@ -97,7 +97,7 @@ function toDockerCommandError(error: unknown): Error {
     }
 
     if (!error || typeof error !== 'object') {
-        return new SandboxCommandExitError(String(error));
+        return new SandboxCommandExitError(String(error), { cause: error });
     }
 
     const err = error as Record<string, unknown>;
@@ -106,7 +106,7 @@ function toDockerCommandError(error: unknown): Error {
     const exitCode = typeof err['code'] === 'number' ? err['code'] : 1;
     const message = typeof err['message'] === 'string' ? stripWorkspacePath(err['message']) : 'Docker sandbox command failed';
 
-    return new SandboxCommandExitError(message, { stdout, stderr, exitCode });
+    return new SandboxCommandExitError(message, { stdout, stderr, exitCode, cause: error });
 }
 
 function resolvePath(value: string | undefined): string {
