@@ -1,6 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import type { SubscribeProps, Transport } from './transport.js';
+import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -52,6 +52,10 @@ export class Migration implements Transport {
     async publish(event: Event): Promise<Result<void>> {
         const results = await this.publisher.publish(event);
         return results;
+    }
+
+    async publishBatch<TSubject extends Event['subject']>(props: PublishBatchProps<TSubject>): Promise<Result<PublishBatchResult>> {
+        return this.publisher.publishBatch(props);
     }
 
     subscribe<TSubject extends Event['subject']>(params: SubscribeProps<TSubject>): void {
