@@ -191,9 +191,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                         onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
                                                         className="accent-brand shrink-0"
                                                     />
-                                                    <span
-                                                        className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}
-                                                    >
+                                                    <span className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}>
                                                         {item.label}
                                                     </span>
                                                 </label>

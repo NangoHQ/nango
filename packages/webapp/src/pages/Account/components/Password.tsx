@@ -70,10 +70,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
 const Requirement: React.FC<{ text: string; check: boolean }> = ({ text, check }) => {
     return (
         <span
-            className={cn(
-                'inline-flex items-center gap-1 !text-body-small-regular text-text-strong',
-                check ? 'text-status-success-text' : 'text-text-muted'
-            )}
+            className={cn('inline-flex items-center gap-1 !text-body-small-regular text-text-strong', check ? 'text-status-success-text' : 'text-text-muted')}
         >
             {check ? <CheckIcon className="size-4" /> : <X className="size-4" />}
             {text}

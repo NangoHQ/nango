@@ -72,9 +72,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             </SelectContent>
                         </Select>
                     ) : (
-                        <Tag variant="neutral">
-                            {snippets[0].language}
-                        </Tag>
+                        <Tag variant="neutral">{snippets[0].language}</Tag>
                     )}
                     {onExecute && (
                         <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>

@@ -32,10 +32,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
         <form.Field name="theme.light.primary">
             {(field: any) => (
                 <div className="w-full flex flex-col gap-2">
-                    <label
-                        htmlFor={field.name}
-                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}
-                    >
+                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
                         Primary (Light theme)
                     </label>
                     <div className="flex items-center">
@@ -60,10 +57,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
         <form.Field name="theme.dark.primary">
             {(field: any) => (
                 <div className="w-full flex flex-col gap-2">
-                    <label
-                        htmlFor={field.name}
-                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}
-                    >
+                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
                         Primary (Dark theme)
                     </label>
                     <div className="flex items-center">

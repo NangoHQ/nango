@@ -1,5 +1,5 @@
-import { HelpCircle } from 'lucide-react';
 import { Prism } from '@mantine/prism';
+import { HelpCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,8 +11,8 @@ import Nango, { AuthError } from '@nangohq/frontend';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
 import { SecretTextArea } from '../../components/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
-import { useToast } from '../../hooks/useToast';
 import { useListIntegrations } from '../../hooks/useIntegration';
+import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';

@@ -100,7 +100,10 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-fit p-4 pt-0 rounded-[4px] border border-border-muted text-sm text-text-secondary bg-surface-overlay shadow-lg" align="end">
+            <PopoverContent
+                className="w-fit p-4 pt-0 rounded-[4px] border border-border-muted text-sm text-text-secondary bg-surface-overlay shadow-lg"
+                align="end"
+            >
                 <div className="flex flex-col gap-4 w-80">
                     <div className="flex flex-col gap-1">
                         <span className="text-xs text-text-muted self-end">UTC{format(new Date(), 'XXX')}</span>

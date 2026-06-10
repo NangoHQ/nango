@@ -160,10 +160,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
             <Collapsible.Content asChild>
                 <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-surface-page' : 'bg-surface-canvas')}>
                     {Object.entries(properties || {}).map(([name, property]) => (
-                        <div
-                            key={name}
-                            className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}
-                        >
+                        <div key={name} className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}>
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>
                     ))}

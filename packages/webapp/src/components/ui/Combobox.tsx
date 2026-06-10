@@ -358,11 +358,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                     <div className="flex w-full items-center justify-between px-1 py-1.5">
                         {multiDropdownTitle && <span className="text-text-secondary text-body-small-regular">{multiDropdownTitle}</span>}
                         {multiOnClearAll && multiSelected && multiSelected.length > 0 && (
-                            <button
-                                type="button"
-                                className="ml-auto text-text-muted hover:text-text-strong text-body-small-regular"
-                                onClick={multiOnClearAll}
-                            >
+                            <button type="button" className="ml-auto text-text-muted hover:text-text-strong text-body-small-regular" onClick={multiOnClearAll}>
                                 Clear all
                             </button>
                         )}
