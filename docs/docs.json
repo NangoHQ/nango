@@ -1049,6 +1049,7 @@
               "api-integrations/cloudtalk",
               "integrations/all/cloudentity",
               "api-integrations/cloudflare",
+              "api-integrations/cloudflare-mcp",
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
