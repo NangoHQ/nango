@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 
-import type { ChartSeries } from './chart';
+import type { ChartSeries } from './types';
 import type { ApiBillingUsageMetric } from '@nangohq/types';
+
+// NOTE: these per-day transforms (and the chart hooks/components) have no automated
+// coverage yet — adding unit/component tests is tracked in NAN-5942.
 
 /** Build a `YYYY-MM-DD` (UTC) → quantity lookup from a usage series, for fast per-day reads. */
 function usageToDateMap(usage: { timeframeStart: string | Date; quantity: number }[]): Map<string, number> {

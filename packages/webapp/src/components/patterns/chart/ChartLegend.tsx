@@ -2,7 +2,7 @@ import { Check, X } from 'lucide-react';
 
 import { cn } from '@/utils/utils';
 
-import type { ChartSeries } from './chart';
+import type { ChartSeries } from './types';
 import type { ChartInteractions } from './useChartInteractions';
 
 interface ChartLegendProps {

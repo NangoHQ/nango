@@ -4,8 +4,7 @@ import { useMemo } from 'react';
 import { BreakdownControls } from './BreakdownControls';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, metricsSupportingDimension } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { ChartCard } from '@/components/patterns/ChartCard';
-import { REST_SERIES_COLOR, REST_SERIES_KEY, colorForValue } from '@/components/patterns/usageChartColors';
+import { ChartCard, REST_SERIES_COLOR, REST_SERIES_KEY, colorForValue } from '@/components/patterns/chart';
 import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';

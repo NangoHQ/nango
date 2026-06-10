@@ -1,13 +1,20 @@
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 
 import { REST_SERIES_KEY } from './usageChartColors';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/Chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
 import { formatQuantity } from '@/utils/utils';
 
-import type { ChartSeries } from './chart';
+import type { ChartSeries } from './types';
 import type { ChartInteractions } from './useChartInteractions';
-import type { ChartConfig } from '../ui/Chart';
+import type { ChartConfig } from '../../ui/Chart';
 import type { TooltipProps } from 'recharts';
+
+/** Day-of-month (UTC) for an axis tick: "2026-06-05" → 5. */
+const dayOfMonth = (date: string) => new Date(date).getUTCDate();
+
+/** Full date label for the tooltip: "2026-06-05" → "June 5, 2026". */
+const formatTooltipDate = (date: string | number) =>
+    new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 interface BreakdownChartProps {
     /** Per-day rows: `{ date, total }` for the single series, or `{ date, [seriesKey]: value }` stacked. */
@@ -23,9 +30,8 @@ interface BreakdownChartProps {
 }
 
 /**
- * The recharts chart for a usage panel — single "total" series, or a stacked
- * breakdown with hover/click interactions. Animations are off so swapping the
- * dimension swaps the data instantly instead of morphing between datasets.
+ * The recharts chart for a usage panel — a single "total" series, or a stacked
+ * breakdown with hover/click interactions.
  */
 export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, config, isCumulative, isBreakdown, series, todayDateKey, interactions }) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
@@ -35,47 +41,56 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
     // "Rest" bucket to the bottom; the sized series stack above it. The legend/tooltip keep their own order.
     const stackSeries = [...series.filter((s) => s.key === REST_SERIES_KEY), ...series.filter((s) => s.key !== REST_SERIES_KEY)];
 
-    const seriesElements = isBreakdown
-        ? stackSeries.map((s) =>
-              isCumulative ? (
-                  <Area
-                      key={s.key}
-                      dataKey={s.key}
-                      stackId="usage"
-                      fill={s.color}
-                      stroke={s.color}
-                      fillOpacity={dimByHover(s.key) ? 0.2 : 0.85}
-                      strokeOpacity={dimByHover(s.key) ? 0.3 : 1}
-                      strokeWidth={1}
-                      type="basis"
-                      dot={false}
-                      // The active dot sits on top of the band; mirror the band's handlers so
-                      // hovering it doesn't drop the highlight / single-series tooltip.
-                      activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: () => toggleIsolate(s.key) }}
-                      hide={isSeriesHidden(s.key)}
-                      isAnimationActive={false}
-                      onMouseEnter={() => hoverSeries(s.key)}
-                      onMouseLeave={() => unhoverSeries()}
-                      onClick={() => toggleIsolate(s.key)}
-                  />
-              ) : (
-                  <Bar
-                      key={s.key}
-                      dataKey={s.key}
-                      stackId="usage"
-                      fill={s.color}
-                      fillOpacity={dimByHover(s.key) ? 0.3 : 1}
-                      hide={isSeriesHidden(s.key)}
-                      isAnimationActive={false}
-                      onMouseEnter={() => hoverSeries(s.key)}
-                      onMouseLeave={() => unhoverSeries()}
-                      onClick={() => toggleIsolate(s.key)}
-                  />
-              )
-          )
-        : isCumulative
-          ? [<Area key="total" dataKey="total" fill="var(--color-total)" type="basis" strokeWidth={2} dot={false} isAnimationActive={false} />]
-          : [<Bar key="total" dataKey="total" fill="var(--color-total)" isAnimationActive={false} />];
+    // One stacked Area/Bar per series in breakdown mode; otherwise the single "total" series.
+    const renderSeries = () => {
+        if (isBreakdown) {
+            return stackSeries.map((s) => {
+                if (isCumulative) {
+                    return (
+                        <Area
+                            key={s.key}
+                            dataKey={s.key}
+                            stackId="usage"
+                            fill={s.color}
+                            stroke={s.color}
+                            fillOpacity={dimByHover(s.key) ? 0.2 : 0.85}
+                            strokeOpacity={dimByHover(s.key) ? 0.3 : 1}
+                            strokeWidth={1}
+                            type="basis"
+                            dot={false}
+                            // The active dot sits on top of the band; mirror the band's handlers so
+                            // hovering it doesn't drop the highlight / single-series tooltip.
+                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: () => toggleIsolate(s.key) }}
+                            hide={isSeriesHidden(s.key)}
+                            isAnimationActive={false}
+                            onMouseEnter={() => hoverSeries(s.key)}
+                            onMouseLeave={() => unhoverSeries()}
+                            onClick={() => toggleIsolate(s.key)}
+                        />
+                    );
+                }
+                return (
+                    <Bar
+                        key={s.key}
+                        dataKey={s.key}
+                        stackId="usage"
+                        fill={s.color}
+                        fillOpacity={dimByHover(s.key) ? 0.3 : 1}
+                        hide={isSeriesHidden(s.key)}
+                        isAnimationActive={false}
+                        onMouseEnter={() => hoverSeries(s.key)}
+                        onMouseLeave={() => unhoverSeries()}
+                        onClick={() => toggleIsolate(s.key)}
+                    />
+                );
+            });
+        }
+        if (isCumulative) {
+            return [<Area key="total" dataKey="total" fill="var(--color-total)" type="basis" strokeWidth={2} dot={false} isAnimationActive={false} />];
+        }
+        return [<Bar key="total" dataKey="total" fill="var(--color-total)" isAnimationActive={false} />];
+    };
+    const seriesElements = renderSeries();
 
     // Today's day number is rendered brighter than the rest so the current date stands out
     // on the axis itself. Reuses recharts' <Text> so it sits where the default ticks do; the
@@ -101,7 +116,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                 verticalAnchor={verticalAnchor}
                 style={isToday ? { fill: 'var(--color-text-primary)' } : undefined}
             >
-                {payload ? new Date(payload.value).getUTCDate() : ''}
+                {payload ? dayOfMonth(payload.value) : ''}
             </Text>
         );
     };
@@ -116,14 +131,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
             return (b.value ?? 0) - (a.value ?? 0);
         });
         const shown = hoveredKey ? sorted?.filter((p) => p.dataKey === hoveredKey) : sorted;
-        return (
-            <ChartTooltipContent
-                active={props.active}
-                label={props.label}
-                payload={shown}
-                labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
-            />
-        );
+        return <ChartTooltipContent active={props.active} label={props.label} payload={shown} labelFormatter={(value) => formatTooltipDate(value)} />;
     };
 
     return (
@@ -136,7 +144,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                     tickMargin={10}
                     stroke="var(--color-bg-muted)"
                     // tickFormatter still drives recharts' tick-spacing math even though the custom tick re-derives the day.
-                    tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
+                    tickFormatter={(value: string) => String(dayOfMonth(value))}
                     tick={renderDayTick}
                 />
                 <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
