@@ -1115,6 +1115,8 @@ a-leads:
         apiKey:
             type: string
             title: API Key
+            description: Your A-Leads API key
+            doc_section: '#step-1-obtain-your-api-key'
             example: a3f8b2e1********************d9c4
             pattern: '^[a-f0-9]{32}$'
 
