@@ -1,15 +1,23 @@
 import EventEmitter from 'node:events';
-
 import { stringifyTask } from '@nangohq/scheduler';
 import { metrics, retryWithBackoff } from '@nangohq/utils';
-
 import { validateTask } from './clients/validate.js';
 import { envs } from './env.js';
 import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
-
 import type { Task } from '@nangohq/scheduler';
 import type knex from 'knex';
+
+function getSafeErrorMessage(output: any): string | null {
+    if (!output) return null;
+    if (typeof output === 'object' && !Array.isArray(output)) {
+        const safeMessage = output.message || output.error_message || output.error;
+        if (typeof safeMessage === 'string') {
+            return safeMessage.slice(0, 1000);
+        }
+    }
+    return 'Task execution failed';
+}
 
 class PgEventEmitter extends EventEmitter {
     private knex: knex.Knex;
@@ -25,7 +33,6 @@ class PgEventEmitter extends EventEmitter {
         }
     ) {
         super();
-
         this.knex = knex;
         this.channel = options.channel;
     }
@@ -33,7 +40,7 @@ class PgEventEmitter extends EventEmitter {
     async connect(): Promise<void> {
         try {
             if (this.connected) {
-                return; // Already connected, no need to reconnect
+                return;
             }
 
             this.client = await this.knex.client.acquireRawConnection();
@@ -50,13 +57,13 @@ class PgEventEmitter extends EventEmitter {
                 logger.error('PostgreSQL client error:', err);
                 this.connected = false;
                 super.emit('error', err);
-                this.reconnect();
+                void this.reconnect();
             });
 
             this.client.on('end', () => {
                 logger.info('PostgreSQL connection ended');
                 this.connected = false;
-                this.reconnect();
+                void this.reconnect();
             });
 
             super.emit('connected');
@@ -64,7 +71,7 @@ class PgEventEmitter extends EventEmitter {
         } catch (err) {
             logger.error('PostgreSQL connection error:', err);
             super.emit('error', err);
-            this.reconnect();
+            void this.reconnect();
         }
     }
 
@@ -101,7 +108,6 @@ class PgEventEmitter extends EventEmitter {
                     try {
                         await this.client.query(`UNLISTEN ${this.channel}`);
                     } catch (_err: unknown) {
-                        // Ignore errors during UNLISTEN
                     }
                 }
 
@@ -120,6 +126,7 @@ class PgEventEmitter extends EventEmitter {
             }
         }
     }
+
     override emit(event: string): boolean {
         if (!this.connected) {
             logger.warning(`Not connected to PostgreSQL, emitting event locally: ${String(event)}`);
@@ -150,7 +157,6 @@ class PgEventEmitter extends EventEmitter {
             throw new Error('Not connected to PostgreSQL');
         }
 
-        // Check payload size (PostgreSQL NOTIFY has ~8KB limit)
         const maxPayloadSize = 8_000;
         if (payload.length > maxPayloadSize) {
             const error = new Error(`Payload too large: ${payload.length} bytes (max: ${maxPayloadSize})`);
@@ -163,7 +169,7 @@ class PgEventEmitter extends EventEmitter {
         } catch (err: any) {
             if (err.code === 'ECONNRESET' || err.code === 'ENOTCONN') {
                 this.connected = false;
-                this.reconnect();
+                void this.reconnect();
             }
             throw err;
         }
@@ -173,8 +179,6 @@ class PgEventEmitter extends EventEmitter {
 export const taskEvents = {
     taskCreated: (prop: Task | string): string => {
         const groupKey = typeof prop === 'string' ? prop.replaceAll('*', '') : prop.groupKey;
-        // If the groupKey contains the separator, we only take the prefix part
-        // so that listeners can listen to a group of tasks
         const groupKeyPrefix = groupKey.split(GROUP_PREFIX_SEPARATOR)[0];
         return `task:created:${groupKeyPrefix}`;
     },
@@ -183,7 +187,6 @@ export const taskEvents = {
             return `task:completed:${prop}`;
         }
 
-        // Only action and onEvent tasks are being listened to for completion
         const res = validateTask(prop);
         if (res.isErr()) {
             return undefined;
@@ -210,7 +213,6 @@ export class TaskEventsHandler extends PgEventEmitter {
     private throttleEmit(event: string, delay: number): void {
         const timeoutId = this.debounced.get(event);
 
-        // If there's no existing timeout, emit the event and set a new timeout
         if (!timeoutId) {
             this.emit(event);
 
@@ -231,17 +233,12 @@ export class TaskEventsHandler extends PgEventEmitter {
             CREATED: (task: Task) => {
                 logger.info(`Task created: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
-                // CREATED events are used for dequeuing tasks per groupKey
-                // so we emit them with the groupKey prefix
-                // and debounce them to avoid flooding the listeners
-                // with too many duplicate events
                 this.throttleEmit(taskEvents.taskCreated(task), envs.ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS);
             },
             STARTED: (task: Task) => {
                 logger.info(`Task started: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
                 this.recordExecutionEvent(task, 'STARTED');
-                // STARTED events are not listen to, so we don't emit them
             },
             SUCCEEDED: (task: Task) => {
                 logger.info(`Task succeeded: ${stringifyTask(task)}`);
@@ -293,7 +290,6 @@ export class TaskEventsHandler extends PgEventEmitter {
         const connection = val.connection;
         if (!connection) return;
 
-        // Calculate duration for terminal states
         let duration_ms: number | undefined = undefined;
         if (status === 'SUCCESS' || status === 'FAILURE') {
             const start = task.createdAt;
@@ -308,6 +304,11 @@ export class TaskEventsHandler extends PgEventEmitter {
             integration_id = val.actionName;
         }
 
+        let error_message: string | null = null;
+        if (status === 'FAILURE') {
+            error_message = getSafeErrorMessage(task.output);
+        }
+
         const event = {
             environment_id: connection.environment_id,
             integration_id: integration_id,
@@ -317,9 +318,8 @@ export class TaskEventsHandler extends PgEventEmitter {
             status,
             retries: task.retryCount,
             duration_ms,
-            // error info not fully available from task payload, wait we can extract it if it's failed from task.output?
             error_type: status === 'FAILURE' ? 'UNKNOWN' : null,
-            error_message: status === 'FAILURE' ? (task.output ? JSON.stringify(task.output).slice(0, 1000) : null) : null
+            error_message
         };
 
         void retryWithBackoff(
