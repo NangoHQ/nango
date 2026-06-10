@@ -12,9 +12,9 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
 import { StyledLink } from '@/components/ui/StyledLink';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';

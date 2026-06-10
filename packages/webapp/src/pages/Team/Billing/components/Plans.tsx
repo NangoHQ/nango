@@ -399,9 +399,7 @@ const PlanChangeDialog: React.FC<{
                 </DialogHeader>
                 <div className="flex flex-col gap-1">
                     <p>{description}</p>
-                    {longWait && (
-                        <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
-                    )}
+                    {longWait && <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>}
                 </div>
                 {error && (
                     <Alert variant="error">

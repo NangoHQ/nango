@@ -11,7 +11,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/In
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
-import { type Theme, useThemeStore } from '@/lib/theme';
+import { useThemeStore } from '@/lib/theme';
+
+import type { Theme } from '@/lib/theme';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();
