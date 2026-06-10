@@ -26,8 +26,23 @@ export class E2BSandboxProvider implements SandboxProvider {
             throw new Error(`E2B_API_KEY is required for the E2B ${params.purpose} runtime`);
         }
 
-        const sandbox = await createE2BRawSandbox({ ...params, apiKey });
-        return new E2BSandbox(sandbox);
+        try {
+            const sandbox = await E2B.create(template, {
+                timeoutMs: params.timeoutMs,
+                allowInternetAccess: true,
+                metadata: { ...params.metadata, purpose: params.purpose, requestId: randomUUID() },
+                network: { allowPublicTraffic: true },
+                apiKey
+            });
+
+            return new E2BSandbox(sandbox);
+        } catch (err) {
+            if (isExecutionEnvironmentUnavailableError(err)) {
+                throw new SandboxUnavailableError('Function execution environment unavailable', { cause: err });
+            }
+
+            throw err;
+        }
     }
 
     async cleanup({ sandboxId, apiKey = envs.E2B_API_KEY }: CleanupSandboxParams): Promise<void> {
@@ -88,24 +103,6 @@ class E2BSandbox implements Sandbox {
 
     async stop(): Promise<void> {
         await this.sandbox.kill();
-    }
-}
-
-async function createE2BRawSandbox({ apiKey, purpose, timeoutMs, metadata = {} }: CreateSandboxParams & { apiKey: string }): Promise<E2BRawSandbox> {
-    try {
-        return await E2B.create(template, {
-            timeoutMs,
-            allowInternetAccess: true,
-            metadata: { ...metadata, purpose, requestId: randomUUID() },
-            network: { allowPublicTraffic: true },
-            apiKey
-        });
-    } catch (err) {
-        if (isExecutionEnvironmentUnavailableError(err)) {
-            throw new SandboxUnavailableError('Function execution environment unavailable', { cause: err });
-        }
-
-        throw err;
     }
 }
 
