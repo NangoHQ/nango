@@ -2,9 +2,9 @@ import { Braces, CheckCircle2, ExternalLink, Info, XCircle } from 'lucide-react'
 import { useMemo } from 'react';
 
 import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/Alert';
-import { CodeBlock } from '@/components-v2/ui/CodeBlock';
-import { Separator } from '@/components-v2/ui/Separator';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { CodeBlock } from '@/components/ui/CodeBlock';
+import { Separator } from '@/components/ui/Separator';
 import { usePlaygroundStore } from '@/store/playground';
 import { getLogsUrl } from '@/utils/logs';
 

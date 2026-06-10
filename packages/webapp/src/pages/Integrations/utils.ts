@@ -17,7 +17,8 @@ const displayNames: Record<AuthModeType, string> = {
     TBA: 'TBA',
     JWT: 'JWT',
     BILL: 'Bill',
-    INSTALL_PLUGIN: 'Install Plugin'
+    INSTALL_PLUGIN: 'Install Plugin',
+    AWS_SIGV4: 'AWS SigV4'
 };
 
 /**

@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
 
 import { execDockerFileAsync, getExecErrorOutput, readContainerFile, writeContainerFile } from './docker.js';
-import { CompilerError, buildCompilerIndexTs, getCompilerFilePaths } from '../remote-function/compiler-client.js';
+import { CompilerError, buildCompilerIndexTs, getCompilerFilePaths } from '../functions/compiler-client.js';
 import {
     remoteFunctionCompileTimeoutMs,
     remoteFunctionCompilerSandboxTimeoutMs,
     remoteFunctionLocalImage,
     remoteFunctionProjectPath
-} from '../remote-function/runtime.js';
+} from '../functions/runtime.js';
 
-import type { CompileRequest, CompileResult } from '../remote-function/compiler-client.js';
+import type { CompileRequest, CompileResult } from '../functions/compiler-client.js';
 
 export async function invokeLocalCompiler(request: CompileRequest): Promise<CompileResult> {
     const containerName = `nango-compiler-${randomUUID().slice(0, 8)}`;

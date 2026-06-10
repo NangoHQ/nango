@@ -22,7 +22,7 @@ import { aggregateHealthMetrics } from './crons/aggregateHealthMetrics.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
-import { timeoutFunctionDryrunsCron } from './crons/timeoutFunctionDryruns.js';
+import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
@@ -41,13 +41,11 @@ initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NA
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
     report(reason);
-    // not closing on purpose
 });
 
 process.on('uncaughtException', (err) => {
     logger.error('Received uncaughtException...', err);
     report(err);
-    // not closing on purpose
 });
 
 const app = express();
@@ -65,7 +63,8 @@ app.use('/', router);
 const server = http.createServer(app);
 
 server.keepAliveTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT;
-server.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000; //needs to be longer than the keep alive timeout to avoid premature disconnections
+server.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000;
+
 // -------
 // Websocket
 const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
@@ -74,12 +73,9 @@ wss.on('connection', async (ws: WebSocket) => {
     await publisher.subscribe(ws);
 });
 
-// Set to 'false' to disable migration at startup. Appropriate when you
-// have multiple replicas of the service running and you do not want them
-// all trying to migrate the database at the same time. In this case, the
-// operator should run migrate.ts once before starting the service.
+// Set to 'false' to disable migration at startup...
 if (NANGO_MIGRATE_AT_START === 'true') {
-    const db = new KnexDatabase({ timeoutMs: 0 }); // Disable timeout for migrations
+    const db = new KnexDatabase({ timeoutMs: 0 });
     await migrate(db);
     await migrateKeystore(db.knex);
     await migrateLogs();
@@ -95,8 +91,13 @@ getProviders();
 
 refreshConnectionsCron();
 timeoutLogsOperations();
+
+// Health Dashboard cron
 aggregateHealthMetrics();
-timeoutFunctionDryrunsCron();
+
+// Updated from upstream (renamed dryrun -> async jobs)
+timeoutFunctionAsyncJobsCron();
+
 deleteOldData();
 trialCron();
 lambdaKeepWarmCron();

@@ -26,6 +26,7 @@ export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
+export * as awsSigV4Client from './auth/aws-sigv4.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/sandbox-api-key.js';
 export * from './services/functions/index.js';

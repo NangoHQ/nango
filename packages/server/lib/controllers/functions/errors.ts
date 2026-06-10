@@ -4,7 +4,7 @@ import { stringifyError } from '@nangohq/utils';
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
 
-const maxRemoteFunctionErrorMessageLength = 20_000;
+const maxFunctionErrorMessageLength = 20_000;
 
 /**
  * Runtime allow-list for error codes exposed by the function API.
@@ -19,6 +19,7 @@ const functionErrorCodes = new Set<string>([
     'deployment_error',
     'connection_not_found',
     'dryrun_not_found',
+    'deployment_not_found',
     'function_disabled',
     'execution_environment_unavailable',
     'timeout',
@@ -76,7 +77,7 @@ function sanitizeMessage(message: string): string {
         .replace(/(^|[\s"'(])(\/[^\s"')]+)/g, (_, prefix: string, absolutePath: string) => `${prefix}${redactAbsolutePath(absolutePath)}`)
         .replace(/__REMOTE_FUNCTION_URL_(\d+)__/g, (_, index: string) => urlReplacements[Number(index)] ?? '<url>')
         .replace(/\b[A-Z][A-Z0-9_]{4,}\b/g, (match) => (process.env[match] !== undefined ? '<env>' : match))
-        .slice(0, maxRemoteFunctionErrorMessageLength);
+        .slice(0, maxFunctionErrorMessageLength);
 }
 
 function removeUrlOrigin(value: string): string {

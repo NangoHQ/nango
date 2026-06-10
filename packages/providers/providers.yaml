@@ -2355,6 +2355,144 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+aws-sigv4:
+    display_name: AWS SigV4 Proxy
+    categories:
+        - storage
+    auth_mode: AWS_SIGV4
+    proxy:
+        base_url: https://${connectionConfig.service}.${connectionConfig.region}.amazonaws.com
+    docs: https://nango.dev/docs/integrations/all/aws-sigv4
+    docs_connect: https://nango.dev/docs/integrations/all/aws-sigv4/connect
+    credentials:
+        role_arn:
+            type: string
+            title: IAM Role ARN
+            description: The ARN of the IAM role your customer creates via your onboarding template.
+            example: arn:aws:iam::123456789012:role/NangoAccessRole
+            doc_section: '#step-1-provide-the-role-arn'
+    connection_config:
+        region:
+            type: string
+            title: AWS Region (optional)
+            description: Override the region if it differs from the integration default set by the integration owner.
+            example: us-east-1
+            optional: true
+            doc_section: '#step-3-enter-connection-details'
+        service:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    integration_config:
+        service:
+            type: string
+            title: AWS Service
+            description: The AWS service requests are signed for (e.g. s3, execute-api).
+            example: s3
+            pattern: ^[a-z0-9-]+$
+            order: 1
+        defaultRegion:
+            type: string
+            title: Default AWS Region
+            description: Region used to sign requests when a connection does not specify one.
+            example: us-east-1
+            optional: true
+            order: 2
+        stsMode:
+            type: string
+            title: STS Mode
+            description: How temporary AWS credentials are issued.
+            enum:
+                - builtin
+                - custom
+            default_value: builtin
+            optional: true
+            order: 3
+        awsAccessKeyId:
+            type: string
+            title: AWS Access Key ID
+            description: Access key for the IAM principal Nango uses to call STS AssumeRole.
+            secret: true
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: builtin
+            order: 4
+        awsSecretAccessKey:
+            type: string
+            title: AWS Secret Access Key
+            description: Secret access key paired with the access key ID above.
+            secret: true
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: builtin
+            order: 5
+        stsEndpointUrl:
+            type: string
+            title: STS Endpoint URL
+            description: HTTPS endpoint that issues temporary AWS credentials.
+            format: uri
+            pattern: ^https://
+            example: https://sts.example.com/assume
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: custom
+            order: 6
+        stsAuthType:
+            type: string
+            title: STS Auth Type
+            description: How Nango authenticates to the custom STS endpoint.
+            enum:
+                - none
+                - api_key
+                - basic
+            default_value: none
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: custom
+            order: 7
+        stsAuthHeader:
+            type: string
+            title: STS Auth Header
+            description: Header name used to send the API key to the custom STS endpoint.
+            default_value: x-api-key
+            optional: true
+            visible_when:
+                field: stsAuthType
+                equals: api_key
+            order: 8
+        stsApiKey:
+            type: string
+            title: STS API Key
+            description: API key value sent to the custom STS endpoint.
+            secret: true
+            visible_when:
+                field: stsAuthType
+                equals: api_key
+            order: 9
+        stsAuthUsername:
+            type: string
+            title: STS Username
+            description: Username for basic auth to the custom STS endpoint.
+            optional: true
+            visible_when:
+                field: stsAuthType
+                equals: basic
+            order: 10
+        stsAuthPassword:
+            type: string
+            title: STS Password
+            description: Password for basic auth to the custom STS endpoint.
+            secret: true
+            visible_when:
+                field: stsAuthType
+                equals: basic
+            order: 11
+
 azure-blob-storage:
     categories:
         - storage
@@ -3770,6 +3908,27 @@ chargebee:
             # Chargebee is using basic auth with an api key
             default_value: ''
             hidden: true
+
+chatarmin:
+    display_name: Chatarmin
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.chatarmin.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/public/contacts?limit=1
+    docs: https://nango.dev/docs/api-integrations/chatarmin
+    docs_connect: https://nango.dev/docs/api-integrations/chatarmin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chatarmin API key.
 
 chattermill:
     display_name: Chattermill
@@ -6076,6 +6235,25 @@ drupal:
             prefix: https://
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
+
+dualentry-mcp:
+    display_name: Dualentry (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.dualentry.com/mcp/authorize
+    token_url: https://api.dualentry.com/mcp/token
+    registration_url: https://api.dualentry.com/mcp/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.dualentry.com
+    docs: https://nango.dev/docs/api-integrations/dualentry-mcp
 
 dynatrace:
     display_name: Dynatrace
@@ -11763,6 +11941,7 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
+    authorization_method: header
     authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
     token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
@@ -11777,16 +11956,18 @@ mercury:
             type: string
             title: OAuth Hostname
             description: Your Mercury OAuth hostname.
-            example: oauth2-sandbox.mercury.com
             optional: true
-            pattern: '^oauth2(?:-sandbox)?\.mercury\.com$'
+            enum:
+                - oauth2.mercury.com
+                - oauth2-sandbox.mercury.com
         hostname:
             type: string
             title: API Hostname
             description: Your Mercury API hostname.
-            example: api-sandbox.mercury.com
             optional: true
-            pattern: '^api(?:-sandbox)?\.mercury\.com$'
+            enum:
+                - api.mercury.com
+                - api-sandbox.mercury.com
 
 meta-marketing-api:
     display_name: Meta Marketing API
@@ -13321,12 +13502,12 @@ okta-cc:
         - dev-tools
         - iam
     auth_mode: OAUTH2_CC
-    token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
+    token_url: https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
     token_request_auth_method: private_key_jwt
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.subdomain}.okta.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.okta.com
         retry:
             at:
                 - 'x-rate-limit-reset'
@@ -13349,15 +13530,19 @@ okta-cc:
             secret: true
             doc_section: '#step-2-generating-and-registering-your-rsa-key-pair'
     connection_config:
-        subdomain:
+        hostname:
             type: string
             title: Okta Domain
-            description: The subdomain of your Okta account
-            pattern: '^[a-z0-9_-]+$'
-            example: dev-12345678
-            suffix: .okta.com
+            description: The full hostname of your Okta account
+            format: hostname
             prefix: https://
+            example: dev-12345678.okta.com
             doc_section: '#step-3-finding-your-okta-domain'
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of hostname
         oauth_scopes:
             type: string
             title: Scopes
@@ -15196,7 +15381,61 @@ private-api-basic:
             type: string
             title: Password
             description: Your password
-
+private-api-generic:
+    display_name: Private API (Generic)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.nango.dev/
+    integration_config:
+        keyPlacement:
+            type: string
+            title: Key placement
+            description: Where the API key is sent on proxied requests.
+            enum:
+                - header
+                - query
+            default_value: header
+            warnings:
+                query: Sending the key as a query param can expose it in upstream, proxy, and CDN logs. Prefer a header when the API supports it.
+            order: 1
+        keyName:
+            type: string
+            title: Key name
+            description: Header name or query-param name (e.g. Authorization, x-api-key, api_key).
+            example: Authorization
+            order: 2
+        valueTemplate:
+            type: string
+            title: Value template
+            description: How the key is presented to the upstream API. Use ${apiKey} as the placeholder for the stored key.
+            example: Api-Key ${apiKey}
+            default_value: ${apiKey}
+            pattern: '\$\{apiKey\}'
+            order: 3
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Base URL of the upstream API the proxy will call.
+            format: uri
+            pattern: '^https?://'
+            example: https://api.example.com
+            order: 4
+        keyLabel:
+            type: string
+            title: API key label (shown in Connect UI)
+            description: The label end users see for the API key field in the Connect UI.
+            default_value: API Key
+            optional: true
+            order: 5
+    docs: https://nango.dev/docs/integrations/all/private-api-generic
+    docs_connect: https://nango.dev/docs/integrations/all/private-api-generic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
 precisefp:
     display_name: PreciseFP
     categories:
@@ -18356,7 +18595,7 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     scope_separator: ','
-    alternate_access_token_response_path: authed_user.access_token
+    alternate_access_token_response_path: authed_user
     token_url: https://slack.com/api/oauth.v2.access
     disable_pkce: true
     token_response_metadata:
@@ -18391,11 +18630,13 @@ slack-mcp:
     authorization_url: https://slack.com/oauth/v2_user/authorize
     token_url: https://slack.com/api/oauth.v2.user.access
     scope_separator: ','
-    alternate_access_token_response_path: authed_user.access_token
+    alternate_access_token_response_path: authed_user
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://mcp.slack.com
         headers:
@@ -19228,6 +19469,32 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://nango.dev/docs/integrations/all/survey-monkey
+
+swoogo:
+    display_name: Swoogo
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://api.swoogo.com/api/v1/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.swoogo.com
+    docs: https://nango.dev/docs/api-integrations/swoogo
+    docs_connect: https://nango.dev/docs/api-integrations/swoogo/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: Your Swoogo API key.
+            doc_section: '#step-1-generate-your-api-credentials'
+        client_secret:
+            type: string
+            title: API Secret
+            description: Your Swoogo API secret.
+            secret: true
+            doc_section: '#step-1-generate-your-api-credentials'
 
 tailscale:
     display_name: Tailscale (OAuth)
@@ -21167,6 +21434,38 @@ wakatime:
     proxy:
         base_url: https://wakatime.com
     docs: https://nango.dev/docs/integrations/all/wakatime
+
+walmart:
+    display_name: Walmart Marketplace
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.account.wal-mart.com/authorize
+    authorization_params:
+        clientType: ${connectionConfig.clientType}
+        nonce: ${random}
+    disable_pkce: true
+    authorization_url_replacements:
+        response_type=: responseType=
+        client_id=: clientId=
+        redirect_uri=: redirectUri=
+    token_url: https://marketplace.walmartapis.com/v3/token
+    redirect_uri_metadata:
+        - sellerId
+    proxy:
+        base_url: https://marketplace.walmartapis.com
+        headers:
+            wm_qos.correlation_id: ${random}
+            wm_sec.access_token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/walmart
+    setup_guide_url: https://nango.dev/docs/api-integrations/walmart/how-to-register-your-own-walmart-marketplace-oauth-app
+    connection_config:
+        clientType:
+            type: string
+            title: ''
+            description: ''
+            default_value: seller
+            hidden: true
 
 wave-accounting:
     display_name: Wave Accounting

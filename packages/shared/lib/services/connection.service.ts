@@ -11,6 +11,7 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
+import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
@@ -57,6 +58,7 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     AuthModeType,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
@@ -186,7 +188,15 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
+        credentials:
+            | TwoStepCredentials
+            | TbaCredentials
+            | JwtCredentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | BillCredentials
+            | SignatureCredentials
+            | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -944,9 +954,18 @@ class ConnectionService {
         switch (authMode) {
             case 'OAUTH2': {
                 let accessToken: string | undefined = rawCreds['access_token'];
+                let tokenContext: Record<string, any> = rawCreds;
 
                 if (!accessToken && template && 'alternate_access_token_response_path' in template && template.alternate_access_token_response_path) {
-                    accessToken = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    const alternateValue = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    if (alternateValue && typeof alternateValue === 'object') {
+                        // Path points to an object — extract access_token from it and use the whole object as context
+                        // so refresh_token/expires_in are also picked up.
+                        tokenContext = alternateValue as Record<string, any>;
+                        accessToken = tokenContext['access_token'];
+                    } else {
+                        accessToken = alternateValue;
+                    }
                 }
 
                 if (!accessToken) {
@@ -954,16 +973,16 @@ class ConnectionService {
                 }
                 let expiresAt: Date | undefined;
 
-                if (rawCreds['expires_at']) {
-                    expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
-                } else if (rawCreds['expires_in']) {
-                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                if (tokenContext['expires_at']) {
+                    expiresAt = parseTokenExpirationDate(tokenContext['expires_at']);
+                } else if (tokenContext['expires_in']) {
+                    expiresAt = new Date(Date.now() + Number.parseInt(tokenContext['expires_in'], 10) * 1000);
                 }
 
                 const oauth2Creds: OAuth2Credentials = {
                     type: 'OAUTH2',
                     access_token: accessToken,
-                    refresh_token: rawCreds['refresh_token'],
+                    refresh_token: tokenContext['refresh_token'],
                     expires_at: expiresAt,
                     raw: rawCreds
                 };
@@ -1208,8 +1227,11 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : null;
+        if (!tokenUrl?.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+        const url = makeUrl(tokenUrl, connectionConfig);
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
@@ -1640,6 +1662,7 @@ class ConnectionService {
             | TwoStepCredentials
             | SignatureCredentials
             | CombinedOauth2AppCredentials
+            | AwsSigV4Credentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1764,6 +1787,58 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if (provider.auth_mode === 'AWS_SIGV4') {
+            const settingsResult = awsSigV4Client.getAwsSigV4Settings(providerConfig);
+            if (settingsResult.isErr()) {
+                return { success: false, error: settingsResult.error, response: null };
+            }
+            const settings = settingsResult.value;
+
+            const roleArn = (connection.connection_config['role_arn'] as string) || (connection.credentials as AwsSigV4Credentials).role_arn;
+            const externalId = (connection.connection_config['external_id'] as string) || (connection.credentials as AwsSigV4Credentials).external_id || null;
+            const region =
+                (connection.connection_config['region'] as string) || (connection.credentials as AwsSigV4Credentials).region || settings.defaultRegion;
+
+            if (!roleArn) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_role_arn'), response: null };
+            }
+            if (!externalId) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_external_id'), response: null };
+            }
+            if (!region) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_region'), response: null };
+            }
+
+            const credsResult = await awsSigV4Client.fetchAwsTemporaryCredentials({
+                settings,
+                input: { roleArn, externalId, region }
+            });
+
+            if (credsResult.isErr()) {
+                return { success: false, error: credsResult.error, response: null };
+            }
+
+            const creds = credsResult.value;
+
+            const refreshed: AwsSigV4Credentials = {
+                type: 'AWS_SIGV4',
+                raw: {
+                    access_key_id: creds.accessKeyId,
+                    secret_access_key: creds.secretAccessKey,
+                    session_token: creds.sessionToken,
+                    expires_at: creds.expiresAt
+                },
+                role_arn: roleArn,
+                region,
+                service: settings.service,
+                access_key_id: creds.accessKeyId,
+                secret_access_key: creds.secretAccessKey,
+                session_token: creds.sessionToken,
+                expires_at: creds.expiresAt,
+                external_id: externalId
+            };
+
+            return { success: true, error: null, response: refreshed };
         } else if ((provider as any).auth_mode === 'MCP_OAUTH2_GENERIC') {
             const { success, error, response: creds } = await refreshMcpGenericCredentials({ connection, logCtx });
 

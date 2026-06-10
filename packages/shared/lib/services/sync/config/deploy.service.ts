@@ -246,7 +246,7 @@ async function compileDeployInfo({
         fileBody,
         models,
         runs,
-        version: optionalVersion,
+        version: userSpecifiedVersion, // From CLI param or specified in function.ts file
         type = 'sync',
         track_deletes,
         auto_start,
@@ -266,7 +266,7 @@ async function compileDeployInfo({
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
-        if (!optionalVersion) {
+        if (!userSpecifiedVersion) {
             bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
         }
 
@@ -274,7 +274,7 @@ async function compileDeployInfo({
             void logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
-        if (runs) {
+        if (runs && runs !== previousSyncAndActionConfig.runs) {
             const syncs = await getSyncsByProviderConfigKey({ environmentId: environment_id, providerConfigKey, filter: [{ syncName, syncVariant: 'base' }] });
 
             for (const sync of syncs) {
@@ -298,7 +298,7 @@ async function compileDeployInfo({
         }
     }
 
-    const version = optionalVersion || bumpedVersion || '1';
+    const targetVersion = userSpecifiedVersion || bumpedVersion || '1';
 
     // intentionally not filtered by source so a disabled sync stays disabled when switching sources (e.g. catalog → repo).
     // select all active rows, not just .first(), so any duplicates left by prior races are also cleaned up.
@@ -332,31 +332,64 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const uploads = [
-        remoteFileService.upload({
-            content: jsFile,
-            destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-            destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
-        })
-    ];
+    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${targetVersion}.js`;
+    const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
+    const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
+    // If no previous file location, we consider the file changed no matter what the content is.
+    // This ensures if upload succeeds, but db transaction fails, we re-upload and get a valid file_location.
+    const jsChanged = previousJsFileLocation ? await remoteFileService.checkIfChanged({ content: jsFile, objectKey: previousJsFileLocation }) : true;
+    // User can specify a new version via CLI param without changing the file content, so we need to upload if the version is different.
+    const userChangedVersion = userSpecifiedVersion && userSpecifiedVersion !== previousSyncAndActionConfig?.version;
+    const uploads = [];
+
+    let file_location: string | null | undefined = previousJsFileLocation;
+    let persistedVersion = previousSyncAndActionConfig?.version || '1';
 
     if (typeof fileBody === 'object' && fileBody.ts) {
-        uploads.push(
-            remoteFileService.upload({
-                content: fileBody.ts,
-                destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-                destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
-            })
-        );
+        const tsFile = fileBody.ts;
+        const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`;
+        const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
+        const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
+
+        if (tsChanged || jsChanged || userChangedVersion) {
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                }),
+                remoteFileService.upload({
+                    content: tsFile,
+                    destinationPath: tsDestinationPath,
+                    destinationLocalFileName: tsLocalFileName
+                })
+            );
+        }
+    }
+    // Legacy Path - Only JS is provided
+    else {
+        if (jsChanged || userChangedVersion) {
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                })
+            );
+        }
     }
 
-    const [file_location] = await Promise.all(uploads);
+    if (uploads.length > 0) {
+        void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${targetVersion}.js` });
+        [file_location] = await Promise.all(uploads);
+        persistedVersion = targetVersion;
+    } else {
+        void logCtx.info('Function unchanged. Skipping upload', { fileName: `${syncName}-v${targetVersion}.js` });
+    }
 
     if (!file_location) {
-        void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
-
-        // this is a platform error so throw this
-        throw new NangoError('file_upload_error');
+        void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${targetVersion}.js` });
+        return { success: false, error: new NangoError('file_upload_error'), response: null };
     }
 
     let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
@@ -382,7 +415,7 @@ async function compileDeployInfo({
                 sync_name: syncName,
                 type,
                 models,
-                version,
+                version: persistedVersion,
                 track_deletes: track_deletes || false,
                 auto_start: auto_start === false ? false : true,
                 attributes,

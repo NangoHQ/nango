@@ -1,12 +1,12 @@
 import { Search } from 'lucide-react';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof InputGroup> = {
     component: InputGroup,
-    title: 'Components v2/UI/InputGroup',
+    title: 'Components/UI/InputGroup',
     parameters: { layout: 'centered' }
 };
 export default meta;

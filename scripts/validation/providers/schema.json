@@ -1,5 +1,88 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "providerFieldSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "title", "description"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["string"]
+                },
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "example": {
+                    "type": "string"
+                },
+                "pattern": {
+                    "type": "string"
+                },
+                "format": {
+                    "type": "string",
+                    "enum": ["hostname", "uri", "uuid", "email"]
+                },
+                "enum": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "order": {
+                    "type": "number"
+                },
+                "secret": {
+                    "type": "boolean"
+                },
+                "prefix": {
+                    "type": "string"
+                },
+                "suffix": {
+                    "type": "string"
+                },
+                "optional": {
+                    "type": "boolean"
+                },
+                "doc_section": {
+                    "type": "string",
+                    "pattern": "^#[a-z0-9-]+$"
+                },
+                "automated": {
+                    "type": "boolean"
+                },
+                "default_value": {
+                    "type": "string"
+                },
+                "hidden": {
+                    "type": "boolean"
+                },
+                "warnings": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "visible_when": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["field", "equals"],
+                    "properties": {
+                        "field": {
+                            "type": "string"
+                        },
+                        "equals": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
     "type": "object",
     "additionalProperties": false,
     "patternProperties": {
@@ -54,7 +137,8 @@
                         "SIGNATURE",
                         "MCP_OAUTH2",
                         "MCP_OAUTH2_GENERIC",
-                        "INSTALL_PLUGIN"
+                        "INSTALL_PLUGIN",
+                        "AWS_SIGV4"
                     ]
                 },
                 "auth_type": {
@@ -225,7 +309,7 @@
                             "type": "object",
                             "additionalProperties": false,
                             "patternProperties": {
-                                "^[a-z0-9_-]+$": {
+                                "^[a-z0-9_.-]+$": {
                                     "type": "string"
                                 }
                             }
@@ -629,66 +713,16 @@
                     "additionalProperties": false,
                     "patternProperties": {
                         "^[a-zA-Z_.-]+$": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": ["type", "title", "description"],
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "enum": ["string"]
-                                },
-                                "title": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                },
-                                "example": {
-                                    "type": "string"
-                                },
-                                "pattern": {
-                                    "type": "string"
-                                },
-                                "format": {
-                                    "type": "string",
-                                    "enum": ["hostname", "uri", "uuid", "email"]
-                                },
-                                "enum": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "minItems": 1
-                                },
-                                "order": {
-                                    "type": "number"
-                                },
-                                "secret": {
-                                    "type": "boolean"
-                                },
-                                "prefix": {
-                                    "type": "string"
-                                },
-                                "suffix": {
-                                    "type": "string"
-                                },
-                                "optional": {
-                                    "type": "boolean"
-                                },
-                                "doc_section": {
-                                    "type": "string",
-                                    "pattern": "^#[a-z0-9-]+$"
-                                },
-                                "automated": {
-                                    "type": "boolean"
-                                },
-                                "default_value": {
-                                    "type": "string"
-                                },
-                                "hidden": {
-                                    "type": "boolean"
-                                }
-                            }
+                            "$ref": "#/definitions/providerFieldSchema"
+                        }
+                    }
+                },
+                "integration_config": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "patternProperties": {
+                        "^[a-zA-Z_.-]+$": {
+                            "$ref": "#/definitions/providerFieldSchema"
                         }
                     }
                 },

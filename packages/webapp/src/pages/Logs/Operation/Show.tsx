@@ -1,5 +1,6 @@
 import { Prism } from '@mantine/prism';
-import { IconCalendar, IconClockHour4, IconShare2 } from '@tabler/icons-react';
+import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
+import { ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
@@ -11,9 +12,8 @@ import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -99,12 +99,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-screen">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-semibold text-white">Operation Details</h3>
-                    <div className="mr-9">
-                        <CopyButton text={window.location.href} iconType="link" />
-                    </div>
-                </div>
+                <h3 className="text-xl font-semibold text-white">Operation Details</h3>
                 <div className="flex gap-3 items-center">
                     <div className="flex">
                         <StatusTag state={operation.state} size="sm" />
@@ -141,9 +136,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                                 className="flex gap-2.5 items-center hover:text-white"
                             >
                                 <ProviderTag msg={operation} />
-                                <div className="w-4">
-                                    <IconShare2 stroke={1} size={18} />
-                                </div>
+                                <ExternalLink size={16} strokeWidth={1.5} className="shrink-0" />
                             </Link>
                         ) : (
                             'n/a'
@@ -161,9 +154,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                                 className="flex gap-2.5 items-center hover:text-white"
                             >
                                 <div className="truncate">{operation.connectionName}</div>
-                                <div className="w-4">
-                                    <IconShare2 stroke={1} size={18} />
-                                </div>
+                                <ExternalLink size={16} strokeWidth={1.5} className="shrink-0" />
                             </Link>
                         ) : (
                             'n/a'

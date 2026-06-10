@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { ComboboxSelect } from '@/components-v2/ui/Combobox';
+import { ComboboxSelect } from '@/components/ui/Combobox';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -13,7 +13,7 @@ const options = [
 ];
 
 const meta: Meta = {
-    title: 'Components v2/UI/Combobox',
+    title: 'Components/UI/Combobox',
     parameters: { layout: 'padded' }
 };
 export default meta;

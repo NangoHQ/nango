@@ -17,6 +17,7 @@ import type { EndpointMethod } from './api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
+    PostPublicAwsSigV4Authorization,
     PostPublicBasicAuthorization,
     PostPublicBillAuthorization,
     PostPublicJwtAuthorization,
@@ -63,6 +64,7 @@ import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
+    GetFunctionDeployment,
     GetFunctionDryrun,
     GetIntegrationFunction,
     GetIntegrationFunctions,
@@ -70,11 +72,9 @@ import type {
     GetProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
+    PostFunctionDeploymentResult,
     PostFunctionDryrun,
-    PostFunctionDryrunResult,
-    PostRemoteFunctionCompile,
-    PostRemoteFunctionDeploy,
-    PostRemoteFunctionDryrun
+    PostFunctionDryrunResult
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -149,6 +149,7 @@ export type PublicApiEndpoints =
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
+    | PostPublicAwsSigV4Authorization
     | PostPublicConnection
     | PatchPublicConnection
     | PostPublicSyncStart
@@ -161,9 +162,8 @@ export type PublicApiEndpoints =
     | GetFunctionDryrun
     | PostFunctionDryrunResult
     | PostFunctionDeployment
-    | PostRemoteFunctionCompile
-    | PostRemoteFunctionDryrun
-    | PostRemoteFunctionDeploy
+    | GetFunctionDeployment
+    | PostFunctionDeploymentResult
     | GetPublicFunctionCode
     | AllPublicProxy;
 
