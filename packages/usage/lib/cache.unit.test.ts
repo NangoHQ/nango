@@ -30,5 +30,6 @@ describe('UsageCache', () => {
         if (res.isErr()) {
             expect(res.error.message).toBe('cache_entry_invalid');
         }
+        expect(store.del).toHaveBeenCalledWith('key');
     });
 });
