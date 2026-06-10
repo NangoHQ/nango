@@ -158,7 +158,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                         </ConditionalTooltip>
                         <InputGroupAddon align="inline-end">
                             <PermissionGate condition={canRead || !secret} tooltipSide="bottom">
-                                {(allowed) => <CopyButton disabled={!allowed} text={value} className="!size-8 p-0" />}
+                                {(allowed) => <CopyButton disabled={!allowed} text={value} className="size-6 p-0" />}
                             </PermissionGate>
                         </InputGroupAddon>
                     </>
