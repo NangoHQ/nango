@@ -21,7 +21,7 @@ export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimiti
     return (
         <TabsPrimitive.Trigger
             className={cn(
-                'w-full p-2.5 cursor-pointer text-text-secondary !text-body-medium-medium text-start rounded transition-colors hover:bg-state-hover hover:text-text-strong data-[state=active]:bg-surface-panel-inset data-[state=active]:text-text-strong focus-default',
+                'w-full p-2.5 cursor-pointer text-text-secondary !text-body-medium-medium text-start rounded transition-colors hover:bg-state-hover hover:text-text-strong data-[state=active]:bg-state-hover data-[state=active]:text-text-strong focus-default',
                 // Horizontal
                 'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-full data-[orientation=horizontal]:px-3 data-[orientation=horizontal]:py-0.5',
                 // Disabled
