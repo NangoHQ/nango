@@ -1,4 +1,4 @@
-export async function runWithConcurrencyLimit<T, R>(items: T[], concurrency: number, worker: (item: T, index: number) => Promise<R>): Promise<R[]> {
+export async function runWithConcurrencyLimit<T, R>(items: T[], concurrency: number, worker: (item: T, index: number) => Promise<R> | R): Promise<R[]> {
     const results: R[] = new Array(items.length);
     const workerCount = Math.min(concurrency, items.length);
     let nextIndex = 0;

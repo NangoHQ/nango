@@ -1,9 +1,7 @@
 import { SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import tracer from 'dd-trace';
 
-import { metrics, report } from '@nangohq/utils';
-
-import { runWithConcurrencyLimit } from '../runWithConcurrencyLimit.js';
+import { chunk, metrics, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import type { SQSClient, SendMessageBatchCommandOutput, SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
@@ -73,7 +71,12 @@ export class DispatchQueuePublisher {
 
         const activeSpan = tracer.scope().active();
         const firstMessage = messages[0]!.message;
-        const batches = chunk(messages, this.batchSize);
+        const batches = chunk(
+            messages,
+            { count: 0, bytes: 0 },
+            (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + item.byteSize }),
+            (acc, item) => acc.count >= this.batchSize || acc.bytes + item.byteSize > SQS_BATCH_MAX_BYTES
+        );
         const span = tracer.startSpan('webhook.dispatch.publish', {
             ...(activeSpan ? { childOf: activeSpan } : {}),
             tags: {
@@ -203,30 +206,4 @@ function entryIdToIndex(id: string): number | null {
 
     const index = Number.parseInt(id.slice(1), 10);
     return Number.isNaN(index) ? null : index;
-}
-
-function chunk(items: PreparedDispatchMessage[], size: number): PreparedDispatchMessage[][] {
-    const chunks: PreparedDispatchMessage[][] = [];
-    let currentChunk: PreparedDispatchMessage[] = [];
-    let currentChunkBytes = 0;
-
-    for (const item of items) {
-        const exceedsBatchSize = currentChunk.length >= size;
-        const exceedsBatchBytes = currentChunkBytes + item.byteSize > SQS_BATCH_MAX_BYTES;
-
-        if (currentChunk.length > 0 && (exceedsBatchSize || exceedsBatchBytes)) {
-            chunks.push(currentChunk);
-            currentChunk = [];
-            currentChunkBytes = 0;
-        }
-
-        currentChunk.push(item);
-        currentChunkBytes += item.byteSize;
-    }
-
-    if (currentChunk.length > 0) {
-        chunks.push(currentChunk);
-    }
-
-    return chunks;
 }
