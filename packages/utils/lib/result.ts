@@ -49,6 +49,15 @@ export function Err<T>(error: unknown): Result<T> {
     };
 }
 
+export const matchWith =
+    <T, E extends Error, U>(onOk: (value: T) => U, onErr: (error: E) => U) =>
+    (result: Result<T, E>): U => {
+        if (result.isOk()) {
+            return onOk(result.value);
+        }
+        return onErr(result.error);
+    };
+
 function ensureError(err: unknown): Error {
     if (err === null || err === undefined) {
         return new Error();
