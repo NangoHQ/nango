@@ -14,7 +14,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
             data-slot="input-group"
             role="group"
             className={cn(
-                'group/input-group bg-surface-canvas border border-border-muted text-text-strong placeholder:text-text-muted !text-body-medium-regular relative flex w-full items-center rounded transition-[color,box-shadow] outline-none',
+                'group/input-group bg-surface-canvas border border-border-input text-text-strong placeholder:text-text-muted !text-body-medium-regular relative flex w-full items-center rounded transition-[color,box-shadow] outline-none hover:border-border-input-hover',
                 'h-9 min-w-0 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -24,9 +24,9 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
                 'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
                 // Focus state
-                'keyboard-nav:has-[[data-slot=input-group-control]:focus-visible]:[box-shadow:var(--shadow-focus-outline-default)] has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-default',
+                'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-input-hover',
                 // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
-                'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-strong',
+                'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-input-hover',
 
                 // Error state.
                 'has-[[data-slot][aria-invalid=true]]:!border-text-danger',
@@ -138,7 +138,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
             ref={ref}
             data-slot="input-group-control"
             data-filled={isFilled}
-            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:[box-shadow:none]', className)}
+            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0', className)}
             value={value}
             defaultValue={defaultValue}
             onChange={handleChange}
