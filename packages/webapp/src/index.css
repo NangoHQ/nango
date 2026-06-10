@@ -12,6 +12,7 @@
 */
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+@custom-variant keyboard-nav (.keyboard-nav &);
 
 @theme {
     --font-*: initial;
@@ -66,6 +67,13 @@
 @utility focus-default {
     @variant focus-visible {
         outline: none;
+        box-shadow: var(--shadow-focus-outline-default);
+    }
+}
+
+@utility focus-default-input {
+    outline: none;
+    .keyboard-nav &:focus-visible {
         box-shadow: var(--shadow-focus-outline-default);
     }
 }
