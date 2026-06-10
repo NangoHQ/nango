@@ -16425,6 +16425,29 @@ roam-scim:
             pattern: '^rmk-[A-Za-z0-9_-]{86}$'
             doc_section: '#step-1-generating-your-scim-api-token'
 
+robinhood-mcp:
+    display_name: Robinhood (MCP)
+    categories:
+        - finance
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://robinhood.com/oauth
+    token_url: https://api.robinhood.com/oauth2/token/
+    registration_url: https://agent.robinhood.com/oauth/trading/register
+    authorization_params:
+        response_type: code
+        resource: https://agent.robinhood.com/mcp/trading
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://agent.robinhood.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/robinhood-mcp
+
 rock-gym-pro:
     display_name: Rock Gym Pro
     categories:

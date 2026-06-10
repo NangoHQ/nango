@@ -1508,6 +1508,7 @@
               "integrations/all/rippling-shop-app",
               "integrations/all/rocketlane",
               "integrations/all/roam-scim",
+              "api-integrations/robinhood-mcp",
               "integrations/all/rock-gym-pro",
               "integrations/all/roller",
               "api-integrations/rootly",
