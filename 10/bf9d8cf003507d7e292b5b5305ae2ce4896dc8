@@ -1,0 +1,19 @@
+packages/sandbox/lib/providers/e2b.ts
+  s_0bc521b83bf53d::t_39a3e59e073211 29-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "10bf9d8cf003507d7e292b5b5305ae2ce4896dc8",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
