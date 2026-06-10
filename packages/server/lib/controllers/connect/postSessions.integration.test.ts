@@ -166,7 +166,14 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: seed.apiKey.secret,
-            body: { end_user: { id: endUserId, email: 'a@b.com' }, integrations_config_defaults: { github: { connection_config: {} } } }
+            body: {
+                end_user: { id: endUserId, email: 'a@b.com' },
+                integrations_config_defaults: {
+                    github: {
+                        connection_config: {}
+                    }
+                }
+            }
         });
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({

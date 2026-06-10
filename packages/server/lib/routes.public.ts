@@ -11,6 +11,7 @@ import { postPublicTriggerAction } from './controllers/action/postTriggerAction.
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postPublicAwsSigV4Authorization } from './controllers/auth/postAwsSigV4.js';
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
@@ -35,7 +36,9 @@ import { postPublicConnection } from './controllers/connection/postConnection.js
 import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
 import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionDeploymentResult } from './controllers/functions/deploy/postDeployResult.js';
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
@@ -105,6 +108,7 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 };
 const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
+const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
 
 export const publicAPI = express.Router();
 
@@ -171,6 +175,7 @@ publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth,
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
 publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
 publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
+publicAPI.route('/auth/aws-sigv4/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAwsSigV4Authorization);
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
@@ -286,6 +291,8 @@ publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryru
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
 publicAPI.route('/functions/deployments').post(functionDeployAuth, postFunctionDeployment);
+publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
+publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

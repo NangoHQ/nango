@@ -13,9 +13,7 @@ export interface SchedulerConfig {
         readonly schedulingTickIntervalMs: number;
         readonly expiringTickIntervalMs: number;
         readonly cleaningTickIntervalMs: number;
-        readonly monitoringTickIntervalMs: number;
         readonly cleaningOlderThanDays: number;
-        readonly monitoringTopN: number;
     };
     readonly limits: {
         readonly groupTaskCap: number;
@@ -31,9 +29,7 @@ export const defaultSchedulerConfig: SchedulerConfig = {
         schedulingTickIntervalMs: 100,
         expiringTickIntervalMs: 1000,
         cleaningTickIntervalMs: 10_000,
-        monitoringTickIntervalMs: 10_000,
-        cleaningOlderThanDays: 5,
-        monitoringTopN: 10
+        cleaningOlderThanDays: 5
     },
     limits: {
         groupTaskCap: 10_000,
@@ -46,9 +42,12 @@ export const defaultSchedulerConfig: SchedulerConfig = {
  * Operational events emitted by the scheduler. Consumers decide whether to turn these into
  * metrics, logs, alerts, or nothing.
  */
-export type SchedulerEvent =
-    | { type: 'task_dropped'; groupKey: string; count: number; reason: 'task_cap' }
-    | { type: 'queue_backpressure'; groupKey: string; queued: number };
+export interface SchedulerEvent {
+    type: 'task_dropped';
+    groupKey: string;
+    count: number;
+    reason: 'task_cap';
+}
 
 const noop = (() => undefined) as unknown as StrictLogger['info'];
 

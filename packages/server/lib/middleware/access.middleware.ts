@@ -56,6 +56,7 @@ export class AccessMiddleware {
                 apiKeyId?: number;
                 purpose?: 'dryrun' | 'deploy';
                 dryrunId?: string;
+                deploymentId?: string;
             };
         }>
     > {
@@ -126,6 +127,9 @@ export class AccessMiddleware {
                 }
                 if (result.value.auth.dryrunId !== undefined) {
                     res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
+                }
+                if (result.value.auth.deploymentId !== undefined) {
+                    res.locals['sandboxTokenDeploymentId'] = result.value.auth.deploymentId;
                 }
             }
             const authSource = result.value.auth?.source ?? 'env_var';
@@ -412,6 +416,9 @@ export class AccessMiddleware {
                     }
                     if (apiKeyResult.value.auth.dryrunId !== undefined) {
                         res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
+                    }
+                    if (apiKeyResult.value.auth.deploymentId !== undefined) {
+                        res.locals['sandboxTokenDeploymentId'] = apiKeyResult.value.auth.deploymentId;
                     }
                 }
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
