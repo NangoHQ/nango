@@ -1,6 +1,15 @@
 import db from '@nangohq/database';
 import { envs, logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, connectionService, errorManager, getProvider, githubAppClient } from '@nangohq/shared';
+import {
+    NangoError,
+    accountService,
+    configService,
+    connectionService,
+    errorManager,
+    generateSlackConnectionId,
+    getProvider,
+    githubAppClient
+} from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
@@ -39,7 +48,7 @@ class ConnectionController {
 
             const { environment, account: team } = res.locals;
             const connectionId = req.params['connectionId'] as string;
-            const expectedConnectionId = `account-${team.uuid}-${environment.id}`;
+            const expectedConnectionId = generateSlackConnectionId(team.uuid, environment.id);
 
             if (connectionId !== expectedConnectionId) {
                 res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });

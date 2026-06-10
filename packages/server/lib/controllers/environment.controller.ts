@@ -1,4 +1,4 @@
-import { accountService, environmentService, errorManager, hmacService } from '@nangohq/shared';
+import { accountService, environmentService, errorManager, generateSlackConnectionId, hmacService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -41,7 +41,7 @@ class EnvironmentController {
             }
 
             const { account, environment: callerEnvironment } = res.locals;
-            const expectedConnectionId = `account-${account.uuid}-${callerEnvironment.id}`;
+            const expectedConnectionId = generateSlackConnectionId(account.uuid, callerEnvironment.id);
             const { connection_id: connectionId } = req.query;
 
             if (connectionId !== expectedConnectionId) {
