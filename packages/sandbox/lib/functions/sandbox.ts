@@ -1,61 +1,37 @@
-import { randomUUID } from 'node:crypto';
+import { getLogger } from '@nangohq/utils';
 
-import { RateLimitError, Sandbox } from 'e2b';
+import { E2BSandboxProvider, createE2BRawSandbox, getRunningE2BSandboxCount } from '../providers/e2b.js';
+import { executionEnvironmentUnavailableMessage, sandboxService, toExecutionEnvironmentUnavailableError } from '../sandbox-service.js';
 
-import { getLogger, stringifyError } from '@nangohq/utils';
-
-import { FunctionError } from './helpers.js';
-import { remoteFunctionCompilerTemplate } from './runtime.js';
-import { envs } from '../env.js';
-
-import type { SandboxListOpts } from 'e2b';
+import type { SandboxPurpose } from '../providers/types.js';
 
 const logger = getLogger('FunctionSandbox');
 
-export const executionEnvironmentUnavailableMessage = 'The function execution environment is temporarily unavailable. Please try again shortly.';
+export { executionEnvironmentUnavailableMessage, toExecutionEnvironmentUnavailableError };
 
-export type FunctionSandbox = Awaited<ReturnType<typeof Sandbox.create>>;
+export type FunctionSandbox = Awaited<ReturnType<typeof createE2BRawSandbox>>;
 
-export type FunctionSandboxPurpose = 'compile' | 'deploy' | 'dryrun';
+export type FunctionSandboxPurpose = SandboxPurpose;
 
-export async function cleanupFunctionSandbox({
-    sandboxId,
-    apiKey = envs.E2B_API_KEY
-}: {
-    sandboxId: string | null | undefined;
-    apiKey?: string | undefined;
-}): Promise<void> {
-    if (!sandboxId || sandboxId === 'local') {
+export async function cleanupFunctionSandbox(params: { sandboxId: string | null | undefined; apiKey?: string | undefined }): Promise<void> {
+    if (Object.hasOwn(params, 'apiKey')) {
+        if (!params.sandboxId || params.sandboxId === 'local') {
+            return;
+        }
+
+        try {
+            await new E2BSandboxProvider().cleanup({ sandboxId: params.sandboxId, apiKey: params.apiKey });
+        } catch (err) {
+            logger.warning('Failed to clean up function sandbox', { sandboxId: params.sandboxId, err });
+        }
         return;
     }
 
-    if (!apiKey) {
-        logger.warning('Skipping function sandbox cleanup because E2B_API_KEY is not set', { sandboxId });
-        return;
-    }
-
-    try {
-        await Sandbox.kill(sandboxId, { apiKey });
-    } catch (err) {
-        logger.warning('Failed to clean up function sandbox', { sandboxId, err: stringifyError(err) });
-    }
+    await sandboxService.cleanup(params);
 }
 
 export async function getRunningSandboxCount({ apiKey, requestTimeoutMs }: { apiKey: string; requestTimeoutMs?: number | undefined }): Promise<number> {
-    const listOptions = {
-        apiKey,
-        ...(requestTimeoutMs !== undefined ? { requestTimeoutMs } : {}),
-        query: { state: ['running'] }
-    } satisfies SandboxListOpts;
-
-    const paginator = Sandbox.list(listOptions);
-
-    let count = 0;
-    while (paginator.hasNext) {
-        count += (await paginator.nextItems()).length;
-    }
-
-    return count;
+    return getRunningE2BSandboxCount({ apiKey, requestTimeoutMs });
 }
 
 export async function createFunctionSandbox({
@@ -70,13 +46,7 @@ export async function createFunctionSandbox({
     metadata?: Record<string, string> | undefined;
 }): Promise<FunctionSandbox> {
     try {
-        return await Sandbox.create(remoteFunctionCompilerTemplate, {
-            timeoutMs,
-            allowInternetAccess: true,
-            metadata: { ...metadata, purpose, requestId: randomUUID() },
-            network: { allowPublicTraffic: true },
-            apiKey
-        });
+        return await createE2BRawSandbox({ apiKey, purpose, timeoutMs, metadata });
     } catch (err) {
         const unavailableError = toExecutionEnvironmentUnavailableError(err);
         if (unavailableError) {
@@ -86,46 +56,4 @@ export async function createFunctionSandbox({
 
         throw err;
     }
-}
-
-export function toExecutionEnvironmentUnavailableError(error: unknown): FunctionError | null {
-    if (!isExecutionEnvironmentUnavailableError(error)) {
-        return null;
-    }
-
-    return new FunctionError({
-        code: 'execution_environment_unavailable',
-        message: executionEnvironmentUnavailableMessage,
-        status: 503
-    });
-}
-
-function isExecutionEnvironmentUnavailableError(error: unknown): boolean {
-    if (error instanceof RateLimitError) {
-        return true;
-    }
-
-    if (hasHttpStatus(error, 429)) {
-        return true;
-    }
-
-    const message = stringifyError(error).toLowerCase();
-
-    return (
-        message.includes('rate limit') ||
-        message.includes('too many sandboxes') ||
-        message.includes('concurrent sandbox') ||
-        message.includes('concurrency limit') ||
-        message.includes('sandbox limit') ||
-        message.includes('quota')
-    );
-}
-
-function hasHttpStatus(error: unknown, status: number): boolean {
-    if (!error || typeof error !== 'object') {
-        return false;
-    }
-
-    const err = error as Record<string, unknown>;
-    return err['status'] === status || err['statusCode'] === status || err['code'] === status;
 }

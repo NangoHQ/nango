@@ -11,3 +11,7 @@ export * from './functions/helpers.js';
 export * from './functions/runtime.js';
 export * from './functions/sandbox.js';
 export * from './functions/shell.js';
+export * from './providers/errors.js';
+export * from './providers/factory.js';
+export type * from './providers/types.js';
+export * from './sandbox-service.js';
