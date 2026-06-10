@@ -29,7 +29,6 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false,
         sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
         webhook_function_runtime: 'lambda',
@@ -74,8 +73,7 @@ export const starterV1Plan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false,
-        lambda_tenant_isolation: false
+        lambda_tenant_isolation: true
     }
 };
 
@@ -115,8 +113,7 @@ export const growthV1Plan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
-        remote_functions: false,
-        lambda_tenant_isolation: false
+        lambda_tenant_isolation: true
     }
 };
 
@@ -183,8 +180,7 @@ export const enterprisePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
-        remote_functions: false,
-        lambda_tenant_isolation: false
+        lambda_tenant_isolation: true
     }
 };
 
@@ -224,8 +220,7 @@ export const starterLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false,
-        lambda_tenant_isolation: false
+        lambda_tenant_isolation: true
     }
 };
 
@@ -264,8 +259,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false,
-        lambda_tenant_isolation: false
+        lambda_tenant_isolation: true
     }
 };
 
@@ -304,8 +298,7 @@ export const growthLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
-        remote_functions: false,
-        lambda_tenant_isolation: false
+        lambda_tenant_isolation: true
     }
 };
 

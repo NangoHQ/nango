@@ -16,9 +16,10 @@
     "keywords": [],
     "dependencies": {
         "@nangohq/logs": "file:../logs",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/kvstore": "file:../kvstore",
-        "axios": "1.15.2",
+        "axios": "1.16.1",
         "dayjs": "1.11.7",
         "dayjs-plugin-utc": "0.1.2",
         "rate-limiter-flexible": "5.0.3"
@@ -26,7 +27,7 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "typescript": "5.8.3",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     },
     "files": [
         "dist/**/*"

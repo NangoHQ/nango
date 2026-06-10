@@ -1,7 +1,6 @@
-import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
-import { useStore } from '@/store';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { StyledLink } from '@/components/ui/StyledLink';
 
 import type { Role } from '@nangohq/types';
 
@@ -20,8 +19,6 @@ export const RoleSelect: React.FC<{
     onChange: (value: Role) => void;
     hasRBAC?: boolean;
 }> = ({ value, onChange, hasRBAC = true }) => {
-    const env = useStore((state) => state.env);
-
     return (
         <Select value={value} onValueChange={(v) => onChange(v as Role)}>
             <SelectTrigger className="w-40">
@@ -38,7 +35,7 @@ export const RoleSelect: React.FC<{
                             content={
                                 <span>
                                     RBAC is only available for &apos;Growth&apos; plans.{' '}
-                                    <StyledLink to={`/${env}/team/billing#plans`} className="text-s">
+                                    <StyledLink to={`/team/billing#plans`} className="text-s">
                                         Upgrade
                                     </StyledLink>
                                 </span>

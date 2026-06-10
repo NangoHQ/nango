@@ -5,12 +5,12 @@ import { permissions } from '@nangohq/authz';
 import { useEnvironment } from '../../../hooks/useEnvironment.js';
 import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
 import { useToast } from '../../../hooks/useToast.js';
-import { useStore } from '../../../store.js';
 import { APIError } from '../../../utils/api.js';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Switch } from '@/components-v2/ui/switch';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useStore } from '@/store';
 
 import type { ApiError, ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 

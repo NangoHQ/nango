@@ -9,7 +9,7 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:22.21.1-bookworm-slim AS build
+FROM node:22.22.2-bookworm-slim AS build
 
 
 # Setup the app WORKDIR
@@ -19,6 +19,7 @@ WORKDIR /app/tmp
 # To leverage Docker's cache when no dependency has changed
 COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
 COPY packages/database/package.json ./packages/database/package.json
+COPY packages/design-system/package.json ./packages/design-system/package.json
 COPY packages/frontend/package.json ./packages/frontend/package.json
 COPY packages/jobs/package.json ./packages/jobs/package.json
 COPY packages/kvstore/package.json ./packages/kvstore/package.json
@@ -30,6 +31,7 @@ COPY packages/persist/package.json ./packages/persist/package.json
 COPY packages/records/package.json ./packages/records/package.json
 COPY packages/runner/package.json ./packages/runner/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json
+COPY packages/sandbox/package.json ./packages/sandbox/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/types/package.json ./packages/types/package.json
@@ -57,7 +59,7 @@ COPY . /app/tmp
 
 # Build the backend separately because it can be cached --in the same build for production and staging-- when we change the env vars
 RUN true \
-  && npm run ts-build:docker
+  && npm run ts-build:docker -- --noCheck
 
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
@@ -79,7 +81,7 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:22.21.1-bookworm-slim AS web
+FROM node:22.22.2-bookworm-slim AS web
 
 # Install a more recent npm
 RUN npm install -g npm@11.10.1

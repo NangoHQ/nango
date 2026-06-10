@@ -8,9 +8,9 @@ import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment'
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { KeyValueInput } from '@/components-v2/KeyValueInput';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
@@ -78,7 +78,7 @@ export const Functions: React.FC = () => {
     }
 
     return (
-        <SettingsContent title="Functions">
+        <SettingsContent title="Function env vars">
             <div className="flex flex-col gap-2.5">
                 <div className="inline-flex items-center gap-2">
                     Environment variables
@@ -95,7 +95,6 @@ export const Functions: React.FC = () => {
                             placeholderValue="value"
                             disabled={!edit || isPending}
                             isSecret={true}
-                            alwaysShowEmptyRow={edit}
                         />
                         {errors.length > 0 && (
                             <div className="flex flex-col gap-1">

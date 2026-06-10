@@ -19,9 +19,11 @@
             type: string
             title: Events API Domain
             description: The regional Events API domain for your 1Password account.
-            example: events.1password.com
             order: 1
-            pattern: '^events\.1password\.(com|ca|eu)$'
+            enum:
+                - events.1password.com
+                - events.1password.ca
+                - events.1password.eu
     credentials:
         apiKey:
             type: string
@@ -83,8 +85,10 @@
             type: string
             title: API Domain
             description: The regional API domain for your 1Password account.
-            example: api.1password.com
-            pattern: '^api\.1password\.(com|ca|eu)$'
+            enum:
+                - api.1password.com
+                - api.1password.ca
+                - api.1password.eu
             order: 1
         accountId:
             type: string
@@ -575,9 +579,10 @@ adyen:
         environment:
             type: string
             title: Environment
-            description: The environment to use
-            pattern: '^(live|test)$'
-            example: live|test
+            description: The environment to use.
+            enum:
+                - live
+                - test
         resource:
             type: string
             title: Resource
@@ -897,6 +902,58 @@ algolia:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-2-finding-your-admin-api-key'
 
+altrata:
+    display_name: Altrata
+    categories:
+        - analytics
+    auth_mode: TWO_STEP
+    token_url: https://api-auth.altrata.com/oauth2/token?grant_type=client_credentials
+    body_format: form
+    token_headers:
+        authorization: Basic ${base64(${credentials.username}:${credentials.password})}
+        x-api-key: ${credentials.apiKey}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-api-key: ${credentials.apiKey}
+    docs: https://nango.dev/docs/api-integrations/altrata
+    docs_connect: https://nango.dev/docs/api-integrations/altrata/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Service Hostname
+            description: The Altrata service hostname to connect to.
+            example: events.altrata.com
+            format: hostname
+            pattern: '^(matching|profile|events|relationships)\.altrata\.com$'
+            order: 1
+            doc_section: '#step-2-choose-a-service-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Altrata API key.
+            secret: true
+            example: mN3pQv8wLc2jXs5rKt4bGy6uFd1eAh7Z*******
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-obtain-your-credentials'
+        username:
+            type: string
+            title: Username
+            description: Your Altrata account username.
+            example: john_doe
+            doc_section: '#step-1-obtain-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Altrata account password.
+            secret: true
+            doc_section: '#step-1-obtain-your-credentials'
+
 amazon:
     display_name: Amazon
     categories:
@@ -971,18 +1028,19 @@ amazon-selling-partner:
             type: string
             title: Proxy BaseUrl Subdomain
             description: The subdomain prefix for the Amazon Selling Partner API endpoint.
-            example: sellingpartnerapi
-            pattern: '^(sandbox\.)?sellingpartnerapi$'
-            prefix: https://
             doc_section: '#step-3-finding-your-proxy-baseurl-subdomain'
             order: 3
+            enum:
+                - sellingpartnerapi
+                - sandbox.sellingpartnerapi
         region:
             type: string
             title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
-            example: eu
-            pattern: '^[a-z]+$'
-            suffix: .amazon.com
+            enum:
+                - na
+                - eu
+                - fe
             doc_section: '#step-4-finding-your-proxy-baseurl-region'
             order: 4
 
@@ -1035,10 +1093,10 @@ amazon-selling-partner-beta:
             type: string
             title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
-            example: eu
-            pattern: '^[a-z]+$'
-            prefix: https://sandbox.sellingpartnerapi-
-            suffix: .amazon.com
+            enum:
+                - na
+                - eu
+                - fe
             doc_section: '#step-3-finding-your-proxy-baseurl-region'
             order: 3
 
@@ -1094,10 +1152,11 @@ amplitude:
         hostname:
             type: string
             title: Hostname
-            description: The hostname associated with your server residency
-            example: analytics.eu.amplitude.com
+            description: The hostname associated with your server residency.
             optional: true
-            pattern: '^(?:analytics\.eu\.)?amplitude\.com$'
+            enum:
+                - amplitude.com
+                - analytics.eu.amplitude.com
 
 amplitude-mcp:
     display_name: Amplitude (MCP US)
@@ -1217,6 +1276,34 @@ anthropic-admin:
             type: string
             title: API Key
             description: The Admin API key for your Anthropic account
+
+anvil:
+    display_name: Anvil
+    categories:
+        - legal
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://app.useanvil.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/anvil
+    docs_connect: https://nango.dev/docs/api-integrations/anvil/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Anvil API key
+            pattern: '^[A-Za-z0-9]+$'
+            example: rj8T3fa*************************
+            doc_section: '#step-1-finding-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 apaleo:
     display_name: Apaleo
@@ -1837,10 +1924,12 @@ auvik:
         region:
             type: string
             title: Region
-            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI)
-            example: us2
-            pattern: '^[a-z]{2,4}\d{1,3}$'
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI).
             doc_section: '#step-2-determine-your-region'
+            enum:
+                - us1
+                - us2
+                - eu1
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
@@ -1874,12 +1963,16 @@ avanan:
             type: string
             title: Subdomain
             description: The Avanan API subdomain for your region.
-            example: smart-api-production-1-us
-            suffix: .avanan.net
-            prefix: https://
-            pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
+            enum:
+                - smart-api-production-1-us
+                - smart-api-production-1-eu
+                - smart-api-production-1-ca
+                - smart-api-production-5-ap
+                - smart-api-production-1-euw2
+                - smart-api-production-1-mec1
+                - smart-api-production-1-aps1
     credentials:
         appId:
             type: string
@@ -2043,10 +2136,10 @@ axiom:
             type: string
             title: Edge / region subdomain
             description: The subdomain of the API you would wish to connect to.
-            example: us-east-1.aws.edge
-            pattern: '^(api|us-east-1\.aws\.edge|eu-central-1\.aws\.edge)$'
-            suffix: .axiom.co
-            prefix: https://
+            enum:
+                - api
+                - us-east-1.aws.edge
+                - eu-central-1.aws.edge
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
     credentials:
@@ -2262,6 +2355,144 @@ aws-scim:
             order: 1
             doc_section: '#step-2-setting-up-automatic-provisioning'
 
+aws-sigv4:
+    display_name: AWS SigV4 Proxy
+    categories:
+        - storage
+    auth_mode: AWS_SIGV4
+    proxy:
+        base_url: https://${connectionConfig.service}.${connectionConfig.region}.amazonaws.com
+    docs: https://nango.dev/docs/integrations/all/aws-sigv4
+    docs_connect: https://nango.dev/docs/integrations/all/aws-sigv4/connect
+    credentials:
+        role_arn:
+            type: string
+            title: IAM Role ARN
+            description: The ARN of the IAM role your customer creates via your onboarding template.
+            example: arn:aws:iam::123456789012:role/NangoAccessRole
+            doc_section: '#step-1-provide-the-role-arn'
+    connection_config:
+        region:
+            type: string
+            title: AWS Region (optional)
+            description: Override the region if it differs from the integration default set by the integration owner.
+            example: us-east-1
+            optional: true
+            doc_section: '#step-3-enter-connection-details'
+        service:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    integration_config:
+        service:
+            type: string
+            title: AWS Service
+            description: The AWS service requests are signed for (e.g. s3, execute-api).
+            example: s3
+            pattern: ^[a-z0-9-]+$
+            order: 1
+        defaultRegion:
+            type: string
+            title: Default AWS Region
+            description: Region used to sign requests when a connection does not specify one.
+            example: us-east-1
+            optional: true
+            order: 2
+        stsMode:
+            type: string
+            title: STS Mode
+            description: How temporary AWS credentials are issued.
+            enum:
+                - builtin
+                - custom
+            default_value: builtin
+            optional: true
+            order: 3
+        awsAccessKeyId:
+            type: string
+            title: AWS Access Key ID
+            description: Access key for the IAM principal Nango uses to call STS AssumeRole.
+            secret: true
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: builtin
+            order: 4
+        awsSecretAccessKey:
+            type: string
+            title: AWS Secret Access Key
+            description: Secret access key paired with the access key ID above.
+            secret: true
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: builtin
+            order: 5
+        stsEndpointUrl:
+            type: string
+            title: STS Endpoint URL
+            description: HTTPS endpoint that issues temporary AWS credentials.
+            format: uri
+            pattern: ^https://
+            example: https://sts.example.com/assume
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: custom
+            order: 6
+        stsAuthType:
+            type: string
+            title: STS Auth Type
+            description: How Nango authenticates to the custom STS endpoint.
+            enum:
+                - none
+                - api_key
+                - basic
+            default_value: none
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: custom
+            order: 7
+        stsAuthHeader:
+            type: string
+            title: STS Auth Header
+            description: Header name used to send the API key to the custom STS endpoint.
+            default_value: x-api-key
+            optional: true
+            visible_when:
+                field: stsAuthType
+                equals: api_key
+            order: 8
+        stsApiKey:
+            type: string
+            title: STS API Key
+            description: API key value sent to the custom STS endpoint.
+            secret: true
+            visible_when:
+                field: stsAuthType
+                equals: api_key
+            order: 9
+        stsAuthUsername:
+            type: string
+            title: STS Username
+            description: Username for basic auth to the custom STS endpoint.
+            optional: true
+            visible_when:
+                field: stsAuthType
+                equals: basic
+            order: 10
+        stsAuthPassword:
+            type: string
+            title: STS Password
+            description: Password for basic auth to the custom STS endpoint.
+            secret: true
+            visible_when:
+                field: stsAuthType
+                equals: basic
+            order: 11
+
 azure-blob-storage:
     categories:
         - storage
@@ -2454,17 +2685,22 @@ battlenet:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Battle.net account
-            example: com
-            pattern: '^[a-z.]+$'
+            description: The domain extension of your Battle.net account.
+            enum:
+                - com
+                - cn
+                - net
             order: 1
         apiDomain:
             type: string
             title: API Domain
-            description: The domain to where you will access your API
-            example: us.api.blizzard.com
-            pattern: '^[a-z.]+$'
-            prefix: https://
+            description: The domain to where you will access your API.
+            enum:
+                - us.api.blizzard.com
+                - eu.api.blizzard.com
+                - kr.api.blizzard.com
+                - tw.api.blizzard.com
+                - gateway.battlenet.com.cn
 
 beehiiv:
     display_name: Beehiiv
@@ -2548,6 +2784,39 @@ bliro:
             description: Your Bliro client application Client Secret.
             secret: true
             doc_section: '#step-1-creating-a-client-application'
+
+bigchange:
+    display_name: BigChange
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://api.bigchange.com/auth/tokens
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.bigchange.com
+        headers:
+            customer-id: ${connectionConfig.customer_id}
+    docs: https://nango.dev/docs/api-integrations/bigchange
+    docs_connect: https://nango.dev/docs/api-integrations/bigchange/connect
+    connection_config:
+        customer_id:
+            type: string
+            title: BigChange Customer ID
+            description: Your numeric BigChange Customer ID.
+            example: '5690'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-bigchange-customer-id'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your BigChange Partner API client_id.
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your BigChange Partner API client_secret.
+            secret: true
 
 bigcommerce:
     display_name: BigCommerce
@@ -2835,11 +3104,10 @@ booking-com:
         environmentType:
             type: string
             title: Environment Type
-            description: The environment type for your various requests
-            pattern: '^(secure-supply|supply)$'
-            example: secure-supply|supply
-            suffix: -xml.booking.com
-            prefix: https://
+            description: The environment type for your various requests.
+            enum:
+                - secure-supply
+                - supply
     credentials:
         username:
             type: string
@@ -3674,6 +3942,27 @@ chargebee:
             default_value: ''
             hidden: true
 
+chatarmin:
+    display_name: Chatarmin
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.chatarmin.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/public/contacts?limit=1
+    docs: https://nango.dev/docs/api-integrations/chatarmin
+    docs_connect: https://nango.dev/docs/api-integrations/chatarmin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chatarmin API key.
+
 chattermill:
     display_name: Chattermill
     categories:
@@ -3702,11 +3991,11 @@ chattermill:
         subdomain:
             type: string
             title: Chattermill subdomain
-            description: The subdomain for your api requests
-            pattern: '^(app|api|backend)$'
-            example: 'app|api|backend'
-            suffix: .chattermill.com
-            prefix: https://
+            description: The subdomain for your api requests.
+            enum:
+                - app
+                - api
+                - backend
 
 checkhq:
     display_name: Check
@@ -4085,12 +4374,14 @@ clio:
         hostname:
             type: string
             title: Hostname
-            description: The hostname for your Clio region (e.g. app.clio.com for US, eu.app.clio.com for EU, ca.app.clio.com for CA, au.app.clio.com for AU)
-            example: app.clio.com
+            description: The hostname for your Clio region (e.g. app.clio.com for US, eu.app.clio.com for EU, ca.app.clio.com for CA, au.app.clio.com for AU).
             default_value: app.clio.com
             format: hostname
-            pattern: '^(app\.clio\.com|eu\.app\.clio\.com|ca\.app\.clio\.com|au\.app\.clio\.com)$'
-            prefix: https://
+            enum:
+                - app.clio.com
+                - eu.app.clio.com
+                - ca.app.clio.com
+                - au.app.clio.com
             order: 1
             doc_section: '#step-1-finding-your-hostname'
 
@@ -4255,14 +4546,20 @@ clover:
             type: string
             title: Authorization Host
             description: The Clover authorization hostname for your region.
-            example: www.clover.com
-            pattern: '^(www\.clover\.com|www\.eu\.clover\.com|www\.la\.clover\.com|sandbox\.dev\.clover\.com)$'
+            enum:
+                - www.clover.com
+                - www.eu.clover.com
+                - www.la.clover.com
+                - sandbox.dev.clover.com
         apiHost:
             type: string
             title: API Host
             description: The Clover API hostname for your region.
-            example: api.clover.com
-            pattern: '^(api\.clover\.com|api\.eu\.clover\.com|api\.la\.clover\.com|apisandbox\.dev\.clover\.com)$'
+            enum:
+                - api.clover.com
+                - api.eu.clover.com
+                - api.la.clover.com
+                - apisandbox.dev.clover.com
 
 close:
     display_name: Close
@@ -4397,9 +4694,10 @@ commercetools:
         cloudProvider:
             type: string
             title: Cloud Provider
-            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
-            example: gcp
-            pattern: '^(gcp|aws)$'
+            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws').
+            enum:
+                - gcp
+                - aws
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
 crowdstrike:
@@ -4642,10 +4940,11 @@ connectwise-rmm:
         subdomain:
             type: string
             title: API Subdomain
-            description: The ConnectWise RMM OpenAPI subdomain for your region
-            pattern: '^(itsupport247\.net|euplatform\.connectwise\.com|auplatform\.connectwise\.com)$'
-            example: itsupport247.net
-            prefix: https://openapi.service.
+            description: The ConnectWise RMM OpenAPI subdomain for your region.
+            enum:
+                - itsupport247.net
+                - euplatform.connectwise.com
+                - auplatform.connectwise.com
             doc_section: '#step-1-find-your-api-subdomain'
     credentials:
         client_id:
@@ -4925,9 +5224,10 @@ customer-io:
         subdomain:
             type: string
             title: Subdomain
-            description: The region to where your instance is hosted.
-            pattern: '^cdp(-eu)?$'
-            example: cdp
+            description: The region where your Customer.io instance is hosted.
+            enum:
+                - cdp
+                - cdp-eu
             order: 1
             doc_section: '#step-2-choose-your-subdomain'
     credentials:
@@ -4967,7 +5267,7 @@ cursor:
             description: The API Key for your Cursor account
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
 
 cursor-admin:
     display_name: Cursor Admin
@@ -4988,7 +5288,7 @@ cursor-admin:
             title: API key
             description: The API Key of your Greenhouse account
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
             secret: true
             doc_section: '#step-1-finding-api-key'
         password:
@@ -5129,9 +5429,14 @@ datadog:
         siteParameter:
             type: string
             title: Site Parameter
-            description: The site parameter to datadog.
-            pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
-            example: 'us5.datadoghq.com'
+            description: The Datadog site for your account.
+            enum:
+                - datadoghq.com
+                - us3.datadoghq.com
+                - us5.datadoghq.com
+                - datadoghq.eu
+                - ddog-gov.com
+                - ap1.datadoghq.com
             order: 1
             doc_section: '#step-1-finding-your-datadog-domain'
         applicationKey:
@@ -5233,11 +5538,14 @@ datto-rmm:
         platform:
             type: string
             title: Platform
-            description: The Datto RMM platform (region) for your account
-            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
-            example: merlot
-            prefix: https://
-            suffix: -api.centrastage.net
+            description: The Datto RMM platform (region) for your account.
+            enum:
+                - pinotage
+                - merlot
+                - concord
+                - vidal
+                - zinfandel
+                - syrah
             order: 1
             doc_section: '#step-2-select-your-platform'
 
@@ -5266,11 +5574,14 @@ datto-rmm-password-grant:
         platform:
             type: string
             title: Platform
-            description: The Datto RMM platform (region) for your account
-            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
-            example: merlot
-            prefix: https://
-            suffix: -api.centrastage.net
+            description: The Datto RMM platform (region) for your account.
+            enum:
+                - pinotage
+                - merlot
+                - concord
+                - vidal
+                - zinfandel
+                - syrah
             order: 1
             doc_section: '#step-2-select-your-platform'
     credentials:
@@ -5622,10 +5933,11 @@ dixa:
     connection_config:
         apiType:
             type: string
-            title: Api Type
-            description: The Api type for your requests
-            pattern: '^dev\|exports$'
-            example: 'dev|exports'
+            title: API Type
+            description: The Dixa API type to use for requests.
+            enum:
+                - dev
+                - exports
 
 document360:
     display_name: Document360
@@ -5956,6 +6268,94 @@ drupal:
             prefix: https://
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
+
+dualentry-mcp:
+    display_name: Dualentry (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.dualentry.com/mcp/authorize
+    token_url: https://api.dualentry.com/mcp/token
+    registration_url: https://api.dualentry.com/mcp/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.dualentry.com
+    docs: https://nango.dev/docs/api-integrations/dualentry-mcp
+
+dynatrace:
+    display_name: Dynatrace
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environmentId}.live.dynatrace.com
+        headers:
+            authorization: Api-Token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/dynatrace
+    docs_connect: https://nango.dev/docs/api-integrations/dynatrace/connect
+    connection_config:
+        environmentId:
+            type: string
+            title: Environment ID
+            description: Your Dynatrace environment ID.
+            pattern: '^[a-z0-9]+$'
+            example: mew08***
+            order: 1
+            doc_section: '#step-1-find-your-environment-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Dynatrace API token.
+            pattern: '^dt0[a-z]\d+\.[A-Z0-9]+\.[A-Z0-9]+$'
+            example: dt0s01.ST2EY72KQINMH5***********.G3DFPBEJYMODIDAEX454M7YWB***************************
+            doc_section: '#step-2-generate-an-api-token'
+
+dynatrace-oauth:
+    display_name: Dynatrace (OAuth)
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://sso.dynatrace.com/sso/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+        resource: urn:dtaccount:${connectionConfig.accountUuid}
+    proxy:
+        base_url: https://api.dynatrace.com
+    docs: https://nango.dev/docs/api-integrations/dynatrace-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/dynatrace-oauth/connect
+    connection_config:
+        accountUuid:
+            type: string
+            title: Account UUID
+            description: Your Dynatrace account UUID.
+            example: 9a8b7c6d-1234-5678-abcd-ef0123456789
+            format: uuid
+            order: 1
+            doc_section: '#step-1-find-your-account-uuid'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Dynatrace OAuth client ID.
+            example: dt0s03.****************
+            doc_section: '#step-2-create-an-oauth-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Dynatrace OAuth client secret.
+            secret: true
+            example: dt0s03.5NJ******.GYWJPBF******************
+            doc_section: '#step-2-create-an-oauth-client'
 
 emarsys:
     display_name: Emarsys Core API (WSSE)
@@ -6326,9 +6726,11 @@ evaluagent:
         region:
             type: string
             title: Region
-            description: The region of your EvaluAgent account
-            example: eu
-            pattern: '^[a-z]+$'
+            description: The region of your EvaluAgent account.
+            enum:
+                - api
+                - api.us-east
+                - api.aus
     credentials:
         username:
             type: string
@@ -6427,9 +6829,15 @@ exact-online:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Exact Online account
-            example: nl
-            pattern: '^[a-z.]+$'
+            description: The domain extension of your Exact Online account.
+            enum:
+                - nl
+                - be
+                - de
+                - fr
+                - es
+                - co.uk
+                - com
 
 exist:
     display_name: Exist
@@ -6812,11 +7220,11 @@ figma-scim:
         host:
             type: string
             title: Host
-            description: The host to your Figma account
-            example: www.figma.com
+            description: The Figma host for your account.
             format: hostname
-            prefix: https://
-            pattern: ^(www\.figma\.com|figma-gov\.com)+$
+            enum:
+                - www.figma.com
+                - figma-gov.com
             order: 1
             doc_section: '#step-1-finding-your-host'
         tenantId:
@@ -7078,6 +7486,8 @@ folk:
     categories:
         - crm
     auth_mode: API_KEY
+    webhook_routing_script: folkWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://api.folk.app
         headers:
@@ -7089,8 +7499,10 @@ folk:
             method: GET
             endpoints:
                 - /v1/users/me
-    docs: https://nango.dev/docs/integrations/all/folk
-    docs_connect: https://nango.dev/docs/integrations/all/folk/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/folk
+    docs_connect: https://nango.dev/docs/api-integrations/folk/connect
     credentials:
         apiKey:
             type: string
@@ -7099,6 +7511,21 @@ folk:
             example: 'FOLKLrHVSoYB6TaAF39aNGtEpEi3oxuo'
             pattern: '^FOLK[a-zA-Z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+followupboss:
+    display_name: Follow Up Boss
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.followupboss.com/oauth/authorize
+    token_url: https://app.followupboss.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: auth_code
+    proxy:
+        base_url: https://api.followupboss.com
+    docs: https://nango.dev/docs/api-integrations/followupboss
+    setup_guide_url: https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app
 
 fortnox:
     display_name: Fortnox
@@ -8929,9 +9356,10 @@ grist:
         environment:
             type: string
             title: Environment
-            description: The environment you want to connect to
-            pattern: '^(team|docs)$'
-            example: docs
+            description: The environment you want to connect to.
+            enum:
+                - team
+                - docs
             order: 1
             doc_section: '#step-1-selecting-your-environment'
 
@@ -9605,11 +10033,64 @@ itglue:
         subdomain:
             type: string
             title: Subdomain
-            description: Your IT Glue subdomain (api, api.eu, or api.au)
-            pattern: '^api(\.(eu|au))?$'
-            example: api
+            description: Your IT Glue subdomain.
+            enum:
+                - api
+                - api.eu
+                - api.au
             doc_section: '#step-1-finding-your-subdomain'
             order: 1
+
+immybot:
+    display_name: ImmyBot
+    categories:
+        - dev-tools
+        - support
+    auth_mode: OAUTH2_CC
+    body_format: form
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        scope: https://${connectionConfig.instanceSubdomain}.immy.bot/.default
+    proxy:
+        base_url: https://${connectionConfig.instanceSubdomain}.immy.bot
+        headers:
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/immybot
+    docs_connect: https://nango.dev/docs/api-integrations/immybot/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Microsoft Entra Tenant ID
+            description: The Azure tenant ID that owns the ImmyBot app registration.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            order: 1
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+        instanceSubdomain:
+            type: string
+            title: ImmyBot Instance Subdomain
+            description: The first segment of your ImmyBot instance URL.
+            pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+            example: acme
+            prefix: https://
+            suffix: .immy.bot
+            order: 2
+            doc_section: '#step-6-find-your-immybot-instance-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Application client ID from the Microsoft Entra app registration.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret value from the Microsoft Entra app registration.
+            secret: true
+            doc_section: '#step-2-create-a-client-secret'
 
 intercom:
     display_name: Intercom
@@ -9636,8 +10117,9 @@ intercom:
             type: string
             title: Region
             description: The API region for your Intercom workspace.
-            pattern: '^(eu|au)$'
-            example: eu
+            enum:
+                - eu
+                - au
             optional: true
             doc_section: '#step-1-finding-your-region'
 
@@ -9674,11 +10156,11 @@ ironclad:
         subdomain:
             type: string
             title: Subdomain
-            description: Your Ironclad Environment Subdomain
-            example: na1
-            prefix: https://
-            suffix: .ironcladapp.com
-            pattern: '^(na1|demo|eu1)$'
+            description: Your Ironclad Environment Subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
             doc_section: '#step-1-finding-your-subdomain'
 
 jamf:
@@ -9786,8 +10268,9 @@ jiminny:
             type: string
             title: Region
             description: The region your Jiminny account is hosted in.
-            pattern: '^(eu|com)$'
-            example: eu
+            enum:
+                - eu
+                - com
             doc_section: '#step-1-find-your-region'
     credentials:
         apiKey:
@@ -10358,10 +10841,14 @@ knowbe4:
         subdomain:
             type: string
             title: Subdomain
-            description: The subdomain to your API base URL
+            description: The subdomain to your API base URL.
             doc_section: '#step-1-finding-your-subdomain'
-            example: eu.api
-            pattern: '^(us\.api|eu\.api|ca\.api|uk\.api|de\.api)$'
+            enum:
+                - us.api
+                - eu.api
+                - ca.api
+                - uk.api
+                - de.api
             order: 1
 
 klipfolio:
@@ -10727,6 +11214,31 @@ lever-basic-sandbox:
             description: ''
             default_value: ''
             hidden: true
+
+lightfield:
+    display_name: Lightfield
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.lightfield.app
+        headers:
+            authorization: Bearer ${apiKey}
+            lightfield-version: '2026-03-01'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/auth/validate
+    docs: https://nango.dev/docs/api-integrations/lightfield
+    docs_connect: https://nango.dev/docs/api-integrations/lightfield/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Lightfield API key
+            example: sk_lf_0_...
+            pattern: '^sk_lf_0_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-key'
 
 lightspeed-retail:
     display_name: Lightspeed Retail (X-Series)
@@ -11224,9 +11736,10 @@ mailgun:
         region:
             type: string
             title: Region
-            description: The region of your Mailgun account
-            pattern: '^[a-z]+$'
-            example: us
+            description: The region of your Mailgun account.
+            enum:
+                - api
+                - api.eu
             doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
@@ -11490,14 +12003,33 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
-    authorization_url: https://oauth2.mercury.com/oauth2/auth
-    token_url: https://oauth2.mercury.com/oauth2/token
+    authorization_method: header
+    authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
+    token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
         - offline_access
     proxy:
-        base_url: https://api.mercury.com
+        base_url: https://${connectionConfig.hostname} || https://api.mercury.com
     docs: https://nango.dev/docs/api-integrations/mercury
+    docs_connect: https://nango.dev/docs/api-integrations/mercury/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app
+    connection_config:
+        oauth_hostname:
+            type: string
+            title: OAuth Hostname
+            description: Your Mercury OAuth hostname.
+            optional: true
+            enum:
+                - oauth2.mercury.com
+                - oauth2-sandbox.mercury.com
+        hostname:
+            type: string
+            title: API Hostname
+            description: Your Mercury API hostname.
+            optional: true
+            enum:
+                - api.mercury.com
+                - api-sandbox.mercury.com
 
 meta-marketing-api:
     display_name: Meta Marketing API
@@ -11641,6 +12173,14 @@ microsoft-oauth2-cc:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
+
+microsoft-intune:
+    display_name: Microsoft Intune
+    categories:
+        - dev-tools
+    alias: microsoft-oauth2-cc
+    docs: https://nango.dev/docs/api-integrations/microsoft-intune
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-intune/connect
 
 microsoft-planner:
     display_name: Microsoft Planner
@@ -11799,8 +12339,9 @@ maximizer:
             type: string
             title: Region
             description: Region-specific subdomain.
-            pattern: '^(caw|ukw)$'
-            example: caw
+            enum:
+                - caw
+                - ukw
         company_alias:
             type: string
             title: Company Alias
@@ -12268,9 +12809,14 @@ modmed:
         environment:
             type: string
             title: Environment
-            description: The ModMed API environment
-            example: stage.ema-api.com/ema-dev
-            pattern: '^(stage|mmapi)\.ema-api\.com\/(ema-dev|ema-training|ema-prod)$'
+            description: The ModMed API environment.
+            enum:
+                - stage.ema-api.com/ema-dev
+                - stage.ema-api.com/ema-training
+                - stage.ema-api.com/ema-prod
+                - mmapi.ema-api.com/ema-dev
+                - mmapi.ema-api.com/ema-training
+                - mmapi.ema-api.com/ema-prod
             doc_section: '#step-3-selecting-your-environment'
             order: 1
         firmUrlPrefix:
@@ -12318,6 +12864,48 @@ mural:
     proxy:
         base_url: https://app.mural.co
     docs: https://nango.dev/docs/integrations/all/mural
+
+nable-ncentral:
+    display_name: N-able N-central
+    categories:
+        - support
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.serverUrl}/api/auth/authenticate
+    token_headers:
+        authorization: Bearer ${credentials.userApiToken}
+        accept: application/json
+    token_response:
+        token: tokens.access.token
+        token_expiration: tokens.access.expirySeconds
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/api
+        verification:
+            method: GET
+            endpoints:
+                - /auth/validate
+    docs: https://nango.dev/docs/api-integrations/nable-ncentral
+    docs_connect: https://nango.dev/docs/api-integrations/nable-ncentral/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: N-central server URL
+            description: Your N-central server hostname.
+            example: ncentral.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-n-central-server-url'
+    credentials:
+        userApiToken:
+            type: string
+            title: User-API token
+            description: Your N-central User-API token (JWT)
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJOX2NlbnRyYWwifQ.c2lnbmF0dXJl
+            secret: true
+            doc_section: '#step-2-generate-a-user-api-token'
 
 nationbuilder:
     display_name: NationBuilder
@@ -12504,6 +13092,50 @@ next-cloud-ocs:
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
 
+nexthink:
+    display_name: Nexthink
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instance}-login.${connectionConfig.region}.nexthink.cloud/oauth2/default/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - service:integration
+    proxy:
+        base_url: https://${connectionConfig.instance}.api.${connectionConfig.region}.nexthink.cloud
+    docs: https://nango.dev/docs/api-integrations/nexthink
+    docs_connect: https://nango.dev/docs/api-integrations/nexthink/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Nexthink API Client ID.
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Nexthink API Client Secret.
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
+    connection_config:
+        instance:
+            type: string
+            title: Instance Name
+            description: The name of your Nexthink instance.
+            example: acme
+            order: 1
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+        region:
+            type: string
+            title: Region
+            description: 'Your Nexthink region'
+            example: eu
+            pattern: '^(us|eu|pac|meta)$'
+            order: 2
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+
 ninjaone-rmm:
     display_name: NinjaOne RMM
     categories:
@@ -12554,6 +13186,50 @@ ninjaone-rmm-oauth2:
         base_url: https://app.ninjarmm.com
     docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app
+
+ninjaone-saas-backup:
+    display_name: NinjaOne SaaS Backup
+    categories:
+        - storage
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/api
+        headers:
+            x-reseller-token: ${connectionConfig.resellerToken}
+            x-access-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/ninjaone-saas-backup
+    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The host from your NinjaOne SaaS Backup API URL.
+            example: dropsuite.us
+            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            prefix: https://
+            suffix: /api
+            order: 1
+            doc_section: '#step-1-find-your-api-credentials'
+        resellerToken:
+            type: string
+            title: Reseller Token
+            description: The Reseller Token from NinjaOne SaaS Backup API Settings.
+            format: uuid
+            order: 2
+            doc_section: '#step-1-find-your-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: The Authentication Token from NinjaOne SaaS Backup API Settings.
+            format: uuid
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
 
 nocrm:
     display_name: nocrm.io
@@ -12612,9 +13288,10 @@ northbeam:
         subdomain:
             type: string
             title: API Subdomain
-            description: Use 'api' for production or 'api-uat' for testing/development.
-            pattern: '^api(-uat)?$'
-            example: api
+            description: Use api for production or api-uat for testing/development.
+            enum:
+                - api
+                - api-uat
             order: 1
             doc_section: '#step-1-getting-authentication-credentials'
         dataClientId:
@@ -12887,12 +13564,12 @@ okta-cc:
         - dev-tools
         - iam
     auth_mode: OAUTH2_CC
-    token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
+    token_url: https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
     token_request_auth_method: private_key_jwt
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.subdomain}.okta.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.okta.com
         retry:
             at:
                 - 'x-rate-limit-reset'
@@ -12915,15 +13592,19 @@ okta-cc:
             secret: true
             doc_section: '#step-2-generating-and-registering-your-rsa-key-pair'
     connection_config:
-        subdomain:
+        hostname:
             type: string
             title: Okta Domain
-            description: The subdomain of your Okta account
-            pattern: '^[a-z0-9_-]+$'
-            example: dev-12345678
-            suffix: .okta.com
+            description: The full hostname of your Okta account
+            format: hostname
             prefix: https://
+            example: dev-12345678.okta.com
             doc_section: '#step-3-finding-your-okta-domain'
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of hostname
         oauth_scopes:
             type: string
             title: Scopes
@@ -13488,10 +14169,9 @@ paddle:
             type: string
             title: Environment
             description: Use 'api' for live or 'sandbox-api' for sandbox.
-            pattern: '^(api|sandbox-api)$'
-            example: api
-            prefix: https://
-            suffix: .paddle.com
+            enum:
+                - api
+                - sandbox-api
             doc_section: '#step-2-choose-your-environment'
             order: 1
 
@@ -13708,11 +14388,10 @@ paylocity-nextgen:
         environment:
             type: string
             title: Environment
-            description: Your Paylocity NextGen environment
-            pattern: '^(dc1prodgwext|dc1demogwext)$'
-            example: dc1prodgwext
-            prefix: https://
-            suffix: .paylocity.com
+            description: Your Paylocity NextGen environment.
+            enum:
+                - dc1prodgwext
+                - dc1demogwext
             order: 1
             doc_section: '#step-1-select-the-correct-paylocity-environment'
         companyId:
@@ -13742,11 +14421,10 @@ paylocity:
         environment:
             type: string
             title: Paylocity Environment
-            pattern: '^(dc1demogw|api)$'
-            example: dc1demogw
-            description: Your Paylocity Weblink environment
-            prefix: https://
-            suffix: .paylocity.com
+            enum:
+                - dc1demogw
+                - api
+            description: Your Paylocity Weblink environment.
             order: 1
             doc_section: '#step-1-select-the-correct-paylocity-environment'
         companyId:
@@ -14009,12 +14687,11 @@ perimeter81:
         domain:
             type: string
             title: Domain
-            description: The domain for Perimeter81
-            pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
-            example: '(perimeter81,eu.sase.checkpoint)'
+            description: The domain for Perimeter81.
+            enum:
+                - perimeter81
+                - eu.sase.checkpoint
             doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
-            suffix: .com
-            prefix: https://api.
             order: 1
     credentials:
         apiKey:
@@ -14148,9 +14825,14 @@ pingone:
         tld:
             type: string
             title: Top Level Domain
-            description: The top level domain for your PingOne account
-            example: com
-            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            description: The top level domain for your PingOne account.
+            enum:
+                - com
+                - ca
+                - eu
+                - com.au
+                - sg
+                - asia
             doc_section: '#step-2-finding-your-top-level-domain'
         environmentId:
             type: string
@@ -14182,10 +14864,15 @@ pingone-cc:
         tld:
             type: string
             title: Top Level Domain
-            description: The top level domain for your PingOne account
-            example: com
+            description: The top level domain for your PingOne account.
             order: 2
-            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            enum:
+                - com
+                - ca
+                - eu
+                - com.au
+                - sg
+                - asia
             doc_section: '#step-3-finding-your-top-level-domain'
         environmentId:
             type: string
@@ -14356,6 +15043,118 @@ pivotaltracker:
             title: API Key
             description: The API key for your Pivotal Tracker account
 
+planning-center-online:
+    display_name: Planning Center Online (OAuth)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.planningcenteronline.com/oauth/authorize
+    token_url: https://api.planningcenteronline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+            user-agent: Nango (https://nango.dev)
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+    docs: https://nango.dev/docs/api-integrations/planning-center-online
+    setup_guide_url: https://nango.dev/docs/api-integrations/planning-center-online/how-to-register-your-own-planning-center-oauth-app
+
+planning-center-online-pat:
+    display_name: Planning Center Online (Personal Access Token)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                user-agent: Nango (https://nango.dev)
+            endpoints:
+                - /current/v2/me
+    docs: https://nango.dev/docs/api-integrations/planning-center-online-pat
+    docs_connect: https://nango.dev/docs/api-integrations/planning-center-online-pat/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: The Client ID for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9_-]{4,128}$'
+            example: 01h2jk3lm4np5qrst6uvw
+            doc_section: '#step-2-create-a-personal-access-token'
+        password:
+            type: string
+            title: Secret
+            description: The Secret for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9+/=_-]{8,512}$'
+            example: 7f8e9d0c1b2a3847564930210fedcba9876543210fedcba9876543210
+            doc_section: '#step-2-create-a-personal-access-token'
+
+pushpay-chms-v1:
+    display_name: Pushpay ChMS (v1)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ccbchurch.com
+        retry:
+            after:
+                - 'retry-after'
+    credentials_verification_script: pushpayChmsV1CredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v1
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v1/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for your Pushpay ChMS site.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            order: 1
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-church-subdomain'
+    credentials:
+        username:
+            type: string
+            title: API username
+            description: The API login created in Pushpay ChMS API Admin.
+            doc_section: '#step-2-create-an-api-user'
+        password:
+            type: string
+            title: API password
+            description: The password for your Pushpay ChMS API user.
+            secret: true
+            doc_section: '#step-2-create-an-api-user'
+
 plain:
     display_name: Plain
     categories:
@@ -14404,19 +15203,17 @@ pleo:
         subdomain:
             type: string
             title: OAuth Subdomain
-            description: The auth subdomain of your Pleo environment.
-            example: auth
-            pattern: '^auth(\.staging)?$'
-            suffix: .pleo.io
-            prefix: https://
+            description: The OAuth subdomain for your Pleo environment.
+            enum:
+                - auth
+                - auth.staging
         apiSubdomain:
             type: string
             title: API Subdomain
-            description: The API subdomain of your Pleo environment.
-            example: external
-            pattern: '^external(\.staging)?$'
-            suffix: .pleo.io
-            prefix: https://
+            description: The API subdomain for your Pleo environment.
+            enum:
+                - external
+                - external.staging
 
 podium:
     display_name: Podium
@@ -14485,11 +15282,12 @@ posthog:
         subdomain:
             type: string
             title: Subdomain
-            description: The subdomain of your PostHog cloud account
-            pattern: '^(us(\.i)?|eu(\.i)?)$'
-            example: us.i
-            suffix: .posthog.com
-            prefix: https://
+            description: The subdomain of your PostHog cloud account.
+            enum:
+                - us
+                - us.i
+                - eu
+                - eu.i
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
     credentials:
@@ -14522,10 +15320,11 @@ posthog-oauth:
             type: string
             title: Subdomain
             description: The subdomain of your PostHog cloud account.
-            pattern: '^(us(\.i)?|eu(\.i)?)$'
-            example: us
-            suffix: .posthog.com
-            prefix: https://
+            enum:
+                - us
+                - us.i
+                - eu
+                - eu.i
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
 
@@ -14564,15 +15363,15 @@ prospeo:
                 content-type: application/json
             endpoints:
                 - /account-information
-    docs: https://nango.dev/docs/integrations/all/prospeo
-    docs_connect: https://nango.dev/docs/integrations/all/prospeo/connect
+    docs: https://nango.dev/docs/api-integrations/prospeo
+    docs_connect: https://nango.dev/docs/api-integrations/prospeo/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: Your Prospeo API Key
-            example: 65d2be5e227e447d8777d36f934c611c
-            pattern: '^[a-f0-9]{32}$'
+            example: pk_640edfcc************************304fca5e
+            pattern: '^(pk_[a-f0-9]{64}|[a-f0-9]{32})$'
             doc_section: '#step-1-finding-your-api-key'
 
 prtg-classic:
@@ -14644,7 +15443,61 @@ private-api-basic:
             type: string
             title: Password
             description: Your password
-
+private-api-generic:
+    display_name: Private API (Generic)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.nango.dev/
+    integration_config:
+        keyPlacement:
+            type: string
+            title: Key placement
+            description: Where the API key is sent on proxied requests.
+            enum:
+                - header
+                - query
+            default_value: header
+            warnings:
+                query: Sending the key as a query param can expose it in upstream, proxy, and CDN logs. Prefer a header when the API supports it.
+            order: 1
+        keyName:
+            type: string
+            title: Key name
+            description: Header name or query-param name (e.g. Authorization, x-api-key, api_key).
+            example: Authorization
+            order: 2
+        valueTemplate:
+            type: string
+            title: Value template
+            description: How the key is presented to the upstream API. Use ${apiKey} as the placeholder for the stored key.
+            example: Api-Key ${apiKey}
+            default_value: ${apiKey}
+            pattern: '\$\{apiKey\}'
+            order: 3
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Base URL of the upstream API the proxy will call.
+            format: uri
+            pattern: '^https?://'
+            example: https://api.example.com
+            order: 4
+        keyLabel:
+            type: string
+            title: API key label (shown in Connect UI)
+            description: The label end users see for the API key field in the Connect UI.
+            default_value: API Key
+            optional: true
+            order: 5
+    docs: https://nango.dev/docs/integrations/all/private-api-generic
+    docs_connect: https://nango.dev/docs/integrations/all/private-api-generic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
 precisefp:
     display_name: PreciseFP
     categories:
@@ -14809,6 +15662,55 @@ provenexpert:
             secret: true
             pattern: '^[A-Za-z0-9]{43}$'
             example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
+            doc_section: '#step-1-getting-your-credentials'
+
+pverify:
+    display_name: pVerify
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.apiHost}/Token
+    token_params:
+        Client_Id: ${credentials.clientId}
+        Client_Secret: ${credentials.clientSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        Client-API-Id: ${credentials.clientId}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            client-api-id: ${credentials.clientId}
+    docs: https://nango.dev/docs/api-integrations/pverify
+    docs_connect: https://nango.dev/docs/api-integrations/pverify/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your pVerify Client ID.
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            format: uuid
+            doc_section: '#step-1-getting-your-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your pVerify Client Secret.
+            secret: true
+            example: aB3mNpQr7sXwYz2t***************
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-getting-your-credentials'
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: Your pVerify API hostname.
+            example: api.pverify.com
+            pattern: '^(api|testapi)\.pverify\.com$'
             doc_section: '#step-1-getting-your-credentials'
 
 qualtrics:
@@ -15241,12 +16143,13 @@ recall-ai:
         region:
             type: string
             title: Region
-            description: The region where your Recall.ai account is hosted
-            example: us-east-1
-            pattern: '^(us-east-1|us-west-2|eu-central-1|ap-northeast-1)$'
+            description: The region where your Recall.ai account is hosted.
+            enum:
+                - us-east-1
+                - us-west-2
+                - eu-central-1
+                - ap-northeast-1
             order: 1
-            prefix: https://
-            suffix: .recall.ai
             doc_section: '#step-1-determine-your-region'
     credentials:
         apiKey:
@@ -15519,11 +16422,10 @@ researchdesk:
         subdomain:
             type: string
             title: Subdomain
-            description: The subdomain of the environment to which you want to connect to
-            pattern: '^(demand|stage-demand)$'
-            example: demand
-            suffix: .researchdesk.com
-            prefix: https://
+            description: The subdomain of the environment to which you want to connect to.
+            enum:
+                - demand
+                - stage-demand
             order: 1
             doc_section: '#step-1-choosing-your-subdomain'
     credentials:
@@ -15920,6 +16822,49 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://nango.dev/docs/integrations/all/sage
+
+sage-200:
+    display_name: Sage 200
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://id.sage.com/authorize
+    token_url: https://id.sage.com/oauth/token
+    authorization_params:
+        audience: s200ukipd/sage200
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    scope_separator: ' '
+    post_connection_script: sage200PostConnection
+    proxy:
+        base_url: https://api.columbus.sage.com/uk/${connectionConfig.edition}
+        headers:
+            x-company: ${connectionConfig.company_id}
+            x-site: ${connectionConfig.site_id}
+    docs: https://nango.dev/docs/api-integrations/sage-200
+    setup_guide_url: https://nango.dev/docs/api-integrations/sage-200/how-to-register-your-own-sage-200-oauth-app
+    connection_config:
+        edition:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        company_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        site_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 sage-hr:
     display_name: Sage HR
@@ -16427,6 +17372,63 @@ sap-concur:
             example: us
             doc_section: '#step-3-determine-your-region'
 
+sap-concur-password:
+    display_name: SAP Concur (Password Grant)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.region}.api.concursolutions.com/oauth2/v0/token
+    token_params:
+        grant_type: password
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.region}.api.concursolutions.com
+    docs: https://nango.dev/docs/api-integrations/sap-concur-password
+    docs_connect: https://nango.dev/docs/api-integrations/sap-concur-password/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your SAP Concur username or userId.
+            doc_section: '#step-2-get-your-user-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: Your SAP Concur account password.
+            doc_section: '#step-2-get-your-user-credentials'
+        clientId:
+            type: string
+            title: Client ID
+            description: Your OAuth application client_id supplied by App Management.
+            doc_section: '#step-1-get-your-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            secret: true
+            description: Your OAuth application client_secret supplied by App Management.
+            doc_section: '#step-1-get-your-client-credentials'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The SAP Concur Data Center region.
+            example: us
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+            doc_section: '#step-3-determine-your-region'
+
 sap-business-one:
     display_name: SAP Business One
     categories:
@@ -16441,10 +17443,15 @@ sap-business-one:
         Password: ${credentials.password}
     token_headers:
         content-type: application/json
+    token_expires_in_ms: 1700000
     proxy:
         base_url: https://${connectionConfig.domain}
+        headers:
+            cookie: ${credentials._cookies}
     token_response:
-        token: AccessToken
+        token: SessionId
+    token_response_headers:
+        - set-cookie
     docs: https://nango.dev/docs/integrations/all/sap-business-one
     docs_connect: https://nango.dev/docs/integrations/all/sap-business-one/connect
     connection_config:
@@ -16776,11 +17783,13 @@ sentry:
         hostname:
             type: string
             title: Hostname
-            description: The Hostname of your Sentry account
-            example: us.sentry.io
+            description: The Hostname of your Sentry account.
             format: hostname
-            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
-            prefix: https://
+            enum:
+                - sentry.io
+                - us.sentry.io
+                - eu.sentry.io
+                - de.sentry.io
             order: 1
             doc_section: '#step-1-finding-your-hostname'
     credentials:
@@ -16815,11 +17824,13 @@ sentry-oauth:
         hostname:
             type: string
             title: Hostname
-            description: The Hostname of your Sentry account
-            example: us.sentry.io
+            description: The Hostname of your Sentry account.
             format: hostname
-            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
-            prefix: https://
+            enum:
+                - sentry.io
+                - us.sentry.io
+                - eu.sentry.io
+                - de.sentry.io
             order: 1
             doc_section: '#step-1-finding-your-hostname'
         actor:
@@ -17240,10 +18251,9 @@ shipbob-pat:
             type: string
             title: API Subdomain
             description: The ShipBob API subdomain of the environment you want to connect to.
-            example: api
-            pattern: '^(api|sandbox-api)$'
-            prefix: https://
-            suffix: .shipbob.com
+            enum:
+                - api
+                - sandbox-api
             doc_section: '#step-2-identify-your-api-subdomain'
     credentials:
         apiKey:
@@ -17634,7 +18644,7 @@ shortcut:
             description: The API key for your Shortcut account
 
 simpro:
-    display_name: simPRO
+    display_name: Simpro
     categories:
         - productivity
         - invoicing
@@ -17654,8 +18664,8 @@ simpro:
     connection_config:
         build:
             type: string
-            title: simPRO Build Name
-            description: The subdomain part of your simPRO URL.
+            title: Simpro Build Name
+            description: The subdomain part of your Simpro URL.
             pattern: '^[a-z0-9_-]+$'
             example: yourcompany
             suffix: .simprosuite.com
@@ -17670,7 +18680,7 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     scope_separator: ','
-    alternate_access_token_response_path: authed_user.access_token
+    alternate_access_token_response_path: authed_user
     token_url: https://slack.com/api/oauth.v2.access
     disable_pkce: true
     token_response_metadata:
@@ -17705,11 +18715,13 @@ slack-mcp:
     authorization_url: https://slack.com/oauth/v2_user/authorize
     token_url: https://slack.com/api/oauth.v2.user.access
     scope_separator: ','
-    alternate_access_token_response_path: authed_user.access_token
+    alternate_access_token_response_path: authed_user
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://mcp.slack.com
         headers:
@@ -17803,7 +18815,7 @@ smartsheet:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.smartsheet.com/b/authorize
+    authorization_url: https://${connectionConfig.app_host}/b/authorize || https://app.smartsheet.com/b/authorize
     token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
@@ -17813,16 +18825,29 @@ smartsheet:
         grant_type: refresh_token
     proxy:
         base_url: https://api.${connectionConfig.domain}
-    docs: https://nango.dev/docs/integrations/all/smartsheet
-    docs_connect: https://nango.dev/docs/integrations/all/smartsheet/connect
+    docs: https://nango.dev/docs/api-integrations/smartsheet
+    docs_connect: https://nango.dev/docs/api-integrations/smartsheet/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/smartsheet/how-to-register-your-own-smartsheet-api-oauth-app
     connection_config:
+        app_host:
+            type: string
+            title: App Host
+            description: The app host used for authorization.
+            example: app.smartsheet.com
+            optional: true
+            pattern: '^(app\.smartsheet\.com|app\.test\.smartsheet\.com)$'
         domain:
             type: string
             title: Domain
-            description: The domain where your account is hosted
-            example: smartsheet.com
+            description: The domain where your account is hosted.
             prefix: https://api.
-            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
+            order: 1
+            enum:
+                - smartsheet.com
+                - smartsheet.eu
+                - smartsheet.au
+                - smartsheetgov.com
+                - test.smartsheet.com
 
 smugmug:
     display_name: Smugmug
@@ -18163,6 +19188,32 @@ stitch-mcp:
     docs: https://nango.dev/docs/api-integrations/stitch-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
+store-census:
+    display_name: StoreCensus
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.storecensus.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/apps?page=1&pageSize=1
+    docs: https://nango.dev/docs/api-integrations/store-census
+    docs_connect: https://nango.dev/docs/api-integrations/store-census/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your StoreCensus API key.
+            doc_section: '#step-1-get-your-api-key'
+
 store-leads:
     display_name: Store Leads
     categories:
@@ -18463,6 +19514,31 @@ supabase-mcp-oauth:
             pattern: '^[a-z0-9]{20}$'
             doc_section: '#step-1-finding-your-project-reference'
 
+superhuman-mcp:
+    display_name: Superhuman (MCP)
+    categories:
+        - communication
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.auth.mail.superhuman.com/oauth2/authorize
+    token_url: https://mcp.auth.mail.superhuman.com/oauth2/token
+    registration_url: https://mcp.auth.mail.superhuman.com/oauth2/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.mail.superhuman.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/superhuman-mcp
+
 survey-monkey:
     display_name: SurveyMonkey
     categories:
@@ -18478,6 +19554,32 @@ survey-monkey:
     proxy:
         base_url: https://api.surveymonkey.com
     docs: https://nango.dev/docs/integrations/all/survey-monkey
+
+swoogo:
+    display_name: Swoogo
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://api.swoogo.com/api/v1/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.swoogo.com
+    docs: https://nango.dev/docs/api-integrations/swoogo
+    docs_connect: https://nango.dev/docs/api-integrations/swoogo/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: Your Swoogo API key.
+            doc_section: '#step-1-generate-your-api-credentials'
+        client_secret:
+            type: string
+            title: API Secret
+            description: Your Swoogo API secret.
+            secret: true
+            doc_section: '#step-1-generate-your-api-credentials'
 
 tailscale:
     display_name: Tailscale (OAuth)
@@ -18700,6 +19802,39 @@ tableau:
             doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
 
+tanium:
+    display_name: Tanium
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            session: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/session/info
+    docs: https://nango.dev/docs/api-integrations/tanium
+    docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Tanium API token.
+            doc_section: '#step-1-generate-an-api-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Tanium Cloud hostname.
+            example: acme.cloud.tanium.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-find-your-hostname'
+            order: 1
+
 teamtailor:
     display_name: Teamtailor
     categories:
@@ -18794,6 +19929,126 @@ telegram:
             example: 1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ1234567
             pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
             doc_section: '#step-1-creating-your-telegram-bot'
+
+the-swarm:
+    display_name: The Swarm
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://bee.theswarm.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /v2/profiles/search
+            headers:
+                content-type: application/json
+            data:
+                query:
+                    match_all: {}
+                limit: 1
+    docs: https://nango.dev/docs/api-integrations/the-swarm
+    docs_connect: https://nango.dev/docs/api-integrations/the-swarm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Swarm API key from Team Settings.
+            example: aB3cD9eF************************wX6yZ2
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
+
+theirstack:
+    display_name: TheirStack
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.theirstack.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/billing/credit-balance
+    docs: https://nango.dev/docs/api-integrations/theirstack
+    docs_connect: https://nango.dev/docs/api-integrations/theirstack/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your TheirStack API key.
+            example: eyJhbGci*******.eyJ2ZX********.kWB5********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-api-key'
+
+thomson-reuters-legal-tracker:
+    display_name: Thomson Reuters Legal Tracker
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/onepass/oauth2/token
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/legal-tracker
+    docs: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker
+    docs_connect: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The regional API hostname for your Thomson Reuters account.
+            enum:
+                - api.thomsonreuters.com
+                - api.thomsonreuters.co.uk
+                - api.thomsonreuters.ca
+                - api.thomsonreuters.au
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID from the App Management.
+            doc_section: '#step-1-obtain-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret from the App Management.
+            secret: true
+            doc_section: '#step-1-obtain-your-client-credentials'
+
+thomson-reuters-legal-tracker-tr-account:
+    display_name: Thomson Reuters Legal Tracker (TR Account)
+    alias: thomson-reuters-legal-tracker
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.thomsonreuters.com/oauth/token
+    token_request_auth_method: basic
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_params:
+        grant_type: client_credentials
+        audience: 506f6a92-4fd1-43c1-bf18-4e3735ea55aa
+    docs: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account
+    docs_connect: https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your TR Account client ID.
+            doc_section: '#step-1-obtain-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your TR Account client secret.
+            secret: true
+            doc_section: '#step-1-obtain-your-client-credentials'
 
 terraform:
     display_name: Terraform
@@ -19301,6 +20556,56 @@ timify:
             description: Your Timify app secret
             secret: true
             doc_section: '#step-3-getting-your-credentials'
+
+toast:
+    display_name: Toast
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.subdomain}.toasttab.com/authentication/v1/authentication/login
+    token_params:
+        clientId: ${credentials.clientId}
+        clientSecret: ${credentials.clientSecret}
+        userAccessType: TOAST_MACHINE_CLIENT
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token.accessToken
+        token_expiration: token.expiresIn
+        token_expiration_strategy: expireIn
+    token_expiration_buffer: 60
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.toasttab.com
+        headers:
+            toast-restaurant-external-id: ${connectionConfig.restaurantId}
+    docs: https://nango.dev/docs/api-integrations/toast
+    docs_connect: https://nango.dev/docs/api-integrations/toast/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The Toast API subdomain for your environment.
+            example: ws-api
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+        restaurantId:
+            type: string
+            title: Restaurant External ID
+            description: The Toast GUID for the restaurant to connect to.
+            example: 4721e7a9-b4ae-4fef-9230-b3dae186e0a4
+            format: uuid
+            optional: true
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Toast API client identifier.
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Toast API client secret.
+            secret: true
 
 todoist:
     display_name: Todoist
@@ -20272,8 +21577,33 @@ videoask:
         grant_type: refresh_token
     proxy:
         base_url: https://api.videoask.com
+    webhook_routing_script: videoaskWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
+
+wappalyzer:
+    display_name: Wappalyzer
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.wappalyzer.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/credits/balance/
+    docs: https://nango.dev/docs/api-integrations/wappalyzer
+    docs_connect: https://nango.dev/docs/api-integrations/wappalyzer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Wappalyzer API key.
+            doc_section: '#step-1-get-your-api-key'
 
 wakatime:
     display_name: Wakatime
@@ -20286,6 +21616,38 @@ wakatime:
     proxy:
         base_url: https://wakatime.com
     docs: https://nango.dev/docs/integrations/all/wakatime
+
+walmart:
+    display_name: Walmart Marketplace
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.account.wal-mart.com/authorize
+    authorization_params:
+        clientType: ${connectionConfig.clientType}
+        nonce: ${random}
+    disable_pkce: true
+    authorization_url_replacements:
+        response_type=: responseType=
+        client_id=: clientId=
+        redirect_uri=: redirectUri=
+    token_url: https://marketplace.walmartapis.com/v3/token
+    redirect_uri_metadata:
+        - sellerId
+    proxy:
+        base_url: https://marketplace.walmartapis.com
+        headers:
+            wm_qos.correlation_id: ${random}
+            wm_sec.access_token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/walmart
+    setup_guide_url: https://nango.dev/docs/api-integrations/walmart/how-to-register-your-own-walmart-marketplace-oauth-app
+    connection_config:
+        clientType:
+            type: string
+            title: ''
+            description: ''
+            default_value: seller
+            hidden: true
 
 wave-accounting:
     display_name: Wave Accounting
@@ -21229,6 +22591,51 @@ zendesk:
             prefix: https://
             doc_section: '#step-1-finding-your-subdomain'
 
+zendesk-api-key:
+    display_name: Zendesk (API Token)
+    categories:
+        - support
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zendesk.com
+        headers:
+            authorization: 'Basic ${base64(${credentials.username}/token:${credentials.password})}'
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/users.json?per_page=1&page=1
+    docs: https://nango.dev/docs/api-integrations/zendesk-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/zendesk-api-key/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Zendesk Domain
+            description: The subdomain of your Zendesk account.
+            pattern: '^[a-z0-9_-]+$'
+            example: acme
+            suffix: .zendesk.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: Your Zendesk account email address.
+            format: email
+            doc_section: '#step-3-generate-an-api-token'
+        password:
+            type: string
+            title: API Token
+            description: Your Zendesk API token.
+            example: 'SDMWuOoZ******************************9CMz'
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-3-generate-an-api-token'
+
 zendesk-sell:
     display_name: Zendesk Sell
     categories:
@@ -21315,12 +22722,15 @@ zoho:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho account
-            pattern: '^[a-z.]+$'
-            prefix: https://accounts.zoho.
-            example: com
+            description: The domain extension of your Zoho account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
         accounts-server:
             type: string
             title: ''
@@ -21338,12 +22748,15 @@ zoho-books:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Books account
-            pattern: '^[a-z.]+$'
-            prefix: https://books.zoho.
-            example: com
+            description: The domain extension of your Zoho Books account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-crm:
     display_name: Zoho CRM
@@ -21357,12 +22770,15 @@ zoho-crm:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho CRM account
-            pattern: '^[a-z.]+$'
-            prefix: https://crm.zoho.
-            example: com
+            description: The domain extension of your Zoho CRM account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-calendar:
     display_name: Zoho Calendar
@@ -21377,12 +22793,15 @@ zoho-calendar:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Calendar account
-            pattern: '^[a-z.]+$'
-            prefix: https://calendar.zoho.
-            example: com
+            description: The domain extension of your Zoho Calendar account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-desk:
     display_name: Zoho Desk
@@ -21398,12 +22817,15 @@ zoho-desk:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Desk account
-            pattern: '^[a-z.]+$'
-            prefix: https://desk.zoho.
-            example: com
+            description: The domain extension of your Zoho Desk account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-inventory:
     display_name: Zoho Inventory
@@ -21416,12 +22838,15 @@ zoho-inventory:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Inventory account
-            pattern: '^[a-z.]+$'
-            prefix: https://inventory.zoho.
-            example: com
+            description: The domain extension of your Zoho Inventory account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-invoice:
     display_name: Zoho Invoice
@@ -21434,12 +22859,15 @@ zoho-invoice:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Invoice account
-            pattern: '^[a-z.]+$'
-            prefix: https://invoice.zoho.
-            example: com
+            description: The domain extension of your Zoho Invoice account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-mail:
     display_name: Zoho Mail
@@ -21455,12 +22883,15 @@ zoho-mail:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Mail account
-            pattern: '^[a-z.]+$'
-            prefix: https://mail.zoho.
-            example: com
+            description: The domain extension of your Zoho Mail account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-bigin:
     display_name: Zoho Bigin
@@ -21473,12 +22904,15 @@ zoho-bigin:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Bigin account
-            pattern: '^[a-z.]+$'
-            prefix: https://bigin.zoho.
-            example: com
+            description: The domain extension of your Zoho Bigin account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-people:
     display_name: Zoho People
@@ -21493,12 +22927,15 @@ zoho-people:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho People account
-            pattern: '^[a-z.]+$'
-            prefix: https://people.zoho.
-            example: com
+            description: The domain extension of your Zoho People account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-recruit:
     display_name: Zoho Recruit
@@ -21513,11 +22950,14 @@ zoho-recruit:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Recruit account
-            pattern: '^[a-z.]+$'
-            prefix: https://recruit.zoho.
-            example: com
-            suffix: /
+            description: The domain extension of your Zoho Recruit account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
 
 zoom:
     display_name: Zoom

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { format, migrate as migrateRecords, records } from '@nangohq/records';
+import { format, records } from '@nangohq/records';
 import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
@@ -10,7 +10,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 describe(`PATCH ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        await migrateRecords();
+        await records.migrate();
     });
     afterAll(() => {
         api.server.close();
@@ -103,12 +103,14 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
         const recs = (
             await records.getRecords({
                 connectionId: conn.id,
-                model: 'Ticket'
+                model: 'Ticket',
+                plan: null
             })
         ).unwrap();
         expect(recs.records.length).toBe(3);
@@ -208,13 +210,15 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         const recs = (
             await records.getRecords({
                 connectionId: conn.id,
-                model: 'Ticket'
+                model: 'Ticket',
+                plan: null
             })
         ).unwrap();
         expect(recs.records.length).toBe(3);
@@ -237,7 +241,8 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         const res1 = await api.fetch(route, {

@@ -5,6 +5,8 @@
 
 @import 'tw-animate-css';
 
+@import '@nangohq/design-system/tokens/tokens.generated.css';
+
 /*
   ---break---
 */
@@ -303,6 +305,7 @@
     --color-red-300: #f7a6a6;
     --color-red-500: #ee4242;
     --color-red-700: #e81818;
+    --color-red-800: #4a1111;
     --color-red-900: #5a0f0f;
 
     --color-green-100: #e6f7ec;
@@ -487,7 +490,7 @@
             --color-feedback-info-bg: var(--color-brand-1000);
             --color-feedback-info-alt: var(--color-brand-700);
             --color-feedback-error-fg: var(--color-red-500);
-            --color-feedback-error-bg: var(--color-red-900);
+            --color-feedback-error-bg: var(--color-red-800);
             --color-feedback-error-alt: var(--color-red-700);
             --color-feedback-error-border: var(--color-red-500);
             --color-feedback-neutral-fg: var(--color-gray-600);

@@ -1,0 +1,164 @@
+---
+title: 'How to set up webhooks with Folk on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Folk events in Nango'
+---
+
+This guide shows you how to receive real-time Folk webhooks in Nango using [Folk's webhook support](https://developer.folk.app/webhooks/create-webhooks).
+
+## How it works
+
+1. You create a webhook in Folk pointing to your Nango webhook URL
+2. When a subscribed event occurs, Folk sends a signed POST request to Nango
+3. Nango verifies the signature and forwards it to your app
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Folk integration and copy the **Webhook URL**.
+
+Folk's webhook payload does not identify which account triggered the event, so Nango cannot route it to a specific connection automatically. Append `?nangoConnectionId=<connectionId>` to the URL to target a specific connection:
+
+```
+https://api.nango.dev/webhook/folk?nangoConnectionId=my-connection-id
+```
+
+If you have multiple Folk accounts connected, create one webhook per account in Folk using a different `nangoConnectionId` for each.
+
+### 2. Create the webhook in Folk
+
+You can create a webhook via the [workspace API settings page](https://app.folk.app/apps/contacts/network/settings/api-keys), or via the API:
+
+```bash
+curl -X POST "https://api.folk.app/v1/webhooks" \
+  -H "Authorization: Bearer <FOLK-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nango",
+    "targetUrl": "<NANGO-WEBHOOK-URL>",
+    "subscribedEvents": [
+      {"eventType": "person.created"},
+      {"eventType": "person.updated"},
+      {"eventType": "person.deleted"}
+    ]
+  }'
+```
+
+Folk generates a **webhook secret** at creation time — copy it, it is only shown once.
+
+You can automate webhook creation for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Create a Folk webhook for the new connection',
+    exec: async (nango) => {
+        const webhookUrl = await nango.getWebhookURL();
+        const connectionId = nango.connectionId;
+
+        const config: ProxyConfiguration = {
+            endpoint: '/v1/webhooks',
+            data: {
+                name: 'Nango',
+                targetUrl: `${webhookUrl}?nangoConnectionId=${connectionId}`,
+                subscribedEvents: [
+                    { eventType: 'person.created' },
+                    { eventType: 'person.updated' },
+                    { eventType: 'person.deleted' },
+                ],
+            },
+        };
+
+        const response = await nango.post(config);
+
+        await nango.updateMetadata({
+            folkWebhookId: response.data.id,
+        });
+    }
+});
+```
+
+### 3. Delete the webhook on connection deletion
+
+If a connection is deleted in Nango but the Folk webhook remains active, Folk will continue sending notifications until you manually remove it. You can automate cleanup with a `pre-connection-deletion` event function using the `folkWebhookId` stored in metadata during creation (step 2):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Delete the Folk webhook before connection deletion',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const webhookId = metadata['folkWebhookId'];
+
+        if (!webhookId) {
+            return;
+        }
+
+        try {
+            await nango.delete({ endpoint: `/v1/webhooks/${webhookId}` });
+        } catch (err) {
+            await nango.log(`Failed to delete Folk webhook: ${String(err)}`, { level: 'error' });
+        }
+    }
+});
+```
+
+### 4. Configure the webhook secret in Nango
+
+In the Nango dashboard, open your Folk integration settings and paste the webhook secret into the **Webhook Secret** field.
+
+### 5. Handle forwarded webhooks
+
+When a Folk event arrives, Nango verifies the signature and forwards it to your system. The forwarded payload looks like this:
+
+```json
+{
+  "from": "folk",
+  "providerConfigKey": "folk",
+  "type": "forward",
+  "connectionId": "my-connection-id",
+  "payload": {
+    "id": "evt_01J9XAMPLE",
+    "type": "person.created",
+    "createdAt": "2024-11-01T12:00:00.000Z",
+    "data": {
+      "id": "person_01J9XAMPLE"
+    }
+  }
+}
+```
+
+Once you receive the webhook, trigger your existing sync for that connection:
+
+```bash
+curl -X POST "https://api.nango.dev/sync/trigger" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sync_mode": "incremental",
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "folk",
+    "syncs": ["contacts"]
+  }'
+```
+
+With webhooks driving real-time updates, you can reduce your sync frequency (`1d`/`1h`) as a safety net for missed webhooks.
+
+<Note>
+If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`.
+
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+</Note>
+
+## Supported events
+
+See the full list of available event types in the [Folk webhook events & payloads docs](https://developer.folk.app/webhooks/events-and-payloads).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

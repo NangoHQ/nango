@@ -3,7 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, isSandboxApiKey, userService } from '@nangohq/shared';
 import {
     Err,
     Ok,
@@ -51,16 +51,24 @@ export class AccessMiddleware {
             secret: DBAPISecret;
             plan: DBPlan | null;
             auth?: {
-                source: 'customer_key' | 'api_secret' | 'env_var';
+                source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
+                purpose?: 'dryrun' | 'deploy';
+                dryrunId?: string;
+                deploymentId?: string;
             };
         }>
     > {
-        if (!keyRegex.test(secret)) {
+        const isSandboxApiKeyToken = isSandboxApiKey(secret);
+
+        if (!keyRegex.test(secret) && !isSandboxApiKeyToken) {
             return Err('invalid_secret_key_format');
         }
-        const accountContext = await accountService.getAccountContextByApiKey(opts.isScript ? { internalSecretKey: secret } : { secretKey: secret });
+
+        const accountContext = await accountService.getAccountContextByApiKey(
+            isSandboxApiKeyToken || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
+        );
         if (!accountContext) {
             return Err('unknown_account');
         }
@@ -109,8 +117,24 @@ export class AccessMiddleware {
             if (result.value.auth?.scopes) {
                 res.locals['apiKeyScopes'] = result.value.auth.scopes;
             }
+            if (result.value.auth) {
+                res.locals['apiKeyAuthSource'] = result.value.auth.source;
+                if (result.value.auth.apiKeyId !== undefined) {
+                    res.locals['apiKeyId'] = result.value.auth.apiKeyId;
+                }
+                if (result.value.auth.purpose !== undefined) {
+                    res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
+                }
+                if (result.value.auth.dryrunId !== undefined) {
+                    res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
+                }
+                if (result.value.auth.deploymentId !== undefined) {
+                    res.locals['sandboxTokenDeploymentId'] = result.value.auth.deploymentId;
+                }
+            }
+            const authSource = result.value.auth?.source ?? 'env_var';
             metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
-                auth_source: isScript ? 'internal_script' : (result.value.auth?.source ?? 'env_var')
+                auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
             tagTraceUser(result.value);
             next();
@@ -381,6 +405,21 @@ export class AccessMiddleware {
                 res.locals['plan'] = apiKeyResult.value.plan;
                 if (apiKeyResult.value.auth?.scopes) {
                     res.locals['apiKeyScopes'] = apiKeyResult.value.auth.scopes;
+                }
+                if (apiKeyResult.value.auth) {
+                    res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
+                    if (apiKeyResult.value.auth.apiKeyId !== undefined) {
+                        res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
+                    }
+                    if (apiKeyResult.value.auth.purpose !== undefined) {
+                        res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;
+                    }
+                    if (apiKeyResult.value.auth.dryrunId !== undefined) {
+                        res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
+                    }
+                    if (apiKeyResult.value.auth.deploymentId !== undefined) {
+                        res.locals['sandboxTokenDeploymentId'] = apiKeyResult.value.auth.deploymentId;
+                    }
                 }
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                     auth_source: apiKeyResult.value.auth?.source ?? 'env_var'

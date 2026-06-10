@@ -346,6 +346,96 @@ describe(`GET ${route}`, () => {
         expect(res.json.data).toHaveLength(0);
     });
 
+    it('should filter by case-insensitive search on name across all function types', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'fetch-issues',
+            type: 'sync'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'list-users',
+            type: 'sync'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'create-issue',
+            type: 'action'
+        });
+        await insertOnEventScripts({
+            configId: integration.id!,
+            scripts: [
+                { name: 'issue-listener', event: 'POST_CONNECTION_CREATION' },
+                { name: 'unrelated-listener', event: 'POST_CONNECTION_CREATION' }
+            ]
+        });
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', search: 'ISSUE' },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.pagination.total).toBe(3);
+        const keys = res.json.data.map((f) => `${f.type}:${f.name}`).sort();
+        expect(keys).toStrictEqual(['action:create-issue', 'on-event:issue-listener', 'sync:fetch-issues']);
+    });
+
+    it('should match LIKE wildcards literally in search', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'fetch-issues',
+            type: 'sync'
+        });
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', search: '%' },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.pagination.total).toBe(0);
+        expect(res.json.data).toHaveLength(0);
+    });
+
+    it('should reject empty search after trim', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', search: '   ' },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('invalid_query_params');
+    });
+
     it('should reject invalid type query', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');

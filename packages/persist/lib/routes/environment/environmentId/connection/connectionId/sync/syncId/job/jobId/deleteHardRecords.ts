@@ -40,7 +40,7 @@ const paramsSchema = z
         environmentId: z.coerce.number().int().positive(),
         nangoConnectionId: z.coerce.number().int().positive(),
         syncId: z.string(),
-        syncJobId: z.coerce.number().int().positive()
+        syncJobId: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER)
     })
     .strict();
 
@@ -52,14 +52,15 @@ const validate = validateRequest<DeleteHardRecords>({
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteHardRecords, AuthLocals>) => {
     const { nangoConnectionId, environmentId, syncId } = res.locals.parsedParams;
     const { model } = res.locals.parsedBody;
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const limit = envs.PERSIST_HARD_DELETE_LIMIT;
     const result = await records.deleteRecords({
         connectionId: nangoConnectionId,
         environmentId,
         model,
         mode: 'hard',
-        limit
+        limit,
+        plan
     });
     if (result.isOk()) {
         if (result.value.count > 0) {

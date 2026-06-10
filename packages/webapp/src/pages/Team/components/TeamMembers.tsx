@@ -6,16 +6,16 @@ import { permissions } from '@nangohq/authz';
 import { RoleSelect } from './RoleSelect';
 import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
-import { Dot } from '@/components-v2/Dot';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { StatusWithIcon } from '@/components-v2/StatusWithIcon';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Badge } from '@/components-v2/ui/badge';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components-v2/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/dropdown-menu';
-import { Input } from '@/components-v2/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Badge } from '@/components/ui/Badge';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Dot } from '@/components/ui/Dot';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { Input } from '@/components/ui/Input';
+import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -156,7 +156,7 @@ export const TeamMembers: React.FC = () => {
                                             tooltipContent={
                                                 <span>
                                                     RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <StyledLink to={`/${env}/team/billing#plans`} className="text-s">
+                                                    <StyledLink to={`/team/billing#plans`} className="text-s">
                                                         Upgrade
                                                     </StyledLink>{' '}
                                                     to reactivate role.

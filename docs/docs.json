@@ -633,6 +633,14 @@
     {
       "source": "/reference/sdks/java",
       "destination": "/reference/backend/backend-sdk/java"
+    },
+    {
+      "source": "/integrations/all/prospeo",
+      "destination": "/api-integrations/prospeo"
+    },
+    {
+      "source": "/integrations/all/prospeo/connect",
+      "destination": "/api-integrations/prospeo/connect"
     }
   ],
   "navigation": {
@@ -786,6 +794,10 @@
                       {
                         "group": "Functions",
                         "pages": [
+                          "reference/backend/http-api/functions/compile",
+                          "reference/backend/http-api/functions/dryruns-create",
+                          "reference/backend/http-api/functions/dryruns-get",
+                          "reference/backend/http-api/functions/deployments",
                           "reference/backend/http-api/scripts/config"
                         ]
                       },
@@ -848,142 +860,7 @@
                 "group": "Resources",
                 "expanded": false,
                 "pages": [
-                  "getting-started/sample-app"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Reference",
-            "pages": [
-              {
-                "group": "Frontend",
-                "expanded": false,
-                "pages": [
-                  "reference/sdks/frontend"
-                ]
-              },
-              {
-                "group": "Backend",
-                "expanded": false,
-                "pages": [
-                  {
-                    "group": "HTTP API",
-                    "icon": "cloud",
-                    "pages": [
-                      "reference/api-keys",
-                      "reference/api/authentication",
-                      "reference/api/rate-limits",
-                      {
-                        "group": "Integrations",
-                        "pages": [
-                          "reference/api/integration/list",
-                          "reference/api/integration/get",
-                          "reference/api/integration/create",
-                          "reference/api/integration/update",
-                          "reference/api/integration/delete"
-                        ]
-                      },
-                      {
-                        "group": "Connect",
-                        "pages": [
-                          "reference/api/connect/sessions/create",
-                          "reference/api/connect/sessions/reconnect",
-                          "reference/api/connect/session/get",
-                          "reference/api/connect/session/delete"
-                        ]
-                      },
-                      {
-                        "group": "Connections",
-                        "pages": [
-                          "reference/api/connections/post",
-                          "reference/api/connections/list",
-                          "reference/api/connections/get",
-                          "reference/api/connections/patch",
-                          "reference/api/connections/set-metadata",
-                          "reference/api/connections/update-metadata",
-                          "reference/api/connections/delete"
-                        ]
-                      },
-                      {
-                        "group": "Functions",
-                        "pages": [
-                          "reference/api/scripts/config"
-                        ]
-                      },
-                      {
-                        "group": "Syncs",
-                        "pages": [
-                          "reference/api/sync/records-list",
-                          "reference/api/sync/prune-records",
-                          "reference/api/sync/trigger",
-                          "reference/api/sync/start",
-                          "reference/api/sync/pause",
-                          "reference/api/sync/status",
-                          "reference/api/sync/update-connection-frequency",
-                          "reference/api/sync/environment-variables",
-                          "reference/api/sync/create-variant",
-                          "reference/api/sync/delete-variant"
-                        ]
-                      },
-                      {
-                        "group": "Actions",
-                        "pages": [
-                          "reference/api/action/trigger"
-                        ]
-                      },
-                      {
-                        "group": "Proxy",
-                        "pages": [
-                          "reference/api/proxy/get",
-                          "reference/api/proxy/post",
-                          "reference/api/proxy/put",
-                          "reference/api/proxy/patch",
-                          "reference/api/proxy/delete"
-                        ]
-                      },
-                      {
-                        "group": "Providers",
-                        "pages": [
-                          "reference/api/providers/list",
-                          "reference/api/providers/get"
-                        ]
-                      },
-                      {
-                        "group": "Deprecated",
-                        "pages": [
-                          "reference/api/connection/list",
-                          "reference/api/connection/get",
-                          "reference/api/connection/post",
-                          "reference/api/connection/set-metadata",
-                          "reference/api/connection/set-metadata-legacy",
-                          "reference/api/connection/update-metadata",
-                          "reference/api/connection/update-metadata-legacy",
-                          "reference/api/connection/delete"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Backend SDK",
-                    "icon": "cubes",
-                    "pages": [
-                      "reference/backend/backend-sdk/node",
-                      "reference/backend/backend-sdk/python",
-                      "reference/backend/backend-sdk/java",
-                      "reference/backend/backend-sdk/ruby",
-                      "reference/backend/backend-sdk/go",
-                      "reference/backend/backend-sdk/rust",
-                      "reference/backend/backend-sdk/php"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Functions",
-                "pages": [
-                  "reference/functions/functions-cli",
-                  "reference/functions/functions-sdk"
+                  "getting-started/use-cases/sample-app"
                 ]
               }
             ]
@@ -1003,7 +880,7 @@
             ]
           },
           {
-            "group": "700+ APIs & Integrations",
+            "group": "800+ APIs & Integrations",
             "pages": [
               "api-integrations/1password-events",
               "integrations/all/1password-scim",
@@ -1035,6 +912,7 @@
               "api-integrations/airtable",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
+              "api-integrations/altrata",
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
@@ -1044,6 +922,7 @@
               "integrations/all/anrok",
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
+              "api-integrations/anvil",
               "integrations/all/apaleo",
               "integrations/all/apify",
               "api-integrations/apollo",
@@ -1075,7 +954,9 @@
               "integrations/all/aws",
               "api-integrations/aws-iam",
               "api-integrations/aws-inspector2",
+              "api-integrations/aws-multi-service",
               "integrations/all/aws-scim",
+              "integrations/all/aws-sigv4",
               "integrations/all/avoma",
               "api-integrations/axiom",
               "integrations/all/azure-blob-storage",
@@ -1086,6 +967,7 @@
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
+              "api-integrations/bigchange",
               "api-integrations/bliro",
               "integrations/all/bigcommerce",
               "integrations/all/bill",
@@ -1131,6 +1013,7 @@
               "integrations/all/certn",
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
+              "api-integrations/chatarmin",
               "integrations/all/chattermill",
               "integrations/all/checkhq",
               "integrations/all/checkout-com",
@@ -1179,6 +1062,7 @@
               "integrations/all/coupa-compass",
               "integrations/all/crisp",
               "api-integrations/crisp-plugin-install",
+              "api-integrations/crunchbase",
               "integrations/all/crowdstrike",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
@@ -1215,6 +1099,9 @@
               "api-integrations/dropbox",
               "integrations/all/dropbox-sign",
               "integrations/all/drupal",
+              "api-integrations/dualentry-mcp",
+              "api-integrations/dynatrace",
+              "api-integrations/dynatrace-oauth",
               "integrations/all/e-conomic",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
@@ -1229,6 +1116,7 @@
               "integrations/all/employment-hero",
               "integrations/all/entrata",
               "integrations/all/envoy",
+              "api-integrations/epc-gov-uk",
               "integrations/all/epic-games",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
@@ -1240,6 +1128,7 @@
               "api-integrations/facebook",
               "api-integrations/fellow",
               "api-integrations/fern",
+              "api-integrations/followupboss",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
               "api-integrations/freepik",
@@ -1263,7 +1152,7 @@
               "integrations/all/fiserv-api-key",
               "integrations/all/fitbit",
               "integrations/all/fortnox",
-              "integrations/all/folk",
+              "api-integrations/folk",
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
               "api-integrations/freshsales",
@@ -1363,9 +1252,11 @@
               "integrations/all/insightly",
               "api-integrations/instagram",
               "integrations/all/instantly",
+              "api-integrations/immybot",
               "api-integrations/intercom",
               "integrations/all/intuit",
               "integrations/all/ironclad",
+              "integrations/all/itglue",
               "integrations/all/jamf",
               "integrations/all/jamf-basic",
               "integrations/all/jazzhr",
@@ -1404,6 +1295,7 @@
               "integrations/all/lever-basic",
               "integrations/all/lever-basic-sandbox",
               "integrations/all/lever-sandbox",
+              "api-integrations/lightfield",
               "api-integrations/lightspeed-retail",
               "api-integrations/linear",
               "api-integrations/linear-mcp",
@@ -1445,12 +1337,14 @@
               "api-integrations/microsoft-teams",
               "api-integrations/microsoft-teams-bot",
               "api-integrations/microsoft-word",
+              "api-integrations/microsoft-intune",
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
               "api-integrations/maxio",
               "integrations/all/microsoft-tenant-specific",
               "api-integrations/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
+              "integrations/all/mimecast",
               "integrations/all/mindbody",
               "integrations/all/minimax",
               "integrations/all/mip-cloud",
@@ -1466,20 +1360,25 @@
               "api-integrations/monday",
               "integrations/all/momentum-io",
               "integrations/all/mural",
+              "api-integrations/nable-ncentral",
               "integrations/all/nationbuilder",
               "integrations/all/ninjaone-rmm",
               "api-integrations/ninjaone-rmm-oauth2",
+              "api-integrations/ninjaone-saas-backup",
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "api-integrations/nerdio",
               "integrations/all/netsuite",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
+              "api-integrations/nexthink",
               "api-integrations/nocrm",
+              "api-integrations/northbeam",
               "api-integrations/notion",
               "api-integrations/notion-mcp",
               "api-integrations/nyne-ai",
               "integrations/all/notion-scim",
+              "api-integrations/ocean-io",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
               "integrations/all/okta",
@@ -1509,6 +1408,7 @@
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
               "api-integrations/paddle",
+              "integrations/all/pax8",
               "api-integrations/paylocity-nextgen",
               "api-integrations/paylocity",
               "integrations/all/payfit",
@@ -1539,6 +1439,8 @@
               "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
+              "api-integrations/planning-center-online",
+              "api-integrations/planning-center-online-pat",
               "api-integrations/pleo",
               "integrations/all/podium",
               "api-integrations/podscribe",
@@ -1549,11 +1451,14 @@
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
-              "integrations/all/prospeo",
+              "integrations/all/private-api-generic",
+              "api-integrations/prospeo",
               "integrations/all/productboard",
               "api-integrations/procore",
               "api-integrations/provenexpert",
               "api-integrations/prtg-classic",
+              "api-integrations/pushpay-chms-v1",
+              "api-integrations/pverify",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
               "api-integrations/qualia",
@@ -1585,6 +1490,7 @@
               "integrations/all/redtail-crm-sandbox",
               "integrations/all/razorpay",
               "integrations/all/replicate",
+              "api-integrations/render-mcp",
               "integrations/all/retell-ai",
               "integrations/all/ring-central",
               "integrations/all/ring-central-sandbox",
@@ -1594,8 +1500,11 @@
               "integrations/all/rocketlane",
               "integrations/all/roam-scim",
               "integrations/all/rock-gym-pro",
+              "integrations/all/roller",
               "api-integrations/rootly",
+              "api-integrations/rocketreach",
               "integrations/all/sage",
+              "api-integrations/sage-200",
               "integrations/all/sage-hr",
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
@@ -1612,6 +1521,7 @@
               "api-integrations/sellercloud",
               "integrations/all/sap-business-one",
               "integrations/all/sap-concur",
+              "api-integrations/sap-concur-password",
               "api-integrations/sap-success-factors",
               "integrations/all/sap-fieldglass",
               "api-integrations/sap-odata-oauth2-cc",
@@ -1654,9 +1564,14 @@
               "api-integrations/slab",
               "api-integrations/slack",
               "api-integrations/slack-mcp",
+              "api-integrations/swoogo",
               "api-integrations/talentlms",
               "api-integrations/tally",
               "api-integrations/telegram",
+              "api-integrations/the-swarm",
+              "api-integrations/theirstack",
+              "api-integrations/thomson-reuters-legal-tracker",
+              "api-integrations/thomson-reuters-legal-tracker-tr-account",
               "api-integrations/timify",
               "api-integrations/toggl",
               "api-integrations/torii",
@@ -1665,7 +1580,7 @@
               "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
-              "integrations/all/smartsheet",
+              "api-integrations/smartsheet",
               "integrations/all/smugmug",
               "integrations/all/snipe-it",
               "integrations/all/snapchat",
@@ -1683,6 +1598,8 @@
               "integrations/all/statista",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
+              "api-integrations/store-census",
+              "api-integrations/store-leads",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "api-integrations/streak",
@@ -1694,9 +1611,11 @@
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",
               "api-integrations/supabase-mcp-oauth",
+              "api-integrations/superhuman-mcp",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
+              "api-integrations/tanium",
               "integrations/all/teamtailor",
               "integrations/all/teamleader",
               "integrations/all/teamwork",
@@ -1708,6 +1627,7 @@
               "integrations/all/tiktok-personal",
               "integrations/all/tiktok-ads",
               "integrations/all/timely",
+              "api-integrations/toast",
               "integrations/all/todoist",
               "integrations/all/trafft",
               "integrations/all/tailscale",
@@ -1748,8 +1668,11 @@
               "api-integrations/vercel-mcp",
               "api-integrations/videoask",
               "integrations/all/vimeo",
+              "api-integrations/vtex",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",
+              "api-integrations/walmart",
+              "api-integrations/wappalyzer",
               "integrations/all/wakatime",
               "integrations/all/wave-accounting",
               "integrations/all/wealthbox",
@@ -1765,6 +1688,7 @@
               "integrations/all/wiza",
               "integrations/all/woocommerce",
               "integrations/all/wordpress",
+              "api-integrations/wordpress-mcp",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
               "api-integrations/workday-adaptive-planning",
@@ -1786,6 +1710,7 @@
               "integrations/all/zapier-nla",
               "integrations/all/zapier-scim",
               "api-integrations/zendesk",
+              "api-integrations/zendesk-api-key",
               "integrations/all/zendesk-sell",
               "integrations/all/zenefits",
               "api-integrations/zigpoll",

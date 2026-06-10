@@ -8,8 +8,8 @@ import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { PermissionGate } from '@/components-v2/PermissionGate';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 

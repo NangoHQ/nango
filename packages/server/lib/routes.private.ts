@@ -4,7 +4,7 @@ import express from 'express';
 import passport from 'passport';
 
 import { permissions as p } from '@nangohq/authz';
-import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
+import { flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { can, envScope } from './authz/middleware.js';
 import { setupAuth } from './clients/auth.client.js';
@@ -63,9 +63,11 @@ import { getIntegrations } from './controllers/v1/integrations/getIntegrations.j
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
+import { getIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/getFunction.js';
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
+import { getIntegrationTemplates } from './controllers/v1/integrations/providerConfigKey/templates/getTemplates.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
@@ -84,6 +86,7 @@ import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js';
+import { getBillingUsageTopDimensionValues } from './controllers/v1/plans/usage/getBillingUsageTopDimensionValues.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getProviderItem } from './controllers/v1/providers/getProvider.js';
 import { getProvidersList } from './controllers/v1/providers/getProviders.js';
@@ -102,13 +105,15 @@ import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
+import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
 
 let webAuth: RequestHandler[] = flagHasAuth
-    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware]
     : isBasicAuthEnabled
       ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -126,7 +131,10 @@ const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
-    origin: [basePublicUrl, baseUrl],
+    // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
+    origin: (origin, callback) => {
+        callback(null, isAllowedWebCorsOrigin(origin));
+    },
     credentials: true
 });
 web.use(webCorsHandler);
@@ -193,6 +201,7 @@ web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, can(p.canChangePlan), postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
+web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUsageTopDimensionValues);
 web.route('/plans/billing/invoicing').put(webAuth, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/change').post(webAuth, can(p.canChangePlan), postPlanChange);
 
@@ -229,6 +238,12 @@ web.route('/integrations/:providerConfigKey').patch(webAuth, can({ action: 'upda
 web.route('/integrations/:providerConfigKey').delete(webAuth, can({ action: 'delete', resource: 'integration', scopedBy: envScope }), deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
 web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunctions);
+web.route('/integrations/:providerConfigKey/functions/:functionName').get(
+    webAuth,
+    can({ action: 'read', resource: 'flow', scopedBy: envScope }),
+    getIntegrationFunction
+);
+web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);

@@ -138,7 +138,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -164,7 +164,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncJobId: syncJob.id,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(plan),
             endUser: endUser,
             startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs

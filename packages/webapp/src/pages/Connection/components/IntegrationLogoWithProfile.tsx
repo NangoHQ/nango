@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
-import { Avatar } from '@/components-v2/Avatar';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { Avatar } from '@/components/ui/Avatar';
 import { useStore } from '@/store';
 
 interface IntegrationLogoWithProfileProps {

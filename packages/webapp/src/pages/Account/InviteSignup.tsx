@@ -8,8 +8,8 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { StyledLink } from '@/components/ui/StyledLink';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();
@@ -150,7 +150,7 @@ export const InviteSignup: React.FC = () => {
                 <div className="flex flex-col gap-4 items-center w-full">
                     <SignupForm invitation={inviteData.invitation} token={token} />
                     <span className="text-body-medium-regular text-text-tertiary">
-                        Already have an account? <StyledLink to="/signin">Log in.</StyledLink>
+                        Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
                     </span>
                 </div>
             )}

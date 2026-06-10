@@ -1,6 +1,6 @@
 import ms from 'ms';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, flagHasPlan } from '@nangohq/utils';
 
 import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
@@ -10,6 +10,18 @@ import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
+
+function getTrialStartFields(
+    plan: Pick<DBPlan, 'trial_start_at' | 'trial_extension_count'>
+): Pick<DBPlan, 'trial_start_at' | 'trial_end_at' | 'trial_end_notified_at' | 'trial_extension_count' | 'trial_expired'> {
+    return {
+        trial_start_at: plan.trial_start_at || new Date(),
+        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+        trial_end_notified_at: null,
+        trial_extension_count: plan.trial_extension_count + 1,
+        trial_expired: false
+    };
+}
 
 export async function getPlan(
     db: Knex,
@@ -40,6 +52,19 @@ export async function getPlan(
     } catch (err) {
         return Err(new Error('failed_to_get_plan', { cause: err }));
     }
+}
+
+export async function getPlanSafe(
+    db: Knex,
+    opts: Partial<{
+        accountId: DBPlan['account_id'];
+        environmentId: DBEnvironment['id'];
+        stripeCustomerId: DBPlan['stripe_customer_id'];
+    }>
+): Promise<DBPlan | null> {
+    if (!flagHasPlan) return null;
+    const plan = await getPlan(db, opts);
+    return plan.isOk() ? plan.value : null;
 }
 
 export async function createPlan(
@@ -94,11 +119,7 @@ export async function updatePlanByTeam(
 export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
     return await updatePlan(db, {
         id: plan.id,
-        trial_start_at: plan.trial_start_at || new Date(),
-        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
-        trial_end_notified_at: null,
-        trial_extension_count: plan.trial_extension_count + 1,
-        trial_expired: false
+        ...getTrialStartFields(plan)
     });
 }
 
@@ -174,6 +195,7 @@ export async function handlePlanChanged(
                   trial_expired: null
               }
             : {}),
+        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan.value) : {}),
         ...mergedFlags
     });
 
@@ -224,6 +246,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'trial_end_notified_at':
             case 'trial_expired':
             case 'fleet_node_routing_override':
+            case 'records_store':
             case 'created_at':
             case 'updated_at':
                 break;
@@ -241,7 +264,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
             case 'can_customize_connect_ui_theme':
-            case 'remote_functions': {
+            case 'export_runner_telemetry': {
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
                 break;
             }

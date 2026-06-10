@@ -1,10 +1,12 @@
 import './tracer.js';
 
-import { DatabaseClient, Scheduler } from '@nangohq/scheduler';
+import { DatabaseClient, Scheduler, defaultDatabaseClientOptions } from '@nangohq/scheduler';
 import { initSentry, once, report, stringifyError } from '@nangohq/utils';
 
+import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
+import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
 
@@ -29,7 +31,14 @@ const databaseUrl =
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
 
 try {
-    const dbClient = new DatabaseClient({ url: databaseUrl, schema: databaseSchema });
+    const dbClient = new DatabaseClient({
+        ...defaultDatabaseClientOptions,
+        url: databaseUrl,
+        schema: databaseSchema,
+        poolMax: envs.ORCHESTRATOR_DB_POOL_MAX,
+        ssl: envs.ORCHESTRATOR_DB_SSL ? { rejectUnauthorized: false } : false,
+        applicationName: envs.NANGO_DB_APPLICATION_NAME
+    });
     await dbClient.migrate();
 
     const eventsHandler = new TaskEventsHandler(dbClient.db);
@@ -45,9 +54,23 @@ try {
             logger.close();
 
             process.exit(1); // scheduler error is critical, we exit the process
-        }
+        },
+        config: buildSchedulerConfig(envs),
+        onEvent: handleSchedulerEvent,
+        logger
     });
     scheduler.start();
+
+    const backpressureMonitor = new BackpressureMonitor({
+        scheduler,
+        tickIntervalMs: envs.ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS,
+        topN: envs.ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N,
+        onError: (err) => {
+            report(err);
+            logger.error(`BackpressureMonitor error: ${stringifyError(err)}`);
+        }
+    });
+    backpressureMonitor.start();
 
     // default max listener is 10
     // but we need more listeners
@@ -65,6 +88,7 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
+            await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
             await dbClient.destroy();

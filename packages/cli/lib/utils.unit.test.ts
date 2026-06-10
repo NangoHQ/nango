@@ -3,7 +3,7 @@ import path from 'path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { detectPackageManager } from './utils.js';
+import { detectPackageManager, getConfig, getConnection, http } from './utils.js';
 
 describe('detectPackageManager', () => {
     afterEach(() => {
@@ -142,5 +142,69 @@ describe('getEnvironments', () => {
         const result = await getEnvironments();
         expect(result).toBeUndefined();
         expect(warn).toHaveBeenCalledOnce();
+    });
+});
+
+describe('connection helpers', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('returns a Result success for getConnection', async () => {
+        const data = { data: { id: 1, connection_id: 'conn-1' } };
+        const get = vi.spyOn(http, 'get').mockResolvedValue({ data } as any);
+
+        const result = await getConnection('github', 'conn-1', { 'Nango-Is-Dry-Run': true });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual(data);
+        }
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/connection/conn-1'), {
+            params: { provider_config_key: 'github' },
+            headers: expect.objectContaining({
+                'Nango-Is-Dry-Run': true,
+                Authorization: expect.any(String)
+            })
+        });
+    });
+
+    it('returns a Result error for getConnection request failures', async () => {
+        vi.spyOn(http, 'get').mockRejectedValue(new Error('connection lookup failed'));
+
+        const result = await getConnection('github', 'conn-1');
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('connection lookup failed');
+        }
+    });
+
+    it('returns a Result success for getConfig', async () => {
+        const data = { data: { provider: 'github' } };
+        const get = vi.spyOn(http, 'get').mockResolvedValue({ data } as any);
+
+        const result = await getConfig('github');
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual(data);
+        }
+        expect(get).toHaveBeenCalledWith(expect.stringContaining('/integrations/github'), {
+            headers: expect.objectContaining({
+                Authorization: expect.any(String)
+            })
+        });
+    });
+
+    it('returns a Result error for getConfig request failures', async () => {
+        vi.spyOn(http, 'get').mockRejectedValue(new Error('config lookup failed'));
+
+        const result = await getConfig('github');
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('config lookup failed');
+        }
     });
 });

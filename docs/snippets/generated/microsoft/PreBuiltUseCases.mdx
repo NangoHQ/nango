@@ -1,3 +1,81 @@
-_No pre-built syncs or actions available yet._
+### Applications
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-application` | Create a new application in Microsoft Entra ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/create-application.ts) |
+| `delete-application` | Delete or archive an application in Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/delete-application.ts) |
+| `get-application` | Retrieve a single application from Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/get-application.ts) |
+| `list-applications` | List applications from Microsoft Graph API | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-applications.ts) |
+| `update-application` | Update an application in Microsoft Entra | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/update-application.ts) |
+
+### Devices
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-devices` | List devices from Microsoft Graph | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-devices.ts) |
+
+### Directory
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-directory-roles` | List directory roles from Microsoft Graph. Returns activated directory roles in the tenant. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-directory-roles.ts) |
+
+### Directory Roles
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-directory-role` | Retrieve a single directory role from Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/get-directory-role.ts) |
+| `list-directory-role-members` | List all members (users and service principals) assigned to a directory role in Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-directory-role-members.ts) |
+
+### Groups
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-group-member` | Add a member (user, group, or service principal) to a group in Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/add-group-member.ts) |
+| `create-group` | Create a group in Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/create-group.ts) |
+| `delete-group` | Delete or archive a group in Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/delete-group.ts) |
+| `get-group` | Retrieve a single group from Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/get-group.ts) |
+| `list-group-members` | List all direct members of a group in Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-group-members.ts) |
+| `list-groups` | List groups from Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-groups.ts) |
+| `remove-group-member` | Remove a member from a group in Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/remove-group-member.ts) |
+
+### Organizations
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-organization` | Retrieve a single organization from Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/get-organization.ts) |
+| `list-organizations` | List organizations from Microsoft Graph. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-organizations.ts) |
+| `update-organization` | Update the properties of a Microsoft organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/update-organization.ts) |
+
+### Service Principals
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-service-principal` | Create a service principal in Microsoft Entra ID for an existing application. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/create-service-principal.ts) |
+| `delete-service-principal` | Delete a service principal in Microsoft Entra ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/delete-service-principal.ts) |
+| `get-service-principal` | Retrieve a single service principal from Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/get-service-principal.ts) |
+| `list-service-principals` | List service principals from Microsoft Graph | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-service-principals.ts) |
+| `update-service-principal` | Update a service principal in Microsoft Entra ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/update-service-principal.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-user` | Create a user in Microsoft Azure AD | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/create-user.ts) |
+| `delete-user` | Delete or archive a user in Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/delete-user.ts) |
+| `get-user` | Retrieve a single user from Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/get-user.ts) |
+| `list-user-memberships` | List all groups, directory roles, and administrative units that a user is a member of in Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-user-memberships.ts) |
+| `list-users` | List users from Microsoft | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/list-users.ts) |
+| `update-user` | Update a user in Microsoft Entra ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/update-user.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `update-group` | Update a group in Microsoft. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/actions/update-group.ts) |
+| `applications` | Sync applications from Microsoft Graph | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/syncs/applications.ts) |
+| `directory-roles` | Sync directory roles from Microsoft | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/syncs/directory-roles.ts) |
+| `groups` | Sync groups from Microsoft Graph with incremental delta tracking | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/syncs/groups.ts) |
+| `organizations` | Sync organizations from Microsoft | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/syncs/organizations.ts) |
+| `service-principals` | Sync service principals from Microsoft Graph | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/syncs/service-principals.ts) |
+| `users` | Sync users from Microsoft | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft/syncs/users.ts) |

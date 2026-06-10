@@ -39,8 +39,8 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    PROXY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.incoming.payloadSizeBytes',
-    PROXY_OUTGOING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.outgoing.payloadSizeBytes',
+    PROXY_REQUEST_SIZE_IN_BYTES = 'nango.server.proxy.request.sizeInBytes',
+    PROXY_RESPONSE_SIZE_IN_BYTES = 'nango.server.proxy.response.sizeInBytes',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
@@ -56,6 +56,11 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
+    RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES = 'nango.runner.uncontrolledFetch.request.sizeBytes',
+    RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES = 'nango.runner.uncontrolledFetch.response.sizeBytes',
+    RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.records.sent.sizeInBytes',
+    RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES = 'nango.runner.persist.records.received.sizeInBytes',
+    RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.logs.sent.sizeInBytes',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
@@ -68,17 +73,20 @@ export enum Types {
     WEBHOOK_ASYNC_ACTION_SUCCESS = 'nango.webhook.async_action.success',
     WEBHOOK_ASYNC_ACTION_FAILED = 'nango.webhook.async_action.failed',
     WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
+    WEBHOOK_REQUEST_SIZE_IN_BYTES = 'nango.webhook.request.sizeInBytes',
+    WEBHOOK_RESPONSE_SIZE_IN_BYTES = 'nango.webhook.response.sizeInBytes',
     WEBHOOK_DIRECT_TRIGGER_SUCCESS = 'nango.webhook.direct_trigger.success',
 
     WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
     WEBHOOK_DISPATCH_BYPASS_OVERSIZE = 'nango.webhook.dispatch_queue.bypass_oversize',
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
-    WEBHOOK_DISPATCH_CONSUME_SUCCESS = 'nango.webhook.dispatch_queue.consume.success',
-    WEBHOOK_DISPATCH_CONSUME_FAILURE = 'nango.webhook.dispatch_queue.consume.failure',
-    WEBHOOK_DISPATCH_POISON_PILL = 'nango.webhook.dispatch_queue.poison_pill',
-    WEBHOOK_DISPATCH_STALE = 'nango.webhook.dispatch_queue.stale',
+    // Consume outcome, tagged result=success|failure.
+    WEBHOOK_DISPATCH_CONSUME = 'nango.webhook.dispatch_queue.consume',
+    // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
+    WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
+    WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
@@ -88,6 +96,17 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
+
+    TASKS_ENQUEUED = 'nango.tasks.enqueued',
+    TASKS_RETRIED = 'nango.tasks.retried',
+    TASKS_STARTED = 'nango.tasks.started',
+    TASKS_SUCCEEDED = 'nango.tasks.succeeded',
+    TASKS_FAILED = 'nango.tasks.failed',
+    TASKS_EXPIRED = 'nango.tasks.expired',
+    TASKS_CANCELLED = 'nango.tasks.cancelled',
+    TASKS_DROPPED = 'nango.tasks.dropped',
+    TASKS_HANDLER_DURATION = 'nango.tasks.handler.duration',
+    TASKS_QUEUE_DEPTH = 'nango.tasks.queue.depth',
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
 
@@ -105,25 +124,40 @@ export enum Types {
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
     RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',
+    RECORDS_BUDGET_TRUNCATE = 'nango.records.budgetTruncate',
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 
     DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
     DEPLOY_SECURITY_SCAN = 'nango.server.deploy.security.scan',
 
+    EGRESS_BYTES = 'nango.server.egress.bytes',
+
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
+
+    E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
 
     ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
     BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
-    BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED = 'nango.billing.usage.clickhouse.batcher.dropped',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS = 'nango.billing.usage.clickhouse.batcher.ingest.duration_ms',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT = 'nango.billing.usage.clickhouse.batcher.ingest.result',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY = 'nango.billing.usage.clickhouse.batcher.retry',
+    BILLING_USAGE_CLICKHOUSE_QUERY_DURATION_MS = 'nango.billing.usage.clickhouse.query.duration_ms',
+    BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS = 'nango.billing.usage.clickhouse.top_dimension_values.duration_ms',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT = 'nango.billing.usage.clickhouse.s3_export.file.result',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT = 'nango.billing.usage.clickhouse.s3_export.run.result',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
+    BILLING_USAGE_SHADOW_DIVERGENCE = 'nango.billing.usage.shadow.divergence',
+    BILLING_USAGE_SHADOW_ONE_SIDED = 'nango.billing.usage.shadow.one_sided',
+    BILLING_USAGE_SHADOW_DURATION_MS = 'nango.billing.usage.shadow.duration_ms',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
-    AUTH_CALLBACK_STATE_COOKIE_MISSING = 'nango.server.auth.callback.state_cookie.missing'
+    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

@@ -126,7 +126,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -150,13 +150,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             syncConfig: syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(plan),
             startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.custom
             }
         };
 

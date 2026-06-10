@@ -5,24 +5,35 @@ export const apiKeyScopes = [
     // Integrations
     'environment:integrations:list',
     'environment:integrations:list_credentials',
+    'environment:integrations:list_functions',
     'environment:integrations:read',
     'environment:integrations:read_credentials',
-    'environment:integrations:write',
+    'environment:integrations:create',
+    'environment:integrations:update',
+    'environment:integrations:delete',
     'environment:integrations:*',
     // Connections
     'environment:connections:list',
     'environment:connections:list_credentials',
     'environment:connections:read',
     'environment:connections:read_credentials',
-    'environment:connections:write',
+    'environment:connections:create',
+    'environment:connections:update',
+    'environment:connections:delete',
     'environment:connections:*',
     // Connect Sessions
     'environment:connect_sessions:write',
     // Syncs
     'environment:syncs:read',
     'environment:syncs:execute',
-    'environment:syncs:manage',
+    'environment:syncs:update',
+    'environment:syncs:variant:create',
+    'environment:syncs:variant:delete',
     'environment:syncs:*',
+    // Functions
+    'environment:functions:compile',
+    'environment:functions:dryrun',
+    'environment:functions:*',
     // Deploy
     'environment:deploy',
     // Records
@@ -34,9 +45,8 @@ export const apiKeyScopes = [
     'environment:actions:*',
     // Proxy
     'environment:proxy',
-    // Config
-    'environment:config:read',
-    'environment:config:*',
+    // Variables
+    'environment:variables:read',
     // MCP
     'environment:mcp'
 ] as const satisfies readonly ApiKeyScope[];

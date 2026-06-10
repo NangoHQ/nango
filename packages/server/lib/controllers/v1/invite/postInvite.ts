@@ -67,7 +67,7 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
             return;
         }
 
-        await sendInviteEmail({ email, account, user, invitation });
+        await sendInviteEmail({ email, account, user, invitation, isExistingUser: !!existingUser });
         invited.push(email);
     }
 

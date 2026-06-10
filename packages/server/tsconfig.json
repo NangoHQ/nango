@@ -39,7 +39,13 @@
             "path": "../records"
         },
         {
+            "path": "../sandbox"
+        },
+        {
             "path": "../orchestrator"
+        },
+        {
+            "path": "../tasks"
         },
         {
             "path": "../fleet"

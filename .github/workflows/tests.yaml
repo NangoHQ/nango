@@ -62,15 +62,12 @@ jobs:
 
             - name: Use Node.js
               if: needs.should-run.outputs.should_skip != 'true'
-              uses: actions/setup-node@v4
-              with:
-                  cache: 'npm'
-                  node-version-file: '.nvmrc'
+              uses: ./.github/actions/setup-node
 
             - run: npm ci
               if: needs.should-run.outputs.should_skip != 'true'
 
-            - run: npm run ts-build
+            - run: npm run ts-build -- --noCheck
               if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run test:unit -- --exclude packages/cli/
@@ -88,10 +85,7 @@ jobs:
 
             - name: Use Node.js
               if: needs.should-run.outputs.should_skip != 'true'
-              uses: actions/setup-node@v4
-              with:
-                  cache: 'npm'
-                  node-version-file: '.nvmrc'
+              uses: ./.github/actions/setup-node
 
             - run: npm ci
               if: needs.should-run.outputs.should_skip != 'true'

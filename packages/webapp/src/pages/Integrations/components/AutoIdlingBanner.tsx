@@ -7,8 +7,8 @@ import { useEnvironment } from '../../../hooks/useEnvironment';
 import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export const AutoIdlingBanner: React.FC = () => {
@@ -58,7 +58,7 @@ export const AutoIdlingBanner: React.FC = () => {
                             </AlertButton>
                         )}
                     </PermissionGate>
-                    <AlertButtonLink variant={'warning'} to={`/${env}/team/billing#plans`}>
+                    <AlertButtonLink variant={'warning'} to={`/team/billing#plans`}>
                         Upgrade
                     </AlertButtonLink>
                 </AlertActions>
@@ -80,7 +80,7 @@ export const AutoIdlingBanner: React.FC = () => {
                         </AlertButton>
                     )}
                 </PermissionGate>
-                <AlertButtonLink variant={'info'} to={`/${env}/team/billing#plans`}>
+                <AlertButtonLink variant={'info'} to={`/team/billing#plans`}>
                     Upgrade
                 </AlertButtonLink>
             </AlertActions>

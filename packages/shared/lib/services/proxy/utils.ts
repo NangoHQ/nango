@@ -4,8 +4,9 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD, metrics } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
+import { signAwsSigV4Request } from './aws-sigv4.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -88,6 +89,10 @@ export function getAxiosConfiguration({
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
 }): AxiosRequestConfig {
+    if (proxyConfig.provider.integration_config) {
+        proxyConfig = deriveIntegrationConfigProxy({ proxyConfig, integrationConfig });
+    }
+
     const url = buildProxyURL({ config: proxyConfig, connection });
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
@@ -97,18 +102,16 @@ export function getAxiosConfiguration({
         headers
     };
 
-    // TODO: change default to false after removing the metric below
-    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
-    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
+
+    axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
         if (proxyConfig.validateProxyRedirectUrl) {
             const absolute = absoluteUrlFromRedirectRequestOptions(options);
             if (absolute) {
                 proxyConfig.validateProxyRedirectUrl(absolute);
             }
         }
-        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName });
         if (shouldForward) {
-            // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
                     options['headers'][key] = headers[key];
@@ -202,7 +205,9 @@ export function getProxyConfiguration({
         return Err(new ProxyError('unknown_provider'));
     }
 
-    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride)) {
+    const isAwsSigV4 = provider.auth_mode === 'AWS_SIGV4';
+
+    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride && !isAwsSigV4)) {
         return Err(new ProxyError('unsupported_provider'));
     }
 
@@ -258,6 +263,56 @@ export function getProxyConfiguration({
 }
 
 /**
+ * For providers that expose a customer-configurable `integration_config` schema (e.g. `private-api-generic`),
+ * the API-key injection is configured per-integration and stored in the integration's `custom` field rather than
+ * statically in providers.yaml. This derives an effective proxy config (base_url + a single header/query entry)
+ * from that per-integration config so the existing header/query interpolation can inject the key.
+ *
+ * The `valueTemplate` (e.g. `Api-Key ${apiKey}`) is interpolated downstream against the connection credentials,
+ * where `${apiKey}` resolves to the stored API key.
+ */
+export function deriveIntegrationConfigProxy({
+    proxyConfig,
+    integrationConfig
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}): ApplicationConstructedProxyConfiguration {
+    const provider = proxyConfig.provider;
+    const custom = integrationConfig?.custom;
+
+    // Only providers that declare `integration_config` opt into per-integration proxy injection.
+    if (!provider.integration_config || !custom || !custom['keyName']) {
+        return proxyConfig;
+    }
+
+    const placement = custom['keyPlacement'] || 'header';
+    const keyName = custom['keyName'];
+    const valueTemplate = custom['valueTemplate'] || '${apiKey}';
+    const baseUrl = custom['baseUrl'];
+
+    const baseProxy = provider.proxy ?? { base_url: '' };
+    const proxy = {
+        ...baseProxy,
+        base_url: baseUrl || baseProxy.base_url,
+        headers: { ...(baseProxy.headers ?? {}) },
+        query: { ...(baseProxy.query ?? {}) }
+    };
+
+    if (placement === 'query') {
+        proxy.query[keyName] = valueTemplate;
+    } else {
+        // HTTP header names are case-insensitive; lowercase to match the providers.yaml convention.
+        proxy.headers[keyName.toLowerCase()] = valueTemplate;
+    }
+
+    return {
+        ...proxyConfig,
+        provider: { ...provider, proxy }
+    };
+}
+
+/**
  * Construct URL
  */
 export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
@@ -265,7 +320,18 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 
     let apiBase = config.baseUrlOverride || templateApiBase;
 
-    if (apiBase?.includes('${') && apiBase?.includes('||')) {
+    // AWS SigV4 allows a per-connection base_url override for non-standard endpoints (S3, API Gateway,
+    // GovCloud, FIPS). It wins over the provider's templated base_url, but NOT over an explicit
+    // config.baseUrlOverride — credential verification sets that to the regional STS URL and must not be
+    // redirected to the connection's endpoint.
+    if (!config.baseUrlOverride && connection.credentials.type === 'AWS_SIGV4') {
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            apiBase = connectionBaseUrl;
+        }
+    }
+
+    if (apiBase && apiBase?.includes('${') && apiBase?.includes('||')) {
         const connectionConfig = connection.connection_config;
         const splitApiBase = apiBase.split(/\s*\|\|\s*/);
 
@@ -275,7 +341,17 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
+    let normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
+
+    // If the endpoint is absolute and starts with the effective base, strip the base to avoid duplicating it.
+    // Only strip at a real boundary — end of string, or the next char is a path/query/fragment delimiter — so a
+    // different host that merely shares the prefix (e.g. https://api.example.com.evil.com) isn't wrongly rewritten.
+    if (normalizedBase && !normalizedBase.includes('${') && normalizedEndpoint.startsWith(normalizedBase)) {
+        const rest = normalizedEndpoint.slice(normalizedBase.length);
+        if (rest === '' || rest[0] === '/' || rest[0] === '?' || rest[0] === '#') {
+            normalizedEndpoint = rest.replace(/^\/+/, '');
+        }
+    }
 
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
@@ -305,8 +381,8 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             if (typeof value !== 'string') {
                 continue;
             }
-            if (connection.credentials.type === 'API_KEY' && value === '${apiKey}') {
-                url.searchParams.set(key, connection.credentials.apiKey);
+            if (connection.credentials.type === 'API_KEY' && value.includes('${apiKey}')) {
+                url.searchParams.set(key, interpolateIfNeeded(value, { ...(connection.credentials as unknown as Record<string, string>) }));
             } else if (value.includes('connectionConfig.')) {
                 const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
 
@@ -413,7 +489,12 @@ export function buildProxyHeaders({
             const hasCustomAuthHeader =
                 'proxy' in config.provider &&
                 'headers' in config.provider.proxy &&
-                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('${accessToken}'));
+                // ${credentials._cookies} = session-cookie auth (e.g. SAP B1); ${accessToken} = explicit bearer override
+                Object.entries(config.provider.proxy.headers).some(
+                    ([key, header]) =>
+                        (key.toLowerCase() === 'cookie' && typeof header === 'string' && header.includes('${credentials._cookies}')) ||
+                        (typeof header === 'string' && header.includes('${accessToken}'))
+                );
 
             if (!hasCustomAuthHeader) {
                 headers['authorization'] = `Bearer ${connection.credentials.token}`;
@@ -457,6 +538,11 @@ export function buildProxyHeaders({
         case 'CUSTOM':
         case undefined:
         case 'BILL': {
+            break;
+        }
+        case 'AWS_SIGV4': {
+            // Defer signing until after provider- and caller-supplied headers are merged below,
+            // so headers like x-amz-target are included in the canonical request's SignedHeaders.
             break;
         }
         case 'OAUTH1': {
@@ -577,5 +663,71 @@ export function buildProxyHeaders({
         headers = { ...headers, ...config.headers };
     }
 
+    if (connection.credentials.type === 'AWS_SIGV4') {
+        // Sign last so caller-supplied headers (e.g. x-amz-target for DynamoDB / CloudWatch Logs)
+        // are part of the canonical request. The signer overlays its own authorization/host/
+        // x-amz-* headers on top after computing the signature.
+        const signedHeaders = signAwsSigV4Request({
+            url,
+            method: config.method,
+            headers,
+            body: resolveSigV4Payload(config),
+            credentials: connection.credentials
+        });
+        removeExistingHeaders(headers, Object.keys(signedHeaders));
+        headers = { ...headers, ...signedHeaders };
+    }
+
     return headers;
+}
+
+function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): string | Buffer | null {
+    if (!methodDataAllowed.includes(config.method)) {
+        return '';
+    }
+
+    if (!config.data) {
+        return '';
+    }
+
+    if (typeof config.data === 'string' || Buffer.isBuffer(config.data)) {
+        return config.data;
+    }
+
+    if (isFormData(config.data)) {
+        return null;
+    }
+
+    // URLSearchParams serializes to form-encoded (a=1&b=2), which is what axios sends — sign that exact
+    // body, not JSON.stringify (which would produce "{}" and yield SignatureDoesNotMatch).
+    if (config.data instanceof URLSearchParams) {
+        return config.data.toString();
+    }
+
+    if (typeof config.data === 'object') {
+        try {
+            return JSON.stringify(config.data);
+        } catch {
+            return null;
+        }
+    }
+
+    return '';
+}
+
+function removeExistingHeaders(headers: Record<string, string>, keys: string[]) {
+    if (!keys.length) {
+        return;
+    }
+
+    const lower = keys.map((key) => key.toLowerCase());
+    for (const currentKey of Object.keys(headers)) {
+        if (lower.includes(currentKey.toLowerCase())) {
+            Reflect.deleteProperty(headers, currentKey);
+        }
+    }
+}
+
+function isFormData(value: unknown): value is FormData {
+    return Boolean(value && typeof (value as FormData).getBoundary === 'function');
 }

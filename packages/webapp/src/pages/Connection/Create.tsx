@@ -9,14 +9,14 @@ import { z } from 'zod';
 
 import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ButtonLink } from '../../components/ui/button/Button';
-import { Form } from '../../components-v2/ui/form';
+import { Form } from '../../components/ui/Form';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
+import { ButtonLink } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useProvider } from '@/hooks/useProvider';
 
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -154,8 +154,8 @@ export const ConnectionCreate: React.FC = () => {
                         <div className="flex gap-4">
                             <ButtonLink
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
-                                size="md"
-                                variant={'link'}
+                                size="sm"
+                                variant={'ghost'}
                                 className={'text-breadcrumb-default'}
                             >
                                 Use deprecated flow <ExternalLink className="size-4.5 text-breadcrumb-default" />

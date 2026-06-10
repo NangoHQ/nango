@@ -4,6 +4,20 @@ sidebarTitle: 'Migrate to checkpoints'
 description: 'Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.'
 ---
 
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s migrating-to-checkpoints"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install checkpoint migration skill</span>
+    <span className="agent-quickstart-action-description">
+      Copy the command to install <code>migrating-to-checkpoints</code> from <code>NangoHQ/skills</code>.
+    </span>
+  </button>
+</div>
+
 # Who is impacted
 
 If any of your sync functions read `nango.lastSyncDate` to determine where to resume syncing, you are impacted by this migration.
@@ -40,6 +54,21 @@ Checkpoints also replace the `syncType: 'incremental'` field in your sync declar
 Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/guides/functions/syncs/checkpoints).
 
 # Migration steps
+
+<a id="migrate-with-skill"></a>
+## Migrate with the migrating-to-checkpoints skill
+
+You can migrate syncs to checkpoints with the **`migrating-to-checkpoints`** skill from [NangoHQ/skills](https://github.com/NangoHQ/skills). The skill guides a coding agent through converting `createSync()` implementations from `nango.lastSyncDate`, legacy `syncType: 'incremental'`, and non-resumable full refreshes to checkpoint-based syncs.
+
+Install it in your functions repo:
+
+```bash
+npx skills add NangoHQ/skills -s migrating-to-checkpoints
+```
+
+Then ask your agent to migrate a specific sync using the `migrating-to-checkpoints` skill. The skill covers checkpoint schema selection, replacing `lastSyncDate` with `getCheckpoint()` and `saveCheckpoint()`, full-refresh recovery with `clearCheckpoint()`, and validating with `nango dryrun --checkpoint`.
+
+The manual steps below walk through the same migration if you prefer to do it by hand or want to review what the skill changes.
 
 ## Step 1: Add a checkpoint schema to your sync declaration
 

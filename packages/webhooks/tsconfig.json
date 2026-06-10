@@ -16,6 +16,9 @@
         },
         {
             "path": "../kvstore"
+        },
+        {
+            "path": "../shared"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

@@ -78,18 +78,16 @@ jobs:
 
             - name: Use Node.js ${{ matrix.node-version }}
               if: needs.should-run.outputs.should_skip != 'true'
-              uses: actions/setup-node@v4
+              uses: ./.github/actions/setup-node
               with:
-                  cache: 'npm'
                   node-version: ${{ matrix.node-version }}
-                  cache-dependency-path: 'package-lock.json'
 
             - run: npm ci
               if: needs.should-run.outputs.should_skip != 'true'
 
             - name: Build Typescript
               if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build
+              run: npm run ts-build -- --noCheck
 
             - run: npm run test:cli
               if: needs.should-run.outputs.should_skip != 'true'

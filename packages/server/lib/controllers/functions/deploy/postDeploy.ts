@@ -1,24 +1,38 @@
-import db from '@nangohq/database';
-import { configService, getSyncConfigRaw, secretService } from '@nangohq/shared';
+import {
+    FunctionError,
+    createFunctionDeployment,
+    getRemoteFunctionNangoHost,
+    markFunctionDeploymentFailed,
+    markFunctionDeploymentRunning,
+    prepareAsyncDeploy,
+    toFunctionDeploymentCreate
+} from '@nangohq/sandbox';
+import { configService, getSyncConfigRaw } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
-import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
-import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { remoteFunctionDeployBodySchema } from '../validation.js';
+import { sendStepError } from '../errors.js';
+import { functionDeploymentBodySchema } from '../validation.js';
+import { createDeploySandboxApiKey, requireCustomerKeyId, toFunctionDeploymentError } from './helpers.js';
 
-import type { PostRemoteFunctionDeploy } from '@nangohq/types';
+import type { DBSyncConfig, PostFunctionDeployment } from '@nangohq/types';
 
-export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(async (req, res) => {
+function isProtectedExistingFunction(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null): boolean {
+    return Boolean(existingSyncConfig && existingSyncConfig.source !== 'standalone');
+}
+
+function shouldAllowDestructiveDeploy(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null, allowDestructive: boolean): boolean {
+    return Boolean(allowDestructive && existingSyncConfig?.source === 'standalone');
+}
+
+export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
-    const valBody = remoteFunctionDeployBodySchema.safeParse(req.body);
+    const valBody = functionDeploymentBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
@@ -26,6 +40,10 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
 
     const body = valBody.data;
     const { environment } = res.locals;
+    const parentCustomerKeyId = requireCustomerKeyId(res, 'Function deployments can only be started from a customer API key');
+    if (!parentCustomerKeyId) {
+        return;
+    }
 
     const providerConfig = await configService.getProviderConfig(body.integration_id, environment.id);
     if (!providerConfig || !providerConfig.id) {
@@ -40,7 +58,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         isAction: body.function_type === 'action'
     });
 
-    if (existingSyncConfig && existingSyncConfig.source !== 'standalone') {
+    if (isProtectedExistingFunction(existingSyncConfig)) {
         res.status(400).send({
             error: {
                 code: 'invalid_request',
@@ -50,33 +68,72 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         return;
     }
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        sendStepError({ res, status: 500, error: defaultSecret.error });
+    const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive);
+    const deploymentResult = await createFunctionDeployment({
+        environmentId: environment.id,
+        request: {
+            type: 'function',
+            integration_id: body.integration_id,
+            function_name: body.function_name,
+            function_type: body.function_type,
+            code: body.code,
+            ...(body.version ? { version: body.version } : {}),
+            allow_destructive: allowDestructiveDeploy
+        }
+    });
+    if (deploymentResult.isErr()) {
+        sendStepError({ res, status: 500, error: deploymentResult.error });
         return;
     }
 
+    const deployment = deploymentResult.value;
+    let prepared: Awaited<ReturnType<typeof prepareAsyncDeploy>> | null = null;
     try {
-        const result = await invokeDeploy({
+        const nangoHost = getRemoteFunctionNangoHost();
+        const sandboxApiKey = await createDeploySandboxApiKey(parentCustomerKeyId, environment.id, deployment.id);
+        if (sandboxApiKey.isErr()) {
+            throw sandboxApiKey.error;
+        }
+
+        const callbackUrl = new URL(`/functions/deployments/${deployment.id}/result`, nangoHost).toString();
+        prepared = await prepareAsyncDeploy({
             integration_id: body.integration_id,
             function_name: body.function_name,
             function_type: body.function_type,
             code: body.code,
             environment_name: environment.name,
-            nango_secret_key: defaultSecret.value.secret,
-            nango_host: getRemoteFunctionNangoHost()
+            nango_secret_key: sandboxApiKey.value,
+            nango_host: nangoHost,
+            deployment_id: deployment.id,
+            callback_url: callbackUrl,
+            ...(body.version ? { version: body.version } : {}),
+            allow_destructive: allowDestructiveDeploy
         });
-        const output = parseDeploySuccessOutput(result.output);
 
-        res.status(200).send({
-            integration_id: body.integration_id,
-            function_name: body.function_name,
-            function_type: body.function_type,
-            deployed: output.deployed,
-            deployed_functions: output.deployedFunctions,
-            output: output.output
+        const running = await markFunctionDeploymentRunning({
+            environmentId: environment.id,
+            id: deployment.id,
+            sandboxId: prepared.sandboxId,
+            startedAt: prepared.startedAt,
+            executionTimeoutAt: prepared.executionTimeoutAt
         });
+        if (!running) {
+            await prepared.kill();
+            throw new Error(`Failed to mark function deployment '${deployment.id}' as running`);
+        }
+
+        await prepared.start();
+
+        res.status(202).send(toFunctionDeploymentCreate(running));
     } catch (err) {
-        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+        await prepared?.kill().catch(() => {
+            // Still mark the deployment as failed if sandbox cleanup fails.
+        });
+        await markFunctionDeploymentFailed({
+            environmentId: environment.id,
+            id: deployment.id,
+            error: toFunctionDeploymentError(err)
+        });
+        sendStepError({ res, error: err, ...(err instanceof FunctionError ? {} : { status: 500 }) });
     }
 });

@@ -1,0 +1,140 @@
+name: Preview Deploy — Webapp
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+        paths:
+            - 'packages/webapp/**'
+            - 'packages/design-system/**'
+
+permissions: {}
+
+concurrency:
+    group: preview-webapp-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    preview:
+        runs-on: ubuntu-latest
+        environment: development
+        # Security note: forked PRs using `pull_request` do not receive secrets or OIDC
+        # tokens, so untrusted fork code cannot assume the deploy role. The OIDC role is
+        # also scoped solely to the dev preview S3 bucket — a compromise cannot reach
+        # production resources. Fork PRs are skipped entirely to avoid wasted CI builds.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        permissions:
+            id-token: write
+            contents: read
+            pull-requests: write
+        steps:
+            - name: Checkout
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+              with:
+                  persist-credentials: false
+
+            - name: Set preview vars
+              id: preview
+              run: |
+                  echo "slug=pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+                  echo "url=https://pr-${{ github.event.pull_request.number }}.app-development.nango.dev" >> "$GITHUB_OUTPUT"
+                  echo "run_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+
+            - name: Find or create deploying comment
+              id: post-comment
+              uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+              env:
+                  PREVIEW_URL: ${{ steps.preview.outputs.url }}
+                  RUN_URL: ${{ steps.preview.outputs.run_url }}
+              with:
+                  result-encoding: string
+                  script: |
+                      const { PREVIEW_URL: url, RUN_URL: runUrl } = process.env;
+                      const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+                      const marker = '<!-- preview-webapp-deploy-bot -->';
+                      const body = `${marker}\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| 🔄 Deploying | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
+
+                      const comments = await github.paginate(github.rest.issues.listComments, {
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                      });
+                      const existing = comments.find(c => c.body.startsWith(marker));
+
+                      if (existing) {
+                        await github.rest.issues.updateComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          comment_id: existing.id,
+                          body,
+                        });
+                        return String(existing.id);
+                      }
+
+                      const { data: comment } = await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        body,
+                      });
+                      return String(comment.id);
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build Webapp
+              run: npm run ts-build && npm run -w @nangohq/webapp build
+
+            - name: Inject API origin into dist/index.html
+              run: |
+                  sed -E -i 's#(<meta name="nango-api-origin" content=")[^"]*(")#\1${{ vars.API_DOMAIN }}\2#' packages/webapp/dist/index.html
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+              with:
+                  role-to-assume: ${{ vars.PREVIEW_APP_UI_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+
+            - name: Deploy to S3
+              run: |
+                  aws s3 sync --delete packages/webapp/dist/ s3://${{ vars.PREVIEW_APP_UI_BUCKET }}/previews/${{ steps.preview.outputs.slug }}/
+
+            - name: Create CloudFront invalidation
+              run: |
+                  aws cloudfront create-invalidation --distribution-id ${{ vars.PREVIEW_APP_UI_DISTRIBUTION_ID }} --paths "/previews/${{ steps.preview.outputs.slug }}/*"
+
+            - name: Update comment - Ready
+              if: success()
+              uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+              env:
+                  PREVIEW_URL: ${{ steps.preview.outputs.url }}
+                  RUN_URL: ${{ steps.preview.outputs.run_url }}
+              with:
+                  script: |
+                      const { PREVIEW_URL: url, RUN_URL: runUrl } = process.env;
+                      const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+                      const body = `<!-- preview-webapp-deploy-bot -->\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| ✅ Ready | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
+                      await github.rest.issues.updateComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        comment_id: Number('${{ steps.post-comment.outputs.result }}'),
+                        body,
+                      });
+
+            - name: Update comment - Failed
+              if: failure() && steps.post-comment.outputs.result != ''
+              uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+              env:
+                  PREVIEW_URL: ${{ steps.preview.outputs.url }}
+                  RUN_URL: ${{ steps.preview.outputs.run_url }}
+              with:
+                  script: |
+                      const { PREVIEW_URL: url, RUN_URL: runUrl } = process.env;
+                      const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+                      const body = `<!-- preview-webapp-deploy-bot -->\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| ❌ Failed | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
+                      await github.rest.issues.updateComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        comment_id: Number('${{ steps.post-comment.outputs.result }}'),
+                        body,
+                      });

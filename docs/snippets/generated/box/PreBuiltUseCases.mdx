@@ -1,15 +1,52 @@
+### Collaborations
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-collaboration` | Create a collaboration in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/create-collaboration.ts) |
+| `delete-collaboration` | Delete or archive a collaboration in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/delete-collaboration.ts) |
+| `get-collaboration` | Retrieve a single collaboration from Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/get-collaboration.ts) |
+| `list-collaborations` | List collaborations from Box. Retrieves pending collaboration invites for this user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/list-collaborations.ts) |
+| `update-collaboration` | Update a collaboration in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/update-collaboration.ts) |
+
+### Comments
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-comment` | Create a comment in Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/create-comment.ts) |
+| `delete-comment` | Delete or archive a comment in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/delete-comment.ts) |
+| `get-comment` | Retrieve a single comment from Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/get-comment.ts) |
+| `list-comments` | List comments for a file | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/list-comments.ts) |
+| `update-comment` | Update a comment in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/update-comment.ts) |
+
 ### Files
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `files` | Sync the metadata of a specified files or folders paths from Box. A file or folder id or path can be used. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/files.ts) |
+| `copy-file` | Copy a file to a different folder in Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/copy-file.ts) |
+| `delete-file` | Delete or archive a file in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/delete-file.ts) |
+| `download-file` | Download file content from Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/download-file.ts) |
+| `get-file` | Retrieve a single file from Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/get-file.ts) |
+| `list-files` | List files from Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/list-files.ts) |
+| `update-file` | Update a file in Box. This can be used to rename or move a file. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/update-file.ts) |
+| `files` | Sync the metadata of specified files or folder paths from Box. A file or folder ID can be provided. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/files.ts) |
 
 ### Folders
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
+| `copy-folder` | Copy a folder and its contents to a different location in Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/copy-folder.ts) |
+| `create-folder` | Create a folder in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/create-folder.ts) |
+| `delete-folder` | Delete or archive a folder in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/delete-folder.ts) |
 | `folder-content` | Fetches the top-level content (files and folders) of a folder given its ID. If no folder ID is provided, it fetches content from the root folder. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/folder-content.ts) |
-| `folders` | Sync the folders at the root level from Box | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/folders.ts) |
+| `get-folder` | Retrieve a single folder from Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/get-folder.ts) |
+| `list-folders` | List folders from Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/list-folders.ts) |
+| `update-folder` | Update a folder in Box. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/update-folder.ts) |
+
+### Search
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `search` | Search for files, folders, and other content in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/search.ts) |
 
 ### Users
 
@@ -17,4 +54,13 @@
 | - | - | - | - |
 | `create-user` | Creates a user in Box. Requires an enterprise account. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/create-user.ts) |
 | `delete-user` | Deletes a user in Box. Requires an enterprise account. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/delete-user.ts) |
+| `get-user` | Retrieve a single user from Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/get-user.ts) |
+| `update-user` | Update a user in Box | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/actions/update-user.ts) |
 | `users` | Fetches a list of users from Box. Requires an enterprise account. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/users.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `collaborations` | Sync collaborations from Box | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/collaborations.ts) |
+| `folders` | Sync folders from Box | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/syncs/folders.ts) |

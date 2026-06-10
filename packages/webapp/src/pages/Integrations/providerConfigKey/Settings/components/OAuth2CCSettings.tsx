@@ -1,7 +1,7 @@
 import { permissions } from '@nangohq/authz';
 
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { Label } from '@/components-v2/ui/label';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
+import { Label } from '@/components/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
@@ -49,6 +49,8 @@ export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data'
                     onChange={handleScopesChange}
                     isSharedCredentials={isSharedCredentials}
                     readOnly={!canEdit}
+                    availableScopes={template.available_scopes}
+                    showAvailableScopesDropdown={true}
                 />
             </div>
         </div>

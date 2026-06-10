@@ -1,4 +1,4 @@
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 import { globalEnv } from './env';
 
@@ -56,11 +56,11 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
 }
 
 export function requestErrorToast() {
-    toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
+    toast.error('Request error...');
 }
 
 function serverErrorToast() {
-    toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+    toast.error('Server error...');
 }
 
 export function useHostedSigninAPI() {

@@ -1,6 +1,4 @@
-import { afterEach } from 'node:test';
-
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from './logContextGetter.js';
 import { listMessages } from './messages.js';

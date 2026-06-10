@@ -2,16 +2,17 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
+import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
-import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
-import { logger } from './utils/logger.js';
+import { logger, setLogger } from './utils/logger.js';
 
-import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
-import type { Result } from '@nangohq/utils';
+import type { SchedulerConfig, SchedulerEvent } from './config.js';
+import type { AtProps, FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
+import type { Result, StrictLogger } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
 
@@ -19,7 +20,6 @@ export class Scheduler {
     private expiring: ExpiringDaemon;
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
-    private backpressureMonitor: BackpressureMonitoringDaemon;
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -41,31 +41,79 @@ export class Scheduler {
      *    }
      * });
      */
-    constructor({ db, on, onError }: { db: knex.Knex; on: Record<TaskState, (task: Task) => void>; onError: (err: Error) => void }) {
+    private readonly config: SchedulerConfig;
+    private readonly onEvent: (event: SchedulerEvent) => void;
+
+    constructor({
+        db,
+        on,
+        onError,
+        config = defaultSchedulerConfig,
+        onEvent = () => {},
+        continueOnError = false,
+        logger: injectedLogger
+    }: {
+        db: knex.Knex;
+        on: Record<TaskState, (task: Task) => void>;
+        onError: (err: Error) => void;
+        config?: SchedulerConfig;
+        onEvent?: (event: SchedulerEvent) => void;
+        /**
+         * When true, a daemon that throws on a tick reports via `onError` and keeps ticking (self-healing)
+         * instead of stopping. Use when `onError` only logs; leave false when `onError` is fatal (e.g. exits the process).
+         */
+        continueOnError?: boolean;
+        logger?: StrictLogger;
+    }) {
         this.ac = new AbortController();
         this.onCallbacks = on;
         this.db = db;
+        this.config = config;
+        setLogger(injectedLogger ?? noopLogger);
+
+        const safeOnEvent = (event: SchedulerEvent): void => {
+            try {
+                onEvent(event);
+            } catch (err) {
+                logger.error(`Scheduler onEvent handler threw for ${event.type}`, err);
+            }
+        };
+        this.onEvent = safeOnEvent;
 
         this.expiring = new ExpiringDaemon({
             db,
             abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.expiringTickIntervalMs,
+            batchSize: config.limits.expiringBatchSize,
             onExpiring: (task: Task) => {
                 const { reason } = task.output as unknown as { reason?: string };
                 this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
                 this.onCallbacks[task.state](task);
             },
-            onError
+            onError,
+            continueOnError
         });
         this.scheduling = new SchedulingDaemon({
             db,
             abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.schedulingTickIntervalMs,
+            groupTaskCap: config.limits.groupTaskCap,
+            recurringGroupMaxConcurrency: config.limits.recurringGroupMaxConcurrency,
             onScheduling: (task: Task) => {
                 this.onCallbacks[task.state](task);
             },
-            onError
+            onEvent: safeOnEvent,
+            onError,
+            continueOnError
         });
-        this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
-        this.backpressureMonitor = new BackpressureMonitoringDaemon({ db, abortSignal: this.ac.signal, onError });
+        this.cleaning = new CleaningDaemon({
+            db,
+            abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.cleaningTickIntervalMs,
+            olderThanDays: config.daemons.cleaningOlderThanDays,
+            onError,
+            continueOnError
+        });
     }
 
     start(): void {
@@ -73,7 +121,6 @@ export class Scheduler {
         void this.expiring.start();
         void this.scheduling.start();
         void this.cleaning.start();
-        void this.backpressureMonitor.start();
     }
 
     async stop(): Promise<void> {
@@ -81,7 +128,6 @@ export class Scheduler {
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();
         await this.scheduling.waitUntilStopped();
-        await this.backpressureMonitor.waitUntilStopped();
     }
 
     /**
@@ -136,6 +182,16 @@ export class Scheduler {
         return schedules.search(this.db, params);
     }
 
+    public monitoring = {
+        backpressure: async ({ limit }: { limit: number }): Promise<Result<{ groupKey: string; queued: number }[]>> => {
+            const res = await tasks.getGroupsWithBackpressure(this.db, { limit });
+            if (res.isErr()) {
+                return Err(res.error);
+            }
+            return Ok(res.value.map(({ group_key, queued }) => ({ groupKey: group_key, queued })));
+        }
+    };
+
     /**
      * Schedule a task immediately
      * @param props - Scheduling properties or schedule name
@@ -155,70 +211,156 @@ export class Scheduler {
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | FromScheduleProps): Promise<Result<Task>> {
-        return this.db.transaction(async (trx) => {
+        if (!('scheduleName' in props)) {
+            return this.at({ ...props, startsAfter: new Date() });
+        }
+        const events: SchedulerEvent[] = [];
+        const result = await this.db.transaction<Result<Task>>(async (trx) => {
+            // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
+            const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
+            if (getSchedules.isErr()) {
+                return Err(getSchedules.error);
+            }
+            const schedule = getSchedules.value[0];
+            if (!schedule) {
+                return Err(new Error(`Schedule '${props.scheduleName}' not found`));
+            }
+            // Not scheduling a task if another task for the same schedule is already running
+            const running = await tasks.search(trx, {
+                scheduleId: schedule.id,
+                states: ['CREATED', 'STARTED']
+            });
+            if (running.isErr()) {
+                return Err(running.error);
+            }
+            if (running.value.length > 0) {
+                // TODO: identify this error so we can return something else than a 500
+                return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
+            }
+            const inserted = await this.insertTask(trx, {
+                name: `${schedule.name}:${uuidv7()}`,
+                payload: { ...schedule.payload, ...props.extra },
+                groupKey: schedule.groupKey,
+                groupMaxConcurrency: 0,
+                retryMax: schedule.retryMax,
+                retryCount: 0,
+                createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                startsAfter: new Date(),
+                scheduleId: schedule.id,
+                ownerKey: null
+            });
+            events.push(...inserted.events);
+            return inserted.result;
+        });
+        events.forEach((event) => this.onEvent(event));
+        return result;
+    }
+
+    /**
+     * Schedule a one-shot task that only becomes dequeue-able at/after `startsAfter`.
+     *
+     * Unlike `immediate`, the task waits until `startsAfter` before it can be dequeued. The
+     * created→started timeout is measured from `startsAfter`, so long delays don't cause the task
+     * to expire while waiting. Use this for deferred work (e.g. "run in 30 days").
+     * @example
+     * const scheduled = await scheduler.at({ ...props, startsAfter: addDays(new Date(), 30) });
+     */
+    public async at(props: AtProps): Promise<Result<Task>> {
+        const { result, events } = await this.db.transaction((trx) => this.insertTask(trx, { ...props, scheduleId: null }));
+        events.forEach((event) => this.onEvent(event));
+        return result;
+    }
+
+    /**
+     * Create a single task within the given transaction and fire its state callback. A capped task
+     * is never created, so it surfaces as an Err and a `task_dropped` event rather than a returned task.
+     * Events are returned (not emitted) so the caller can emit them only after the transaction
+     * commits, never for work that ends up rolled back.
+     */
+    private async insertTask(trx: knex.Knex, taskProps: tasks.TaskProps): Promise<{ result: Result<Task>; events: SchedulerEvent[] }> {
+        const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
+        if (createResult.isErr()) {
+            return { result: Err(createResult.error), events: [] };
+        }
+        const task = createResult.value.created[0];
+        if (!task) {
+            const events = createResult.value.discarded
+                .filter((d) => d.reason === 'capped')
+                .map((d): SchedulerEvent => ({ type: 'task_dropped', groupKey: d.props.groupKey, count: 1, reason: 'task_cap' }));
+            return { result: Err(`Failed to create task '${taskProps.name}'`), events };
+        }
+        if (task.scheduleId) {
+            const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
+            if (scheduleRes.isErr()) {
+                return {
+                    result: Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`),
+                    events: []
+                };
+            }
+        }
+        this.onCallbacks[task.state](task);
+        return { result: Ok(task), events: [] };
+    }
+
+    /**
+     * Schedule a batch of tasks immediately in a single transaction.
+     *
+     * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
+     * with the originating props. Mapping discards back to specific requests (and deciding what to
+     * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
+     */
+    public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
+        return this.atBatch(propsList);
+    }
+
+    /**
+     * Schedule a batch of tasks in a single transaction. Each task becomes dequeue-able at/after its
+     * own `startsAfter`, defaulting to the insert time (computed inside the transaction, so a slow or
+     * large batch doesn't eat into the created→started timeout) when omitted.
+     *
+     * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
+     * with the originating props. Mapping discards back to specific requests (and deciding what to
+     * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
+     */
+    public async atBatch(propsList: (ImmediateProps & { startsAfter?: Date })[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
+        if (propsList.length === 0) {
+            return Ok({ created: [], discarded: [] });
+        }
+        const cappedCounts = new Map<string, number>();
+        const result = await this.db.transaction<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>>(async (trx) => {
             const now = new Date();
-            let taskProps: tasks.TaskProps;
-            if ('scheduleName' in props) {
-                // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-                const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
-                if (getSchedules.isErr()) {
-                    return Err(getSchedules.error);
-                }
-                const schedule = getSchedules.value[0];
-                if (!schedule) {
-                    return Err(new Error(`Schedule '${props.scheduleName}' not found`));
-                }
-                // Not scheduling a task if another task for the same schedule is already running
-                const running = await tasks.search(trx, {
-                    scheduleId: schedule.id,
-                    states: ['CREATED', 'STARTED']
-                });
-                if (running.isErr()) {
-                    return Err(running.error);
-                }
-                if (running.value.length > 0) {
-                    // TODO: identify this error so we can return something else than a 500
-                    return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
-                }
-                taskProps = {
-                    name: `${schedule.name}:${uuidv7()}`,
-                    payload: { ...schedule.payload, ...props.extra },
-                    groupKey: schedule.groupKey,
-                    groupMaxConcurrency: 0,
-                    retryMax: schedule.retryMax,
-                    retryCount: 0,
-                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
-                    startsAfter: now,
-                    scheduleId: schedule.id,
-                    ownerKey: null
-                };
-            } else {
-                taskProps = {
-                    ...props,
-                    startsAfter: now,
-                    scheduleId: null
-                };
+            const taskPropsList: tasks.TaskProps[] = propsList.map((props) => ({
+                ...props,
+                startsAfter: props.startsAfter ?? now,
+                scheduleId: null
+            }));
+
+            const createResult = await tasks.create(trx, taskPropsList, {
+                groupTaskCap: this.config.limits.groupTaskCap,
+                onConflict: 'skip'
+            });
+            if (createResult.isErr()) {
+                return Err(createResult.error);
             }
 
-            const created = await tasks.create(trx, [taskProps]);
-            if (created.isErr()) {
-                return Err(created.error);
-            }
-            const task = created.value.tasks[0];
-            if (!task) {
-                return Err(`Failed to create task '${taskProps.name}'`);
-            }
-            if (task.scheduleId) {
-                const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
-                if (scheduleRes.isErr()) {
-                    return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
+            for (const d of createResult.value.discarded) {
+                if (d.reason === 'capped') {
+                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
                 }
             }
-            this.onCallbacks[task.state](task);
-            return Ok(task);
+
+            for (const task of createResult.value.created) {
+                this.onCallbacks[task.state](task);
+            }
+
+            return Ok(createResult.value);
         });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
+        return result;
     }
 
     /**

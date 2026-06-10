@@ -12,6 +12,7 @@ import {
     configService,
     connectionService,
     errorManager,
+    getProvider,
     getProxyConfiguration,
     pubsub,
     refreshOrTestCredentials
@@ -51,8 +52,7 @@ const schemaHeaders = z.object({
         .string()
         .regex(/^\d+(,\d+)*$/)
         .optional(),
-    // TODO: change default to 'false' after removing the metric in utils.ts
-    'forward-headers-on-redirect': z.enum(['true', 'false']).default('true'),
+    'forward-headers-on-redirect': z.enum(['true', 'false']).optional(),
     'nango-activity-log-id': z.string().max(255).optional(),
     'nango-is-sync': z.enum(['true', 'false']).optional(),
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
@@ -86,8 +86,6 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         return;
     }
 
-    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
-
     let logCtx: LogContext | undefined;
 
     const connectionId = parsedHeaders['connection-id'];
@@ -95,7 +93,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const retries = parsedHeaders['retries'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
-    const forwardHeadersOnRedirect = parsedHeaders['forward-headers-on-redirect'] === 'true';
+    const forwardHeadersOnRedirect =
+        parsedHeaders['forward-headers-on-redirect'] !== undefined ? parsedHeaders['forward-headers-on-redirect'] === 'true' : undefined;
     const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
     const isSync = parsedHeaders['nango-is-sync'] === 'true';
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
@@ -146,6 +145,20 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     code: 'unknown_provider_config',
                     message: 'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.'
                 }
+            });
+            return;
+        }
+
+        // A base-url-override (already checked above) takes precedence over the integration's custom.baseUrl, so only
+        // denylist-check custom.baseUrl when no override is supplied — otherwise a safe override would be wrongly rejected.
+        const provider = getProvider(integration.provider);
+        const customBaseUrl = !baseUrlOverride && provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
+        if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
+            void logCtx.error('Integration base URL is not allowed by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: { code: 'base_url_override_not_allowed', message: 'This base URL is not allowed by server configuration.' }
             });
             return;
         }
@@ -213,7 +226,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     method,
                     retryOn,
                     responseType: 'stream',
-                    forwardHeadersOnRedirect,
+                    ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
                     ...(baseUrlOverrideDenylist.size > 0
                         ? {
                               validateProxyRedirectUrl: (absoluteUrl: string) => {
@@ -267,8 +280,13 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             },
             getIntegrationConfig: () => ({
                 oauth_client_id: integration.oauth_client_id,
-                oauth_client_secret: integration.oauth_client_secret
-            })
+                oauth_client_secret: integration.oauth_client_secret,
+                custom: integration.custom
+            }),
+            onBytes: ({ sent, received }) => {
+                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });
+                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server' });
+            }
         });
 
         let success = false;
@@ -432,7 +450,6 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
 
         await logCtx.success();
         metrics.increment(metrics.Types.PROXY_SUCCESS);
-        metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
     });
 }
 
@@ -532,8 +549,6 @@ export function handleErrorResponse({
                     // Intentionally left blank - parsedBody stays string
                 }
             }
-
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};

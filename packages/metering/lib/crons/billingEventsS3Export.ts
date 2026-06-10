@@ -1,23 +1,32 @@
+import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import { getLocking } from '@nangohq/kvstore';
 import { clickhouseClient } from '@nangohq/usage';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.billingEventsS3Export');
-const cronMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_MINUTES;
+// Minute-of-the-hour to fire on (0–59). -1 disables the cron entirely.
+// See CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE in packages/utils/lib/environment/parse.ts.
+const cronMinute = envs.CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
+const region = envs.BILLING_EVENTS_S3_REGION;
 const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '';
 
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
-const LOCK_TTL_MS_CAP = 30 * 60 * 1000; // hard cap; the export query is seconds, no reason to hold a lock for hours
-const lockTtlMs = Math.min(cronMinutes * 60 * 1000 * 0.8, LOCK_TTL_MS_CAP);
+// Cron fires hourly; lock should expire well before the next tick.
+const lockTtlMs = 30 * 60 * 1000;
+
+// Single S3 client reused across cron ticks — `new S3Client()` doesn't open any
+// connection eagerly so this is cheap at module load, and reusing the client lets
+// the SDK pool TCP connections across runs.
+const s3 = new S3Client({ region });
 
 const DEFAULT_DATABASE = 'usage';
 
@@ -136,8 +145,8 @@ export const METRICS: MetricSpec[] = [
 ];
 
 export function billingEventsS3ExportCron(): void {
-    if (cronMinutes <= 0) {
-        logger.info(`Skipping (CRON_BILLING_EVENTS_S3_EXPORT_MINUTES=${cronMinutes})`);
+    if (cronMinute < 0) {
+        logger.info(`Skipping (CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE=${cronMinute})`);
         return;
     }
     if (!bucket || !roleArn) {
@@ -149,7 +158,8 @@ export function billingEventsS3ExportCron(): void {
         return;
     }
 
-    cron.schedule(`*/${cronMinutes} * * * *`, () => {
+    // Hourly cron at minute `cronMinute` of every hour.
+    cron.schedule(`${cronMinute} * * * *`, () => {
         exec().catch((err: unknown) => {
             logger.error('Cron tick failed unexpectedly', err);
         });
@@ -165,23 +175,72 @@ export async function exec(): Promise<void> {
                 logger.error(`Clickhouse client not configured`);
                 return;
             }
+            const day = yesterdayUTC();
+            let anyFailure = false;
             try {
-                const day = yesterdayUTC();
-                const runTimestamp = nowCompactUTC();
                 for (const metric of METRICS) {
                     const eventName = `${metric.canonicalEventName}${eventNameSuffix}`;
-                    const sql = exportSql({ metric, day, runTimestamp, eventName });
-                    logger.info(`Exporting ${eventName} for day=${day}`);
-                    await client.command({ query: sql });
+                    const key = objectKey({ day, eventName });
+                    const start = process.hrtime.bigint();
+                    // Tracks which step is in flight so a catch can tag the failure
+                    // without us having to introspect the thrown error.
+                    let step: 's3_check' | 'export' = 's3_check';
+                    try {
+                        if (await objectExists(key)) {
+                            logger.info(`Skipping ${eventName} for day=${day} (already in s3://${bucket}/${key})`);
+                            continue;
+                        }
+                        step = 'export';
+                        logger.info(`Exporting ${eventName} for day=${day}`);
+                        await client.command({ query: exportSql({ metric, day, eventName, key }) });
+                        logger.info(`Exported ${eventName} for day=${day}`);
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
+                            metric: metric.canonicalEventName,
+                            success: 'true'
+                        });
+                    } catch (err) {
+                        // Per-metric catch so a single failure (e.g. CH timeout on
+                        // a heavy table) does not abort the rest of the run.
+                        anyFailure = true;
+                        logger.error(`Failed to export ${eventName} for day=${day} at step=${step}`, err);
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
+                            metric: metric.canonicalEventName,
+                            success: 'false',
+                            step
+                        });
+                    } finally {
+                        metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6, {
+                            metric: metric.canonicalEventName
+                        });
+                    }
                 }
                 logger.info(`✅ done`);
-            } catch (err) {
-                logger.error('Failed to export billing events to S3', err);
             } finally {
+                // One emit per cron tick so a monitor like
+                // `sum:...run.result{success:false}.as_count() > 3` over a 3h
+                // window reliably counts consecutive failed runs (cron is hourly).
+                // A run is failed if any single metric failed — already-uploaded
+                // skips count as success because that's the self-heal succeeding.
+                metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT, 1, {
+                    success: anyFailure ? 'false' : 'true'
+                });
                 await client.close();
             }
         });
     });
+}
+
+async function objectExists(key: string): Promise<boolean> {
+    try {
+        await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+        return true;
+    } catch (err) {
+        const status = (err as { $metadata?: { httpStatusCode?: number }; name?: string }).$metadata?.httpStatusCode;
+        if (status === 404 || (err as Error).name === 'NotFound') {
+            return false;
+        }
+        throw err;
+    }
 }
 
 async function withLock(fn: () => Promise<void>): Promise<void> {
@@ -223,15 +282,23 @@ export function metricRowsSql({
             concat('${eventName}:', toString(account_id), ':', toString(day)) AS idempotency_key,
             '${eventName}' AS event_name,
             toString(account_id) AS external_customer_id,
-            concat(toString(day), 'T00:00:00.000Z') AS timestamp,
+            -- End-of-day so the timestamp falls within Orb's account grace period at
+            -- ingestion time (cron runs the day after, so 00:00:00 of D is older than
+            -- the typical 24h grace and gets rejected with "must be later than ...").
+            -- The day bucket is still D for billing purposes.
+            concat(toString(day), 'T23:59:59.999Z') AS timestamp,
             properties
         FROM (${metric.select(day, database)})
     `;
 }
 
-function exportSql({ metric, day, runTimestamp, eventName }: { metric: MetricSpec; day: string; runTimestamp: string; eventName: string }): string {
+function objectKey({ day, eventName }: { day: string; eventName: string }): string {
     const dayCompact = day.replace(/-/g, '');
-    const url = `https://${bucket}.s3.amazonaws.com/${dayCompact}/${runTimestamp}_${eventName}.jsonl`;
+    return `${dayCompact}/${eventName}.jsonl`;
+}
+
+function exportSql({ metric, day, eventName, key }: { metric: MetricSpec; day: string; eventName: string; key: string }): string {
+    const url = `https://${bucket}.s3.amazonaws.com/${key}`;
 
     // Argument order matters: ClickHouse 25.8+ docs show s3(url, format, extra_credentials(...)).
     // Reversing the last two raises a syntax error.
@@ -249,11 +316,4 @@ function yesterdayUTC(): string {
     const d = new Date();
     d.setUTCDate(d.getUTCDate() - 1);
     return d.toISOString().slice(0, 10); // YYYY-MM-DD
-}
-
-function nowCompactUTC(): string {
-    return new Date()
-        .toISOString()
-        .replace(/[-:]/g, '')
-        .replace(/\.\d{3}Z$/, 'Z'); // YYYYMMDDTHHMMSSZ
 }

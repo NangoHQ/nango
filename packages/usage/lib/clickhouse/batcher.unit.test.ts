@@ -2,11 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Batcher } from './batcher.js';
 
+import type { Mock } from 'vitest';
+
+type ProcessFn = (events: unknown[], opts: { retryKey: string }) => Promise<void>;
+
 describe('Batcher', () => {
-    let mockProcess: ReturnType<typeof vi.fn>;
+    let mockProcess: Mock<ProcessFn>;
 
     beforeEach(() => {
-        mockProcess = vi.fn().mockResolvedValue(undefined);
+        mockProcess = vi.fn<ProcessFn>().mockResolvedValue(undefined);
         vi.useFakeTimers();
     });
 
@@ -201,20 +205,18 @@ describe('Batcher', () => {
             expect(batcher['queue']).toEqual([]);
         });
 
-        it('should return Err if processing fails during shutdown flush', async () => {
-            const shutdownError = new Error('Shutdown process fail');
-            mockProcess.mockRejectedValueOnce(shutdownError);
+        it('should retry a transient flush failure during shutdown and succeed', async () => {
+            // shutdown() now logs+continues on flush Err so the per-flush retry path
+            // can run to success within timeoutMs.
+            mockProcess.mockRejectedValueOnce(new Error('Transient'));
             const batcher = new Batcher({ process: mockProcess, maxBatchSize: 5 });
             batcher.add('item1');
 
             const res = await batcher.shutdown();
-            expect(res.isErr()).toBe(true);
-            if (res.isErr()) {
-                expect(res.error.message).toBe('Batcher failed to process batch');
-                expect(res.error.cause).toBe(shutdownError);
-            }
-            expect(batcher['queue']).toEqual(['item1']);
-            expect(batcher['retry']).toEqual(expect.objectContaining({ size: 1, attempts: 1 }));
+            expect(res.isOk()).toBe(true);
+            expect(mockProcess).toHaveBeenCalledTimes(2);
+            expect(batcher['queue']).toEqual([]);
+            expect(batcher['retry']).toBeNull();
         });
 
         it('should return successfully when queue is empty and not processing', async () => {
@@ -223,23 +225,36 @@ describe('Batcher', () => {
             expect(res.isOk()).toBe(true);
             expect(mockProcess).not.toHaveBeenCalled();
         });
-        it('should return error from shutdown if a forced flush fails and items are discarded (max retries)', async () => {
+
+        it('should drop items after exhausting retries within shutdown and return Ok with empty queue', async () => {
+            // maxProcessingRetry=0 → first failure drops. Queue ends empty, shutdown
+            // completes cleanly (the drop itself is the terminal outcome, accounted
+            // for via BATCHER_INGEST_RESULT{success=false, reason=insert_failed}).
             const batcher = new Batcher({ process: mockProcess, maxBatchSize: 10, maxProcessingRetry: 0 });
             batcher.add('item1');
-
-            const processError = new Error('Processing failed');
-            mockProcess.mockRejectedValueOnce(processError);
+            mockProcess.mockRejectedValueOnce(new Error('Processing failed'));
 
             const res = await batcher.shutdown({ timeoutMs: 100 });
 
+            expect(res.isOk()).toBe(true);
+            expect(mockProcess).toHaveBeenCalledTimes(1);
+            expect(batcher['queue']).toEqual([]);
+        });
+
+        it('should return Err and leave items in the queue when timeoutMs elapses', async () => {
+            // Retries never exhaust because maxProcessingRetry is huge; the
+            // wall-clock budget runs out first and the orphan branch fires.
+            vi.useRealTimers(); // need actual time progression for Date.now()
+            const batcher = new Batcher({ process: mockProcess, maxBatchSize: 5, maxProcessingRetry: 1_000_000 });
+            batcher.add('item1');
+            mockProcess.mockRejectedValue(new Error('Always fails'));
+
+            const res = await batcher.shutdown({ timeoutMs: 30 });
             expect(res.isErr()).toBe(true);
             if (res.isErr()) {
-                expect(res.error.message).toBe('Batcher failed to process batch');
-                expect(res.error.cause).toBe(processError);
+                expect(res.error.message).toBe('Clickhouse batcher shutdown timed out');
             }
-            expect(mockProcess).toHaveBeenCalledTimes(1);
-            expect(mockProcess).toHaveBeenCalledWith(['item1'], expect.objectContaining({ retryKey: expect.any(String) }));
-            expect(batcher['queue']).toEqual([]);
+            expect(batcher['queue']).toEqual(['item1']);
         });
     });
 

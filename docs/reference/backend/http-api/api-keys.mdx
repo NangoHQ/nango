@@ -128,7 +128,7 @@ For most functions, `environment:connections:read` is sufficient for `nango dryr
 
 Without `read_credentials`, these helpers return empty values because the API strips the `credentials` field from the response.
 
-The **Default - Full access** key that comes with each environment already has all required scopes for both deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
+The **Default - Full access** key that comes with each environment already has all required scopes for deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
 
 ## All Available Scopes
 
@@ -138,9 +138,12 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:integrations:list` | List integrations (no credentials) |
 | `environment:integrations:list_credentials` | List integrations with client credentials |
+| `environment:integrations:list_functions` | List deployed functions (syncs and actions) |
 | `environment:integrations:read` | Read a single integration (no credentials) |
 | `environment:integrations:read_credentials` | Read a single integration with client credentials |
-| `environment:integrations:write` | Create, update, delete integrations |
+| `environment:integrations:create` | Create integrations |
+| `environment:integrations:update` | Update integrations |
+| `environment:integrations:delete` | Delete integrations |
 
 ### Connections
 
@@ -150,7 +153,9 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:connections:list_credentials` | List connections with access/refresh tokens |
 | `environment:connections:read` | Read a single connection (no credentials) |
 | `environment:connections:read_credentials` | Read a single connection with access/refresh tokens |
-| `environment:connections:write` | Create, update, delete connections and metadata |
+| `environment:connections:create` | Create connections |
+| `environment:connections:update` | Update connections and metadata |
+| `environment:connections:delete` | Delete connections |
 
 ### Connect Sessions
 
@@ -164,13 +169,22 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:syncs:read` | Read sync status |
 | `environment:syncs:execute` | Trigger, pause, start syncs |
-| `environment:syncs:manage` | Update sync frequency, create/delete sync variants |
+| `environment:syncs:update` | Update sync connection frequency |
+| `environment:syncs:variant:create` | Create sync variants |
+| `environment:syncs:variant:delete` | Delete sync variants |
 
 ### Deploy
 
 | Scope | Description |
 |-------|-------------|
 | `environment:deploy` | Deploy syncs and actions via CLI or API |
+
+### Functions
+
+| Scope | Description |
+|-------|-------------|
+| `environment:functions:compile` | Compile function source code |
+| `environment:functions:dryrun` | Dry run function source code |
 
 ### Records
 
@@ -191,11 +205,11 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:proxy` | Send proxy requests to external APIs through Nango |
 
-### Config
+### Variables
 
 | Scope | Description |
 |-------|-------------|
-| `environment:config:read` | Read environment variables and functions config |
+| `environment:variables:read` | Read environment variables |
 
 ### MCP
 

@@ -14,6 +14,9 @@ export type ApiPublicIntegration = Merge<
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
+    // Per-integration, non-secret overrides surfaced to the Connect UI (e.g. the API key field label).
+    // Derived server-side from a curated subset of the integration's `custom` config — never the whole object.
+    credentials_label?: Record<string, string> | undefined;
     credentials?:
         | {
               type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];
@@ -23,6 +26,14 @@ export interface ApiPublicIntegrationInclude {
               webhook_secret: string | null;
           }
         | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null; webhook_secret: string | null }
+        | {
+              type: AuthModes['Custom'];
+              client_id: string | null;
+              client_secret: string | null;
+              app_id: string | null;
+              app_link: string | null;
+              private_key: string | null;
+          }
         | null;
 }
 
@@ -44,6 +55,7 @@ export type PostPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        integration_config?: Record<string, string> | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -81,6 +93,11 @@ export type PatchPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+        // Validated server-side against the provider schema and persisted to the `custom` column.
+        integration_config?: Record<string, string> | undefined;
+        // Free-form custom values, for providers without an `integration_config` schema.
+        custom?: Record<string, string> | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -207,6 +224,9 @@ export type PostIntegration = Endpoint<{
         displayName?: string | undefined;
         forward_webhooks?: boolean | undefined;
         auth?: IntegrationAuthBody | undefined;
+        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+        // Validated server-side against the provider schema and merged into `custom`.
+        integrationConfig?: Record<string, string> | undefined;
     };
     Success: {
         data: ApiIntegration;
@@ -237,7 +257,14 @@ export type PatchIntegration = Endpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Body:
-        | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
+        | {
+              integrationId?: string | undefined;
+              webhookSecret?: string | undefined;
+              displayName?: string | undefined;
+              forward_webhooks?: boolean | undefined;
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic, aws-sigv4).
+              integrationConfig?: Record<string, string> | undefined;
+          }
         | IntegrationAuthBody;
     Success: {
         data: {

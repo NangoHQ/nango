@@ -23,6 +23,12 @@ SELF_HOSTED_IMAGE="ghcr.io/usehivy/integrations:latest"
 echo ""
 echo -e "Building self-hosted $SELF_HOSTED_IMAGE"
 
+output="type=docker"
+
+if [ "$PUSH" = "true" ]; then
+  output="type=registry"
+fi
+
 docker buildx build \
   --platform linux/amd64 \
   --build-arg git_hash="$GIT_HASH" \
@@ -31,12 +37,11 @@ docker buildx build \
   --cache-to type=gha,mode=max \
   -t "$SELF_HOSTED_IMAGE" \
   --file ../Dockerfile \
-  --output=type=docker \
+  --output="$output" \
   ../
 
-if [ $PUSH ]; then
-  echo "Pushing"
-  docker push "$SELF_HOSTED_IMAGE"
+if [ "$PUSH" = "true" ]; then
+  echo "Pushed"
 else
   echo "Not pushing"
 fi

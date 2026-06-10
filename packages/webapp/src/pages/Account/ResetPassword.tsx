@@ -9,9 +9,9 @@ import z from 'zod';
 import { Password, passwordSchema } from './components/Password';
 import { useResetPasswordAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormField } from '@/components-v2/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Form, FormField } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
 
 const resetPasswordSchema = z.object({
