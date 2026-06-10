@@ -1,0 +1,33 @@
+packages/sandbox/lib/providers/agentcore.ts
+  s_0bc521b83bf53d::t_357adb604cb355 3,12
+packages/sandbox/lib/providers/errors.ts
+  s_0bc521b83bf53d::t_357adb604cb355 6-7
+packages/sandbox/lib/sandbox-service.unit.test.ts
+  s_0bc521b83bf53d::t_357adb604cb355 38
+packages/sandbox/lib/providers/docker.unit.test.ts
+  s_0bc521b83bf53d::t_357adb604cb355 42,71-76,80-81
+packages/sandbox/lib/providers/types.ts
+  s_0bc521b83bf53d::t_357adb604cb355 48
+packages/sandbox/lib/providers/e2b.ts
+  s_0bc521b83bf53d::t_357adb604cb355 11,48-49,132-133
+packages/sandbox/lib/sandbox-service.ts
+  s_0bc521b83bf53d::t_357adb604cb355 7,30,36
+packages/sandbox/lib/providers/docker.ts
+  s_0bc521b83bf53d::t_357adb604cb355 7,36,100,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "83bd416acc3a8e8e90cdcdcad564aea03e2c1e8a",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
