@@ -1,0 +1,53 @@
+packages/sandbox/lib/functions/dryrun-client.ts
+  s_0bc521b83bf53d::t_43dbe02fb82e52 7,45,48,53-57,60,63,66,69,75,79-80,96,100
+packages/utils/lib/environment/parse.unit.test.ts
+  s_0bc521b83bf53d::t_43dbe02fb82e52 36-40
+packages/sandbox/lib/providers/docker.ts
+  s_0bc521b83bf53d::t_be73ee78e64fde 5
+  s_0bc521b83bf53d::t_b6b4c8e0224849 1-4,6-109
+packages/sandbox/lib/providers/factory.ts
+  s_0bc521b83bf53d::t_be73ee78e64fde 1-27
+packages/sandbox/lib/providers/e2b.ts
+  s_0bc521b83bf53d::t_5dadf86ec8d4cb 1-8,10-180
+  s_0bc521b83bf53d::t_be73ee78e64fde 9
+packages/sandbox/lib/providers/types.ts
+  s_0bc521b83bf53d::t_62ee7bab9eb786 1-48
+packages/utils/lib/environment/parse.ts
+  s_0bc521b83bf53d::t_43dbe02fb82e52 623
+packages/sandbox/lib/providers/docker.unit.test.ts
+  s_0bc521b83bf53d::t_11578e9f5faaef 1-50
+packages/sandbox/lib/index.ts
+  s_0bc521b83bf53d::t_be73ee78e64fde 16
+  s_0bc521b83bf53d::t_43dbe02fb82e52 14-15,17
+packages/sandbox/lib/functions/sandbox.ts
+  s_0bc521b83bf53d::t_1a2ad8e3f93ce7 3-4,17-20,22-26,30
+  s_0bc521b83bf53d::t_a27da3e2a21b75 16
+  s_0bc521b83bf53d::t_43dbe02fb82e52 1,6,10,12,14,34,49
+packages/sandbox/lib/functions/deploy-client.ts
+  s_0bc521b83bf53d::t_43dbe02fb82e52 10-11,46,49,55-59,65,69-70,87,91,97,99,105-108,120-121,128,136,142
+packages/sandbox/lib/providers/agentcore.ts
+  s_0bc521b83bf53d::t_6112618e4085e5 1-15
+packages/sandbox/lib/providers/errors.ts
+  s_0bc521b83bf53d::t_be73ee78e64fde 1-34
+packages/sandbox/lib/sandbox-service.ts
+  s_0bc521b83bf53d::t_be73ee78e64fde 3
+  s_0bc521b83bf53d::t_13d1c7472f22e2 1-2,4-98
+packages/sandbox/lib/functions/compiler-client.ts
+  s_0bc521b83bf53d::t_43dbe02fb82e52 6-7,38,40,46-49,52-53,59,62,68,75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "70915c3d389703913e72150a1edd8f4142d36c4b",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
