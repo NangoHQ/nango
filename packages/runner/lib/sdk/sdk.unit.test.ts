@@ -110,7 +110,12 @@ describe('cache', () => {
 });
 
 describe('proxy base URL override denylist', () => {
+    beforeEach(() => {
+        vi.unstubAllEnvs();
+    });
+
     afterEach(() => {
+        vi.unstubAllEnvs();
         vi.clearAllMocks();
     });
 
@@ -132,7 +137,7 @@ describe('proxy base URL override denylist', () => {
         expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
     });
 
-    it('does not allow bypassing denylist by mutating process.env', async () => {
+    it('does not allow bypassing denylist via runtime env mutation', async () => {
         const persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
@@ -140,8 +145,8 @@ describe('proxy base URL override denylist', () => {
 
         const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
 
-        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = 'null';
-        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'] = 'true';
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', 'null');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'true');
 
         await expect(
             nangoAction.proxy({
