@@ -50,7 +50,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         if (isBreakdown) {
             return Object.fromEntries((breakdownSeries ?? []).map((s) => [s.key, { label: s.label, color: s.color }]));
         }
-        return { total: { label: 'Total', color: 'var(--color-brand-500)' } };
+        return { total: { label: 'Total', color: 'var(--ds-color-brand-500)' } };
     }, [isBreakdown, breakdownSeries]);
 
     // What occupies the chart body: a breakdown spinner/error, the empty state, or the chart.
@@ -68,7 +68,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
     const showEmpty = effectiveEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError;
 
     return (
-        <div className={cn('bg-surface-page rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
+        <div className={cn('bg-surface-panel rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
                 <div className="flex flex-col items-start justify-center h-11">
                     {isLoading || !data ? (
