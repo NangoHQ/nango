@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { metrics } from '@nangohq/utils';
+import { Err, metrics } from '@nangohq/utils';
 
 import type { PublishBatchProps, PublishBatchResult, Transport } from './transport/transport.js';
 import type { Event } from '@nangohq/types';
@@ -39,6 +39,22 @@ export class Publisher {
             idempotencyKey: e.idempotencyKey ?? uuidv4(),
             createdAt: e.createdAt ?? new Date()
         }));
-        return this.transport.publishBatch({ ...props, events: stamped as unknown as Extract<Event, { subject: TSubject }>[] });
+
+        // runtime sanity check for homogeneous subject
+        if (props.events.find((e) => e.subject !== props.subject)) {
+            metrics.increment(metrics.Types.PUBSUB_PUBLISH, props.events.length, { subject: props.subject, success: 'false' });
+            return Err(new Error(`All events must be of the provided subject: "${props.subject}"`));
+        }
+
+        const res = await this.transport.publishBatch({ ...props, events: stamped as unknown as Extract<Event, { subject: TSubject }>[] });
+
+        if (res.isOk()) {
+            metrics.increment(metrics.Types.PUBSUB_PUBLISH, res.value.successful.length, { subject: props.subject, success: 'true' });
+            metrics.increment(metrics.Types.PUBSUB_PUBLISH, res.value.failed.length, { subject: props.subject, success: 'false' });
+        } else {
+            metrics.increment(metrics.Types.PUBSUB_PUBLISH, props.events.length, { subject: props.subject, success: 'false' });
+        }
+
+        return res;
     }
 }
