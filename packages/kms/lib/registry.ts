@@ -1,6 +1,6 @@
 /**
- * Process-global holder for the unwrapped Data Encryption Key (DEK), and the
- * policy of how it is resolved from the environment.
+ * Immutable holder for the unwrapped Data Encryption Key (DEK)
+ * and it is resolved from the environment variables.
  * The key only ever lives in memory, never written to disk or logs.
  */
 import { getLogger } from '@nangohq/utils';
@@ -25,54 +25,22 @@ export interface DekEnvs {
 }
 
 export class DekRegistry {
-    private dek: string | null = null;
+    private constructor(private readonly dek: string) {}
 
     /**
-     * Resolve the DEK from the environment variables and register it.
-     * Call once at service startup before anything touches encrypted data.
-     * Registers '' when encryption is disabled.
+     * Resolve the DEK from the environment variables:
+     * KMS unwrap when NANGO_ENCRYPTION_KEY_WRAPPED is set, passthrough for NANGO_ENCRYPTION_KEY.
+     * Holds '' when neither is set (encryption disabled).
      */
-    async load(envs: DekEnvs): Promise<void> {
-        this.register(await resolveDek(envs));
+    static async create(envs: DekEnvs): Promise<DekRegistry> {
+        return new DekRegistry(await resolveDek(envs));
     }
 
     /**
-     * Register the DEK for this process.
-     * Idempotent for the same value (so test setups and multiple bootstrap paths don't conflict)
-     * but throws if a different key is already registered
-     * ie: a silent key swap mid-process would corrupt every subsequent encryption.
-     */
-    private register(key: string): void {
-        if (this.dek !== null && this.dek !== key) {
-            throw new Error('A different encryption key is already registered for this process');
-        }
-        this.dek = key;
-    }
-
-    /**
-     * Returns the registered DEK (base64, '' when encryption is disabled).
-     * Throws if the DEK is not yet registered.
+     * Returns the DEK (base64, '' when encryption is disabled).
      */
     get(): string {
-        if (this.dek === null) {
-            throw new Error('Encryption key not loaded. Call globalDek.load() at service startup before using encryption.');
-        }
         return this.dek;
-    }
-
-    exists(): boolean {
-        return this.dek !== null;
-    }
-}
-
-export const globalDek = new DekRegistry();
-
-/**
- * Assert that the environment variables provide required information to resolve a DEK.
- */
-export function requireDekEnv(envs: DekEnvs): void {
-    if (!envs.NANGO_ENCRYPTION_KEY && !envs.NANGO_ENCRYPTION_KEY_WRAPPED) {
-        throw new Error('One of NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required');
     }
 }
 
