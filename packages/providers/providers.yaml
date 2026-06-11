@@ -1100,6 +1100,26 @@ amazon-selling-partner-beta:
             doc_section: '#step-3-finding-your-proxy-baseurl-region'
             order: 3
 
+a-leads:
+    display_name: A-Leads
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.a-leads.co/gateway
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/a-leads
+    docs_connect: https://nango.dev/docs/integrations/all/a-leads/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your A-Leads API key
+            doc_section: '#step-1-obtain-your-api-key'
+            example: a3f8b2e1********************d9c4
+            pattern: '^[a-f0-9]{32}$'
+
 anrok:
     display_name: Anrok
     categories:
