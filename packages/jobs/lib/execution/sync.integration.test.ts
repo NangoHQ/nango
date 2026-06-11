@@ -239,7 +239,8 @@ const runJob = async (
         connectionId: connection.id,
         environmentId: connection.environment_id,
         model,
-        softDelete
+        softDelete,
+        plan: null
     });
     if (upserting.isErr()) {
         throw new Error(`failed to upsert records: ${upserting.error.message}`);
@@ -296,7 +297,7 @@ const verifySyncRun = async (
 };
 
 const getRecords = async (connection: ConnectionJobs, model: string) => {
-    const res = await recordsService.getRecords({ connectionId: connection.id, model });
+    const res = await recordsService.getRecords({ connectionId: connection.id, model, plan: null });
     if (res.isOk()) {
         return res.value.records;
     }
@@ -324,7 +325,8 @@ async function populateRecords(
             records: records.slice(i, i + chunkSize),
             connectionId: connection.id,
             environmentId: connection.environment_id,
-            model
+            model,
+            plan: null
         });
         if (res.isErr()) {
             throw new Error(`Failed to upsert records: ${res.error.message}`);

@@ -1,4 +1,4 @@
-import { CheckIcon, CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { Check, Search, XCircle } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
@@ -171,7 +171,7 @@ export function FilterMultiSelect<T extends string = string>({
                         isSelected && 'border-transparent'
                     )}
                 >
-                    {isSelected && <CheckIcon className="h-5 w-5" />}
+                    {isSelected && <Check className="h-5 w-5" />}
                 </span>
                 <span className="min-w-0 truncate">{opt.label}</span>
             </div>
@@ -193,7 +193,7 @@ export function FilterMultiSelect<T extends string = string>({
                                 if (['Enter', ' '].includes(e.key)) reset(e);
                             }}
                         >
-                            <CrossCircledIcon />
+                            <XCircle size={14} />
                             {selected.length}
                         </span>
                     )}
@@ -204,7 +204,7 @@ export function FilterMultiSelect<T extends string = string>({
                     <div className="pb-2">
                         <InputGroup className="bg-active-gray border-grayscale-600">
                             <InputGroupAddon>
-                                <MagnifyingGlassIcon className="w-4 h-4" />
+                                <Search className="w-4 h-4" />
                             </InputGroupAddon>
                             <InputGroupInput
                                 ref={searchInputRef}

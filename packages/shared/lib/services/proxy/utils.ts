@@ -6,6 +6,7 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
+import { signAwsSigV4Request } from './aws-sigv4.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -93,6 +94,14 @@ export function getAxiosConfiguration({
     }
 
     const url = buildProxyURL({ config: proxyConfig, connection });
+
+    // Merge proxy.body into proxyConfig.data before building headers so that any
+    // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
+    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
+    if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
+        proxyConfig = { ...proxyConfig, data: mergeInjectedBody(proxyConfig.data, injectedBody) };
+    }
+
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
@@ -204,7 +213,9 @@ export function getProxyConfiguration({
         return Err(new ProxyError('unknown_provider'));
     }
 
-    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride)) {
+    const isAwsSigV4 = provider.auth_mode === 'AWS_SIGV4';
+
+    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride && !isAwsSigV4)) {
         return Err(new ProxyError('unsupported_provider'));
     }
 
@@ -317,7 +328,18 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 
     let apiBase = config.baseUrlOverride || templateApiBase;
 
-    if (apiBase?.includes('${') && apiBase?.includes('||')) {
+    // AWS SigV4 allows a per-connection base_url override for non-standard endpoints (S3, API Gateway,
+    // GovCloud, FIPS). It wins over the provider's templated base_url, but NOT over an explicit
+    // config.baseUrlOverride — credential verification sets that to the regional STS URL and must not be
+    // redirected to the connection's endpoint.
+    if (!config.baseUrlOverride && connection.credentials.type === 'AWS_SIGV4') {
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            apiBase = connectionBaseUrl;
+        }
+    }
+
+    if (apiBase && apiBase?.includes('${') && apiBase?.includes('||')) {
         const connectionConfig = connection.connection_config;
         const splitApiBase = apiBase.split(/\s*\|\|\s*/);
 
@@ -381,6 +403,62 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         }
     }
     return url.toString();
+}
+
+export function buildProxyBody({
+    config,
+    connection
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+}): Record<string, string> | null {
+    if (!config.provider?.proxy?.body) {
+        return null;
+    }
+
+    const body: Record<string, string> = {};
+    const replacers = {
+        connectionConfig: connection.connection_config,
+        credentials: connection.credentials,
+        ...(connection.credentials as unknown as Record<string, string>)
+    };
+
+    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+        if (typeof value !== 'string') {
+            continue;
+        }
+        const interpolated = interpolateIfNeeded(value, replacers);
+        if (!interpolated.includes('${')) {
+            body[key] = interpolated;
+        }
+    }
+
+    return Object.keys(body).length > 0 ? body : null;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        !Buffer.isBuffer(value) &&
+        !(value instanceof FormData) &&
+        !(value instanceof URLSearchParams)
+    );
+}
+
+function mergeInjectedBody(existing: unknown, injected: Record<string, string>): unknown {
+    if (!existing) return injected;
+    if (isPlainObject(existing)) return { ...existing, ...injected };
+    if (existing instanceof FormData) {
+        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        return existing;
+    }
+    if (existing instanceof URLSearchParams) {
+        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        return existing;
+    }
+    return existing;
 }
 
 function getRawBody(method: string, data: unknown): string {
@@ -526,6 +604,11 @@ export function buildProxyHeaders({
         case 'BILL': {
             break;
         }
+        case 'AWS_SIGV4': {
+            // Defer signing until after provider- and caller-supplied headers are merged below,
+            // so headers like x-amz-target are included in the canonical request's SignedHeaders.
+            break;
+        }
         case 'OAUTH1': {
             const credentials = connection.credentials;
             const consumerKey = integrationConfig?.oauth_client_id;
@@ -644,5 +727,71 @@ export function buildProxyHeaders({
         headers = { ...headers, ...config.headers };
     }
 
+    if (connection.credentials.type === 'AWS_SIGV4') {
+        // Sign last so caller-supplied headers (e.g. x-amz-target for DynamoDB / CloudWatch Logs)
+        // are part of the canonical request. The signer overlays its own authorization/host/
+        // x-amz-* headers on top after computing the signature.
+        const signedHeaders = signAwsSigV4Request({
+            url,
+            method: config.method,
+            headers,
+            body: resolveSigV4Payload(config),
+            credentials: connection.credentials
+        });
+        removeExistingHeaders(headers, Object.keys(signedHeaders));
+        headers = { ...headers, ...signedHeaders };
+    }
+
     return headers;
+}
+
+function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): string | Buffer | null {
+    if (!methodDataAllowed.includes(config.method)) {
+        return '';
+    }
+
+    if (!config.data) {
+        return '';
+    }
+
+    if (typeof config.data === 'string' || Buffer.isBuffer(config.data)) {
+        return config.data;
+    }
+
+    if (isFormData(config.data)) {
+        return null;
+    }
+
+    // URLSearchParams serializes to form-encoded (a=1&b=2), which is what axios sends — sign that exact
+    // body, not JSON.stringify (which would produce "{}" and yield SignatureDoesNotMatch).
+    if (config.data instanceof URLSearchParams) {
+        return config.data.toString();
+    }
+
+    if (typeof config.data === 'object') {
+        try {
+            return JSON.stringify(config.data);
+        } catch {
+            return null;
+        }
+    }
+
+    return '';
+}
+
+function removeExistingHeaders(headers: Record<string, string>, keys: string[]) {
+    if (!keys.length) {
+        return;
+    }
+
+    const lower = keys.map((key) => key.toLowerCase());
+    for (const currentKey of Object.keys(headers)) {
+        if (lower.includes(currentKey.toLowerCase())) {
+            Reflect.deleteProperty(headers, currentKey);
+        }
+    }
+}
+
+function isFormData(value: unknown): value is FormData {
+    return Boolean(value && typeof (value as FormData).getBoundary === 'function');
 }

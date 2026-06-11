@@ -103,12 +103,14 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
         const recs = (
             await records.getRecords({
                 connectionId: conn.id,
-                model: 'Ticket'
+                model: 'Ticket',
+                plan: null
             })
         ).unwrap();
         expect(recs.records.length).toBe(3);
@@ -208,13 +210,15 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         const recs = (
             await records.getRecords({
                 connectionId: conn.id,
-                model: 'Ticket'
+                model: 'Ticket',
+                plan: null
             })
         ).unwrap();
         expect(recs.records.length).toBe(3);
@@ -237,7 +241,8 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         const res1 = await api.fetch(route, {
