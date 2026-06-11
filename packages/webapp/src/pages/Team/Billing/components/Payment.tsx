@@ -26,7 +26,7 @@ export const Payment: React.FC = () => {
         <div className="flex-1 flex flex-col gap-8">
             <div className="flex flex-col gap-5">
                 <h3 className="text-body-small-regular text-text-secondary">PAYMENT</h3>
-                <Card className="bg-surface-page rounded border-2 border-border-disabled py-0 gap-0">
+                <Card className="bg-surface-page rounded border border-border-muted py-0 gap-0">
                     <CardHeader className="bg-surface-panel h-10 flex items-center px-6">
                         <CardTitle className="text-text-strong !text-heading-sm">Payment method</CardTitle>
                     </CardHeader>
