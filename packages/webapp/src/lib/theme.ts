@@ -8,7 +8,7 @@ export type Theme = 'light' | 'dark' | 'system';
 
 // Dark is the default for now so existing users keep the current look and new users
 // don't land on light mode at rollout. Revisit defaulting to 'system' once light mode
-// has been live for a while. Keep index.html's pre-paint fallback in sync with this.
+// has been live for a while (NAN-5960). Keep index.html's pre-paint fallback in sync.
 const DEFAULT_THEME: Theme = 'dark';
 
 // --- DOM utility ---
