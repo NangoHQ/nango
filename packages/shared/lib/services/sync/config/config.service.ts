@@ -21,6 +21,7 @@ import type {
     StandardNangoConfig
 } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+import type { Knex } from 'knex';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -373,8 +374,8 @@ export async function getSyncConfigByParams(
     return null;
 }
 
-export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<DBSyncConfig>(TABLE).where({ id, deleted: false }).update({
+export async function deleteSyncConfig(id: number, trx: Knex | Knex.Transaction = db.knex): Promise<void> {
+    await trx.from<DBSyncConfig>(TABLE).where({ id, deleted: false }).update({
         active: false,
         deleted: true,
         deleted_at: new Date()
