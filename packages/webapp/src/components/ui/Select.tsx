@@ -16,19 +16,32 @@ function SelectValue({ ...props }: React.ComponentProps<typeof SelectPrimitive.V
     return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
+// Radix FocusScope restores focus via setTimeout, breaking Chrome's pointer-origin heuristic
+// for :focus-visible. Track pointer-based item selection to suppress the ring on restoration.
+let suppressNextFocusVisible = false;
+
 interface SelectTriggerProps extends React.ComponentProps<typeof SelectPrimitive.Trigger> {
     size?: 'default' | 'sm';
 }
 
-function SelectTrigger({ className, children, size = 'default', ...props }: SelectTriggerProps) {
+function SelectTrigger({ className, children, size = 'default', onFocus, ...props }: SelectTriggerProps) {
     return (
         <SelectPrimitive.Trigger
             data-slot="select-trigger"
             className={cn(
-                "flex w-fit items-center justify-between gap-1.5 rounded px-1.5 py-0.5 bg-surface-overlay border border-border-muted text-text-secondary hover:bg-state-hover focus:border-border-default data-[placeholder]:text-text-muted [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
+                "flex w-fit items-center justify-between gap-1.5 rounded px-1.5 py-0.5 bg-surface-overlay border border-border-muted text-text-secondary hover:bg-state-hover focus-visible:border-border-default data-[placeholder]:text-text-muted [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
                 size === 'sm' ? 'h-7 text-s' : 'h-9 text-sm',
                 className
             )}
+            onFocus={(e) => {
+                if (suppressNextFocusVisible) {
+                    suppressNextFocusVisible = false;
+                    const el = e.currentTarget;
+                    el.style.boxShadow = 'none';
+                    el.addEventListener('blur', () => { el.style.boxShadow = ''; }, { once: true });
+                }
+                onFocus?.(e);
+            }}
             {...props}
         >
             {children}
@@ -72,7 +85,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
     return <SelectPrimitive.Label data-slot="select-label" className={cn('text-text-secondary px-2 py-1.5 text-xs', className)} {...props} />;
 }
 
-function SelectItem({ className, children, ...props }: React.ComponentProps<typeof SelectPrimitive.Item>) {
+function SelectItem({ className, children, onPointerDown, ...props }: React.ComponentProps<typeof SelectPrimitive.Item>) {
     return (
         <SelectPrimitive.Item
             data-slot="select-item"
@@ -80,6 +93,10 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
                 "h-7 focus:bg-state-hover focus:text-text-strong [&_svg:not([class*='text-'])]:text-text-secondary relative flex w-full cursor-default items-center gap-2 rounded p-2 pl-1 text-body-medium-regular leading-5 outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
                 className
             )}
+            onPointerDown={(e) => {
+                suppressNextFocusVisible = true;
+                onPointerDown?.(e);
+            }}
             {...props}
         >
             <span className="absolute right-1 flex size-3.5 items-center justify-center">
