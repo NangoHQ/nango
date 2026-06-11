@@ -27,7 +27,7 @@ import {
     connectionTagsSchema,
     endUserSchema
 } from '../../helpers/validation.js';
-import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
+import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -386,11 +386,6 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
             return;
     }
 
-    if (updatedConnection && updatedConnection.operation === 'override') {
-        // If we updated the connection we assume the connection is now correct
-        await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
-    }
-
     if (!updatedConnection) {
         void logCtx.error('Connection creation returned no result', { providerConfigKey: body.provider_config_key });
         await logCtx.failed();
@@ -406,16 +401,21 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
     });
 
     if (customValidationResponse.isErr()) {
-        if (updatedConnection.operation === 'creation') {
-            // since this is a new invalid connection, delete it with no trace of it
-            await connectionService.hardDelete(updatedConnection.connection.id);
-        }
-
-        const payload = customValidationResponse.error?.payload;
-        const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
-
         void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+        const message = await handleValidateConnectionFailure({
+            operation: updatedConnection.operation,
+            connection: updatedConnection.connection,
+            config: integration,
+            account,
+            environment,
+            provider,
+            error: customValidationResponse.error,
+            logCtx
+        });
+
         await logCtx.failed();
+
         res.status(400).send({
             error: {
                 code: 'connection_validation_failed',
@@ -423,6 +423,10 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
             }
         });
         return;
+    }
+
+    if (updatedConnection.operation === 'override') {
+        await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
     }
 
     let endUser: EndUser | undefined;
