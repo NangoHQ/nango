@@ -13724,6 +13724,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `adp-workforce-now` | ADP Workforce Now | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-workforce-now.md) | [connect](https://nango.dev/docs/integrations/all/adp-workforce-now/connect.md) |  | hr |
 | `adp-workforce-now-next-gen` | ADP Workforce Now Next Generation | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen.md) | [connect](https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen/connect.md) |  | hr |
 | `adyen` | Adyen | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adyen.md) |  |  | payment |
+| `adyntel` | Adyntel | API_KEY | [docs](https://nango.dev/docs/api-integrations/adyntel.md) | [connect](https://nango.dev/docs/api-integrations/adyntel/connect.md) |  | marketing |
 | `affinity` | Affinity (v1) | BASIC | [docs](https://nango.dev/docs/integrations/all/affinity.md) | [connect](https://nango.dev/docs/integrations/all/affinity/connect.md) |  | crm |
 | `affinity-v2` | Affinity (v2) | API_KEY | [docs](https://nango.dev/docs/integrations/all/affinity-v2.md) | [connect](https://nango.dev/docs/integrations/all/affinity-v2/connect.md) |  | crm |
 | `aimfox` | Aimfox | API_KEY | [docs](https://nango.dev/docs/integrations/all/aimfox.md) | [connect](https://nango.dev/docs/integrations/all/aimfox/connect.md) |  | surveys |
@@ -13903,6 +13904,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `devin` | Devin | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin.md) | [connect](https://nango.dev/docs/integrations/all/devin/connect.md) |  | dev-tools |
 | `dialpad` | Dialpad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad.md) |  |  | communication |
 | `dialpad-sandbox` | Dialpad (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad-sandbox.md) |  |  | communication |
+| `diffbot` | Diffbot | API_KEY | [docs](https://nango.dev/docs/api-integrations/diffbot.md) | [connect](https://nango.dev/docs/api-integrations/diffbot/connect.md) |  | analytics |
 | `digitalocean` | DigitalOcean | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/digitalocean.md) |  |  | dev-tools |
 | `digits` | Digits | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits.md) |  | [setup](https://nango.dev/docs/api-integrations/digits/how-to-register-your-own-digits-api-oauth-app.md) | accounting |
 | `digits-mcp` | Digits (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits-mcp.md) |  |  | accounting, mcp |
@@ -14108,6 +14110,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `lagrowthmachine` | La Growth Machine | API_KEY | [docs](https://nango.dev/docs/integrations/all/lagrowthmachine.md) | [connect](https://nango.dev/docs/integrations/all/lagrowthmachine/connect.md) |  | marketing |
 | `lastpass` | LastPass | BASIC | [docs](https://nango.dev/docs/integrations/all/lastpass.md) | [connect](https://nango.dev/docs/integrations/all/lastpass/connect.md) |  | productivity |
 | `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/integrations/all/lattice.md) | [connect](https://nango.dev/docs/integrations/all/lattice/connect.md) |  | hr |
+| `leadfeeder` | Leadfeeder | API_KEY | [docs](https://nango.dev/docs/api-integrations/leadfeeder.md) | [connect](https://nango.dev/docs/api-integrations/leadfeeder/connect.md) |  | marketing, crm |
 | `leadmagic` | LeadMagic | API_KEY | [docs](https://nango.dev/docs/integrations/all/leadmagic.md) | [connect](https://nango.dev/docs/integrations/all/leadmagic/connect.md) |  | marketing, crm |
 | `lemlist` | lemlist | BASIC | [docs](https://nango.dev/docs/integrations/all/lemlist.md) | [connect](https://nango.dev/docs/integrations/all/lemlist/connect.md) |  | marketing, communication |
 | `lessonly` | Lessonly | BASIC | [docs](https://nango.dev/docs/integrations/all/lessonly.md) |  |  | productivity |
