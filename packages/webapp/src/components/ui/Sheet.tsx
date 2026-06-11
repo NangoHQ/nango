@@ -103,7 +103,7 @@ function SheetContent({
                 )}
                 {...props}
             >
-                {useScrollable ? <div className="scrollbar-app flex min-h-0 w-full flex-1 flex-col overflow-auto pr-1">{children}</div> : children}
+                {useScrollable ? <div className="flex min-h-0 w-full flex-1 flex-col overflow-auto">{children}</div> : children}
                 {!hideCloseButton && (
                     <SheetPrimitive.Close className="ring-offset-white focus:ring-neutral-950 data-[state=open]:bg-neutral-100 absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800">
                         <XIcon />
