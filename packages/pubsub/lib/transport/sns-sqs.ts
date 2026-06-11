@@ -13,6 +13,9 @@ import type { BatchResultErrorEntry, PublishBatchRequestEntry } from '@aws-sdk/c
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
+export const SNS_BATCH_MAX_SIZE = 10;
+export const SNS_BATCH_MAX_BYTES = 262_144;
+
 const logger = getLogger('pubsub.sns-sqs');
 
 const snsNotificationEnvelopeSchema = z.object({
@@ -204,9 +207,12 @@ export class SnsSqs implements Transport {
 
         const batches = chunk(
             entries,
-            { count: 0 },
-            (acc, _) => ({ count: acc.count + 1 }),
-            (acc, _) => acc.count >= 10
+            () => ({
+                count: 0,
+                bytes: 0
+            }),
+            (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') }),
+            (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') > SNS_BATCH_MAX_BYTES
         );
 
         const successful: string[] = [];
