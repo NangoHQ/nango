@@ -9,6 +9,7 @@ import {
     isTest,
     metrics,
     normalizeDenylist,
+    normalizeDenylistHost,
     redactHeaders,
     redactURL,
     stringifyAndTruncateValue,
@@ -55,19 +56,33 @@ const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
 function getRunnerProxyDenylist(): Set<string> {
+    let entries: string[];
     if (!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
-        return normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
-    }
-
-    const raw = process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-    if (raw !== undefined) {
-        const trimmed = raw.trim();
-        if (trimmed === '' || trimmed === '[]') {
-            return normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        entries = [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+    } else {
+        const raw = process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
+        if (raw !== undefined) {
+            const trimmed = raw.trim();
+            if (trimmed === '' || trimmed === '[]') {
+                entries = [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+            } else {
+                entries = envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
+            }
+        } else {
+            entries = envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
         }
     }
 
-    return normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
+    const denylist = normalizeDenylist(entries);
+    const lambdaRuntimeApi = process.env['AWS_LAMBDA_RUNTIME_API'];
+    if (lambdaRuntimeApi) {
+        const normalized = normalizeDenylistHost(lambdaRuntimeApi);
+        if (normalized) {
+            denylist.add(normalized);
+        }
+    }
+
+    return denylist;
 }
 
 /**

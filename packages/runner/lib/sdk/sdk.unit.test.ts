@@ -109,6 +109,46 @@ describe('cache', () => {
     });
 });
 
+describe('proxy base URL override denylist', () => {
+    beforeEach(() => {
+        vi.resetModules();
+        vi.unstubAllEnvs();
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.clearAllMocks();
+    });
+
+    it('blocks AWS Lambda runtime API host when present', async () => {
+        vi.stubEnv('AWS_LAMBDA_RUNTIME_API', 'lambda-runtime-block-test.invalid:9001');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['denylisted-proxy-test.invalid']));
+
+        const { NangoActionRunner } = await import('./sdk.js');
+        const { ProxyRequest } = await import('@nangohq/shared');
+        const { Nango } = await import('@nangohq/node');
+        const { PersistClient } = await import('../clients/persist.js');
+        const { MapLocks } = await import('./locks.js');
+        const { Ok } = await import('@nangohq/utils');
+
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/',
+                baseUrlOverride: 'http://lambda-runtime-block-test.invalid:9001/'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
+});
+
 describe('Pagination', () => {
     const providerConfigKey = 'github';
     const connectionId = 'connection-1';
