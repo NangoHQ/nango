@@ -40,19 +40,10 @@ const Metadata = z.object({
 });
 
 export default createOnEvent({
-    description: 'Register a Salesforce webhook and lock the org ID in metadata after a successful connect',
+    description: 'Register a Salesforce webhook after a successful connection',
     event: 'post-connection-creation',
     metadata: Metadata,
     exec: async (nango) => {
-        const userInfo = await nango.get({
-            endpoint: '/services/oauth2/userinfo'
-        });
-
-        const organizationId = userInfo.data?.organization_id as string | undefined;
-        if (!organizationId) {
-            throw new nango.ActionError('Salesforce connection missing organization_id from /services/oauth2/userinfo');
-        }
-
         const response = await nango.post({
             endpoint: '/webhooks',
             data: {
@@ -62,7 +53,6 @@ export default createOnEvent({
         });
 
         await nango.setMetadata({
-            organization_id: organizationId,
             webhookId: response.data.id
         });
     }
@@ -84,31 +74,33 @@ import { createOnEvent } from 'nango';
 import * as z from 'zod';
 
 const Metadata = z.object({
-    organization_id: z.string().optional(),
+    organizationId: z.string().optional(),
     webhookId: z.string().optional()
 });
 
 export default createOnEvent({
-    description: 'Reject reconnect when the Salesforce org differs from the locked org in metadata',
+    description: 'Validate connection against saved organization id to prevent changing account on reconnect',
     event: 'validate-connection',
     metadata: Metadata,
     exec: async (nango) => {
         const metadata = await nango.getMetadata();
         const lockedOrganizationId = metadata?.organization_id;
 
-        if (!lockedOrganizationId) {
-            return;
-        }
-
-        const response = await nango.get({
+        const response = await nango.get<{organization_id: string}>({
             endpoint: '/services/oauth2/userinfo'
         });
-
-        const organizationId = response.data?.organization_id as string | undefined;
+        const organizationId = response.data?.organization_id;
         if (!organizationId) {
             throw new nango.ActionError('Salesforce connection missing organization_id from /services/oauth2/userinfo');
         }
 
+        // On initial connection, save organization id to connection metadata
+        if (!lockedOrganizationId) {
+            await nango.setMetadata({organization_id});
+            return;
+        }
+
+        // On subsequent connections, check if new organization id matches stored value
         if (lockedOrganizationId !== organizationId) {
             throw new nango.ActionError(
                 `Salesforce org mismatch: expected ${lockedOrganizationId}, got ${organizationId}`
