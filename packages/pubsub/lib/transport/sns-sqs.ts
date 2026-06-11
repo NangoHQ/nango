@@ -54,6 +54,7 @@ function toSnsEntry(event: Event): Result<PublishBatchRequestEntry, PublishFailu
         .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, 'Failed to serialize event', { cause: e }));
 }
 
+<<<<<<< HEAD
 // https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html
 // Message size = body + per-attribute (name + data type + string value) lengths.
 function snsEntryBytes(entry: PublishBatchRequestEntry): number {
@@ -64,6 +65,8 @@ function snsEntryBytes(entry: PublishBatchRequestEntry): number {
     return bodyBytes + attrBytes;
 }
 
+=======
+>>>>>>> f71e6ae23 (refactor(pubsub): replace use of idempotency keys as SNS ids)
 function asPublishFailure(idempotencyKey: string, error: BatchResultErrorEntry): PublishFailure {
     const errorCode = error.Code !== undefined ? { code: error.Code } : undefined;
     return new PublishFailure(idempotencyKey, error.Message ?? 'SNS rejected message', errorCode);
@@ -207,6 +210,7 @@ export class SnsSqs implements Transport {
         const failed: PublishFailure[] = [];
         const entries: PublishBatchRequestEntry[] = [];
 
+<<<<<<< HEAD
         try {
             events.map(toSnsEntry).forEach((entry) => {
                 if (entry.isOk()) {
@@ -222,6 +226,44 @@ export class SnsSqs implements Transport {
                 (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + snsEntryBytes(item) }),
                 (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + snsEntryBytes(item) > SNS_BATCH_MAX_BYTES
             );
+=======
+        events.map(toSnsEntry).forEach(
+            matchWith(
+                (entry) => entries.push(entry),
+                (err) => failed.push(err)
+            )
+        );
+
+        const batches = chunk(
+            entries,
+            () => ({ count: 0, bytes: 0 }),
+            (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') }),
+            (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') > SNS_BATCH_MAX_BYTES
+        );
+
+        const successful: string[] = [];
+
+        await runWithConcurrencyLimit(batches, publishConcurrency(concurrency), async (batch, _) => {
+            // Map each batch entry's index to its original idempotencyKey to support a reverse-lookup from SNS responses
+            const idMap = new Map(batch.map((entry, i) => [String(i), entry.Id!]));
+            const batchWithPositionalIds = batch.map((entry, i) => ({ ...entry, Id: String(i) }));
+
+            const cmd = new PublishBatchCommand({
+                TopicArn: topicArn,
+                PublishBatchRequestEntries: batchWithPositionalIds
+            });
+
+            await this.sns
+                .send(cmd)
+                .then((response) => {
+                    successful.push(...(response.Successful ?? []).map((s) => idMap.get(s.Id!) ?? s.Id!));
+                    failed.push(...(response.Failed ?? []).map((e) => asPublishFailure(idMap.get(e.Id!) ?? e.Id!, e)));
+                })
+                .catch((err: unknown) => {
+                    failed.push(...batch.map((f) => new PublishFailure(f.Id!, 'Batch publish request failed', { cause: err })));
+                });
+        });
+>>>>>>> f71e6ae23 (refactor(pubsub): replace use of idempotency keys as SNS ids)
 
             const successful: string[] = [];
 
