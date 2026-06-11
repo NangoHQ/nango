@@ -49,7 +49,7 @@
         "ms": "3.0.0-canary.1",
         "oauth-1.0a": "2.2.6",
         "parse-link-header": "2.0.0",
-        "posthog-node": "4.14.0",
+        "posthog-node": "5.35.11",
         "qs": "6.15.0",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
