@@ -1,4 +1,5 @@
-import { IconEdit, IconExternalLink, IconEye, IconEyeOff, IconKey, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconEye, IconEyeOff, IconKey } from '@tabler/icons-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -417,7 +418,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmButtonText="Delete API Key"
             trigger={
                 <Button variant="ghost" size="icon" className="text-text-muted hover:text-status-danger-text">
-                    <IconTrash stroke={1} size={16} />
+                    <Trash2 className="size-3.5" />
                 </Button>
             }
             onConfirm={onDelete}
@@ -557,7 +558,7 @@ export const ApiKeys: React.FC = () => {
                                                         onClick={() => setSelectedKeyId(key.id)}
                                                         className="text-text-muted hover:text-text-strong"
                                                     >
-                                                        <IconEdit stroke={1} size={16} />
+                                                        <Pencil className="size-3.5" />
                                                     </Button>
                                                 )}
                                                 {canManageKeys && (
