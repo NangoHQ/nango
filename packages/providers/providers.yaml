@@ -3929,6 +3929,32 @@ chargebee:
             default_value: ''
             hidden: true
 
+chartboost:
+    display_name: Chartboost
+    categories:
+        - marketing
+        - gaming
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.chartboost.com/v5/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://public.api.gateway.chartboost.com
+    proxy:
+        base_url: https://api.chartboost.com/v5
+    docs: https://nango.dev/docs/api-integrations/chartboost
+    docs_connect: https://nango.dev/docs/api-integrations/chartboost/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Chartboost API client_id.
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Chartboost API client_secret.
+            secret: true
+
 chatarmin:
     display_name: Chatarmin
     categories:
