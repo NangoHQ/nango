@@ -87,7 +87,7 @@ export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): st
     }
 
     const trimmed = raw.trim();
-    if (trimmed === '' || trimmed === '[]') {
+    if (trimmed === '') {
         return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
     }
 
@@ -95,6 +95,9 @@ export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): st
         const parsed = JSON.parse(trimmed);
         if (!Array.isArray(parsed)) {
             return [];
+        }
+        if (parsed.length === 0) {
+            return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
         }
         const customEntries = parsed
             .filter((v): v is string => typeof v === 'string')

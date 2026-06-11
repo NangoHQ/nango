@@ -181,6 +181,47 @@ describe('proxy base URL override denylist', () => {
         ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
         expect(httpCall).toHaveBeenCalledTimes(1);
     });
+
+    it('blocks AWS SigV4 per-connection base_url via resolved proxy URL validation', async () => {
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['denylisted-proxy-test.invalid']));
+
+        const { NangoActionRunner } = await import('./sdk.js');
+        const { ProxyRequest } = await import('@nangohq/shared');
+        const { Nango } = await import('@nangohq/node');
+        const { PersistClient } = await import('../clients/persist.js');
+        const { MapLocks } = await import('./locks.js');
+        const { Ok } = await import('@nangohq/utils');
+
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner(
+            { ...nangoProps, scriptType: 'action', provider: 'aws-sigv4', providerConfigKey: 'aws-sigv4' },
+            { persistClient, locks: new MapLocks() }
+        );
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/tables'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
 });
 
 describe('Pagination', () => {

@@ -161,6 +161,8 @@ describe('parse', () => {
     it('should allow explicit opt-out of NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', () => {
         const resEmpty = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '[]' });
         expect(resEmpty.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+        const resWhitespaceEmpty = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '[ ]' });
+        expect(resWhitespaceEmpty.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
         const resBlank = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '' });
         expect(resBlank.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
     });

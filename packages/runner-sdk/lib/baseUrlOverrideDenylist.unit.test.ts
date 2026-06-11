@@ -40,6 +40,8 @@ describe('runner-sdk baseUrlOverrideDenylist', () => {
 
     it('resolveProxyBaseUrlOverrideDenylist applies secure defaults for empty env (runner does not inherit server opt-out)', () => {
         expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(resolveProxyBaseUrlOverrideDenylist('[ ]')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(resolveProxyBaseUrlOverrideDenylist('[\n]')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
         expect(resolveProxyBaseUrlOverrideDenylist('')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
     });
 

@@ -115,6 +115,8 @@ describe('resolveProxyBaseUrlOverrideDenylist', () => {
 
     it('returns empty array for explicit opt-out', () => {
         expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('[ ]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('[\n]')).toEqual([]);
         expect(resolveProxyBaseUrlOverrideDenylist('')).toEqual([]);
         expect(resolveProxyBaseUrlOverrideDenylist('  ')).toEqual([]);
     });

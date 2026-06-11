@@ -42,7 +42,7 @@ export const ENVS = z.object({
                 return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
             }
             const trimmed = s.trim();
-            if (trimmed === '' || trimmed === '[]') {
+            if (trimmed === '') {
                 return [];
             }
             try {
@@ -50,6 +50,9 @@ export const ENVS = z.object({
                 if (!Array.isArray(parsed) || !parsed.every((item: unknown) => typeof item === 'string')) {
                     ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a JSON array of strings`);
                     return z.NEVER;
+                }
+                if (parsed.length === 0) {
+                    return [];
                 }
                 const customEntries = parsed.map((e: string) => e.trim()).filter((e: string) => e.length > 0);
                 return mergeProxyBaseUrlOverrideDenylist(customEntries);

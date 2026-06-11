@@ -11,6 +11,7 @@ import {
     ProxyRequest,
     configService,
     connectionService,
+    enforceProxyOutboundUrlPolicy,
     errorManager,
     getProvider,
     getProxyConfiguration,
@@ -75,24 +76,6 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const { environment, account, plan } = res.locals;
 
     const baseUrlOverride = parsedHeaders['base-url-override'];
-    if (baseUrlOverride && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
-        res.status(400).send({
-            error: {
-                code: 'base_url_override_disabled',
-                message: 'Base URL override is disabled by server configuration.'
-            }
-        });
-        return;
-    }
-    if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
-        res.status(400).send({
-            error: {
-                code: 'base_url_override_not_allowed',
-                message: 'This base URL override is not allowed by server configuration.'
-            }
-        });
-        return;
-    }
 
     let logCtx: LogContext | undefined;
 
@@ -117,6 +100,32 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
         if (logCtx instanceof LogContextOrigin) {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+        }
+
+        if (baseUrlOverride && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+            void logCtx.error('Base URL override is disabled by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: {
+                    code: 'base_url_override_disabled',
+                    message: 'Base URL override is disabled by server configuration.'
+                }
+            });
+            return;
+        }
+        if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
+            metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
+            void logCtx.error('Base URL override is not allowed by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: {
+                    code: 'base_url_override_not_allowed',
+                    message: 'This base URL override is not allowed by server configuration.'
+                }
+            });
+            return;
         }
 
         // capping
@@ -244,8 +253,18 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     retryOn,
                     responseType: 'stream',
                     ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
-                    ...(baseUrlOverrideDenylist.size > 0
+                    ...(!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED || baseUrlOverrideDenylist.size > 0
                         ? {
+                              validateProxyRequestUrl: ({ absoluteUrl, proxyConfig, connection, integrationConfig }) => {
+                                  enforceProxyOutboundUrlPolicy({
+                                      absoluteUrl,
+                                      proxyConfig,
+                                      connection,
+                                      ...(integrationConfig !== undefined ? { integrationConfig } : {}),
+                                      overrideEnabled: envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED,
+                                      denylist: baseUrlOverrideDenylist
+                                  });
+                              },
                               validateProxyRedirectUrl: (absoluteUrl: string) => {
                                   if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
                                       metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });

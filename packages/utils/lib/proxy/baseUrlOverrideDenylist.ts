@@ -85,13 +85,16 @@ export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): st
     }
 
     const trimmed = raw.trim();
-    if (trimmed === '' || trimmed === '[]') {
+    if (trimmed === '') {
         return [];
     }
 
     try {
         const parsed = JSON.parse(trimmed);
         if (!Array.isArray(parsed)) {
+            return [];
+        }
+        if (parsed.length === 0) {
             return [];
         }
         const customEntries = parsed
