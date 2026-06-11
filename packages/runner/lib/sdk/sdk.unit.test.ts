@@ -110,19 +110,11 @@ describe('cache', () => {
 });
 
 describe('proxy base URL override denylist', () => {
-    beforeEach(() => {
-        vi.unstubAllEnvs();
-    });
-
     afterEach(() => {
-        vi.unstubAllEnvs();
         vi.clearAllMocks();
     });
 
-    it('blocks AWS Lambda runtime API host when present', async () => {
-        vi.stubEnv('AWS_LAMBDA_RUNTIME_API', 'lambda-runtime-block-test.invalid:9001');
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['denylisted-proxy-test.invalid']));
-
+    it('blocks denylisted base URL overrides using startup policy', async () => {
         const persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
@@ -133,43 +125,35 @@ describe('proxy base URL override denylist', () => {
         await expect(
             nangoAction.proxy({
                 endpoint: '/',
-                baseUrlOverride: 'http://lambda-runtime-block-test.invalid:9001/'
+                baseUrlOverride: 'http://localhost:4566/'
             })
         ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
 
         expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
     });
 
-    it('respects runtime changes to NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', async () => {
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['only-this-one.invalid']));
-
+    it('does not allow bypassing denylist by mutating process.env', async () => {
         const persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
-        const httpCall = vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
 
         const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
 
-        await nangoAction.proxy({
-            endpoint: '/',
-            baseUrlOverride: 'http://runtime-added.invalid/'
-        });
-        expect(httpCall).toHaveBeenCalledTimes(1);
-
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['runtime-added.invalid']));
+        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = 'null';
+        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'] = 'true';
 
         await expect(
             nangoAction.proxy({
                 endpoint: '/',
-                baseUrlOverride: 'http://runtime-added.invalid/'
+                baseUrlOverride: 'http://localhost:4566/'
             })
         ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
-        expect(httpCall).toHaveBeenCalledTimes(1);
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
     });
 
     it('blocks AWS SigV4 per-connection base_url via resolved proxy URL validation', async () => {
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['denylisted-proxy-test.invalid']));
-
         const persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
         Nango.prototype.getConnection = vi.fn().mockReturnValue({

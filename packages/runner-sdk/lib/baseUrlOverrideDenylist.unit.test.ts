@@ -51,6 +51,12 @@ describe('runner-sdk baseUrlOverrideDenylist', () => {
         expect(resolveProxyBaseUrlOverrideDenylist('')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
     });
 
+    it('resolveProxyBaseUrlOverrideDenylist falls back to secure defaults on malformed JSON', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('not-json')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(resolveProxyBaseUrlOverrideDenylist('null')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(resolveProxyBaseUrlOverrideDenylist('{}')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+    });
+
     it('mergeProxyBaseUrlOverrideDenylist merges custom entries with defaults', () => {
         expect(mergeProxyBaseUrlOverrideDenylist(['denylisted-proxy-test.invalid'])).toEqual([
             ...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
