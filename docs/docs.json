@@ -1405,6 +1405,7 @@
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
+              "integrations/all/olostep",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
               "api-integrations/ordinal",
