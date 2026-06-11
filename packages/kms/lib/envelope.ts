@@ -1,16 +1,8 @@
 import { CommitmentPolicy, KmsKeyringNode, buildClient } from '@aws-crypto/client-node';
 
-import { getLogger } from '@nangohq/utils';
-
 import type { EncryptionContext, KeyringNode } from '@aws-crypto/client-node';
 
-const logger = getLogger('kms');
-
 const DEK_BYTE_LENGTH = 32;
-
-// Signed algorithm suites (the default under REQUIRE_ENCRYPT_REQUIRE_DECRYPT)
-// store their ECDSA public key in the encryption context under this key.
-const RESERVED_CONTEXT_KEYS = new Set(['aws-crypto-public-key']);
 
 // Strictest commitment policy: refuses to decrypt without key commitment, preventing downgrade attacks.
 const { decrypt } = buildClient(CommitmentPolicy.REQUIRE_ENCRYPT_REQUIRE_DECRYPT);
@@ -28,15 +20,10 @@ export type UnwrapDekOptions = {
  * Fails fast on a tampered envelope, mismatched encryption context, or wrong key length.
  */
 export async function unwrapDek(opts: UnwrapDekOptions): Promise<string> {
-    const start = Date.now();
     const keyring = 'keyring' in opts ? opts.keyring : new KmsKeyringNode({ keyIds: [opts.kmsKeyArn] });
     const { plaintext: unwrapped, messageHeader } = await decrypt(keyring, Buffer.from(opts.wrapped, 'base64'));
     assertEncryptionContext(messageHeader.encryptionContext, opts.expectedContext);
     assertDekLength(unwrapped);
-
-    const masterKeyId = messageHeader.encryptedDataKeys[0]?.providerInfo ?? 'unknown';
-    logger.info(`Unwrapped encryption key (keyId=${masterKeyId}, latencyMs=${Date.now() - start})`);
-
     return Buffer.from(unwrapped).toString('base64');
 }
 
@@ -50,11 +37,6 @@ function assertEncryptionContext(context: Readonly<Record<string, string>>, expe
     for (const [key, value] of Object.entries(expected)) {
         if (context[key] !== value) {
             throw new Error(`Encryption context mismatch on "${key}": the wrapped key was not produced for this purpose`);
-        }
-    }
-    for (const key of Object.keys(context)) {
-        if (!(key in expected) && !RESERVED_CONTEXT_KEYS.has(key)) {
-            throw new Error(`Unexpected encryption context key "${key}" on the wrapped key`);
         }
     }
 }

@@ -22,11 +22,15 @@ describe('DekRegistry.create', () => {
         expect(registry.get()).toBe('');
     });
 
-    it('should throw when both envs are set', async () => {
-        await expect(DekRegistry.create({ NANGO_ENCRYPTION_KEY: testDek, NANGO_ENCRYPTION_KEY_WRAPPED: 'anything' })).rejects.toThrow(/mutually exclusive/);
+    // TEMPORARY (KMS rollout validation): wrapped key is unwrapped in shadow mode only;
+    // plaintext stays the source of truth and unwrap failures are not fatal.
+    it('should resolve from plaintext when both envs are set', async () => {
+        const registry = await DekRegistry.create({ NANGO_ENCRYPTION_KEY: testDek, NANGO_ENCRYPTION_KEY_WRAPPED: 'anything' });
+        expect(registry.get()).toBe(testDek);
     });
 
-    it('should throw when wrapped is set without a key ARN', async () => {
-        await expect(DekRegistry.create({ NANGO_ENCRYPTION_KEY_WRAPPED: 'anything' })).rejects.toThrow(/NANGO_KMS_KEY_ARN is required/);
+    it('should not use the wrapped key even when it is the only one set', async () => {
+        const registry = await DekRegistry.create({ NANGO_ENCRYPTION_KEY_WRAPPED: 'anything' });
+        expect(registry.get()).toBe('');
     });
 });

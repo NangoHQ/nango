@@ -27,9 +27,6 @@
             "path": "../orchestrator"
         },
         {
-            "path": "../orchestrator"
-        },
-        {
             "path": "../pubsub"
         },
         {

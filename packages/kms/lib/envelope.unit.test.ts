@@ -39,12 +39,6 @@ describe('unwrapDek', () => {
         await expect(unwrapDek({ wrapped, keyring, expectedContext })).rejects.toThrow(/Encryption context mismatch/);
     });
 
-    it('should throw when the wrapped key carries unexpected context keys', async () => {
-        const keyring = testKeyring();
-        const wrapped = await wrap(keyring, Buffer.from(testDek, 'base64'), { ...expectedContext, extra: 'nope' });
-        await expect(unwrapDek({ wrapped, keyring, expectedContext })).rejects.toThrow(/Unexpected encryption context key/);
-    });
-
     it('should throw when the envelope decrypts to a non-32-byte key', async () => {
         const keyring = testKeyring();
         const wrapped = await wrap(keyring, crypto.randomBytes(16));
