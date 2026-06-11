@@ -1,5 +1,5 @@
-import { Dot } from '@/components-v2/Dot';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { Dot } from '@/components/ui/Dot';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useConnectionsCount } from '@/hooks/useConnections';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';

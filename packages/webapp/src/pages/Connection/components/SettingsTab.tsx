@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 
 import { ConnectionSideInfo } from './ConnectionSideInfo';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Button } from '@/components-v2/ui/button';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button } from '@/components/ui/Button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';

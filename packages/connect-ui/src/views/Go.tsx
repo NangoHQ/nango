@@ -2,14 +2,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
 import { ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
 import * as z from 'zod';
 
 import { AuthError } from '@nangohq/frontend';
 
-import { CustomInput } from '@/components/CustomInput';
+import { CustomInput, StandaloneInput } from '@/components/CustomInput';
+import { CustomSelect } from '@/components/CustomSelect';
 import { HeaderButtons } from '@/components/HeaderButtons';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -24,6 +25,8 @@ import type { AuthResult } from '@nangohq/frontend';
 import type { AuthModeType } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
+
+const generateExternalId = (): string => crypto.randomUUID();
 
 const formSchema: Record<AuthModeType, z.ZodObject> = {
     API_KEY: z.object({
@@ -66,6 +69,9 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         username: z.string().min(1),
         password: z.string().min(1)
     }),
+    AWS_SIGV4: z.object({
+        role_arn: z.string().min(1)
+    }),
     CUSTOM: z.object({}),
     MCP_OAUTH2: z.object({}),
     MCP_OAUTH2_GENERIC: z.object({}),
@@ -89,7 +95,8 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.token_id': { secret: true, title: 'Token ID', example: 'Your Token ID' },
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
-    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' }
+    'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' },
+    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
 };
 
 export const Go: React.FC = () => {
@@ -103,7 +110,14 @@ export const Go: React.FC = () => {
     const [connectionFailed, setConnectionFailed] = useState(false);
     const [showErrorDetails, setShowErrorDetails] = useState(false);
 
-    const preconfigured = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+    const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
+    const initialExternalId = useMemo(() => {
+        const value = preconfiguredParams['external_id'] as string | undefined;
+        return value && value.length > 0 ? value : generateExternalId();
+    }, [preconfiguredParams]);
+    const [awsExternalId] = useState(initialExternalId);
+    const [externalIdCopied, setExternalIdCopied] = useState(false);
+    const externalIdCopyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const displayName = useMemo(() => {
         return integration?.display_name ?? provider?.display_name ?? '';
@@ -115,7 +129,6 @@ export const Go: React.FC = () => {
         if (override) return [override, true];
         return [provider?.docs_connect, false];
     }, [provider, integration, session]);
-
     useMount(() => {
         if (integration) {
             telemetry('view:integration', { integration: integration.unique_key });
@@ -123,8 +136,46 @@ export const Go: React.FC = () => {
         // on unmount always clear popup and state
         return () => {
             nango?.clear();
+            if (externalIdCopyTimeout.current) {
+                clearTimeout(externalIdCopyTimeout.current);
+            }
         };
     });
+    const handleCopyExternalId = useCallback(() => {
+        if (!awsExternalId) {
+            return;
+        }
+        const onSuccess = () => {
+            setExternalIdCopied(true);
+            if (externalIdCopyTimeout.current) {
+                clearTimeout(externalIdCopyTimeout.current);
+            }
+            externalIdCopyTimeout.current = setTimeout(() => setExternalIdCopied(false), 2000);
+        };
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+            navigator.clipboard
+                .writeText(awsExternalId)
+                .then(onSuccess)
+                .catch((err: unknown) => {
+                    console.error('Failed to copy to clipboard:', err);
+                });
+        } else {
+            // Fallback for iframes or older browsers where Clipboard API is unavailable
+            const textarea = document.createElement('textarea');
+            textarea.value = awsExternalId;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                onSuccess();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textarea);
+        }
+    }, [awsExternalId]);
 
     const { resolver, shouldAutoTrigger, orderedFields } = useMemo<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,7 +222,7 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[fullName] = order;
             }
-            if (preconfigured[name] ?? schema.hidden) {
+            if (schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -193,7 +244,8 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            if (preconfigured[name] ?? schema.hidden) {
+            const isPreconfigured = typeof preconfiguredParams[name] !== 'undefined';
+            if (isPreconfigured || schema.hidden) {
                 hiddenFields += 1;
             }
         }
@@ -207,16 +259,16 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[fullName] = order;
             }
-            if (preconfigured[name] ?? schema.hidden) {
+            if (schema.hidden) {
                 hiddenFields += 1;
             }
         }
 
-        if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfigured).length > 0) {
+        if (provider.auth_mode === 'OAUTH2' && Object.keys(preconfiguredParams).length > 0) {
             // For OAUTH2, allow users to override client credentials if preconfigured with empty values
             const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override', 'oauth_refresh_token_override'];
             for (const key of allowedOverrides) {
-                if (key in preconfigured && !additionalFields[key] && !(key in baseForm.shape)) {
+                if (key in preconfiguredParams && !additionalFields[key] && !(key in baseForm.shape)) {
                     baseForm.shape[key] = z.string().optional();
                     order += 1;
                     orderedFields[`credentials.${key}`] = order;
@@ -241,7 +293,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider, preconfigured]);
+    }, [provider, preconfiguredParams]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -344,8 +396,12 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
+                    const params = { ...(values['params'] || {}) };
+                    if (provider.auth_mode === 'AWS_SIGV4') {
+                        params['external_id'] = awsExternalId;
+                    }
                     res = await nango.auth(integration.unique_key, {
-                        params: values['params'] || {},
+                        params,
                         credentials: { ...values['credentials'], type: provider.auth_mode } as Record<string, string>,
                         detectClosedAuthWindow,
                         ...(provider.installation && { installation: provider.installation }),
@@ -391,12 +447,13 @@ export const Go: React.FC = () => {
 
                 setConnectionFailed(true);
                 const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+                setError(errorMsg);
                 triggerError('unknown_error', errorMsg);
             } finally {
                 setLoading(false);
             }
         },
-        [provider, integration, loading, nango, t, detectClosedAuthWindow, displayName]
+        [provider, integration, loading, nango, t, detectClosedAuthWindow, displayName, awsExternalId]
     );
 
     if (!provider || !integration) {
@@ -517,6 +574,20 @@ export const Go: React.FC = () => {
                     <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
+                {/* Only on first connect: the customer puts this in their IAM trust policy. On reconnect the
+                    stored external_id is reused server-side, so we hide it to avoid showing a fresh, misleading value. */}
+                {provider.auth_mode === 'AWS_SIGV4' && awsExternalId && !session?.isReconnecting && (
+                    <div className="flex flex-col gap-2 border border-subtle rounded-md p-4 bg-elevated">
+                        <p className="text-sm text-text-secondary">Use this External ID when configuring your IAM trust policy.</p>
+                        <div className="flex gap-2 items-center">
+                            <StandaloneInput readOnly className="font-mono text-xs" value={awsExternalId} />
+                            <Button size="sm" type="button" onClick={handleCopyExternalId}>
+                                {externalIdCopied ? 'Copied' : 'Copy'}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {error && (
                     <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
                         <TriangleAlert className="w-5 h-5" />
@@ -542,14 +613,21 @@ export const Go: React.FC = () => {
                                         provider[type === 'credentials' ? 'credentials' : type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
-                                    const isPreconfigured = typeof preconfigured[key] !== 'undefined';
+                                    const labelOverride = type === 'credentials' ? integration?.credentials_label?.[key] : undefined;
+                                    const source = type === 'credentials' ? {} : preconfiguredParams;
+                                    const isPreconfigured = typeof source[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
                                     return (
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
+                                            defaultValue={
+                                                isPreconfigured
+                                                    ? source[key]
+                                                    : (definition?.default_value ??
+                                                      (definition?.hidden ? undefined : definition?.enum && !isOptional ? definition.enum[0] : ''))
+                                            }
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {
@@ -559,7 +637,7 @@ export const Go: React.FC = () => {
                                                             'bg-elevated p-5',
                                                             (isPreconfigured &&
                                                                 (provider.auth_mode !== 'OAUTH2' ||
-                                                                    preconfigured[key] !== '' ||
+                                                                    source[key] !== '' ||
                                                                     ![
                                                                         'oauth_client_id_override',
                                                                         'oauth_client_secret_override',
@@ -574,7 +652,8 @@ export const Go: React.FC = () => {
                                                         <div className="flex flex-col gap-2">
                                                             <div className="flex gap-2 items-center">
                                                                 <FormLabel className="text-xs font-semibold text-text-primary">
-                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-error">*</span>}
+                                                                    {labelOverride || definition?.title || base?.title}{' '}
+                                                                    {!isOptional && <span className="text-error">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
                                                                     <span className="bg-elevated rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
@@ -589,19 +668,30 @@ export const Go: React.FC = () => {
                                                                     </Link>
                                                                 )}
                                                             </div>
-                                                            {definition?.description && (
+                                                            {!labelOverride && definition?.description && (
                                                                 <FormDescription className="text-text-secondary">{definition.description}</FormDescription>
                                                             )}
                                                         </div>
                                                         <FormControl>
-                                                            <CustomInput
-                                                                placeholder={definition?.example || definition?.title || base?.example}
-                                                                prefix={definition?.prefix}
-                                                                suffix={definition?.suffix}
-                                                                {...(field as InputHTMLAttributes<HTMLInputElement>)}
-                                                                autoComplete="off"
-                                                                type={definition?.secret || base?.secret ? 'password' : 'text'}
-                                                            />
+                                                            {definition?.enum && definition.enum.length > 0 ? (
+                                                                <CustomSelect
+                                                                    name={field.name}
+                                                                    optional={isOptional}
+                                                                    options={definition.enum}
+                                                                    placeholder={definition.title}
+                                                                    value={field.value as string | undefined}
+                                                                    onChange={field.onChange}
+                                                                />
+                                                            ) : (
+                                                                <CustomInput
+                                                                    placeholder={labelOverride ? '' : definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
+                                                                    suffix={definition?.suffix}
+                                                                    {...(field as InputHTMLAttributes<HTMLInputElement>)}
+                                                                    autoComplete="off"
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
+                                                                />
+                                                            )}
                                                         </FormControl>
                                                         <FormMessage className="p-0" />
                                                     </FormItem>

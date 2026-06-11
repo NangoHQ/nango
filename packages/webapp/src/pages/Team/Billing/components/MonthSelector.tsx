@@ -2,10 +2,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo } from 'react';
 
-import { Button } from '@/components-v2/ui/button';
+import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
+import { useBreakdownEnabled } from '../useBreakdownEnabled';
+import { Button } from '@/components/ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });
+
+const EARLIEST_USAGE_MONTH_LABEL = new Date(EARLIEST_USAGE_MONTH_MS).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 interface MonthSelectorProps {
     onMonthChange?: (month: Date) => void;
@@ -15,19 +20,26 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     // Sync selected month with URL query params
     const [monthParam, setMonthParam] = useQueryState('month', parseMonth);
 
-    // Convert URL param to Date, defaulting to current month
+    // The June 2026 floor only applies while the breakdown (ClickHouse) view is
+    // active — that's the data that starts then. Legacy Orb accounts keep full history.
+    const breakdownEnabled = useBreakdownEnabled();
+
+    // Convert URL param to Date, defaulting to current month. When the breakdown view
+    // is active, never resolve earlier than the floor (clamps stale/tampered URLs).
     const selectedMonth = useMemo(() => {
-        if (!monthParam) {
+        const currentMonth = () => {
             const now = new Date();
             return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        };
+        let month = currentMonth();
+        if (monthParam) {
+            const [year, m] = monthParam.split('-').map(Number);
+            if (!isNaN(year) && !isNaN(m) && m >= 1 && m <= 12) {
+                month = new Date(Date.UTC(year, m - 1, 1));
+            }
         }
-        const [year, month] = monthParam.split('-').map(Number);
-        if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
-            const now = new Date();
-            return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-        }
-        return new Date(Date.UTC(year, month - 1, 1));
-    }, [monthParam]);
+        return breakdownEnabled && month.getTime() < EARLIEST_USAGE_MONTH_MS ? new Date(EARLIEST_USAGE_MONTH_MS) : month;
+    }, [monthParam, breakdownEnabled]);
 
     // Notify parent when month changes
     useEffect(() => {
@@ -64,11 +76,31 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
         return selectedMonth < currentMonth;
     }, [selectedMonth]);
 
+    // Disable the previous button at the June 2026 floor, but only while the breakdown
+    // view is active; otherwise legacy history stays navigable.
+    const canGoPrevious = useMemo(() => !breakdownEnabled || selectedMonth.getTime() > EARLIEST_USAGE_MONTH_MS, [breakdownEnabled, selectedMonth]);
+
+    const previousButton = (
+        <Button variant="ghost" size="icon" onClick={handlePreviousMonth} disabled={!canGoPrevious}>
+            <ChevronLeft />
+        </Button>
+    );
+
     return (
         <div className="self-end flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={handlePreviousMonth}>
-                <ChevronLeft />
-            </Button>
+            {canGoPrevious ? (
+                previousButton
+            ) : (
+                <Tooltip>
+                    {/* Span wrapper so the disabled button still surfaces the tooltip on hover/focus. */}
+                    <TooltipTrigger asChild>
+                        <span className="inline-flex" tabIndex={0}>
+                            {previousButton}
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Usage tracking is only available from {EARLIEST_USAGE_MONTH_LABEL}.</TooltipContent>
+                </Tooltip>
+            )}
             <span className="text-text-primary text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
             <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={!canGoNext}>
                 <ChevronRight />

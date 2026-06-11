@@ -29,7 +29,9 @@ export interface Task {
     readonly ownerKey: string | null;
 }
 
-export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
+export type AtProps = SetOptional<Omit<TaskProps, 'scheduleId'>, 'retryKey'>;
+/** Like AtProps but starts immediately (no `startsAfter`). */
+export type ImmediateProps = Omit<AtProps, 'startsAfter'>;
 export interface FromScheduleProps {
     scheduleName: string;
     extra: JsonObject;

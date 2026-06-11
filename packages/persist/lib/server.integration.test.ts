@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
-import { migrate as migrateRecords, records } from '@nangohq/records';
+import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
     SyncJobsType,
@@ -45,7 +45,7 @@ describe('Persist API', () => {
 
     beforeAll(async () => {
         await multipleMigrations();
-        await migrateRecords();
+        await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
         server.listen(port);
@@ -296,7 +296,8 @@ describe('Persist API', () => {
             const allRecords = (
                 await records.getRecords({
                     connectionId: seed.connection.id,
-                    model
+                    model,
+                    plan: null
                 })
             ).unwrap();
             const firstRecord = allRecords.records[0];
@@ -326,7 +327,8 @@ describe('Persist API', () => {
             const allRecords = (
                 await records.getRecords({
                     connectionId: seed.connection.id,
-                    model
+                    model,
+                    plan: null
                 })
             ).unwrap();
             const lastRecord = allRecords.records[allRecords.records.length - 1];
@@ -658,7 +660,7 @@ const initDb = async () => {
     const now = new Date();
     const env = await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' });
     if (!env) throw new Error('Environment not created');
-    const secret = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
+    const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
 
@@ -773,6 +775,7 @@ const insertRecords = async (seed: testSeed, model: string, toInsert: Unencrypte
         connectionId: seed.connection.id,
         environmentId: seed.env.id,
         model,
-        records: formatted
+        records: formatted,
+        plan: null
     });
 };

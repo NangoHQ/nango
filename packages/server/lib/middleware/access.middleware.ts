@@ -3,7 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, isSandboxApiKey, userService } from '@nangohq/shared';
 import {
     Err,
     Ok,
@@ -30,7 +30,6 @@ import type { NextFunction, Request, Response } from 'express';
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const sandboxApiKeyPrefix = 'nango_sbx_v1_';
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
@@ -55,17 +54,20 @@ export class AccessMiddleware {
                 source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
+                purpose?: 'dryrun' | 'deploy';
+                dryrunId?: string;
+                deploymentId?: string;
             };
         }>
     > {
-        const isSandboxApiKey = secret.startsWith(sandboxApiKeyPrefix);
+        const isSandboxApiKeyToken = isSandboxApiKey(secret);
 
-        if (!keyRegex.test(secret) && !isSandboxApiKey) {
+        if (!keyRegex.test(secret) && !isSandboxApiKeyToken) {
             return Err('invalid_secret_key_format');
         }
 
         const accountContext = await accountService.getAccountContextByApiKey(
-            isSandboxApiKey || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
+            isSandboxApiKeyToken || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
         );
         if (!accountContext) {
             return Err('unknown_account');
@@ -119,6 +121,15 @@ export class AccessMiddleware {
                 res.locals['apiKeyAuthSource'] = result.value.auth.source;
                 if (result.value.auth.apiKeyId !== undefined) {
                     res.locals['apiKeyId'] = result.value.auth.apiKeyId;
+                }
+                if (result.value.auth.purpose !== undefined) {
+                    res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
+                }
+                if (result.value.auth.dryrunId !== undefined) {
+                    res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
+                }
+                if (result.value.auth.deploymentId !== undefined) {
+                    res.locals['sandboxTokenDeploymentId'] = result.value.auth.deploymentId;
                 }
             }
             const authSource = result.value.auth?.source ?? 'env_var';
@@ -399,6 +410,15 @@ export class AccessMiddleware {
                     res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
                     if (apiKeyResult.value.auth.apiKeyId !== undefined) {
                         res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
+                    }
+                    if (apiKeyResult.value.auth.purpose !== undefined) {
+                        res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;
+                    }
+                    if (apiKeyResult.value.auth.dryrunId !== undefined) {
+                        res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
+                    }
+                    if (apiKeyResult.value.auth.deploymentId !== undefined) {
+                        res.locals['sandboxTokenDeploymentId'] = apiKeyResult.value.auth.deploymentId;
                     }
                 }
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {

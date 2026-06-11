@@ -7,10 +7,10 @@ import z from 'zod';
 
 import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { useToast } from '@/hooks/useToast';
 
 const forgotPasswordSchema = z.object({

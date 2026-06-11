@@ -305,6 +305,7 @@
     --color-red-300: #f7a6a6;
     --color-red-500: #ee4242;
     --color-red-700: #e81818;
+    --color-red-800: #4a1111;
     --color-red-900: #5a0f0f;
 
     --color-green-100: #e6f7ec;
@@ -489,7 +490,7 @@
             --color-feedback-info-bg: var(--color-brand-1000);
             --color-feedback-info-alt: var(--color-brand-700);
             --color-feedback-error-fg: var(--color-red-500);
-            --color-feedback-error-bg: var(--color-red-900);
+            --color-feedback-error-bg: var(--color-red-800);
             --color-feedback-error-alt: var(--color-red-700);
             --color-feedback-error-border: var(--color-red-500);
             --color-feedback-neutral-fg: var(--color-gray-600);
@@ -717,6 +718,14 @@
         height: 100%;
     }
 
+    [data-theme='dark'] {
+        color-scheme: dark;
+    }
+
+    [data-theme='light'] {
+        color-scheme: light;
+    }
+
     button,
     [role='button'] {
         cursor: pointer;
@@ -741,31 +750,3 @@
     background-color: var(--color-bg-surface) !important;
 }
 
-.scrollbar-app {
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-gray-400) transparent;
-}
-.scrollbar-app::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.scrollbar-app::-webkit-scrollbar-track {
-    background: transparent;
-}
-.scrollbar-app::-webkit-scrollbar-thumb {
-    background: var(--color-gray-400);
-    border-radius: 3px;
-}
-.scrollbar-app::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gray-500);
-}
-.dark .scrollbar-app {
-    scrollbar-color: var(--color-gray-600) transparent;
-}
-.dark .scrollbar-app::-webkit-scrollbar-thumb {
-    background: var(--color-gray-600);
-}
-.dark .scrollbar-app::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gray-550);
-}

@@ -41,7 +41,13 @@
             "path": "packages/runner-sdk"
         },
         {
+            "path": "packages/sandbox"
+        },
+        {
             "path": "packages/scheduler"
+        },
+        {
+            "path": "packages/tasks"
         },
         {
             "path": "packages/orchestrator"
@@ -54,6 +60,9 @@
         },
         {
             "path": "packages/connect-ui"
+        },
+        {
+            "path": "packages/design-system"
         },
         {
             "path": "packages/webapp"

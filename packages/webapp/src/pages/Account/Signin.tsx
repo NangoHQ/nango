@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
-import GoogleButton from '@/components/ui/button/Auth/Google';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
+import GoogleButton from '@/components/patterns/GoogleButton';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSigninAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
@@ -39,6 +39,8 @@ export const Signin: React.FC = () => {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const error = searchParams.get('error');
+    const next = searchParams.get('next');
+    const inviteToken = next?.match(/^\/signup\/([^/]+)$/)?.[1];
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (error === 'sso_session_expired') {
@@ -69,7 +71,7 @@ export const Signin: React.FC = () => {
             if (res.status === 200) {
                 const user: ApiUser = res.json.user;
                 signin(user);
-                navigate('/');
+                navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
                 form.resetField('password', { defaultValue: '' });
@@ -213,7 +215,7 @@ export const Signin: React.FC = () => {
                             </div>
                         )}
 
-                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} />
+                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} />
                     </div>
                 )}
 

@@ -67,7 +67,7 @@ export const ENVS = z.object({
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
-    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(3),
     CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
@@ -81,7 +81,11 @@ export const ENVS = z.object({
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
-    CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
+    // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
+    // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
+    // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
+    // snapshot it.
+    CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -98,12 +102,12 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
-    PERSIST_SEEN_PARTITION_INTERVAL_MS: z.coerce
+    RECORDS_POSTGRES_SEEN_PARTITION_INTERVAL_MS: z.coerce
         .number()
         .positive()
         .max(6 * 3600 * 1000) // max 6 hours to ensure the records_seen daily partition for next day is always created ahead of time
         .default(1 * 3600 * 1000),
-    PERSIST_SEEN_PARTITION_MAX_AGE_MS: z.coerce
+    RECORDS_POSTGRES_SEEN_PARTITION_MAX_AGE_MS: z.coerce
         .number()
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
@@ -125,6 +129,14 @@ export const ENVS = z.object({
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
+
+    // Tasks (generic server-side task queue, see @nangohq/tasks). Runs in an isolated schema on the main Nango DB.
+    TASKS_DATABASE_SCHEMA: z
+        .string()
+        .regex(/^[a-z_][a-z0-9_]*$/i, 'TASKS_DATABASE_SCHEMA must be a valid Postgres identifier ([A-Za-z_][A-Za-z0-9_]*)')
+        .optional()
+        .default('nango_tasks'),
+    TASKS_DB_POOL_MAX: z.coerce.number().optional().default(10),
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
@@ -218,6 +230,8 @@ export const ENVS = z.object({
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
     RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
+    RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().max(1000).default(10),
+    RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(2000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
@@ -285,6 +299,7 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
@@ -301,6 +316,21 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
+    // Gate that *permits* the per-request `source` override on
+    // `getBillingUsage` (dashboard path). When OFF (prod default), the
+    // `source` query param is ignored and the dashboard always uses Orb;
+    // when ON (dev), the param is honoured, letting individual sessions
+    // flip via localStorage('nango.billingUsageSource') without a redeploy.
+    // The flag does NOT change the default — even when on, missing override
+    // → Orb. Capping is unaffected (no override mechanism there).
+    FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
+
+    // Shadow dashboard read against ClickHouse to compare totals vs Orb. Only
+    // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
+    // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
+    FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
+    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
+    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
@@ -324,7 +354,8 @@ export const ENVS = z.object({
     DD_TRACE_AGENT_URL: z.string().optional(),
     DD_API_KEY_SECRET_ARN: z.string().optional(),
 
-    // Elasticsearch
+    // Elasticsearch / OpenSearch (logs)
+    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch']).optional().default('elasticsearch'),
     NANGO_LOGS_ES_URL: z.url().optional(),
     NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
     NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
@@ -384,6 +415,12 @@ export const ENVS = z.object({
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
     RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
+
+    RECORDS_2_DATABASE_URL: z.url().optional(),
+    RECORDS_2_DATABASE_READ_URL: z.url().optional(),
+    RECORDS_2_DATABASE_SCHEMA: z.string().optional().default('nango_records_2'),
+    RECORDS_2_DATABASE_SSL: z.stringbool().optional().default(false),
+
     RECORDS_DATABASE_POOL_MIN: z.coerce.number().optional().default(2),
     RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
     RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
@@ -394,6 +431,11 @@ export const ENVS = z.object({
     RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
     // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
     RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
+    // Max number of records decrypted concurrently in getRecords. decryptAsync offloads to the
+    // libuv threadpool (UV_THREADPOOL_SIZE, default 4), so awaiting one record at a time leaves
+    // the other threads idle. Bounding the fan-out keeps every thread busy without materializing
+    // a whole page of decrypted blobs at once (which would defeat the per-record GC drop below).
+    RECORDS_DECRYPT_CONCURRENCY: z.coerce.number().int().positive().optional().default(10),
 
     // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),
@@ -577,7 +619,10 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
     NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
-    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(50),
+    // Number of parallel SQS poll loops. Each in-flight batch holds one orchestrator DB session,
+    // so peak orchestrator connections from webhook dispatch ≈ jobs_replicas × this. Keep it well
+    // under ORCHESTRATOR_DB_POOL_MAX so bulk webhook ingress can't starve the orchestrator's core work.
+    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
@@ -585,6 +630,8 @@ export const ENVS = z.object({
     // E2B sandboxes
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
+    E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
+    E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

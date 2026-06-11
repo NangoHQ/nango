@@ -1,6 +1,6 @@
-import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { StyledLink } from '@/components/ui/StyledLink';
 
 import type { Role } from '@nangohq/types';
 

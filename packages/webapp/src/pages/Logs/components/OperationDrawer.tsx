@@ -1,50 +1,42 @@
-import { Cross1Icon } from '@radix-ui/react-icons';
-import { useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import { useState } from 'react';
 
-import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from '../../../components/ui/Drawer';
+import { CopyButton } from '../../../components/ui/CopyButton';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '../../../components/ui/Sheet';
 import { ShowOperation } from '../Operation/Show';
 
-const drawerWidth = '1034px';
 export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: boolean, operationId: string) => void }> = ({ operationId, onClose }) => {
     const [open, setOpen] = useState(true);
-    const ref = useRef<HTMLDivElement>();
-    const close = () => {
-        if (!ref.current) {
-            return;
-        }
-
-        // Bug in vaul: https://github.com/emilkowalski/vaul/issues/361
-        ref.current.style.setProperty('transform', `translate3d(100%, 0, 0)`);
-        ref.current.style.setProperty('transition', `transform 0.5s cubic-bezier(${[0.32, 0.72, 0, 1].join(',')})`);
-
-        setTimeout(() => {
-            onClose(false, operationId);
-        }, 150);
-    };
 
     return (
-        <Drawer
-            direction="right"
-            snapPoints={[drawerWidth]}
-            handleOnly={true}
-            noBodyStyles={true}
-            dismissible={true}
+        <Sheet
             open={open}
-            onClose={() => setOpen(false)}
-            onOpenChange={(val) => (val ? setOpen(val) : close())}
-            disablePreventScroll={true}
+            onOpenChange={(val) => {
+                setOpen(val);
+                if (!val) {
+                    setTimeout(() => onClose(false, operationId), 300);
+                }
+            }}
         >
-            <DrawerTrigger asChild type={null as unknown as 'button'}></DrawerTrigger>
-            <DrawerContent ref={ref as any}>
-                <div className={`w-[1034px] relative h-screen select-text`}>
-                    <div className="absolute right-6 top-[35px]">
-                        <DrawerClose title="Close" className="w-8 h-6 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white">
-                            <Cross1Icon className="" />
-                        </DrawerClose>
+            <SheetContent side="right" hideCloseButton className="w-[1034px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400">
+                <SheetTitle className="sr-only">Operation Details</SheetTitle>
+                <div className="relative h-full select-text">
+                    <div className="absolute right-6 top-[35px] flex items-center gap-1">
+                        <CopyButton
+                            text={window.location.href}
+                            iconType="link"
+                            className="text-text-light-gray hover:text-white focus:text-white transition-colors"
+                        />
+                        <SheetClose
+                            title="Close"
+                            className="bg-transparent text-text-light-gray hover:text-white focus:text-white transition-colors w-8 h-6 flex items-center justify-center"
+                        >
+                            <X size={16} />
+                        </SheetClose>
                     </div>
                     <ShowOperation operationId={operationId} />
                 </div>
-            </DrawerContent>
-        </Drawer>
+            </SheetContent>
+        </Sheet>
     );
 };

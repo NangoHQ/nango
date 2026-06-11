@@ -1,26 +1,30 @@
-import db from '@nangohq/database';
-import { connectionService, sandboxApiKeyService } from '@nangohq/shared';
+import {
+    FunctionError,
+    createFunctionDryrun,
+    getRemoteFunctionNangoHost,
+    markFunctionDryrunFailed,
+    markFunctionDryrunRunning,
+    prepareAsyncDryrun,
+    toFunctionDryrunCreate
+} from '@nangohq/sandbox';
+import { configService, connectionService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { parseDryrunSuccessOutput } from '../../../services/remote-function/command-output.js';
-import { invokeDryrun } from '../../../services/remote-function/dryrun-client.js';
-import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost, remoteFunctionDryrunSandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { remoteFunctionDryrunBodySchema } from '../validation.js';
+import { sendStepError } from '../errors.js';
+import { functionDryrunBodySchema } from '../validation.js';
+import { createDryrunSandboxApiKey, defaultFunctionName, requireCustomerKeyId, toFunctionDryrunError } from './helpers.js';
 
-import type { PostRemoteFunctionDryrun } from '@nangohq/types';
+import type { PostFunctionDryrun } from '@nangohq/types';
 
-const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
-
-export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(async (req, res) => {
+export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
-    const valBody = remoteFunctionDryrunBodySchema.safeParse(req.body);
+    const valBody = functionDryrunBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
@@ -28,6 +32,16 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
 
     const body = valBody.data;
     const { environment } = res.locals;
+    const parentCustomerKeyId = requireCustomerKeyId(res, 'Function dryruns can only be started from a customer API key');
+    if (!parentCustomerKeyId) {
+        return;
+    }
+
+    const providerConfig = await configService.getProviderConfig(body.integration_id, environment.id);
+    if (!providerConfig) {
+        res.status(404).send({ error: { code: 'integration_not_found', message: `Integration '${body.integration_id}' was not found` } });
+        return;
+    }
 
     const connectionResult = await connectionService.getConnection(body.connection_id, body.integration_id, environment.id);
     if (!connectionResult.success || !connectionResult.response) {
@@ -39,52 +53,76 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         return;
     }
 
-    if (res.locals.apiKeyAuthSource !== 'customer_key' || !res.locals.apiKeyId) {
-        res.status(403).send({ error: { code: 'forbidden', message: 'Sandbox tokens can only be issued from a customer API key' } });
-        return;
-    }
-
-    const sandboxApiKey = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
-        parentApiKeyId: res.locals.apiKeyId,
+    const dryrunResult = await createFunctionDryrun({
         environmentId: environment.id,
-        purpose: 'dryrun',
-        expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+        request: {
+            integration_id: body.integration_id,
+            function_name: defaultFunctionName,
+            function_type: body.function_type,
+            code: body.code,
+            connection_id: body.connection_id,
+            ...(body.input !== undefined ? { input: body.input } : {}),
+            ...(body.metadata ? { metadata: body.metadata } : {}),
+            ...(body.checkpoint ? { checkpoint: body.checkpoint } : {}),
+            ...(body.last_sync_date ? { last_sync_date: body.last_sync_date } : {})
+        }
     });
-    if (sandboxApiKey.isErr()) {
-        sendStepError({ res, status: 500, error: sandboxApiKey.error });
+    if (dryrunResult.isErr()) {
+        sendStepError({ res, status: 500, error: dryrunResult.error });
         return;
     }
 
-    const startedAt = new Date();
-
+    const dryrun = dryrunResult.value;
+    let prepared: Awaited<ReturnType<typeof prepareAsyncDryrun>> | null = null;
     try {
-        const result = await invokeDryrun({
+        const nangoHost = getRemoteFunctionNangoHost();
+        const sandboxApiKey = await createDryrunSandboxApiKey(parentCustomerKeyId, environment.id, dryrun.id);
+        if (sandboxApiKey.isErr()) {
+            throw sandboxApiKey.error;
+        }
+
+        const callbackUrl = new URL(`/functions/dryruns/${dryrun.id}/result`, nangoHost).toString();
+        prepared = await prepareAsyncDryrun({
             integration_id: body.integration_id,
-            function_name: body.function_name,
+            function_name: defaultFunctionName,
             function_type: body.function_type,
             code: body.code,
             environment_name: environment.name,
             connection_id: body.connection_id,
             nango_secret_key: sandboxApiKey.value,
-            nango_host: getRemoteFunctionNangoHost(),
+            nango_host: nangoHost,
+            dryrun_id: dryrun.id,
+            callback_url: callbackUrl,
             ...(body.input !== undefined ? { input: body.input } : {}),
             ...(body.metadata ? { metadata: body.metadata } : {}),
             ...(body.checkpoint ? { checkpoint: body.checkpoint } : {}),
             ...(body.last_sync_date ? { last_sync_date: body.last_sync_date } : {})
         });
 
-        const durationMs = Date.now() - startedAt.getTime();
-        const dryrunOutput = parseDryrunSuccessOutput(result.output);
-
-        res.status(200).send({
-            integration_id: body.integration_id,
-            function_name: body.function_name,
-            function_type: body.function_type,
-            execution_timeout_at: new Date(startedAt.getTime() + 5 * 60 * 1000).toISOString(),
-            duration_ms: durationMs,
-            ...(dryrunOutput.hasResult ? { result: dryrunOutput.result } : {})
+        const running = await markFunctionDryrunRunning({
+            environmentId: environment.id,
+            id: dryrun.id,
+            sandboxId: prepared.sandboxId,
+            startedAt: prepared.startedAt,
+            executionTimeoutAt: prepared.executionTimeoutAt
         });
+        if (!running) {
+            await prepared.kill();
+            throw new Error(`Failed to mark function dryrun '${dryrun.id}' as running`);
+        }
+
+        await prepared.start();
+
+        res.status(202).send(toFunctionDryrunCreate(running));
     } catch (err) {
-        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+        await prepared?.kill().catch(() => {
+            // Still mark the dryrun as failed if sandbox cleanup fails.
+        });
+        await markFunctionDryrunFailed({
+            environmentId: environment.id,
+            id: dryrun.id,
+            error: toFunctionDryrunError(err)
+        });
+        sendStepError({ res, error: err, ...(err instanceof FunctionError ? {} : { status: 500 }) });
     }
 });

@@ -41,6 +41,7 @@ services:
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - NANGO_SERVER_WEBSOCKETS_PATH
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
+            - NANGO_LOGS_PROVIDER=${NANGO_LOGS_PROVIDER:-elasticsearch}
             - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}
             - NANGO_LOGS_ES_USER
             - NANGO_LOGS_ES_PWD

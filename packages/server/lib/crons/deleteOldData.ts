@@ -4,6 +4,7 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
 import { getLocking } from '@nangohq/kvstore';
+import { deleteFunctionAsyncJobsOlderThan } from '@nangohq/sandbox';
 import {
     configService,
     connectionService,
@@ -45,6 +46,7 @@ const deleteConfigsOlderThan = envs.CRON_DELETE_OLD_CONFIGS_MAX_DAYS;
 const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
 const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
 const deleteEnvironmentsOlderThan = envs.CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS;
+const deleteFunctionAsyncJobsOlderThanDays = 14;
 
 export function deleteOldData(): void {
     if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN <= 0) {
@@ -126,6 +128,12 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'invitations',
             deleteFn: async () => await deleteExpiredInvitations({ limit, olderThan: deleteInvitationsOlderThan })
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'function async jobs',
+            deleteFn: async () => await deleteFunctionAsyncJobsOlderThan({ olderThanDays: deleteFunctionAsyncJobsOlderThanDays, limit })
         });
 
         // Delete syncs and all associated data

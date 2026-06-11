@@ -95,7 +95,9 @@ export class ProxyRequest {
                     const headersNeedOAuthAppCredentials =
                         proxyHeaders &&
                         Object.values(proxyHeaders).some((v) => typeof v === 'string' && (v.includes('${clientId}') || v.includes('${clientSecret}')));
-                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials) {
+
+                    const needsIntegrationConfig = Boolean(this.config.provider.integration_config);
+                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials || needsIntegrationConfig) {
                         this.integrationConfig = await this.getIntegrationConfig();
                     }
 
@@ -108,10 +110,13 @@ export class ProxyRequest {
                     const byteTotals = { sent: 0, received: 0 };
 
                     if (this.onBytes) {
-                        this.axiosConfig.transport = createMeteringTransport((bytes) => {
-                            byteTotals.sent += bytes.sent;
-                            byteTotals.received += bytes.received;
-                        });
+                        this.axiosConfig.transport = createMeteringTransport(
+                            (bytes) => {
+                                byteTotals.sent += bytes.sent;
+                                byteTotals.received += bytes.received;
+                            },
+                            this.axiosConfig.beforeRedirect as (opts: Record<string, unknown>) => void
+                        );
                     }
 
                     const start = new Date();

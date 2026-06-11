@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { AppSidebar } from '../components-v2/AppSidebar';
-import { AppHeader } from '@/components-v2/AppHeader';
-import { Playground } from '@/components-v2/Playground';
-import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
+import { AppSidebar } from './AppSidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
+import { Playground } from '@/features/Playground';
+import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
 
 interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -19,7 +19,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>((
                 <div
                     ref={ref}
                     className={cn(
-                        'relative w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl',
+                        'relative w-full flex-1 min-h-0 overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl',
                         fullWidth ? 'p-0' : 'p-11'
                     )}
                     {...props}

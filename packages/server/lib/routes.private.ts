@@ -67,6 +67,7 @@ import { getIntegrationFunction } from './controllers/v1/integrations/providerCo
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
+import { getIntegrationTemplates } from './controllers/v1/integrations/providerConfigKey/templates/getTemplates.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
@@ -85,6 +86,7 @@ import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
 import { postPlanExtendTrial } from './controllers/v1/plans/trial/postPlanExtendTrial.js';
 import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js';
+import { getBillingUsageTopDimensionValues } from './controllers/v1/plans/usage/getBillingUsageTopDimensionValues.js';
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getProviderItem } from './controllers/v1/providers/getProvider.js';
 import { getProvidersList } from './controllers/v1/providers/getProviders.js';
@@ -103,6 +105,7 @@ import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
+import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
@@ -110,7 +113,7 @@ import { isAllowedWebCorsOrigin } from './utils/cors.js';
 import type { Request, RequestHandler, Response } from 'express';
 
 let webAuth: RequestHandler[] = flagHasAuth
-    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
+    ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware]
     : isBasicAuthEnabled
       ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
       : [authMiddleware.noAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -198,6 +201,7 @@ web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, can(p.canChangePlan), postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
+web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUsageTopDimensionValues);
 web.route('/plans/billing/invoicing').put(webAuth, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/change').post(webAuth, can(p.canChangePlan), postPlanChange);
 
@@ -217,7 +221,11 @@ web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update',
 web.route('/environment/api-keys/:keyId').delete(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), deleteApiKey);
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+web.route('/environment/admin-auth').get(
+    webAuth,
+    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    environmentController.getAdminAuthInfo.bind(environmentController)
+);
 
 // Connect
 web.route('/connect/sessions').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), postInternalConnectSessions);
@@ -239,6 +247,7 @@ web.route('/integrations/:providerConfigKey/functions/:functionName').get(
     can({ action: 'read', resource: 'flow', scopedBy: envScope }),
     getIntegrationFunction
 );
+web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);
@@ -251,7 +260,11 @@ web.route('/connections/count').get(webAuth, can({ action: 'read', resource: 'co
 web.route('/connections/:connectionId').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionWeb);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
 web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
-web.route('/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/connections/admin/:connectionId').delete(
+    webAuth,
+    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    connectionController.deleteAdminConnection.bind(connectionController)
+);
 
 // User
 web.route('/user').get(webAuth, getUser);

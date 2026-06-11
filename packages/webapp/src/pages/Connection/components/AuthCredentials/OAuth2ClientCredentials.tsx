@@ -1,9 +1,9 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Button } from '@/components-v2/ui/button';
-import { Label } from '@/components-v2/ui/label';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Button } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 
 import type { ApiConnectionFull, OAuth2ClientCredentials } from '@nangohq/types';

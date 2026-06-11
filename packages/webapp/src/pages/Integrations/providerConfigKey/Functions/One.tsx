@@ -7,19 +7,18 @@ import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../compon
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
-import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EmptyCard } from '@/components-v2/EmptyCard';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
-import { LineSnippet } from '@/components-v2/LineSnippet';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { Skeleton } from '@/components-v2/ui/skeleton';
-import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
+import { LineSnippet } from '@/components/ui/LineSnippet';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
@@ -28,6 +27,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
+import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
 
 import type { JSONSchema7 } from 'json-schema';
@@ -133,7 +133,7 @@ export const FunctionsOne: React.FC = () => {
     }
 
     const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
-    const gitUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${gitDir}.ts`;
+    const gitUrl = `${githubRepo}/tree/main/integrations/${gitDir}.ts`;
 
     return (
         <DashboardLayout>

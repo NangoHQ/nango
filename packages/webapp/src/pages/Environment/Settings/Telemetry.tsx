@@ -9,11 +9,11 @@ import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironme
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { KeyValueInput } from '@/components-v2/KeyValueInput';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { Label } from '@/components-v2/ui/label';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export const Telemetry: React.FC = () => {
@@ -122,7 +122,6 @@ export const Telemetry: React.FC = () => {
                                 placeholderValue="value"
                                 disabled={!editHeaders || loading}
                                 isSecret={true}
-                                alwaysShowEmptyRow={editHeaders}
                             />
                             {errors.length > 0 && (
                                 <div className="flex flex-col gap-1">

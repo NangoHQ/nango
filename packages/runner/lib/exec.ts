@@ -13,9 +13,11 @@ import * as zod from 'zod';
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
 import { Err, Ok, errorToObject, isEnterprise, truncateJson } from '@nangohq/utils';
 
+import { PersistClient } from './clients/persist.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
+import { createTelemetryRecorder } from './telemetry.js';
 
 import type { Locks } from './sdk/locks.js';
 import type { CreateAnyResponse } from '@nangohq/runner-sdk';
@@ -50,14 +52,20 @@ export async function exec({
     abortController?: AbortController;
     locks?: Locks;
 }): Promise<Result<RunnerOutput, ExecutionError>> {
+    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const telemetryRecorder = createTelemetryRecorder({
+        environmentId: nangoProps.environmentId,
+        exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
+        persistClient
+    });
     const rawNango = (() => {
         switch (nangoProps.scriptType) {
             case 'sync':
             case 'webhook':
-                return new NangoSyncRunner(nangoProps, { locks });
+                return new NangoSyncRunner(nangoProps, { persistClient, telemetryRecorder, locks });
             case 'action':
             case 'on-event':
-                return new NangoActionRunner(nangoProps, { locks });
+                return new NangoActionRunner(nangoProps, { persistClient, telemetryRecorder, locks });
         }
     })();
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
@@ -397,6 +405,9 @@ export async function exec({
             } catch (err) {
                 logger.warning('Failed to release all locks', { reason: err });
             }
+            await telemetryRecorder
+                .shutdown({ timeoutMs: 5000 })
+                .catch((err: unknown) => logger.error('Failed to cleanly shutdown telemetry recorder', { reason: err }));
             span.finish();
         }
     });

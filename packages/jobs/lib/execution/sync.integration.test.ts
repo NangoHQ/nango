@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
-import { clearDbTestsOnly as clearRecordsDb, format as recordsFormatter, migrate as migrateRecords, records as recordsService } from '@nangohq/records';
+import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
+import { clearDb as clearRecordsDb } from '@nangohq/records/lib/stores/postgres/tests/helpers.js';
 import { getLatestSyncJob, isSyncJobRunning, seeders, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 
@@ -170,7 +171,7 @@ describe('Running sync', () => {
 
 const initDb = async () => {
     await multipleMigrations();
-    await migrateRecords();
+    await recordsService.migrate();
 };
 
 const runJob = async (
@@ -238,7 +239,8 @@ const runJob = async (
         connectionId: connection.id,
         environmentId: connection.environment_id,
         model,
-        softDelete
+        softDelete,
+        plan: null
     });
     if (upserting.isErr()) {
         throw new Error(`failed to upsert records: ${upserting.error.message}`);
@@ -295,7 +297,7 @@ const verifySyncRun = async (
 };
 
 const getRecords = async (connection: ConnectionJobs, model: string) => {
-    const res = await recordsService.getRecords({ connectionId: connection.id, model });
+    const res = await recordsService.getRecords({ connectionId: connection.id, model, plan: null });
     if (res.isOk()) {
         return res.value.records;
     }
@@ -323,7 +325,8 @@ async function populateRecords(
             records: records.slice(i, i + chunkSize),
             connectionId: connection.id,
             environmentId: connection.environment_id,
-            model
+            model,
+            plan: null
         });
         if (res.isErr()) {
             throw new Error(`Failed to upsert records: ${res.error.message}`);
