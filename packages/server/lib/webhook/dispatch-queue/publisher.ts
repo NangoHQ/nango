@@ -73,7 +73,7 @@ export class DispatchQueuePublisher {
         const firstMessage = messages[0]!.message;
         const batches = chunk(
             messages,
-            { count: 0, bytes: 0 },
+            () => ({ count: 0, bytes: 0 }),
             (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + item.byteSize }),
             (acc, item) => acc.count >= this.batchSize || acc.bytes + item.byteSize > SQS_BATCH_MAX_BYTES
         );
