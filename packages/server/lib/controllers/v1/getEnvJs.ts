@@ -20,6 +20,7 @@ import type { RequestHandler } from 'express';
 export const getEnvJs: RequestHandler = (_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
+        connectApiUrl: baseUrl,
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,

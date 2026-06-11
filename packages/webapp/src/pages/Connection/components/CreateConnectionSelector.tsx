@@ -167,7 +167,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
+            apiURL: globalEnv.connectApiUrl,
             onEvent
         });
 
@@ -201,7 +201,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
 
             const { connect_link: connectLink, expires_at: expiresAt } = res.json.data;
             const shareUrl = new URL(connectLink);
-            shareUrl.searchParams.set('apiURL', globalEnv.apiUrl);
+            shareUrl.searchParams.set('apiURL', globalEnv.connectApiUrl);
 
             try {
                 await navigator.clipboard.writeText(shareUrl.toString());
