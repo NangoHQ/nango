@@ -48,7 +48,7 @@ export const AppHeader: React.FC = () => {
                     Help
                 </ButtonLink>
                 {isDevToolsEnabled && themeSwitcher && (
-                    <Button variant="outline" size="icon" onClick={toggleDarkMode} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+                    <Button variant="outline" size="sm" className="size-8 p-0" onClick={toggleDarkMode} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
                         {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
                     </Button>
                 )}
