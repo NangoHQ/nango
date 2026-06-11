@@ -592,6 +592,43 @@ adyen:
             suffix: -(live|test).adyen.com
             prefix: https://
 
+adyntel:
+    display_name: Adyntel
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.adyntel.com
+        body:
+            api_key: ${apiKey}
+            email: ${connectionConfig.email}
+        verification:
+            method: POST
+            endpoints:
+                - /domain-keywords
+            headers:
+                content-type: application/json
+            data:
+                company_domain: example.com
+    docs: https://nango.dev/docs/api-integrations/adyntel
+    docs_connect: https://nango.dev/docs/api-integrations/adyntel/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Adyntel dashboard.
+            example: hd-f66446a8**************-6
+            pattern: '^hd-[a-f0-9]+-[a-z0-9]+$'
+            doc_section: '#step-1-obtain-your-api-key'
+    connection_config:
+        email:
+            type: string
+            title: Email
+            description: The login email address for your Adyntel account.
+            format: email
+            example: you@company.com
+            doc_section: '#step-2-find-your-email-address'
+
 affinity:
     display_name: Affinity (v1)
     categories:
@@ -1099,6 +1136,26 @@ amazon-selling-partner-beta:
                 - fe
             doc_section: '#step-3-finding-your-proxy-baseurl-region'
             order: 3
+
+a-leads:
+    display_name: A-Leads
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.a-leads.co/gateway
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/a-leads
+    docs_connect: https://nango.dev/docs/integrations/all/a-leads/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your A-Leads API key
+            doc_section: '#step-1-obtain-your-api-key'
+            example: a3f8b2e1********************d9c4
+            pattern: '^[a-f0-9]{32}$'
 
 anrok:
     display_name: Anrok
@@ -5693,6 +5750,30 @@ dialpad-sandbox:
         base_url: https://sandbox.dialpad.com
     docs: https://nango.dev/docs/integrations/all/dialpad-sandbox
 
+diffbot:
+    display_name: Diffbot
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.diffbot.com
+        query:
+            token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v4/account
+    docs: https://nango.dev/docs/api-integrations/diffbot
+    docs_connect: https://nango.dev/docs/api-integrations/diffbot/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Diffbot API token.
+            example: c4f82a1b********************e7d3
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-obtain-your-api-token'
+
 digitalocean:
     display_name: DigitalOcean
     categories:
@@ -5748,6 +5829,30 @@ digits-mcp:
     proxy:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
+
+discolike:
+    display_name: DiscoLike
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.discolike.com
+        headers:
+            x-discolike-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/count
+    docs: https://nango.dev/docs/api-integrations/discolike
+    docs_connect: https://nango.dev/docs/api-integrations/discolike/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your DiscoLike API key.
+            doc_section: '#step-1-obtain-your-api-key'
+            example: 123e4567-e89b-12d3-a456-426614174000
+            format: uuid
 
 discord:
     display_name: Discord
@@ -11025,6 +11130,31 @@ leadmagic:
             pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-your-api-key'
 
+leadfeeder:
+    display_name: Leadfeeder
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.leadfeeder.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/accounts
+    docs: https://nango.dev/docs/api-integrations/leadfeeder
+    docs_connect: https://nango.dev/docs/api-integrations/leadfeeder/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Leadfeeder account.
+            example: a3f8c2b1****************************8805
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-obtain-your-api-key'
+
 lessonly:
     display_name: Lessonly
     categories:
@@ -11808,6 +11938,43 @@ marketo:
             suffix: /identity/oauth/token
             order: 2
             doc_section: '#step-3-find-your-domain-and-identity-url'
+
+mattermost:
+    display_name: Mattermost
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /v4/users/me
+    docs: https://nango.dev/docs/api-integrations/mattermost
+    docs_connect: https://nango.dev/docs/api-integrations/mattermost/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Server URL
+            description: The hostname of your Mattermost server.
+            example: mattermost.example.com
+            pattern: '^[a-zA-Z0-9.-]+(?::[0-9]+)?$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-mattermost-server-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Mattermost personal access token.
+            example: 'hx3mq8n0vy6***************'
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-generate-a-personal-access-token'
 
 malwarebytes:
     display_name: Malwarebytes
