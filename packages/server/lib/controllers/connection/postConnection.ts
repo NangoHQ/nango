@@ -410,8 +410,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
             account,
             environment,
             provider,
-            error: customValidationResponse.error,
-            logCtx
+            error: customValidationResponse.error
         });
 
         await logCtx.failed();

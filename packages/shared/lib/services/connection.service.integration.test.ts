@@ -419,7 +419,7 @@ describe('Connection service integration tests', () => {
         it('should set refresh_exhausted and clear last_refresh_success', async () => {
             const env = await createEnvironmentSeed();
             const config = await createConfigSeed(env, 'test-auth-failed', 'google');
-            const connection = await createConnectionSeed({ env, provider: config.provider });
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
 
             await connectionService.markConnectionAuthFailed({ id: connection.id });
 
