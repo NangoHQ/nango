@@ -1,6 +1,6 @@
 import { ChevronRight, Plus } from 'lucide-react';
 
-import { Button, IconButton } from './button';
+import { Button, IconButton } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react';
 
