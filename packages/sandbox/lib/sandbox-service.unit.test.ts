@@ -43,7 +43,7 @@ describe('SandboxService', () => {
         const service = new SandboxService(createProvider({ cleanup }));
 
         await service.cleanup({ sandboxId: null });
-        await service.cleanup({ sandboxId: 'local' });
+        await service.cleanup({ sandboxId: undefined });
 
         expect(cleanup).not.toHaveBeenCalled();
     });

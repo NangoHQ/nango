@@ -28,7 +28,7 @@ export class SandboxService {
     }
 
     async cleanup(params: { sandboxId: string | null | undefined }): Promise<void> {
-        if (!params.sandboxId || params.sandboxId === 'local') {
+        if (!params.sandboxId) {
             return;
         }
 
