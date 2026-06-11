@@ -1100,6 +1100,7 @@
               "integrations/all/digitalocean",
               "api-integrations/digits",
               "api-integrations/digits-mcp",
+              "api-integrations/discolike",
               "api-integrations/discord",
               "integrations/all/discourse",
               "integrations/all/dixa",
