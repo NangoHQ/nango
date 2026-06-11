@@ -592,6 +592,43 @@ adyen:
             suffix: -(live|test).adyen.com
             prefix: https://
 
+adyntel:
+    display_name: Adyntel
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.adyntel.com
+        body:
+            api_key: ${apiKey}
+            email: ${connectionConfig.email}
+        verification:
+            method: POST
+            endpoints:
+                - /domain-keywords
+            headers:
+                content-type: application/json
+            data:
+                company_domain: example.com
+    docs: https://nango.dev/docs/api-integrations/adyntel
+    docs_connect: https://nango.dev/docs/api-integrations/adyntel/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Adyntel dashboard.
+            example: hd-f66446a8**************-6
+            pattern: '^hd-[a-f0-9]+-[a-z0-9]+$'
+            doc_section: '#step-1-obtain-your-api-key'
+    connection_config:
+        email:
+            type: string
+            title: Email
+            description: The login email address for your Adyntel account.
+            format: email
+            example: you@company.com
+            doc_section: '#step-2-find-your-email-address'
+
 affinity:
     display_name: Affinity (v1)
     categories:
