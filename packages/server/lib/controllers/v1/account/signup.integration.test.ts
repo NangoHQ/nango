@@ -45,7 +45,7 @@ describe('POST /api/v1/account/signup', () => {
     });
 
     it('should enforce password strength', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: { email: 'a@example.com', name: 'Foobar', password: '12345678', foundUs: '' } });
+        const res = await api.fetch(route, { method: 'POST', body: { email: 'a@example.com', name: 'Foobar', password: '123456789101', foundUs: '' } });
 
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
