@@ -17,8 +17,8 @@ function SelectValue({ ...props }: React.ComponentProps<typeof SelectPrimitive.V
 }
 
 // Radix FocusScope restores focus via setTimeout, breaking Chrome's pointer-origin heuristic
-// for :focus-visible. Track pointer-based item selection to suppress the ring on restoration.
-let suppressNextFocusVisible = false;
+// for :focus-visible. Track the specific trigger whose close was pointer-initiated.
+const pendingFocusSuppression = new WeakSet<HTMLButtonElement>();
 
 interface SelectTriggerProps extends React.ComponentProps<typeof SelectPrimitive.Trigger> {
     size?: 'default' | 'sm';
@@ -34,11 +34,17 @@ function SelectTrigger({ className, children, size = 'default', onFocus, ...prop
                 className
             )}
             onFocus={(e) => {
-                if (suppressNextFocusVisible) {
-                    suppressNextFocusVisible = false;
-                    const el = e.currentTarget;
+                const el = e.currentTarget;
+                if (pendingFocusSuppression.has(el)) {
+                    pendingFocusSuppression.delete(el);
                     el.style.boxShadow = 'none';
-                    el.addEventListener('blur', () => { el.style.boxShadow = ''; }, { once: true });
+                    el.addEventListener(
+                        'blur',
+                        () => {
+                            el.style.boxShadow = '';
+                        },
+                        { once: true }
+                    );
                 }
                 onFocus?.(e);
             }}
@@ -94,7 +100,10 @@ function SelectItem({ className, children, onPointerDown, ...props }: React.Comp
                 className
             )}
             onPointerDown={(e) => {
-                suppressNextFocusVisible = true;
+                const trigger = document.querySelector<HTMLButtonElement>('[data-slot=select-trigger][data-state=open]');
+                if (trigger) {
+                    pendingFocusSuppression.add(trigger);
+                }
                 onPointerDown?.(e);
             }}
             {...props}
