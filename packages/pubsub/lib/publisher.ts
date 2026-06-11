@@ -71,10 +71,6 @@ export class Publisher {
 function reportBatchPublishResults(subject: Event['subject'], batchSize: number, res: Result<PublishBatchResult>) {
     const report = matchWith<PublishBatchResult, Error, void>(
         (value) => {
-            if (value.successful.length > 0) {
-                metrics.increment(metrics.Types.PUBSUB_PUBLISH, value.successful.length, { subject: subject, success: 'true' });
-            }
-
             if (value.failed.length > 0) {
                 logger.error(`publishBatch partial failure`, {
                     subject: subject,
