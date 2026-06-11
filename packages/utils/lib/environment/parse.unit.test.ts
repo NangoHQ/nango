@@ -143,16 +143,40 @@ describe('parse', () => {
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
     });
 
-    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to empty array', () => {
+    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(true);
     });
 
-    it('should parse NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON array and trim entries', () => {
+    it('should parse NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED false', () => {
+        const res = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: 'false' });
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(false);
+    });
+
+    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to secure defaults when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual(['169.254.169.254', 'metadata.google.internal', 'localhost', '127.0.0.1', '[::1]']);
+    });
+
+    it('should allow explicit opt-out of NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', () => {
+        const resEmpty = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '[]' });
+        expect(resEmpty.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+        const resBlank = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '' });
+        expect(resBlank.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+    });
+
+    it('should merge custom NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST entries with defaults', () => {
         const res = parseEnvs(ENVS, {
-            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([' 169.254.169.254 ', 'localhost', ''])
+            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid', ''])
         });
-        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual(['169.254.169.254', 'localhost']);
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([
+            '169.254.169.254',
+            'metadata.google.internal',
+            'localhost',
+            '127.0.0.1',
+            '[::1]',
+            'denylisted-proxy-test.invalid'
+        ]);
     });
 
     it('should throw on invalid NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON', () => {

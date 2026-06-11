@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
 export const ENVS = z.object({
@@ -32,30 +33,31 @@ export const ENVS = z.object({
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: z.stringbool().optional().default(true),
     NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: z
         .string()
+        .optional()
         .transform((s, ctx) => {
-            if (s.trim() === '') {
+            if (s === undefined) {
+                return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+            }
+            const trimmed = s.trim();
+            if (trimmed === '' || trimmed === '[]') {
                 return [];
             }
             try {
-                const parsed = JSON.parse(s);
+                const parsed = JSON.parse(trimmed);
                 if (!Array.isArray(parsed) || !parsed.every((item: unknown) => typeof item === 'string')) {
                     ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a JSON array of strings`);
                     return z.NEVER;
                 }
-                return parsed;
+                const customEntries = parsed.map((e: string) => e.trim()).filter((e: string) => e.length > 0);
+                return mergeProxyBaseUrlOverrideDenylist(customEntries);
             } catch {
                 ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a valid JSON array of strings`);
                 return z.NEVER;
             }
-        })
-        .pipe(
-            z.array(z.string()).transform((arr) => {
-                return arr.map((e) => e.trim()).filter((e) => e.length > 0);
-            })
-        )
-        .default([]),
+        }),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

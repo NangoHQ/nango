@@ -17,9 +17,8 @@ import {
     pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
-import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, getLogger, isBaseUrlOverrideDenied, metrics, normalizeDenylist, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
-import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDenylist.js';
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
@@ -76,6 +75,15 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const { environment, account, plan } = res.locals;
 
     const baseUrlOverride = parsedHeaders['base-url-override'];
+    if (baseUrlOverride && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+        res.status(400).send({
+            error: {
+                code: 'base_url_override_disabled',
+                message: 'Base URL override is disabled by server configuration.'
+            }
+        });
+        return;
+    }
     if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
         res.status(400).send({
             error: {
@@ -153,6 +161,15 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         // denylist-check custom.baseUrl when no override is supplied — otherwise a safe override would be wrongly rejected.
         const provider = getProvider(integration.provider);
         const customBaseUrl = !baseUrlOverride && provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
+        if (customBaseUrl && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+            void logCtx.error('Integration base URL override is disabled by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: { code: 'base_url_override_disabled', message: 'Base URL override is disabled by server configuration.' }
+            });
+            return;
+        }
         if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
             void logCtx.error('Integration base URL is not allowed by server configuration');
             await logCtx.failed();

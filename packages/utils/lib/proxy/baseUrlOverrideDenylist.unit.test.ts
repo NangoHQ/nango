@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { canonicalizeHostnameForDenylist, isBaseUrlOverrideDenied, normalizeDenylist, normalizeDenylistHost } from './baseUrlOverrideDenylist.js';
+import {
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+    canonicalizeHostnameForDenylist,
+    isBaseUrlOverrideDenied,
+    mergeProxyBaseUrlOverrideDenylist,
+    normalizeDenylist,
+    normalizeDenylistHost,
+    resolveProxyBaseUrlOverrideDenylist
+} from './baseUrlOverrideDenylist.js';
 
 describe('canonicalizeHostnameForDenylist', () => {
     it('strips trailing FQDN dot', () => {
@@ -88,5 +96,36 @@ describe('isBaseUrlOverrideDenied', () => {
 
     it('fails closed when URL cannot be parsed and denylist is non-empty', () => {
         expect(isBaseUrlOverrideDenied('http://', new Set(['localhost']))).toBe(true);
+    });
+});
+
+describe('mergeProxyBaseUrlOverrideDenylist', () => {
+    it('merges custom entries with defaults and dedupes', () => {
+        expect(mergeProxyBaseUrlOverrideDenylist(['denylisted-proxy-test.invalid', 'localhost'])).toEqual([
+            ...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+            'denylisted-proxy-test.invalid'
+        ]);
+    });
+});
+
+describe('resolveProxyBaseUrlOverrideDenylist', () => {
+    it('returns defaults when env is unset', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist(undefined)).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+    });
+
+    it('returns empty array for explicit opt-out', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('  ')).toEqual([]);
+    });
+
+    it('merges custom JSON array with defaults', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist(JSON.stringify(['denylisted-proxy-test.invalid']))).toEqual(
+            mergeProxyBaseUrlOverrideDenylist(['denylisted-proxy-test.invalid'])
+        );
+    });
+
+    it('returns empty array on invalid JSON (fail-open for sandbox callers)', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('not-json')).toEqual([]);
     });
 });

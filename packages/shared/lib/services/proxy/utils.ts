@@ -39,7 +39,9 @@ type ProxyErrorCode =
     | 'unknown_error'
     | 'failed_to_get_connection'
     | 'invalid_certificate_or_key_format'
-    | 'proxy_redirect_to_denied_host';
+    | 'proxy_redirect_to_denied_host'
+    | 'base_url_override_disabled'
+    | 'base_url_override_not_allowed';
 
 export interface RetryReason {
     retry: boolean;

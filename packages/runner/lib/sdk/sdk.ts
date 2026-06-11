@@ -1,11 +1,13 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
-import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { ProxyError, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import {
     MAX_LOG_PAYLOAD,
     getCheckpointKey,
+    isBaseUrlOverrideDenied,
     isTest,
     metrics,
+    normalizeDenylist,
     redactHeaders,
     redactURL,
     stringifyAndTruncateValue,
@@ -120,12 +122,33 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
+        const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
+
+        if (config.baseUrlOverride) {
+            if (!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+                throw new ProxyError('base_url_override_disabled', 'Base URL override is disabled by server configuration.');
+            }
+            if (isBaseUrlOverrideDenied(config.baseUrlOverride, baseUrlOverrideDenylist)) {
+                throw new ProxyError('base_url_override_not_allowed', 'This base URL override is not allowed by server configuration.');
+            }
+        }
 
         let canRetryOn401 = true;
         let prevConnection: ApiPublicConnectionFull | undefined;
         const proxy = new ProxyRequest({
             proxyConfig: getProxyConfiguration({
-                externalConfig: this.getProxyConfig(config),
+                externalConfig: {
+                    ...this.getProxyConfig(config),
+                    ...(baseUrlOverrideDenylist.size > 0
+                        ? {
+                              validateProxyRedirectUrl: (absoluteUrl: string) => {
+                                  if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                                      throw new ProxyError('proxy_redirect_to_denied_host', 'This redirect target is not allowed by server configuration.');
+                                  }
+                              }
+                          }
+                        : {})
+                },
                 internalConfig: {
                     providerName: this.provider!
                 }
