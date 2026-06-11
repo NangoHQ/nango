@@ -2,6 +2,7 @@ import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
 import { ProxyError, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import {
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     MAX_LOG_PAYLOAD,
     getCheckpointKey,
     isBaseUrlOverrideDenied,
@@ -52,6 +53,22 @@ export const oldLevelToNewLevel = {
 
 const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
+
+function getRunnerProxyDenylist(): Set<string> {
+    if (!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+        return normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+    }
+
+    const raw = process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
+    if (raw !== undefined) {
+        const trimmed = raw.trim();
+        if (trimmed === '' || trimmed === '[]') {
+            return normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        }
+    }
+
+    return normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
+}
 
 /**
  * Action SDK
@@ -122,7 +139,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
-        const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
+        const baseUrlOverrideDenylist = getRunnerProxyDenylist();
 
         if (config.baseUrlOverride) {
             if (!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {

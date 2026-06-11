@@ -417,7 +417,9 @@ class Kubernetes {
             { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
             { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
             { name: 'NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', value: String(envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) },
-            { name: 'NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', value: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) },
+            ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
+                ? [{ name: 'NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', value: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }]
+                : []),
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),

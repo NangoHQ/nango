@@ -85,15 +85,13 @@ async function makeActionInstance() {
 describe('uncontrolledFetch', () => {
     beforeEach(() => {
         vi.resetModules();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        delete process.env['AWS_LAMBDA_RUNTIME_API'];
+        vi.unstubAllEnvs();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        delete process.env['AWS_LAMBDA_RUNTIME_API'];
+        vi.unstubAllEnvs();
     });
 
     it('rejects redirects to non-HTTP(S) schemes', async () => {
@@ -108,8 +106,24 @@ describe('uncontrolledFetch', () => {
         });
     });
 
+    it('blocks localhost when override feature is disabled even if denylist env is empty', async () => {
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'false');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', '[]');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('http://localhost:3003/health') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it('blocks a redirect hop to a denylisted host', async () => {
-        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = JSON.stringify(['metadata.google.internal']);
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['metadata.google.internal']));
         const fetchMock = vi
             .fn()
             .mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'https://metadata.google.internal/latest/meta-data/' } }));
@@ -376,12 +390,13 @@ describe('uncontrolledFetch byte metering helpers', () => {
 describe('uncontrolledFetch transfer metering', () => {
     beforeEach(() => {
         vi.resetModules();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
+        vi.unstubAllEnvs();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+        vi.unstubAllEnvs();
     });
 
     it('records request and response transfer bytes for a simple GET', async () => {

@@ -12,13 +12,11 @@ import {
 describe('runner-sdk baseUrlOverrideDenylist', () => {
     beforeEach(() => {
         vi.resetModules();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        delete process.env['AWS_LAMBDA_RUNTIME_API'];
+        vi.unstubAllEnvs();
     });
 
     afterEach(() => {
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        delete process.env['AWS_LAMBDA_RUNTIME_API'];
+        vi.unstubAllEnvs();
     });
 
     it('matches utils canonicalizeHostnameForDenylist behavior', () => {
@@ -40,8 +38,9 @@ describe('runner-sdk baseUrlOverrideDenylist', () => {
         expect(resolveProxyBaseUrlOverrideDenylist(undefined)).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
     });
 
-    it('resolveProxyBaseUrlOverrideDenylist allows explicit opt-out', () => {
-        expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([]);
+    it('resolveProxyBaseUrlOverrideDenylist applies secure defaults for empty env (runner does not inherit server opt-out)', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(resolveProxyBaseUrlOverrideDenylist('')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
     });
 
     it('mergeProxyBaseUrlOverrideDenylist merges custom entries with defaults', () => {
@@ -58,16 +57,26 @@ describe('runner-sdk baseUrlOverrideDenylist', () => {
         expect(denylist.has('169.254.169.254')).toBe(true);
     });
 
-    it('getBaseUrlOverrideDenylistFromEnv honors explicit opt-out', async () => {
-        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = '[]';
+    it('getBaseUrlOverrideDenylistFromEnv applies secure defaults when denylist env is empty', async () => {
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', '[]');
         const { getBaseUrlOverrideDenylistFromEnv: getDenylist } = await import('./baseUrlOverrideDenylist.js');
         const denylist = getDenylist();
-        expect(denylist.size).toBe(0);
+        expect(denylist.has('localhost')).toBe(true);
+        expect(denylist.has('169.254.169.254')).toBe(true);
+    });
+
+    it('getBaseUrlOverrideDenylistFromEnv enforces secure defaults when override feature is disabled', async () => {
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'false');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', '[]');
+        const { getBaseUrlOverrideDenylistFromEnv: getDenylist } = await import('./baseUrlOverrideDenylist.js');
+        const denylist = getDenylist();
+        expect(denylist.has('localhost')).toBe(true);
+        expect(denylist.has('169.254.169.254')).toBe(true);
     });
 
     it('getBaseUrlOverrideDenylistFromEnv auto-denies AWS Lambda runtime API host', async () => {
-        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = '[]';
-        process.env['AWS_LAMBDA_RUNTIME_API'] = '127.0.0.1:9001';
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', '[]');
+        vi.stubEnv('AWS_LAMBDA_RUNTIME_API', '127.0.0.1:9001');
         const { getBaseUrlOverrideDenylistFromEnv: getDenylist } = await import('./baseUrlOverrideDenylist.js');
         const denylist = getDenylist();
         expect(denylist.has('127.0.0.1')).toBe(true);

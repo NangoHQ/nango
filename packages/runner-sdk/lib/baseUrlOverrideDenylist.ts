@@ -68,6 +68,19 @@ export function mergeProxyBaseUrlOverrideDenylist(customEntries: string[]): stri
     return [...new Set(merged)];
 }
 
+function isBaseUrlOverrideEnabledFromEnv(): boolean {
+    const raw = typeof process !== 'undefined' ? process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'] : undefined;
+    if (raw === undefined) {
+        return true;
+    }
+    const normalized = raw.trim().toLowerCase();
+    return normalized !== 'false' && normalized !== '0';
+}
+
+/**
+ * Runner-side denylist resolution. Unlike server env parsing, runners always apply secure defaults
+ * when the env is unset or empty (`[]` / `''`) so a server-level opt-out is not inherited.
+ */
 export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): string[] {
     if (raw === undefined) {
         return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
@@ -75,7 +88,7 @@ export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): st
 
     const trimmed = raw.trim();
     if (trimmed === '' || trimmed === '[]') {
-        return [];
+        return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
     }
 
     try {
@@ -95,13 +108,18 @@ export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): st
 
 let memoizedBaseUrlOverrideDenylist: Set<string> | null = null;
 
+export function isBaseUrlOverridePolicyEnabledFromEnv(): boolean {
+    return isBaseUrlOverrideEnabledFromEnv();
+}
+
 export function getBaseUrlOverrideDenylistFromEnv(): Set<string> {
     if (memoizedBaseUrlOverrideDenylist) {
         return memoizedBaseUrlOverrideDenylist;
     }
 
     const raw = typeof process !== 'undefined' ? process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] : undefined;
-    const denylist = normalizeDenylist(resolveProxyBaseUrlOverrideDenylist(raw));
+    const entries = isBaseUrlOverrideEnabledFromEnv() ? resolveProxyBaseUrlOverrideDenylist(raw) : [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+    const denylist = normalizeDenylist(entries);
 
     const lambdaRuntimeApi = typeof process !== 'undefined' ? process.env['AWS_LAMBDA_RUNTIME_API'] : undefined;
     if (lambdaRuntimeApi) {
