@@ -21,37 +21,26 @@ shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in th
 
 **Tailwind v4 syntax for token values:**
 
-Tokens registered in `@theme` inside `tokens.generated.css` are available as plain Tailwind utilities — no `[var(...)]` needed:
+All tokens in `tokens.generated.css` that are registered in `@theme` can be used as regular Tailwind utilities — no `[var(...)]` needed for colours:
+
+All tokens in `tokens.generated.css` are registered in `@theme` and can be used as plain Tailwind utilities:
 
 ```tsx
-// colours — semantic tokens (there are no component-level button-* tokens;
-// compose variants from the semantic interactive/text/border/surface namespaces)
-'bg-interactive-primary'          // filled primary button background
-'text-text-on-brand'              // white text on filled interactive backgrounds
-'bg-interactive-primary-hover'    // hover state
-'bg-interactive-primary-active'   // active/pressed state
-'bg-interactive-disabled'         // disabled fill for any variant
-'bg-interactive-ghost'            // transparent (ghost / link variants)
-'bg-interactive-ghost-hover'      // subtle hover overlay (transparent dark/light)
-'bg-interactive-danger'           // danger fill
-'bg-surface-panel'                // white panel fill (secondary variant)
-'bg-surface-panel-inset'          // light gray inset fill
-'text-text-default'               // body text
-'text-text-disabled'              // muted text for disabled states
-'text-text-danger'                // danger text (link-danger variant)
-'border-border-default'           // default border
-'border-border-strong'            // stronger border (secondary hover, outline hover)
-'border-border-disabled'          // faint border for disabled outlines
+// colours — component and semantic tokens
+'bg-button-primary-bg-default'
+'text-text-default'
+'border-input-border-default'
+'hover:bg-button-primary-bg-hover'
+'disabled:text-button-primary-text-disabled'
 
 // focus rings — registered as --shadow-* → shadow-*
 'focus-visible:shadow-focus-outline-default'
 'focus-visible:shadow-focus-outline-danger'
 
-// typography — registered as --text-ds-*, --font-weight-ds-*, --leading-ds-*, --tracking-ds-*
+// typography — registered as --text-ds-*, --font-weight-ds-*, --tracking-ds-*
 'text-ds-md'          // font-size: 14px
 'text-ds-xs'          // font-size: 12px
 'font-ds-medium'      // font-weight: 500
-'leading-ds-normal'   // line-height: 1.5
 'tracking-ds-tight'   // letter-spacing: -0.01em
 
 // radius — registered as --radius-ds-* → rounded-ds-*
@@ -97,50 +86,15 @@ Use native Tailwind for everything structural — things that are about layout, 
 
 | What | Token pattern | Example |
 |---|---|---|
-| Interactive fills | `--interactive-<variant>[-hover|-active]` | `--interactive-primary`, `--interactive-danger` |
-| Surface fills | `--surface-<role>` | `--surface-canvas`, `--surface-panel`, `--surface-panel-inset` |
-| Text colours | `--text-<role>` | `--text-default`, `--text-on-accent` (white on fills), `--text-danger` |
-| Border colours | `--border-<role>` | `--border-default`, `--border-strong`, `--border-danger` |
-| State overlays | `--state-<state>` | `--state-hover`, `--state-pressed`, `--state-selected` |
-| Focus rings | `--focus-outline-default`, `--focus-outline-danger` | (box-shadow value) |
+| Component colours | `--<component>-<variant>-<property>-<state>` | `--button-primary-bg-default` |
+| Text colours | `--text-<role>` | `--text-default`, `--text-secondary`, `--text-disabled` |
 | Spacing | `--ds-space-<n>` | `--ds-space-2` (8px), `--ds-space-2-5` (10px) |
 | Radius | `--ds-radius-<size>` | `--ds-radius-sm` (4px), `--ds-radius-full` |
 | Border width | `--ds-border-width-<n>` | `--ds-border-width-1` (1px), `--ds-border-width-hairline` (0.5px) |
 | Typography | `--ds-typography-font-size-<size>` | `--ds-typography-font-size-md` (14px) |
 | Motion | `--ds-motion-duration-<speed>`, `--ds-motion-easing-<curve>` | `--ds-motion-duration-fast` (100ms) |
+| Focus rings | `--focus-outline-default`, `--focus-outline-danger` | (box-shadow value, not a colour) |
 | Icon sizes | `--ds-icon-size-<size>` | `--ds-icon-size-sm` (14px) |
-
-> **No component-level tokens.** There are no `--button-*`, `--input-*`, etc. tokens. The token set is intentionally semantic-only; component variants are composed from the namespaces above (see `button.tsx` for the pattern).
-
-**Figma variable → CSS custom property → Tailwind utility**
-
-Figma variables use `/` separators and camelCase. The CSS pipeline converts them to kebab-case with `-` separators. The Tailwind utility is just the CSS var name used as a class suffix:
-
-```
-Figma variable path          CSS custom property              Tailwind utility
-──────────────────────────   ─────────────────────────────   ─────────────────────────────
-interactive/primary          --interactive-primary           bg-interactive-primary
-interactive/primaryHover     --interactive-primary-hover     bg-interactive-primary-hover
-interactive/danger           --interactive-danger            bg-interactive-danger
-text/onAccent                --text-on-accent                text-text-on-accent
-text/default                 --text-default                  text-text-default
-text/danger                  --text-danger                   text-text-danger
-text/disabled                --text-disabled                 text-text-disabled
-surface/panel                --surface-panel                 bg-surface-panel
-surface/panelInset           --surface-panel-inset           bg-surface-panel-inset
-border/default               --border-default                border-border-default
-border/strong                --border-strong                 border-border-strong
-border/disabled              --border-disabled               border-border-disabled
-state/hover                  --state-hover                   bg-state-hover
-state/pressed                --state-pressed                 bg-state-pressed
-state/selected               --state-selected                bg-state-selected
-focus/outlineDefault         --focus-outline-default         shadow-focus-outline-default
-icon/default                 --icon-default                  text-icon-default
-```
-
-**Transformation rule:** replace `/` with `-`, convert camelCase to kebab-case (e.g. `onAccent` → `on-accent`). The result is the CSS variable name (without `--`); the Tailwind utility prefixes `bg-`, `text-`, `border-`, etc. depending on the property.
-
-When inspecting a node in Figma Dev Mode, the variable panel shows paths like `interactive/primary`. Apply this rule to get the Tailwind class directly without guessing.
 
 **Focus rings** use `box-shadow`, not `outline`:
 ```tsx
@@ -248,7 +202,7 @@ src/
       button.stories.tsx
       icon-button.tsx
       icon-button.stories.tsx
-      spinner.tsx          standalone loading indicator; also used by Button internally
+      spinner.tsx          internal — used by Button for loading state
       …                    add new components here
   lib/
     cn.ts                  cn() helper: twMerge + clsx
