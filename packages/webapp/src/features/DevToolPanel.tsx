@@ -12,9 +12,13 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  * True when the dev tool panel is available based on the current hostname:
  * - local Vite dev server
  * - *.app-development.nango.dev (development deployment and PR previews)
+ * - app-staging.nango.dev (staging deployment)
  */
 const isDevToolsEnabledByHostname =
-    import.meta.env.DEV || window.location.hostname === 'app-development.nango.dev' || window.location.hostname.endsWith('.app-development.nango.dev');
+    import.meta.env.DEV ||
+    window.location.hostname === 'app-development.nango.dev' ||
+    window.location.hostname.endsWith('.app-development.nango.dev') ||
+    window.location.hostname === 'app-staging.nango.dev';
 
 /**
  * Returns true when the dev tool panel should be available — either on a dev
