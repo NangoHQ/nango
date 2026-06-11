@@ -59,8 +59,8 @@ export enum LocalStorageKeys {
  * keys (theme, feature flags) survive. The Record type forces every key to be
  * classified, so a new one can't accidentally skip this decision.
  *
- * Playground lives in sessionStorage, so clearing it here is a no-op (whether
- * logout should reset that state is left open).
+ * Playground lives in sessionStorage, so clearing it here is a no-op; logout
+ * resets it separately via resetPlayground() (see useSignout).
  */
 const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.UserEmail]: 'session',
