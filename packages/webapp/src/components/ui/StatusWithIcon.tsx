@@ -11,7 +11,7 @@ const statusVariants = cva('flex items-center justify-center [&_svg]:size-4.5 [&
             success: '[&_svg]:fill-status-success-bg [&_svg]:stroke-status-success-text',
             error: '[&_svg]:fill-status-danger-bg [&_svg]:stroke-status-danger-text',
             warning: '[&_svg]:fill-status-warning-bg [&_svg]:stroke-status-warning-text',
-            neutral: '[&_svg]:fill-status-neutral-bg [&_svg]:stroke-status-neutral-text'
+            neutral: '[&_svg]:fill-transparent [&_svg]:stroke-status-neutral-text'
         }
     },
     defaultVariants: {

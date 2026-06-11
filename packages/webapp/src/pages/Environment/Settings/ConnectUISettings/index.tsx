@@ -242,7 +242,7 @@ export const ConnectUISettings = () => {
                     </div>
                 </form>
                 <div className="w-full min-h-full flex justify-end items-center">
-                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[450px] max-h-[700px]" />
+                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[450px] max-h-[700px] border border-border-muted rounded-md" />
                 </div>
             </div>
         </SettingsContent>

@@ -517,8 +517,7 @@ export const ApiKeys: React.FC = () => {
             ) : apiKeys.length === 0 ? (
                 <div className="text-body-small-regular text-text-muted py-4">No API keys yet. Create one to get started.</div>
             ) : (
-                <div className="[&_[data-slot=table-container]]:border-0 [&_[data-slot=table-container]]:rounded-none">
-                    <Table>
+                <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Name</TableHead>
@@ -571,7 +570,6 @@ export const ApiKeys: React.FC = () => {
                             ))}
                         </TableBody>
                     </Table>
-                </div>
             )}
         </SettingsContent>
     );
