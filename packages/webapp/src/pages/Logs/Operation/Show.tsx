@@ -174,7 +174,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
                 {payload ? (
                     <div
-                        className="text-text-muted text-sm bg-surface-panel-inset py-2 resize-y overflow-auto"
+                        className="text-text-muted text-sm bg-surface-panel-inset py-2 resize-y overflow-y-auto overflow-x-hidden"
                         style={{
                             minHeight: '100px',
                             height: '30vh',

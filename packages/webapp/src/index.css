@@ -234,6 +234,14 @@
         height: 100%;
     }
 
+    [data-theme='dark'] {
+        color-scheme: dark;
+    }
+
+    [data-theme='light'] {
+        color-scheme: light;
+    }
+
     button,
     [role='button'] {
         cursor: pointer;
@@ -256,33 +264,4 @@
 .mantine-Prism-code {
     font-family: 'Geist Mono';
     background-color: var(--surface-canvas) !important;
-}
-
-.scrollbar-app {
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-    scrollbar-color: var(--ds-color-neutral-400) transparent;
-}
-.scrollbar-app::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.scrollbar-app::-webkit-scrollbar-track {
-    background: transparent;
-}
-.scrollbar-app::-webkit-scrollbar-thumb {
-    background: var(--ds-color-neutral-400);
-    border-radius: 3px;
-}
-.scrollbar-app::-webkit-scrollbar-thumb:hover {
-    background: var(--ds-color-neutral-450);
-}
-[data-theme='dark'] .scrollbar-app {
-    scrollbar-color: var(--ds-color-neutral-600) transparent;
-}
-[data-theme='dark'] .scrollbar-app::-webkit-scrollbar-thumb {
-    background: var(--ds-color-neutral-600);
-}
-[data-theme='dark'] .scrollbar-app::-webkit-scrollbar-thumb:hover {
-    background: var(--ds-color-neutral-500);
 }
