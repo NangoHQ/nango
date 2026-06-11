@@ -1,4 +1,4 @@
-import { ChevronRightIcon } from '@radix-ui/react-icons';
+import { ChevronRight } from 'lucide-react';
 
 import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
@@ -82,7 +82,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         cell: () => {
             return (
                 <div className="-ml-2">
-                    <ChevronRightIcon />
+                    <ChevronRight size={16} />
                 </div>
             );
         }

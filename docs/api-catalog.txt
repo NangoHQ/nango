@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 842
+Provider count: 846
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -15,6 +15,7 @@ URL patterns:
 | `1password-users` | 1Password (Users API) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/1password-users.md) | [connect](https://nango.dev/docs/api-integrations/1password-users/connect.md) |  | iam |
 | `3cx` | 3CX | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/3cx.md) | [connect](https://nango.dev/docs/api-integrations/3cx/connect.md) |  | communication |
 | `8x8` | 8x8 | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/8x8.md) | [connect](https://nango.dev/docs/api-integrations/8x8/connect.md) |  | communication |
+| `a-leads` | A-Leads | API_KEY | [docs](https://nango.dev/docs/api-integrations/a-leads.md) | [connect](https://nango.dev/docs/api-integrations/a-leads/connect.md) |  | marketing |
 | `absorb-lms` | Absorb LMS | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/absorb-lms.md) | [connect](https://nango.dev/docs/api-integrations/absorb-lms/connect.md) | [setup](https://nango.dev/docs/api-integrations/absorb-lms/how-to-register-your-own-absorb-lms-api-oauth-app.md) | other |
 | `accelo` | Accelo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/accelo.md) |  | [setup](https://nango.dev/docs/api-integrations/accelo/how-to-register-your-own-accelo-api-oauth-app.md) | invoicing, ticketing |
 | `active-campaign` | ActiveCampaign | API_KEY | [docs](https://nango.dev/docs/integrations/all/active-campaign.md) | [connect](https://nango.dev/docs/integrations/all/active-campaign/connect.md) |  | marketing, communication |
@@ -86,6 +87,7 @@ URL patterns:
 | `aws-inspector2` | AWS Inspector2 | BASIC | [docs](https://nango.dev/docs/api-integrations/aws-inspector2.md) | [connect](https://nango.dev/docs/api-integrations/aws-inspector2/connect.md) |  | dev-tools |
 | `aws-multi-service` | AWS Multi-Service | BASIC | [docs](https://nango.dev/docs/api-integrations/aws-multi-service.md) | [connect](https://nango.dev/docs/api-integrations/aws-multi-service/connect.md) |  | dev-tools |
 | `aws-scim` | AWS (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/aws-scim.md) | [connect](https://nango.dev/docs/integrations/all/aws-scim/connect.md) |  | dev-tools, iam |
+| `aws-sigv4` | AWS SigV4 Proxy | AWS_SIGV4 | [docs](https://nango.dev/docs/integrations/all/aws-sigv4.md) | [connect](https://nango.dev/docs/integrations/all/aws-sigv4/connect.md) |  | storage |
 | `axiom` | Axiom | API_KEY | [docs](https://nango.dev/docs/api-integrations/axiom.md) | [connect](https://nango.dev/docs/api-integrations/axiom/connect.md) |  | dev-tools, analytics |
 | `azure-blob-storage` | Azure Blob Storage | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/azure-blob-storage.md) | [connect](https://nango.dev/docs/integrations/all/azure-blob-storage/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | storage |
 | `azure-devops` | Azure DevOps | BASIC | [docs](https://nango.dev/docs/integrations/all/azure-devops.md) | [connect](https://nango.dev/docs/integrations/all/azure-devops/connect.md) |  | dev-tools |
@@ -740,6 +742,8 @@ URL patterns:
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |
 | `theirstack` | TheirStack | API_KEY | [docs](https://nango.dev/docs/api-integrations/theirstack.md) | [connect](https://nango.dev/docs/api-integrations/theirstack/connect.md) |  | marketing |
+| `thomson-reuters-legal-tracker` | Thomson Reuters Legal Tracker | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker.md) | [connect](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker/connect.md) |  | legal |
+| `thomson-reuters-legal-tracker-tr-account` | Thomson Reuters Legal Tracker (TR Account) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account.md) | [connect](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account/connect.md) |  | legal |
 | `thrivecart-api-key` | ThriveCart (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/thrivecart-api-key.md) |  |  | e-commerce, payment |
 | `thrivecart-oauth` | ThriveCart (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/thrivecart-oauth.md) |  |  | e-commerce, payment |
 | `ticktick` | TickTick | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ticktick.md) |  |  | productivity, ticketing |

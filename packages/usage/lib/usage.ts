@@ -49,6 +49,51 @@ export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is Get
     return opts.timeframe.start >= SHADOW_MIN_TIMEFRAME_START;
 }
 
+let cachedAllowlistCsv: string | undefined;
+let cachedAllowlist = new Set<number>();
+function getRolloutAllowlist(): Set<number> {
+    const csv = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS;
+    if (csv !== cachedAllowlistCsv) {
+        cachedAllowlistCsv = csv;
+        cachedAllowlist = new Set();
+        for (const part of csv.split(',')) {
+            const trimmed = part.trim();
+            // Strict digit-only to keep scientific/hex/decimal forms from
+            // silently casting to an unintended account id.
+            if (/^\d+$/.test(trimmed)) cachedAllowlist.add(Number(trimmed));
+        }
+    }
+    return cachedAllowlist;
+}
+
+export function shouldUseClickhouseFor(accountId: number): boolean {
+    if (getRolloutAllowlist().has(accountId)) return true;
+    const pct = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE;
+    if (pct > 0 && accountId % 100 < pct) return true;
+    return false;
+}
+
+export function resolveBillingUsageSource(accountId: number, requestedSource: 'clickhouse' | 'orb' | undefined): 'clickhouse' | 'orb' {
+    const respected = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE ? requestedSource : undefined;
+    return respected ?? (shouldUseClickhouseFor(accountId) ? 'clickhouse' : 'orb');
+}
+
+async function resolveEnvironmentNamesInBreakdown(
+    usage: BillingUsageMetrics,
+    breakdown: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined
+): Promise<void> {
+    const metrics = (Object.keys(breakdown ?? {}) as UsageMetric[]).filter((m) => breakdown?.[m] === 'environment_id');
+    if (metrics.length === 0) return;
+    const series = metrics.flatMap((m) => usage[m]?.breakdown ?? []).filter((s) => s.group && s.group.value !== 'rest');
+    const envIds = series.map((s) => Number(s.group!.value)).filter(Number.isFinite);
+    if (envIds.length === 0) return;
+    const names = await environmentService.getEnvironmentNamesByIds(envIds);
+    for (const s of series) {
+        const name = names.get(Number(s.group!.value));
+        if (name) s.group!.value = name;
+    }
+}
+
 export interface UsageStatus {
     accountId: number;
     metric: UsageMetric;
@@ -285,12 +330,8 @@ export class UsageTracker implements IUsageTracker {
     }
 
     public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
-        // CH path: dashboard shape only (granularity='day' + timeframe), and
-        // only when the env gate is on AND the request opted in via `source`.
-        // No silent Orb fallback on error — surfaces regressions in dev.
-        // Capping (`getBillingMetrics`, no granularity) stays on Orb.
-        const requestedSource = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE ? opts?.source : undefined;
-        const useClickhouseForDashboard = requestedSource === 'clickhouse' && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
+        const effectiveSource = resolveBillingUsageSource(accountId, opts?.source);
+        const useClickhouseForDashboard = effectiveSource === 'clickhouse' && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
 
         if (useClickhouseForDashboard) {
             return this.getBillingUsageFromClickhouse(accountId, {
@@ -568,6 +609,7 @@ export class UsageTracker implements IUsageTracker {
                 breakdown: toRunningAvgUsage(br.value)
             };
         }
+        await resolveEnvironmentNamesInBreakdown(result, breakdown);
         return Ok(result);
     }
 

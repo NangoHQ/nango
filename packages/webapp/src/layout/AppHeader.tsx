@@ -6,7 +6,7 @@ import { SlackIcon } from '@/assets/SlackIcon';
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { isDevToolsEnabled } from '@/features/DevToolPanel';
+import { useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useThemeStore } from '@/lib/theme';
@@ -27,6 +27,7 @@ export const AppHeader: React.FC = () => {
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const darkMode = useThemeStore((s) => s.darkMode);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
+    const isDevToolsEnabled = useIsDevToolsEnabled();
 
     return (
         <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
