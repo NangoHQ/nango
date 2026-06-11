@@ -84,7 +84,7 @@ export default createOnEvent({
     metadata: Metadata,
     exec: async (nango) => {
         const metadata = await nango.getMetadata();
-        const lockedOrganizationId = metadata?.organization_id;
+        const lockedOrganizationId = metadata?.organizationId;
 
         const response = await nango.get<{organization_id: string}>({
             endpoint: '/services/oauth2/userinfo'
@@ -96,7 +96,7 @@ export default createOnEvent({
 
         // On initial connection, save organization id to connection metadata
         if (!lockedOrganizationId) {
-            await nango.setMetadata({organization_id});
+            await nango.setMetadata({organizationId});
             return;
         }
 
