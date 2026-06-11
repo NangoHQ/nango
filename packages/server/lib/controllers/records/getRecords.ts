@@ -63,7 +63,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment, account, plan } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
 
@@ -84,7 +84,8 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
             limit: query.limit,
             filter: query.filter,
             cursor: query.cursor,
-            externalIds: query.ids
+            externalIds: query.ids,
+            plan
         });
 
         if (result.isErr()) {

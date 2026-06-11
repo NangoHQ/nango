@@ -1,4 +1,4 @@
-import { Pencil1Icon } from '@radix-ui/react-icons';
+import { Pencil } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -82,7 +82,7 @@ export const UserSettings: React.FC = () => {
                                                 }, 100);
                                             }}
                                         >
-                                            <Pencil1Icon />
+                                            <Pencil size={14} />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent sideOffset={10}>Edit</TooltipContent>

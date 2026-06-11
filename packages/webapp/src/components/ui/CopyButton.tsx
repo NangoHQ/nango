@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 import { Button } from './Button';
 import { cn } from '@/utils/utils';
 
-export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?: 'clipboard' | 'link' }> = ({ text, disabled, iconType = 'clipboard' }) => {
+export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?: 'clipboard' | 'link'; className?: string }> = ({
+    text,
+    disabled,
+    iconType = 'clipboard',
+    className
+}) => {
     const [copied, setCopied] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -30,7 +35,7 @@ export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?:
     const Icon = iconType === 'link' ? Link2 : Copy;
 
     return (
-        <Button type="button" disabled={disabled} data-copied={copied} variant="ghost" size="icon" onClick={copyToClipboard} className="group">
+        <Button type="button" disabled={disabled} data-copied={copied} variant="ghost" size="icon" onClick={copyToClipboard} className={cn('group', className)}>
             <Check className={cn('size-3.5 hidden group-data-[copied=true]:inline', animationClass)} />
             <Icon className={cn('size-3.5 inline group-data-[copied=true]:hidden', animationClass)} />
         </Button>

@@ -1,0 +1,9 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "lib",
+        "outDir": "dist"
+    },
+    "references": [{ "path": "../scheduler" }, { "path": "../utils" }],
+    "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
+}
