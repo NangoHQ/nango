@@ -55,18 +55,12 @@ export enum LocalStorageKeys {
 }
 
 /**
- * Classifies every localStorage key so logout knows what to remove:
- *   - 'session'    — data tied to the signed-in user; cleared on logout.
- *   - 'preference' — user/device preferences; preserved across logout.
+ * Categorizes each key for logout: 'session' keys are cleared, 'preference'
+ * keys (theme, feature flags) survive. The Record type forces every key to be
+ * classified, so a new one can't accidentally skip this decision.
  *
- * Typing this as `Record<LocalStorageKeys, ...>` makes it a compile-time guard:
- * adding a new key to the enum without categorizing it here breaks the build,
- * so logout can never silently wipe a preference or retain stale session data.
- *
- * `Playground` is persisted to sessionStorage (see store/playground.ts), so
- * removing it from localStorage on logout is a no-op. Whether logout should also
- * reset the sessionStorage playground state is an open question, intentionally
- * left as-is for now.
+ * Playground lives in sessionStorage, so clearing it here is a no-op (whether
+ * logout should reset that state is left open).
  */
 const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.UserEmail]: 'session',
