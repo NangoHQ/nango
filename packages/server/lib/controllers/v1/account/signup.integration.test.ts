@@ -53,7 +53,7 @@ describe('POST /api/v1/account/signup', () => {
                 errors: [
                     {
                         code: 'custom',
-                        message: 'Password should be least 8 characters with uppercase, a number and a special character',
+                        message: 'Password should be least 12 characters with uppercase, a number and a special character',
                         path: ['password']
                     }
                 ]
@@ -65,7 +65,7 @@ describe('POST /api/v1/account/signup', () => {
     it('should signup', async () => {
         const res = await api.fetch(route, {
             method: 'POST',
-            body: { email: `${nanoid()}@example.com`, name: 'Foobar', password: 'aZ1-foobar!', foundUs: 'the internet' }
+            body: { email: `${nanoid()}@example.com`, name: 'Foobar', password: 'aZ1-foobar!!', foundUs: 'the internet' }
         });
 
         expect(res.res.status).toBe(200);
