@@ -81,10 +81,14 @@ export const buttonVariants = cva(
                 ]
             },
             size: {
+                // 20px — compact size for icon-only buttons (replaces the webapp's old `icon` size)
+                '2xs': 'h-5 px-1 text-ds-xs',
                 xs: 'h-6 px-1.5 text-ds-xs',
                 sm: 'h-7 px-2',
                 md: 'h-8 px-2.5',
-                lg: 'h-9 px-3'
+                lg: 'h-9 px-3',
+                // @deprecated 40px — legacy webapp size, kept only to migrate existing usages; do not use for new buttons
+                xl: 'h-10 px-4'
             }
         },
         defaultVariants: {
@@ -141,7 +145,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        const iconSize = size ?? 'md';
+        // Spinner has no 2xs size; clamp to xs for the loading indicator
+        const iconSize = size === '2xs' ? 'xs' : (size ?? 'md');
 
         return (
             <Comp
