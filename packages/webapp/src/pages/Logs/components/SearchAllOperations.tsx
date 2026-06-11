@@ -291,8 +291,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 </div>
             </div>
             <div
-                className="scrollbar-app"
-                style={{ height: '100%', overflow: 'auto', position: 'relative' }}
+                className="scrollbar-app flex-1 min-h-0"
+                style={{ overflow: 'auto', position: 'relative' }}
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >

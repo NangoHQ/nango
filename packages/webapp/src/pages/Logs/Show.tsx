@@ -44,7 +44,7 @@ export const LogsShow: React.FC = () => {
                 <title>Logs - Nango</title>
             </Helmet>
 
-            <div key={env} className="h-full">
+            <div key={env} className="flex flex-col h-full">
                 <SearchAllOperations onSelectOperation={onSelectOperation} />
 
                 {operationId && <OperationDrawer key={operationId} operationId={operationId} onClose={onSelectOperation} />}
