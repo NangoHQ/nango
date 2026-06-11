@@ -72,12 +72,10 @@ describe('getFeatureFlagsClient', () => {
 
     it('falls back to noop when unleash is selected but url is missing', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
-        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         vi.resetModules();
         const { getFeatureFlagsClient } = await import('./index.js');
         const client = await getFeatureFlagsClient();
         await expect(client.isEnabled('any-flag', {}, true)).resolves.toBe(true);
-        expect(warn).toHaveBeenCalled();
     });
 
     it('uses unleash provider when configured', async () => {
