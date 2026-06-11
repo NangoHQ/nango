@@ -1,15 +1,15 @@
-import { PublishBatchCommand, PublishCommand, PublishBatchRequestEntry, SNSClient } from '@aws-sdk/client-sns';
+import { PublishBatchCommand, PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
 import { Err, Ok, chunk, getLogger, matchWith, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { PublishFailure } from './transport.js';
 import { serde } from '../utils/serde.js';
 
-import { PublishFailure } from './transport.js';
-
 import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
+import type { BatchResultErrorEntry, PublishBatchRequestEntry } from '@aws-sdk/client-sns';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -41,14 +41,19 @@ function publishConcurrency(concurrency: number | undefined): number {
 function toSnsEntry(event: Event): Result<PublishBatchRequestEntry, PublishFailure> {
     return serde
         .serialize(event)
-        .map((encoded: Buffer<ArrayBufferLike>) => ({
+        .map((encoded: Buffer) => ({
             Id: event.idempotencyKey,
             Message: encoded.toString('base64'),
             MessageAttributes: {
                 subject: { DataType: 'String', StringValue: event.subject }
             }
         }))
-        .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, e instanceof Error ? e.message : String(e)));
+        .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, 'Failed to serialize event', { cause: e }));
+}
+
+function asPublishFailure(error: BatchResultErrorEntry): PublishFailure {
+    const errorCode = error.Code !== undefined ? { code: error.Code } : undefined;
+    return new PublishFailure(error.Id!, error.Message ?? 'SNS rejected message', errorCode);
 }
 
 function subscribeConcurrency(concurrency: number | undefined): number {
@@ -216,10 +221,10 @@ export class SnsSqs implements Transport {
                 .send(cmd)
                 .then((response) => {
                     successful.push(...(response.Successful ?? []).map((s) => s.Id!));
-                    failed.push(...(response.Failed ?? []).map((f) => new PublishFailure(f.Id!, `(code=${f.Code}) ${f.Message}`)));
+                    failed.push(...(response.Failed ?? []).map(asPublishFailure));
                 })
-                .catch((err) => {
-                    failed.push(...batch.map((f) => new PublishFailure(f.Id!, err.message)));
+                .catch((err: unknown) => {
+                    failed.push(...batch.map((f) => new PublishFailure(f.Id!, 'Batch publish request failed', { cause: err })));
                 });
         });
 
