@@ -360,7 +360,7 @@ describe('SnsSqs transport', () => {
             expect(res.value.successful).toEqual(['ok-key']);
             expect(res.value.failed).toHaveLength(1);
             expect(res.value.failed[0]!.idempotencyKey).toBe('fail-key');
-            expect(res.value.failed[0]!.message).toContain('bad message');
+            expect(res.value.failed[0]!.message).toBe('bad message');
         });
 
         it('puts all batch entries in failed when PublishBatchCommand throws', async () => {
@@ -377,7 +377,8 @@ describe('SnsSqs transport', () => {
             expect(res.value.successful).toHaveLength(0);
             expect(res.value.failed).toHaveLength(2);
             expect(res.value.failed.map((f) => f.idempotencyKey)).toEqual(['key-1', 'key-2']);
-            expect(res.value.failed[0]!.message).toContain('network error');
+            expect(res.value.failed[0]!.message).toBe('Batch publish request failed');
+            expect(res.value.failed[0]!.cause).toMatchObject({ message: 'network error' });
         });
 
         it('chunks groups larger than 10 into multiple PublishBatchCommand calls', async () => {

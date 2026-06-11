@@ -13,10 +13,23 @@ export interface SubscribeProps<TSubject extends Event['subject'] = Event['subje
 
 export class PublishFailure extends Error {
     idempotencyKey: string;
+    code?: string;
 
-    constructor(idempotencyKey: string, message: string) {
-        super(message);
+    constructor(idempotencyKey: string, message: string, options?: { code?: string; cause?: unknown }) {
+        super(message, { cause: options?.cause });
         this.idempotencyKey = idempotencyKey;
+        if (options?.code !== undefined) {
+            this.code = options.code;
+        }
+    }
+
+    toJSON() {
+        return {
+            idempotencyKey: this.idempotencyKey,
+            message: this.message,
+            ...(this.code !== undefined ? { code: this.code } : {}),
+            ...(this.cause instanceof Error ? { cause: this.cause.message } : typeof this.cause === 'string' ? { cause: this.cause } : {})
+        };
     }
 }
 

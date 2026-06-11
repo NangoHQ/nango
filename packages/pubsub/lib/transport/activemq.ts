@@ -6,9 +6,9 @@ import WebSocket from 'ws';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { PublishFailure } from './transport.js';
 import { serde } from '../utils/serde.js';
 
-import { PublishFailure } from './transport.js';
 import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -163,7 +163,7 @@ export class ActiveMQ implements Transport {
             if (res.isOk()) {
                 successful.push(event.idempotencyKey);
             } else {
-                failed.push(new PublishFailure(event.idempotencyKey, `Failed to publish message to ActiveMQ topic ${event.subject}: ${res.error}`));
+                failed.push(new PublishFailure(event.idempotencyKey, `Failed to publish to ActiveMQ topic ${event.subject}`, { cause: res.error }));
             }
         }
         return Ok({ successful, failed });
