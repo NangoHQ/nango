@@ -31,11 +31,6 @@ export const AppHeader: React.FC = () => {
         <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5 bg-surface-canvas">
             <Breadcrumbs />
             <div className="flex gap-1.5 justify-end">
-                {isDevToolsEnabled && themeSwitcher && (
-                    <Button variant="outline" size="icon" onClick={toggleDarkMode} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
-                        {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
-                    </Button>
-                )}
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
                         <Button variant="outline" size="sm" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
@@ -52,6 +47,11 @@ export const AppHeader: React.FC = () => {
                     <SlackIcon />
                     Help
                 </ButtonLink>
+                {isDevToolsEnabled && themeSwitcher && (
+                    <Button variant="outline" size="icon" onClick={toggleDarkMode} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+                        {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                    </Button>
+                )}
             </div>
         </header>
     );
