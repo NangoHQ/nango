@@ -28,7 +28,8 @@ export class SchedulingDaemon extends SchedulerDaemon {
         recurringGroupMaxConcurrency,
         onScheduling,
         onEvent,
-        onError
+        onError,
+        continueOnError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
@@ -38,13 +39,15 @@ export class SchedulingDaemon extends SchedulerDaemon {
         onScheduling: (task: Task) => void;
         onEvent: (event: SchedulerEvent) => void;
         onError: (err: Error) => void;
+        continueOnError?: boolean;
     }) {
         super({
             name: 'Scheduling',
             db,
             tickIntervalMs,
             abortSignal,
-            onError
+            onError,
+            continueOnError
         });
         this.onScheduling = onScheduling;
         this.onEvent = onEvent;

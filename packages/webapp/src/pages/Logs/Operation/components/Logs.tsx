@@ -241,7 +241,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </div>
             </header>
             <div
-                style={{ height: '100%', overflow: 'auto', position: 'relative' }}
+                style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >

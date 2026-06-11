@@ -39,6 +39,8 @@ export const Signin: React.FC = () => {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const error = searchParams.get('error');
+    const next = searchParams.get('next');
+    const inviteToken = next?.match(/^\/signup\/([^/]+)$/)?.[1];
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (error === 'sso_session_expired') {
@@ -69,7 +71,7 @@ export const Signin: React.FC = () => {
             if (res.status === 200) {
                 const user: ApiUser = res.json.user;
                 signin(user);
-                navigate('/');
+                navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
                 form.resetField('password', { defaultValue: '' });
@@ -213,7 +215,7 @@ export const Signin: React.FC = () => {
                             </div>
                         )}
 
-                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} />
+                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} />
                     </div>
                 )}
 

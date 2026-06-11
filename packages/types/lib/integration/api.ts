@@ -262,7 +262,7 @@ export type PatchIntegration = Endpoint<{
               webhookSecret?: string | undefined;
               displayName?: string | undefined;
               forward_webhooks?: boolean | undefined;
-              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+              // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic, aws-sigv4).
               integrationConfig?: Record<string, string> | undefined;
           }
         | IntegrationAuthBody;
