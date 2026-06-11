@@ -519,58 +519,56 @@ export const ApiKeys: React.FC = () => {
                 <div className="text-body-small-regular text-text-muted py-4">No API keys yet. Create one to get started.</div>
             ) : (
                 <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Scopes</TableHead>
-                                <TableHead>Created</TableHead>
-                                <TableHead>Last used</TableHead>
-                                {canMakeActions && <TableHead>Action</TableHead>}
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Scopes</TableHead>
+                            <TableHead>Created</TableHead>
+                            <TableHead>Last used</TableHead>
+                            {canMakeActions && <TableHead>Action</TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {apiKeys.map((key) => (
+                            <TableRow key={key.id}>
+                                <TableCell>
+                                    <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
+                                        {formatRelativeTime(key.created_at)}
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-text-secondary cursor-default" title={formatFullDate(key.last_used_at)}>
+                                        {formatRelativeTime(key.last_used_at)}
+                                    </span>
+                                </TableCell>
+                                {canMakeActions && (
+                                    <TableCell>
+                                        <div className="flex items-center gap-1">
+                                            {canReadSecret && <CopyButton text={key.secret} />}
+                                            {canManageKeys && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setSelectedKeyId(key.id)}
+                                                    className="text-text-muted hover:text-text-strong"
+                                                >
+                                                    <Pencil className="size-3.5" />
+                                                </Button>
+                                            )}
+                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
+                                        </div>
+                                    </TableCell>
+                                )}
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {apiKeys.map((key) => (
-                                <TableRow key={key.id}>
-                                    <TableCell>
-                                        <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
-                                            {formatRelativeTime(key.created_at)}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-text-secondary cursor-default" title={formatFullDate(key.last_used_at)}>
-                                            {formatRelativeTime(key.last_used_at)}
-                                        </span>
-                                    </TableCell>
-                                    {canMakeActions && (
-                                        <TableCell>
-                                            <div className="flex items-center gap-1">
-                                                {canReadSecret && <CopyButton text={key.secret} />}
-                                                {canManageKeys && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => setSelectedKeyId(key.id)}
-                                                        className="text-text-muted hover:text-text-strong"
-                                                    >
-                                                        <Pencil className="size-3.5" />
-                                                    </Button>
-                                                )}
-                                                {canManageKeys && (
-                                                    <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                        ))}
+                    </TableBody>
+                </Table>
             )}
         </SettingsContent>
     );
