@@ -152,7 +152,27 @@ export type UsageWebhookForwardEvent = UsageEventBase<
     }
 >;
 
+export type UsageDataTransferEvent = UsageEventBase<
+    'usage.data_transfer',
+    {
+        value: number;
+        properties: {
+            package: 'server' | 'runner' | 'shared';
+            callsite: string;
+            direction: 'ingress' | 'egress';
+            syncId?: string;
+        };
+    }
+>;
+
 type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
 export type UsageEvent = EnforceUsageEventBase<
-    UsageMarEvent | UsageRecordsEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
+    | UsageMarEvent
+    | UsageRecordsEvent
+    | UsageActionsEvent
+    | UsageConnectionsEvent
+    | UsageFunctionExecutionsEvent
+    | UsageProxyEvent
+    | UsageWebhookForwardEvent
+    | UsageDataTransferEvent
 >;

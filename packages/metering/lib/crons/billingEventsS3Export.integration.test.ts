@@ -83,6 +83,8 @@ function gen({
                 return { type, attrs: { ...baseAttributes, model: 'test', syncId: 'test', ...attributes } };
             case 'usage.connections':
                 return { type, attrs: { ...baseAttributes, ...attributes } };
+            case 'usage.data_transfer':
+                return { type, attrs: { ...baseAttributes, package: 'server', callsite: 'proxy', direction: 'egress', ...attributes } };
             default:
                 throw new Error(`unsupported event type ${type satisfies never}`);
         }
