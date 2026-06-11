@@ -1096,6 +1096,7 @@
               "api-integrations/demodesk",
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
+              "api-integrations/diffbot",
               "integrations/all/digitalocean",
               "api-integrations/digits",
               "api-integrations/digits-mcp",
