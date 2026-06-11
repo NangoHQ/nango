@@ -33,22 +33,22 @@ export const AppHeader: React.FC = () => {
             <div className="flex gap-1.5 justify-end">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
-                        <Button variant="outline" size="sm" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
+                        <Button variant="secondary" size="sm" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
                             <Box />
                             Playground
                         </Button>
                     )}
                 </PermissionGate>
-                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="outline" size="sm">
+                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="secondary" size="sm">
                     <BookOpen />
                     Docs
                 </ButtonLink>
-                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="outline" size="sm">
+                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="secondary" size="sm">
                     <SlackIcon />
                     Help
                 </ButtonLink>
                 {isDevToolsEnabled && themeSwitcher && (
-                    <Button variant="outline" size="sm" className="size-8 p-0" onClick={toggleDarkMode} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+                    <Button variant="secondary" size="sm" className="size-8 p-0" onClick={toggleDarkMode} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
                         {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
                     </Button>
                 )}
