@@ -1,5 +1,11 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
+import {
+    NangoActionBase,
+    NangoSyncBase,
+    executeUncontrolledFetch,
+    isBaseUrlOverridePolicyEnabledFromEnv,
+    resolveProxyBaseUrlOverrideDenylist
+} from '@nangohq/runner-sdk';
 import { ProxyError, ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import {
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -56,22 +62,8 @@ const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
 function getRunnerProxyDenylist(): Set<string> {
-    let entries: string[];
-    if (!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
-        entries = [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
-    } else {
-        const raw = process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        if (raw !== undefined) {
-            const trimmed = raw.trim();
-            if (trimmed === '' || trimmed === '[]') {
-                entries = [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
-            } else {
-                entries = envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
-            }
-        } else {
-            entries = envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
-        }
-    }
+    const raw = process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
+    const entries = isBaseUrlOverridePolicyEnabledFromEnv() ? resolveProxyBaseUrlOverrideDenylist(raw) : [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
 
     const denylist = normalizeDenylist(entries);
     const lambdaRuntimeApi = process.env['AWS_LAMBDA_RUNTIME_API'];
@@ -157,7 +149,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         const baseUrlOverrideDenylist = getRunnerProxyDenylist();
 
         if (config.baseUrlOverride) {
-            if (!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+            if (!isBaseUrlOverridePolicyEnabledFromEnv()) {
                 throw new ProxyError('base_url_override_disabled', 'Base URL override is disabled by server configuration.');
             }
             if (isBaseUrlOverrideDenied(config.baseUrlOverride, baseUrlOverrideDenylist)) {

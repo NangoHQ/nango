@@ -147,6 +147,40 @@ describe('proxy base URL override denylist', () => {
 
         expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
     });
+
+    it('respects runtime changes to NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', async () => {
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['only-this-one.invalid']));
+
+        const { NangoActionRunner } = await import('./sdk.js');
+        const { ProxyRequest } = await import('@nangohq/shared');
+        const { Nango } = await import('@nangohq/node');
+        const { PersistClient } = await import('../clients/persist.js');
+        const { MapLocks } = await import('./locks.js');
+        const { Ok } = await import('@nangohq/utils');
+
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        const httpCall = vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
+
+        await nangoAction.proxy({
+            endpoint: '/',
+            baseUrlOverride: 'http://runtime-added.invalid/'
+        });
+        expect(httpCall).toHaveBeenCalledTimes(1);
+
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['runtime-added.invalid']));
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/',
+                baseUrlOverride: 'http://runtime-added.invalid/'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+        expect(httpCall).toHaveBeenCalledTimes(1);
+    });
 });
 
 describe('Pagination', () => {
