@@ -1308,6 +1308,7 @@
               "integrations/all/lever-basic",
               "integrations/all/lever-basic-sandbox",
               "integrations/all/lever-sandbox",
+              "api-integrations/leadfeeder",
               "api-integrations/lightfield",
               "api-integrations/lightspeed-retail",
               "api-integrations/linear",
