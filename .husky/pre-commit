@@ -3,6 +3,14 @@ set -e
 
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Skip during rebase/cherry-pick — these replay commits whose changes were
+# already reviewed, and lint-staged shouldn't rewrite them mid-replay. Mirrors
+# the guard in prepare-commit-msg.
+GIT_DIR=$(git rev-parse --git-dir)
+if [ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ] || [ -f "$GIT_DIR/CHERRY_PICK_HEAD" ]; then
+  exit 0
+fi
+
 npx lint-staged --allow-empty
 
 if [ $(git diff --cached --numstat -- ./docs/integrations/all/ ./packages/shared/flows.yaml | wc -l) -gt "0" ]; then
