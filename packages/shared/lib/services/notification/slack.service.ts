@@ -653,7 +653,13 @@ export class SlackService {
             return Err(refreshedConnection.error);
         }
 
-        const res = await this.proxySlackMessage({ slackConnection: refreshedConnection.value, payload, integration, accountId: account.id });
+        const res = await this.proxySlackMessage({
+            slackConnection: refreshedConnection.value,
+            payload,
+            integration,
+            accountId: account.id,
+            environmentId: environment.id
+        });
 
         if (res.isErr()) {
             metrics.increment(metrics.Types.SLACK_NOTIFICATION_FAILURE, 1, { accountId: account.id });
@@ -677,12 +683,14 @@ export class SlackService {
         slackConnection,
         payload,
         integration,
-        accountId
+        accountId,
+        environmentId
     }: {
         slackConnection: DBConnectionDecrypted;
         payload: NotificationPayload;
         integration: Config;
         accountId: number;
+        environmentId: number;
     }): Promise<Result<PostSlackMessageResponse>> {
         const color = payload.status === 'open' ? '#e01e5a' : '#36a64f';
 
@@ -724,7 +732,7 @@ export class SlackService {
                         accountId,
                         slackConnection.connection_id,
                         slackConnection.provider_config_key,
-                        slackConnection.environment_id,
+                        environmentId,
                         meteredBytes
                     );
                     if (events.length > 0) {
@@ -811,7 +819,7 @@ export class SlackService {
                         accountId,
                         slackConnection.connection_id,
                         slackConnection.provider_config_key,
-                        slackConnection.environment_id,
+                        environmentId,
                         meteredBytes
                     );
                     if (events.length > 0) {
