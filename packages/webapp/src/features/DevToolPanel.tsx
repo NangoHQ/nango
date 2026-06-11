@@ -1,4 +1,4 @@
-import { Sun, X } from 'lucide-react';
+import { BarChart3, Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
@@ -49,6 +49,7 @@ export const DevToolPanel: React.FC = () => {
     const setOpen = useDevPanelStore((s) => s.setOpen);
     const toggle = useDevPanelStore((s) => s.toggle);
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
+    const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
 
     useEffect(() => {
@@ -87,6 +88,13 @@ export const DevToolPanel: React.FC = () => {
                             <span className="text-sm text-text-primary">Theme switcher</span>
                         </div>
                         <Switch checked={themeSwitcher} onCheckedChange={(v) => setFlag('themeSwitcher', v)} />
+                    </li>
+                    <li className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <BarChart3 className="size-4 shrink-0 text-text-secondary" />
+                            <span className="text-sm text-text-primary">Usage breakdown</span>
+                        </div>
+                        <Switch checked={usageBreakdown} onCheckedChange={(v) => setFlag('usageBreakdown', v)} />
                     </li>
                 </ul>
             </div>
