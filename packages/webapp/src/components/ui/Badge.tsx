@@ -11,13 +11,13 @@ const badgeVariants = cva(
     {
         variants: {
             variant: {
-                gray: 'bg-badge-bg-gray text-badge-fg-gray',
-                secondary: 'bg-bg-subtle text-text-secondary border border-border-muted',
-                brand: 'bg-bg-accent text-text-brand',
-                mint: 'bg-badge-bg-mint text-badge-fg-mint',
-                pink: 'bg-badge-bg-pink text-badge-fg-pink',
-                yellow: 'bg-badge-bg-yellow text-badge-fg-yellow',
-                green: 'bg-badge-bg-green text-badge-fg-green',
+                gray: 'bg-status-neutral-bg text-status-neutral-text',
+                secondary: 'bg-surface-panel-inset text-text-secondary border border-border-muted',
+                brand: 'bg-status-info-bg text-text-brand',
+                mint: 'bg-status-success-bg text-status-success-text',
+                pink: 'bg-status-danger-bg text-status-danger-text',
+                yellow: 'bg-status-warning-bg text-status-warning-text',
+                green: 'bg-status-success-bg text-status-success-text',
                 ghost: 'bg-transparent text-text-secondary border border-border-default'
             },
             size: {

@@ -25,7 +25,7 @@ export const BreakdownControls: React.FC<BreakdownControlsProps> = ({ dimensions
             <button
                 type="button"
                 onClick={onApplyToAll}
-                className="flex items-center gap-1 text-text-tertiary text-body-small-regular hover:text-text-primary"
+                className="flex items-center gap-1 text-text-muted text-body-small-regular hover:text-text-strong"
                 title="Apply this selection to every applicable metric"
             >
                 <Layers className="size-3.5" />

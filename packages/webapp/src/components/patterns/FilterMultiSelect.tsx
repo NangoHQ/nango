@@ -171,7 +171,7 @@ export function FilterMultiSelect<T extends string = string>({
                         isSelected && 'border-transparent'
                     )}
                 >
-                    {isSelected && <Check className="h-5 w-5" />}
+                    {isSelected && <Check className="size-3.5" />}
                 </span>
                 <span className="min-w-0 truncate">{opt.label}</span>
             </div>
@@ -187,7 +187,7 @@ export function FilterMultiSelect<T extends string = string>({
                         <span
                             role="button"
                             tabIndex={-1}
-                            className="bg-pure-black text-white flex gap-1 items-center px-1.5 rounded-xl"
+                            className="bg-surface-panel-inset text-text-strong flex gap-1 items-center px-1.5 rounded-xl"
                             onPointerDown={reset}
                             onKeyDown={(e) => {
                                 if (['Enter', ' '].includes(e.key)) reset(e);
@@ -202,7 +202,7 @@ export function FilterMultiSelect<T extends string = string>({
             <PopoverContent className={cn('p-2 text-white bg-active-gray', width)} align="end">
                 {showSearch && (
                     <div className="pb-2">
-                        <InputGroup className="bg-active-gray border-grayscale-600">
+                        <InputGroup className="border-border-default">
                             <InputGroupAddon>
                                 <Search className="w-4 h-4" />
                             </InputGroupAddon>
@@ -227,7 +227,7 @@ export function FilterMultiSelect<T extends string = string>({
                         </InputGroup>
                     </div>
                 )}
-                {isMaxed && <div className="px-3 py-1.5 text-xs text-amber-500 border-b border-grayscale-700">Can&apos;t select more filters</div>}
+                {isMaxed && <div className="px-3 py-1.5 text-xs text-status-warning-text border-b border-border-muted">Can&apos;t select more filters</div>}
                 <div ref={listboxRef} role="listbox" className="max-h-[415px] overflow-y-auto" onKeyDown={handleListboxKeyDown}>
                     {filteredOptions.map((opt) => (
                         <div key={opt.value}>

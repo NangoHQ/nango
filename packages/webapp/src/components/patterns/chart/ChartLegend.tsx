@@ -57,7 +57,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                             onMouseLeave={onLeave}
                             className={cn(
                                 'min-w-0 truncate transition-colors',
-                                dimmed ? 'text-text-tertiary line-through hover:text-text-secondary' : 'text-text-secondary hover:text-text-primary'
+                                dimmed ? 'text-text-muted line-through hover:text-text-secondary' : 'text-text-secondary hover:text-text-strong'
                             )}
                             title={s.label}
                         >

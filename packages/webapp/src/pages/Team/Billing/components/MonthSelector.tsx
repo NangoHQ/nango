@@ -101,7 +101,7 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
                     <TooltipContent>Usage tracking is only available from {EARLIEST_USAGE_MONTH_LABEL}.</TooltipContent>
                 </Tooltip>
             )}
-            <span className="text-text-primary text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
+            <span className="text-text-strong text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
             <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={!canGoNext}>
                 <ChevronRight />
             </Button>

@@ -279,7 +279,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     }, [usageCapReached, integrationHasMissingFields, env, integration, isFormValid]);
 
     return (
-        <Card className="bg-bg-elevated rounded border-none gap-2.5">
+        <Card className="bg-surface-page rounded border-none gap-2.5">
             <CardHeader className={'gap-4'}>
                 <CardTitle>Test connection</CardTitle>
                 <CardDescription>Pick an integration to test from the list below</CardDescription>

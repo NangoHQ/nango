@@ -38,7 +38,7 @@ export const UserSettings: React.FC = () => {
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
-                <h2 className="text-3xl font-semibold text-white mb-16">Profile Settings</h2>
+                <h2 className="text-3xl font-semibold text-text-strong mb-16">Profile Settings</h2>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
@@ -61,7 +61,7 @@ export const UserSettings: React.FC = () => {
                 <title>Profile Settings - Nango</title>
             </Helmet>
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-white">Profile Settings</h2>
+                <h2 className="text-3xl font-semibold text-text-strong">Profile Settings</h2>
             </div>
             <div className="flex flex-col gap-12 mt-16">
                 <div className="flex flex-col gap-5">
@@ -106,8 +106,8 @@ export const UserSettings: React.FC = () => {
                     )}
                 </div>
                 <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-white">Email</h3>
-                    <p className="text-white text-sm">{user.email}</p>
+                    <h3 className="font-semibold text-sm text-text-strong">Email</h3>
+                    <p className="text-text-strong text-sm">{user.email}</p>
                 </div>
             </div>
         </DashboardLayout>

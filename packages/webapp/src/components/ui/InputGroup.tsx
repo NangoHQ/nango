@@ -14,7 +14,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
             data-slot="input-group"
             role="group"
             className={cn(
-                'group/input-group bg-bg-surface border border-border-muted text-text-primary placeholder:text-text-tertiary !text-body-medium-regular relative flex w-full items-center rounded transition-[color,box-shadow] outline-none focus-shadow',
+                'group/input-group bg-surface-input border border-border-input text-text-strong placeholder:text-text-muted !text-body-medium-regular relative flex w-full items-center rounded transition-[color,box-shadow] outline-none hover:border-border-input-hover has-[[data-slot=input-group-control]:disabled]:hover:border-border-input',
                 'h-9 min-w-0 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -24,12 +24,12 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
                 'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
                 // Focus state
-                'has-[[data-slot=input-group-control]:focus-visible]:focus-default has-[[data-slot=input-group-control]:focus-visible]:border-border-default',
+                'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-input-hover',
                 // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
-                'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-strong',
+                'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-input-hover',
 
                 // Error state.
-                'has-[[data-slot][aria-invalid=true]]:!focus-error has-[[data-slot][aria-invalid=true]]:!border-feedback-error-border',
+                'has-[[data-slot][aria-invalid=true]]:!border-text-danger',
 
                 className
             )}
@@ -100,7 +100,7 @@ function InputGroupButton({
 function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
     return (
         <span
-            className={cn("text-neutral-500 flex items-center gap-2 text-sm [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4", className)}
+            className={cn("text-text-muted flex items-center gap-2 text-sm [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4", className)}
             {...props}
         />
     );

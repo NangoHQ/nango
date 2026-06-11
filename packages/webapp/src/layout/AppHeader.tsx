@@ -30,7 +30,7 @@ export const AppHeader: React.FC = () => {
     const isDevToolsEnabled = useIsDevToolsEnabled();
 
     return (
-        <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
+        <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5 bg-surface-canvas">
             <Breadcrumbs />
             <div className="flex gap-1.5 justify-end">
                 <PermissionGate condition={canUsePlayground}>

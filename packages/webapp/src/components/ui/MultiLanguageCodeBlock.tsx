@@ -49,8 +49,8 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
 
     return (
         <div {...props} className={cn('border border-border-muted rounded', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-3 bg-bg-subtle rounded-t">
-                <span className="text-text-tertiary text-s">{title}</span>
+            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
+                <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {snippets.length > 1 ? (
                         <Select
@@ -85,7 +85,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                                 </>
                             ) : (
                                 <>
-                                    <Play className="w-4 h-4 text-brand-500" />
+                                    <Play className="w-4 h-4 text-text-brand" />
                                     Run
                                 </>
                             )}
