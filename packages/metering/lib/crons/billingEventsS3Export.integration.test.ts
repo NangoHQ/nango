@@ -26,6 +26,10 @@ const baseAttributes = {
 // per-branch inside `gen()`.
 type FixtureAttrs = Record<string, unknown>;
 
+// 'usage.data_transfer' excluded: not ingested into Clickhouse yet.
+// TODO: Remove Exclude when CH ingestion is added.
+type IngestedEventType = Exclude<ClickhouseRawUsageEvent['type'], 'usage.data_transfer'>;
+
 function genN({
     n,
     day,
@@ -35,7 +39,7 @@ function genN({
 }: {
     n: number;
     day: string;
-    type: ClickhouseRawUsageEvent['type'];
+    type: IngestedEventType;
     accountId: number;
     attributes?: FixtureAttrs;
 }): ClickhouseRawUsageEvent[] {
@@ -50,7 +54,7 @@ function gen({
     attributes = {}
 }: {
     day: string;
-    type: ClickhouseRawUsageEvent['type'];
+    type: IngestedEventType;
     accountId: number;
     value?: number;
     attributes?: FixtureAttrs;
@@ -83,8 +87,6 @@ function gen({
                 return { type, attrs: { ...baseAttributes, model: 'test', syncId: 'test', ...attributes } };
             case 'usage.connections':
                 return { type, attrs: { ...baseAttributes, ...attributes } };
-            case 'usage.data_transfer':
-                return { type, attrs: { ...baseAttributes, package: 'server', callsite: 'proxy', direction: 'egress', ...attributes } };
             default:
                 throw new Error(`unsupported event type ${type satisfies never}`);
         }
