@@ -1,9 +1,9 @@
-import { connectionService, encryptionManager, onEventScriptService } from '@nangohq/shared';
+import { connectionService, onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { getOrchestrator } from '../../../utils/utils.js';
-import { connectionRefreshFailed } from '../../hooks.js';
+import { reconnectionFailed } from '../../hooks.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config, NangoError } from '@nangohq/shared';
@@ -79,8 +79,7 @@ export async function handleValidateConnectionFailure({
     account,
     environment,
     provider,
-    error,
-    logCtx
+    error
 }: {
     operation: AuthOperationType;
     connection: DBConnection;
@@ -89,7 +88,6 @@ export async function handleValidateConnectionFailure({
     environment: DBEnvironment;
     provider: Provider;
     error: NangoError;
-    logCtx: LogContext;
 }): Promise<string> {
     const message = getValidateConnectionFailureMessage(error);
 
@@ -97,17 +95,18 @@ export async function handleValidateConnectionFailure({
         await connectionService.hardDelete(connection.id);
     } else if (operation === 'override') {
         await connectionService.markConnectionAuthFailed({ id: connection.id });
-        const decryptedConnection = encryptionManager.decryptConnection(connection);
-        await connectionRefreshFailed({
+        void reconnectionFailed(
+            {
+                connection,
+                environment,
+                account,
+                auth_mode: provider.auth_mode,
+                error: { type: 'connection_validation_failed', description: message },
+                operation: 'override'
+            },
             account,
-            connection: decryptedConnection,
-            logCtx,
-            authError: { type: 'connection_validation_failed', description: message },
-            environment,
-            provider,
-            config,
-            action: 'connection_test'
-        });
+            config
+        );
     }
 
     return message;

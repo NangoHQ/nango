@@ -195,8 +195,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error,
-                logCtx
+                error: customValidationResponse.error
             });
 
             await logCtx.failed();

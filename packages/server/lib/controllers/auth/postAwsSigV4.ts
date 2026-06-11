@@ -297,8 +297,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error,
-                logCtx
+                error: customValidationResponse.error
             });
 
             await logCtx.failed();

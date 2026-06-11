@@ -545,8 +545,7 @@ class OAuthController {
                     account,
                     environment,
                     provider,
-                    error: customValidationResponse.error,
-                    logCtx
+                    error: customValidationResponse.error
                 });
 
                 await logCtx.failed();
@@ -1853,8 +1852,7 @@ class OAuthController {
                     account,
                     environment,
                     provider,
-                    error: customValidationResponse.error,
-                    logCtx
+                    error: customValidationResponse.error
                 });
 
                 await logCtx.failed();
@@ -2077,8 +2075,7 @@ class OAuthController {
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error,
-                logCtx
+                error: customValidationResponse.error
             });
 
             await logCtx.failed();
@@ -2252,8 +2249,7 @@ class OAuthController {
                         account,
                         environment,
                         provider,
-                        error: customValidationResponse.error,
-                        logCtx
+                        error: customValidationResponse.error
                     });
 
                     await logCtx.failed();

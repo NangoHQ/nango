@@ -218,6 +218,38 @@ export const connectionCreationFailed = async (
     }
 };
 
+export const reconnectionFailed = async (
+    failedConnectionPayload: RecentlyFailedConnection,
+    account: DBTeam,
+    providerConfig?: IntegrationConfig
+): Promise<void> => {
+    const { connection, environment, auth_mode, error } = failedConnectionPayload;
+
+    if (error) {
+        const webhookSettings = await externalWebhookService.get(environment.id);
+
+        if (webhookSettings) {
+            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            if (webhookSigningKey.isErr()) {
+                throw webhookSigningKey.error;
+            }
+
+            void sendAuthWebhook({
+                connection,
+                environment,
+                secret: webhookSigningKey.value,
+                webhookSettings,
+                auth_mode,
+                success: false,
+                error,
+                operation: 'override',
+                providerConfig,
+                account
+            });
+        }
+    }
+};
+
 export const connectionRefreshSuccess = async ({
     connection,
     config

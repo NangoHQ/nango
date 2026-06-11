@@ -7,11 +7,10 @@ import { getValidateConnectionFailureMessage, handleValidateConnectionFailure } 
 import type * as SharedModule from '@nangohq/shared';
 import type { DBConnection, DBEnvironment, DBTeam, Provider } from '@nangohq/types';
 
-const { mockHardDelete, mockMarkConnectionAuthFailed, mockDecryptConnection, mockConnectionRefreshFailed } = vi.hoisted(() => ({
+const { mockHardDelete, mockMarkConnectionAuthFailed, mockReconnectionFailed } = vi.hoisted(() => ({
     mockHardDelete: vi.fn(),
     mockMarkConnectionAuthFailed: vi.fn(),
-    mockDecryptConnection: vi.fn(),
-    mockConnectionRefreshFailed: vi.fn()
+    mockReconnectionFailed: vi.fn()
 }));
 
 vi.mock('@nangohq/shared', async () => {
@@ -22,15 +21,12 @@ vi.mock('@nangohq/shared', async () => {
         connectionService: {
             hardDelete: mockHardDelete,
             markConnectionAuthFailed: mockMarkConnectionAuthFailed
-        },
-        encryptionManager: {
-            decryptConnection: mockDecryptConnection
         }
     };
 });
 
 vi.mock('../../hooks.js', () => ({
-    connectionRefreshFailed: mockConnectionRefreshFailed
+    reconnectionFailed: mockReconnectionFailed
 }));
 
 vi.mock('../../../utils/utils.js', () => ({
@@ -42,7 +38,6 @@ const config = { id: 1, unique_key: 'test', provider: 'attio', environment_id: 1
 const account = { id: 1, name: 'test' } as DBTeam;
 const environment = { id: 1, name: 'dev' } as DBEnvironment;
 const provider = { auth_mode: 'OAUTH2' } as Provider;
-const logCtx = { failed: vi.fn() } as unknown as Parameters<typeof handleValidateConnectionFailure>[0]['logCtx'];
 
 describe('getValidateConnectionFailureMessage', () => {
     it('returns payload message when present', () => {
@@ -64,7 +59,6 @@ describe('getValidateConnectionFailureMessage', () => {
 describe('handleValidateConnectionFailure', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockDecryptConnection.mockReturnValue({ ...connection, credentials: { type: 'OAUTH2' } });
     });
 
     it('hard deletes on creation', async () => {
@@ -77,14 +71,13 @@ describe('handleValidateConnectionFailure', () => {
             account,
             environment,
             provider,
-            error,
-            logCtx
+            error
         });
 
         expect(message).toBe('Invalid');
         expect(mockHardDelete).toHaveBeenCalledWith(42);
         expect(mockMarkConnectionAuthFailed).not.toHaveBeenCalled();
-        expect(mockConnectionRefreshFailed).not.toHaveBeenCalled();
+        expect(mockReconnectionFailed).not.toHaveBeenCalled();
     });
 
     it('marks auth failed on override', async () => {
@@ -97,18 +90,19 @@ describe('handleValidateConnectionFailure', () => {
             account,
             environment,
             provider,
-            error,
-            logCtx
+            error
         });
 
         expect(message).toBe('Workspace mismatch');
         expect(mockHardDelete).not.toHaveBeenCalled();
         expect(mockMarkConnectionAuthFailed).toHaveBeenCalledWith({ id: 42 });
-        expect(mockConnectionRefreshFailed).toHaveBeenCalledWith(
+        expect(mockReconnectionFailed).toHaveBeenCalledWith(
             expect.objectContaining({
-                authError: { type: 'connection_validation_failed', description: 'Workspace mismatch' },
-                action: 'connection_test'
-            })
+                error: { type: 'connection_validation_failed', description: 'Workspace mismatch' },
+                operation: 'override'
+            }),
+            account,
+            config
         );
     });
 });
