@@ -21,7 +21,7 @@ Connect to Circleback (MCP) with Nango and start calling tools in minutes. Circl
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/api/mcp" \
+            curl "https://api.nango.dev/proxy/mcp" \
               -X POST \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
@@ -47,7 +47,7 @@ Connect to Circleback (MCP) with Nango and start calling tools in minutes. Circl
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/api/mcp',
+            endpoint: '/mcp',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
             body: {
