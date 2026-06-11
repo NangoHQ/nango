@@ -2,7 +2,7 @@ import { CheckIcon } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { Icon } from './icon';
+import { Icon } from '../src/components/ui/icon';
 
 import type { Meta, StoryObj } from '@storybook/react';
 import type { LucideIcon } from 'lucide-react';
