@@ -221,7 +221,11 @@ web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update',
 web.route('/environment/api-keys/:keyId').delete(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), deleteApiKey);
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+web.route('/environment/admin-auth').get(
+    webAuth,
+    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    environmentController.getAdminAuthInfo.bind(environmentController)
+);
 
 // Connect
 web.route('/connect/sessions').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), postInternalConnectSessions);
@@ -256,7 +260,11 @@ web.route('/connections/count').get(webAuth, can({ action: 'read', resource: 'co
 web.route('/connections/:connectionId').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionWeb);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
 web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
-web.route('/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/connections/admin/:connectionId').delete(
+    webAuth,
+    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    connectionController.deleteAdminConnection.bind(connectionController)
+);
 
 // User
 web.route('/user').get(webAuth, getUser);
