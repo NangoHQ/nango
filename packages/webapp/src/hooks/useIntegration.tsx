@@ -108,9 +108,12 @@ export function useDeleteIntegrationFunction(env: string, integrationId: string,
     const queryClient = useQueryClient();
     return useMutation<DeleteIntegrationFunction['Success'], APIError>({
         mutationFn: async () => {
-            const res = await apiFetch(`/api/v1/integrations/${integrationId}/functions/${functionName}?env=${env}&type=${type}`, {
-                method: 'DELETE'
-            });
+            const res = await apiFetch(
+                `/api/v1/integrations/${encodeURIComponent(integrationId)}/functions/${encodeURIComponent(functionName)}?env=${encodeURIComponent(env)}&type=${type}`,
+                {
+                    method: 'DELETE'
+                }
+            );
             const json = (await res.json()) as DeleteIntegrationFunction['Reply'];
             if (!res.ok || 'error' in json) {
                 throw new APIError({ res, json });
