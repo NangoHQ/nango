@@ -1,0 +1,21 @@
+packages/sandbox/lib/sandbox-service.unit.test.ts
+  s_0bc521b83bf53d::t_b3f0db083fa7b8 46
+packages/sandbox/lib/sandbox-service.ts
+  s_0bc521b83bf53d::t_b3f0db083fa7b8 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a1c7924f5abe2194307d884aa2bac7cf58bb0c2c",
+  "prompts": {},
+  "sessions": {
+    "s_0bc521b83bf53d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ea7fc-2ce9-7ee1-9f4f-f5fc3684458f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
