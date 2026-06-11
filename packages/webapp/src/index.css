@@ -726,11 +726,6 @@
         color-scheme: light;
     }
 
-    /* WebKit doesn't apply color-scheme to the resize handle — match payload background */
-    [data-theme='dark'] ::-webkit-resizer {
-        background-color: var(--color-pure-black);
-    }
-
     button,
     [role='button'] {
         cursor: pointer;
