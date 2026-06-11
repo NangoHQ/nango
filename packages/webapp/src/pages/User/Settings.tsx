@@ -115,7 +115,7 @@ export const UserSettings: React.FC = () => {
                     <p className="text-text-strong text-sm">{user.email}</p>
                 </div>
                 <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Theme</h3>
+                    <h3 className="font-semibold text-sm text-text-strong">Appearance</h3>
                     <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
                         <SelectTrigger className="w-48">
                             <SelectValue />
