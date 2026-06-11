@@ -288,6 +288,11 @@ export class UsageProcessor {
                     ]);
                     return Ok(undefined);
                 }
+                case 'usage.data_transfer': {
+                    const { package: pkg, callsite, direction } = event.payload.properties;
+                    metrics.increment(metrics.Types.DATA_TRANSFER, event.payload.value, { package: pkg, callsite, direction });
+                    return Ok(undefined);
+                }
                 default:
                     ((_exhaustiveCheck: never) => {
                         throw new Error(`Unhandled event type: ${JSON.stringify(_exhaustiveCheck)}`);

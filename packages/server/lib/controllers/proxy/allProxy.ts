@@ -15,6 +15,7 @@ import {
     errorManager,
     getProvider,
     getProxyConfiguration,
+    makeDataTransferEvents,
     pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
@@ -319,9 +320,20 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 oauth_client_secret: integration.oauth_client_secret,
                 custom: integration.custom
             }),
-            onBytes: ({ sent, received }) => {
-                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });
-                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server' });
+            onBytes: (meteredBytes) => {
+                const events = makeDataTransferEvents(
+                    'server',
+                    'proxy',
+                    account.id,
+                    connection.connection_id,
+                    providerConfigKey,
+                    environment.id,
+                    meteredBytes,
+                    environment.name
+                );
+                if (events.length > 0) {
+                    void pubsub.publisher.publishBatch({ subject: 'usage', events });
+                }
             }
         });
 

@@ -612,6 +612,7 @@ function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
         }
         case 'usage.records':
         case 'usage.connections':
+        case 'usage.data_transfer':
             // Not ingested into Clickhouse via events
             return null;
     }
