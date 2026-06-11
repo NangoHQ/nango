@@ -5750,6 +5750,30 @@ dialpad-sandbox:
         base_url: https://sandbox.dialpad.com
     docs: https://nango.dev/docs/integrations/all/dialpad-sandbox
 
+diffbot:
+    display_name: Diffbot
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.diffbot.com
+        query:
+            token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v4/account
+    docs: https://nango.dev/docs/api-integrations/diffbot
+    docs_connect: https://nango.dev/docs/api-integrations/diffbot/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Diffbot API token.
+            example: c4f82a1b********************e7d3
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-obtain-your-api-token'
+
 digitalocean:
     display_name: DigitalOcean
     categories:
