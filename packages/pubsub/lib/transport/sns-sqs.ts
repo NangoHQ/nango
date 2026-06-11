@@ -54,9 +54,9 @@ function toSnsEntry(event: Event): Result<PublishBatchRequestEntry, PublishFailu
         .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, 'Failed to serialize event', { cause: e }));
 }
 
-function asPublishFailure(error: BatchResultErrorEntry): PublishFailure {
+function asPublishFailure(idempotencyKey: string, error: BatchResultErrorEntry): PublishFailure {
     const errorCode = error.Code !== undefined ? { code: error.Code } : undefined;
-    return new PublishFailure(error.Id!, error.Message ?? 'SNS rejected message', errorCode);
+    return new PublishFailure(idempotencyKey, error.Message ?? 'SNS rejected message', errorCode);
 }
 
 function subscribeConcurrency(concurrency: number | undefined): number {
@@ -207,10 +207,7 @@ export class SnsSqs implements Transport {
 
         const batches = chunk(
             entries,
-            () => ({
-                count: 0,
-                bytes: 0
-            }),
+            () => ({ count: 0, bytes: 0 }),
             (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') }),
             (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') > SNS_BATCH_MAX_BYTES
         );
@@ -218,16 +215,20 @@ export class SnsSqs implements Transport {
         const successful: string[] = [];
 
         await runWithConcurrencyLimit(batches, publishConcurrency(concurrency), async (batch, _) => {
+            // Map each batch entry's index to its original idempotencyKey to support a reverse-lookup from SNS responses
+            const idMap = new Map(batch.map((entry, i) => [String(i), entry.Id!]));
+            const batchWithPositionalIds = batch.map((entry, i) => ({ ...entry, Id: String(i) }));
+
             const cmd = new PublishBatchCommand({
                 TopicArn: topicArn,
-                PublishBatchRequestEntries: batch
+                PublishBatchRequestEntries: batchWithPositionalIds
             });
 
             await this.sns
                 .send(cmd)
                 .then((response) => {
-                    successful.push(...(response.Successful ?? []).map((s) => s.Id!));
-                    failed.push(...(response.Failed ?? []).map(asPublishFailure));
+                    successful.push(...(response.Successful ?? []).map((s) => idMap.get(s.Id!) ?? s.Id!));
+                    failed.push(...(response.Failed ?? []).map((e) => asPublishFailure(idMap.get(e.Id!) ?? e.Id!, e)));
                 })
                 .catch((err: unknown) => {
                     failed.push(...batch.map((f) => new PublishFailure(f.Id!, 'Batch publish request failed', { cause: err })));
