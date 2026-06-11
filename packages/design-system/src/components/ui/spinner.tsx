@@ -1,6 +1,6 @@
 import { Loader2Icon } from 'lucide-react';
 
-import { cn } from '@/lib/cn';
+import { cn } from '../../lib/cn';
 
 const sizeClasses = {
     xs: 'size-[var(--ds-icon-size-xs)]',
