@@ -51,7 +51,13 @@ export class Scheduler {
             abortSignal: this.ac.signal,
             onExpiring: (task: Task) => {
                 const { reason } = task.output as unknown as { reason?: string };
-                void this.db.transaction((trx) => this.scheduleAbortTask(trx, { aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` }));
+                void this.db
+                    .transaction((trx) => this.scheduleAbortTask(trx, { aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` }))
+                    .then((abortTask) => {
+                        if (abortTask.isOk()) {
+                            this.onCallbacks[abortTask.value.state](abortTask.value);
+                        }
+                    });
                 this.onCallbacks[task.state](task);
             },
             onError
