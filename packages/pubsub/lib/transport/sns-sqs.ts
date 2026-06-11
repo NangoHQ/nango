@@ -191,51 +191,54 @@ export class SnsSqs implements Transport {
 
         const topicArn = this.topicArns[subject];
         if (!topicArn) {
-            logger.error(`No SNS topic ARN configured for subject ${subject}`, { topicArn });
             return Err(new Error(`No SNS topic ARN configured for subject "${subject}"`));
         }
 
         const failed: PublishFailure[] = [];
         const entries: PublishBatchRequestEntry[] = [];
 
-        events.map(toSnsEntry).forEach(
-            matchWith(
-                (entry) => entries.push(entry),
-                (err) => failed.push(err)
-            )
-        );
+        try {
+            events.map(toSnsEntry).forEach(
+                matchWith(
+                    (entry) => entries.push(entry),
+                    (err) => failed.push(err)
+                )
+            );
 
-        const batches = chunk(
-            entries,
-            () => ({ count: 0, bytes: 0 }),
-            (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') }),
-            (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') > SNS_BATCH_MAX_BYTES
-        );
+            const batches = chunk(
+                entries,
+                () => ({ count: 0, bytes: 0 }),
+                (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') }),
+                (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') > SNS_BATCH_MAX_BYTES
+            );
 
-        const successful: string[] = [];
+            const successful: string[] = [];
 
-        await runWithConcurrencyLimit(batches, publishConcurrency(concurrency), async (batch, _) => {
-            // Map each batch entry's index to its original idempotencyKey to support a reverse-lookup from SNS responses
-            const idMap = new Map(batch.map((entry, i) => [String(i), entry.Id!]));
-            const batchWithPositionalIds = batch.map((entry, i) => ({ ...entry, Id: String(i) }));
+            await runWithConcurrencyLimit(batches, publishConcurrency(concurrency), async (batch, _) => {
+                // Map each batch entry's index to its original idempotencyKey to support a reverse-lookup from SNS responses
+                const idMap = new Map(batch.map((entry, i) => [String(i), entry.Id!]));
+                const batchWithPositionalIds = batch.map((entry, i) => ({ ...entry, Id: String(i) }));
 
-            const cmd = new PublishBatchCommand({
-                TopicArn: topicArn,
-                PublishBatchRequestEntries: batchWithPositionalIds
+                const cmd = new PublishBatchCommand({
+                    TopicArn: topicArn,
+                    PublishBatchRequestEntries: batchWithPositionalIds
+                });
+
+                await this.sns
+                    .send(cmd)
+                    .then((response) => {
+                        successful.push(...(response.Successful ?? []).map((s) => idMap.get(s.Id!) ?? s.Id!));
+                        failed.push(...(response.Failed ?? []).map((e) => asPublishFailure(idMap.get(e.Id!) ?? e.Id!, e)));
+                    })
+                    .catch((err: unknown) => {
+                        failed.push(...batch.map((f) => new PublishFailure(f.Id!, 'Batch publish request failed', { cause: err })));
+                    });
             });
 
-            await this.sns
-                .send(cmd)
-                .then((response) => {
-                    successful.push(...(response.Successful ?? []).map((s) => idMap.get(s.Id!) ?? s.Id!));
-                    failed.push(...(response.Failed ?? []).map((e) => asPublishFailure(idMap.get(e.Id!) ?? e.Id!, e)));
-                })
-                .catch((err: unknown) => {
-                    failed.push(...batch.map((f) => new PublishFailure(f.Id!, 'Batch publish request failed', { cause: err })));
-                });
-        });
-
-        return Ok({ successful, failed });
+            return Ok({ successful, failed });
+        } catch (err) {
+            return Err(new Error(`Failed to publish batch to SNS for subject "${subject}"`, { cause: err }));
+        }
     }
 
     public subscribe<TSubject extends Event['subject']>(props: SubscribeProps<TSubject>): void {
