@@ -204,7 +204,8 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error
+                error: customValidationResponse.error,
+                logCtx
             });
 
             await logCtx.failed();

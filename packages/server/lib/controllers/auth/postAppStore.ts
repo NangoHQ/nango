@@ -200,7 +200,8 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error
+                error: customValidationResponse.error,
+                logCtx
             });
 
             await logCtx.failed();

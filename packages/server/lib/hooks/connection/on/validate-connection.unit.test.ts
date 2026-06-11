@@ -4,6 +4,7 @@ import { NangoError } from '@nangohq/shared';
 
 import { getValidateConnectionFailureMessage, handleValidateConnectionFailure } from './validate-connection.js';
 
+import type { LogContext } from '@nangohq/logs';
 import type * as SharedModule from '@nangohq/shared';
 import type { DBConnection, DBEnvironment, DBTeam, Provider } from '@nangohq/types';
 
@@ -38,6 +39,7 @@ const config = { id: 1, unique_key: 'test', provider: 'attio', environment_id: 1
 const account = { id: 1, name: 'test' } as DBTeam;
 const environment = { id: 1, name: 'dev' } as DBEnvironment;
 const provider = { auth_mode: 'OAUTH2' } as Provider;
+const logCtx = { id: 'log-1' } as unknown as LogContext;
 
 describe('getValidateConnectionFailureMessage', () => {
     it('returns payload message when present', () => {
@@ -71,7 +73,8 @@ describe('handleValidateConnectionFailure', () => {
             account,
             environment,
             provider,
-            error
+            error,
+            logCtx
         });
 
         expect(message).toBe('Invalid');
@@ -90,7 +93,8 @@ describe('handleValidateConnectionFailure', () => {
             account,
             environment,
             provider,
-            error
+            error,
+            logCtx
         });
 
         expect(message).toBe('Workspace mismatch');
@@ -102,6 +106,7 @@ describe('handleValidateConnectionFailure', () => {
                 operation: 'override'
             }),
             account,
+            logCtx,
             config
         );
     });

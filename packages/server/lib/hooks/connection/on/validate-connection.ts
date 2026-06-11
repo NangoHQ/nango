@@ -79,7 +79,8 @@ export async function handleValidateConnectionFailure({
     account,
     environment,
     provider,
-    error
+    error,
+    logCtx
 }: {
     operation: AuthOperationType;
     connection: DBConnection;
@@ -88,6 +89,7 @@ export async function handleValidateConnectionFailure({
     environment: DBEnvironment;
     provider: Provider;
     error: NangoError;
+    logCtx: LogContext;
 }): Promise<string> {
     const message = getValidateConnectionFailureMessage(error);
 
@@ -95,7 +97,7 @@ export async function handleValidateConnectionFailure({
         await connectionService.hardDelete(connection.id);
     } else if (operation === 'override') {
         await connectionService.markConnectionAuthFailed({ id: connection.id });
-        void reconnectionFailed(
+        await reconnectionFailed(
             {
                 connection,
                 environment,
@@ -105,6 +107,7 @@ export async function handleValidateConnectionFailure({
                 operation: 'override'
             },
             account,
+            logCtx,
             config
         );
     }

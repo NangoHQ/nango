@@ -210,7 +210,8 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error
+                error: customValidationResponse.error,
+                logCtx
             });
 
             await logCtx.failed();

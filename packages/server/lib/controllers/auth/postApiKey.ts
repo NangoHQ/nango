@@ -195,7 +195,8 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error
+                error: customValidationResponse.error,
+                logCtx
             });
 
             await logCtx.failed();

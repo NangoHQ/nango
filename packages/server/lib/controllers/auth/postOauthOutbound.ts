@@ -170,7 +170,8 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
                 account,
                 environment,
                 provider,
-                error: customValidationResponse.error
+                error: customValidationResponse.error,
+                logCtx
             });
 
             await logCtx.failed();
