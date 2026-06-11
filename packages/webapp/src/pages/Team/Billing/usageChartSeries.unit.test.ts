@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { toChartSeries } from './usageChartSeries.js';
-import { REST_SERIES_COLOR, REST_SERIES_KEY, resetUsageChartColorsForTests } from '@/components/patterns/chart/usageChartColors';
+import { REST_SERIES_COLOR, REST_SERIES_KEY, resetUsageChartColorsForTests } from '../../../components/patterns/chart/usageChartColors.js';
 
 import type { BillingUsageMetric } from '@nangohq/types';
 

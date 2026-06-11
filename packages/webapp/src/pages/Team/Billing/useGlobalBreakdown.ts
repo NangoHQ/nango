@@ -35,9 +35,7 @@ export function useGlobalBreakdown(metrics: readonly UsageMetric[]) {
         (metric: UsageMetric, dimension: GlobalBreakdownSelection) => {
             const targetValue = dimension ?? 'none';
             const supportingMetrics = dimension === null ? metrics : metricsSupportingDimension(dimension);
-            return supportingMetrics
-                .filter((m) => m !== metric)
-                .some((m) => (breakdowns[`${m}.breakdown`] ?? 'none') !== targetValue);
+            return supportingMetrics.filter((m) => m !== metric).some((m) => (breakdowns[`${m}.breakdown`] ?? 'none') !== targetValue);
         },
         [breakdowns, metrics]
     );

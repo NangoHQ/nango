@@ -1,8 +1,8 @@
 import { formatDimensionValue } from './usageBreakdown';
-import { REST_SERIES_COLOR, REST_SERIES_KEY, colorForValue } from '@/components/patterns/chart/usageChartColors';
+import { REST_SERIES_COLOR, REST_SERIES_KEY, colorForValue } from '../../../components/patterns/chart/usageChartColors';
 
 import type { AnyBreakdownDimension } from './usageBreakdown';
-import type { ChartSeries } from '@/components/patterns/chart/types';
+import type { ChartSeries } from '../../../components/patterns/chart/types';
 import type { BillingUsageMetric } from '@nangohq/types';
 
 /** Map breakdown entries to stacked chart series: largest usage first, with the 'rest' rollup last. */
