@@ -304,12 +304,12 @@ describe('SnsSqs transport', () => {
             expect(mockSnsSend).not.toHaveBeenCalled();
         });
 
-        it('sends PublishBatchCommand with idempotency key as entry Id', async () => {
+        it('sends PublishBatchCommand with positional entry Id', async () => {
             const t = createTransport();
             await t.connect();
 
             const event = usageEvent();
-            mockSnsSend.mockResolvedValue({ Successful: [{ Id: event.idempotencyKey, MessageId: 'msg-1' }], Failed: [] });
+            mockSnsSend.mockResolvedValue({ Successful: [{ Id: '0', MessageId: 'msg-1' }], Failed: [] });
 
             await t.publishBatch({ subject: 'usage', events: [event] });
 
@@ -321,7 +321,7 @@ describe('SnsSqs transport', () => {
                 TopicArn: topicArn,
                 PublishBatchRequestEntries: [
                     {
-                        Id: event.idempotencyKey,
+                        Id: '0',
                         Message: encoded,
                         MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } }
                     }
@@ -334,7 +334,7 @@ describe('SnsSqs transport', () => {
             await t.connect();
 
             const event = usageEvent();
-            mockSnsSend.mockResolvedValue({ Successful: [{ Id: event.idempotencyKey, MessageId: 'msg-1' }], Failed: [] });
+            mockSnsSend.mockResolvedValue({ Successful: [{ Id: '0', MessageId: 'msg-1' }], Failed: [] });
 
             const res = await t.publishBatch({ subject: 'usage', events: [event] });
             assert(res.isOk());
@@ -351,8 +351,8 @@ describe('SnsSqs transport', () => {
                 { ...usageEvent(), idempotencyKey: 'fail-key' }
             ];
             mockSnsSend.mockResolvedValue({
-                Successful: [{ Id: 'ok-key', MessageId: 'msg-1' }],
-                Failed: [{ Id: 'fail-key', Code: 'InvalidParameter', Message: 'bad message', SenderFault: true }]
+                Successful: [{ Id: '0', MessageId: 'msg-1' }],
+                Failed: [{ Id: '1', Code: 'InvalidParameter', Message: 'bad message', SenderFault: true }]
             });
 
             const res = await t.publishBatch({ subject: 'usage', events });
@@ -388,11 +388,11 @@ describe('SnsSqs transport', () => {
             const events = Array.from({ length: 11 }, (_, i) => ({ ...usageEvent(), idempotencyKey: `idem-${i}` }));
             mockSnsSend
                 .mockResolvedValueOnce({
-                    Successful: events.slice(0, 10).map((e) => ({ Id: e.idempotencyKey, MessageId: `msg-${e.idempotencyKey}` })),
+                    Successful: events.slice(0, 10).map((_, i) => ({ Id: String(i), MessageId: `msg-${i}` })),
                     Failed: []
                 })
                 .mockResolvedValueOnce({
-                    Successful: [{ Id: events[10]!.idempotencyKey, MessageId: `msg-${events[10]!.idempotencyKey}` }],
+                    Successful: [{ Id: '0', MessageId: 'msg-10' }],
                     Failed: []
                 });
 
