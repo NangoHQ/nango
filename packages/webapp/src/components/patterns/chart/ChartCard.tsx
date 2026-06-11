@@ -68,15 +68,15 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
     const showEmpty = effectiveEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError;
 
     return (
-        <div className={cn('bg-bg-elevated rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
+        <div className={cn('bg-surface-page rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
                 <div className="flex flex-col items-start justify-center h-11">
                     {isLoading || !data ? (
-                        <Skeleton className="bg-bg-subtle h-4 w-32" />
+                        <Skeleton className="bg-surface-panel-inset h-4 w-32" />
                     ) : (
                         <>
                             <div className="flex items-center gap-1.5">
-                                <span className="text-text-primary text-body-large-semi">{data.label}</span>
+                                <span className="text-text-strong text-body-large-semi">{data.label}</span>
                                 {isCumulative && (
                                     <InfoTooltip>
                                         This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
@@ -87,7 +87,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                             {headlineTotal !== undefined && (
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
-                                    {isCumulative && <span className="text-text-tertiary text-body-small-regular">monthly average</span>}
+                                    {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
                                 </div>
                             )}
                         </>

@@ -30,7 +30,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                 return (
                     <div key={step.id} className="flex flex-col w-full">
                         <div className="flex flex-row">
-                            <div className={cn('mr-10 w-px h-auto bg-border-default', isCurrent && 'bg-border-strong', isDone && 'bg-border-brand')} />
+                            <div className={cn('mr-10 w-px h-auto bg-border-default', isCurrent && 'bg-border-strong', isDone && 'bg-border-selected')} />
 
                             <div
                                 className={cn(
@@ -45,7 +45,7 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
                                 {step.content}
                             </div>
                         </div>
-                        {!isLast && <div className={cn('mr-10 h-10 bg-border-default w-px', isDone && 'bg-border-brand', isLast && 'opacity-0')} />}
+                        {!isLast && <div className={cn('mr-10 h-10 bg-border-default w-px', isDone && 'bg-border-selected', isLast && 'opacity-0')} />}
                     </div>
                 );
             })}
