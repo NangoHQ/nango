@@ -316,6 +316,7 @@ export async function handleSyncSuccess({
         }
         team = accountContext.account;
         environment = accountContext.environment;
+        const plan = accountContext.plan;
 
         if (!nangoProps.syncJobId) {
             throw new Error('syncJobId is required to update sync status');
@@ -360,7 +361,8 @@ export async function handleSyncSuccess({
                     environmentId: nangoProps.environmentId,
                     connectionId: nangoProps.nangoConnectionId,
                     model,
-                    generation: nangoProps.syncJobId
+                    generation: nangoProps.syncJobId,
+                    plan
                 });
                 if (res.isErr()) {
                     throw res.error;

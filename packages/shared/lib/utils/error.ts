@@ -173,6 +173,51 @@ export class NangoError extends NangoInternalError {
                 this.message = `Invalid HMAC signature.`;
                 break;
 
+            case 'missing_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is missing.`;
+                break;
+
+            case 'invalid_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is invalid.`;
+                break;
+
+            case 'missing_aws_sigv4_service':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the target AWS service.`;
+                break;
+
+            case 'missing_aws_sigv4_sts_endpoint':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the STS endpoint configuration.`;
+                break;
+
+            case 'missing_aws_sigv4_builtin_credentials':
+                this.status = 400;
+                this.message = `AWS SigV4 built-in mode requires AWS Access Key ID and Secret Access Key.`;
+                break;
+
+            case 'missing_aws_sigv4_region':
+                this.status = 400;
+                this.message = `AWS SigV4 requests require a region.`;
+                break;
+
+            case 'missing_aws_sigv4_role_arn':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the IAM role ARN.`;
+                break;
+
+            case 'missing_aws_sigv4_external_id':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the external ID.`;
+                break;
+
+            case 'aws_sigv4_sts_request_failed':
+                this.status = 502;
+                this.message = `Failed to retrieve AWS credentials from the configured STS endpoint.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
@@ -598,6 +643,16 @@ export class NangoError extends NangoInternalError {
             case 'execution_timeout':
                 this.status = 500;
                 this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
+                break;
+
+            case 'followupboss_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token request failed.';
+                break;
+
+            case 'followupboss_refresh_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token refresh failed.';
                 break;
 
             default:

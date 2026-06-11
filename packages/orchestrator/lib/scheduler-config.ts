@@ -15,9 +15,7 @@ export function buildSchedulerConfig(envs: Envs): SchedulerConfig {
             schedulingTickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS,
             expiringTickIntervalMs: envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS,
             cleaningTickIntervalMs: envs.ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS,
-            monitoringTickIntervalMs: envs.ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS,
-            cleaningOlderThanDays: envs.ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS,
-            monitoringTopN: envs.ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N
+            cleaningOlderThanDays: envs.ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS
         },
         limits: {
             groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX,
@@ -33,11 +31,6 @@ export function handleSchedulerEvent(event: SchedulerEvent): void {
             const primitive = event.groupKey.split(GROUP_PREFIX_SEPARATOR)[0] || 'unknown';
             logger.warning(`Dropped ${event.count} task(s) for group '${event.groupKey}' (reason: ${event.reason})`);
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, event.count, { primitive, reason: event.reason });
-            return;
-        }
-        case 'queue_backpressure': {
-            const primitive = event.groupKey.split(GROUP_PREFIX_SEPARATOR)[0]!;
-            metrics.gauge(metrics.Types.ORCH_QUEUE_BACKPRESSURE, event.queued, { groupKey: event.groupKey, primitive });
             return;
         }
     }

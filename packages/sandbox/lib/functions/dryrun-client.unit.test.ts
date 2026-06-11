@@ -13,8 +13,9 @@ const mocks = vi.hoisted(() => {
         kill
     };
     const create = vi.fn();
+    const envs = { E2B_API_KEY: 'e2b-key' as string | undefined };
 
-    return { RateLimitError, create, kill, run, sandbox, write };
+    return { RateLimitError, create, envs, kill, run, sandbox, write };
 });
 
 vi.mock('e2b', () => ({
@@ -31,6 +32,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
     return { ...actual, isLocal: false };
 });
+vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
@@ -50,14 +52,13 @@ const request = {
 
 describe('remote function dryrun client', () => {
     beforeEach(() => {
-        vi.stubEnv('E2B_API_KEY', 'e2b-key');
+        mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);
         mocks.write.mockResolvedValue(undefined);
         mocks.kill.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
-        vi.unstubAllEnvs();
         vi.clearAllMocks();
     });
 
@@ -84,7 +85,7 @@ describe('remote function dryrun client', () => {
         expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-dryrun.mjs', {
             cwd: '/home/user/nango-integrations',
             background: true,
-            timeoutMs: 30_000,
+            timeoutMs: 0,
             envs: expect.objectContaining({
                 NANGO_DRYRUN_CALLBACK_URL: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result',
                 NANGO_DRYRUN_ARGS: JSON.stringify([

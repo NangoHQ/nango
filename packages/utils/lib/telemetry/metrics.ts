@@ -97,6 +97,17 @@ export enum Types {
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
 
+    TASKS_ENQUEUED = 'nango.tasks.enqueued',
+    TASKS_RETRIED = 'nango.tasks.retried',
+    TASKS_STARTED = 'nango.tasks.started',
+    TASKS_SUCCEEDED = 'nango.tasks.succeeded',
+    TASKS_FAILED = 'nango.tasks.failed',
+    TASKS_EXPIRED = 'nango.tasks.expired',
+    TASKS_CANCELLED = 'nango.tasks.cancelled',
+    TASKS_DROPPED = 'nango.tasks.dropped',
+    TASKS_HANDLER_DURATION = 'nango.tasks.handler.duration',
+    TASKS_QUEUE_DEPTH = 'nango.tasks.queue.depth',
+
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
