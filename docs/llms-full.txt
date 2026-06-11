@@ -3887,27 +3887,45 @@ Supported events:
 
 | Event | When it runs | Common use |
 | --- | --- | --- |
-| `validate-connection` | During connection creation | Reject invalid credentials or missing provider permissions |
 | `post-connection-creation` | Immediately after a connection is created | Register provider webhooks, seed metadata, run setup checks |
+| `validate-connection` | During connection creation and reconnect | Reject invalid credentials, missing provider permissions, or policy violations (e.g. same-account enforcement) |
 | `pre-connection-deletion` | Before a connection is deleted | Delete provider webhook subscriptions or external resources |
 
 <Accordion title="For agents">
   Before generating an event function, identify the lifecycle event, provider endpoint, required metadata, and desired failure behavior.
 
-  For `validate-connection`, throwing rejects and deletes the connection. For cleanup functions, make the provider call idempotent because the external resource may already be gone.
+  For `validate-connection`, throwing rejects the auth attempt. On first connect, the connection is deleted. On reconnect, the connection is marked as an auth error (`refresh_exhausted`) and the user must reconnect explicitly. For cleanup functions, make the provider call idempotent because the external resource may already be gone.
+
+  For same-account enforcement on reconnect, store the provider account identifier in **connection metadata** during `post-connection-creation`, then compare it to a live identity API call in `validate-connection`. Do not compare `connection_config` fields: reconnect upserts new credentials before validation runs, so config values already reflect the newly authenticated account.
 </Accordion>
 
 ## Create a setup function
 
 Add a file under the integration's `on-events/` folder:
 
-```typescript salesforce/on-events/register-webhook.ts
+```typescript salesforce/on-events/post-connection-setup.ts
 import { createOnEvent } from 'nango';
+import * as z from 'zod';
+
+const Metadata = z.object({
+    organization_id: z.string().optional(),
+    webhookId: z.string().optional()
+});
 
 export default createOnEvent({
-    description: 'Register a Salesforce webhook after a connection is created',
+    description: 'Register a Salesforce webhook and lock the org ID in metadata after a successful connect',
     event: 'post-connection-creation',
+    metadata: Metadata,
     exec: async (nango) => {
+        const userInfo = await nango.get({
+            endpoint: '/services/oauth2/userinfo'
+        });
+
+        const organizationId = userInfo.data?.organization_id as string | undefined;
+        if (!organizationId) {
+            throw new nango.ActionError('Salesforce connection missing organization_id from /services/oauth2/userinfo');
+        }
+
         const response = await nango.post({
             endpoint: '/webhooks',
             data: {
@@ -3917,6 +3935,7 @@ export default createOnEvent({
         });
 
         await nango.setMetadata({
+            organization_id: organizationId,
             webhookId: response.data.id
         });
     }
@@ -3926,18 +3945,75 @@ export default createOnEvent({
 Import it from `index.ts`:
 
 ```typescript index.ts
-import './salesforce/on-events/register-webhook';
+import './salesforce/on-events/post-connection-setup';
 ```
+
+## Create a connection validation function
+
+Add a file under the integration's `on-events/` folder:
+
+```typescript salesforce/on-events/validate-connection.ts
+import { createOnEvent } from 'nango';
+import * as z from 'zod';
+
+const Metadata = z.object({
+    organization_id: z.string().optional(),
+    webhookId: z.string().optional()
+});
+
+export default createOnEvent({
+    description: 'Reject reconnect when the Salesforce org differs from the locked org in metadata',
+    event: 'validate-connection',
+    metadata: Metadata,
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const lockedOrganizationId = metadata?.organization_id;
+
+        if (!lockedOrganizationId) {
+            return;
+        }
+
+        const response = await nango.get({
+            endpoint: '/services/oauth2/userinfo'
+        });
+
+        const organizationId = response.data?.organization_id as string | undefined;
+        if (!organizationId) {
+            throw new nango.ActionError('Salesforce connection missing organization_id from /services/oauth2/userinfo');
+        }
+
+        if (lockedOrganizationId !== organizationId) {
+            throw new nango.ActionError(
+                `Salesforce org mismatch: expected ${lockedOrganizationId}, got ${organizationId}`
+            );
+        }
+    }
+});
+```
+
+Import it from `index.ts`:
+
+```typescript index.ts
+import './salesforce/on-events/post-connection-setup';
+import './salesforce/on-events/validate-connection';
+```
+
+On first connect, validation passes when metadata has no locked org yet; the setup function records `organization_id` after auth succeeds. On reconnect, validation compares the new credentials against the saved org ID and rejects the attempt if they differ.
+
+<Info>
+Compare the locked value in **metadata** to a live value from the provider API. Do not compare `connection_config` fields: on reconnect, Nango upserts the new credentials and overwrites `connection_config` **before** `validate-connection` runs, so config already reflects the account the user just authenticated with.
+</Info>
 
 ## Create a cleanup function
 
 If the provider webhook is registered per connection, clean it up before the Nango connection is deleted:
 
-```typescript salesforce/on-events/delete-webhook.ts
+```typescript salesforce/on-events/pre-connection-cleanup.ts
 import { createOnEvent } from 'nango';
 import * as z from 'zod';
 
 const Metadata = z.object({
+    organization_id: z.string().optional(),
     webhookId: z.string().optional()
 });
 
@@ -3961,7 +4037,7 @@ export default createOnEvent({
 Import it from `index.ts`:
 
 ```typescript index.ts
-import './salesforce/on-events/delete-webhook';
+import './salesforce/on-events/pre-connection-cleanup';
 ```
 
 ## Test and deploy
@@ -3969,7 +4045,7 @@ import './salesforce/on-events/delete-webhook';
 Dry run an event function against an existing connection:
 
 ```bash
-nango dryrun register-webhook '<CONNECTION-ID>' -e dev
+nango dryrun post-connection-setup '<CONNECTION-ID>' -e dev
 ```
 
 Deploy your functions:
