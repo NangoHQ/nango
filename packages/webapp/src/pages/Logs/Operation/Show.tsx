@@ -14,6 +14,7 @@ import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useThemeStore } from '@/lib/theme';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -68,6 +69,8 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         isLive ? 5000 : null
     );
 
+    const darkMode = useThemeStore((s) => s.darkMode);
+
     if (loading) {
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
@@ -102,9 +105,9 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <h3 className="text-xl font-semibold text-text-strong">Operation Details</h3>
                 <div className="flex gap-3 items-center">
                     <div className="flex">
-                        <StatusTag state={operation.state} size="sm" />
+                        <StatusTag state={operation.state} />
                     </div>
-                    <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
+                    <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
                         <IconClockHour4 stroke={1} size={18} />
                         <div className="text-text-muted text-s pt-px font-code">{duration}</div>
@@ -120,8 +123,8 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
             <div className="flex gap-5 flex-wrap">
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
-                    <div className="text-gray-400 text-xs pt-px">
-                        <OperationTag message={operation.message} operation={operation.operation} size="sm" />
+                    <div className="text-text-muted text-xs pt-px">
+                        <OperationTag message={operation.message} operation={operation.operation} />
                     </div>
                 </div>
             </div>
@@ -182,7 +185,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                         <Prism
                             language="json"
                             className="transparent-code"
-                            colorScheme="dark"
+                            colorScheme={darkMode ? 'dark' : 'light'}
                             styles={() => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}

@@ -20,7 +20,7 @@ export interface PeriodSelectorProps {
     customPeriodExample?: Period;
 }
 
-export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset, customPeriodExample }: PeriodSelectorProps) => {
+export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset, customPeriodExample }: PeriodSelectorProps) => {
     const [open, setOpen] = useState(false);
 
     const [selectedPreset, setSelectedPreset] = useState<PeriodPreset | null>(null);
@@ -95,16 +95,15 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    size={'sm'}
-                    className={cn('h-9 grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
-                >
+                <Button variant="outline" size={'sm'} className="h-9 rounded bg-surface-canvas grow truncate tabular-nums">
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-fit p-4 pt-0 rounded-md text-sm text-grayscale-11 bg-grayscale-1" align="end">
+            <PopoverContent
+                className="w-fit p-4 pt-0 rounded-[4px] border border-border-muted text-sm text-text-secondary bg-surface-overlay shadow-lg"
+                align="end"
+            >
                 <div className="flex flex-col gap-4 w-80">
                     <div className="flex flex-col gap-1">
                         <span className="text-xs text-text-muted self-end">UTC{format(new Date(), 'XXX')}</span>

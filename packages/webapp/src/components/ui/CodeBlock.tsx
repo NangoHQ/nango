@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { Badge } from './Badge.js';
 import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
+import { useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
@@ -40,6 +41,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     constrainHeight = true,
     ...props
 }) => {
+    const darkMode = useThemeStore((s) => s.darkMode);
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);
@@ -99,7 +101,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     <Prism
                         className="w-full min-w-0"
                         language={language}
-                        colorScheme="dark"
+                        colorScheme={darkMode ? 'dark' : 'light'}
                         noCopy={true}
                         styles={{ code: { fontSize: '12px' } }}
                         highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
