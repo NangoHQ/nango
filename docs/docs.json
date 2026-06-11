@@ -1076,6 +1076,7 @@
               "integrations/all/certn",
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
+              "api-integrations/chartboost",
               "api-integrations/chatarmin",
               "integrations/all/chattermill",
               "integrations/all/checkhq",
