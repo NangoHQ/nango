@@ -8,7 +8,7 @@ import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
 import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
 import { EditableInput } from '@/components/patterns/EditableInput.js';
 import { SecretInput } from '@/components/patterns/SecretInput.js';
-import { ButtonLink } from '@/components/ui/Button.js';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Label } from '@/components/ui/Label.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
@@ -49,7 +49,7 @@ export const Webhooks: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         Webhook URLs
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/webhooks-from-nango" variant="ghost" size="icon">
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/webhooks-from-nango" variant="ghost" size="2xs">
                             <ExternalLink />
                         </ButtonLink>
                     </div>

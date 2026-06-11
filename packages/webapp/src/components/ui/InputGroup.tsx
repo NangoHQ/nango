@@ -1,7 +1,8 @@
 import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { cn } from '@/utils/utils';

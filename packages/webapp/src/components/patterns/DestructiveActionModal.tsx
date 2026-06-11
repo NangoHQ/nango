@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { Button } from '../ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../ui/Dialog';
 import { Input } from '../ui/Input';
 
@@ -48,7 +49,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                     <DialogClose asChild>
                         <Button variant="secondary">{cancelButtonText}</Button>
                     </DialogClose>
-                    <Button variant="destructive" onClick={onConfirm} disabled={!isConfirmed}>
+                    <Button variant="danger" onClick={onConfirm} disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

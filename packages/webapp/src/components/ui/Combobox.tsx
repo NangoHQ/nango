@@ -2,7 +2,8 @@ import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { Check, CheckIcon, ChevronsUpDown, Minus, Search, X, XIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from './Button';
+import { Button } from '@nangohq/design-system';
+
 import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
 import { cn } from '@/utils/utils';
@@ -228,7 +229,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             loading={props.loading}
             disabled={disabled || options.length === 0}
             variant="ghost"
-            size="lg"
+            size="xl"
             className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
         >
             {props.label}{' '}
@@ -527,7 +528,7 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             {children}
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
-                    render={<Button variant="ghost" size="icon" />}
+                    render={<Button variant="ghost" size="2xs" />}
                     className="size-4 opacity-50 hover:opacity-100 p-0 flex items-center justify-center"
                     data-slot="combobox-chip-remove"
                 >

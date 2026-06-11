@@ -3,6 +3,8 @@ import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
@@ -10,7 +12,7 @@ import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSch
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
@@ -177,7 +179,7 @@ export const FunctionsOne: React.FC = () => {
                         </div>
                         <div className="inline-flex items-center gap-3">
                             {func.enabled && debugMode && (
-                                <Button onClick={downloadCode} variant="ghost" size="icon">
+                                <Button onClick={downloadCode} variant="ghost" size="2xs">
                                     <Download />
                                 </Button>
                             )}
@@ -185,7 +187,7 @@ export const FunctionsOne: React.FC = () => {
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
                                 <Button
                                     variant="secondary"
-                                    size="sm"
+                                    size="md"
                                     disabled={!func.enabled}
                                     onClick={() => {
                                         openPlaygroundWithContext({
@@ -261,7 +263,7 @@ export const FunctionsOne: React.FC = () => {
                             </div>
                             <div className="inline-flex gap-3">
                                 <LineSnippet snippet={`nango clone ${gitDir}`} />
-                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="xl">
                                     View code <ExternalLink />
                                 </ButtonLink>
                             </div>
@@ -277,11 +279,11 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
+                                <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
+                                <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}

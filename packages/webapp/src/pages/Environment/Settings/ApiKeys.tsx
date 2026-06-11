@@ -3,6 +3,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import SettingsContent from './components/SettingsContent';
 import {
@@ -20,7 +21,6 @@ import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
@@ -293,7 +293,7 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
                     <ScopeSelector selectedScopes={selectedScopes} onChange={setSelectedScopes} />
                 </div>
                 <DialogFooter>
-                    <Button variant="tertiary" onClick={() => setOpen(false)}>
+                    <Button variant="outline" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>
                     <Button onClick={handleCreate} loading={isPending} disabled={hasNoScopes}>
@@ -375,7 +375,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                 <Button
                                     variant="ghost"
-                                    size="icon"
+                                    size="2xs"
                                     onClick={() => setSecretRevealed((r) => !r)}
                                     className="text-text-muted hover:text-text-strong h-7 w-7"
                                 >
@@ -391,7 +391,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
 
                 {canManageKeys && (
                     <div className="flex gap-2 pt-2">
-                        <Button variant="tertiary" onClick={onBack}>
+                        <Button variant="outline" onClick={onBack}>
                             Cancel
                         </Button>
                         <Button onClick={handleSave} loading={isPending} disabled={!hasChanges || hasNoScopes}>
@@ -417,7 +417,7 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <Button variant="ghost" size="icon" className="text-text-muted hover:text-status-danger-text">
+                <Button variant="ghost" size="2xs" className="text-text-muted hover:text-status-danger-text">
                     <Trash2 className="size-3.5" />
                 </Button>
             }
@@ -447,7 +447,7 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                             <Button
                                 variant="ghost"
-                                size="icon"
+                                size="2xs"
                                 onClick={() => setRevealed((r) => !r)}
                                 className="text-text-muted hover:text-text-strong h-7 w-7"
                             >
@@ -554,7 +554,7 @@ export const ApiKeys: React.FC = () => {
                                             {canManageKeys && (
                                                 <Button
                                                     variant="ghost"
-                                                    size="icon"
+                                                    size="2xs"
                                                     onClick={() => setSelectedKeyId(key.id)}
                                                     className="text-text-muted hover:text-text-strong"
                                                 >

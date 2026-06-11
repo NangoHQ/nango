@@ -1,11 +1,12 @@
 import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { SlackIcon } from '@/assets/SlackIcon';
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -29,23 +30,23 @@ export const AppHeader: React.FC = () => {
             <div className="flex gap-1.5 justify-end">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
-                        <Button variant="outline" size="sm" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
+                        <Button variant="outline" size="md" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
                             <Box />
                             Playground
                         </Button>
                     )}
                 </PermissionGate>
-                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="outline" size="sm">
+                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="outline" size="md">
                     <BookOpen />
                     Docs
                 </ButtonLink>
-                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="outline" size="sm">
+                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="outline" size="md">
                     <SlackIcon />
                     Help
                 </ButtonLink>
                 <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     className="size-8 p-0"
                     onClick={toggleDarkMode}
                     title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { PlaygroundInputs } from './PlaygroundInputs';
 import { PlaygroundResult } from './PlaygroundResult';
@@ -11,7 +12,6 @@ import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import { Sheet, SheetContent } from '@/components/ui/Sheet';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
@@ -123,7 +123,7 @@ export const Playground: React.FC = () => {
                                     <h2 className="text-text-strong text-heading-medium">Playground</h2>
                                     <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                                <Button variant="ghost" size="2xs" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
                                     <X />
                                 </Button>
                             </div>
@@ -147,11 +147,11 @@ export const Playground: React.FC = () => {
                                 <div className="flex gap-2">
                                     {running ? (
                                         <>
-                                            <Button variant="primary" disabled loading={true} size="sm">
+                                            <Button variant="primary" disabled loading={true} size="md">
                                                 Running
                                             </Button>
                                             {isSync && (
-                                                <Button variant="destructive" size="sm" onClick={handleCancel}>
+                                                <Button variant="danger" size="md" onClick={handleCancel}>
                                                     <X />
                                                     Cancel run
                                                 </Button>
@@ -161,7 +161,7 @@ export const Playground: React.FC = () => {
                                         <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
                                             <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
                                                 {(allowed) => (
-                                                    <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
+                                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
                                                         <RotateCcw />
                                                         Run again
                                                     </Button>
@@ -172,7 +172,7 @@ export const Playground: React.FC = () => {
                                         <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
                                             <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
                                                 {(allowed) => (
-                                                    <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
+                                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
                                                         <Play />
                                                         Run
                                                     </Button>

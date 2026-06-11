@@ -3,6 +3,9 @@
 
 @import 'tailwindcss';
 
+/* Tailwind v4 ignores node_modules; scan the design-system source so its component classes are generated here */
+@source '../../design-system/src';
+
 @import 'tw-animate-css';
 
 @import '@nangohq/design-system/tokens/tokens.generated.css';

@@ -5,7 +5,8 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Input } from '@/components/ui/Input';
 import { Separator } from '@/components/ui/Separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
@@ -231,7 +232,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
             data-sidebar="trigger"
             data-slot="sidebar-trigger"
             variant="ghost"
-            size="icon"
+            size="2xs"
             className={cn('size-7', className)}
             onClick={(event) => {
                 onClick?.(event);

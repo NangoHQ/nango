@@ -2,6 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
@@ -12,7 +13,7 @@ import { APIError } from '../../../utils/api';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Label } from '@/components/ui/Label';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -85,7 +86,7 @@ export const Telemetry: React.FC = () => {
                 label={
                     <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="icon">
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="2xs">
                             <ExternalLink />
                         </ButtonLink>
                     </div>
@@ -145,7 +146,7 @@ export const Telemetry: React.FC = () => {
                             )}
                             {editHeaders && (
                                 <>
-                                    <Button variant="tertiary" onClick={onCancelHeaders}>
+                                    <Button variant="outline" onClick={onCancelHeaders}>
                                         Cancel
                                     </Button>
                                     <Button variant="primary" onClick={onSaveHeaders} loading={loading}>

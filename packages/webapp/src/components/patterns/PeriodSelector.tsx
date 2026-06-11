@@ -2,7 +2,8 @@ import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { matchPresetFromPeriod, parsePeriod } from '@/utils/dates';
 import { cn } from '@/utils/utils';
@@ -95,7 +96,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button variant="outline" size={'sm'} className="h-9 rounded bg-surface-canvas grow truncate tabular-nums">
+                <Button variant="outline" size={'md'} className="h-9 rounded bg-surface-canvas grow truncate tabular-nums">
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
@@ -10,7 +11,6 @@ import { globalEnv } from '../../../utils/env';
 import { connectSlack } from '../../../utils/slack-connection';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import { useEnvironment, usePatchEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
@@ -78,7 +78,7 @@ export const SlackAlertsSettings: React.FC = () => {
                             <Button
                                 className="px-4"
                                 disabled={slackIsConnecting || !allowed}
-                                variant={isConnected ? 'tertiary' : 'primary'}
+                                variant={isConnected ? 'outline' : 'primary'}
                                 onClick={isConnected ? slackDisconnect : slackConnect}
                             >
                                 <SlackIcon className="w-5 h-5" />

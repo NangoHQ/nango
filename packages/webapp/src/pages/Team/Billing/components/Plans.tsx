@@ -2,13 +2,14 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
 import { Dot } from '../../../../components/ui/Dot.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dialog } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components/ui/StyledLink.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/Table';
@@ -180,7 +181,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
                         {(allowed) => (
-                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="destructive" className="w-27" disabled={!allowed}>
+                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="danger" className="w-27" disabled={!allowed}>
                                 Downgrade
                             </Button>
                         )}

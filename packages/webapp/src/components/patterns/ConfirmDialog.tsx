@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { Button } from '../ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { StyledLink } from '../ui/StyledLink';
 
@@ -9,7 +10,7 @@ export interface ConfirmDialogOptions {
     description: string;
     confirmButtonText?: string;
     cancelButtonText?: string;
-    confirmVariant?: 'primary' | 'destructive' | 'secondary' | 'tertiary';
+    confirmVariant?: 'primary' | 'danger' | 'secondary' | 'outline';
     icon?: React.ReactNode;
     docs?: {
         title: string;

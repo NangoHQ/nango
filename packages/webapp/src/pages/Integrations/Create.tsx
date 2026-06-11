@@ -7,7 +7,7 @@ import { AuthCreateForm } from './components/forms/AuthCreateForm';
 import { getDisplayName } from './utils';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePostIntegration } from '@/hooks/useIntegration';
 import { useProvider } from '@/hooks/useProvider';

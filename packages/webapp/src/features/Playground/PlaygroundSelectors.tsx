@@ -3,9 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { Button } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
@@ -150,7 +151,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                         <Button
                             type="button"
                             variant="secondary"
-                            size="sm"
+                            size="md"
                             className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                             onClick={() => {
                                 setPlaygroundOpen(false);
@@ -181,7 +182,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                         <Button
                             type="button"
                             variant="secondary"
-                            size="sm"
+                            size="md"
                             className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                             onClick={() => {
                                 setPlaygroundOpen(false);
@@ -211,7 +212,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             <Button
                                 type="button"
                                 variant="secondary"
-                                size="sm"
+                                size="md"
                                 className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                                 onClick={() => {
                                     setPlaygroundOpen(false);

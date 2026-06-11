@@ -1,11 +1,12 @@
 import { CreditCard } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { Button } from '@nangohq/design-system';
+
 import { InvoicingDetailsForm } from './InvoicingDetailsForm';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { Dot } from '../../../../components/ui/Dot';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -52,7 +53,7 @@ export const Payment: React.FC = () => {
                                     </div>
                                 </div>
                                 <PaymentMethodDialog replace={!!paymentMethod}>
-                                    <Button size={'sm'} className="min-w-27">
+                                    <Button size={'md'} className="min-w-27">
                                         {paymentMethod ? 'Update' : 'Add payment method'}
                                     </Button>
                                 </PaymentMethodDialog>

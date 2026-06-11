@@ -2,7 +2,8 @@ import { Prism } from '@mantine/prism';
 import { Loader, Play } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from './Button.js';
+import { Button } from '@nangohq/design-system';
+
 import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
 import { Tag } from './Tag.js';

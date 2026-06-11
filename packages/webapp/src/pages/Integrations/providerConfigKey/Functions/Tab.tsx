@@ -6,7 +6,7 @@ import { EmptyCard } from '../../../../components/ui/EmptyCard.js';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert.js';
 import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton.js';

@@ -2,13 +2,15 @@ import { LogOut } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
 import { SignupForm } from './components/SignupForm';
 import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { StyledLink } from '@/components/ui/StyledLink';
 
 export const InviteSignup: React.FC = () => {
@@ -79,7 +81,7 @@ export const InviteSignup: React.FC = () => {
                     <p className="text-text-secondary text-body-medium-regular">This invitation no longer exists or is expired.</p>
                 </div>
 
-                <ButtonLink to={'/signup'} variant="secondary" className="w-full" size="lg">
+                <ButtonLink to={'/signup'} variant="secondary" className="w-full" size="xl">
                     Back to signup
                 </ButtonLink>
             </DefaultLayout>
@@ -104,10 +106,10 @@ export const InviteSignup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 items-center justify-center">
-                    <ButtonLink to={'/'} variant="secondary" size="lg">
+                    <ButtonLink to={'/'} variant="secondary" size="xl">
                         Back to home
                     </ButtonLink>
-                    <Button onClick={signout} variant="primary" size="lg">
+                    <Button onClick={signout} variant="primary" size="xl">
                         <LogOut />
                         Log out
                     </Button>
@@ -139,10 +141,10 @@ export const InviteSignup: React.FC = () => {
 
             {isLogged ? (
                 <div className="flex gap-2 items-center justify-center">
-                    <Button variant="secondary" size="lg" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
+                    <Button variant="secondary" size="xl" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
                         Decline
                     </Button>
-                    <Button variant="destructive" size="lg" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
+                    <Button variant="danger" size="xl" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
                         Join a different team
                     </Button>
                 </div>

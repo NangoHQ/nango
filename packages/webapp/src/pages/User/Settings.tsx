@@ -2,11 +2,12 @@ import { Edit } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { Button } from '@nangohq/design-system';
+
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Button } from '@/components/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -79,7 +80,7 @@ export const UserSettings: React.FC = () => {
                                     <TooltipTrigger asChild>
                                         <Button
                                             variant={'ghost'}
-                                            size={'icon'}
+                                            size={'2xs'}
                                             onClick={() => {
                                                 setEdit(true);
                                                 setTimeout(() => {

@@ -1,7 +1,8 @@
 import { EyeIcon, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { Button } from '../ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { CopyButton } from '../ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from '../ui/InputGroup';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -50,7 +51,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
             <InputGroupAddon align="inline-end" className={isSecretVisible ? 'self-start' : ''}>
                 <PermissionGate condition={canRead}>
                     {(allowed) => (
-                        <Button disabled={!allowed} type="button" variant="ghost" size="icon" onClick={toggleSecretVisibility}>
+                        <Button disabled={!allowed} type="button" variant="ghost" size="2xs" onClick={toggleSecretVisibility}>
                             {isSecretVisible ? <EyeIcon /> : <EyeOff />}
                         </Button>
                     )}

@@ -2,8 +2,9 @@ import Fuse from 'fuse.js';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
+import { buttonVariants } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { buttonVariants } from '@/components/ui/Button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/utils';
@@ -52,7 +53,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'bg-surface-canvas justify-between grow w-full h-13')}
+                className={cn(buttonVariants({ variant: 'secondary', size: 'xl' }), 'bg-surface-canvas justify-between grow w-full h-13')}
                 disabled={disabled}
             >
                 {selectedIntegration ? (

@@ -67,7 +67,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             description:
                 'Updating the Client ID will invalidate token refreshes for all existing connections for this integration. Are you sure you want to continue?',
             confirmButtonText: 'Update Client ID',
-            confirmVariant: 'destructive',
+            confirmVariant: 'danger',
             onConfirm: async () => {
                 await onSave({ clientId: value });
             }

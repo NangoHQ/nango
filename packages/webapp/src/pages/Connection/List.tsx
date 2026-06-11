@@ -7,13 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Avatar } from '@/components/ui/Avatar';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
@@ -287,7 +288,7 @@ export const ConnectionList = () => {
                     {(hasConnections || hasFiltered) && (
                         <PermissionGate condition={canCreateTestConnection}>
                             {(allowed) => (
-                                <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed}>
+                                <ButtonLink to={`/${env}/connections/create`} size="xl" disabled={!allowed}>
                                     Add test connection
                                 </ButtonLink>
                             )}
@@ -333,7 +334,7 @@ export const ConnectionList = () => {
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                size="sm"
+                                                size="md"
                                                 className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                                                 onClick={() => {
                                                     navigate(`/${env}/integrations/create`);
@@ -440,14 +441,14 @@ export const ConnectionList = () => {
                                 </StyledLink>
                                 , or manually here.
                             </p>
-                            <ButtonLink to={`/${env}/connections/create`} size="lg">
+                            <ButtonLink to={`/${env}/connections/create`} size="xl">
                                 Add test connection
                             </ButtonLink>
                         </div>
                     )}
 
                     {hasNextPage && (
-                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
+                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline" className="self-center">
                             Load More
                         </Button>
                     )}

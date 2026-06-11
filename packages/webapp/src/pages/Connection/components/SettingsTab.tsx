@@ -2,10 +2,10 @@ import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -52,8 +52,8 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
                     <PermissionGate condition={canDeleteConnection} asChild>
                         {(allowed) => (
                             <Button
-                                variant="destructive"
-                                size="lg"
+                                variant="danger"
+                                size="xl"
                                 loading={isDeletingConnection}
                                 disabled={!allowed}
                                 onClick={() =>
@@ -61,7 +61,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
                                         title: 'Delete connection?',
                                         description: 'All credentials & synced data associated with this connection will be deleted.',
                                         confirmButtonText: 'Delete connection',
-                                        confirmVariant: 'destructive',
+                                        confirmVariant: 'danger',
                                         onConfirm: onDelete
                                     })
                                 }

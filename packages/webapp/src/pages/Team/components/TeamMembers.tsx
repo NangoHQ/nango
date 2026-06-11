@@ -2,13 +2,14 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { RoleSelect } from './RoleSelect';
 import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Badge } from '@/components/ui/Badge';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
@@ -131,7 +132,7 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="icon" variant="ghost" target="_blank">
+                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="2xs" variant="ghost" target="_blank">
                                     <ExternalLink className="size-3" />
                                 </ButtonLink>
                             </div>
@@ -187,7 +188,7 @@ export const TeamMembers: React.FC = () => {
                                         <PermissionGate condition={canManageTeam}>
                                             {(allowed) => (
                                                 <DropdownMenuTrigger asChild disabled={!allowed}>
-                                                    <Button variant="ghost" size="icon" disabled={!allowed}>
+                                                    <Button variant="ghost" size="2xs" disabled={!allowed}>
                                                         <Ellipsis />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -205,7 +206,7 @@ export const TeamMembers: React.FC = () => {
                                                             description: `Are you sure you want to remove ${user.name} from the team?`,
                                                             onConfirm: () => onRemoveUser(user),
                                                             confirmButtonText: 'Remove',
-                                                            confirmVariant: 'destructive'
+                                                            confirmVariant: 'danger'
                                                         })
                                                     }
                                                 >
@@ -222,7 +223,7 @@ export const TeamMembers: React.FC = () => {
                                                             description: `Are you sure you want to revoke the invitation for ${user.email}?`,
                                                             onConfirm: () => onCancelInvitation(user),
                                                             confirmButtonText: 'Revoke',
-                                                            confirmVariant: 'destructive'
+                                                            confirmVariant: 'danger'
                                                         })
                                                     }
                                                 >
