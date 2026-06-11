@@ -11939,6 +11939,43 @@ marketo:
             order: 2
             doc_section: '#step-3-find-your-domain-and-identity-url'
 
+mattermost:
+    display_name: Mattermost
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /v4/users/me
+    docs: https://nango.dev/docs/api-integrations/mattermost
+    docs_connect: https://nango.dev/docs/api-integrations/mattermost/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Server URL
+            description: The hostname of your Mattermost server.
+            example: mattermost.example.com
+            pattern: '^[a-zA-Z0-9.-]+(?::[0-9]+)?$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-mattermost-server-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Mattermost personal access token.
+            example: 'hx3mq8n0vy6***************'
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-generate-a-personal-access-token'
+
 malwarebytes:
     display_name: Malwarebytes
     categories:

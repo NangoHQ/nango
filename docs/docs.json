@@ -1336,6 +1336,7 @@
               "integrations/all/malwarebytes",
               "integrations/all/manatal",
               "integrations/all/marketo",
+              "api-integrations/mattermost",
               "integrations/all/mcp-generic",
               "integrations/all/medallia",
               "api-integrations/mercury",
