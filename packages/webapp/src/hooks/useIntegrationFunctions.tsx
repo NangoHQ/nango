@@ -22,8 +22,8 @@ export function useGetIntegrationFunctions({ env, providerConfigKey, search, typ
             usp.set('env', env);
             usp.set('page', String(pageParam));
             usp.set('limit', String(limit));
-            if (search) {
-                usp.set('search', search);
+            if (search?.trim()) {
+                usp.set('search', search.trim());
             }
             if (type) {
                 usp.set('type', type);

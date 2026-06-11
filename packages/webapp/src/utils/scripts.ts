@@ -9,7 +9,7 @@ export function isSyncOrAction(fn: DeployedNangoFunction): fn is DeployedNangoSy
 
 /** Path of a function's source file within the integration-templates repo, e.g. `integrations/github/syncs/foo.ts`. */
 export function functionRepoPath({ provider, name, type }: { provider: string; name: string; type: FunctionType }): string {
-    const dir = type === 'action' ? 'actions' : 'syncs';
+    const dir = type === 'action' ? 'actions' : type === 'on-event' ? 'on-events' : 'syncs';
     return `integrations/${provider}/${dir}/${name}.ts`;
 }
 
