@@ -1,5 +1,4 @@
-import { EyeSlashIcon } from '@heroicons/react/24/outline';
-import { EyeIcon } from 'lucide-react';
+import { EyeIcon, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { Button } from '../ui/Button';
@@ -28,7 +27,7 @@ export const SecretInput: React.FC<SecretInputProps> = ({ copy, canRead = true, 
                 <PermissionGate condition={canRead}>
                     {(allowed) => (
                         <Button disabled={!allowed} type="button" variant="ghost" size="icon" onClick={toggleSecretVisibility}>
-                            {isSecretVisible ? <EyeIcon /> : <EyeSlashIcon />}
+                            {isSecretVisible ? <EyeIcon /> : <EyeOff />}
                         </Button>
                     )}
                 </PermissionGate>

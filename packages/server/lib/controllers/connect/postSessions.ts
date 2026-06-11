@@ -201,7 +201,11 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 ? Object.fromEntries(
                       Object.entries(body.integrations_config_defaults).map(([key, value]) => [
                           key,
-                          { user_scopes: value.user_scopes, authorization_params: value.authorization_params, connectionConfig: value.connection_config }
+                          {
+                              user_scopes: value.user_scopes,
+                              authorization_params: value.authorization_params,
+                              connectionConfig: value.connection_config
+                          }
                       ])
                   )
                 : null,
