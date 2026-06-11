@@ -1,7 +1,7 @@
-import { pubsub } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
 
 import { telemetryBodySchema, telemetryParamsSchema } from './validate.js';
+import { pubsub } from '../../../pubsub.js';
 
 import type { AuthLocals } from '../../../middleware/auth.middleware.js';
 import type { DBEnvironment, DBTeam, PostRunnerTelemetry, RunnerDataTransferTelemetry, UsageDataTransferEvent } from '@nangohq/types';
