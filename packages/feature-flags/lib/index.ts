@@ -57,10 +57,15 @@ async function buildProvider(): Promise<Provider> {
             url: envs.NANGO_UNLEASH_URL,
             appName: envs.NANGO_UNLEASH_APP_NAME,
             apiToken: envs.NANGO_UNLEASH_API_TOKEN,
-            refreshIntervalMs: envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS
+            refreshIntervalMs: envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS,
+            initTimeoutMs: envs.NANGO_UNLEASH_INIT_TIMEOUT_MS
         });
         await provider.initialize();
-        logger.info('Unleash provider initialized');
+        if (provider.hasSynchronized()) {
+            logger.info('Unleash provider initialized');
+        } else {
+            logger.warning('Unleash provider initialized without toggle data; evaluations will use defaults until synchronized');
+        }
         return provider;
     }
     logger.info('Using noop feature-flags provider');

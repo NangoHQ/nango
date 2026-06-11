@@ -1,8 +1,14 @@
 import { ErrorCode } from '@openfeature/server-sdk';
 import { initialize } from 'unleash-client';
 
+import { getLogger } from '@nangohq/utils';
+
 import type { EvaluationContext, JsonValue, Logger, Provider, ResolutionDetails } from '@openfeature/server-sdk';
 import type { Context as UnleashEvaluationContext, Unleash } from 'unleash-client';
+
+const logger = getLogger('FeatureFlags.Unleash');
+
+const DEFAULT_INIT_TIMEOUT_MS = 10_000;
 
 const KNOWN_KEYS = new Set(['userId', 'sessionId', 'remoteAddress', 'environment', 'appName', 'currentTime']);
 
@@ -11,6 +17,7 @@ export interface UnleashProviderConfig {
     appName: string;
     apiToken?: string | undefined;
     refreshIntervalMs?: number | undefined;
+    initTimeoutMs?: number | undefined;
 }
 
 function stringifyValue(value: unknown): string {
@@ -22,6 +29,9 @@ function stringifyValue(value: unknown): string {
         case 'bigint':
             return value.toString();
         case 'object':
+            if (value instanceof Date) {
+                return value.toISOString();
+            }
             return JSON.stringify(value);
         default:
             return '';
@@ -34,6 +44,10 @@ function toUnleashContext(context: EvaluationContext): UnleashEvaluationContext 
 
     for (const [key, value] of Object.entries(context)) {
         if (value === undefined || value === null) continue;
+        if (key === 'currentTime') {
+            out.currentTime = value instanceof Date ? value : new Date(stringifyValue(value));
+            continue;
+        }
         const str = stringifyValue(value);
         if (key === 'targetingKey') {
             out.userId = str;
@@ -54,7 +68,9 @@ export class UnleashProvider implements Provider {
     readonly runsOn = 'server' as const;
 
     private readonly unleash: Unleash;
-    private ready = false;
+    private readonly whenReady: Promise<void>;
+    private settleWhenReady: (() => void) | undefined;
+    private hasToggleData = false;
 
     constructor(config: UnleashProviderConfig) {
         this.unleash = initialize({
@@ -65,39 +81,76 @@ export class UnleashProvider implements Provider {
             customHeaders: config.apiToken ? { Authorization: config.apiToken } : {}
         });
 
-        this.unleash.on('synchronized', () => {
-            this.ready = true;
-        });
+        this.whenReady = this.waitForFirstContact(config.initTimeoutMs ?? DEFAULT_INIT_TIMEOUT_MS);
+
         this.unleash.on('error', (err: Error) => {
-            console.error(`Unleash error: ${err.message}`);
+            logger.error('Unleash error', err);
+        });
+    }
+
+    hasSynchronized(): boolean {
+        return this.hasToggleData;
+    }
+
+    private waitForFirstContact(timeoutMs: number): Promise<void> {
+        if (this.unleash.isSynchronized()) {
+            this.hasToggleData = true;
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+            let settled = false;
+            const settle = (synchronized: boolean) => {
+                if (settled) return;
+                settled = true;
+                this.settleWhenReady = undefined;
+                clearTimeout(timer);
+                this.unleash.removeListener('ready', onReady);
+                this.unleash.removeListener('synchronized', onReady);
+                if (synchronized) {
+                    this.hasToggleData = true;
+                }
+                resolve();
+            };
+
+            this.settleWhenReady = () => settle(false);
+
+            const onReady = () => settle(true);
+            this.unleash.once('ready', onReady);
+            this.unleash.once('synchronized', onReady);
+
+            const timer = setTimeout(() => {
+                logger.warning('Unleash first contact timed out; flag evaluations will use defaults until synchronized');
+                settle(false);
+            }, timeoutMs);
+            if (typeof timer.unref === 'function') {
+                timer.unref();
+            }
         });
     }
 
     async initialize(): Promise<void> {
-        if (this.ready) return;
-        await new Promise<void>((resolve) => {
-            this.unleash.once('synchronized', () => resolve());
-            this.unleash.once('error', () => resolve());
-        });
+        await this.whenReady;
     }
 
+    // unleash-client destroy() is synchronous — stops polling and clears timers.
     onClose(): Promise<void> {
+        this.settleWhenReady?.();
         this.unleash.destroy();
         return Promise.resolve();
     }
 
-    resolveBooleanEvaluation(flagKey: string, defaultValue: boolean, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<boolean>> {
+    private async evaluate<T>(defaultValue: T, evaluate: () => T): Promise<ResolutionDetails<T>> {
+        await this.whenReady;
         try {
-            const value = this.unleash.isEnabled(flagKey, toUnleashContext(context), defaultValue);
-            return Promise.resolve({ value, reason: 'TARGETING_MATCH' });
+            return { value: evaluate(), reason: 'TARGETING_MATCH' };
         } catch (err) {
-            return Promise.resolve({
-                value: defaultValue,
-                reason: 'ERROR',
-                errorCode: ErrorCode.GENERAL,
-                errorMessage: err instanceof Error ? err.message : String(err)
-            });
+            return this.evaluationError(defaultValue, err);
         }
+    }
+
+    async resolveBooleanEvaluation(flagKey: string, defaultValue: boolean, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<boolean>> {
+        return this.evaluate(defaultValue, () => this.unleash.isEnabled(flagKey, toUnleashContext(context), defaultValue));
     }
 
     // Non-boolean values are served as Unleash variant payloads (provisioned by the
@@ -110,37 +163,47 @@ export class UnleashProvider implements Provider {
         return undefined;
     }
 
-    resolveStringEvaluation(flagKey: string, defaultValue: string, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<string>> {
+    async resolveStringEvaluation(flagKey: string, defaultValue: string, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<string>> {
+        await this.whenReady;
         try {
             const raw = this.payloadValue(flagKey, context);
-            if (raw === undefined) return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
-            return Promise.resolve({ value: raw, reason: 'TARGETING_MATCH' });
+            if (raw === undefined) return { value: defaultValue, reason: 'DEFAULT' };
+            return { value: raw, reason: 'TARGETING_MATCH' };
         } catch (err) {
-            return Promise.resolve(this.evaluationError(defaultValue, err));
+            return this.evaluationError(defaultValue, err);
         }
     }
 
-    resolveNumberEvaluation(flagKey: string, defaultValue: number, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<number>> {
+    async resolveNumberEvaluation(flagKey: string, defaultValue: number, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<number>> {
+        await this.whenReady;
         try {
             const raw = this.payloadValue(flagKey, context);
             const num = raw === undefined ? NaN : Number(raw);
-            if (Number.isNaN(num)) return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
-            return Promise.resolve({ value: num, reason: 'TARGETING_MATCH' });
+            if (Number.isNaN(num)) return { value: defaultValue, reason: 'DEFAULT' };
+            return { value: num, reason: 'TARGETING_MATCH' };
         } catch (err) {
-            return Promise.resolve(this.evaluationError(defaultValue, err));
+            return this.evaluationError(defaultValue, err);
         }
     }
 
-    resolveObjectEvaluation<T extends JsonValue>(flagKey: string, defaultValue: T, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<T>> {
+    async resolveObjectEvaluation<T extends JsonValue>(
+        flagKey: string,
+        defaultValue: T,
+        context: EvaluationContext,
+        _logger: Logger
+    ): Promise<ResolutionDetails<T>> {
+        await this.whenReady;
         try {
             const raw = this.payloadValue(flagKey, context);
-            if (raw === undefined) return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
-            return Promise.resolve({ value: JSON.parse(raw) as T, reason: 'TARGETING_MATCH' });
+            if (raw === undefined) return { value: defaultValue, reason: 'DEFAULT' };
+            return { value: JSON.parse(raw) as T, reason: 'TARGETING_MATCH' };
         } catch (err) {
-            return Promise.resolve(this.evaluationError(defaultValue, err));
+            return this.evaluationError(defaultValue, err);
         }
     }
 
+    // Return the default with reason 'ERROR'; OpenFeature applies the default and exposes error metadata.
+    // https://openfeature.dev/docs/reference/concepts/provider/
     private evaluationError<T>(defaultValue: T, err: unknown): ResolutionDetails<T> {
         return {
             value: defaultValue,

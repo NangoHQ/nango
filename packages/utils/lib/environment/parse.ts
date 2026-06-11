@@ -642,6 +642,7 @@ export const ENVS = z.object({
     NANGO_UNLEASH_API_TOKEN: z.string().optional(),
     NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
     NANGO_UNLEASH_REFRESH_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    NANGO_UNLEASH_INIT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

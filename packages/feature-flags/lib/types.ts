@@ -1,1 +1,1 @@
-export type FlagContext = Record<string, string | number | boolean | undefined>;
+export type FlagContext = Record<string, string | number | boolean | Date | undefined>;
