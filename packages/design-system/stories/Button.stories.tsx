@@ -1,6 +1,7 @@
 import { ChevronRight, Plus } from 'lucide-react';
 
 import { Button, IconButton } from '../src/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 
 import type { Meta, StoryObj } from '@storybook/react';
 
@@ -14,8 +15,8 @@ type Story = StoryObj<typeof meta>;
 
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-// 'xl' (40px) is deprecated — kept only for migrating legacy webapp buttons
-const SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
+const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
+// '2xs' (20px, icon-only) and 'xl' (40px) are deprecated migration-only sizes — see the "Deprecated sizes" story
 
 export const AllVariants: Story = {
     name: 'All variants',
@@ -105,6 +106,43 @@ export const IconButtonSizes: Story = {
                     </IconButton>
                 </div>
             ))}
+        </div>
+    )
+};
+
+export const DeprecatedSizes: Story = {
+    name: 'Deprecated sizes ⚠️',
+    parameters: {
+        docs: {
+            description: {
+                story: '`2xs` (20px, icon-only) and `xl` (40px) exist only to migrate legacy webapp buttons. Do not use them for new buttons — use `xs`–`lg`.'
+            }
+        }
+    },
+    render: () => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
+            <Alert variant="warning" className="max-w-2xl">
+                <AlertTitle>Deprecated sizes</AlertTitle>
+                <AlertDescription>2xs (20px, icon-only) and xl (40px) exist only to migrate legacy webapp buttons. Use xs–lg for new buttons.</AlertDescription>
+            </Alert>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
+                <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '6rem', flexShrink: 0 }}>
+                    2xs (icon-only)
+                </span>
+                <Button size="2xs" variant="ghost" aria-label="Example">
+                    <Plus />
+                </Button>
+                <Button size="2xs" variant="outline" aria-label="Example">
+                    <Plus />
+                </Button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
+                <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '6rem', flexShrink: 0 }}>xl</span>
+                <Button size="xl">Button</Button>
+                <Button size="xl" variant="outline">
+                    Outline
+                </Button>
+            </div>
         </div>
     )
 };

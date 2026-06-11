@@ -81,8 +81,8 @@ export const buttonVariants = cva(
                 ]
             },
             size: {
-                // 20px — compact size for icon-only buttons (replaces the webapp's old `icon` size)
-                '2xs': 'h-5 px-1 text-ds-xs',
+                // @deprecated 20px square icon-only size — replicates the webapp's old `icon` size; migration only, do not use for new buttons
+                '2xs': "size-5 p-1 [&_svg:not([class*='size-'])]:size-4",
                 xs: 'h-6 px-1.5 text-ds-xs',
                 sm: 'h-7 px-2',
                 md: 'h-8 px-2.5',
