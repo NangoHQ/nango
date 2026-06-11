@@ -65,12 +65,16 @@ import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
     DeleteIntegrationFunction,
+    DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
     GetProviderTemplates,
+    GetPublicIntegrationFunction,
+    GetPublicIntegrationFunctions,
+    GetPublicProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentResult,
@@ -166,6 +170,10 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | GetPublicFunctionCode
+    | GetPublicIntegrationFunctions
+    | GetPublicIntegrationFunction
+    | DeletePublicIntegrationFunction
+    | GetPublicProviderTemplates
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =

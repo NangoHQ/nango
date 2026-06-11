@@ -45,13 +45,17 @@ import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDry
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
+import { deletePublicIntegrationFunction } from './controllers/integrations/uniqueKey/functions/deleteFunction.js';
 import { getFunctionCode } from './controllers/integrations/uniqueKey/functions/getCode.js';
+import { getPublicIntegrationFunction } from './controllers/integrations/uniqueKey/functions/getFunction.js';
+import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProviderTemplates } from './controllers/providers/provider/templates/getTemplates.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { patchPublicPruneRecords } from './controllers/records/patchPruneRecords.js';
@@ -184,6 +188,7 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngr
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
+publicAPI.route('/providers/:provider/templates').get(apiAuth, withScope('environment:functions:list'), getPublicProviderTemplates);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -210,6 +215,11 @@ publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environme
 publicAPI
     .route('/integrations/:uniqueKey/functions/:name/code')
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
+publicAPI.route('/integrations/:uniqueKey/functions').get(apiAuth, withScope('environment:functions:list'), getPublicIntegrationFunctions);
+publicAPI
+    .route('/integrations/:uniqueKey/functions/:name')
+    .get(apiAuth, withScope('environment:functions:read'), getPublicIntegrationFunction)
+    .delete(apiAuth, withScope('environment:functions:delete'), deletePublicIntegrationFunction);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
