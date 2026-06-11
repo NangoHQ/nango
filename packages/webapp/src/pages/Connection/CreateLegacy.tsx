@@ -679,7 +679,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>{`The ID you will use to retrieve the connection (most often the user ID).`}</TooltipContent>
                                         </Tooltip>
@@ -895,7 +895,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 <span>Some integrations require extra configuration (cf. </span>
@@ -977,7 +977,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 </label>
                                                 <Tooltip>
                                                     <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                        <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                        <HelpCircle className="h-5 ml-1 text-text-muted" />
                                                     </TooltipTrigger>
                                                     <TooltipContent>{`The API key to authenticate requests`}</TooltipContent>
                                                 </Tooltip>
@@ -1039,7 +1039,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</TooltipContent>
                                         </Tooltip>
@@ -1068,7 +1068,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>{`Obtained after creating an API Key.`}</TooltipContent>
                                         </Tooltip>
@@ -1091,7 +1091,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>{`is accessible in App Store Connect, under Users and Access, then Copy next to the ID`}</TooltipContent>
                                         </Tooltip>
@@ -1114,7 +1114,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>{`Obtained after creating an API Key. This value should be base64 encoded when passing to the auth call`}</TooltipContent>
                                         </Tooltip>
@@ -1141,7 +1141,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                         <Tooltip>
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-gray-400" />
+                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
                                             <TooltipContent>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</TooltipContent>
                                         </Tooltip>

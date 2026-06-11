@@ -122,7 +122,7 @@ function SelectSeparator({ className, ...props }: React.ComponentProps<typeof Se
     return (
         <SelectPrimitive.Separator
             data-slot="select-separator"
-            className={cn('bg-neutral-200 pointer-events-none -mx-1 my-1 h-px dark:bg-neutral-800', className)}
+            className={cn('bg-border-muted pointer-events-none -mx-1 my-1 h-px', className)}
             {...props}
         />
     );

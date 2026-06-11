@@ -105,7 +105,7 @@ function SheetContent({
             >
                 {useScrollable ? <div className="flex min-h-0 w-full flex-1 flex-col overflow-auto">{children}</div> : children}
                 {!hideCloseButton && (
-                    <SheetPrimitive.Close className="ring-offset-white focus:ring-neutral-950 data-[state=open]:bg-neutral-100 absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800">
+                    <SheetPrimitive.Close className="ring-offset-surface-page focus:ring-border-default data-[state=open]:bg-state-hover absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
                         <XIcon />
                         <span className="sr-only">Close</span>
                     </SheetPrimitive.Close>
@@ -124,11 +124,11 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
-    return <SheetPrimitive.Title data-slot="sheet-title" className={cn('text-neutral-950 font-semibold dark:text-neutral-50', className)} {...props} />;
+    return <SheetPrimitive.Title data-slot="sheet-title" className={cn('text-text-strong font-semibold', className)} {...props} />;
 }
 
 function SheetDescription({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Description>) {
-    return <SheetPrimitive.Description data-slot="sheet-description" className={cn('text-neutral-500 text-sm dark:text-neutral-400', className)} {...props} />;
+    return <SheetPrimitive.Description data-slot="sheet-description" className={cn('text-text-muted text-sm', className)} {...props} />;
 }
 
 export { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger };
