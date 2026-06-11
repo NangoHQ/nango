@@ -6,12 +6,10 @@ import { SlackIcon } from '@/assets/SlackIcon';
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
-import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
 
 export const AppHeader: React.FC = () => {
@@ -22,8 +20,6 @@ export const AppHeader: React.FC = () => {
     const environment = envData?.environmentAndAccount?.environment;
     const { can } = usePermissions();
     const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
-    const isDevToolsEnabled = useIsDevToolsEnabled();
-    const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const darkMode = useThemeStore(darkModeSelector);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
@@ -47,17 +43,15 @@ export const AppHeader: React.FC = () => {
                     <SlackIcon />
                     Help
                 </ButtonLink>
-                {isDevToolsEnabled && themeSwitcher && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="size-8 p-0"
-                        onClick={toggleDarkMode}
-                        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                    >
-                        {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
-                    </Button>
-                )}
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="size-8 p-0"
+                    onClick={toggleDarkMode}
+                    title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                    {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                </Button>
             </div>
         </header>
     );

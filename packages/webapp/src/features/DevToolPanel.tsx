@@ -53,7 +53,6 @@ export const DevToolPanel: React.FC = () => {
     const open = useDevPanelStore((s) => s.open);
     const setOpen = useDevPanelStore((s) => s.setOpen);
     const toggle = useDevPanelStore((s) => s.toggle);
-    const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
     const theme = useThemeStore((s) => s.theme);
@@ -104,13 +103,6 @@ export const DevToolPanel: React.FC = () => {
             <div className="p-3">
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">Feature Flags</p>
                 <ul className="space-y-2.5">
-                    <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Sun className="size-4 shrink-0 text-text-secondary" />
-                            <span className="text-sm text-text-strong">Theme switcher</span>
-                        </div>
-                        <Switch checked={themeSwitcher} onCheckedChange={(v) => setFlag('themeSwitcher', v)} />
-                    </li>
                     <li className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <BarChart3 className="size-4 shrink-0 text-text-secondary" />
