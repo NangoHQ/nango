@@ -155,7 +155,15 @@ describe('parse', () => {
 
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to secure defaults when unset', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual(['169.254.169.254', 'metadata.google.internal', 'localhost', '127.0.0.1', '[::1]']);
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([
+            '169.254.169.254',
+            'metadata.google.internal',
+            'localhost',
+            '127.0.0.1',
+            '[::1]',
+            '[::ffff:127.0.0.1]',
+            '[::ffff:169.254.169.254]'
+        ]);
     });
 
     it('should allow explicit opt-out of NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', () => {
@@ -177,6 +185,8 @@ describe('parse', () => {
             'localhost',
             '127.0.0.1',
             '[::1]',
+            '[::ffff:127.0.0.1]',
+            '[::ffff:169.254.169.254]',
             'denylisted-proxy-test.invalid'
         ]);
     });

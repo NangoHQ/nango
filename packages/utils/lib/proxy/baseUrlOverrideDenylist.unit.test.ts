@@ -89,6 +89,23 @@ describe('isBaseUrlOverrideDenied', () => {
         expect(isBaseUrlOverrideDenied('http://[::1]/', list)).toBe(true);
     });
 
+    it('matches IPv4-mapped IPv6 loopback when denylist uses normalized literal form', () => {
+        const list = normalizeDenylist(['[::ffff:127.0.0.1]']);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:127.0.0.1]/', list)).toBe(true);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:7f00:1]/', list)).toBe(true);
+    });
+
+    it('matches IPv4-mapped IPv6 metadata when denylist uses normalized literal form', () => {
+        const list = normalizeDenylist(['[::ffff:169.254.169.254]']);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:169.254.169.254]/', list)).toBe(true);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:a9fe:a9fe]/', list)).toBe(true);
+    });
+
+    it('blocks IPv4-mapped IPv6 loopback with default denylist', () => {
+        const list = normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:127.0.0.1]/', list)).toBe(true);
+    });
+
     it('matches URL-form deny entry with bracketed IPv6', () => {
         const list = normalizeDenylist(['http://[::1]/']);
         expect(isBaseUrlOverrideDenied('http://[::1]/path', list)).toBe(true);

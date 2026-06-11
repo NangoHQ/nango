@@ -4,7 +4,15 @@
  * Keep aligned with `packages/utils/lib/proxy/baseUrlOverrideDenylist.ts` (canonical for services).
  * runner-sdk cannot depend on other `@nangohq/*` packages, so this module is duplicated in-package.
  */
-export const DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST = ['169.254.169.254', 'metadata.google.internal', 'localhost', '127.0.0.1', '[::1]'] as const;
+export const DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST = [
+    '169.254.169.254',
+    'metadata.google.internal',
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    '[::ffff:127.0.0.1]',
+    '[::ffff:169.254.169.254]'
+] as const;
 
 export function canonicalizeHostnameForDenylist(host: string): string {
     let h = host.trim().toLowerCase();

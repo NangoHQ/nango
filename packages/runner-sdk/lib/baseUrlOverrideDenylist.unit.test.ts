@@ -5,6 +5,7 @@ import {
     canonicalizeHostnameForDenylist,
     isBaseUrlOverrideDenied,
     mergeProxyBaseUrlOverrideDenylist,
+    normalizeDenylist,
     normalizeDenylistHost,
     resolveProxyBaseUrlOverrideDenylist
 } from './baseUrlOverrideDenylist.js';
@@ -32,6 +33,11 @@ describe('runner-sdk baseUrlOverrideDenylist', () => {
     it('matches utils isBaseUrlOverrideDenied behavior', () => {
         expect(isBaseUrlOverrideDenied('http://169.254.169.254/', new Set())).toBe(false);
         expect(isBaseUrlOverrideDenied('http://169.254.169.254/foo', new Set(['169.254.169.254']))).toBe(true);
+    });
+
+    it('blocks IPv4-mapped IPv6 loopback with default denylist', () => {
+        const list = normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:127.0.0.1]/', list)).toBe(true);
     });
 
     it('resolveProxyBaseUrlOverrideDenylist returns defaults when unset', () => {
