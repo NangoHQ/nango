@@ -17,11 +17,11 @@
                     var s = localStorage.getItem('nango_theme');
                     var parsed = s ? JSON.parse(s) : null;
                     var state = parsed && parsed.state;
-                    // Support new `theme` field and old boolean `darkMode`
-                    var theme = state && state.theme ? state.theme : (state && state.darkMode === false ? 'light' : 'system');
+                    // Support new `theme` field and old boolean `darkMode`; default to dark to match the app default
+                    var theme = state && state.theme ? state.theme : (state && state.darkMode === false ? 'light' : 'dark');
                     dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
                 } catch (e) {
-                    dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    dark = true;
                 }
                 document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
             })();
