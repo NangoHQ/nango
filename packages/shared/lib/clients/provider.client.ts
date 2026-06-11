@@ -40,6 +40,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'followupboss':
             case 'instagram':
             case 'jobber':
             case 'microsoft-admin':
@@ -87,7 +88,8 @@ class ProviderClient {
         code: string,
         callBackUrl: string,
         codeVerifier: string,
-        connectionConfig?: Record<string, string>
+        connectionConfig?: Record<string, string>,
+        state?: string
     ): Promise<object> {
         switch (config.provider) {
             case 'braintree':
@@ -101,6 +103,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'followupboss':
+                return this.createFollowupbossToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, state);
             case 'jobber':
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
@@ -204,6 +208,8 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
                 return this.refreshFigmaToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'followupboss':
+                return this.refreshFollowupbossToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'jobber':
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
@@ -417,6 +423,52 @@ class ProviderClient {
             throw new NangoError('tiktok_token_request_error');
         } catch (err: any) {
             throw new NangoError('tiktok_token_request_error', err.message);
+        }
+    }
+
+    private async createFollowupbossToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string,
+        state?: string
+    ): Promise<object> {
+        const body: Record<string, string> = {
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: redirectUri
+        };
+        if (state) {
+            body['state'] = state;
+        }
+        const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        try {
+            const response = await axios.post(tokenUrl, qs.stringify(body), {
+                headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            if (response.status === 200 && response.data) {
+                return response.data;
+            }
+            throw new NangoError('followupboss_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('followupboss_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshFollowupbossToken(tokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
+        const body = { grant_type: 'refresh_token', refresh_token: refreshToken };
+        const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        try {
+            const response = await axios.post(tokenUrl, qs.stringify(body), {
+                headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            if (response.status === 200 && response.data) {
+                return response.data;
+            }
+            throw new NangoError('followupboss_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('followupboss_refresh_token_request_error', stringifyError(err));
         }
     }
 

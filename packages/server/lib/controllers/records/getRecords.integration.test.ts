@@ -117,7 +117,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // Fetch first page
@@ -206,7 +207,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // Added
@@ -231,7 +233,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // Updated
@@ -338,7 +341,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // One ID

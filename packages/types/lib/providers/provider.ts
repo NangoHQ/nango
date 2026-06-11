@@ -40,6 +40,8 @@ export interface SimplifiedJSONSchema {
     enum?: string[];
     // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
     warnings?: Record<string, string>;
+    // Show/validate this field only when another field in the same `integration_config` holds `equals`.
+    visible_when?: { field: string; equals: string };
 }
 
 export interface BaseProvider {
@@ -51,6 +53,7 @@ export interface BaseProvider {
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;
+        body?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         forward_headers_on_redirect?: boolean;
@@ -258,6 +261,10 @@ export interface ProviderSignature extends BaseProvider {
     };
 }
 
+export interface ProviderAwsSigV4 extends BaseProvider {
+    auth_mode: 'AWS_SIGV4';
+}
+
 export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
@@ -274,6 +281,7 @@ export type Provider =
     | ProviderJwt
     | ProviderTwoStep
     | ProviderSignature
+    | ProviderAwsSigV4
     | ProviderApiKey
     | ProviderBill
     | ProviderGithubApp
@@ -283,5 +291,5 @@ export type Provider =
     | ProviderMcpOAuth2Generic
     | ProviderInstallPlugin;
 
-export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic; // TODO: fix this type
+export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic | ProviderAwsSigV4; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

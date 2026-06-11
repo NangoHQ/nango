@@ -1,3 +1,55 @@
-_No pre-built syncs or actions available yet._
+### Auth
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-auth-user` | Create an auth user in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/create-auth-user.ts) |
+| `delete-auth-factor` | Delete an MFA factor for a user in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/delete-auth-factor.ts) |
+| `delete-auth-user` | Delete or archive a auth user in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/delete-auth-user.ts) |
+| `generate-auth-link` | Generate a magic link, OTP, invite, signup, or recovery link for a user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/generate-auth-link.ts) |
+| `get-auth-user` | Retrieve a single auth user from Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/get-auth-user.ts) |
+| `list-auth-factors` | List MFA factors enrolled for a specific user in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/list-auth-factors.ts) |
+| `list-auth-users` | List auth users from Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/list-auth-users.ts) |
+| `update-auth-user` | Update an auth user in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/update-auth-user.ts) |
+
+### PostgREST
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `insert-table-row` | Insert a row into a Supabase table. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/insert-table-row.ts) |
+| `query-table-rows` | Query rows from a Supabase table through PostgREST. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/query-table-rows.ts) |
+
+### Storage
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `copy-storage-object` | Copy a storage object within or between buckets in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/copy-storage-object.ts) |
+| `create-signed-upload-url` | Generate a signed URL that allows a client to upload a file directly to Supabase Storage without exposing the service role key. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/create-signed-upload-url.ts) |
+| `create-signed-url` | Generate a time-limited signed URL for accessing a private storage object. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/create-signed-url.ts) |
+| `create-storage-bucket` | Create a storage bucket in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/create-storage-bucket.ts) |
+| `create-storage-object` | Upload a storage object to Supabase Storage. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/create-storage-object.ts) |
+| `delete-storage-object` | Delete or archive a storage object in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/delete-storage-object.ts) |
+| `get-storage-bucket` | Retrieve a single storage bucket from Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/get-storage-bucket.ts) |
+| `get-storage-object` | Retrieve metadata for a single storage object from Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/get-storage-object.ts) |
+| `list-storage-objects` | List storage objects from Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/list-storage-objects.ts) |
+| `update-storage-bucket` | Update a storage bucket in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/update-storage-bucket.ts) |
+
+### Tables
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-table-rows` | Delete rows from a Supabase table. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/delete-table-rows.ts) |
+| `update-table-rows` | Update rows in a Supabase table. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/update-table-rows.ts) |
+| `upsert-table-row` | Insert or update a row in a Supabase table, merging on conflict. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/upsert-table-row.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-storage-bucket` | Delete or archive a storage bucket in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/delete-storage-bucket.ts) |
+| `invoke-rpc` | Call a Supabase Postgres function via PostgREST. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/invoke-rpc.ts) |
+| `list-storage-buckets` | List storage buckets from Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/list-storage-buckets.ts) |
+| `update-storage-object` | Update a storage object in Supabase. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/actions/update-storage-object.ts) |
+| `auth-users` | Sync auth users from Supabase. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/syncs/auth-users.ts) |
+| `storage-buckets` | Sync storage buckets from Supabase | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/syncs/storage-buckets.ts) |
+| `storage-objects` | Sync storage objects from Supabase. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/syncs/storage-objects.ts) |
+| `table-rows` | Sync rows from a configured Supabase table. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/supabase/syncs/table-rows.ts) |

@@ -2,12 +2,16 @@ import { networkError, retryWithBackoff, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
 
-function hasErrorCode(error: unknown): error is { code: string } {
-    return typeof error === 'object' && error !== null && 'code' in error && typeof (error as any).code === 'string';
+function getErrorCode(error: unknown): string | undefined {
+    if (typeof error !== 'object' || error === null) return undefined;
+    if ('code' in error && typeof (error as any).code === 'string') return (error as any).code;
+    if ('cause' in error) return getErrorCode((error as any).cause);
+    return undefined;
 }
 
 function shouldRetry(error: unknown, response?: Response): boolean {
-    if (hasErrorCode(error) && networkError.includes(error.code)) {
+    const code = getErrorCode(error);
+    if (code && networkError.includes(code)) {
         return true;
     }
 
@@ -47,29 +51,30 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
 
     try {
         return await retryWithBackoff(async () => {
+            let res: Response;
             try {
-                const res = await fetch(url, fetchOptions);
-
-                if (!res.ok) {
-                    logger.error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
-                }
-
-                if (shouldRetry(null, res)) {
-                    throw new Error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
-                }
-
-                return res;
+                res = await fetch(url, fetchOptions);
             } catch (err) {
                 if (shouldRetry(err)) {
                     throw err;
                 }
 
-                // Non-retryable error
+                // Non-retryable network error
                 return new Response(JSON.stringify({ error: stringifyError(err, { cause: true }) }), {
                     status: 502,
                     headers: { 'Content-Type': 'application/json' }
                 });
             }
+
+            if (!res.ok) {
+                logger.error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+            }
+
+            if (shouldRetry(null, res)) {
+                throw new Error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+            }
+
+            return res;
         }, backoffOptions);
     } catch (err) {
         // All retries exhausted

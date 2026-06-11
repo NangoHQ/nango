@@ -95,7 +95,7 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
 
     // Custom integration configuration: schema-validated field for providers that declare `integration_config`.
     if ('integration_config' in body && body.integration_config && Object.keys(body.integration_config).length > 0) {
-        const result = resolveIntegrationConfig(provider, body.integration_config, { patch: true });
+        const result = resolveIntegrationConfig(provider, body.integration_config, { patch: true, existing: integration.custom });
         if (result.isErr()) {
             res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
             return;

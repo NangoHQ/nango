@@ -130,6 +130,14 @@ export const ENVS = z.object({
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
+    // Tasks (generic server-side task queue, see @nangohq/tasks). Runs in an isolated schema on the main Nango DB.
+    TASKS_DATABASE_SCHEMA: z
+        .string()
+        .regex(/^[a-z_][a-z0-9_]*$/i, 'TASKS_DATABASE_SCHEMA must be a valid Postgres identifier ([A-Za-z_][A-Za-z0-9_]*)')
+        .optional()
+        .default('nango_tasks'),
+    TASKS_DB_POOL_MAX: z.coerce.number().optional().default(10),
+
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
@@ -321,6 +329,8 @@ export const ENVS = z.object({
     // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
     // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
     FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
+    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
+    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
@@ -405,6 +415,12 @@ export const ENVS = z.object({
     RECORDS_DATABASE_READ_URL: z.url().optional(),
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
     RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
+
+    RECORDS_2_DATABASE_URL: z.url().optional(),
+    RECORDS_2_DATABASE_READ_URL: z.url().optional(),
+    RECORDS_2_DATABASE_SCHEMA: z.string().optional().default('nango_records_2'),
+    RECORDS_2_DATABASE_SSL: z.stringbool().optional().default(false),
+
     RECORDS_DATABASE_POOL_MIN: z.coerce.number().optional().default(2),
     RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
     RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
@@ -415,6 +431,11 @@ export const ENVS = z.object({
     RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
     // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
     RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
+    // Max number of records decrypted concurrently in getRecords. decryptAsync offloads to the
+    // libuv threadpool (UV_THREADPOOL_SIZE, default 4), so awaiting one record at a time leaves
+    // the other threads idle. Bounding the fan-out keeps every thread busy without materializing
+    // a whole page of decrypted blobs at once (which would defeat the per-record GC drop below).
+    RECORDS_DECRYPT_CONCURRENCY: z.coerce.number().int().positive().optional().default(10),
 
     // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),
