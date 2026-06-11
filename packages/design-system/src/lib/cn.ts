@@ -19,7 +19,7 @@ import type { ClassValue } from 'clsx';
  * - `rounded-ds-*` → border-radius
  * - `leading-ds-*` → line-height
  * - `tracking-ds-*`→ letter-spacing
- * - `shadow-*`  → shadow
+ * - `shadow-*-ds`  → shadow
  */
 const twMerge = extendTailwindMerge({
     extend: {
