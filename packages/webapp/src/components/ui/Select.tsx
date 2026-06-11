@@ -26,7 +26,7 @@ function SelectTrigger({ className, children, size = 'default', ...props }: Sele
             data-slot="select-trigger"
             className={cn(
                 "flex w-fit items-center justify-between gap-1.5 rounded px-1.5 py-0.5 bg-surface-overlay border border-border-muted text-text-secondary hover:bg-state-hover focus:border-border-default data-[placeholder]:text-text-muted [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
-                size === 'sm' ? 'h-7 text-xs' : 'h-9 text-sm',
+                size === 'sm' ? 'h-7 text-s' : 'h-9 text-sm',
                 className
             )}
             {...props}
