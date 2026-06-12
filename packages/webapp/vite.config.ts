@@ -18,10 +18,11 @@ const REMOTE_API_URLS: Record<string, string> = {
     prod: 'https://api.nango.dev'
 };
 
-// Fetches /env.js from apiUrl and rewrites apiUrl to the local Vite dev server
-// so all API calls are routed through Vite's proxy instead of going cross-origin.
-// The actual listening port is resolved at request time (after the server binds)
-// so Vite's automatic port increment is reflected correctly.
+// REMOTE_API mode only: fetch /env.js from the remote API and rewrite apiUrl to the
+// local Vite dev server origin so all API calls are routed through Vite's proxy instead
+// of going cross-origin to a backend whose CORS we don't control. The actual listening
+// port is resolved at request time (after the server binds) so Vite's automatic port
+// increment is reflected correctly.
 function apiEnvProxyPlugin(apiUrl: string): Plugin {
     return {
         name: 'api-env-proxy',
@@ -46,10 +47,22 @@ function apiProxyConfig() {
         throw new Error(`[nango] Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
     }
 
-    const apiUrl = remoteUrl ?? `http://localhost:${LOCAL_API_PORT}`;
-    const proxyOpts = remoteUrl ? { target: apiUrl, changeOrigin: true } : { target: apiUrl };
+    // Local dev (no REMOTE_API): the dashboard talks to the local API directly. The API's
+    // dev CORS trusts any localhost port, so multiple worktree dashboards on 3000/3001/...
+    // work without a proxy, and Connect UI reaches the real API (and its OAuth WebSocket)
+    // since apiUrl is left as the backend URL. We only proxy /env.js so the app can load
+    // window._env same-origin.
+    if (!remoteUrl) {
+        return {
+            envProxyPlugin: null as Plugin | null,
+            proxy: { '/env.js': { target: `http://localhost:${LOCAL_API_PORT}` } }
+        };
+    }
+
+    // REMOTE_API mode: proxy all API traffic to the remote backend and rewrite apiUrl.
+    const proxyOpts = { target: remoteUrl, changeOrigin: true };
     return {
-        envProxyPlugin: apiEnvProxyPlugin(apiUrl),
+        envProxyPlugin: apiEnvProxyPlugin(remoteUrl) as Plugin | null,
         proxy: {
             '/api': proxyOpts,
             // Extra routes needed for connection creation and auth flows.
@@ -72,7 +85,7 @@ export default defineConfig(() => {
     const { envProxyPlugin, proxy } = apiProxyConfig();
 
     return {
-        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin],
+        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin].filter((p): p is Plugin => p !== null),
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
