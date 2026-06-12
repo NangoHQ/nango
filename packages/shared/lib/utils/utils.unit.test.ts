@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import * as utils from './utils.js';
 
@@ -496,19 +496,6 @@ describe('parseTokenExpirationDate', () => {
         const millisecondsTimestamp = Date.now();
         const expected = new Date(millisecondsTimestamp);
         expect(utils.parseTokenExpirationDate(millisecondsTimestamp)?.getTime()).toBe(expected.getTime());
-    });
-});
-
-describe('getRedisUrl', () => {
-    const originalEnv = process.env;
-
-    beforeEach(() => {
-        vi.resetModules();
-        process.env = { ...originalEnv };
-    });
-
-    afterEach(() => {
-        process.env = originalEnv;
     });
 });
 
