@@ -4543,6 +4543,27 @@ cloudflare:
             example: lGlHlGZN3iPR9z7CupZlMB3nzMpTCdfxeUPNj_pf
             pattern: '^[a-zA-Z0-9_-]+$'
 
+cloudflare-mcp:
+    display_name: Cloudflare (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    proxy:
+        base_url: ${connectionConfig.mcp_server_url}
+        headers:
+            accept: application/json,text/event-stream
+    connection_config:
+        mcp_server_url:
+            type: string
+            title: Worker URL
+            description: The full URL of your Cloudflare Worker MCP server.
+            example: https://my-mcp.myusername.workers.dev
+            pattern: '^https://[a-zA-Z0-9.-]+(?:\:[0-9]+)?(?:/.*)?$'
+            doc_section: '#step-1-finding-your-worker-url'
+    docs: https://nango.dev/docs/api-integrations/cloudflare-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/cloudflare-mcp/connect
+
 clover:
     display_name: Clover
     categories:
