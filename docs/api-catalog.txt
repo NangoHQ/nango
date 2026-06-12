@@ -606,6 +606,7 @@ URL patterns:
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |
 | `razorpay` | Razorpay | BASIC | [docs](https://nango.dev/docs/integrations/all/razorpay.md) | [connect](https://nango.dev/docs/integrations/all/razorpay/connect.md) |  | payment |
+| `read-ai` | Read.ai | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/read-ai.md) |  | [setup](https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app.md) | productivity, video |
 | `readwise` | Readwise | API_KEY | [docs](https://nango.dev/docs/integrations/all/readwise.md) | [connect](https://nango.dev/docs/integrations/all/readwise/connect.md) |  | productivity |
 | `readwise-reader` | Readwise Reader | API_KEY | [docs](https://nango.dev/docs/integrations/all/readwise-reader.md) | [connect](https://nango.dev/docs/integrations/all/readwise-reader/connect.md) |  | productivity |
 | `reapit` | Reapit Connect | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/reapit.md) |  | [setup](https://nango.dev/docs/api-integrations/reapit/how-to-register-your-own-reapit-oauth-app.md) | crm |
