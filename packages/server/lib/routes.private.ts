@@ -275,7 +275,7 @@ web.route('/user/password').put(webAuth, putUserPassword);
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(
     webAuth,
-    can({ action: 'update', resource: 'sync_command', scopedBy: envScope }),
+    can({ action: 'execute', resource: 'sync_command', scopedBy: envScope }),
     syncController.syncCommand.bind(syncController)
 );
 web.route('/flows/pre-built/deploy').post(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), postPreBuiltDeploy);
@@ -286,7 +286,7 @@ web.route('/flows/:id/frequency').patch(webAuth, can({ action: 'update', resourc
 web.route('/flows/:id/download').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowDownload);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
 
-web.route('/trigger/function').post(webAuth, can({ action: 'update', resource: 'sync_command', scopedBy: envScope }), postTriggerFunction);
+web.route('/trigger/function').post(webAuth, can({ action: 'execute', resource: 'sync_command', scopedBy: envScope }), postTriggerFunction);
 
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
@@ -301,9 +301,9 @@ web.route('/logs/insights').post(webAuth, can({ action: 'read', resource: 'log',
 
 // Stripe / Billing
 if (flagHasUsage) {
-    web.route('/stripe/payment_methods').get(webAuth, can(p.canManageBilling), getStripePaymentMethods);
-    web.route('/stripe/payment_methods').post(webAuth, can(p.canManageBilling), postStripeCollectPayment);
-    web.route('/stripe/payment_methods').delete(webAuth, can(p.canManageBilling), deleteStripePaymentMethod);
+    web.route('/stripe/payment_methods').get(webAuth, can(p.canReadBilling), getStripePaymentMethods);
+    web.route('/stripe/payment_methods').post(webAuth, can(p.canUpdateBilling), postStripeCollectPayment);
+    web.route('/stripe/payment_methods').delete(webAuth, can(p.canDeleteBilling), deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
     web.route('/orb/webhooks').post((_req, _res, next) => {

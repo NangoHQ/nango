@@ -1,6 +1,5 @@
 import type { Role } from '../user/db.js';
-
-export type Action = 'create' | 'read' | 'update' | 'delete' | '*';
+export type Action = 'create' | 'read' | 'update' | 'delete' | 'execute' | 'use' | '*';
 export type Resource =
     | 'team'
     | 'team_member'
@@ -17,18 +16,17 @@ export type Resource =
     | 'connection'
     | 'flow'
     | 'sync_command'
+    | 'playground'
     | 'secret_key'
     | 'connection_credential'
     | 'log'
     | '*';
 export type Scope = 'production' | 'non-production' | 'global';
-
 export interface Permission {
     action: Action;
     resource: Resource;
     scope: Scope;
 }
-
 export interface PermissionEvaluator {
     evaluate(role: Role, permission: Permission): Promise<boolean>;
 }

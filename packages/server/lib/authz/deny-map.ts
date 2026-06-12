@@ -9,7 +9,9 @@ const ADMIN_ONLY: Permission[] = [
     p.canInviteMember,
     p.canCancelInvitation,
     p.canManageConnectUI,
-    p.canManageBilling,
+    p.canReadBilling,
+    p.canUpdateBilling,
+    p.canDeleteBilling,
     p.canChangePlan,
     p.canToggleIsProduction,
     p.canCreateEnvironment
@@ -28,7 +30,7 @@ const PROD_WRITES: Permission[] = [
     p.canWriteProdWebhooks
 ];
 
-const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials];
+const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials, p.canReadProdEnvironmentVariables];
 
 export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
     administrator: [],

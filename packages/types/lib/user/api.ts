@@ -41,7 +41,7 @@ export interface ApiUser {
 }
 
 export type AllowedPermissions = Partial<
-    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | '*')[]>>>
+    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | 'execute' | 'use' | '*')[]>>>
 >;
 
 export type ApiUserWithPermissions = ApiUser & {

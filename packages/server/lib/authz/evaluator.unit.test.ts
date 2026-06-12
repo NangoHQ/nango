@@ -11,7 +11,9 @@ describe('StaticEvaluator', () => {
         it('should allow everything', async () => {
             const perms: Permission[] = [
                 { action: 'update', resource: 'team', scope: 'global' },
-                { action: '*', resource: 'billing', scope: 'global' },
+                { action: 'read', resource: 'billing', scope: 'global' },
+                { action: 'update', resource: 'billing', scope: 'global' },
+                { action: 'delete', resource: 'billing', scope: 'global' },
                 { action: 'update', resource: 'integration', scope: 'production' },
                 { action: 'read', resource: 'connection', scope: 'production' },
                 { action: 'read', resource: 'secret_key', scope: 'production' },
@@ -34,7 +36,9 @@ describe('StaticEvaluator', () => {
         });
 
         it('should deny billing', async () => {
-            await expect(evaluator.evaluate('production_support', { action: '*', resource: 'billing', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate('production_support', { action: 'read', resource: 'billing', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate('production_support', { action: 'update', resource: 'billing', scope: 'global' })).resolves.toBe(false);
+            await expect(evaluator.evaluate('production_support', { action: 'delete', resource: 'billing', scope: 'global' })).resolves.toBe(false);
             await expect(evaluator.evaluate('production_support', { action: 'update', resource: 'plan', scope: 'global' })).resolves.toBe(false);
         });
 
@@ -69,7 +73,8 @@ describe('StaticEvaluator', () => {
         });
 
         it('should allow production sync commands', async () => {
-            await expect(evaluator.evaluate('production_support', { action: 'update', resource: 'sync_command', scope: 'production' })).resolves.toBe(true);
+            await expect(evaluator.evaluate('production_support', { action: 'execute', resource: 'sync_command', scope: 'production' })).resolves.toBe(true);
+            await expect(evaluator.evaluate('production_support', { action: 'use', resource: 'playground', scope: 'production' })).resolves.toBe(true);
         });
 
         it('should allow non-prod everything', async () => {
@@ -94,9 +99,8 @@ describe('StaticEvaluator', () => {
         });
 
         it('should deny production sync commands', async () => {
-            await expect(evaluator.evaluate('development_full_access', { action: 'update', resource: 'sync_command', scope: 'production' })).resolves.toBe(
-                false
-            );
+            await expect(evaluator.evaluate('development_full_access', { action: 'execute', resource: 'sync_command', scope: 'production' })).resolves.toBe(false);
+            await expect(evaluator.evaluate('development_full_access', { action: 'use', resource: 'playground', scope: 'production' })).resolves.toBe(false);
         });
 
         it('should deny team management', async () => {
