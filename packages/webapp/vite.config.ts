@@ -62,7 +62,8 @@ function apiProxyConfig() {
             '/api-auth': proxyOpts, // API key / basic auth
             '/auth': proxyOpts, // TBA, JWT, two-step, etc.
             '/app-store-auth': proxyOpts,
-            '/app-auth': proxyOpts // GitHub App setup callback
+            '/app-auth': proxyOpts, // GitHub App setup callback
+            '/docs-search': proxyOpts // Docs AI search (server queries docs MCP server-to-server)
         }
     };
 }
