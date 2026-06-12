@@ -50,7 +50,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
 
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
+            apiURL: globalEnv.connectApiUrl,
             onEvent
         });
 

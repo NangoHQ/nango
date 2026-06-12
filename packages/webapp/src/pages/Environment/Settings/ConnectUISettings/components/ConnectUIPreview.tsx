@@ -103,7 +103,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
 
         const iframe = createConnectUIPreviewIFrame({
             baseURL: globalEnv.connectUrl,
-            apiURL: globalEnv.apiUrl,
+            apiURL: globalEnv.connectApiUrl,
             sessionToken
         });
 
