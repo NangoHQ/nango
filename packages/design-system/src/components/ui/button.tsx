@@ -6,7 +6,6 @@ import { Spinner } from './spinner';
 import { cn } from '../../lib/cn';
 
 import type { VariantProps } from 'class-variance-authority';
-import type { ReactNode } from 'react';
 
 export const buttonVariants = cva(
     [
@@ -17,7 +16,9 @@ export const buttonVariants = cva(
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
         'focus-visible:outline-none',
-        'disabled:cursor-not-allowed aria-disabled:cursor-not-allowed'
+        'disabled:cursor-not-allowed aria-disabled:cursor-not-allowed',
+        // inline icons auto-size to 16px unless they set an explicit size-* class (matches shadcn / the old webapp button)
+        "[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0"
     ],
     {
         variants: {
@@ -81,8 +82,8 @@ export const buttonVariants = cva(
                 ]
             },
             size: {
-                // @deprecated 20px square icon-only size — replicates the webapp's old `icon` size; migration only, do not use for new buttons
-                '2xs': "size-5 p-1 [&_svg:not([class*='size-'])]:size-4",
+                // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
+                '2xs': 'size-5 p-1',
                 xs: 'h-6 px-1.5 text-ds-xs',
                 sm: 'h-7 px-2',
                 md: 'h-8 px-2.5',
@@ -103,28 +104,32 @@ export const buttonVariants = cva(
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
     asChild?: boolean;
     loading?: boolean;
-    leadingIcon?: ReactNode;
-    trailingIcon?: ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, leadingIcon, trailingIcon, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
+        // While loading, show the spinner and hide inline icons (text stays). Skipped for asChild — Slot needs a single child.
+        const showSpinner = loading && !asChild;
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(buttonVariants({ variant, size }), isDisabled && asChild && 'pointer-events-none', className)}
+                className={cn(
+                    buttonVariants({ variant, size }),
+                    showSpinner && '[&_svg:not([data-spinner])]:hidden',
+                    isDisabled && asChild && 'pointer-events-none',
+                    className
+                )}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
                 {...props}
             >
-                {loading ? <Spinner size="sm" /> : leadingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{leadingIcon}</span>}
+                {showSpinner && <Spinner data-spinner size="sm" />}
                 {children}
-                {!loading && trailingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{trailingIcon}</span>}
             </Comp>
         );
     }

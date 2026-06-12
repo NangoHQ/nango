@@ -16,7 +16,8 @@ type Story = StoryObj<typeof meta>;
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
-// '2xs' (20px, icon-only) and 'xl' (40px) are deprecated migration-only sizes — see the "Deprecated sizes" story
+// IconButton also supports 2xs (20px). 'xl' (40px) is a deprecated migration-only size — see the "Deprecated sizes" story.
+const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 export const AllVariants: Story = {
     name: 'All variants',
@@ -34,11 +35,13 @@ export const AllVariants: Story = {
                     <Button variant={variant} loading>
                         Loading
                     </Button>
-                    <Button variant={variant} leadingIcon={<Plus size={14} />}>
+                    <Button variant={variant}>
+                        <Plus />
                         With icon
                     </Button>
-                    <Button variant={variant} trailingIcon={<ChevronRight size={14} />}>
+                    <Button variant={variant}>
                         Trailing
+                        <ChevronRight />
                     </Button>
                 </div>
             ))}
@@ -57,7 +60,8 @@ export const AllSizes: Story = {
                     <Button size={size} variant="outline">
                         Outline
                     </Button>
-                    <Button size={size} leadingIcon={<Plus size={14} />}>
+                    <Button size={size}>
+                        <Plus />
                         With icon
                     </Button>
                 </div>
@@ -92,7 +96,7 @@ export const IconButtonSizes: Story = {
     name: 'IconButton — all sizes',
     render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
-            {SIZES.map((size) => (
+            {ICON_SIZES.map((size) => (
                 <div key={size} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
                     <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '3rem', flexShrink: 0 }}>{size}</span>
                     <IconButton size={size} label={`${size} primary`}>
@@ -115,27 +119,16 @@ export const DeprecatedSizes: Story = {
     parameters: {
         docs: {
             description: {
-                story: '`2xs` (20px, icon-only) and `xl` (40px) exist only to migrate legacy webapp buttons. Do not use them for new buttons — use `xs`–`lg`.'
+                story: '`xl` (40px) exists only to migrate legacy 40px webapp buttons. Use `lg` for new buttons.'
             }
         }
     },
     render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
             <Alert variant="warning" className="max-w-2xl">
-                <AlertTitle>Deprecated sizes</AlertTitle>
-                <AlertDescription>2xs (20px, icon-only) and xl (40px) exist only to migrate legacy webapp buttons. Use xs–lg for new buttons.</AlertDescription>
+                <AlertTitle>Deprecated size</AlertTitle>
+                <AlertDescription>xl (40px) exists only to migrate legacy 40px webapp buttons. Use lg for new buttons.</AlertDescription>
             </Alert>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
-                <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '6rem', flexShrink: 0 }}>
-                    2xs (icon-only)
-                </span>
-                <Button size="2xs" variant="ghost" aria-label="Example">
-                    <Plus />
-                </Button>
-                <Button size="2xs" variant="outline" aria-label="Example">
-                    <Plus />
-                </Button>
-            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
                 <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '6rem', flexShrink: 0 }}>xl</span>
                 <Button size="xl">Button</Button>
