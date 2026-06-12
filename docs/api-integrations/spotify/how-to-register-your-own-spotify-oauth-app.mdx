@@ -1,0 +1,101 @@
+---
+title: 'How to register your own Spotify OAuth app'
+sidebarTitle: 'Spotify Setup'
+description: 'Register an OAuth app with Spotify and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with Spotify to obtain your OAuth credentials. These are required to let your users grant your app access to their Spotify account.
+
+<Note>You need a Spotify Premium account to use the Web API.</Note>
+
+## Creating a Spotify OAuth App
+
+<Steps>
+  <Step title="Create a Spotify Developer account">
+    If you don't already have one, log in at [developer.spotify.com](https://developer.spotify.com) using your Spotify Premium account.
+  </Step>
+
+  <Step title="Create a new app">
+    1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+    2. Click **Create app**.
+    3. Fill in the **App name** and **App description**.
+    4. Under **Redirect URIs**, add:
+       ```
+       https://api.nango.dev/oauth/callback
+       ```
+    5. Under **APIs used**, select **Web API**.
+    6. Accept the terms and click **Save**.
+  </Step>
+
+  <Step title="Copy your credentials">
+    In your app's dashboard, click **Settings**. You'll find:
+    - **Client ID** — copy this value.
+    - **Client Secret** — click **View client secret**, then copy it.
+
+    <Warning>Keep your Client Secret secure. Never expose it in client-side code or public repositories.</Warning>
+  </Step>
+
+  <Step title="Choose your OAuth scopes">
+    Scopes control what your app can access. Add them in your Nango integration settings (see next step). Select only the scopes you need:
+
+    | Scope | Description |
+    |---|---|
+    | `user-read-private` | Read user's subscription details and display name |
+    | `user-read-email` | Read user's email address |
+    | `playlist-read-private` | Read user's private playlists |
+    | `playlist-read-collaborative` | Read user's collaborative playlists |
+    | `playlist-modify-public` | Create/modify/delete user's public playlists |
+    | `playlist-modify-private` | Create/modify/delete user's private playlists |
+    | `user-library-read` | Read tracks, albums, shows, and episodes saved in library |
+    | `user-library-modify` | Save/remove items from the user's library |
+    | `user-follow-read` | Read artists and users the user follows |
+    | `user-read-playback-state` | Read information about the user's current playback |
+    | `user-modify-playback-state` | Control playback (play, pause, skip, volume, etc.) |
+    | `user-read-currently-playing` | Read the currently playing track |
+    | `user-read-recently-played` | Read the user's recently played tracks |
+    | `user-top-read` | Read the user's top artists and tracks |
+    | `ugc-image-upload` | Upload custom playlist cover images |
+
+    For a full reference, see [Spotify's scopes documentation](https://developer.spotify.com/documentation/web-api/concepts/scopes).
+
+    <Note>
+    Spotify's **Extended Quota Mode** restricts certain write operations (playlist item writes) for apps in Development Mode. Apps in Development Mode can have up to 25 users. To remove restrictions, submit your app for [Extended Quota Mode](https://developer.spotify.com/documentation/web-api/concepts/quota-modes) approval in the Developer Dashboard. This restriction was introduced on November 27, 2024.
+    </Note>
+  </Step>
+
+  <Step title="Add credentials to Nango">
+    In your [Nango integration settings](https://app.nango.dev/dev/integrations):
+    1. Find or create your Spotify integration.
+    2. Enter your **Client ID** and **Client Secret**.
+    3. Add the **OAuth scopes** your app needs (space-separated), for example:
+       ```
+       user-read-private user-read-email playlist-read-private playlist-modify-public user-library-read user-library-modify
+       ```
+    4. Save your settings.
+  </Step>
+</Steps>
+
+## Access Requirements
+
+| Requirement | Status | Comment |
+|---|---|---|
+| Paid dev account | ❌ | Free Spotify account is sufficient to create apps in the Developer Dashboard |
+| Paid test account | ✅ | Spotify Premium required to use the Web API |
+| Partnership | ❌ | |
+| App review | ⚠️ | Required for Extended Quota Mode (removes write endpoint restrictions; required for more than 25 users) |
+| Security audit | ❌ | |
+
+## API Gotchas
+
+- **Player endpoints require Spotify Premium**: All playback control endpoints (`play`, `pause`, `skip`, `volume`, etc.) require the connected user to have a Spotify Premium subscription. They return `404 NO_ACTIVE_DEVICE` when no Spotify client is open — this is expected behavior, not an auth error.
+- **Extended Quota Mode**: Apps in Development Mode are limited to 25 authorized users. Playlist item write endpoints (`POST/PUT/DELETE /playlists/{id}/items`) return 403 until the app is approved for Extended Quota. The unified library endpoints (`PUT/DELETE /v1/me/library`) are not affected and work in Development Mode.
+- **Client credentials flow**: Spotify also supports a client credentials flow for app-level access (no user context). This is listed as `spotify-oauth2-cc` in Nango. See [Spotify's client credentials documentation](https://developer.spotify.com/documentation/web-api/tutorials/client-credentials-flow).
+- **`uris` as query params**: The unified library endpoints (`PUT/DELETE /v1/me/library` and `GET /v1/me/library/contains`) take `uris` as a comma-separated **query parameter**, not in the request body.
+- **`/playlists/{id}/items` not `/tracks`**: Playlist item endpoints use `/items` (the legacy `/tracks` path has been removed).
+- **Search limit**: The `GET /v1/search` `limit` parameter has a maximum of 10 (default 5).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+For more details, see [Spotify's OAuth 2.0 documentation](https://developer.spotify.com/documentation/web-api/concepts/authorization).
+
+---
