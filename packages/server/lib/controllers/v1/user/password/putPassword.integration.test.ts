@@ -45,7 +45,7 @@ describe(`PUT ${passwordRoute}`, () => {
         api.server.close();
     });
 
-    it('should invalidate other sessions but keep the current one after a password change', async () => {
+    it('should rotate the current session and invalidate all others after a password change', async () => {
         const { email, password } = await signupVerifiedUser();
 
         const currentSession = await signin(email, password);
@@ -63,10 +63,19 @@ describe(`PUT ${passwordRoute}`, () => {
         expect(res.status).toBe(200);
         isSuccess(json);
 
+        // the change rotates the current session: a fresh cookie is issued and it differs from the old one
+        const rotatedCookie = res.headers.getSetCookie()[0];
+        expect(rotatedCookie).toMatch(/^nango_session=/);
+        const rotatedSession = rotatedCookie!.split(';')[0]!;
+        expect(rotatedSession).not.toBe(currentSession);
+
+        // the old cookie (e.g. a stolen one) is now dead, even though it initiated the change
+        expect((await api.fetch(userRoute, { method: 'GET', session: currentSession })).res.status).toBe(401);
+
         // the other session is forcibly logged out
         expect((await api.fetch(userRoute, { method: 'GET', session: otherSession })).res.status).toBe(401);
 
-        // the session that made the change stays authenticated
-        expect((await api.fetch(userRoute, { method: 'GET', session: currentSession })).res.status).toBe(200);
+        // the user who made the change stays authenticated via the rotated session
+        expect((await api.fetch(userRoute, { method: 'GET', session: rotatedSession })).res.status).toBe(200);
     });
 });

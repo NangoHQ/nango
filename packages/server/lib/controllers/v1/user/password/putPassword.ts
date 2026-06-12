@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -48,8 +48,21 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     await db.knex.transaction(async (trx) => {
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
-        await deleteUserSessions(user.id, { exceptSid: req.sessionID, trx });
+        await deleteUserSessions(user.id, { trx });
     });
+
+    // Re-issue a fresh session so the user who just changed their password stays logged in seamlessly.
+    // Best effort basis, if it fails the user can simply re-authenticate with the new password.
+    try {
+        await new Promise<void>((resolve, reject) =>
+            req.session.regenerate((err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()))
+        );
+        await new Promise<void>((resolve, reject) =>
+            req.logIn(user as Express.User, (err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()))
+        );
+    } catch (err) {
+        report(err);
+    }
 
     res.status(200).send({ success: true });
 });
