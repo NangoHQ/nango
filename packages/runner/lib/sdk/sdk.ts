@@ -1,11 +1,15 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
-import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { ProxyError, ProxyRequest, enforceProxyOutboundUrlPolicy, getProxyConfiguration } from '@nangohq/shared';
 import {
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     MAX_LOG_PAYLOAD,
     getCheckpointKey,
+    isBaseUrlOverrideDenied,
     isTest,
     metrics,
+    normalizeDenylist,
+    normalizeDenylistHost,
     redactHeaders,
     redactURL,
     stringifyAndTruncateValue,
@@ -50,6 +54,31 @@ export const oldLevelToNewLevel = {
 
 const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
+
+/**
+ * Snapshot proxy override policy at runner module load (before any user script runs).
+ * Do not read process.env during request handling — sandboxed scripts share the runner process.
+ */
+function buildRunnerProxyDenylistFromEnvs(): Set<string> {
+    const entries =
+        !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED || envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length === 0
+            ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+            : envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
+
+    const denylist = normalizeDenylist(entries);
+    const lambdaRuntimeApi = process.env['AWS_LAMBDA_RUNTIME_API'];
+    if (lambdaRuntimeApi) {
+        const normalized = normalizeDenylistHost(lambdaRuntimeApi);
+        if (normalized) {
+            denylist.add(normalized);
+        }
+    }
+
+    return denylist;
+}
+
+const runnerProxyDenylist = buildRunnerProxyDenylistFromEnvs();
+const runnerProxyOverrideEnabled = envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED;
 
 /**
  * Action SDK
@@ -120,12 +149,35 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
+        const baseUrlOverrideDenylist = runnerProxyDenylist;
+        const overrideEnabled = runnerProxyOverrideEnabled;
 
         let canRetryOn401 = true;
         let prevConnection: ApiPublicConnectionFull | undefined;
         const proxy = new ProxyRequest({
             proxyConfig: getProxyConfiguration({
-                externalConfig: this.getProxyConfig(config),
+                externalConfig: {
+                    ...this.getProxyConfig(config),
+                    ...(!overrideEnabled || baseUrlOverrideDenylist.size > 0
+                        ? {
+                              validateProxyRequestUrl: ({ absoluteUrl, proxyConfig, connection, integrationConfig }) => {
+                                  enforceProxyOutboundUrlPolicy({
+                                      absoluteUrl,
+                                      proxyConfig,
+                                      connection,
+                                      ...(integrationConfig !== undefined ? { integrationConfig } : {}),
+                                      overrideEnabled,
+                                      denylist: baseUrlOverrideDenylist
+                                  });
+                              },
+                              validateProxyRedirectUrl: (absoluteUrl: string) => {
+                                  if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                                      throw new ProxyError('proxy_redirect_to_denied_host', 'This redirect target is not allowed by server configuration.');
+                                  }
+                              }
+                          }
+                        : {})
+                },
                 internalConfig: {
                     providerName: this.provider!
                 }

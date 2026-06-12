@@ -11,8 +11,10 @@ import {
     buildProxyHeaders,
     buildProxyURL,
     deriveIntegrationConfigProxy,
+    enforceProxyOutboundUrlPolicy,
     getAxiosConfiguration,
-    getProxyConfiguration
+    getProxyConfiguration,
+    proxyUsesConfigurableBaseUrlOverride
 } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
@@ -661,7 +663,121 @@ describe('buildProxyHeaders', () => {
     });
 });
 
+describe('proxyUsesConfigurableBaseUrlOverride', () => {
+    it('returns true for AWS SigV4 per-connection base_url', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+
+        expect(proxyUsesConfigurableBaseUrlOverride({ proxyConfig: config, connection })).toBe(true);
+    });
+
+    it('returns false for AWS SigV4 without per-connection base_url', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            }
+        });
+
+        expect(proxyUsesConfigurableBaseUrlOverride({ proxyConfig: config, connection })).toBe(false);
+    });
+});
+
+describe('enforceProxyOutboundUrlPolicy', () => {
+    it('blocks denylisted resolved URLs from AWS SigV4 connection base_url', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            endpoint: '/'
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+        const absoluteUrl = buildProxyURL({ config, connection });
+
+        expect(() =>
+            enforceProxyOutboundUrlPolicy({
+                absoluteUrl,
+                proxyConfig: config,
+                connection,
+                overrideEnabled: true,
+                denylist: new Set(['localhost'])
+            })
+        ).toThrow(
+            expect.objectContaining({
+                code: 'base_url_override_not_allowed'
+            })
+        );
+    });
+});
+
 describe('buildProxyURL', () => {
+    it('uses AWS SigV4 per-connection base_url when no explicit override is set', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            endpoint: '/tables'
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+
+        expect(buildProxyURL({ config, connection })).toBe('http://localhost:4566/tables');
+    });
+
     it('should correctly construct url with no trailing slash and no leading slash', () => {
         const config = getDefaultProxy({
             provider: {
@@ -1349,6 +1465,46 @@ describe('getAxiosConfiguration', () => {
         const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
         expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails)).toThrow(ProxyError);
     });
+
+    it('invokes validateProxyRequestUrl with the resolved outbound URL', () => {
+        const seen: string[] = [];
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            endpoint: '/v1/items',
+            validateProxyRequestUrl: ({ absoluteUrl }) => {
+                seen.push(absoluteUrl);
+            }
+        });
+
+        getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(seen).toEqual(['https://api.example.com/v1/items']);
+    });
+
+    it('propagates throw from validateProxyRequestUrl', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            validateProxyRequestUrl: () => {
+                throw new ProxyError('base_url_override_not_allowed', 'blocked');
+            }
+        });
+
+        expect(() =>
+            getAxiosConfiguration({
+                proxyConfig: config,
+                connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+            })
+        ).toThrow(ProxyError);
+    });
 });
 
 describe('absoluteUrlFromRedirectRequestOptions', () => {
@@ -1497,6 +1653,26 @@ describe('getProxyConfiguration', () => {
         }
 
         expect(res.value.validateProxyRedirectUrl).toBe(validateProxyRedirectUrl);
+    });
+
+    it('passes through validateProxyRequestUrl', () => {
+        const validateProxyRequestUrl = (): void => {};
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            endpoint: '/api/test',
+            validateProxyRequestUrl
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            providerName: 'github'
+        };
+
+        const res = getProxyConfiguration({ externalConfig, internalConfig });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        expect(res.value.validateProxyRequestUrl).toBe(validateProxyRequestUrl);
     });
 });
 
