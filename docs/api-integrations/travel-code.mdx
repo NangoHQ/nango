@@ -10,13 +10,13 @@ Connect to Travel Code with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Travel Code_.
+    In Nango ([free signup](https://app.nango.dev)), go to the _Integrations_ tab -> _Configure New Integration_ -> _Travel Code_.
     </Step>
     <Step id="authorize-travel-code" title="Authorize Travel Code">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_. You'll be redirected to log in to Travel Code and authorize access to your account. Later, you'll let your users do the same directly from your app.
+    Go to the _Connections_ tab -> _Add Test Connection_ -> _Authorize_. You'll be redirected to log in to Travel Code and authorize access to your account. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step id="call-travel-code-api" title="Call the Travel Code API">
-    Let's make your first request to the Travel Code API (list supported airlines). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Travel Code API (list supported airlines). Replace the placeholders below with your API key (from the _Environment Settings_ tab), integration ID (from the _Integrations_ tab), and connection ID (from the _Connections_ tab):
     <Tabs>
         <Tab title="cURL">
 
@@ -51,7 +51,7 @@ Connect to Travel Code with Nango and see data flow in 2 minutes.
     </Tabs>
     Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    ✅ You're connected! Check the _Logs_ tab in Nango to inspect requests.
     </Step>
 
     <Step id="implement-nango" title="Implement Nango in your app">
