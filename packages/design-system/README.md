@@ -19,15 +19,6 @@ Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) 
 
 > **Note:** The `storybook` script uses `NODE_PATH=./node_modules` to work around a Vite 7 CJS module resolution issue. This is safe to keep and should not be removed.
 
-### Stories
-
-| Story | Path |
-|---|---|
-| Typography — Type Scale | `Design System / Typography` |
-| Typography — Font Families | `Design System / Typography` |
-| Color Palette — Semantic Tokens | `Design System / Color Palette` |
-| Color Palette — Primitive Ramps | `Design System / Color Palette` |
-
 ### Storybook MCP
 
 Storybook ships with an [MCP server](https://storybook.js.org/docs/ai/mcp/overview) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. This lets you ask Claude to build or modify components with full knowledge of existing stories, props, and usage examples — no copy-pasting docs required.
@@ -51,10 +42,6 @@ This stores the config in `.claude/settings.local.json` (gitignored). Then start
 ### Accessibility
 
 `@storybook/addon-a11y` runs an automated [axe-core](https://github.com/dequelabs/axe-core) audit on every story. Open the **Accessibility** panel (bottom of the Storybook UI) to see violations, incomplete checks, and passing rules for the rendered story. Fix any violations before shipping a component.
-
-### Adding component stories
-
-Token stories live in `packages/design-system/tokens/` alongside the token files they document. When adding component stories, place them under `packages/design-system/src/` and add `'../src/**/*.stories.@(ts|tsx)'` to the `stories` glob in `.storybook/main.ts`. Follow the `tokens/Typography.stories.tsx` pattern.
 
 ---
 
@@ -104,9 +91,11 @@ Token changes should always originate in Figma — the designer owns the source 
 ### Generated CSS structure
 
 ```css
-/* Primitives — --ds- prefix, NOT in @theme (enforce semantic-only usage) */
+/* Primitives — --ds- prefix, raw scale values */
 :root {
   --ds-color-neutral-50: #f9fafb;
+  --ds-radius-sm: 4px;
+  --ds-typography-font-size-md: 14px;
   ...
 }
 
@@ -124,22 +113,35 @@ Token changes should always originate in Figma — the designer owns the source 
   ...
 }
 
-/* Tailwind v4 @theme — generates bg-surface-canvas, text-text-strong, etc. */
+/* Tailwind @theme — semantic tokens → bg-*, text-*, border-*, shadow-* utilities */
 @theme {
   --color-surface-canvas: var(--surface-canvas);
+  --shadow-focus-outline-default: var(--focus-outline-default);
+  ...
+}
+
+/* Tailwind @theme — primitive tokens → rounded-ds-*, text-ds-*, font-ds-*, etc. */
+@theme {
+  --radius-ds-sm: var(--ds-radius-sm);
+  --text-ds-md: var(--ds-typography-font-size-md);
+  --font-weight-ds-medium: var(--ds-typography-font-weight-medium);
   ...
 }
 ```
 
 ### Token naming
 
-| Token                           | CSS var                 | Tailwind utility    |
-| ------------------------------- | ----------------------- | ------------------- |
-| `Primitives.color.neutral.50`   | `--ds-color-neutral-50` | —                   |
-| `Semantic/Light.surface.canvas` | `--surface-canvas`      | `bg-surface-canvas` |
-| `Semantic/Light.text.strong`    | `--text-strong`         | `text-text-strong`  |
+| Token                                   | CSS var                           | Tailwind utility          |
+| --------------------------------------- | --------------------------------- | ------------------------- |
+| `Primitives.color.neutral.50`           | `--ds-color-neutral-50`           | —                         |
+| `Primitives.radius.sm`                  | `--ds-radius-sm`                  | `rounded-ds-sm`           |
+| `Primitives.typography.font-size.md`    | `--ds-typography-font-size-md`    | `text-ds-md`              |
+| `Primitives.typography.font-weight.medium` | `--ds-typography-font-weight-medium` | `font-ds-medium`      |
+| `Semantic/Light.surface.canvas`         | `--surface-canvas`                | `bg-surface-canvas`       |
+| `Semantic/Light.text.strong`            | `--text-strong`                   | `text-text-strong`        |
+| `Semantic/Light.focus-outline-default`  | `--focus-outline-default`         | `shadow-focus-outline-default` |
 
-Primitives are excluded from `@theme` to nudge components toward semantic tokens. They can still be used directly via `var(--ds-*)` in CSS when a semantic token doesn't exist yet.
+Primitive color tokens (`--ds-color-*`) are excluded from `@theme` to keep components on semantic tokens. Primitive dimension/typography tokens are in `@theme` under the `ds-` prefix so they can be used as utilities without arbitrary `[var(...)]` wrappers.
 
 ### Consuming in webapp
 
@@ -149,4 +151,45 @@ Primitives are excluded from `@theme` to nudge components toward semantic tokens
 @import '@nangohq/design-system/tokens/tokens.generated.css';
 ```
 
-Legacy tokens in `index.css` (`--color-*`) are separate and untouched.
+---
+
+## Components
+
+Components are added on-demand as they're needed in product screens. See `AGENTS.md` for the full guide on adding new components.
+
+Available components:
+
+```tsx
+import { Button, IconButton, Spinner, buttonVariants } from '@nangohq/design-system';
+```
+
+The consumer must also import the token CSS once at the app root (see above). Components use only semantic CSS variables — no raw hex, hardcoded sizes, or hardcoded spacing.
+
+### Focus rings
+
+Components apply focus rings via `box-shadow` using `--focus-outline-default` (or `--focus-outline-danger` for destructive actions). The app shell should include:
+
+```css
+*:focus-visible { outline: none; }
+```
+
+This is included in Storybook's `preview.css` automatically.
+
+---
+
+## Tokens Studio GitHub sync config
+
+| Field | Value |
+|---|---|
+| Repository | `NangoHQ/nango` |
+| Branch | `design/tokens` |
+| File path | `packages/design-system/tokens/tokens.json` |
+
+### Figma plugin setup (first time)
+
+1. Install the [Tokens Studio for Figma](https://tokens.studio/) plugin
+2. Plugin should detect existing GitHub sync and pre-fill all fields except for the access token
+3. For the **Personal Access Token** field, retrieve it from 1Password:
+   - Vault: **Eng**
+   - Item: **GitHub PAT - Figma Tokens Studio Sync**
+4. Click **Save** — the plugin will load the existing tokens from the `design/tokens` branch

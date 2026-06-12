@@ -1,10 +1,11 @@
-import { BarChart3, Sun, X } from 'lucide-react';
+import { BarChart3, Moon, Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
 import { useTeam } from '@/hooks/useTeam';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
@@ -52,9 +53,11 @@ export const DevToolPanel: React.FC = () => {
     const open = useDevPanelStore((s) => s.open);
     const setOpen = useDevPanelStore((s) => s.setOpen);
     const toggle = useDevPanelStore((s) => s.toggle);
-    const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
+    const theme = useThemeStore((s) => s.theme);
+    const darkMode = useThemeStore(darkModeSelector);
+    const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -73,30 +76,37 @@ export const DevToolPanel: React.FC = () => {
     }
 
     return (
-        <div className="fixed bottom-11 right-11 z-50 w-64 rounded border border-border-muted bg-dropdown-bg-press shadow-md">
+        <div className="fixed bottom-11 right-11 z-50 w-64 rounded border border-border-muted bg-surface-overlay shadow-md">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border-muted px-3 py-2">
-                <span className="text-sm font-medium text-text-primary">Dev Tools</span>
-                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-primary">
+                <span className="text-sm font-medium text-text-strong">Dev Tools</span>
+                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-strong">
                     <X className="size-3.5" />
                 </Button>
             </div>
 
+            {/* Theme */}
+            <div className="p-3 border-b border-border-muted">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">Theme</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        {darkMode ? <Moon className="size-4 shrink-0 text-text-secondary" /> : <Sun className="size-4 shrink-0 text-text-secondary" />}
+                        <span className="text-sm text-text-strong">
+                            {theme === 'system' ? `System (${darkMode ? 'dark' : 'light'})` : darkMode ? 'Dark' : 'Light'}
+                        </span>
+                    </div>
+                    <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
+                </div>
+            </div>
+
             {/* Feature flags */}
             <div className="p-3">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-tertiary">Feature Flags</p>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">Feature Flags</p>
                 <ul className="space-y-2.5">
                     <li className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Sun className="size-4 shrink-0 text-text-secondary" />
-                            <span className="text-sm text-text-primary">Theme switcher</span>
-                        </div>
-                        <Switch checked={themeSwitcher} onCheckedChange={(v) => setFlag('themeSwitcher', v)} />
-                    </li>
-                    <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
                             <BarChart3 className="size-4 shrink-0 text-text-secondary" />
-                            <span className="text-sm text-text-primary">Usage breakdown</span>
+                            <span className="text-sm text-text-strong">Usage breakdown</span>
                         </div>
                         <Switch checked={usageBreakdown} onCheckedChange={(v) => setFlag('usageBreakdown', v)} />
                     </li>

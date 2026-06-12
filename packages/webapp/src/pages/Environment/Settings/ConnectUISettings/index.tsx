@@ -32,10 +32,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
         <form.Field name="theme.light.primary">
             {(field: any) => (
                 <div className="w-full flex flex-col gap-2">
-                    <label
-                        htmlFor={field.name}
-                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-tertiary' : '')}
-                    >
+                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
                         Primary (Light theme)
                     </label>
                     <div className="flex items-center">
@@ -47,7 +44,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                                 disabled={disabled}
                             />
                             {!field.state.meta.isValid && (
-                                <em role="alert" className="text-body-small-regular text-feedback-error-fg">
+                                <em role="alert" className="text-body-small-regular text-status-danger-text">
                                     {field.state.meta.errors.join(', ')}
                                 </em>
                             )}
@@ -60,10 +57,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
         <form.Field name="theme.dark.primary">
             {(field: any) => (
                 <div className="w-full flex flex-col gap-2">
-                    <label
-                        htmlFor={field.name}
-                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-tertiary' : '')}
-                    >
+                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
                         Primary (Dark theme)
                     </label>
                     <div className="flex items-center">
@@ -75,7 +69,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                                 disabled={disabled}
                             />
                             {!field.state.meta.isValid && (
-                                <em role="alert" className="text-sm text-red-500">
+                                <em role="alert" className="text-sm text-status-danger-text">
                                     {field.state.meta.errors.join(', ')}
                                 </em>
                             )}
@@ -91,7 +85,7 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
     <form.Field name="showWatermark">
         {(field: any) => (
             <div className="flex gap-5 items-center">
-                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-tertiary' : '')}>
+                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-muted' : '')}>
                     Show &quot;Secured by Nango&quot;
                 </label>
                 <div className="flex items-center">
@@ -223,7 +217,7 @@ export const ConnectUISettings = () => {
                         </form.Subscribe>
 
                         {(!canCustomizeTheme || !canDisableWatermark) && (
-                            <div className="bg-bg-elevated p-6 flex flex-col gap-6">
+                            <div className="bg-surface-panel p-6 flex flex-col gap-6">
                                 <div className="flex text-body-medium-regular gap-2 items-center">
                                     <Lock size="16" />
                                     <span>Advanced Customization</span>
@@ -248,7 +242,7 @@ export const ConnectUISettings = () => {
                     </div>
                 </form>
                 <div className="w-full min-h-full flex justify-end items-center">
-                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[450px] max-h-[700px]" />
+                    <ConnectUIPreview ref={connectUIPreviewRef} className="w-full h-full max-w-[450px] max-h-[700px] border border-border-muted rounded-md" />
                 </div>
             </div>
         </SettingsContent>

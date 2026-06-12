@@ -4,7 +4,7 @@ import * as RechartsPrimitive from 'recharts';
 import { cn } from '@/utils/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: '', dark: '.dark' } as const;
+const THEMES = { light: '', dark: "[data-theme='dark']" } as const;
 
 export type ChartConfig = Record<
     string,
@@ -49,7 +49,7 @@ function ChartContainer({
                 data-slot="chart"
                 data-chart={chartId}
                 className={cn(
-                    "[&_.recharts-cartesian-axis-tick_text]:fill-text-disabled [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-bg-subtle [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+                    "[&_.recharts-cartesian-axis-tick_text]:fill-text-disabled [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-surface-panel-inset [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
                     className
                 )}
                 {...props}
@@ -127,14 +127,14 @@ function ChartTooltipContent({
         const value = !labelKey && typeof label === 'string' ? config[label]?.label || label : itemConfig?.label;
 
         if (labelFormatter) {
-            return <div className={cn('text-text-body-medium-medium text-text-primary', labelClassName)}>{labelFormatter(value, payload)}</div>;
+            return <div className={cn('text-text-body-medium-medium text-text-strong', labelClassName)}>{labelFormatter(value, payload)}</div>;
         }
 
         if (!value) {
             return null;
         }
 
-        return <div className={cn('text-text-body-medium-medium text-text-primary', labelClassName)}>{value}</div>;
+        return <div className={cn('text-text-body-medium-medium text-text-strong', labelClassName)}>{value}</div>;
     }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);
 
     if (!active || !payload?.length) {
@@ -144,7 +144,7 @@ function ChartTooltipContent({
     const nestLabel = payload.length === 1 && indicator !== 'dot';
 
     return (
-        <div className={cn('bg-bg-subtle grid min-w-[8rem] items-start gap-1.5 rounded p-2 text-xs shadow-xl', className)}>
+        <div className={cn('bg-surface-panel-inset grid min-w-[8rem] items-start gap-1.5 rounded p-2 text-xs shadow-xl', className)}>
             {!nestLabel ? tooltipLabel : null}
             <div className="grid gap-1.5">
                 {payload
@@ -192,7 +192,7 @@ function ChartTooltipContent({
                                                 <span className="text-text-secondary">{itemConfig?.label || item.name}</span>
                                             </div>
                                             {item.value !== undefined && (
-                                                <span className="text-text-primary font-mono font-medium tabular-nums">{item.value.toLocaleString()}</span>
+                                                <span className="text-text-strong font-mono font-medium tabular-nums">{item.value.toLocaleString()}</span>
                                             )}
                                         </div>
                                     </>
@@ -235,7 +235,7 @@ function ChartLegendContent({
                     return (
                         <div
                             key={item.value}
-                            className={cn('[&>svg]:text-neutral-500 flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 dark:[&>svg]:text-neutral-400')}
+                            className={cn('[&>svg]:text-text-muted flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3')}
                         >
                             {itemConfig?.icon && !hideIcon ? (
                                 <itemConfig.icon />

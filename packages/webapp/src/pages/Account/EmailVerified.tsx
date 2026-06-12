@@ -76,8 +76,8 @@ export const EmailVerified: React.FC = () => {
     return (
         <DefaultLayout>
             <div className="mt-4 flex flex-col justify-center items-center gap-8">
-                <h2 className="text-text-primary text-title-group">{errorMessage ? 'Something went wrong' : 'Verifying your email'}</h2>
-                {errorMessage ? <p className="text-text-light-gray text-body-small">{errorMessage}</p> : <Loader2 className="w-10 h-10 animate-spin" />}
+                <h2 className="text-text-strong text-title-group">{errorMessage ? 'Something went wrong' : 'Verifying your email'}</h2>
+                {errorMessage ? <p className="text-text-muted text-body-small">{errorMessage}</p> : <Loader2 className="w-10 h-10 animate-spin" />}
             </div>
         </DefaultLayout>
     );

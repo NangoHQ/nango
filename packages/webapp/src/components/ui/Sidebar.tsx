@@ -157,7 +157,7 @@ function Sidebar({
                     data-sidebar="sidebar"
                     data-slot="sidebar"
                     data-mobile="true"
-                    className="bg-bg-surface text-text-secondary w-(--sidebar-width) p-0 [&>button]:hidden"
+                    className="bg-surface-canvas text-text-secondary w-(--sidebar-width) p-0 [&>button]:hidden"
                     style={
                         {
                             '--sidebar-width': SIDEBAR_WIDTH_MOBILE
@@ -214,7 +214,7 @@ function Sidebar({
                 <div
                     data-sidebar="sidebar"
                     data-slot="sidebar-inner"
-                    className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+                    className="bg-surface-canvas group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
                 >
                     {children}
                 </div>
@@ -285,7 +285,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
 }
 
 function SidebarInput({ className, ...props }: React.ComponentProps<typeof Input>) {
-    return <Input data-slot="sidebar-input" data-sidebar="input" className={cn('bg-white h-8 w-full shadow-none dark:bg-neutral-950', className)} {...props} />;
+    return <Input data-slot="sidebar-input" data-sidebar="input" className={cn('bg-surface-input h-8 w-full shadow-none', className)} {...props} />;
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {
@@ -340,7 +340,7 @@ function SidebarGroupAction({ className, asChild = false, ...props }: React.Comp
             data-slot="sidebar-group-action"
             data-sidebar="group-action"
             className={cn(
-                'text-text-secondary focus-default hover:bg-nav-bg-hover hover:text-text-primary absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+                'text-text-secondary focus-default hover:bg-state-hover hover:text-text-strong absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 // Increases the hit area of the button on mobile.
                 'after:absolute after:-inset-2 md:after:hidden',
                 'group-data-[collapsible=icon]:hidden',
@@ -364,13 +364,12 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
 }
 
 const sidebarMenuButtonVariants = cva(
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded p-2 text-left text-body-medium-medium outline-hidden focus-default transition-[width,height,padding] hover:bg-nav-bg-hover hover:text-text-primary focus-visible:bg-nav-bg-hover focus-visible:text-text-primary active:bg-nav-bg-press disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-nav-bg-press data-[active=true]:text-text-primary data-[state=open]:hover:bg-nav-bg-hover data-[state=open]:hover:text-text-primary group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded p-2 text-left text-body-medium-medium outline-hidden focus-default transition-[width,height,padding] hover:bg-state-hover hover:text-text-strong focus-visible:bg-state-hover focus-visible:text-text-strong active:bg-state-selected disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-state-selected data-[active=true]:text-text-strong data-[state=open]:hover:bg-state-hover data-[state=open]:hover:text-text-strong group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0',
     {
         variants: {
             variant: {
-                default: 'transition-colors hover:bg-nav-bg-hover hover:text-text-primary',
-                outline:
-                    'bg-white shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-nav-bg-hover hover:text-text-primary hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))] dark:bg-neutral-950'
+                default: 'transition-colors hover:bg-state-hover hover:text-text-strong',
+                outline: 'bg-surface-panel border border-border-muted hover:bg-state-hover hover:text-text-strong'
             },
             size: {
                 default: 'h-8 text-sm',
@@ -446,7 +445,7 @@ function SidebarMenuAction({
             data-slot="sidebar-menu-action"
             data-sidebar="menu-action"
             className={cn(
-                'text-text-tertiary focus-default cursor-pointer hover:bg-nav-bg-hover hover:text-text-primary peer-hover/menu-button:text-text-primary absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+                'text-text-muted focus-default cursor-pointer hover:bg-state-hover hover:text-text-strong peer-hover/menu-button:text-text-strong absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 // Increases the hit area of the button on mobile.
                 'after:absolute after:-inset-2 md:after:hidden',
                 'peer-data-[size=sm]/menu-button:top-1',
@@ -454,7 +453,7 @@ function SidebarMenuAction({
                 'peer-data-[size=lg]/menu-button:top-2.5',
                 'group-data-[collapsible=icon]:hidden',
                 showOnHover &&
-                    'peer-data-[active=true]/menu-button:text-text-primary group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
+                    'peer-data-[active=true]/menu-button:text-text-strong group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
                 className
             )}
             {...props}
@@ -469,7 +468,7 @@ function SidebarMenuBadge({ className, ...props }: React.ComponentProps<'div'>) 
             data-sidebar="menu-badge"
             className={cn(
                 'text-text-secondary pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums select-none',
-                'peer-hover/menu-button:text-text-primary peer-data-[active=true]/menu-button:text-text-primary',
+                'peer-hover/menu-button:text-text-strong peer-data-[active=true]/menu-button:text-text-strong',
                 'peer-data-[size=sm]/menu-button:top-1',
                 'peer-data-[size=default]/menu-button:top-1.5',
                 'peer-data-[size=lg]/menu-button:top-2.5',
@@ -548,8 +547,8 @@ function SidebarMenuSubButton({
             data-size={size}
             data-active={isActive}
             className={cn(
-                'text-text-secondary focus-default hover:bg-nav-bg-hover hover:text-text-primary active:bg-nav-bg-press active:text-text-primary [&>svg]:text-text-primary flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
-                'data-[active=true]:bg-nav-bg-press data-[active=true]:text-text-primary',
+                'text-text-secondary focus-default hover:bg-state-hover hover:text-text-strong active:bg-state-selected active:text-text-strong [&>svg]:text-text-strong flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+                'data-[active=true]:bg-state-selected data-[active=true]:text-text-strong',
                 size === 'sm' && 'text-xs',
                 size === 'md' && 'text-sm',
                 'group-data-[collapsible=icon]:hidden',

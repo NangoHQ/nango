@@ -127,7 +127,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                     fill={fill}
                     textAnchor={textAnchor}
                     verticalAnchor={verticalAnchor}
-                    style={isToday ? { fill: 'var(--color-text-primary)' } : undefined}
+                    style={isToday ? { fill: 'var(--color-text-strong)' } : undefined}
                 >
                     {payload ? dayOfMonth(payload.value) : ''}
                 </Text>
@@ -160,7 +160,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                     dataKey="date"
                     tickLine={false}
                     tickMargin={10}
-                    stroke="var(--color-bg-muted)"
+                    stroke="var(--color-surface-panel-muted)"
                     // tickFormatter still drives recharts' tick-spacing math even though the custom tick re-derives the day.
                     tickFormatter={(value: string) => String(dayOfMonth(value))}
                     tick={renderDayTick}

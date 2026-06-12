@@ -6,14 +6,14 @@ import { Link } from 'react-router-dom';
 import type { VariantProps } from 'class-variance-authority';
 
 const styledLinkVariants = cva(
-    'w-fit underline inline-flex items-center cursor-pointer focus-default disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
+    'w-fit underline inline-flex items-center cursor-pointer focus-default disabled:text-text-disabled disabled:[&_svg]:text-text-disabled',
     {
         variants: {
             variant: {
                 default:
-                    'text-link-default [&_svg]:text-link-disabled hover:text-link-hover hover:[&_svg]:text-link-hover active:text-link-press active:[&_svg]:text-link-press disabled:text-link-disabled disabled:[&_svg]:text-link-disabled',
-                info: 'text-feedback-info-fg [&_svg]:text-feedback-info-fg',
-                error: 'text-feedback-error-fg [&_svg]:text-feedback-error-fg'
+                    'text-text-link [&_svg]:text-text-disabled hover:text-text-link-hover hover:[&_svg]:text-text-link-hover active:text-text-link-active active:[&_svg]:text-text-link-active disabled:text-text-disabled disabled:[&_svg]:text-text-disabled',
+                info: 'text-status-info-text [&_svg]:text-status-info-text',
+                error: 'text-status-danger-text [&_svg]:text-status-danger-text'
             },
             size: {
                 default: 'text-body-medium-medium',

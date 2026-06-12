@@ -45,7 +45,7 @@ export const TeamSettings: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-heading-sm text-text-primary">Team name</h3>
+            <h3 className="text-heading-sm text-text-strong">Team name</h3>
             <EditableInput initialValue={team?.name} canEdit={canManageTeam} onSave={onSaveTeamName} />
         </div>
     );

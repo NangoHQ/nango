@@ -205,7 +205,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     return (
         <TableRow>
             <TableCell className="w-1/3 font-medium">
-                <div className="inline-flex items-center gap-1 py-3 text-text-primary text-body-medium-medium">
+                <div className="inline-flex items-center gap-1 py-3 text-text-strong text-body-medium-medium">
                     {plan.title} {active && <Dot />}
                 </div>
             </TableCell>
@@ -399,9 +399,7 @@ const PlanChangeDialog: React.FC<{
                 </DialogHeader>
                 <div className="flex flex-col gap-1">
                     <p>{description}</p>
-                    {longWait && (
-                        <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
-                    )}
+                    {longWait && <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>}
                 </div>
                 {error && (
                     <Alert variant="error">

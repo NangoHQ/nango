@@ -1,5 +1,9 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
         "target": "ES2021",
         "lib": ["DOM", "DOM.Iterable", "ES2021"],
         "allowJs": true,

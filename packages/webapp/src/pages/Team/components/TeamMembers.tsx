@@ -122,7 +122,7 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-heading-sm text-text-primary">Team members</h3>
+            <h3 className="text-heading-sm text-text-strong">Team members</h3>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -172,11 +172,11 @@ export const TeamMembers: React.FC = () => {
                             <TableCell>
                                 {user.is_invitation ? (
                                     <div className="inline-flex items-center gap-2 text-text-secondary">
-                                        <Dot className="bg-feedback-warning-fg" /> Invited
+                                        <Dot className="bg-status-warning-icon" /> Invited
                                     </div>
                                 ) : (
-                                    <div className="inline-flex items-center gap-2 text-text-primary">
-                                        <Dot className="bg-feedback-success-fg" /> Active
+                                    <div className="inline-flex items-center gap-2 text-text-strong">
+                                        <Dot className="bg-status-success-icon" /> Active
                                     </div>
                                 )}
                             </TableCell>
@@ -209,7 +209,7 @@ export const TeamMembers: React.FC = () => {
                                                         })
                                                     }
                                                 >
-                                                    <span className="text-feedback-error-fg">Remove user</span>
+                                                    <span className="text-status-danger-text">Remove user</span>
                                                 </DropdownMenuItem>
                                             )}
 
@@ -226,7 +226,7 @@ export const TeamMembers: React.FC = () => {
                                                         })
                                                     }
                                                 >
-                                                    <span className="text-feedback-error-fg">Revoke invitation</span>
+                                                    <span className="text-status-danger-text">Revoke invitation</span>
                                                 </DropdownMenuItem>
                                             )}
                                         </DropdownMenuContent>
