@@ -49,7 +49,7 @@ export const ConnectionShow = () => {
                     <div className="flex gap-4 items-center">
                         <Skeleton className="size-20" />
                         <div className="flex flex-col gap-1">
-                            <span className="text-body-large-semi text-text-primary">
+                            <span className="text-body-large-semi text-text-strong">
                                 <Skeleton className="w-64 h-6" />
                             </span>
                             <span className="text-body-medium-regular text-text-secondary">
@@ -88,7 +88,7 @@ export const ConnectionShow = () => {
                         profile={displayName}
                     />
                     <div className="flex flex-col">
-                        <span className="text-body-large-semi text-text-primary">
+                        <span className="text-body-large-semi text-text-strong">
                             {integrationData.integration.display_name || integrationData.template.display_name} x {displayName}
                         </span>
                         <span className="text-body-medium-regular text-text-secondary">{email ?? connectionResponse.connection.connection_id}</span>

@@ -229,17 +229,17 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             disabled={disabled || options.length === 0}
             variant="ghost"
             size="lg"
-            className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover', className)}
+            className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
         >
             {props.label}{' '}
             {props.selected.length > 0 && (
-                <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center gap-1 px-2">
+                <span className="text-text-strong text-body-small-semi bg-surface-panel-inset rounded-full h-5 min-w-5 flex items-center justify-center gap-1 px-2">
                     {props.selected.length}
                     {multiOnClearAll && (
                         <span
                             role="button"
                             aria-label="Clear filter"
-                            className="flex items-center justify-center text-text-tertiary hover:text-text-primary"
+                            className="flex items-center justify-center text-text-muted hover:text-text-strong"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 multiOnClearAll();
@@ -263,9 +263,9 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             type="button"
             disabled={disabled}
             className={cn(
-                'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-bg-surface px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50',
-                selectedOption ? 'text-text-primary' : 'text-text-secondary',
-                open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover',
+                'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-surface-canvas px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-strong disabled:cursor-not-allowed disabled:opacity-50',
+                selectedOption ? 'text-text-strong' : 'text-text-secondary',
+                open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
                 className
             )}
         >
@@ -307,10 +307,10 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                     }
                 }}
                 className={cn(
-                    'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-primary',
+                    'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-state-hover text-text-secondary hover:text-text-strong',
                     isChild && 'pl-4',
                     isDisabled && 'cursor-not-allowed opacity-50 pointer-events-none',
-                    isHighlighted && 'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated hover:text-text-primary'
+                    isHighlighted && 'border-[0.5px] border-surface-page bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
                 )}
             >
                 <div className="flex min-w-0 items-center gap-2">
@@ -318,7 +318,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                         <span
                             className={cn(
                                 'flex size-5 shrink-0 items-center justify-center rounded-sm border',
-                                checkboxState !== 'unchecked' ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                checkboxState !== 'unchecked' ? 'border-transparent bg-surface-panel text-text-strong' : 'border-border-strong bg-transparent'
                             )}
                         >
                             {checkboxState === 'checked' ? (
@@ -336,7 +336,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 {'tag' in opt && opt.tag ? (
                     <div className="shrink-0">{opt.tag}</div>
                 ) : isHighlighted && !showCheckbox ? (
-                    <Check className="size-4 shrink-0 text-text-primary" />
+                    <Check className="size-4 shrink-0 text-text-strong" />
                 ) : null}
             </div>
         );
@@ -349,7 +349,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 align={props.allowMultiple ? 'end' : 'start'}
                 sideOffset={0}
                 className={cn(
-                    'z-[70] flex w-[var(--radix-popover-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-bg-subtle p-1 pb-0',
+                    'z-[70] flex w-[var(--radix-popover-trigger-width)] flex-col items-start overflow-hidden rounded-[4px] border border-border-muted bg-surface-overlay shadow-lg p-1 pb-0',
                     props.allowMultiple && 'min-w-[312px]',
                     contentClassName
                 )}
@@ -358,11 +358,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                     <div className="flex w-full items-center justify-between px-1 py-1.5">
                         {multiDropdownTitle && <span className="text-text-secondary text-body-small-regular">{multiDropdownTitle}</span>}
                         {multiOnClearAll && multiSelected && multiSelected.length > 0 && (
-                            <button
-                                type="button"
-                                className="ml-auto text-text-tertiary hover:text-text-primary text-body-small-regular"
-                                onClick={multiOnClearAll}
-                            >
+                            <button type="button" className="ml-auto text-text-muted hover:text-text-strong text-body-small-regular" onClick={multiOnClearAll}>
                                 Clear all
                             </button>
                         )}
@@ -370,16 +366,16 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 )}
                 {showSearch && (
                     <div className="w-full border-b border-border-muted" onKeyDown={(e) => e.stopPropagation()}>
-                        <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-bg-surface px-2.5 py-1.5">
+                        <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
                             <InputGroupAddon className="p-0 pr-2">
-                                <Search className="size-4 text-text-tertiary" />
+                                <Search className="size-4 text-text-muted" />
                             </InputGroupAddon>
                             <InputGroupInput
                                 type="text"
                                 placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="h-auto p-0 text-body-medium-regular text-text-tertiary placeholder:text-text-tertiary"
+                                className="h-auto p-0 text-body-medium-regular text-text-muted placeholder:text-text-muted"
                             />
                         </InputGroup>
                     </div>
@@ -395,7 +391,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                         ))
                     ) : (
                         <div className="px-2 py-3 text-center">
-                            <p className="text-text-tertiary text-body-small-regular">{emptyText}</p>
+                            <p className="text-text-muted text-body-small-regular">{emptyText}</p>
                         </div>
                     )}
                 </div>
@@ -438,7 +434,7 @@ function ComboboxContent({
                     data-slot="combobox-content"
                     data-chips={!!anchor}
                     className={cn(
-                        'group/combobox-content relative max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[min(var(--available-width),100vw)] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-bg-surface text-text-primary shadow-md ring-1 ring-border-muted duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+                        'group/combobox-content relative max-h-[var(--available-height)] w-[var(--anchor-width)] max-w-[min(var(--available-width),100vw)] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-surface-overlay text-text-strong shadow-md ring-1 ring-border-muted duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                         className
                     )}
                     {...props}
@@ -463,7 +459,7 @@ function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.
         <ComboboxPrimitive.Item
             data-slot="combobox-item"
             className={cn(
-                'relative flex w-full cursor-pointer items-center gap-2 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-highlighted:bg-dropdown-bg-hover data-highlighted:text-text-primary data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+                'relative flex w-full cursor-pointer items-center gap-2 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-highlighted:bg-state-hover data-highlighted:text-text-strong data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
                 className
             )}
             {...props}
@@ -509,7 +505,7 @@ const ComboboxChips = React.forwardRef<HTMLDivElement, React.ComponentPropsWitho
                 ref={ref}
                 data-slot="combobox-chips"
                 className={cn(
-                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-bg-surface px-2 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
+                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
                     className
                 )}
                 {...props}
@@ -523,7 +519,7 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
         <ComboboxPrimitive.Chip
             data-slot="combobox-chip"
             className={cn(
-                'inline-flex h-[21px] w-fit items-center justify-center gap-[2px] rounded bg-bg-elevated border border-border-default px-[6px] text-sm font-normal whitespace-nowrap text-text-secondary has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
+                'inline-flex h-[21px] w-fit items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal whitespace-nowrap text-text-secondary has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
                 className
             )}
             {...props}
@@ -547,7 +543,7 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
         <ComboboxPrimitive.Input
             data-slot="combobox-chip-input"
             className={cn(
-                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-primary placeholder:text-text-tertiary',
+                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-muted',
                 className
             )}
             {...props}
