@@ -25,7 +25,14 @@ import type {
     GetTopDimensionValuesQuery,
     GetTopDimensionValuesResult
 } from './clickhouse.query.js';
-import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageRecordsEvent } from '@nangohq/types';
+import type {
+    UsageActionsEvent,
+    UsageConnectionsEvent,
+    UsageDataTransferEvent,
+    UsageEvent,
+    UsageFunctionExecutionsEvent,
+    UsageRecordsEvent
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const envs = parseEnvs(ENVS);
@@ -46,7 +53,8 @@ type ClickhouseRawUsageEventAttrs =
     | UsageAttrs<UsageConnectionsEvent, 'connectionId'>
     | UsageAttrs<UsageActionsEvent>
     | UsageAttrs<UsageEvent>
-    | UsageAttrs<UsageRecordsEvent, 'syncId'>;
+    | UsageAttrs<UsageRecordsEvent, 'syncId'>
+    | UsageAttrs<UsageDataTransferEvent>;
 
 export interface ClickhouseRawUsageEvent {
     ts: number; // Unix timestamp in milliseconds, matches DateTime64(3)
@@ -554,7 +562,8 @@ function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
         case 'usage.actions':
         case 'usage.function_executions':
         case 'usage.proxy':
-        case 'usage.webhook_forward': {
+        case 'usage.webhook_forward':
+        case 'usage.data_transfer': {
             const { accountId, ...properties } = event.payload.properties;
             return {
                 ts: event.createdAt.getTime(),
@@ -567,7 +576,6 @@ function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
         }
         case 'usage.records':
         case 'usage.connections':
-        case 'usage.data_transfer':
             // Not ingested into Clickhouse via events
             return null;
     }
