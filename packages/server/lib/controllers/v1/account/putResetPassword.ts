@@ -46,23 +46,23 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
 
     try {
         jwt.verify(token, resetPasswordSecret());
-
-        const hashedPassword = (await pbkdf2(password, user.salt, 310000, 32, 'sha256')).toString('base64');
-
-        user.hashed_password = hashedPassword;
-        user.reset_password_token = null;
-        await db.knex.transaction(async (trx) => {
-            await userService.editUserPassword(user, trx);
-            await deleteUserSessions(user.id, { trx });
-        });
-
-        res.status(200).json({
-            success: true
-        });
     } catch {
         res.status(400).send({
             error: { code: 'invalid_token' }
         });
         return;
     }
+
+    const hashedPassword = (await pbkdf2(password, user.salt, 310000, 32, 'sha256')).toString('base64');
+
+    user.hashed_password = hashedPassword;
+    user.reset_password_token = null;
+    await db.knex.transaction(async (trx) => {
+        await userService.editUserPassword(user, trx);
+        await deleteUserSessions(user.id, { trx });
+    });
+
+    res.status(200).json({
+        success: true
+    });
 });
