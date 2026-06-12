@@ -13,12 +13,7 @@
  *   await client.isEnabled(FLAGS.EXAMPLE_FLAG, { 'account.uuid': uuid }, false);
  */
 export const FLAGS = {
-    // Reference flags; mirror flags/*.yaml in nango-flags. Safe to remove once real flags exist.
-    // Boolean — read with client.isEnabled(FLAGS.EXAMPLE_FLAG, ctx, false).
-    EXAMPLE_FLAG: 'example-flag',
-    // Non-boolean (string) — read with client.getString(FLAGS.EXAMPLE_VARIANT, ctx, 'control').
-    // Number/JSON flags use client.getNumber / client.getObject.
-    EXAMPLE_VARIANT: 'example-variant'
+    OAUTH_STATE_COOKIE_ENFORCEMENT: 'oauth-state-cookie-enforcement'
 } as const;
 
 export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];

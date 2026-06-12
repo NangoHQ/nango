@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { serializeError } from 'serialize-error';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { getFeatureFlagsClient } from '@nangohq/kvstore';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
@@ -27,6 +28,8 @@ const BINARY_CONTENT_TYPES = [
 ];
 
 export const featureFlags = await getFeatureFlagsClient();
+
+export const flags = await getFlags();
 
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
