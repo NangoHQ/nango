@@ -146,7 +146,6 @@ export async function routeWebhook({
                         environment.name
                     )
                 );
-                logger.info('Data transfer event from webhook forward', { eventsBatched: JSON.stringify(pendingEvents) });
             }
         })
             .then((res) => {
@@ -171,7 +170,6 @@ export async function routeWebhook({
                 }
             })
             .finally(() => {
-                logger.info('Flushing data transfer events', { eventsBatched: JSON.stringify(pendingEvents) });
                 if (pendingEvents.length > 0) {
                     void pubsub.publisher.publishBatch({ subject: 'usage', events: pendingEvents });
                 }
