@@ -106,20 +106,33 @@ describe('uncontrolledFetch', () => {
         });
     });
 
-    it('blocks localhost when override feature is disabled even if denylist env is empty', async () => {
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'false');
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', '[]');
-        const fetchMock = vi.fn();
-        vi.stubGlobal('fetch', fetchMock as any);
+    it('honors NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false by ignoring custom denylist env', async () => {
+        const customOnlyHost = 'https://custom-deny-only.invalid/path';
 
-        const { action } = await makeActionInstance();
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'true');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['custom-deny-only.invalid']));
+        const fetchMockEnabled = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMockEnabled as any);
 
-        await expect(action.uncontrolledFetch({ url: new URL('http://localhost:3003/health') })).rejects.toMatchObject({
+        const { action: actionEnabled } = await makeActionInstance();
+
+        await expect(actionEnabled.uncontrolledFetch({ url: new URL(customOnlyHost) })).rejects.toMatchObject({
             type: 'action_script_runtime_error',
             payload: { code: 'url_not_allowed' }
         });
+        expect(fetchMockEnabled).not.toHaveBeenCalled();
 
-        expect(fetchMock).not.toHaveBeenCalled();
+        vi.resetModules();
+        vi.unstubAllEnvs();
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'false');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['custom-deny-only.invalid']));
+        const fetchMockDisabled = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMockDisabled as any);
+
+        const { action: actionDisabled } = await makeActionInstance();
+
+        await expect(actionDisabled.uncontrolledFetch({ url: new URL(customOnlyHost) })).resolves.toBeDefined();
+        expect(fetchMockDisabled).toHaveBeenCalled();
     });
 
     it('blocks a redirect hop to a denylisted host', async () => {
