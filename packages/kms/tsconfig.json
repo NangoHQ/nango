@@ -4,16 +4,6 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "references": [
-        {
-            "path": "../kms"
-        },
-        {
-            "path": "../types"
-        },
-        {
-            "path": "../utils"
-        }
-    ],
+    "references": [{ "path": "../utils" }],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]
 }

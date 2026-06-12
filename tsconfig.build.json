@@ -20,6 +20,9 @@
             "path": "packages/kvstore"
         },
         {
+            "path": "packages/kms"
+        },
+        {
             "path": "packages/logs"
         },
         {
