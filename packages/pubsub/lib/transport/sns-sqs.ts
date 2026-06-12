@@ -1,15 +1,20 @@
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { PublishBatchCommand, PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, Ok, chunk, getLogger, matchWith, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { PublishFailure } from './transport.js';
 import { serde } from '../utils/serde.js';
 
-import type { SubscribeProps, Transport } from './transport.js';
+import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
+import type { BatchResultErrorEntry, PublishBatchRequestEntry } from '@aws-sdk/client-sns';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export const SNS_BATCH_MAX_SIZE = 10;
+export const SNS_BATCH_MAX_BYTES = 262_144;
 
 const logger = getLogger('pubsub.sns-sqs');
 
@@ -26,6 +31,42 @@ const sqsMessageAttributesSchema = z.record(z.string(), z.looseObject({ StringVa
 
 function subscriptionKey<TSubject extends Event['subject']>(consumerGroup: string, subject: TSubject): `${string}:${TSubject}` {
     return `${consumerGroup}:${subject}`;
+}
+
+function publishConcurrency(concurrency: number | undefined): number {
+    const n = concurrency ?? 10;
+    if (!Number.isFinite(n)) {
+        return 10;
+    }
+    return Math.max(1, Math.min(10, Math.floor(n)));
+}
+
+function toSnsEntry(event: Event): Result<PublishBatchRequestEntry, PublishFailure> {
+    return serde
+        .serialize(event)
+        .map((encoded: Buffer) => ({
+            Id: event.idempotencyKey,
+            Message: encoded.toString('base64'),
+            MessageAttributes: {
+                subject: { DataType: 'String', StringValue: event.subject }
+            }
+        }))
+        .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, 'Failed to serialize event', { cause: e }));
+}
+
+// https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html
+// Message size = body + per-attribute (name + data type + string value) lengths.
+function snsEntryBytes(entry: PublishBatchRequestEntry): number {
+    const bodyBytes = Buffer.byteLength(entry.Message ?? '', 'utf8');
+    const attrBytes = Object.entries(entry.MessageAttributes ?? {}).reduce((sum, [name, attr]) => {
+        return sum + Buffer.byteLength(name, 'utf8') + Buffer.byteLength(attr.DataType ?? '', 'utf8') + Buffer.byteLength(attr.StringValue ?? '', 'utf8');
+    }, 0);
+    return bodyBytes + attrBytes;
+}
+
+function asPublishFailure(idempotencyKey: string, error: BatchResultErrorEntry): PublishFailure {
+    const errorCode = error.Code !== undefined ? { code: error.Code } : undefined;
+    return new PublishFailure(idempotencyKey, error.Message ?? 'SNS rejected message', errorCode);
 }
 
 function subscribeConcurrency(concurrency: number | undefined): number {
@@ -145,6 +186,68 @@ export class SnsSqs implements Transport {
         } catch (err) {
             logger.error(`Failed to publish message to SNS for subject ${event.subject}`, { error: err });
             return Err(new Error(`Failed to publish message to SNS for subject ${event.subject}`, { cause: err }));
+        }
+    }
+
+    public async publishBatch<S extends Event['subject']>({ subject, events, concurrency }: PublishBatchProps<S>): Promise<Result<PublishBatchResult>> {
+        if (!this.isConnected) {
+            return Err(new Error('SNS+SQS publisher not connected'));
+        }
+
+        // runtime sanity check for homogeneous subject
+        if (events.find((e) => e.subject !== subject)) {
+            return Err(new Error(`All events must be of the provided subject: "${subject}"`));
+        }
+
+        const topicArn = this.topicArns[subject];
+        if (!topicArn) {
+            return Err(new Error(`No SNS topic ARN configured for subject "${subject}"`));
+        }
+
+        const failed: PublishFailure[] = [];
+        const entries: PublishBatchRequestEntry[] = [];
+
+        try {
+            events.map(toSnsEntry).forEach(
+                matchWith(
+                    (entry) => entries.push(entry),
+                    (err) => failed.push(err)
+                )
+            );
+
+            const batches = chunk(
+                entries,
+                () => ({ count: 0, bytes: 0 }),
+                (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + snsEntryBytes(item) }),
+                (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + snsEntryBytes(item) > SNS_BATCH_MAX_BYTES
+            );
+
+            const successful: string[] = [];
+
+            await runWithConcurrencyLimit(batches, publishConcurrency(concurrency), async (batch, _) => {
+                // Map each batch entry's index to its original idempotencyKey to support a reverse-lookup from SNS responses
+                const idMap = new Map(batch.map((entry, i) => [String(i), entry.Id!]));
+                const batchWithPositionalIds = batch.map((entry, i) => ({ ...entry, Id: String(i) }));
+
+                const cmd = new PublishBatchCommand({
+                    TopicArn: topicArn,
+                    PublishBatchRequestEntries: batchWithPositionalIds
+                });
+
+                await this.sns
+                    .send(cmd)
+                    .then((response) => {
+                        successful.push(...(response.Successful ?? []).map((s) => idMap.get(s.Id!) ?? s.Id!));
+                        failed.push(...(response.Failed ?? []).map((e) => asPublishFailure(idMap.get(e.Id!) ?? e.Id!, e)));
+                    })
+                    .catch((err: unknown) => {
+                        failed.push(...batch.map((f) => new PublishFailure(f.Id!, 'Batch publish request failed', { cause: err })));
+                    });
+            });
+
+            return Ok({ successful, failed });
+        } catch (err) {
+            return Err(new Error(`Failed to publish batch to SNS for subject "${subject}"`, { cause: err }));
         }
     }
 
