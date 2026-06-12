@@ -455,7 +455,7 @@ export class UsageTracker implements IUsageTracker {
         const timeoutErr = new Error('shadow_timeout');
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
         const chResult = await Promise.race<Result<BillingUsageMetrics>>([
-            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date()),
+            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
             new Promise((resolve) => {
                 timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
             })
