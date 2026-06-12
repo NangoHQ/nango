@@ -38,12 +38,11 @@ export class UsageBillingClient {
     public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
         let cached: string | null = null;
-        let cacheReadFailed = false;
         try {
             cached = await this.redis.get(cacheKey);
-        } catch {
-            cacheReadFailed = true;
+        } catch (err) {
             metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'error' });
+            return Err(new Error('billing_usage_cache_error', { cause: err }));
         }
         if (cached) {
             try {
@@ -54,9 +53,7 @@ export class UsageBillingClient {
                 // ignore parse errors and proceed to fetch from API
             }
         }
-        if (!cacheReadFailed) {
-            metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
-        }
+        metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
 
         const tags = { dashboard: opts?.timeframe ? 'true' : 'false' };
 
@@ -98,7 +95,7 @@ export class UsageBillingClient {
             if (err instanceof RateLimiterRes) {
                 throw new Error('rate_limit_exceeded', { cause: err });
             }
-            // Redis unavailable — proceed without rate limiting
+            throw new Error('billing_usage_throttle_error', { cause: err });
         }
         return await fn();
     }

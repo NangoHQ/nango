@@ -19,9 +19,8 @@ describe('UsageBillingClient', () => {
         vi.clearAllMocks();
     });
 
-    it('falls through to API when redis.get throws', async () => {
-        const usageMetrics = { proxy: { total: 1 } };
-        getUsageMock.mockResolvedValue(Ok(usageMetrics as any));
+    it('returns error when redis.get throws', async () => {
+        getUsageMock.mockResolvedValue(Ok({ proxy: { total: 1 } } as any));
         const incrementSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => {});
 
         const redis = {
@@ -29,18 +28,30 @@ describe('UsageBillingClient', () => {
             set: vi.fn()
         };
         const client = new UsageBillingClient(redis as any);
-        vi.spyOn((client as any).throttler, 'removeTokens').mockRejectedValue(new Error('redis down'));
 
         const res = await client.getUsage('sub-1');
-        expect(res.isOk()).toBe(true);
-        if (res.isOk()) {
-            expect(res.value.fromCache).toBe(false);
-            expect(res.value.value).toEqual(usageMetrics);
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.message).toBe('billing_usage_cache_error');
         }
-        expect(getUsageMock).toHaveBeenCalledWith('sub-1', undefined);
+        expect(getUsageMock).not.toHaveBeenCalled();
         expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'error' });
         expect(incrementSpy).not.toHaveBeenCalledWith(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
 
         incrementSpy.mockRestore();
+    });
+
+    it('throws when throttle fails on cache miss', async () => {
+        getUsageMock.mockResolvedValue(Ok({ proxy: { total: 1 } } as any));
+
+        const redis = {
+            get: vi.fn().mockResolvedValue(null),
+            set: vi.fn()
+        };
+        const client = new UsageBillingClient(redis as any);
+        vi.spyOn((client as any).throttler, 'removeTokens').mockRejectedValue(new Error('redis down'));
+
+        await expect(client.getUsage('sub-1')).rejects.toThrow('billing_usage_throttle_error');
+        expect(getUsageMock).not.toHaveBeenCalled();
     });
 });
