@@ -54,6 +54,16 @@ function toSnsEntry(event: Event): Result<PublishBatchRequestEntry, PublishFailu
         .mapError((e: unknown) => new PublishFailure(event.idempotencyKey, 'Failed to serialize event', { cause: e }));
 }
 
+// https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html
+// Message size = body + per-attribute (name + data type + string value) lengths.
+function snsEntryBytes(entry: PublishBatchRequestEntry): number {
+    const bodyBytes = Buffer.byteLength(entry.Message ?? '', 'utf8');
+    const attrBytes = Object.entries(entry.MessageAttributes ?? {}).reduce((sum, [name, attr]) => {
+        return sum + Buffer.byteLength(name, 'utf8') + Buffer.byteLength(attr.DataType ?? '', 'utf8') + Buffer.byteLength(attr.StringValue ?? '', 'utf8');
+    }, 0);
+    return bodyBytes + attrBytes;
+}
+
 function asPublishFailure(idempotencyKey: string, error: BatchResultErrorEntry): PublishFailure {
     const errorCode = error.Code !== undefined ? { code: error.Code } : undefined;
     return new PublishFailure(idempotencyKey, error.Message ?? 'SNS rejected message', errorCode);
@@ -208,8 +218,8 @@ export class SnsSqs implements Transport {
             const batches = chunk(
                 entries,
                 () => ({ count: 0, bytes: 0 }),
-                (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') }),
-                (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + Buffer.byteLength(item.Message ?? '', 'utf8') > SNS_BATCH_MAX_BYTES
+                (acc, item) => ({ count: acc.count + 1, bytes: acc.bytes + snsEntryBytes(item) }),
+                (acc, item) => acc.count >= SNS_BATCH_MAX_SIZE || acc.bytes + snsEntryBytes(item) > SNS_BATCH_MAX_BYTES
             );
 
             const successful: string[] = [];
