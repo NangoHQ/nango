@@ -44,22 +44,47 @@ export class DekRegistry {
     }
 }
 
-async function resolveDek(envs: DekEnvs): Promise<string> {
+// Cache the in-flight promise so the KMS unwrap runs once per process,
+// even when several packages instantiate a DekRegistry concurrently.
+const resolved = new Map<string, Promise<string>>();
+
+function resolveDek(envs: DekEnvs): Promise<string> {
     const { NANGO_ENCRYPTION_KEY: plaintext, NANGO_ENCRYPTION_KEY_WRAPPED: wrapped, NANGO_KMS_KEY_ARN: kmsKeyArn } = envs;
 
-    // TEMPORARY (KMS rollout validation): the plaintext key stays the source of truth.
-    // When the wrapped key is also set, unwrap it in shadow mode and log whether it matches.
-    // Unwrap failures are logged, not fatal.
+    const cacheKey = JSON.stringify([plaintext, wrapped, kmsKeyArn]);
+    const cached = resolved.get(cacheKey);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const promise = resolveFromEnvs({ plaintext, wrapped, kmsKeyArn }).catch((err: unknown) => {
+        // Don't cache failures: a transient KMS error must not poison every future caller.
+        resolved.delete(cacheKey);
+        throw err;
+    });
+    resolved.set(cacheKey, promise);
+    return promise;
+}
+
+async function resolveFromEnvs({
+    plaintext,
+    wrapped,
+    kmsKeyArn
+}: {
+    plaintext?: string | undefined;
+    wrapped?: string | undefined;
+    kmsKeyArn?: string | undefined;
+}): Promise<string> {
+    // Wrapped key is the source of truth (unwrap it via KMS).
+    // Fallback to the plaintext key (dev/self hosted) or '' (encryption disabled) when neither is set.
+    // Unwrap failures are fatal: we must not silently start up with the wrong key.
     if (wrapped) {
-        try {
-            if (!kmsKeyArn) {
-                throw new Error('NANGO_KMS_KEY_ARN is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
-            }
-            const unwrapped = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
-            logger.info(`Wrapped encryption key validation: match=${unwrapped === (plaintext ?? '')}`);
-        } catch (err) {
-            logger.error('Unwrapping data encryption key failed', err);
+        if (!kmsKeyArn) {
+            throw new Error('NANGO_KMS_KEY_ARN is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
         }
+        const dek = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
+        logger.info('Loaded encryption key (source=wrapped)');
+        return dek;
     }
 
     if (plaintext) {
@@ -68,6 +93,5 @@ async function resolveDek(envs: DekEnvs): Promise<string> {
         return plaintext;
     }
 
-    // No plaintext key set: encryption disabled
     return '';
 }
