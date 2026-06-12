@@ -29,7 +29,6 @@ router.get('/health', (_, res) => {
 router.get('/ready', getReady);
 router.get('/env.js', getEnvJs);
 router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
-
 // Import main routers
 // Order is important because public API has no prefix
 router.use('/api/v1', privateApi);

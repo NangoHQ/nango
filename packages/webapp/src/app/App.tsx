@@ -4,6 +4,7 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
 import { router } from './router';
+import { PlainChat } from '@/components/PlainChat';
 import { DevToolPanel, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
@@ -43,6 +44,7 @@ const App = () => {
 
     return (
         <>
+            <PlainChat user={user} />
             <RouterProvider router={router} />
             <Toaster />
             {isDevToolsEnabled && <DevToolPanel />}

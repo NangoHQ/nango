@@ -472,6 +472,10 @@ export const ENVS = z.object({
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
 
+    // Plain (in-app support chat)
+    PLAIN_APP_ID: z.string().optional(),
+    PLAIN_HMAC_SECRET: z.string().optional(),
+
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 
