@@ -57,7 +57,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             defaultValue={snippets[0].language}
                             onValueChange={(language) => setSelectedSnippetIndex(snippets.findIndex((s) => s.language === language) ?? 0)}
                         >
-                            <SelectTrigger size="sm">
+                            <SelectTrigger>
                                 <SelectValue placeholder="Language" />
                             </SelectTrigger>
                             <SelectContent>
@@ -72,9 +72,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                             </SelectContent>
                         </Select>
                     ) : (
-                        <Tag variant="default" size="sm">
-                            {snippets[0].language}
-                        </Tag>
+                        <Tag variant="neutral">{snippets[0].language}</Tag>
                     )}
                     {onExecute && (
                         <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>

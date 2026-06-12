@@ -19,7 +19,7 @@ const buttonVariants = cva(
                 destructive:
                     'bg-interactive-danger text-text-on-accent hover:bg-interactive-danger-hover active:bg-interactive-danger-active focus-visible:bg-interactive-danger-hover disabled:bg-interactive-disabled disabled:text-text-disabled data-loading:bg-interactive-danger-active data-loading:opacity-100 aria-disabled:hover:bg-interactive-danger aria-disabled:active:bg-interactive-danger',
                 secondary:
-                    'bg-surface-raised border border-border-muted text-text-default hover:bg-state-hover hover:border-border-strong active:bg-state-pressed disabled:bg-interactive-disabled disabled:border-border-muted data-loading:bg-state-pressed data-loading:opacity-100 aria-disabled:hover:bg-surface-raised aria-disabled:active:bg-surface-raised',
+                    'bg-surface-raised border border-border-muted text-text-default hover:bg-state-hover hover:border-border-strong active:bg-state-pressed focus-visible:bg-state-hover disabled:bg-interactive-disabled disabled:border-border-muted data-loading:bg-state-pressed data-loading:opacity-100 aria-disabled:hover:bg-surface-raised aria-disabled:active:bg-surface-raised',
                 tertiary:
                     'bg-surface-panel text-text-secondary hover:bg-state-hover active:bg-state-pressed focus-visible:bg-state-hover disabled:bg-interactive-disabled data-loading:bg-state-pressed data-loading:opacity-100 aria-disabled:hover:bg-surface-panel aria-disabled:active:bg-surface-panel',
                 ghost: 'bg-transparent text-text-muted hover:text-text-strong aria-disabled:hover:text-text-muted',

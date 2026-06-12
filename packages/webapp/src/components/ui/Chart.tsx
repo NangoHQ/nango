@@ -4,7 +4,7 @@ import * as RechartsPrimitive from 'recharts';
 import { cn } from '@/utils/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: '', dark: '.dark' } as const;
+const THEMES = { light: '', dark: "[data-theme='dark']" } as const;
 
 export type ChartConfig = Record<
     string,
@@ -233,10 +233,7 @@ function ChartLegendContent({
                     const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
                     return (
-                        <div
-                            key={item.value}
-                            className={cn('[&>svg]:text-neutral-500 flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 dark:[&>svg]:text-neutral-400')}
-                        >
+                        <div key={item.value} className={cn('[&>svg]:text-text-muted flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3')}>
                             {itemConfig?.icon && !hideIcon ? (
                                 <itemConfig.icon />
                             ) : (

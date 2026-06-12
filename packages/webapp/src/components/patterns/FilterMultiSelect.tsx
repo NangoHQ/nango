@@ -150,12 +150,10 @@ export function FilterMultiSelect<T extends string = string>({
                 aria-disabled={disabled || undefined}
                 tabIndex={disabled ? -1 : 0}
                 className={cn(
-                    'relative flex items-center py-1.5 pl-8 pr-2 text-sm select-none outline-none',
+                    'flex w-full cursor-pointer items-center gap-2 rounded-[4px] px-2 py-1 text-body-medium-regular select-none outline-none text-text-secondary hover:bg-state-hover hover:text-text-strong focus:bg-state-hover focus:text-text-strong',
                     indent && 'ml-4',
-                    disabled
-                        ? 'opacity-50 pointer-events-none text-gray-400'
-                        : 'cursor-pointer text-gray-400 hover:bg-pure-black hover:text-white focus:bg-pure-black focus:text-white',
-                    isSelected && 'text-white bg-pure-black'
+                    disabled && 'opacity-50 pointer-events-none cursor-default',
+                    isSelected && 'text-text-strong bg-surface-page hover:bg-surface-page focus:bg-surface-page'
                 )}
                 onClick={() => select(opt.value)}
                 onKeyDown={(e) => {
@@ -167,8 +165,8 @@ export function FilterMultiSelect<T extends string = string>({
             >
                 <span
                     className={cn(
-                        'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-xs',
-                        isSelected && 'border-transparent'
+                        'flex size-5 shrink-0 items-center justify-center rounded-sm border',
+                        isSelected ? 'border-transparent bg-surface-panel text-text-strong' : 'border-border-strong bg-transparent'
                     )}
                 >
                     {isSelected && <Check className="size-3.5" />}
@@ -181,7 +179,7 @@ export function FilterMultiSelect<T extends string = string>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn('h-9 text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size="sm" className={cn('h-9 rounded bg-surface-canvas text-text-muted', isDirty && 'text-text-strong')}>
                     {label}
                     {isDirty && (
                         <span
@@ -199,7 +197,7 @@ export function FilterMultiSelect<T extends string = string>({
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className={cn('p-2 text-white bg-active-gray', width)} align="end">
+            <PopoverContent className={cn('p-2 bg-surface-overlay border border-border-muted shadow-lg', width)} align="end">
                 {showSearch && (
                     <div className="pb-2">
                         <InputGroup className="border-border-default">

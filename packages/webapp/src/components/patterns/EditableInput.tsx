@@ -151,25 +151,27 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                             <PermissionGate condition={canEdit} tooltipSide="bottom">
                                 {(allowed) => (
                                     <InputGroupButton disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
-                                        <Edit />
+                                        <Edit className="size-3.5" />
                                     </InputGroupButton>
                                 )}
                             </PermissionGate>
                         </ConditionalTooltip>
                         <InputGroupAddon align="inline-end">
                             <PermissionGate condition={canRead || !secret} tooltipSide="bottom">
-                                {(allowed) => <CopyButton disabled={!allowed} text={value} />}
+                                {(allowed) => <CopyButton disabled={!allowed} text={value} className="size-6 p-0" />}
                             </PermissionGate>
                         </InputGroupAddon>
                     </>
                 ) : (
                     <>
                         <InputGroupButton onClick={onCancelClicked} size="icon-sm">
-                            <X />
+                            <X className="size-3.5" />
                         </InputGroupButton>
-                        <InputGroupButton onClick={onSaveClicked} size="icon-sm" disabled={!!error}>
-                            <Check />
-                        </InputGroupButton>
+                        <InputGroupAddon align="inline-end">
+                            <InputGroupButton onClick={onSaveClicked} size="icon-sm" disabled={!!error}>
+                                <Check className="size-3.5" />
+                            </InputGroupButton>
+                        </InputGroupAddon>
                     </>
                 )}
             </InputGroup>
