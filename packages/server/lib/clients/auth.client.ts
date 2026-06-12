@@ -31,12 +31,11 @@ const sessionStore = new KnexSessionStore({
  * devices/browsers are forced to re-authenticate. Passport stores the
  * serialized user at `sess.passport.user`.
  */
-export async function deleteUserSessions(userId: number, { exceptSid, trx }: { exceptSid?: string; trx?: Knex } = {}): Promise<void> {
-    const query = (trx ?? database.knex).from(SESSION_TABLE).whereRaw(`(sess->'passport'->'user'->>'id')::int = ?`, [userId]);
-    if (exceptSid) {
-        query.andWhereNot('sid', exceptSid);
-    }
-    await query.delete();
+export async function deleteUserSessions(userId: number, { trx }: { trx?: Knex } = {}): Promise<void> {
+    await (trx ?? database.knex)
+        .from(SESSION_TABLE)
+        .whereRaw(`sess->'passport'->'user'->>'id' = ?`, [String(userId)])
+        .delete();
 }
 
 export function setupAuth(app: express.Router) {
