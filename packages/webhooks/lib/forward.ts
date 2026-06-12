@@ -31,7 +31,7 @@ export const forwardWebhook = async ({
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
     onBytes?: (bytes: MeteredBytes, connectionId: string) => void;
-}): Promise<Result<{ forwarded: number }>> => {
+}): Promise<Result<{ results: { connectionId: string; success: boolean }[] }>> => {
     const safeOnBytes = (bytes: MeteredBytes, connectionId: string) => {
         try {
             onBytes?.(bytes, connectionId);
@@ -41,13 +41,13 @@ export const forwardWebhook = async ({
     };
 
     if (!webhookSettings) {
-        return Ok({ forwarded: 0 });
+        return Ok({ results: [] });
     }
     if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
-        return Ok({ forwarded: 0 });
+        return Ok({ results: [] });
     }
     if (!integration.forward_webhooks) {
-        return Ok({ forwarded: 0 });
+        return Ok({ results: [] });
     }
 
     const logCtx = await logContextGetter.create(
@@ -96,11 +96,11 @@ export const forwardWebhook = async ({
 
         metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
         await logCtx.success();
-        return Ok({ forwarded: 1 });
+        return Ok({ results: [{ connectionId: 'unknown', success: true }] });
     }
 
     let success = true;
-    let forwarded = 0;
+    const results: { connectionId: string; success: boolean }[] = [];
     for (const connectionId of connectionIds) {
         const deliverBytes: MeteredBytes = { sent: 0, received: 0 };
         const result = await deliver({
@@ -122,10 +122,11 @@ export const forwardWebhook = async ({
 
         if (result.isOk()) {
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
-            forwarded += 1;
+            results.push({ connectionId, success: true });
         } else {
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_FAILED, 1, { accountId: account.id });
             success = false;
+            results.push({ connectionId, success: false });
         }
     }
 
@@ -134,5 +135,5 @@ export const forwardWebhook = async ({
     } else {
         await logCtx.failed();
     }
-    return Ok({ forwarded });
+    return Ok({ results });
 };

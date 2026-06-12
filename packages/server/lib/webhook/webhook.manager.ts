@@ -150,7 +150,7 @@ export async function routeWebhook({
         })
             .then((res) => {
                 if (res.isOk()) {
-                    for (const connectionId of connectionIds.length > 0 ? connectionIds : ['unknown']) {
+                    for (const { connectionId, success } of res.value.results) {
                         pendingEvents.push({
                             subject: 'usage',
                             type: 'usage.webhook_forward',
@@ -162,7 +162,7 @@ export async function routeWebhook({
                                     environmentName: environment.name,
                                     integrationId: integration.unique_key,
                                     connectionId,
-                                    success: true
+                                    success
                                 }
                             }
                         });

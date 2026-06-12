@@ -256,7 +256,7 @@ describe('Webhooks: forward notification tests', () => {
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value.forwarded).toBe(2);
+            expect(result.value.results.filter((r) => r.success).length).toBe(2);
         }
         expect(calls.map((c) => c.connectionId)).toEqual(['conn1', 'conn2']);
         const minBytesPerConnection = Buffer.byteLength(JSON.stringify(payload));
