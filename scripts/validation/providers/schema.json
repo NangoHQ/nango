@@ -295,6 +295,12 @@
                         "base_url": {
                             "type": "string"
                         },
+                        "body": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        },
                         "connection_config": {
                             "type": "object",
                             "additionalProperties": true

@@ -32,10 +32,10 @@ const alertVariants = cva(
     {
         variants: {
             variant: {
-                success: 'bg-feedback-success-bg text-feedback-success-fg',
-                warning: 'bg-feedback-warning-bg text-feedback-warning-fg',
-                info: 'bg-feedback-info-bg text-feedback-info-fg',
-                error: 'bg-feedback-error-bg text-feedback-error-fg'
+                success: 'bg-status-success-bg text-status-success-text',
+                warning: 'bg-status-warning-bg text-status-warning-text',
+                info: 'bg-status-info-bg text-status-info-text',
+                error: 'bg-status-danger-bg text-status-danger-text'
             }
         },
         defaultVariants: {
@@ -85,19 +85,19 @@ const alertButtonVariants = cva(
         variants: {
             variant: {
                 success:
-                    'border border-transparent bg-feedback-success-fg text-feedback-success-bg hover:bg-feedback-success-alt/30 hover:text-feedback-success-fg hover:border-feedback-success-fg active:bg-feedback-success-bg active:border-bg-success active:text-feedback-success-fg',
+                    'border border-transparent bg-status-success-icon text-status-success-bg hover:bg-status-success-bg-hover/30 hover:text-status-success-text hover:border-status-success-icon active:bg-status-success-bg active:border-status-success-bg active:text-status-success-text',
                 'success-secondary':
-                    'border border-feedback-success-fg bg-transparent text-feedback-success-fg hover:border-bg-success hover:bg-feedback-success-alt/30 active:border-transparent active:text-feedback-success-bg active:bg-feedback-success-fg',
-                info: 'border border-transparent bg-feedback-info-fg text-feedback-info-bg hover:bg-feedback-info-alt/30 hover:text-feedback-info-fg hover:border-feedback-info-fg active:bg-feedback-info-bg active:text-feedback-info-fg',
+                    'border border-status-success-icon bg-transparent text-status-success-text hover:border-status-success-bg hover:bg-status-success-bg-hover/30 active:border-transparent active:text-status-success-bg active:bg-status-success-icon',
+                info: 'border border-transparent bg-status-info-icon text-status-info-bg hover:bg-status-info-bg-hover/30 hover:text-status-info-text hover:border-status-info-icon active:bg-status-info-bg active:text-status-info-text',
                 'info-secondary':
-                    'border border-feedback-info-fg bg-transparent text-feedback-info-fg hover:bg-feedback-info-alt/30 active:border-transparent active:text-feedback-info-bg active:bg-feedback-info-fg',
-                error: 'border border-transparent bg-feedback-error-fg text-feedback-error-bg hover:bg-feedback-error-alt/30 hover:text-feedback-error-fg hover:border-feedback-error-fg active:bg-feedback-error-bg active:text-feedback-error-fg',
+                    'border border-status-info-icon bg-transparent text-status-info-text hover:bg-status-info-bg-hover/30 active:border-transparent active:text-status-info-bg active:bg-status-info-icon',
+                error: 'border border-transparent bg-status-danger-icon text-status-danger-bg hover:bg-status-danger-bg-hover/30 hover:text-status-danger-text hover:border-status-danger-icon active:bg-status-danger-bg active:text-status-danger-text',
                 'error-secondary':
-                    'border border-feedback-error-fg bg-transparent text-feedback-error-fg hover:bg-feedback-error-alt/30 active:border-transparent active:text-feedback-error-bg active:bg-feedback-error-fg',
+                    'border border-status-danger-icon bg-transparent text-status-danger-text hover:bg-status-danger-bg-hover/30 active:border-transparent active:text-status-danger-bg active:bg-status-danger-icon',
                 warning:
-                    'border border-transparent bg-feedback-warning-fg text-feedback-warning-bg hover:bg-feedback-warning-alt/30 hover:text-feedback-warning-fg hover:border-feedback-warning-fg active:bg-feedback-warning-bg active:text-feedback-warning-fg',
+                    'border border-transparent bg-status-warning-icon text-status-warning-bg hover:bg-status-warning-bg-hover/30 hover:text-status-warning-text hover:border-status-warning-icon active:bg-status-warning-bg active:text-status-warning-text',
                 'warning-secondary':
-                    'border border-feedback-warning-fg bg-transparent text-feedback-warning-fg hover:bg-feedback-warning-alt/30 active:border-transparent active:text-feedback-warning-bg active:bg-feedback-warning-fg'
+                    'border border-status-warning-icon bg-transparent text-status-warning-text hover:bg-status-warning-bg-hover/30 active:border-transparent active:text-status-warning-bg active:bg-status-warning-icon'
             }
         },
         defaultVariants: {

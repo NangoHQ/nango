@@ -65,26 +65,26 @@ export const ProfileDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-dropdown-bg-default hover:bg-dropdown-bg-hover data-[state=open]:bg-dropdown-bg-press border-t-[0.5px] border-border-muted">
+                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-surface-overlay hover:bg-state-hover data-[state=open]:bg-surface-overlay border-t-[0.5px] border-border-muted">
                         <div className="inline-flex gap-2 items-center">
-                            <div className="size-10 flex items-center justify-center rounded bg-bg-surface border border-border-muted text-text-primary leading-5">
+                            <div className="size-10 flex items-center justify-center rounded bg-surface-canvas border border-border-muted text-text-strong leading-5">
                                 {initials}
                             </div>
                             <div className="flex flex-col gap-1 items-start">
-                                <span className="text-body-medium-semi leading-4 text-text-primary truncate max-w-28 ">{user?.name}</span>
+                                <span className="text-body-medium-semi leading-4 text-text-strong truncate max-w-28 ">{user?.name}</span>
                                 <span className="text-body-small-regular leading-3 text-text-secondary pb-px truncate max-w-28">{user?.email}</span>
                             </div>
                         </div>
-                        <ChevronsUpDown className="size-4.5 text-text-tertiary group-hover/profile:text-text-secondary group-active/profile:text-text-primary" />
+                        <ChevronsUpDown className="size-4.5 text-text-muted group-hover/profile:text-text-secondary group-active/profile:text-text-strong" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" alignOffset={0} side="right" sideOffset={0} className="w-50 p-2">
                         {items.map((item, index) => (
                             <DropdownMenuItem
                                 key={index}
                                 onSelect={() => navigate(item.href)}
-                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-state-hover hover:text-text-strong"
                             >
-                                <item.icon className="size-4 text-text-secondary group-hover:text-text-primary" />
+                                <item.icon className="size-4 text-text-secondary group-hover:text-text-strong" />
                                 <span>{item.label}</span>
                             </DropdownMenuItem>
                         ))}
@@ -93,9 +93,9 @@ export const ProfileDropdown: React.FC = () => {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onSelect={toggleDevPanel}
-                                    className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                    className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-state-hover hover:text-text-strong"
                                 >
-                                    <SlidersHorizontal className="size-4 text-text-secondary group-hover:text-text-primary" />
+                                    <SlidersHorizontal className="size-4 text-text-secondary group-hover:text-text-strong" />
                                     <span>Dev Tools</span>
                                 </DropdownMenuItem>
                             </>
@@ -103,9 +103,9 @@ export const ProfileDropdown: React.FC = () => {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onSelect={() => signout()}
-                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
+                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-state-hover hover:text-text-strong"
                         >
-                            <LogOut className="size-4 text-text-secondary group-hover:text-text-primary" />
+                            <LogOut className="size-4 text-text-secondary group-hover:text-text-strong" />
                             <span>Log Out</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

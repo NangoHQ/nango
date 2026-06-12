@@ -13,7 +13,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({ children, side = 'top'
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <div className="[&>svg]:size-4 [&>svg]:text-text-tertiary">{icon}</div>
+                <div className="[&>svg]:size-4 [&>svg]:text-text-muted">{icon}</div>
             </TooltipTrigger>
             <TooltipContent side={side} align={align}>
                 {children}

@@ -39,9 +39,9 @@ export const ImpersonateForm: React.FC = () => {
     };
 
     return (
-        <div className="w-100 flex flex-col gap-3 p-6 border border-border-gray rounded-md relative">
-            <h3 className="text-heading-sm text-text-primary absolute top-[-12px] left-3 bg-bg-surface px-1">Nango admin</h3>
-            <h3 className="text-heading-sm text-text-primary">Impersonate account</h3>
+        <div className="w-100 flex flex-col gap-3 p-6 border border-border-default rounded-md relative">
+            <h3 className="text-heading-sm text-text-strong absolute top-[-12px] left-3 bg-surface-canvas px-1">Nango admin</h3>
+            <h3 className="text-heading-sm text-text-strong">Impersonate account</h3>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
                     <div className="flex flex-col gap-2">
@@ -84,7 +84,7 @@ export const ImpersonateForm: React.FC = () => {
                     <Button variant="destructive" className="self-end">
                         Impersonate
                     </Button>
-                    {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-red-600">{form.formState.errors.root.message}</p>}
+                    {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
                 </form>
             </Form>
         </div>

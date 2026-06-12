@@ -27,7 +27,7 @@ export function useSignout() {
     const { mutateAsync: logoutAPI } = useLogoutAPI();
 
     return async () => {
-        storage.clear();
+        storage.clearSession();
         analyticsReset();
         await logoutAPI(); // Destroy server session.
 

@@ -53,6 +53,7 @@ export interface BaseProvider {
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;
+        body?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         forward_headers_on_redirect?: boolean;

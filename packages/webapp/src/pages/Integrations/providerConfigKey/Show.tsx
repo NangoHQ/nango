@@ -75,7 +75,7 @@ export const ShowIntegration: React.FC = () => {
                 <div className="inline-flex justify-between">
                     <div className="inline-flex items-center gap-2">
                         <IntegrationLogo provider={integration.integration.provider} className="size-15" />
-                        <span className="text-text-primary text-body-large-semi">
+                        <span className="text-text-strong text-body-large-semi">
                             {integration.integration.display_name ?? integration.template.display_name}
                         </span>
                     </div>

@@ -130,6 +130,14 @@ export const ENVS = z.object({
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
+    // Tasks (generic server-side task queue, see @nangohq/tasks). Runs in an isolated schema on the main Nango DB.
+    TASKS_DATABASE_SCHEMA: z
+        .string()
+        .regex(/^[a-z_][a-z0-9_]*$/i, 'TASKS_DATABASE_SCHEMA must be a valid Postgres identifier ([A-Za-z_][A-Za-z0-9_]*)')
+        .optional()
+        .default('nango_tasks'),
+    TASKS_DB_POOL_MAX: z.coerce.number().optional().default(10),
+
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
@@ -394,6 +402,9 @@ export const ENVS = z.object({
             error: 'To learn more about NANGO_ENCRYPTION_KEY, reach out to support.'
         })
         .optional(),
+    // KMS-wrapped alternative to NANGO_ENCRYPTION_KEY (mutually exclusive, enforced at DEK load).
+    NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
+    NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
@@ -630,6 +641,14 @@ export const ENVS = z.object({
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
     E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+
+    // Feature Flags
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_UNLEASH_URL: z.url().optional(),
+    NANGO_UNLEASH_API_TOKEN: z.string().optional(),
+    NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
+    NANGO_UNLEASH_REFRESH_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    NANGO_UNLEASH_INIT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

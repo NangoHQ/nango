@@ -9,6 +9,9 @@
             "path": "../database"
         },
         {
+            "path": "../kms"
+        },
+        {
             "path": "../kvstore"
         },
         {
@@ -18,15 +21,6 @@
             "path": "../nango-yaml"
         },
         {
-            "path": "../types"
-        },
-        {
-            "path": "../utils"
-        },
-        {
-            "path": "../records"
-        },
-        {
             "path": "../orchestrator"
         },
         {
@@ -34,6 +28,15 @@
         },
         {
             "path": "../pubsub"
+        },
+        {
+            "path": "../records"
+        },
+        {
+            "path": "../types"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

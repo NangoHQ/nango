@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { Badge } from './Badge.js';
 import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
+import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
@@ -40,6 +41,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     constrainHeight = true,
     ...props
 }) => {
+    const darkMode = useThemeStore(darkModeSelector);
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);
@@ -61,8 +63,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 
     return (
         <div {...props} className={cn('border border-border-muted rounded', props.className)}>
-            <header className="flex justify-between items-center py-1.5 px-3 bg-bg-subtle rounded-t">
-                <span className="text-text-tertiary text-s">{title}</span>
+            <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
+                <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {displayLanguage && (
                         <Badge variant="gray" className="uppercase">
@@ -79,7 +81,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                                 </>
                             ) : (
                                 <>
-                                    <Play className="size-4 text-brand-500" />
+                                    <Play className="size-4 text-text-brand" />
                                     Run
                                 </>
                             )}
@@ -99,7 +101,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     <Prism
                         className="w-full min-w-0"
                         language={language}
-                        colorScheme="dark"
+                        colorScheme={darkMode ? 'dark' : 'light'}
                         noCopy={true}
                         styles={{ code: { fontSize: '12px' } }}
                         highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
