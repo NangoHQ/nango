@@ -33,6 +33,11 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS).toBe(5_000);
     });
 
+    it('should parse the sandbox provider', () => {
+        const res = parseEnvs(ENVS, { SANDBOX_PROVIDER: 'agentcore' });
+        expect(res.SANDBOX_PROVIDER).toBe('agentcore');
+    });
+
     it('should coerce boolean and number', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });

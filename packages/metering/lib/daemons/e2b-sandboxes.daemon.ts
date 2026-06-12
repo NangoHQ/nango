@@ -1,4 +1,4 @@
-import { getRunningSandboxCount } from '@nangohq/sandbox';
+import { getRunningE2BSandboxCount } from '@nangohq/sandbox';
 import { cancellableDaemon, getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -11,7 +11,7 @@ interface E2BSandboxMetricOptions {
 }
 
 export async function reportE2BRunningSandboxCount({ apiKey, requestTimeoutMs }: E2BSandboxMetricOptions): Promise<number> {
-    const runningSandboxes = await getRunningSandboxCount({ apiKey, requestTimeoutMs });
+    const runningSandboxes = await getRunningE2BSandboxCount({ apiKey, requestTimeoutMs });
     metrics.gauge(metrics.Types.E2B_RUNNING_SANDBOXES, runningSandboxes);
     return runningSandboxes;
 }

@@ -22,7 +22,7 @@ import {
     markFunctionDryrunSuccess,
     timeoutFunctionAsyncJobs
 } from './async-jobs.service.js';
-import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs } from './runtime.js';
+import { deploySandboxTimeoutMs, dryrunSandboxTimeoutMs } from './timeouts.js';
 
 import type {
     DBFunctionAsyncJob,
@@ -178,7 +178,7 @@ describe('function async jobs service', () => {
             const environmentId = await seedEnvironmentId();
             const dryrun = await insertDryrunJob(environmentId);
             const startedAt = new Date();
-            const executionTimeoutAt = new Date(startedAt.getTime() + remoteFunctionDryrunSandboxTimeoutMs);
+            const executionTimeoutAt = new Date(startedAt.getTime() + dryrunSandboxTimeoutMs);
 
             const row = await markFunctionDryrunRunning({
                 environmentId,
@@ -204,7 +204,7 @@ describe('function async jobs service', () => {
             const environmentId = await seedEnvironmentId();
             const deployment = await insertDeploymentJob(environmentId);
             const startedAt = new Date();
-            const executionTimeoutAt = new Date(startedAt.getTime() + remoteFunctionDeploySandboxTimeoutMs);
+            const executionTimeoutAt = new Date(startedAt.getTime() + deploySandboxTimeoutMs);
 
             const row = await markFunctionDeploymentRunning({
                 environmentId,
@@ -373,12 +373,12 @@ describe('function async jobs service', () => {
             const oldDryrun = await insertDryrunJob(environmentId, {
                 request: { ...dryrunRequest, function_name: 'old-function' },
                 status: 'waiting',
-                created_at: new Date(Date.now() - remoteFunctionDryrunSandboxTimeoutMs - 60_000)
+                created_at: new Date(Date.now() - dryrunSandboxTimeoutMs - 60_000)
             });
             const recentDryrun = await insertDryrunJob(environmentId, {
                 request: { ...dryrunRequest, function_name: 'recent-function' },
                 status: 'waiting',
-                created_at: new Date(Date.now() - remoteFunctionDryrunSandboxTimeoutMs + 60_000)
+                created_at: new Date(Date.now() - dryrunSandboxTimeoutMs + 60_000)
             });
 
             await timeoutFunctionAsyncJobs();
@@ -398,12 +398,12 @@ describe('function async jobs service', () => {
             const oldDeployment = await insertDeploymentJob(environmentId, {
                 request: { ...deploymentRequest, function_name: 'old-function' },
                 status: 'waiting',
-                created_at: new Date(Date.now() - remoteFunctionDeploySandboxTimeoutMs - 60_000)
+                created_at: new Date(Date.now() - deploySandboxTimeoutMs - 60_000)
             });
             const recentDeployment = await insertDeploymentJob(environmentId, {
                 request: { ...deploymentRequest, function_name: 'recent-function' },
                 status: 'waiting',
-                created_at: new Date(Date.now() - remoteFunctionDeploySandboxTimeoutMs + 60_000)
+                created_at: new Date(Date.now() - deploySandboxTimeoutMs + 60_000)
             });
 
             await timeoutFunctionAsyncJobs();
