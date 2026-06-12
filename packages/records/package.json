@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@fastify/deepmerge": "2.0.1",
+        "@nangohq/kms": "file:../kms",
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "dayjs": "1.11.19",

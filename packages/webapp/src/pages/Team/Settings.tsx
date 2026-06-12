@@ -24,7 +24,7 @@ export const TeamSettingsPage: React.FC = () => {
                     <title>Team Settings - Nango</title>
                 </Helmet>
                 <div className="flex items-center justify-between">
-                    <h2 className="text-heading-large text-text-primary">Team settings</h2>
+                    <h2 className="text-heading-large text-text-strong">Team settings</h2>
                 </div>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
@@ -46,7 +46,7 @@ export const TeamSettingsPage: React.FC = () => {
                 <title>Team Settings - Nango</title>
             </Helmet>
             <div className="flex items-center justify-between">
-                <h2 className="text-heading-large text-text-primary">Team settings</h2>
+                <h2 className="text-heading-large text-text-strong">Team settings</h2>
                 <AddTeamMemberButton />
             </div>
 

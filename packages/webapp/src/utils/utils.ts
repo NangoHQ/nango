@@ -8,8 +8,31 @@ import type { ClassValue } from 'clsx';
 const customTwMerge = extendTailwindMerge({
     extend: {
         classGroups: {
-            // Limitation: it's a custom size. Without this it would get confused with a text-color
-            'font-size': ['text-s']
+            // Custom typography utilities — without these, tailwind-merge treats them as
+            // text-color utilities and silently drops real color classes that appear earlier
+            // in the same class string (e.g. text-status-success-text gets dropped by text-body-small-regular).
+            'font-size': [
+                'text-s',
+                { 'text-title': ['screen', 'section', 'subsection', 'group', 'body'] },
+                { 'text-label': ['large'] },
+                { 'text-heading': ['large', 'medium', 'sm'] },
+                {
+                    'text-body': [
+                        'large-regular',
+                        'large-semi',
+                        'medium-regular',
+                        'medium-medium',
+                        'medium-semi',
+                        'small-light',
+                        'small-regular',
+                        'small-medium',
+                        'small-semi',
+                        'extra-small',
+                        'extra-small-semi'
+                    ]
+                },
+                { 'text-code': ['body-small-regular', 'body-small-medium'] }
+            ]
         }
     }
 });

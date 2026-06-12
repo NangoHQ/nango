@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark bg-bg-elevated" data-theme="dark">
+<html lang="en">
     <head>
         <meta charset="utf-8" />
         <link rel="icon" href="/favicon.ico" />
@@ -9,11 +9,29 @@
         <link rel="manifest" href="/manifest.json" />
         <title>Nango</title>
 
+        <!-- Apply saved theme before first paint to avoid flash -->
+        <script>
+            (function () {
+                var dark;
+                try {
+                    var s = localStorage.getItem('nango_theme');
+                    var parsed = s ? JSON.parse(s) : null;
+                    var state = parsed && parsed.state;
+                    // Support new `theme` field and old boolean `darkMode`; default to dark to match the app default
+                    var theme = state && state.theme ? state.theme : (state && state.darkMode === false ? 'light' : 'dark');
+                    dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
+                } catch (e) {
+                    dark = true;
+                }
+                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            })();
+        </script>
+
         <meta name="nango-api-origin" content="" />
         <meta name="nango-env-hash" content="%VITE_HASH%" />
     </head>
 
-    <body class="bg-nav-gradient">
+    <body class="bg-white dark:bg-surface-canvas">
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <script type="module" src="/src/index.tsx"></script>

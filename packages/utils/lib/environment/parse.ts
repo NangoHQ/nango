@@ -402,6 +402,9 @@ export const ENVS = z.object({
             error: 'To learn more about NANGO_ENCRYPTION_KEY, reach out to support.'
         })
         .optional(),
+    // KMS-wrapped alternative to NANGO_ENCRYPTION_KEY (mutually exclusive, enforced at DEK load).
+    NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
+    NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),

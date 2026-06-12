@@ -18,7 +18,7 @@ function entry({ value, total, isRest }: { value?: string; total: number; isRest
 }
 
 describe('toChartSeries', () => {
-    // colorForValue keeps a module-level value→color map; reset it so color assertions aren't order-dependent.
+    // Color assignment keeps a per-dimension module-level map; reset it so color assertions aren't order-dependent.
     beforeEach(() => resetUsageChartColorsForTests());
 
     it('ranks named series by total descending and keys them s0, s1, …', () => {

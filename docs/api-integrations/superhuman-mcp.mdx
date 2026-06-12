@@ -54,7 +54,7 @@ Connect to the Superhuman MCP server with Nango and call MCP tools in minutes. S
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/proxy/mcp',
+            endpoint: '/mcp',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
             data: {
