@@ -57,24 +57,17 @@ async function resolveDek(envs: DekEnvs): Promise<string> {
         return cached;
     }
 
-    // TEMPORARY (KMS rollout validation): the plaintext key stays the source of truth.
-    // When the wrapped key is also set, unwrap it in shadow mode and log whether it matches.
-    // Unwrap failures are logged, not fatal.
-    if (wrapped) {
-        try {
-            if (!kmsKeyArn) {
-                throw new Error('NANGO_KMS_KEY_ARN is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
-            }
-            const unwrapped = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
-            logger.info(`Wrapped encryption key validation: match=${unwrapped === (plaintext ?? '')}`);
-        } catch (err) {
-            logger.error('Unwrapping data encryption key failed', err);
-        }
-    }
-
-    // No plaintext key set: encryption disabled
+    // Wrapped key is the source of truth (unwrap it via KMS).
+    // Fallback to the plaintext key (dev/self hosted) or '' (encryption disabled) when neither is set.
+    // Unwrap failures are fatal: we must not silently start up with the wrong key.
     let dek = '';
-    if (plaintext) {
+    if (wrapped) {
+        if (!kmsKeyArn) {
+            throw new Error('NANGO_KMS_KEY_ARN is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
+        }
+        dek = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
+        logger.info('Loaded encryption key (source=wrapped)');
+    } else if (plaintext) {
         assertDekLength(Buffer.from(plaintext, 'base64'));
         logger.info('Loaded encryption key (source=plaintext)');
         dek = plaintext;
