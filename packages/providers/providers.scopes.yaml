@@ -11024,6 +11024,14 @@ todoist:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 trafft: []
 
+# source: https://apidocs.travel-code.com/ (OAuth 2.0 scopes)
+travel-code:
+    - airlines:read
+    - airports:read
+    - flights:search
+    - flights:stats
+    - flights:status
+
 # source: https://developers.tremendous.com/docs/oauth-20
 tremendous:
     - default

@@ -20459,6 +20459,30 @@ trafft:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+travel-code:
+    display_name: Travel Code
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://travel-code.com/oauth/authorize
+    token_url: https://travel-code.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.travel-code.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/user/me
+    docs: https://nango.dev/docs/api-integrations/travel-code
+    setup_guide_url: https://nango.dev/docs/api-integrations/travel-code/how-to-register-your-own-travel-code-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/travel-code/connect
+
 tremendous:
     display_name: Tremendous
     categories:
