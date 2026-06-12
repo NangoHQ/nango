@@ -20080,7 +20080,7 @@ tempo:
             description: The subdomain of your Jira Cloud instance.
             example: acme
             pattern: '^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'
-            doc_section: '#step-1-finding-your-jira-subdomain'
+            doc_section: '#step-1-find-your-jira-cloud-subdomain'
             order: 2
         subdomain:
             type: string
@@ -20090,7 +20090,7 @@ tempo:
                 - api
                 - api.eu
                 - api.us
-            doc_section: '#step-2-choosing-your-api-region'
+            doc_section: '#step-2-find-your-api-subdomain'
             order: 1
 
 the-swarm:
@@ -20423,6 +20423,18 @@ trafft:
             prefix: https://
             suffix: .admin.trafft.com
             doc_section: '#step-1-access-api-settings'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Trafft OAuth2 Client ID.
+            doc_section: '#step-2-get-your-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Trafft OAuth2 Client Secret.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
 
 tremendous:
     display_name: Tremendous
