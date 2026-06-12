@@ -218,6 +218,53 @@ export const connectionCreationFailed = async (
     }
 };
 
+export const reconnectionFailed = async (
+    failedConnectionPayload: RecentlyFailedConnection,
+    account: DBTeam,
+    logCtx: LogContext,
+    providerConfig?: IntegrationConfig
+): Promise<void> => {
+    const { connection, environment, auth_mode, error } = failedConnectionPayload;
+
+    if ('id' in connection) {
+        try {
+            await errorNotificationService.auth.create({
+                type: 'auth',
+                action: 'connection_test',
+                connection_id: connection.id,
+                log_id: logCtx.id,
+                active: true
+            });
+        } catch (err) {
+            report(new Error('reconnection_failed_hook_failed', { cause: err }), { id: connection.id });
+        }
+    }
+
+    if (error) {
+        const webhookSettings = await externalWebhookService.get(environment.id);
+
+        if (webhookSettings) {
+            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            if (webhookSigningKey.isErr()) {
+                throw webhookSigningKey.error;
+            }
+
+            void sendAuthWebhook({
+                connection,
+                environment,
+                secret: webhookSigningKey.value,
+                webhookSettings,
+                auth_mode,
+                success: false,
+                error,
+                operation: 'override',
+                providerConfig,
+                account
+            });
+        }
+    }
+};
+
 export const connectionRefreshSuccess = async ({
     connection,
     config

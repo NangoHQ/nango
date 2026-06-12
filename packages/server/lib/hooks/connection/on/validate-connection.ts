@@ -1,12 +1,13 @@
-import { onEventScriptService } from '@nangohq/shared';
+import { connectionService, onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { reconnectionFailed } from '../../hooks.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config, NangoError } from '@nangohq/shared';
-import type { DBConnection, DBTeam } from '@nangohq/types';
+import type { AuthOperationType, DBConnection, DBEnvironment, DBTeam, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function validateConnection({
@@ -58,4 +59,58 @@ export async function validateConnection({
     }
 
     return Ok({ tested: true });
+}
+
+export function getValidateConnectionFailureMessage(error: NangoError): string {
+    const payload = error.payload;
+    if (typeof payload?.['message'] === 'string') {
+        return payload['message'];
+    }
+    if (typeof payload?.['error'] === 'string') {
+        return payload['error'];
+    }
+    return 'Connection failed validation';
+}
+
+export async function handleValidateConnectionFailure({
+    operation,
+    connection,
+    config,
+    account,
+    environment,
+    provider,
+    error,
+    logCtx
+}: {
+    operation: AuthOperationType;
+    connection: DBConnection;
+    config: Config;
+    account: DBTeam;
+    environment: DBEnvironment;
+    provider: Provider;
+    error: NangoError;
+    logCtx: LogContext;
+}): Promise<string> {
+    const message = getValidateConnectionFailureMessage(error);
+
+    if (operation === 'creation') {
+        await connectionService.hardDelete(connection.id);
+    } else if (operation === 'override') {
+        await connectionService.markConnectionAuthFailed({ id: connection.id });
+        await reconnectionFailed(
+            {
+                connection,
+                environment,
+                account,
+                auth_mode: provider.auth_mode,
+                error: { type: 'connection_validation_failed', description: message },
+                operation: 'override'
+            },
+            account,
+            logCtx,
+            config
+        );
+    }
+
+    return message;
 }
