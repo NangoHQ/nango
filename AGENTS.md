@@ -9,6 +9,7 @@ Run `npm run ts-build` before autofixing lint errors using npm run lint:fix. Fre
 
 - `npm run lint` / `npm run lint:fix` — full ESLint with type-aware rules (requires `ts-build` artifacts, ~74s).
 - `npm run lint:fast` / `npm run lint:fast:fix` — ESLint with type-aware rules disabled; includes Prettier and needs no `ts-build` (~20s for the repo vs ~74s; a single file ~0.5s vs ~3–5s). Use after refactors to fix import ordering and formatting fast. CI still runs the full type-aware `npm run lint`, so type-aware rules stay enforced.
+- The **pre-commit hook** lints staged files with this fast config (via `lint-staged`), so commits don't build a TypeScript program — fast, and no `ts-build` needed. Type-aware errors are caught by CI, not at commit time.
 
 ## Running Nango locally
 

@@ -5,6 +5,7 @@ import baseConfig from './eslint.config.mjs';
 // The full ESLint config with type-aware rules disabled — for fast local linting.
 //   npm run lint:fast        - check (includes prettier)
 //   npm run lint:fast:fix    - autofix imports, formatting, and type-import style
+//   pre-commit (lint-staged) - lints staged files with this config so commits stay fast
 //
 // Type-aware rules require building a TypeScript program per tsconfig, which
 // dominates runtime (full `npm run lint` ~74s, and a single webapp file ~3-5s).

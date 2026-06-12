@@ -90,7 +90,7 @@
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,cjs}": [
-            "eslint --fix --quiet"
+            "eslint --fix --quiet --config eslint.fast.config.mjs"
         ],
         "*.{html,css,json,yaml}": [
             "prettier --write"
