@@ -22,9 +22,15 @@ type KvBoundary = RedisBoundary;
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
 const mapRedis = new Map<string, RedisClientType>();
+
+function redisClientCacheKey(url: string, boundary: RedisBoundary): string {
+    return `${boundary}:${url}`;
+}
+
 export async function getRedis(url: string, boundary: RedisBoundary = 'system'): Promise<RedisClientType> {
-    if (mapRedis.has(url)) {
-        return mapRedis.get(url)!;
+    const cacheKey = redisClientCacheKey(url, boundary);
+    if (mapRedis.has(cacheKey)) {
+        return mapRedis.get(cacheKey)!;
     }
     const redis = createClient(getRedisClientOptions(url, boundary));
     redis.on('error', (err: Error) => {
@@ -33,7 +39,7 @@ export async function getRedis(url: string, boundary: RedisBoundary = 'system'):
     });
 
     await redis.connect();
-    mapRedis.set(url, redis as RedisClientType);
+    mapRedis.set(cacheKey, redis as RedisClientType);
     return redis as RedisClientType;
 }
 
