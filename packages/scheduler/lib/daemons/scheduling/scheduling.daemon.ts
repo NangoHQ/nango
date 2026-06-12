@@ -18,6 +18,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
     private readonly onScheduling: (task: Task) => void;
     private readonly onEvent: (event: SchedulerEvent) => void;
     private readonly groupTaskCap: number;
+    private readonly batchSize: number;
     private readonly recurringGroupMaxConcurrency: number;
 
     constructor({
@@ -25,6 +26,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
         abortSignal,
         tickIntervalMs,
         groupTaskCap,
+        batchSize,
         recurringGroupMaxConcurrency,
         onScheduling,
         onEvent,
@@ -35,6 +37,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
         abortSignal: AbortSignal;
         tickIntervalMs: number;
         groupTaskCap: number;
+        batchSize: number;
         recurringGroupMaxConcurrency: number;
         onScheduling: (task: Task) => void;
         onEvent: (event: SchedulerEvent) => void;
@@ -52,6 +55,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
         this.onScheduling = onScheduling;
         this.onEvent = onEvent;
         this.groupTaskCap = groupTaskCap;
+        this.batchSize = batchSize;
         this.recurringGroupMaxConcurrency = recurringGroupMaxConcurrency;
     }
 
@@ -68,7 +72,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                 if (lockGranted) {
                     await tracer.trace('scheduler.scheduling.schedule_tasks', async () => {
                         const getDueSchedules = await tracer.trace('scheduler.scheduling.due_schedules', async () => {
-                            return dueSchedules(trx);
+                            return dueSchedules(trx, { batchSize: this.batchSize });
                         });
 
                         if (getDueSchedules.isErr()) {
