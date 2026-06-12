@@ -79,6 +79,7 @@ export interface AdminAxiosProps {
 export class Nango {
     serverUrl: string;
     secretKey: string;
+    webhookSigningKey?: string | undefined;
     connectionId?: string;
     providerConfigKey?: string;
     isSync = false;
@@ -107,6 +108,7 @@ export class Nango {
         }
 
         this.secretKey = config.secretKey;
+        this.webhookSigningKey = config.webhookSigningKey;
         this.connectionId = config.connectionId || '';
         this.providerConfigKey = config.providerConfigKey || '';
 
@@ -1265,10 +1267,11 @@ export class Nango {
     }
 
     private _verifyWebhookSignatureImpl(signatureInHeader: string, jsonPayload: unknown): boolean {
+        const signingKey = this.webhookSigningKey ?? this.secretKey;
         return (
             crypto
                 .createHash('sha256')
-                .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
+                .update(`${signingKey}${JSON.stringify(jsonPayload)}`)
                 .digest('hex') === signatureInHeader
         );
     }
@@ -1276,6 +1279,11 @@ export class Nango {
     /**
      *
      * Verify incoming webhooks request
+     *
+     * Uses `webhookSigningKey` when provided, otherwise falls back to `secretKey`. On environments
+     * created after 2026-04-20 (or any environment that later rotated its API key), the signing key
+     * differs from the API key, so construct the client with `webhookSigningKey` to verify webhooks
+     * without a second client.
      *
      * @param body - The raw HTTP body as a string
      * @param headers - The HTTP headers including X-Nango-Hmac-Sha256
@@ -1287,7 +1295,8 @@ export class Nango {
             return false;
         }
 
-        const expectedSignature = crypto.createHmac('sha256', this.secretKey).update(body).digest('hex');
+        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        const expectedSignature = crypto.createHmac('sha256', signingKey).update(body).digest('hex');
         const actualSignature = headers[signatureInHeader];
 
         if (typeof actualSignature !== 'string') {

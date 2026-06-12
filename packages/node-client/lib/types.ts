@@ -102,6 +102,14 @@ export type { NangoSyncConfig, StandardNangoConfig, SyncResult };
 export interface NangoProps {
     host?: string;
     secretKey: string;
+    /**
+     * The environment's webhook signing key (Environment Settings → Webhooks → Signing key).
+     * Used by `verifyIncomingWebhookRequest` to validate incoming webhook signatures.
+     * Defaults to `secretKey` when omitted. On environments created after 2026-04-20 (or any
+     * environment that later rotated its API key), the signing key differs from the API key,
+     * so set this explicitly to verify webhooks.
+     */
+    webhookSigningKey?: string;
     connectionId?: string;
     providerConfigKey?: string;
     isSync?: boolean;

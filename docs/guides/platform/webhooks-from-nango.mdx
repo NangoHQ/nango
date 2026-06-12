@@ -41,14 +41,18 @@ Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verifi
 The webhook signature can be verified with the following code:
 
 <Warning>
-Initialize the client (or HMAC) with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. Using the API secret key will cause verification to fail on any environment where the keys differ.
+Verify the signature with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. With the Node SDK, pass it as `webhookSigningKey`; for raw HMAC verification, use it as the HMAC secret. Using the API secret key will cause verification to fail on any environment where the keys differ.
 </Warning>
 
 <Tabs>
   <Tab title="Node SDK">
+    Pass the webhook signing key as `webhookSigningKey` so a single client can make API calls with the API key and verify webhooks with the signing key. `webhookSigningKey` falls back to `secretKey` when omitted.
+
     ```typescript
-    // Initialize with the webhook signing key, not the API secret key
-    const nango = new Nango({ secretKey: process.env.NANGO_WEBHOOK_SIGNING_KEY });
+    const nango = new Nango({
+        secretKey: process.env.NANGO_API_KEY, // used for API calls
+        webhookSigningKey: process.env.NANGO_WEBHOOK_SIGNING_KEY // used to verify webhooks
+    });
 
     async (req, res) => {
         const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);

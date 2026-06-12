@@ -254,3 +254,38 @@ describe('verifyIncomingWebhookRequest', () => {
         expect(nango.verifyIncomingWebhookRequest(bodyString, headersLowerCase)).toBe(true);
     });
 });
+
+describe('verifyIncomingWebhookRequest with a separate webhook signing key', () => {
+    const secretKey = 'test-secret-key';
+    const webhookSigningKey = 'test-webhook-signing-key';
+
+    const body = {
+        type: 'sync',
+        connectionId: 'test-connection',
+        providerConfigKey: 'test-provider',
+        syncName: 'test-sync',
+        model: 'TestModel',
+        responseResults: { added: 5, updated: 0, deleted: 0 }
+    };
+    const bodyString = JSON.stringify(body);
+    const signatureFromSigningKey = crypto.createHmac('sha256', webhookSigningKey).update(bodyString).digest('hex');
+    const signatureFromSecretKey = crypto.createHmac('sha256', secretKey).update(bodyString).digest('hex');
+
+    it('should verify webhooks signed with the webhook signing key', () => {
+        const nango = new Nango({ secretKey, webhookSigningKey });
+
+        expect(nango.verifyIncomingWebhookRequest(bodyString, { 'x-nango-hmac-sha256': signatureFromSigningKey })).toBe(true);
+    });
+
+    it('should reject webhooks signed with the secret key when a webhook signing key is set', () => {
+        const nango = new Nango({ secretKey, webhookSigningKey });
+
+        expect(nango.verifyIncomingWebhookRequest(bodyString, { 'x-nango-hmac-sha256': signatureFromSecretKey })).toBe(false);
+    });
+
+    it('should fall back to the secret key when no webhook signing key is set', () => {
+        const nango = new Nango({ secretKey });
+
+        expect(nango.verifyIncomingWebhookRequest(bodyString, { 'x-nango-hmac-sha256': signatureFromSecretKey })).toBe(true);
+    });
+});
