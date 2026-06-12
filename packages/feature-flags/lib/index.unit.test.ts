@@ -29,7 +29,8 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 const { unleashMockState, unleashInstances } = vi.hoisted(() => ({
     unleashMockState: {
         readyEvent: 'ready' as 'ready' | 'synchronized' | 'never',
-        readyDelayMs: 0
+        readyDelayMs: 0,
+        failNextInit: 0
     },
     unleashInstances: [] as { destroy: ReturnType<typeof vi.fn>; isEnabled: ReturnType<typeof vi.fn> }[]
 }));
@@ -37,6 +38,10 @@ const { unleashMockState, unleashInstances } = vi.hoisted(() => ({
 vi.mock('unleash-client', () => {
     return {
         initialize: vi.fn(() => {
+            if (unleashMockState.failNextInit > 0) {
+                unleashMockState.failNextInit -= 1;
+                throw new Error('init failed');
+            }
             const listeners = new Map<string, Set<(err?: Error) => void>>();
             const instance = {
                 isSynchronized: vi.fn(() => false),
@@ -72,22 +77,24 @@ vi.mock('unleash-client', () => {
 });
 
 describe('getFeatureFlagsClient', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         vi.useRealTimers();
         vi.clearAllMocks();
         mockEnvs.NANGO_FLAG_PROVIDER = 'noop';
         mockEnvs.NANGO_UNLEASH_URL = undefined;
         mockEnvs.NANGO_UNLEASH_API_TOKEN = undefined;
+        mockEnvs.NANGO_UNLEASH_REFRESH_INTERVAL_MS = 30_000;
         mockEnvs.NANGO_UNLEASH_INIT_TIMEOUT_MS = 100;
         unleashMockState.readyEvent = 'ready';
         unleashMockState.readyDelayMs = 0;
+        unleashMockState.failNextInit = 0;
         unleashInstances.length = 0;
-        vi.resetModules();
-        const { destroy } = await import('./index.js');
-        await destroy();
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        const { destroy } = await import('./index.js');
+        await destroy();
+        vi.resetModules();
         vi.restoreAllMocks();
         vi.useRealTimers();
     });
@@ -181,6 +188,53 @@ describe('getFeatureFlagsClient', () => {
         expect(unleashInstances[0]?.destroy).toHaveBeenCalledTimes(1);
         // After destroy, isEnabled should still resolve (now backed by NOOP -> default).
         await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(false);
+    });
+
+    it('retries client creation after a failed initialization', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { getFeatureFlagsClient } = await import('./index.js');
+        await expect(getFeatureFlagsClient()).rejects.toThrow('init failed');
+        const client = await getFeatureFlagsClient();
+        await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(false);
+    });
+
+    it('reconnects to unleash in the background after a failed initialization', async () => {
+        vi.useFakeTimers();
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        mockEnvs.NANGO_UNLEASH_REFRESH_INTERVAL_MS = 1000;
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { getFeatureFlagsClient } = await import('./index.js');
+        await expect(getFeatureFlagsClient()).rejects.toThrow('init failed');
+        expect(unleashInstances.length).toBe(0);
+
+        await vi.advanceTimersByTimeAsync(1000);
+        await Promise.resolve();
+
+        expect(unleashInstances.length).toBe(1);
+        vi.useRealTimers();
+    });
+
+    it('cancels a pending reconnect when destroy() is called after a failed initialization', async () => {
+        vi.useFakeTimers();
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        mockEnvs.NANGO_UNLEASH_REFRESH_INTERVAL_MS = 1000;
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { getFeatureFlagsClient, destroy } = await import('./index.js');
+        await expect(getFeatureFlagsClient()).rejects.toThrow('init failed');
+
+        await destroy();
+        await vi.advanceTimersByTimeAsync(1000);
+        await Promise.resolve();
+
+        expect(unleashInstances.length).toBe(0);
+        vi.useRealTimers();
     });
 
     it('rebuilds a fresh provider after destroy/recreate', async () => {

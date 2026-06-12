@@ -1,9 +1,13 @@
 import { OpenFeature } from '@openfeature/server-sdk';
 
+import { getLogger } from '@nangohq/utils';
+
 import { NoopProvider } from './providers/noop.js';
 
 import type { FlagContext } from './types.js';
 import type { Client, EvaluationContext, JsonValue, Provider } from '@openfeature/server-sdk';
+
+const logger = getLogger('FeatureFlags');
 
 export interface FeatureFlagsClient {
     isEnabled(key: string, context: FlagContext, defaultValue: boolean): Promise<boolean>;
@@ -23,6 +27,11 @@ function toEvaluationContext(context: FlagContext): EvaluationContext {
     return out;
 }
 
+function fallbackOnEvaluationError<T>(key: string, defaultValue: T, err: unknown): T {
+    logger.warning('Feature flag evaluation failed, using default', { key, err });
+    return defaultValue;
+}
+
 const FLAG_DOMAIN = 'nango-feature-flags';
 
 export function buildFeatureFlagsClient(provider: Provider): FeatureFlagsClient {
@@ -33,29 +42,29 @@ export function buildFeatureFlagsClient(provider: Provider): FeatureFlagsClient 
         async isEnabled(key, context, defaultValue) {
             try {
                 return await ofClient.getBooleanValue(key, defaultValue, toEvaluationContext(context));
-            } catch {
-                return defaultValue;
+            } catch (err) {
+                return fallbackOnEvaluationError(key, defaultValue, err);
             }
         },
         async getString(key, context, defaultValue) {
             try {
                 return await ofClient.getStringValue(key, defaultValue, toEvaluationContext(context));
-            } catch {
-                return defaultValue;
+            } catch (err) {
+                return fallbackOnEvaluationError(key, defaultValue, err);
             }
         },
         async getNumber(key, context, defaultValue) {
             try {
                 return await ofClient.getNumberValue(key, defaultValue, toEvaluationContext(context));
-            } catch {
-                return defaultValue;
+            } catch (err) {
+                return fallbackOnEvaluationError(key, defaultValue, err);
             }
         },
         async getObject(key, context, defaultValue) {
             try {
                 return (await ofClient.getObjectValue(key, defaultValue, toEvaluationContext(context))) as typeof defaultValue;
-            } catch {
-                return defaultValue;
+            } catch (err) {
+                return fallbackOnEvaluationError(key, defaultValue, err);
             }
         },
         async destroy() {

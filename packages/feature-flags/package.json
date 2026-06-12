@@ -17,7 +17,8 @@
         "@nangohq/utils": "file:../utils",
         "@openfeature/core": "1.9.1",
         "@openfeature/server-sdk": "1.18.0",
-        "unleash-client": "6.6.0"
+        "unleash-client": "6.6.0",
+        "http-cache-semantics": "4.2.0"
     },
     "devDependencies": {
         "rimraf": "6.1.3",

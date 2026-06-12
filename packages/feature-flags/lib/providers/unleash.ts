@@ -71,6 +71,7 @@ export class UnleashProvider implements Provider {
     private readonly whenReady: Promise<void>;
     private settleWhenReady: (() => void) | undefined;
     private hasToggleData = false;
+    private apiSynced = false;
 
     constructor(config: UnleashProviderConfig) {
         this.unleash = initialize({
@@ -83,6 +84,16 @@ export class UnleashProvider implements Provider {
 
         this.whenReady = this.waitForFirstContact(config.initTimeoutMs ?? DEFAULT_INIT_TIMEOUT_MS);
 
+        this.unleash.on('ready', () => {
+            this.hasToggleData = true;
+        });
+        this.unleash.on('synchronized', () => {
+            if (!this.apiSynced) {
+                logger.info('Unleash synchronized; flag evaluations now use remote toggles');
+                this.apiSynced = true;
+            }
+            this.hasToggleData = true;
+        });
         this.unleash.on('error', (err: Error) => {
             logger.error('Unleash error', err);
         });
@@ -140,17 +151,15 @@ export class UnleashProvider implements Provider {
         return Promise.resolve();
     }
 
-    private async evaluate<T>(defaultValue: T, evaluate: () => T): Promise<ResolutionDetails<T>> {
+    async resolveBooleanEvaluation(flagKey: string, defaultValue: boolean, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<boolean>> {
         await this.whenReady;
         try {
-            return { value: evaluate(), reason: 'TARGETING_MATCH' };
+            const value = this.unleash.isEnabled(flagKey, toUnleashContext(context), defaultValue);
+            const reason = this.unleash.isSynchronized() ? 'TARGETING_MATCH' : 'DEFAULT';
+            return { value, reason };
         } catch (err) {
             return this.evaluationError(defaultValue, err);
         }
-    }
-
-    async resolveBooleanEvaluation(flagKey: string, defaultValue: boolean, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<boolean>> {
-        return this.evaluate(defaultValue, () => this.unleash.isEnabled(flagKey, toUnleashContext(context), defaultValue));
     }
 
     // Non-boolean values are served as Unleash variant payloads (provisioned by the
