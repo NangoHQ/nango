@@ -106,7 +106,7 @@ export class OrchestratorProcessor {
         const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error });
         if (setFailed.isErr()) {
             logger.error(`failed to set task ${task.id} as failed`, setFailed.error);
-            span?.setTag('task.failed_report_error', setFailed.error.message);
+            span?.setTag('task.failed_report_error', setFailed.error.name);
         }
     }
 }
