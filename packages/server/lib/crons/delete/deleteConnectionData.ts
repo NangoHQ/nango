@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { connectionService } from '@nangohq/shared';
 
-import { deleteSyncData } from './deleteSyncData.js';
+import { deleteSyncs } from './deleteSyncs.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 import type { Sync } from '@nangohq/shared';
@@ -22,9 +22,10 @@ export async function deleteConnectionData(connection: DBConnection, opts: Batch
         .join('_nango_sync_configs', '_nango_sync_configs.id', '_nango_syncs.sync_config_id')
         .where({ nango_connection_id: connection.id });
 
-    for (const res of resSyncs) {
-        await deleteSyncData(res.sync, res.syncConfig, opts);
-    }
+    await deleteSyncs(
+        resSyncs.map((res) => ({ id: res.sync.id, nangoConnectionId: connection.id, environmentId: connection.environment_id, models: res.syncConfig.models })),
+        opts
+    );
 
     // Connect session and oauth sessions are deleted on expiration
 
