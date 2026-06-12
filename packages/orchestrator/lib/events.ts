@@ -1,15 +1,23 @@
 import EventEmitter from 'node:events';
-
 import { stringifyTask } from '@nangohq/scheduler';
 import { metrics, retryWithBackoff } from '@nangohq/utils';
-
 import { validateTask } from './clients/validate.js';
 import { envs } from './env.js';
 import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
-
 import type { Task } from '@nangohq/scheduler';
 import type knex from 'knex';
+
+function getSafeErrorMessage(output: any): string | null {
+    if (!output) return null;
+    if (typeof output === 'object' && !Array.isArray(output)) {
+        const safeMessage = output.message || output.error_message || output.error;
+        if (typeof safeMessage === 'string') {
+            return safeMessage.slice(0, 1000);
+        }
+    }
+    return 'Task execution failed';
+}
 
 class PgEventEmitter extends EventEmitter {
     private knex: knex.Knex;
@@ -25,7 +33,6 @@ class PgEventEmitter extends EventEmitter {
         }
     ) {
         super();
-
         this.knex = knex;
         this.channel = options.channel;
     }
@@ -33,7 +40,7 @@ class PgEventEmitter extends EventEmitter {
     async connect(): Promise<void> {
         try {
             if (this.connected) {
-                return; // Already connected, no need to reconnect
+                return;
             }
 
             this.client = await this.knex.client.acquireRawConnection();
@@ -50,13 +57,13 @@ class PgEventEmitter extends EventEmitter {
                 logger.error('PostgreSQL client error:', err);
                 this.connected = false;
                 super.emit('error', err);
-                this.reconnect();
+                void this.reconnect();
             });
 
             this.client.on('end', () => {
                 logger.info('PostgreSQL connection ended');
                 this.connected = false;
-                this.reconnect();
+                void this.reconnect();
             });
 
             super.emit('connected');
@@ -64,7 +71,7 @@ class PgEventEmitter extends EventEmitter {
         } catch (err) {
             logger.error('PostgreSQL connection error:', err);
             super.emit('error', err);
-            this.reconnect();
+            void this.reconnect();
         }
     }
 
@@ -101,7 +108,6 @@ class PgEventEmitter extends EventEmitter {
                     try {
                         await this.client.query(`UNLISTEN ${this.channel}`);
                     } catch (_err: unknown) {
-                        // Ignore errors during UNLISTEN
                     }
                 }
 
@@ -120,6 +126,7 @@ class PgEventEmitter extends EventEmitter {
             }
         }
     }
+
     override emit(event: string): boolean {
         if (!this.connected) {
             logger.warning(`Not connected to PostgreSQL, emitting event locally: ${String(event)}`);
@@ -150,7 +157,6 @@ class PgEventEmitter extends EventEmitter {
             throw new Error('Not connected to PostgreSQL');
         }
 
-        // Check payload size (PostgreSQL NOTIFY has ~8KB limit)
         const maxPayloadSize = 8_000;
         if (payload.length > maxPayloadSize) {
             const error = new Error(`Payload too large: ${payload.length} bytes (max: ${maxPayloadSize})`);
@@ -163,7 +169,7 @@ class PgEventEmitter extends EventEmitter {
         } catch (err: any) {
             if (err.code === 'ECONNRESET' || err.code === 'ENOTCONN') {
                 this.connected = false;
-                this.reconnect();
+                void this.reconnect();
             }
             throw err;
         }
@@ -173,8 +179,6 @@ class PgEventEmitter extends EventEmitter {
 export const taskEvents = {
     taskCreated: (prop: Task | string): string => {
         const groupKey = typeof prop === 'string' ? prop.replaceAll('*', '') : prop.groupKey;
-        // If the groupKey contains the separator, we only take the prefix part
-        // so that listeners can listen to a group of tasks
         const groupKeyPrefix = groupKey.split(GROUP_PREFIX_SEPARATOR)[0];
         return `task:created:${groupKeyPrefix}`;
     },
@@ -183,7 +187,6 @@ export const taskEvents = {
             return `task:completed:${prop}`;
         }
 
-        // Only action and onEvent tasks are being listened to for completion
         const res = validateTask(prop);
         if (res.isErr()) {
             return undefined;
@@ -210,7 +213,6 @@ export class TaskEventsHandler extends PgEventEmitter {
     private throttleEmit(event: string, delay: number): void {
         const timeoutId = this.debounced.get(event);
 
-        // If there's no existing timeout, emit the event and set a new timeout
         if (!timeoutId) {
             this.emit(event);
 
@@ -225,25 +227,23 @@ export class TaskEventsHandler extends PgEventEmitter {
 
     constructor(db: knex.Knex) {
         super(db, { channel: 'nango_task_events' });
+        this.db = db;
 
         this.onCallbacks = {
             CREATED: (task: Task) => {
                 logger.info(`Task created: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_CREATED);
-                // CREATED events are used for dequeuing tasks per groupKey
-                // so we emit them with the groupKey prefix
-                // and debounce them to avoid flooding the listeners
-                // with too many duplicate events
                 this.throttleEmit(taskEvents.taskCreated(task), envs.ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS);
             },
             STARTED: (task: Task) => {
                 logger.info(`Task started: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
-                // STARTED events are not listen to, so we don't emit them
+                this.recordExecutionEvent(task, 'STARTED');
             },
             SUCCEEDED: (task: Task) => {
                 logger.info(`Task succeeded: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
+                this.recordExecutionEvent(task, 'SUCCESS');
                 const event = taskEvents.taskCompleted(task);
                 if (event) {
                     this.emit(event);
@@ -252,6 +252,7 @@ export class TaskEventsHandler extends PgEventEmitter {
             FAILED: (task: Task) => {
                 logger.error(`Task failed: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
+                this.recordExecutionEvent(task, 'FAILURE');
                 const event = taskEvents.taskCompleted(task);
                 if (event) {
                     this.emit(event);
@@ -274,5 +275,63 @@ export class TaskEventsHandler extends PgEventEmitter {
                 }
             }
         };
+    }
+
+    private db: knex.Knex;
+
+    private recordExecutionEvent(task: Task, status: 'STARTED' | 'SUCCESS' | 'FAILURE'): void {
+        const validated = validateTask(task);
+        if (validated.isErr()) return;
+
+        const val = validated.value;
+        const type = val.isSync() ? 'SYNC' : val.isAction() ? 'ACTION' : null;
+        if (!type || !('connection' in val)) return;
+
+        const connection = val.connection;
+        if (!connection) return;
+
+        let duration_ms: number | undefined = undefined;
+        if (status === 'SUCCESS' || status === 'FAILURE') {
+            const start = task.createdAt;
+            const end = task.lastStateTransitionAt;
+            duration_ms = Math.max(0, end.getTime() - start.getTime());
+        }
+
+        let integration_id = connection.provider_config_key;
+        if (val.isSync()) {
+            integration_id = val.syncName;
+        } else if (val.isAction()) {
+            integration_id = val.actionName;
+        }
+
+        let error_message: string | null = null;
+        if (status === 'FAILURE') {
+            error_message = getSafeErrorMessage(task.output);
+        }
+
+        const event = {
+            environment_id: connection.environment_id,
+            integration_id: integration_id,
+            connection_id: connection.connection_id,
+            provider: connection.provider_config_key,
+            type,
+            status,
+            retries: task.retryCount,
+            duration_ms,
+            error_type: status === 'FAILURE' ? 'UNKNOWN' : null,
+            error_message
+        };
+
+        void retryWithBackoff(
+            () => this.db.from('execution_events').insert(event),
+            {
+                startingDelay: 100,
+                timeMultiple: 3,
+                numOfAttempts: 3
+            }
+        ).catch((err: unknown) => {
+            logger.error('Failed to insert execution event after retries:', err);
+            metrics.increment(metrics.Types.ORCH_EXECUTION_EVENTS_DROPPED);
+        });
     }
 }
