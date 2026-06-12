@@ -57,6 +57,11 @@ async function resolveDek(envs: DekEnvs): Promise<string> {
         return cached;
     }
 
+    // Wrapped and plaintext keys are mutually exclusive: fail fast rather than silently picking one.
+    if (wrapped && plaintext) {
+        throw new Error('NANGO_ENCRYPTION_KEY and NANGO_ENCRYPTION_KEY_WRAPPED are mutually exclusive: set only one');
+    }
+
     // Wrapped key is the source of truth (unwrap it via KMS).
     // Fallback to the plaintext key (dev/self hosted) or '' (encryption disabled) when neither is set.
     // Unwrap failures are fatal: we must not silently start up with the wrong key.
