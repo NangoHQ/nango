@@ -16134,7 +16134,8 @@ read-ai:
         grant_type: refresh_token
     proxy:
         base_url: https://api.read.ai
-    docs: https://support.read.ai/hc/en-us/articles/49381161088659-API-Reference
+    docs: https://nango.dev/docs/api-integrations/read-ai
+    setup_guide_url: https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app
 
 readwise:
     display_name: Readwise
