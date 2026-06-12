@@ -1586,6 +1586,7 @@
               "api-integrations/talentlms",
               "api-integrations/tally",
               "api-integrations/telegram",
+              "api-integrations/tempo",
               "api-integrations/the-swarm",
               "api-integrations/theirstack",
               "api-integrations/thomson-reuters-legal-tracker",

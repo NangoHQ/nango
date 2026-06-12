@@ -20051,6 +20051,48 @@ telegram:
             pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
             doc_section: '#step-1-creating-your-telegram-bot'
 
+tempo:
+    display_name: Tempo
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.tempo.io/oauth/authorize/redirect
+    token_url: https://api.tempo.io/oauth/token/
+    disable_pkce: true
+    authorization_params:
+        jira_url: https://${connectionConfig.jiraSubdomain}.atlassian.net
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.tempo.io
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/tempo
+    setup_guide_url: https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/tempo/connect
+    connection_config:
+        jiraSubdomain:
+            type: string
+            title: Jira Cloud Subdomain
+            description: The subdomain of your Jira Cloud instance.
+            example: acme
+            pattern: '^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'
+            doc_section: '#step-1-find-your-jira-cloud-subdomain'
+            order: 2
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The subdomain of the Tempo API.
+            enum:
+                - api
+                - api.eu
+                - api.us
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
+
 the-swarm:
     display_name: The Swarm
     categories:
@@ -20381,6 +20423,18 @@ trafft:
             prefix: https://
             suffix: .admin.trafft.com
             doc_section: '#step-1-access-api-settings'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Trafft OAuth2 Client ID.
+            doc_section: '#step-2-get-your-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Trafft OAuth2 Client Secret.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
 
 tremendous:
     display_name: Tremendous
