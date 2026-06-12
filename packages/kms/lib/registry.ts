@@ -44,8 +44,18 @@ export class DekRegistry {
     }
 }
 
+// Memoized so the unwrapping (and its KMS call) runs once per process
+// since several packages can each instantiate a DekRegistry.
+const resolved = new Map<string, string>();
+
 async function resolveDek(envs: DekEnvs): Promise<string> {
     const { NANGO_ENCRYPTION_KEY: plaintext, NANGO_ENCRYPTION_KEY_WRAPPED: wrapped, NANGO_KMS_KEY_ARN: kmsKeyArn } = envs;
+
+    const cacheKey = JSON.stringify([plaintext, wrapped, kmsKeyArn]);
+    const cached = resolved.get(cacheKey);
+    if (cached !== undefined) {
+        return cached;
+    }
 
     // TEMPORARY (KMS rollout validation): the plaintext key stays the source of truth.
     // When the wrapped key is also set, unwrap it in shadow mode and log whether it matches.
@@ -62,12 +72,14 @@ async function resolveDek(envs: DekEnvs): Promise<string> {
         }
     }
 
+    // No plaintext key set: encryption disabled
+    let dek = '';
     if (plaintext) {
         assertDekLength(Buffer.from(plaintext, 'base64'));
         logger.info('Loaded encryption key (source=plaintext)');
-        return plaintext;
+        dek = plaintext;
     }
 
-    // No plaintext key set: encryption disabled
-    return '';
+    resolved.set(cacheKey, dek);
+    return dek;
 }
