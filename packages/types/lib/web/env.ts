@@ -7,7 +7,7 @@ export interface WindowEnv {
     publicPosthogKey: string;
     publicPosthogHost: string;
     publicLogoDevKey: string;
-    publicStripeKey: string;
+    publicStripeKey: string | undefined;
     isCloud: boolean;
     isHosted: boolean;
     isEnterprise: boolean;
