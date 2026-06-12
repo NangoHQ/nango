@@ -19,7 +19,8 @@ describe('gmailWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
-            logContextGetter
+            logContextGetter,
+            ingressRequestId: 'test-ingress-request-id'
         });
         nangoMock.executeScriptForWebhooks = mock;
 
@@ -58,7 +59,8 @@ describe('gmailWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
-            logContextGetter
+            logContextGetter,
+            ingressRequestId: 'test-ingress-request-id'
         });
         nangoMock.executeScriptForWebhooks = mock;
 

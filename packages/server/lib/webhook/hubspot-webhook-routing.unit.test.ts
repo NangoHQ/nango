@@ -29,7 +29,8 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
-            logContextGetter
+            logContextGetter,
+            ingressRequestId: 'test-ingress-request-id'
         });
         nangoMock.executeScriptForWebhooks = mock;
 
@@ -127,7 +128,8 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
-            logContextGetter: logContextGetter
+            logContextGetter: logContextGetter,
+            ingressRequestId: 'test-ingress-request-id'
         });
         nangoMock.executeScriptForWebhooks = mock;
 
