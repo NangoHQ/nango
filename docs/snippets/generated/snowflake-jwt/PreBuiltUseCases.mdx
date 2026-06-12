@@ -1,3 +1,82 @@
-_No pre-built syncs or actions available yet._
+### Metadata
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-columns` | List columns in a Snowflake table with data types, nullability, and defaults. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-columns.ts) |
+
+### Roles
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-roles` | List Snowflake roles with hierarchy and assignment counts. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-roles.ts) |
+
+### SQL
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `execute-statement` | Submit a SQL statement to Snowflake. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/execute-statement.ts) |
+
+### Schemas
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-schemas` | List schemas in a Snowflake database | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-schemas.ts) |
+
+### Stages
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-stages` | List Snowflake stages in a database. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-stages.ts) |
+
+### Statements
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `cancel-statement` | Cancel a running Snowflake SQL statement. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/cancel-statement.ts) |
+| `get-statement-result` | Fetch a Snowflake SQL statement result partition. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/get-statement-result.ts) |
+| `get-statement-status` | Get Snowflake SQL statement execution status and inline results. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/get-statement-status.ts) |
+
+### Tables
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-tables` | List tables in a Snowflake schema | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-tables.ts) |
+
+### Tasks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-tasks` | List Snowflake tasks in a database | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-tasks.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-users` | List Snowflake users with login, email, role, and auth details. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-users.ts) |
+
+### Views
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-views` | List views in a Snowflake schema. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-views.ts) |
+
+### Warehouses
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-warehouses` | List Snowflake warehouses with size, state, and resource usage. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-warehouses.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-databases` | List Snowflake databases. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-databases.ts) |
+| `list-streams` | List Snowflake streams (change data capture) in a database. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/actions/list-streams.ts) |
+| `columns` | Sync Snowflake column metadata across all tables in configured schemas. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/columns.ts) |
+| `databases` | Sync Snowflake database metadata | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/databases.ts) |
+| `query-results` | Sync rows from a customer-configured SELECT query. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/query-results.ts) |
+| `roles` | Sync Snowflake role metadata and hierarchy. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/roles.ts) |
+| `schemas` | Sync Snowflake schema metadata | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/schemas.ts) |
+| `tables` | Sync Snowflake table metadata. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/tables.ts) |
+| `users` | Sync Snowflake user roster with login, auth, and role details | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/users.ts) |
+| `views` | Sync Snowflake view metadata. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/snowflake-jwt/syncs/views.ts) |

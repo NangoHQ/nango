@@ -8,10 +8,11 @@ import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { DBFunctionDryrun } from '@nangohq/sandbox';
+import type { DBFunctionDeployment, DBFunctionDryrun } from '@nangohq/sandbox';
 import type { ApiKeyScope, FunctionSource, ScriptTypeLiteral } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
+const asyncJobsTableName = 'function_async_jobs';
 
 async function seedAccount(scopes?: ApiKeyScope[]) {
     const seed = await seeders.seedAccountEnvAndUser();
@@ -46,9 +47,10 @@ async function createDryrunSeed({
     executionTimeoutAt?: Date | undefined;
 }): Promise<DBFunctionDryrun> {
     const rows = (await db
-        .knex('function_dryruns')
+        .knex(asyncJobsTableName)
         .insert({
             environment_id: environmentId,
+            job_type: 'dryrun',
             request: {
                 integration_id: 'github',
                 function_name: 'function',
@@ -66,6 +68,47 @@ async function createDryrunSeed({
     const row = rows[0];
     if (!row) {
         throw new Error('Failed to create dryrun seed');
+    }
+
+    return row;
+}
+
+async function createDeploymentSeed({
+    environmentId,
+    functionType = 'sync',
+    sandboxId,
+    startedAt,
+    executionTimeoutAt
+}: {
+    environmentId: number;
+    functionType?: 'action' | 'sync';
+    sandboxId?: string | undefined;
+    startedAt?: Date | undefined;
+    executionTimeoutAt?: Date | undefined;
+}): Promise<DBFunctionDeployment> {
+    const rows = (await db
+        .knex(asyncJobsTableName)
+        .insert({
+            environment_id: environmentId,
+            job_type: 'deployment',
+            request: {
+                type: 'function',
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: functionType,
+                code: 'export default {}',
+                allow_destructive: false
+            },
+            status: 'running',
+            ...(sandboxId ? { sandbox_id: sandboxId } : {}),
+            ...(startedAt ? { started_at: startedAt } : {}),
+            ...(executionTimeoutAt ? { execution_timeout_at: executionTimeoutAt } : {})
+        })
+        .returning('*')) as DBFunctionDeployment[];
+
+    const row = rows[0];
+    if (!row) {
+        throw new Error('Failed to create deployment seed');
     }
 
     return row;
@@ -361,6 +404,34 @@ describe('functions public API', () => {
         expect(res.json).not.toHaveProperty('execution_timeout_at');
     });
 
+    it('returns stored deployment status on GET /functions/deployments/:id', async () => {
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
+        const deployment = await createDeploymentSeed({
+            environmentId: env.id,
+            sandboxId: 'sandbox-id',
+            startedAt: new Date('2099-01-01T00:00:00.000Z'),
+            executionTimeoutAt: new Date('2099-01-01T00:05:30.000Z')
+        });
+
+        const res = await api.fetch('/functions/deployments/:id', {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { id: deployment.id }
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toMatchObject({
+            id: deployment.id,
+            status: 'running',
+            integration_id: 'github',
+            function_name: 'syncIssues',
+            function_type: 'sync',
+            started_at: '2099-01-01T00:00:00.000Z'
+        });
+        expect(res.json).not.toHaveProperty('status_url');
+        expect(res.json).not.toHaveProperty('execution_timeout_at');
+    });
+
     it('rejects POST /functions/dryruns/:id/result with a customer API key', async () => {
         const { env, apiKey } = await seedAccount(['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({ environmentId: env.id, startedAt: new Date() });
@@ -372,6 +443,29 @@ describe('functions public API', () => {
                 'content-type': 'application/json'
             },
             body: JSON.stringify({ status: 'success', output: 'Executing -> function\nDone\n{"ok":true}' })
+        });
+
+        const json = (await res.json()) as unknown;
+        expect(res.status).toBe(403);
+        expect(json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'This endpoint only accepts sandbox tokens'
+            }
+        });
+    });
+
+    it('rejects POST /functions/deployments/:id/result with a customer API key', async () => {
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
+        const deployment = await createDeploymentSeed({ environmentId: env.id, startedAt: new Date() });
+
+        const res = await fetch(`${api.url}/functions/deployments/${deployment.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${apiKey.secret}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'success', output: 'Successfully deployed the functions:\n- syncIssues@1' })
         });
 
         const json = (await res.json()) as unknown;
@@ -428,6 +522,56 @@ describe('functions public API', () => {
         expect(getRes.json).not.toHaveProperty('execution_timeout_at');
     });
 
+    it('accepts POST /functions/deployments/:id/result with a sandbox token', async () => {
+        const seed = await seedAccount(['environment:deploy']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:deploy']);
+        const deployment = await createDeploymentSeed({ environmentId: seed.env.id, functionType: 'sync', startedAt: new Date() });
+        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: apiKey.id,
+            environmentId: seed.env.id,
+            purpose: 'deploy',
+            deploymentId: deployment.id,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        const res = await fetch(`${api.url}/functions/deployments/${deployment.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${sandboxToken.unwrap()}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: 'success',
+                output: 'Successfully deployed the functions:\n- syncIssues@1.0.0',
+                duration_ms: 123
+            })
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.json()).toStrictEqual({ ok: true });
+
+        const getRes = await api.fetch('/functions/deployments/:id', {
+            method: 'GET',
+            token: seed.apiKey.secret,
+            params: { id: deployment.id }
+        });
+
+        expect(getRes.res.status).toBe(200);
+        expect(getRes.json).toMatchObject({
+            id: deployment.id,
+            status: 'success',
+            integration_id: 'github',
+            function_name: 'syncIssues',
+            function_type: 'sync',
+            duration_ms: 123,
+            deployed: true,
+            deployed_functions: [{ name: 'syncIssues', version: '1.0.0' }],
+            output: 'Successfully deployed the functions:\n- syncIssues@1.0.0'
+        });
+        expect(getRes.json).not.toHaveProperty('status_url');
+        expect(getRes.json).not.toHaveProperty('execution_timeout_at');
+    });
+
     it('accepts POST /functions/dryruns/:id/result with a sandbox token from a parent key without dryrun scope', async () => {
         const seed = await seedAccount(['environment:functions:dryrun']);
         const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
@@ -451,6 +595,37 @@ describe('functions public API', () => {
 
         expect(res.status).toBe(200);
         expect(await res.json()).toStrictEqual({ ok: true });
+    });
+
+    it('rejects POST /functions/deployments/:id/result with a sandbox token for another deployment', async () => {
+        const seed = await seedAccount(['environment:deploy']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:deploy']);
+        const deployment = await createDeploymentSeed({ environmentId: seed.env.id, startedAt: new Date() });
+        const otherDeployment = await createDeploymentSeed({ environmentId: seed.env.id, startedAt: new Date() });
+        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: apiKey.id,
+            environmentId: seed.env.id,
+            purpose: 'deploy',
+            deploymentId: otherDeployment.id,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        const res = await fetch(`${api.url}/functions/deployments/${deployment.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${sandboxToken.unwrap()}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'failed', error: { message: 'Deployment failed' } })
+        });
+
+        expect(res.status).toBe(403);
+        expect(await res.json()).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'This sandbox token is not authorized for this deployment'
+            }
+        });
     });
 
     it('rejects POST /functions/dryruns/:id/result with a sandbox token for another dryrun', async () => {

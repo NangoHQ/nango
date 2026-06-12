@@ -1,0 +1,42 @@
+---
+title: 'Cloudflare (MCP) - How do I link my account?'
+sidebarTitle: 'Cloudflare (MCP)'
+---
+
+# Overview
+
+To connect to a Cloudflare Worker MCP server, you will need:
+
+1. **Worker URL** — the full `https://` URL of your deployed Cloudflare Worker MCP server.
+
+This guide will walk you through finding your worker URL and authorizing access.
+
+### Prerequisites
+
+- A deployed Cloudflare Worker MCP server. See [Cloudflare's guide](https://developers.cloudflare.com/agents/guides/remote-mcp-server/) for how to build and deploy one.
+- Your worker's OAuth authorization server must allow the Nango callback URL as a redirect URI:
+  - **Production:** `https://api.nango.dev/oauth/callback`
+- Your worker's OAuth authorization server must support the `offline_access` scope. Enable it in your OAuth provider settings to allow Nango to obtain a refresh token and keep the connection alive without re-authenticating.
+
+### Instructions
+
+<a id="step-1-finding-your-worker-url"></a>
+#### Step 1: Finding your worker URL
+
+1. Log in to the [Cloudflare dashboard](https://dash.cloudflare.com).
+2. Go to **Build** > **Compute** > **Workers & Pages** in the left sidebar.
+3. Click on your Worker.
+4. Your worker URL is shown under **Overview** — it follows the format `https://<worker-name>.<your-subdomain>.workers.dev`.
+
+<img src="/api-integrations/cloudflare-mcp/hostname.png" style={{maxWidth: "450px" }}/>
+
+#### Step 2: Authorize in the Connect UI
+
+1. Open the form where you need to connect your Cloudflare Worker MCP server.
+2. Enter the full **Worker URL** in the respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cloudflare-mcp/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to your Cloudflare Worker MCP server.

@@ -10,12 +10,12 @@ export const defaultFunctionName = 'function';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
-export async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number, dryrunId?: string) {
+export async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number, dryrunId: string) {
     return await sandboxApiKeyService.createSandboxApiKey(db.knex, {
         parentApiKeyId,
         environmentId,
         purpose: 'dryrun',
-        ...(dryrunId ? { dryrunId } : {}),
+        dryrunId,
         expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
 }
