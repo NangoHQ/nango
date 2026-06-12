@@ -90,7 +90,7 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
 function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
     const { formDescriptionId } = useFormField();
 
-    return <p data-slot="form-description" id={formDescriptionId} className={cn('!text-text-tertiary text-body-small-regular', className)} {...props} />;
+    return <p data-slot="form-description" id={formDescriptionId} className={cn('!text-text-muted text-body-small-regular', className)} {...props} />;
 }
 
 function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
@@ -102,7 +102,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
     }
 
     return (
-        <p data-slot="form-message" id={formMessageId} className={cn('!text-feedback-error-fg text-body-small-regular', className)} {...props}>
+        <p data-slot="form-message" id={formMessageId} className={cn('!text-text-danger text-body-small-regular', className)} {...props}>
             {body}
         </p>
     );

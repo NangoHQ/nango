@@ -16,6 +16,9 @@ export interface FeatureFlagsState {
     /** When true, shows the dark/light mode toggle button in the app header. */
     themeSwitcher: boolean;
 
+    /** When true, surfaces per-metric breakdown controls on the billing usage dashboard. */
+    usageBreakdown: boolean;
+
     setFlag: <K extends keyof Omit<FeatureFlagsState, 'setFlag'>>(key: K, value: boolean) => void;
 }
 
@@ -24,6 +27,7 @@ export const useFeatureFlagsStore = create<FeatureFlagsState>()(
         (set) => ({
             // Off by default — enable via the dev panel (Ctrl+Shift+D)
             themeSwitcher: false,
+            usageBreakdown: false,
 
             setFlag: (key, value) => set({ [key]: value })
         }),

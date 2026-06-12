@@ -1,4 +1,4 @@
-import { Sun, X } from 'lucide-react';
+import { BarChart3, Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
@@ -12,9 +12,13 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  * True when the dev tool panel is available based on the current hostname:
  * - local Vite dev server
  * - *.app-development.nango.dev (development deployment and PR previews)
+ * - app-staging.nango.dev (staging deployment)
  */
 const isDevToolsEnabledByHostname =
-    import.meta.env.DEV || window.location.hostname === 'app-development.nango.dev' || window.location.hostname.endsWith('.app-development.nango.dev');
+    import.meta.env.DEV ||
+    window.location.hostname === 'app-development.nango.dev' ||
+    window.location.hostname.endsWith('.app-development.nango.dev') ||
+    window.location.hostname === 'app-staging.nango.dev';
 
 /**
  * Returns true when the dev tool panel should be available — either on a dev
@@ -49,6 +53,7 @@ export const DevToolPanel: React.FC = () => {
     const setOpen = useDevPanelStore((s) => s.setOpen);
     const toggle = useDevPanelStore((s) => s.toggle);
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
+    const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
 
     useEffect(() => {
@@ -68,25 +73,32 @@ export const DevToolPanel: React.FC = () => {
     }
 
     return (
-        <div className="fixed bottom-11 right-11 z-50 w-64 rounded border border-border-muted bg-dropdown-bg-press shadow-md">
+        <div className="fixed bottom-11 right-11 z-50 w-64 rounded border border-border-muted bg-surface-overlay shadow-md">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border-muted px-3 py-2">
-                <span className="text-sm font-medium text-text-primary">Dev Tools</span>
-                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-primary">
+                <span className="text-sm font-medium text-text-strong">Dev Tools</span>
+                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-strong">
                     <X className="size-3.5" />
                 </Button>
             </div>
 
             {/* Feature flags */}
             <div className="p-3">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-tertiary">Feature Flags</p>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">Feature Flags</p>
                 <ul className="space-y-2.5">
                     <li className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Sun className="size-4 shrink-0 text-text-secondary" />
-                            <span className="text-sm text-text-primary">Theme switcher</span>
+                            <span className="text-sm text-text-strong">Theme switcher</span>
                         </div>
                         <Switch checked={themeSwitcher} onCheckedChange={(v) => setFlag('themeSwitcher', v)} />
+                    </li>
+                    <li className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <BarChart3 className="size-4 shrink-0 text-text-secondary" />
+                            <span className="text-sm text-text-strong">Usage breakdown</span>
+                        </div>
+                        <Switch checked={usageBreakdown} onCheckedChange={(v) => setFlag('usageBreakdown', v)} />
                     </li>
                 </ul>
             </div>
