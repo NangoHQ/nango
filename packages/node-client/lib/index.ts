@@ -78,6 +78,10 @@ export interface AdminAxiosProps {
 
 export class Nango {
     serverUrl: string;
+    apiKey: string;
+    /**
+     * @deprecated Use `apiKey` instead. Populated with the same value for backward compatibility.
+     */
     secretKey: string;
     webhookSigningKey?: string | undefined;
     connectionId?: string;
@@ -97,8 +101,9 @@ export class Nango {
             this.serverUrl = this.serverUrl.slice(0, -1);
         }
 
-        if (!config.secretKey) {
-            throw new Error('You must specify a secret key (cf. documentation).');
+        const apiKey = config.apiKey ?? config.secretKey;
+        if (!apiKey) {
+            throw new Error('You must specify an API key (cf. documentation).');
         }
 
         try {
@@ -107,7 +112,8 @@ export class Nango {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
-        this.secretKey = config.secretKey;
+        this.apiKey = apiKey;
+        this.secretKey = apiKey;
         this.webhookSigningKey = config.webhookSigningKey;
         this.connectionId = config.connectionId || '';
         this.providerConfigKey = config.providerConfigKey || '';
@@ -1267,7 +1273,7 @@ export class Nango {
     }
 
     private _verifyWebhookSignatureImpl(signatureInHeader: string, jsonPayload: unknown): boolean {
-        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        const signingKey = this.webhookSigningKey ?? this.apiKey;
         return (
             crypto
                 .createHash('sha256')
@@ -1295,7 +1301,7 @@ export class Nango {
             return false;
         }
 
-        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        const signingKey = this.webhookSigningKey ?? this.apiKey;
         const expectedSignature = crypto.createHmac('sha256', signingKey).update(body).digest('hex');
         const actualSignature = headers[signatureInHeader];
 
@@ -1393,7 +1399,7 @@ export class Nango {
      * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
-        headers['Authorization'] = 'Bearer ' + this.secretKey;
+        headers['Authorization'] = 'Bearer ' + this.apiKey;
         headers['Nango-Is-Sync'] = this.isSync;
         headers['Nango-Is-Script'] = this.isScript;
         headers['Nango-Is-Dry-Run'] = this.dryRun;

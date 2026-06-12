@@ -19,7 +19,7 @@ Instantiate the `Nango` class:
 ```js
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<API-KEY>' });
 ```
 
 **Parameters**
@@ -27,8 +27,12 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="config" defaultOpen>
-      <ResponseField name="secretKey" type="string" required>
-        Get your secret key in the environment settings of the Nango UI. This key should never be shared.
+      <ResponseField name="apiKey" type="string" required>
+        Your environment API key, found in **Environment Settings > API Keys** in the Nango UI. Sent as the bearer token for API calls. This key should never be shared.
+      </ResponseField>
+
+      <ResponseField name="secretKey" type="string" deprecated>
+        Deprecated alias for `apiKey`, kept for backward compatibility. Provide either `apiKey` or `secretKey`.
       </ResponseField>
 
       <ResponseField name="webhookSigningKey" type="string">
@@ -2084,7 +2088,7 @@ Asserts that a Webhook is coming from Nango's backend. Verification uses `webhoo
 
 ```js
 const nango = new Nango({
-    secretKey: '<API-KEY>',
+    apiKey: '<API-KEY>',
     webhookSigningKey: '<WEBHOOK-SIGNING-KEY>'
 });
 

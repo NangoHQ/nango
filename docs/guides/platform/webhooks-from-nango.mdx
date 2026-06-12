@@ -50,7 +50,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
 
     ```typescript
     const nango = new Nango({
-        secretKey: process.env.NANGO_API_KEY, // used for API calls
+        apiKey: process.env.NANGO_API_KEY, // used for API calls
         webhookSigningKey: process.env.NANGO_WEBHOOK_SIGNING_KEY // used to verify webhooks
     });
 
