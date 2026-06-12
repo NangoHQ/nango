@@ -17,17 +17,16 @@ import {
 import { Tag } from '@/components/ui/Tag';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
-import type { TagSize } from '@/components/ui/Tag';
 import type { SearchOperationsData } from '@nangohq/types';
 
-export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation']; size?: TagSize }> = ({ message, operation, size }) => {
+export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation'] }> = ({ message, operation }) => {
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger>
                 <div className="flex items-center gap-1">
-                    <Tag size={size}>{operation.type}</Tag>
+                    <Tag>{operation.type}</Tag>
                     {operation.type === 'sync' && (
-                        <Tag size={size}>
+                        <Tag>
                             {operation.action === 'cancel' && <IconX className="w-3.5 h-3.5" />}
                             {operation.action === 'init' && <IconPlus className="w-3.5 h-3.5" />}
                             {operation.action === 'pause' && <IconClockPause className="w-3.5 h-3.5" />}
@@ -41,7 +40,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
 
                     {operation.type === 'auth' && (
-                        <Tag size={size}>
+                        <Tag>
                             {operation.action === 'create_connection' && <IconPlus className="w-3.5 h-3.5" />}
                             {operation.action === 'post_connection' && <IconSettingsAutomation className="w-3.5 h-3.5" />}
                             {operation.action === 'refresh_token' && <IconRefresh className="w-3.5 h-3.5" />}
@@ -49,7 +48,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
 
                     {operation.type === 'webhook' && (
-                        <Tag size={size}>
+                        <Tag>
                             {operation.action === 'forward' && <IconArrowForward className="w-3.5 h-3.5" />}
                             {operation.action === 'incoming' && <IconSettings className="w-3.5 h-3.5" />}
                             {operation.action === 'connection_create' && <IconLink className="w-3.5 h-3.5" />}
@@ -59,7 +58,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent align="start" className="text-white">
+            <TooltipContent align="start" className="text-text-strong">
                 <p>{message}</p>
             </TooltipContent>
         </Tooltip>

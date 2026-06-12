@@ -61,7 +61,7 @@ export const ManagedEmailVerification: React.FC = () => {
             </Helmet>
 
             <div className="flex flex-col items-center gap-3">
-                <h2 className="text-title-group text-text-primary">Verify your email</h2>
+                <h2 className="text-title-group text-text-strong">Verify your email</h2>
 
                 {serverErrorMessage && (
                     <Alert variant="error">
@@ -92,7 +92,7 @@ export const ManagedEmailVerification: React.FC = () => {
                 </Button>
             </form>
 
-            <span className="text-body-medium-regular text-text-tertiary text-center">
+            <span className="text-body-medium-regular text-text-muted text-center">
                 Didn&apos;t get the code? <StyledLink to="/signin">Start the Google sign-in flow again.</StyledLink>
             </span>
         </DefaultLayout>

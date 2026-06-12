@@ -12,8 +12,8 @@ export const Signup: React.FC = () => {
             </Helmet>
 
             <div className="flex flex-col gap-3 items-center">
-                <h2 className="text-title-group text-text-primary">Sign up to Nango</h2>
-                <span className="text-body-medium-regular text-text-tertiary">
+                <h2 className="text-title-group text-text-strong">Sign up to Nango</h2>
+                <span className="text-body-medium-regular text-text-muted">
                     Already have an account? <StyledLink to="/signin">Log in.</StyledLink>
                 </span>
             </div>

@@ -126,7 +126,7 @@ export const Telemetry: React.FC = () => {
                             {errors.length > 0 && (
                                 <div className="flex flex-col gap-1">
                                     {errors.map((err, i) => (
-                                        <div key={i} className="text-body-small-regular text-feedback-error-fg">
+                                        <div key={i} className="text-body-small-regular text-status-danger-text">
                                             Row {err.index + 1}, {err.key}: {err.error}
                                         </div>
                                     ))}

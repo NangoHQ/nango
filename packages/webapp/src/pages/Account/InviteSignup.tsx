@@ -48,7 +48,7 @@ export const InviteSignup: React.FC = () => {
                     <title>Invitation Error - Nango</title>
                 </Helmet>
 
-                <h2 className="text-title-group text-text-primary">Invitation error</h2>
+                <h2 className="text-title-group text-text-strong">Invitation error</h2>
 
                 <p className="text-text-secondary text-body-medium-regular">
                     An error occurred, refresh your page or reach out to the support.
@@ -74,7 +74,7 @@ export const InviteSignup: React.FC = () => {
                 </Helmet>
 
                 <div className="flex flex-col gap-5 items-center">
-                    <h2 className="text-title-group text-text-primary">Invitation error</h2>
+                    <h2 className="text-title-group text-text-strong">Invitation error</h2>
 
                     <p className="text-text-secondary text-body-medium-regular">This invitation no longer exists or is expired.</p>
                 </div>
@@ -96,7 +96,7 @@ export const InviteSignup: React.FC = () => {
                 </Helmet>
 
                 <div className="flex flex-col gap-5 items-center">
-                    <h2 className="text-title-group text-text-primary">Invitation error</h2>
+                    <h2 className="text-title-group text-text-strong">Invitation error</h2>
 
                     <p className="text-text-secondary text-body-medium-regular text-center">
                         This invitation was sent to a different email. Please logout and use the correct account.
@@ -123,13 +123,13 @@ export const InviteSignup: React.FC = () => {
             </Helmet>
 
             <div className="flex flex-col gap-5 items-center">
-                <h2 className="text-title-group text-text-primary">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
+                <h2 className="text-title-group text-text-strong">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
 
                 <div className="flex flex-col gap-2 text-text-secondary text-body-medium-regular text-center">
                     <span>
                         {inviteData.invitedBy.name} has invited you to join their team:
                         <br />
-                        <strong className="text-text-primary">{inviteData.newTeam.name}</strong> ({inviteData.newTeamUsers}
+                        <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({inviteData.newTeamUsers}
                         {inviteData.newTeamUsers > 1 ? ' members' : ' member'})
                     </span>
 
@@ -149,7 +149,7 @@ export const InviteSignup: React.FC = () => {
             ) : (
                 <div className="flex flex-col gap-4 items-center w-full">
                     <SignupForm invitation={inviteData.invitation} token={token} />
-                    <span className="text-body-medium-regular text-text-tertiary">
+                    <span className="text-body-medium-regular text-text-muted">
                         Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
                     </span>
                 </div>
