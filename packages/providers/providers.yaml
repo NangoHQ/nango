@@ -16118,6 +16118,24 @@ razorpay:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-key-id-and-secret'
 
+read-ai:
+    display_name: Read.ai
+    categories:
+        - productivity
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://api.read.ai/oauth/ui
+    token_url: https://authn.read.ai/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.read.ai
+    docs: https://support.read.ai/hc/en-us/articles/49381161088659-API-Reference
+
 readwise:
     display_name: Readwise
     categories:
