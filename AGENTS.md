@@ -5,6 +5,11 @@ After running the initial `npm install` or `npm ci`, run `npm run prepare` to in
 
 Run `npm run ts-build` before autofixing lint errors using npm run lint:fix. Fresh worktrees don't have `dist/` (gitignored), so workspace packages like `@nangohq/types` can't resolve, causing false ESLint errors and broken type-checking.
 
+## Linting
+
+- `npm run lint` / `npm run lint:fix` — full ESLint with type-aware rules (requires `ts-build` artifacts, ~74s).
+- `npm run lint:fast` / `npm run lint:fast:fix` — ESLint with type-aware rules disabled; includes Prettier and needs no `ts-build` (~20s for the repo vs ~74s; a single file ~0.5s vs ~3–5s). Use after refactors to fix import ordering and formatting fast. CI still runs the full type-aware `npm run lint`, so type-aware rules stay enforced.
+
 ## Running Nango locally
 
 For full local dev setup (Docker, service URLs, auth flows, troubleshooting), use the `running-and-testing-locally` skill.
