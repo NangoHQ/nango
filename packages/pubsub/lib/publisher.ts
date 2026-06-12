@@ -34,11 +34,14 @@ export class Publisher {
     public async publishBatch<TSubject extends Event['subject']>(
         props: Omit<PublishBatchProps<TSubject>, 'events'> & { events: MaybeStampedEvent<TSubject>[] }
     ): Promise<Result<PublishBatchResult>> {
-        const stamped = props.events.map((e) => ({
-            ...e,
-            idempotencyKey: e.idempotencyKey ?? uuidv4(),
-            createdAt: e.createdAt ?? new Date()
-        }));
+        const stamped = props.events.map(
+            (e) =>
+                ({
+                    ...e,
+                    idempotencyKey: e.idempotencyKey ?? uuidv4(),
+                    createdAt: e.createdAt ?? new Date()
+                }) as unknown as Extract<Event, { subject: TSubject }>
+        );
 
         // runtime sanity check for homogeneous subject
         if (props.events.find((e) => e.subject !== props.subject)) {
@@ -46,7 +49,7 @@ export class Publisher {
             return Err(new Error(`All events must be of the provided subject: "${props.subject}"`));
         }
 
-        const res = await this.transport.publishBatch({ ...props, events: stamped as unknown as Extract<Event, { subject: TSubject }>[] });
+        const res = await this.transport.publishBatch({ ...props, events: stamped });
 
         if (res.isOk()) {
             metrics.increment(metrics.Types.PUBSUB_PUBLISH, res.value.successful.length, { subject: props.subject, success: 'true' });
