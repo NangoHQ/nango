@@ -2,9 +2,11 @@ import crypto from 'node:crypto';
 
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { passwordSchema } from '../../account/signup.js';
 
@@ -44,7 +46,10 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await pbkdf2(body.newPassword, salt, 310000, 32, 'sha256')).toString('base64');
 
-    await userService.update({ id: user.id, hashed_password: hashedPassword, salt });
+    await db.knex.transaction(async (trx) => {
+        await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
+        await deleteUserSessions(user.id, { exceptSid: req.sessionID, trx });
+    });
 
     res.status(200).send({ success: true });
 });

@@ -13,15 +13,31 @@ import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 
 import type { StoreFactory } from 'connect-session-knex';
 import type express from 'express';
+import type { Knex } from 'knex';
+
+const SESSION_TABLE = '_nango_sessions';
 
 // @ts-expect-error types are wrong
 const KnexSessionStore = connectSessionKnex(session) as StoreFactory;
 
 const sessionStore = new KnexSessionStore({
     knex: database.knex,
-    tablename: '_nango_sessions',
+    tablename: SESSION_TABLE,
     sidfieldname: 'sid'
 });
+
+/**
+ * Delete a user's web sessions, e.g. after a password change so that other
+ * devices/browsers are forced to re-authenticate. Passport stores the
+ * serialized user at `sess.passport.user`.
+ */
+export async function deleteUserSessions(userId: number, { exceptSid, trx }: { exceptSid?: string; trx?: Knex } = {}): Promise<void> {
+    const query = (trx ?? database.knex).from(SESSION_TABLE).whereRaw(`(sess->'passport'->'user'->>'id')::int = ?`, [userId]);
+    if (exceptSid) {
+        query.andWhereNot('sid', exceptSid);
+    }
+    await query.delete();
+}
 
 export function setupAuth(app: express.Router) {
     app.use(cookieParser());

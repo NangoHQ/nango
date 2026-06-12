@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { passwordSchema } from './signup.js';
+import { deleteUserSessions } from '../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 
@@ -49,7 +51,10 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
 
         user.hashed_password = hashedPassword;
         user.reset_password_token = null;
-        await userService.editUserPassword(user);
+        await db.knex.transaction(async (trx) => {
+            await userService.editUserPassword(user, trx);
+            await deleteUserSessions(user.id, { trx });
+        });
 
         res.status(200).json({
             success: true
