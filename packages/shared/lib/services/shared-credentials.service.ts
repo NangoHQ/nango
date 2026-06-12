@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { Err, Ok, nanoid } from '@nangohq/utils';
 
 import configService from './config.service.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -124,7 +124,7 @@ class SharedCredentialsService {
             let decryptedClientSecret = credentials.oauth_client_secret;
 
             if (credentials.oauth_client_secret_iv && credentials.oauth_client_secret_tag) {
-                decryptedClientSecret = encryptionManager.decryptSync(
+                decryptedClientSecret = getEncryptionManager().decryptSync(
                     credentials.oauth_client_secret,
                     credentials.oauth_client_secret_iv,
                     credentials.oauth_client_secret_tag
@@ -150,7 +150,7 @@ class SharedCredentialsService {
             oauth_scopes: config.scopes || ''
         };
 
-        const [encryptedClientSecret, iv, authTag] = encryptionManager.encryptSync(configForEncryption.oauth_client_secret);
+        const [encryptedClientSecret, iv, authTag] = getEncryptionManager().encryptSync(configForEncryption.oauth_client_secret);
 
         const configToInsert: SharedCredentials = {
             ...configForEncryption,
@@ -189,7 +189,7 @@ class SharedCredentialsService {
                 oauth_scopes: config.scopes ?? ''
             };
 
-            const [encryptedClientSecret, iv, authTag] = encryptionManager.encryptSync(configForEncryption.oauth_client_secret);
+            const [encryptedClientSecret, iv, authTag] = getEncryptionManager().encryptSync(configForEncryption.oauth_client_secret);
 
             const configToUpdate: SharedCredentials = {
                 ...configForEncryption,
@@ -249,7 +249,7 @@ class SharedCredentialsService {
                 let decryptedClientSecret = credentials.oauth_client_secret;
 
                 if (credentials.oauth_client_secret_iv && credentials.oauth_client_secret_tag) {
-                    decryptedClientSecret = encryptionManager.decryptSync(
+                    decryptedClientSecret = getEncryptionManager().decryptSync(
                         credentials.oauth_client_secret,
                         credentials.oauth_client_secret_iv,
                         credentials.oauth_client_secret_tag

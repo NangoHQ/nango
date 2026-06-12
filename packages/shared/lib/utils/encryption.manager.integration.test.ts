@@ -2,13 +2,15 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import encryptionManager, { EncryptionManager } from './encryption.manager.js';
+import { EncryptionManager, getEncryptionManager } from './encryption.manager.js';
 import { seedAccountEnvAndUser } from '../seeders/index.js';
 import environmentService from '../services/environment.service.js';
 import { decryptSandboxSigningSecret } from '../services/sandbox-api-key.js';
 import secretService from '../services/secret.service.js';
 
 import type { DBCustomerKey } from '@nangohq/types';
+
+const encryptionManager = getEncryptionManager();
 
 const testEncryptionKey = 'aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=';
 

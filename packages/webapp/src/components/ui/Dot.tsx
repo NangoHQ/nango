@@ -8,10 +8,10 @@ import type { VariantProps } from 'class-variance-authority';
 const dotVariants = cva('size-1.5 rounded-full', {
     variants: {
         variant: {
-            brand: 'bg-feedback-info-fg',
-            success: 'bg-feedback-success-fg',
-            warning: 'bg-feedback-warning-fg',
-            error: 'bg-feedback-error-fg'
+            brand: 'bg-status-info-icon',
+            success: 'bg-status-success-icon',
+            warning: 'bg-status-warning-icon',
+            error: 'bg-status-danger-icon'
         }
     },
     defaultVariants: {

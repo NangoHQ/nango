@@ -86,24 +86,24 @@ export const ClassicGettingStarted: React.FC = () => {
             </Helmet>
             <div
                 className={cn(
-                    'border rounded-lg border-grayscale-700 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0',
+                    'border rounded-lg border-border-muted group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0',
                     !hasVideo && 'cursor-pointer'
                 )}
                 onClick={!hasVideo ? triggerVideo : undefined}
             >
                 <div id="player" style={{ aspectRatio: '16 / 9' }} className="rounded-lg relative">
                     <img src="/images/demo_thumbnail.png" alt="" className="rounded-lg" />
-                    <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center z-10 text-black">
-                        <div className="transition-transform bg-white p-2 rounded-full shadow-[0_1px_100px_50px_black] group-hover:animate-pulse">
+                    <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center z-10 text-text-strong">
+                        <div className="transition-transform bg-surface-panel p-2 rounded-full shadow-[0_1px_100px_50px_black] group-hover:animate-pulse">
                             <IconPlayerPlay size={50} fill="#000" />
                         </div>
                     </div>
                 </div>
             </div>
-            <h1 className="text-xl font-semibold text-white">Build your first integration from here:</h1>
-            <div className="grid grid-cols-2 text-white gap-7">
+            <h1 className="text-xl font-semibold text-text-strong">Build your first integration from here:</h1>
+            <div className="grid grid-cols-2 text-text-strong gap-7">
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
+                    className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0"
                     href="https://nango.dev/docs/guides/auth/auth-guide"
                     onClick={() => analyticsTrack('web:getting_started:authorize')}
                     target="_blank"
@@ -114,22 +114,22 @@ export const ClassicGettingStarted: React.FC = () => {
                             <Tag variant={'neutral'}>Guide 1</Tag>
                             <h2>Authorize</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                        <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
                             <IconLockOpen2 stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
-                        <p className="text-sm text-grayscale-400">Let users authorize an API from your app.</p>
+                        <p className="text-sm text-text-muted">Let users authorize an API from your app.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>
                 </a>
 
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
+                    className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/syncs/sync-functions"
                     onClick={() => analyticsTrack('web:getting_started:read')}
                     target="_blank"
@@ -140,22 +140,22 @@ export const ClassicGettingStarted: React.FC = () => {
                             <Tag variant={'neutral'}>Guide 2</Tag>
                             <h2>Read data</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                        <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
                             <IconRefresh stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
-                        <p className="text-sm text-grayscale-400">Continuously sync data from an API.</p>
+                        <p className="text-sm text-text-muted">Continuously sync data from an API.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>
                 </a>
 
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
+                    className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/action-functions"
                     onClick={() => analyticsTrack('web:getting_started:perform')}
                     target="_blank"
@@ -166,22 +166,22 @@ export const ClassicGettingStarted: React.FC = () => {
                             <Tag variant={'neutral'}>Guide 3</Tag>
                             <h2>Write data</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                        <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
                             <IconPencil stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
-                        <p className="text-sm text-grayscale-400">Write data back to APIs.</p>
+                        <p className="text-sm text-text-muted">Write data back to APIs.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>
                 </a>
 
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
+                    className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/functions-guide"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"
@@ -192,15 +192,15 @@ export const ClassicGettingStarted: React.FC = () => {
                             <Tag variant={'neutral'}>Guide 4</Tag>
                             <h2>Build custom integrations</h2>
                         </div>
-                        <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                        <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
                             <IconTool stroke={1} size={18} />
                         </div>
                     </header>
                     <main>
-                        <p className="text-sm text-grayscale-400">Go beyond pre-built integrations.</p>
+                        <p className="text-sm text-text-muted">Go beyond pre-built integrations.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>

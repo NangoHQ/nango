@@ -25,6 +25,7 @@
         "@hapi/boom": "10.0.1",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/database": "file:../database",
+        "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
