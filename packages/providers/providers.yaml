@@ -16374,6 +16374,29 @@ render-mcp:
             example: rnd_****************************
             pattern: '^rnd_[A-Za-z0-9]+$'
 
+raindrop-mcp:
+    display_name: Raindrop (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://auth.raindrop.ai/oauth/2.1/authorize
+    token_url: https://auth.raindrop.ai/oauth/2.1/token
+    registration_url: https://auth.raindrop.ai/oauth/2.1/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.raindrop.ai/mcp
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.raindrop.ai
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/raindrop-mcp
+
 reddit:
     display_name: Reddit
     categories:

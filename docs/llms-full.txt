@@ -14294,6 +14294,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `quickbooks-sandbox` | Quickbooks (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/quickbooks-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/quickbooks-sandbox/connect.md) | [setup](https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-api-oauth-app.md) | accounting |
 | `quipteams` | Quipteams | API_KEY | [docs](https://nango.dev/docs/api-integrations/quipteams.md) | [connect](https://nango.dev/docs/api-integrations/quipteams/connect.md) |  | other |
 | `ragieai` | Ragie AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/ragieai.md) |  |  | dev-tools |
+| `raindrop-mcp` | Raindrop (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/raindrop-mcp.md) |  |  | dev-tools, mcp |
 | `ramp` | Ramp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp.md) |  |  | banking |
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |

@@ -936,7 +936,12 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
 
+            const reservedOAuthKeys = new Set(['response_type', 'code_challenge', 'code_challenge_method', 'state', 'redirect_uri', 'scope', 'client_id']);
+            const providerAuthParams = Object.fromEntries(
+                Object.entries(interpolateObjectValues(provider.authorization_params || {}, connectionConfig)).filter(([key]) => !reservedOAuthKeys.has(key))
+            );
             const authParams = {
+                ...providerAuthParams,
                 response_type: 'code',
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256'
