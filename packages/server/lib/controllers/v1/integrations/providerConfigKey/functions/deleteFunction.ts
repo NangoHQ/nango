@@ -73,7 +73,7 @@ export const deleteIntegrationFunction = asyncWrapper<DeleteIntegrationFunction>
     });
     if (enqueued.isErr()) {
         report(enqueued.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to enqueue function deletion' } });
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete function' } });
         return;
     }
 

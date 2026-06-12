@@ -14,14 +14,8 @@ export interface FunctionDeletionParams {
 }
 
 /**
- * Soft-deletes the config and enqueues the durable `deleteFunction` task atomically. The soft-delete (which
- * stops execution immediately — a scheduled run loads the config, finds it gone, and bails) runs inside a
- * transaction, and a failed enqueue throws so the transaction rolls it back: we never end up with a function
- * marked deleted but no teardown scheduled.
- *
- * The enqueue uses its own DB connection, so it isn't part of the transaction — but on failure there's no task
- * to undo (the insert failed), so rolling back the soft-delete cleanly leaves "nothing happened". The task then
- * unschedules (bulk) and hard-deletes the syncs. O(1) so it scales to functions with millions of connections.
+ * Soft-deletes the config and enqueues the durable `deleteFunction` task.
+ * The delete task is a no-op if the config is not soft-deleted (by eg. a transaction rollback).
  **/
 export async function startFunctionDeletion({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
     try {

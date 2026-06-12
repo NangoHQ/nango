@@ -38,7 +38,10 @@ describe('startFunctionDeletion', () => {
     beforeEach(() => {
         order.length = 0;
         txOutcome = null;
-        deleteSyncConfig.mockClear();
+        deleteSyncConfig.mockClear().mockImplementation(() => {
+            order.push('deleteSyncConfig');
+            return Promise.resolve();
+        });
         enqueue.mockClear().mockImplementation(() => {
             order.push('enqueue');
             return Promise.resolve(Ok({ taskId: 't' }));
@@ -56,8 +59,11 @@ describe('startFunctionDeletion', () => {
         expect(txOutcome).toBe('committed');
     });
 
-    it('rolls back the soft-delete (transaction) and returns Err when the enqueue fails', async () => {
-        enqueue.mockResolvedValue(Err(new Error('queue down')));
+    it('rolls back the soft-delete and returns Err when the enqueue fails', async () => {
+        enqueue.mockImplementation(() => {
+            order.push('enqueue');
+            return Promise.resolve(Err(new Error('queue down')));
+        });
 
         const res = await startFunctionDeletion({ syncConfigId: 1, environmentId: 10, models: ['User'] });
 

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { getSyncConfigById } from '@nangohq/shared';
 import { defineTask } from '@nangohq/tasks';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
@@ -31,6 +32,12 @@ export const deleteFunctionTask = defineTask({
     }),
     handle: async (payload, taskCtx): Promise<Result<void>> => {
         const { syncConfigId, environmentId, models } = payload;
+
+        const liveConfig = await getSyncConfigById(environmentId, syncConfigId);
+        if (liveConfig) {
+            taskCtx.logger.warning(`[tasks:deleteFunction] sync_config ${syncConfigId} is not soft-deleted; skipping teardown`);
+            return Ok(undefined);
+        }
 
         try {
             await deleteSyncConfigData(

@@ -13,6 +13,12 @@ vi.mock('../../crons/delete/deleteSyncConfigData.js', () => ({
     deleteSyncConfigData: (...args: unknown[]) => deleteSyncConfigData(...args)
 }));
 
+// null = config is soft-deleted (getSyncConfigById only returns live rows), the normal teardown precondition.
+const getSyncConfigById = vi.fn().mockResolvedValue(null);
+vi.mock('@nangohq/shared', () => ({
+    getSyncConfigById: (...args: unknown[]) => getSyncConfigById(...args)
+}));
+
 const { deleteFunctionTask } = await import('./deleteFunction.js');
 
 const ctx = { taskId: 't', attempt: 0, logger: { info: vi.fn(), error: vi.fn(), debug: vi.fn(), warning: vi.fn() } } as any;
@@ -25,8 +31,19 @@ describe('deleteFunction task', () => {
     beforeEach(() => {
         enqueue.mockClear().mockResolvedValue(Ok({ taskId: 'task-id' }));
         deleteSyncConfigData.mockReset().mockResolvedValue(undefined);
+        getSyncConfigById.mockReset().mockResolvedValue(null);
     });
     afterEach(() => vi.clearAllMocks());
+
+    it('no-ops when the config is still live (soft-delete rolled back after enqueue committed)', async () => {
+        getSyncConfigById.mockResolvedValue({ id: 1, deleted: false });
+
+        const res = await run();
+
+        expect(res.isOk()).toBe(true);
+        expect(deleteSyncConfigData).not.toHaveBeenCalled();
+        expect(enqueuesOfType('deleteFunction')).toHaveLength(0);
+    });
 
     it('drives deleteSyncConfigData (with a budget) and returns Ok with no continuation', async () => {
         const res = await run();
