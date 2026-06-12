@@ -718,6 +718,14 @@
         height: 100%;
     }
 
+    [data-theme='dark'] {
+        color-scheme: dark;
+    }
+
+    [data-theme='light'] {
+        color-scheme: light;
+    }
+
     button,
     [role='button'] {
         cursor: pointer;
@@ -742,31 +750,3 @@
     background-color: var(--color-bg-surface) !important;
 }
 
-.scrollbar-app {
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-gray-400) transparent;
-}
-.scrollbar-app::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.scrollbar-app::-webkit-scrollbar-track {
-    background: transparent;
-}
-.scrollbar-app::-webkit-scrollbar-thumb {
-    background: var(--color-gray-400);
-    border-radius: 3px;
-}
-.scrollbar-app::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gray-500);
-}
-.dark .scrollbar-app {
-    scrollbar-color: var(--color-gray-600) transparent;
-}
-.dark .scrollbar-app::-webkit-scrollbar-thumb {
-    background: var(--color-gray-600);
-}
-.dark .scrollbar-app::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gray-550);
-}

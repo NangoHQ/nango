@@ -6,7 +6,7 @@ export * from './functions/command-output.js';
 export * from './functions/compiler-client.js';
 export * from './functions/deploy-client.js';
 export * from './functions/dryrun-client.js';
-export * from './functions/dryruns.service.js';
+export * from './functions/async-jobs.service.js';
 export * from './functions/helpers.js';
 export * from './functions/runtime.js';
 export * from './functions/sandbox.js';
