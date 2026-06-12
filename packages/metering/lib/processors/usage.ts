@@ -291,6 +291,7 @@ export class UsageProcessor {
                 case 'usage.data_transfer': {
                     const { package: pkg, callsite, direction } = event.payload.properties;
                     metrics.increment(metrics.Types.DATA_TRANSFER, event.payload.value, { package: pkg, callsite, direction });
+                    this.clickhouse.add([event]);
                     return Ok(undefined);
                 }
                 default:

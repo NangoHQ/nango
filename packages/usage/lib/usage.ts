@@ -291,7 +291,8 @@ export class UsageTracker implements IUsageTracker {
                 case 'function_executions':
                 case 'function_compute_gbms':
                 case 'webhook_forwards':
-                case 'function_logs': {
+                case 'function_logs':
+                case 'data_transfer': {
                     const billingUsage = await this.getBillingMetrics(accountId);
                     if (billingUsage.isErr()) {
                         if (billingUsage.error.message === 'rate_limit_exceeded') {
@@ -695,7 +696,8 @@ const sources: Record<UsageMetric, string> = {
     function_executions: 'billing:subscription:usage',
     function_compute_gbms: 'billing:subscription:usage',
     webhook_forwards: 'billing:subscription:usage',
-    function_logs: 'billing:subscription:usage'
+    function_logs: 'billing:subscription:usage',
+    data_transfer: 'billing:subscription:usage'
 };
 
 function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {
