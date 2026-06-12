@@ -40,13 +40,14 @@ describe('DekRegistry.create', () => {
         expect(registry.get()).toBe(unwrappedDek);
     });
 
-    it('should resolve from the wrapped key even when plaintext env var is set', async () => {
-        const registry = await DekRegistry.create({
-            NANGO_ENCRYPTION_KEY: testDek,
-            NANGO_ENCRYPTION_KEY_WRAPPED: 'wrapped-both',
-            NANGO_KMS_KEY_ARN: 'arn:aws:kms:test'
-        });
-        expect(registry.get()).toBe(unwrappedDek);
+    it('should throw when both the plaintext and wrapped keys are set', async () => {
+        await expect(
+            DekRegistry.create({
+                NANGO_ENCRYPTION_KEY: testDek,
+                NANGO_ENCRYPTION_KEY_WRAPPED: 'wrapped-both',
+                NANGO_KMS_KEY_ARN: 'arn:aws:kms:test'
+            })
+        ).rejects.toThrow(/mutually exclusive/);
     });
 
     it('should throw when the wrapped key is set without a KMS key ARN', async () => {
