@@ -245,6 +245,71 @@ describe('Scheduler', () => {
         expect(deleted.lastScheduledTaskId).toBe(task?.id);
         expect(deleted.lastScheduledTaskState).toBe('CANCELLED');
     });
+    it('should cancel tasks if schedule is paused', async () => {
+        const schedule = await recurring({ scheduler, state: 'STARTED' });
+        await immediate(scheduler, { schedule });
+        const paused = (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'PAUSED' })).unwrap();
+        expect(paused.state).toBe('PAUSED');
+        const [task] = (await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap();
+        expect(task?.state).toBe('CANCELLED');
+        expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
+        expect(paused.lastScheduledTaskId).toBe(task?.id);
+        expect(paused.lastScheduledTaskState).toBe('CANCELLED');
+    });
+    it('should schedule abort task for runner when a STARTED task is cancelled due to schedule PAUSED', async () => {
+        const scheduleAbortTaskSpy = vi.spyOn(scheduler as any, 'scheduleAbortTask');
+        try {
+            const schedule = await recurring({ scheduler, state: 'STARTED' });
+            const task = await immediate(scheduler, { schedule });
+            (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+
+            (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'PAUSED' })).unwrap();
+
+            const [cancelledTask] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
+            expect(cancelledTask?.state).toBe('CANCELLED');
+            expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
+            expect(scheduleAbortTaskSpy).toHaveBeenCalledOnce();
+            expect(scheduleAbortTaskSpy).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ aborted: expect.objectContaining({ id: task.id }), reason: 'schedule PAUSED' })
+            );
+        } finally {
+            scheduleAbortTaskSpy.mockRestore();
+        }
+    });
+    it('should schedule abort task for runner when a STARTED task is cancelled due to schedule DELETED', async () => {
+        const scheduleAbortTaskSpy = vi.spyOn(scheduler as any, 'scheduleAbortTask');
+        try {
+            const schedule = await recurring({ scheduler });
+            const task = await immediate(scheduler, { schedule });
+            (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+
+            (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'DELETED' })).unwrap();
+
+            const [cancelledTask] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
+            expect(cancelledTask?.state).toBe('CANCELLED');
+            expect(callbacks.CANCELLED).toHaveBeenCalledOnce();
+            expect(scheduleAbortTaskSpy).toHaveBeenCalledOnce();
+            expect(scheduleAbortTaskSpy).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ aborted: expect.objectContaining({ id: task.id }), reason: 'schedule DELETED' })
+            );
+        } finally {
+            scheduleAbortTaskSpy.mockRestore();
+        }
+    });
+    it('should not schedule abort task when pausing schedule with no running tasks', async () => {
+        const scheduleAbortTaskSpy = vi.spyOn(scheduler as any, 'scheduleAbortTask');
+        try {
+            const schedule = await recurring({ scheduler });
+
+            (await scheduler.setScheduleState({ scheduleName: schedule.name, state: 'PAUSED' })).unwrap();
+
+            expect(scheduleAbortTaskSpy).not.toHaveBeenCalled();
+        } finally {
+            scheduleAbortTaskSpy.mockRestore();
+        }
+    });
     it('should update schedule frequency', async () => {
         const schedule = await recurring({ scheduler });
         const newFrequency = 1_800_000;
