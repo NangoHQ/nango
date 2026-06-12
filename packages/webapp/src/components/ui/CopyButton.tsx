@@ -1,7 +1,7 @@
 import { Check, Copy, Link2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 
@@ -36,9 +36,18 @@ export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?:
     const Icon = iconType === 'link' ? Link2 : Copy;
 
     return (
-        <Button type="button" disabled={disabled} data-copied={copied} variant="ghost" size="2xs" onClick={copyToClipboard} className={cn('group', className)}>
+        <IconButton
+            type="button"
+            disabled={disabled}
+            data-copied={copied}
+            variant="ghost"
+            size="2xs"
+            onClick={copyToClipboard}
+            className={cn('group', className)}
+            label={iconType === 'link' ? 'Copy link' : 'Copy to clipboard'}
+        >
             <Check className={cn('size-3.5 hidden group-data-[copied=true]:inline', animationClass)} />
             <Icon className={cn('size-3.5 inline group-data-[copied=true]:hidden', animationClass)} />
-        </Button>
+        </IconButton>
     );
 };

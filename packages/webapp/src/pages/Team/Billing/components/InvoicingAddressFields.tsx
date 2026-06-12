@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { Button } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { countryCodes } from '../invoicingConstants';
 import { OptionalTag } from './InvoicingDetailsForm';
@@ -33,13 +33,13 @@ export const InvoicingAddressFields: React.FC = () => {
                     <OptionalTag />
                 </CardTitle>
                 {address ? (
-                    <Button type="button" variant="ghost" size="2xs" onClick={handleRemove}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove line">
                         <Trash2 />
-                    </Button>
+                    </IconButton>
                 ) : (
-                    <Button type="button" variant="ghost" size="2xs" onClick={handleAdd}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add line">
                         <Plus />
-                    </Button>
+                    </IconButton>
                 )}
             </CardHeader>
             {address && (

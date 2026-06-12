@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
@@ -179,9 +179,9 @@ export const FunctionsOne: React.FC = () => {
                         </div>
                         <div className="inline-flex items-center gap-3">
                             {func.enabled && debugMode && (
-                                <Button onClick={downloadCode} variant="ghost" size="2xs">
+                                <IconButton label="Download" onClick={downloadCode} variant="ghost" size="2xs">
                                     <Download />
-                                </Button>
+                                </IconButton>
                             )}
 
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">

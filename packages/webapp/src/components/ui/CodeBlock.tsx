@@ -2,7 +2,7 @@ import { Prism } from '@mantine/prism';
 import { Eye, EyeOff, Loader, Play } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { Badge } from './Badge.js';
 import { CopyButton } from './CopyButton.js';
@@ -89,9 +89,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         </Button>
                     )}
                     {secret && (
-                        <Button variant="ghost" size="2xs" onClick={toggleSecretVisibility}>
+                        <IconButton variant="ghost" size="2xs" label="Toggle visibility" onClick={toggleSecretVisibility}>
                             {isSecretVisible ? <EyeOff /> : <Eye />}
-                        </Button>
+                        </IconButton>
                     )}
                     <CopyButton text={code} />
                 </div>

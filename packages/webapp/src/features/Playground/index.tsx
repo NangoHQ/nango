@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { PlaygroundInputs } from './PlaygroundInputs';
 import { PlaygroundResult } from './PlaygroundResult';
@@ -123,9 +123,9 @@ export const Playground: React.FC = () => {
                                     <h2 className="text-text-strong text-heading-medium">Playground</h2>
                                     <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
                                 </div>
-                                <Button variant="ghost" size="2xs" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                                <IconButton variant="ghost" size="2xs" label="Close playground" onClick={() => setPlaygroundOpen(false)}>
                                     <X />
-                                </Button>
+                                </IconButton>
                             </div>
 
                             {/* Content */}

@@ -2,7 +2,7 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
@@ -231,9 +231,9 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell>
                     <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="2xs">
+                            <IconButton variant="ghost" size="2xs" label="Sync actions">
                                 <Ellipsis />
-                            </Button>
+                            </IconButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {/* Pause/Resume Schedule */}

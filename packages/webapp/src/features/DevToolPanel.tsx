@@ -2,7 +2,7 @@ import { BarChart3, Moon, Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
-import { Button } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { Switch } from '@/components/ui/Switch';
 import { useTeam } from '@/hooks/useTeam';
@@ -81,9 +81,15 @@ export const DevToolPanel: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border-muted px-3 py-2">
                 <span className="text-sm font-medium text-text-strong">Dev Tools</span>
-                <Button variant="ghost" size="2xs" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-strong">
+                <IconButton
+                    variant="ghost"
+                    size="2xs"
+                    label="Close dev tools"
+                    onClick={() => setOpen(false)}
+                    className="size-5 text-text-secondary hover:text-text-strong"
+                >
                     <X className="size-3.5" />
-                </Button>
+                </IconButton>
             </div>
 
             {/* Theme */}

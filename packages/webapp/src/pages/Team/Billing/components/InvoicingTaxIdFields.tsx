@@ -2,7 +2,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { Button } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
 import { OptionalTag } from './InvoicingDetailsForm';
@@ -62,13 +62,13 @@ export const InvoicingTaxIdFields: React.FC = () => {
                     <OptionalTag />
                 </CardTitle>
                 {taxId ? (
-                    <Button type="button" variant="ghost" size="2xs" onClick={handleRemove}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove tax ID">
                         <Trash2 />
-                    </Button>
+                    </IconButton>
                 ) : (
-                    <Button type="button" variant="ghost" size="2xs" onClick={handleAdd}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add tax ID">
                         <Plus />
-                    </Button>
+                    </IconButton>
                 )}
             </CardHeader>
             {taxId && (

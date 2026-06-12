@@ -2,7 +2,7 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { RoleSelect } from './RoleSelect';
 import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
@@ -188,9 +188,9 @@ export const TeamMembers: React.FC = () => {
                                         <PermissionGate condition={canManageTeam}>
                                             {(allowed) => (
                                                 <DropdownMenuTrigger asChild disabled={!allowed}>
-                                                    <Button variant="ghost" size="2xs" disabled={!allowed}>
+                                                    <IconButton variant="ghost" size="2xs" disabled={!allowed} label="Member actions">
                                                         <Ellipsis />
-                                                    </Button>
+                                                    </IconButton>
                                                 </DropdownMenuTrigger>
                                             )}
                                         </PermissionGate>

@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
@@ -82,9 +82,9 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     const canGoPrevious = useMemo(() => !breakdownEnabled || selectedMonth.getTime() > EARLIEST_USAGE_MONTH_MS, [breakdownEnabled, selectedMonth]);
 
     const previousButton = (
-        <Button variant="ghost" size="2xs" onClick={handlePreviousMonth} disabled={!canGoPrevious}>
+        <IconButton variant="ghost" size="2xs" onClick={handlePreviousMonth} disabled={!canGoPrevious} label="Previous month">
             <ChevronLeft />
-        </Button>
+        </IconButton>
     );
 
     return (
@@ -103,9 +103,9 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
                 </Tooltip>
             )}
             <span className="text-text-strong text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>
-            <Button variant="ghost" size="2xs" onClick={handleNextMonth} disabled={!canGoNext}>
+            <IconButton variant="ghost" size="2xs" onClick={handleNextMonth} disabled={!canGoNext} label="Next month">
                 <ChevronRight />
-            </Button>
+            </IconButton>
         </div>
     );
 };
