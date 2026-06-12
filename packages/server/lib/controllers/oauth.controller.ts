@@ -44,6 +44,7 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.j
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
 import {
+    flags,
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
@@ -1232,6 +1233,8 @@ class OAuthController {
                         present: 'true'
                     });
                 } else {
+                    // Flag off (default) => keep current behaviour (measure only); on => reject below.
+                    const enforced = await flags.isOAuthStateCookieEnforced(account.id);
                     // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
                     // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
                     // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
@@ -1239,6 +1242,7 @@ class OAuthController {
                     metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
                         account_id: account.id,
                         present: 'false',
+                        enforced: String(enforced),
                         auth_mode: session.authMode,
                         provider: config.provider,
                         sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
@@ -1249,6 +1253,14 @@ class OAuthController {
                         has_any_cookie: String(Boolean(req.get('cookie'))),
                         req_secure: String(req.secure)
                     });
+
+                    if (enforced) {
+                        const error = WSErrBuilder.MissingStateCookie();
+                        void logCtx.error('Rejecting OAuth callback: state cookie missing', { providerConfigKey, connectionId });
+                        await logCtx.failed();
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                        return;
+                    }
                 }
             }
 

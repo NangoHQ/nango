@@ -2,15 +2,27 @@ import { getLogger } from '@nangohq/utils';
 
 import { buildFeatureFlagsClient } from './client.js';
 import { envs } from './env.js';
+import { buildFlags } from './flags.js';
 import { NoopProvider } from './providers/noop.js';
 import { UnleashProvider } from './providers/unleash.js';
 
 import type { FeatureFlagsClient } from './client.js';
+import type { Flags } from './flags.js';
 import type { Provider } from '@openfeature/server-sdk';
 
 export type { FeatureFlagsClient } from './client.js';
 export type { FlagContext } from './types.js';
+export type { Flags } from './flags.js';
+export { buildFlags } from './flags.js';
 export { FLAGS, type FlagKey } from './registry.js';
+
+/**
+ * Typed flag facade backed by the shared (cached) client. The underlying client
+ * is initialized lazily and reused; awaiting this is cheap after the first call.
+ */
+export async function getFlags(): Promise<Flags> {
+    return buildFlags(await getFeatureFlagsClient());
+}
 
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
 let destroyPromise: Promise<void> | undefined;
