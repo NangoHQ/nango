@@ -44,11 +44,11 @@ export class DekRegistry {
     }
 }
 
-// Memoized so the unwrapping (and its KMS call) runs once per process
-// since several packages can each instantiate a DekRegistry.
-const resolved = new Map<string, string>();
+// Cache the in-flight promise so the KMS unwrap runs once per process,
+// even when several packages instantiate a DekRegistry concurrently.
+const resolved = new Map<string, Promise<string>>();
 
-async function resolveDek(envs: DekEnvs): Promise<string> {
+function resolveDek(envs: DekEnvs): Promise<string> {
     const { NANGO_ENCRYPTION_KEY: plaintext, NANGO_ENCRYPTION_KEY_WRAPPED: wrapped, NANGO_KMS_KEY_ARN: kmsKeyArn } = envs;
 
     const cacheKey = JSON.stringify([plaintext, wrapped, kmsKeyArn]);
@@ -57,22 +57,41 @@ async function resolveDek(envs: DekEnvs): Promise<string> {
         return cached;
     }
 
+    const promise = resolveFromEnvs({ plaintext, wrapped, kmsKeyArn }).catch((err: unknown) => {
+        // Don't cache failures: a transient KMS error must not poison every future caller.
+        resolved.delete(cacheKey);
+        throw err;
+    });
+    resolved.set(cacheKey, promise);
+    return promise;
+}
+
+async function resolveFromEnvs({
+    plaintext,
+    wrapped,
+    kmsKeyArn
+}: {
+    plaintext?: string | undefined;
+    wrapped?: string | undefined;
+    kmsKeyArn?: string | undefined;
+}): Promise<string> {
     // Wrapped key is the source of truth (unwrap it via KMS).
     // Fallback to the plaintext key (dev/self hosted) or '' (encryption disabled) when neither is set.
     // Unwrap failures are fatal: we must not silently start up with the wrong key.
-    let dek = '';
     if (wrapped) {
         if (!kmsKeyArn) {
             throw new Error('NANGO_KMS_KEY_ARN is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
         }
-        dek = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
+        const dek = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
         logger.info('Loaded encryption key (source=wrapped)');
-    } else if (plaintext) {
-        assertDekLength(Buffer.from(plaintext, 'base64'));
-        logger.info('Loaded encryption key (source=plaintext)');
-        dek = plaintext;
+        return dek;
     }
 
-    resolved.set(cacheKey, dek);
-    return dek;
+    if (plaintext) {
+        assertDekLength(Buffer.from(plaintext, 'base64'));
+        logger.info('Loaded encryption key (source=plaintext)');
+        return plaintext;
+    }
+
+    return '';
 }
