@@ -52,11 +52,9 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
     });
 
     // Re-issue a fresh session so the user who just changed their password stays logged in seamlessly.
-    // Best effort basis, if it fails the user can simply re-authenticate with the new password.
+    // req.logIn regenerates the session id internally (passport's fixation guard), rotating the current
+    // session. Best effort: if it fails the user can simply re-authenticate with the new password.
     try {
-        await new Promise<void>((resolve, reject) =>
-            req.session.regenerate((err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()))
-        );
         await new Promise<void>((resolve, reject) =>
             req.logIn(user as Express.User, (err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()))
         );
