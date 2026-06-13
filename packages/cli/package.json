@@ -57,7 +57,7 @@
         "copyfiles": "2.4.1",
         "dotenv": "16.5.0",
         "ejs": "3.1.10",
-        "esbuild": "0.25.5",
+        "esbuild": "0.28.1",
         "figlet": "1.8.2",
         "glob": "13.0.5",
         "import-meta-resolve": "4.1.0",
