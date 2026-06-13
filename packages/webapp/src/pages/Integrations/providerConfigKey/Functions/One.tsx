@@ -1,7 +1,7 @@
-import { Download, ExternalLink, Info } from 'lucide-react';
+import { Download, ExternalLink, Info, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
@@ -19,9 +19,10 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction, useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -35,6 +36,8 @@ import type { JSONSchema7 } from 'json-schema';
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
     const { toast } = useToast();
+    const navigate = useNavigate();
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const env = useStore((state) => state.env);
     const debugMode = useStore((state) => state.debugMode);
@@ -44,6 +47,9 @@ export const FunctionsOne: React.FC = () => {
     const flowsData = flowsResponse?.data;
 
     const func = flowsData?.flows.find((flow) => flow.name === functionName);
+
+    const functionType = func?.type === 'sync' ? 'sync' : 'action';
+    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, providerConfigKey!, functionName!, functionType);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -100,6 +106,21 @@ export const FunctionsOne: React.FC = () => {
         }
     }, [func, env, toast]);
 
+    const onDelete = useCallback(async () => {
+        try {
+            await deleteFunction();
+            toast({ title: `Function "${functionName}" has been deleted`, variant: 'success' });
+            navigate(`/${env}/integrations/${providerConfigKey}`);
+        } catch (err) {
+            const errorCode = err instanceof APIError ? err.json?.error?.code : undefined;
+            toast({
+                title: 'Failed to delete function',
+                description: errorCode ? `Error code: ${errorCode}` : undefined,
+                variant: 'error'
+            });
+        }
+    }, [deleteFunction, toast, functionName, navigate, env, providerConfigKey]);
+
     if (isLoading) {
         return (
             <DashboardLayout>
@@ -154,12 +175,13 @@ export const FunctionsOne: React.FC = () => {
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
-                        <div className="inline-flex items-center gap-2">
+                        <div className="inline-flex items-center gap-3">
                             {func.enabled && debugMode && (
                                 <Button onClick={downloadCode} variant="ghost" size="icon">
                                     <Download />
                                 </Button>
                             )}
+
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
                                 <Button
                                     variant="secondary"
@@ -176,6 +198,27 @@ export const FunctionsOne: React.FC = () => {
                                     Playground <ExternalLink />
                                 </Button>
                             </ConditionalTooltip>
+                            {func.source !== 'repo' && (func.type === 'sync' || func.type === 'action') && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    loading={isDeleting}
+                                    onClick={() =>
+                                        confirm({
+                                            title: 'Delete function?',
+                                            description:
+                                                func.type === 'sync'
+                                                    ? `You are about to permanently delete the sync "${func.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
+                                                    : `You are about to permanently delete the action "${func.name}". This operation is not reversible, are you sure you wish to continue?`,
+                                            confirmButtonText: 'Delete function',
+                                            confirmVariant: 'destructive',
+                                            onConfirm: onDelete
+                                        })
+                                    }
+                                >
+                                    <Trash2 />
+                                </Button>
+                            )}
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
                     </div>
@@ -285,6 +328,7 @@ export const FunctionsOne: React.FC = () => {
                     </Tabs>
                 </CardContent>
             </CardLayout>
+            {DialogComponent}
         </DashboardLayout>
     );
 };
