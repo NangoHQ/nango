@@ -13,6 +13,8 @@
         "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
         "lint": "eslint . ",
         "lint:fix": "eslint . --fix",
+        "lint:fast": "eslint . --config eslint.fast.config.mjs",
+        "lint:fast:fix": "eslint . --config eslint.fast.config.mjs --fix",
         "ts-build": "tsc -b tsconfig.build.json",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
@@ -88,7 +90,7 @@
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,cjs}": [
-            "eslint --fix --quiet"
+            "eslint --fix --quiet --config eslint.fast.config.mjs"
         ],
         "*.{html,css,json,yaml}": [
             "prettier --write"
