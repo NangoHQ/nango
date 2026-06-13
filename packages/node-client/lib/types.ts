@@ -99,9 +99,16 @@ export type {
 
 export type { NangoSyncConfig, StandardNangoConfig, SyncResult };
 
-export interface NangoProps {
+interface NangoBaseProps {
     host?: string;
-    secretKey: string;
+    /**
+     * The environment's webhook signing key (Environment Settings → Webhooks → Signing key).
+     * Used by `verifyIncomingWebhookRequest` to validate incoming webhook signatures.
+     * Defaults to the API key when omitted. On environments created after 2026-04-20 (or any
+     * environment that later rotated its API key), the signing key differs from the API key,
+     * so set this explicitly to verify webhooks.
+     */
+    webhookSigningKey?: string;
     connectionId?: string;
     providerConfigKey?: string;
     isSync?: boolean;
@@ -109,6 +116,28 @@ export interface NangoProps {
     isScript?: boolean;
     activityLogId?: string | undefined;
 }
+
+/**
+ * Credentials for the SDK. At least one of `apiKey` (preferred) or the deprecated `secretKey`
+ * must be provided; this is enforced at compile time.
+ */
+export type NangoProps = NangoBaseProps &
+    (
+        | {
+              /**
+               * Your Nango environment API key (Environment Settings → API Keys).
+               * Sent as the bearer token for API calls.
+               */
+              apiKey: string;
+              /** @deprecated Use `apiKey` instead. Kept as an alias for backward compatibility. */
+              secretKey?: string;
+          }
+        | {
+              apiKey?: string;
+              /** @deprecated Use `apiKey` instead. Kept as an alias for backward compatibility. */
+              secretKey: string;
+          }
+    );
 
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey'> & {
     providerConfigKey?: string;

@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from './index.js';
 
+import type { NangoProps } from './types.js';
+
 describe('triggerSync', () => {
     const nango = new Nango({ secretKey: 'test' });
     const mockHttp = {
@@ -252,5 +254,72 @@ describe('verifyIncomingWebhookRequest', () => {
         expect(nango.verifyIncomingWebhookRequest(bodyString, headersUpperCase)).toBe(true);
         expect(nango.verifyIncomingWebhookRequest(bodyString, headersMixedCase)).toBe(true);
         expect(nango.verifyIncomingWebhookRequest(bodyString, headersLowerCase)).toBe(true);
+    });
+});
+
+describe('verifyIncomingWebhookRequest with a separate webhook signing key', () => {
+    const secretKey = 'test-secret-key';
+    const webhookSigningKey = 'test-webhook-signing-key';
+
+    const body = {
+        type: 'sync',
+        connectionId: 'test-connection',
+        providerConfigKey: 'test-provider',
+        syncName: 'test-sync',
+        model: 'TestModel',
+        responseResults: { added: 5, updated: 0, deleted: 0 }
+    };
+    const bodyString = JSON.stringify(body);
+    const signatureFromSigningKey = crypto.createHmac('sha256', webhookSigningKey).update(bodyString).digest('hex');
+    const signatureFromSecretKey = crypto.createHmac('sha256', secretKey).update(bodyString).digest('hex');
+
+    it('should verify webhooks signed with the webhook signing key', () => {
+        const nango = new Nango({ secretKey, webhookSigningKey });
+
+        expect(nango.verifyIncomingWebhookRequest(bodyString, { 'x-nango-hmac-sha256': signatureFromSigningKey })).toBe(true);
+    });
+
+    it('should reject webhooks signed with the secret key when a webhook signing key is set', () => {
+        const nango = new Nango({ secretKey, webhookSigningKey });
+
+        expect(nango.verifyIncomingWebhookRequest(bodyString, { 'x-nango-hmac-sha256': signatureFromSecretKey })).toBe(false);
+    });
+
+    it('should fall back to the secret key when no webhook signing key is set', () => {
+        const nango = new Nango({ secretKey });
+
+        expect(nango.verifyIncomingWebhookRequest(bodyString, { 'x-nango-hmac-sha256': signatureFromSecretKey })).toBe(true);
+    });
+});
+
+describe('apiKey / secretKey', () => {
+    it('should accept apiKey and use it as the bearer token and webhook verification key', () => {
+        const apiKey = 'test-api-key';
+        const nango = new Nango({ apiKey });
+
+        expect(nango.apiKey).toBe(apiKey);
+
+        const body = JSON.stringify({ type: 'sync' });
+        const signature = crypto.createHmac('sha256', apiKey).update(body).digest('hex');
+        expect(nango.verifyIncomingWebhookRequest(body, { 'x-nango-hmac-sha256': signature })).toBe(true);
+    });
+
+    it('should still accept the deprecated secretKey and expose it as apiKey', () => {
+        const secretKey = 'test-secret-key';
+        const nango = new Nango({ secretKey });
+
+        expect(nango.apiKey).toBe(secretKey);
+        expect(nango.secretKey).toBe(secretKey);
+    });
+
+    it('should prefer apiKey when both are provided', () => {
+        const nango = new Nango({ apiKey: 'the-api-key', secretKey: 'the-secret-key' });
+
+        expect(nango.apiKey).toBe('the-api-key');
+    });
+
+    it('should throw when neither apiKey nor secretKey is provided', () => {
+        // The type requires at least one credential; cast to exercise the runtime guard defensively.
+        expect(() => new Nango({} as unknown as NangoProps)).toThrow(/API key/);
     });
 });
