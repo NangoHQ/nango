@@ -196,7 +196,7 @@ program
 
         try {
             const ensure = new Ensure(interactive);
-            const functionType = await ensure.functionType(sync, action, onEvent, webhook);
+            const functionType = await ensure.functionType({ sync, action, onEvent, webhook });
 
             let integrations: string[] = [];
 

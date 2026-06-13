@@ -505,7 +505,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         plugin: ({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> => {
             // Properties that `createWebhook()` lifts into its implicit `http` trigger at runtime.
             // Keep in sync with `createWebhook()` in runner-sdk/lib/scripts.ts.
-            const webhookTriggerFields = new Set(['name', 'scope', 'ingress', 'ingressChallenge', 'ingressValidation', 'debounce']);
+            const webhookTriggerFields = new Set(['name', 'scope', 'ingressChallenge', 'ingressValidation', 'debounce']);
 
             /**
              * `createWebhook()` is sugar for a function with a single implicit `http` trigger.

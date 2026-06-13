@@ -271,9 +271,9 @@ export function parseFunction({
         return Err(new Error(`Function "${basename}" must declare at least one trigger (${filePath})`));
     }
 
-    // Validate cron trigger intervals
+    // Validate schedule trigger intervals
     for (const trigger of params.triggers) {
-        if (trigger.type === 'cron') {
+        if (trigger.type === 'schedule') {
             const interval = getInterval(trigger.schedule, new Date());
             if (interval instanceof Error) {
                 return Err(new InvalidIntervalDefinitionError(filePath, ['createFunction', 'triggers', 'schedule']));
@@ -334,7 +334,7 @@ function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
         }
         parsed.hasIngressChallenge = typeof trigger.ingressChallenge === 'function';
         parsed.hasIngressValidation = typeof trigger.ingressValidation === 'function';
-    } else if (trigger.type === 'cron') {
+    } else if (trigger.type === 'schedule') {
         parsed.schedule = trigger.schedule;
     } else if (trigger.type === 'event') {
         parsed.event = trigger.event;

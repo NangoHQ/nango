@@ -441,11 +441,12 @@ export function createOnEvent<TMetadata extends ZodMetadata = undefined, TCheckp
 /**
  * The kind of trigger that initiated a function run.
  * - `http`: an incoming http call or webhook request
- * - `cron`: a periodic schedule
+ * - `schedule`: a periodic schedule
  * - `event`: an internal Nango event
- * - `manual`: started via `nango.triggerFunction()`, the API, or the CLI
+ * - `api`: invoked directly via `nango.triggerFunction()`, the REST API, the CLI, or the UI
+ *   (always available regardless of declared triggers)
  */
-export type FunctionTriggerType = 'http' | 'cron' | 'event' | 'manual';
+export type FunctionTriggerType = 'http' | 'schedule' | 'event' | 'api';
 
 /**
  * Declares where the debounce/coalescing key is extracted from.
@@ -498,8 +499,8 @@ export interface HttpTrigger {
     ingressValidation?: IngressValidation;
     debounce?: WebhookDebounceConfig;
 }
-export interface CronTrigger {
-    type: 'cron';
+export interface ScheduleTrigger {
+    type: 'schedule';
     /** e.g. 'every hour', 'every 2 minutes'. */
     schedule: string;
 }
@@ -507,7 +508,7 @@ export interface EventTrigger {
     type: 'event';
     event: string;
 }
-export type FunctionTrigger = HttpTrigger | CronTrigger | EventTrigger;
+export type FunctionTrigger = HttpTrigger | ScheduleTrigger | EventTrigger;
 
 /** Coalescing summary, present on the event when `debounce` is configured. */
 export interface CoalescedInfo {
@@ -552,7 +553,8 @@ export interface CreateFunctionProps<
 > {
     /**
      * The version of the function. Use it to track changes inside Nango's UI.
-     * @default '0.0.1'
+     * Supports semver (e.g. `'1.0.0'`)
+     * If omitted, Nango auto-manages it: `1` on first deploy, and auto-increments for subsequent deploys.
      */
     version?: string;
 
@@ -561,15 +563,15 @@ export interface CreateFunctionProps<
 
     /**
      * What can initiate execution. A function can have multiple triggers of different types
-     * (e.g. a webhook trigger plus a cron safety net). Any function can also be started via
-     * `nango.triggerFunction()` or the API regardless of declared triggers (`manual`).
+     * (e.g. a webhook trigger plus a scheduled safety net). Any function can also be started via
+     * `nango.triggerFunction()` or the API regardless of declared triggers (`api`).
      */
     triggers: FunctionTrigger[];
 
     /** Models the function can `batchSave`/`batchUpdate`/`batchDelete` against. */
     models?: TModels;
 
-    /** Optional input schema. When set, it types `event.payload` and is used for manual/API invocation. */
+    /** Optional input schema. When set, it types `event.payload` and is used for API invocation. */
     input?: TInput;
 
     /** Optional typed output schema (reserved; unused for webhooks today). */
@@ -617,7 +619,7 @@ export interface CreateFunctionResponse<
  * export default createFunction({
  *     triggers: [
  *         { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
- *         { type: 'cron', schedule: 'every hour' }
+ *         { type: 'schedule', schedule: 'every hour' }
  *     ],
  *     exec: async (nango, event) => { ... }
  * });
@@ -682,11 +684,11 @@ export function createWebhook<
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined
 >(params: CreateWebhookProps<TModels, TMetadata, TCheckpoint>): CreateFunctionResponse<TModels, z.ZodTypeAny, z.ZodTypeAny, TMetadata, TCheckpoint> {
-    const { name, ingressChallenge, ingressValidation, debounce, ...rest } = params;
+    const { name, scope, ingressChallenge, ingressValidation, debounce, ...rest } = params;
     const trigger: HttpTrigger = {
         type: 'http',
         ...(name !== undefined ? { name } : {}),
-        ...(params.scope !== undefined ? { scope: params.scope } : {}),
+        ...(scope !== undefined ? { scope } : {}),
         ...(ingressChallenge !== undefined ? { ingressChallenge } : {}),
         ...(ingressValidation !== undefined ? { ingressValidation } : {}),
         ...(debounce !== undefined ? { debounce } : {})

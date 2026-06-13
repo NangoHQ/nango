@@ -38,7 +38,17 @@ export class Ensure {
         }
     }
 
-    public async functionType(sync: boolean, action: boolean, onEvent: boolean, webhook = false): Promise<FunctionType> {
+    public async functionType({
+        sync,
+        action,
+        onEvent,
+        webhook
+    }: {
+        sync?: boolean;
+        action?: boolean;
+        onEvent?: boolean;
+        webhook?: boolean;
+    }): Promise<FunctionType> {
         if (sync) return 'sync';
         if (action) return 'action';
         if (onEvent) return 'on-event';

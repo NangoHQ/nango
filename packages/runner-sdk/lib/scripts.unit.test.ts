@@ -193,7 +193,7 @@ describe('scripts', () => {
                 description: 'Handle contact updates',
                 triggers: [
                     { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
-                    { type: 'cron', schedule: 'every hour' }
+                    { type: 'schedule', schedule: 'every hour' }
                 ],
                 exec: async (nango, event) => {
                     // No input schema declared → payload is unknown, not any.
@@ -206,7 +206,7 @@ describe('scripts', () => {
                 description: 'Handle contact updates',
                 triggers: [
                     { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
-                    { type: 'cron', schedule: 'every hour' }
+                    { type: 'schedule', schedule: 'every hour' }
                 ],
                 type: 'function',
                 exec: expect.any(Function)
@@ -215,7 +215,7 @@ describe('scripts', () => {
 
         it('should type event.payload from the input schema', () => {
             createFunction({
-                triggers: [{ type: 'cron', schedule: 'every hour' }],
+                triggers: [{ type: 'schedule', schedule: 'every hour' }],
                 input: z.object({ portalId: z.string() }),
                 exec: async (nango, event) => {
                     expectTypeOf(event.payload).toEqualTypeOf<{ portalId: string }>();
@@ -265,6 +265,19 @@ describe('scripts', () => {
             expect(webhook.name).toBeUndefined();
             expect(webhook.triggers).toHaveLength(1);
             expect(webhook.triggers[0]).toStrictEqual({ type: 'http' });
+        });
+
+        it('should lift scope into the http trigger and not leak it to the top level', () => {
+            const webhook = createWebhook({
+                name: 'contacts-updated',
+                scope: 'connection',
+                exec: async (nango) => {
+                    await nango.log('hi');
+                }
+            });
+
+            expect(webhook.triggers[0]).toStrictEqual({ type: 'http', name: 'contacts-updated', scope: 'connection' });
+            expect((webhook as unknown as Record<string, unknown>)['scope']).toBeUndefined();
         });
     });
 });

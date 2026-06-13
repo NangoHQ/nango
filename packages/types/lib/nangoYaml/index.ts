@@ -131,12 +131,12 @@ export interface ParsedNangoSync {
 
 /** Serializable view of a function trigger (the executable hooks live in the deployed file body). */
 export interface ParsedFunctionTrigger {
-    type: 'http' | 'cron' | 'event' | 'manual';
+    type: 'http' | 'schedule' | 'event' | 'api';
     /** http trigger: maps to the URL path segment. */
     name?: string;
     /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
     scope?: 'integration' | 'connection';
-    /** cron trigger. */
+    /** schedule trigger. */
     schedule?: string;
     /** event trigger. */
     event?: string;
