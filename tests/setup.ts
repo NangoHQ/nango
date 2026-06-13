@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { IMAGE_VERSIONS } from './versions';
 
 import { ElasticsearchContainer } from '@testcontainers/elasticsearch';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
@@ -10,7 +11,7 @@ const containers: StartedTestContainer[] = [];
 
 export async function setupElasticsearch() {
     console.log('Starting Elasticsearch...');
-    const es = await new ElasticsearchContainer('elasticsearch:8.13.0')
+    const es = await new ElasticsearchContainer(`elasticsearch:${IMAGE_VERSIONS.ELASTICSEARCH}`)
         .withName(`es-test-${randomUUID()}`)
         .withEnvironment({
             'discovery.type': 'single-node',
@@ -32,7 +33,7 @@ export async function setupElasticsearch() {
 
 export async function setupOpenSearch() {
     console.log('Starting OpenSearch...');
-    const os = await new GenericContainer('opensearchproject/opensearch:2.13.0')
+    const os = await new GenericContainer(`opensearchproject/opensearch:${IMAGE_VERSIONS.OPENSEARCH}`)
         .withName(`os-test-${randomUUID()}`)
         .withEnvironment({
             'discovery.type': 'single-node',
@@ -67,7 +68,7 @@ async function setupPostgres() {
     const dbName = 'postgres';
     const user = 'postgres';
     const password = 'nango_test';
-    const container = new PostgreSqlContainer('postgres:15.5-alpine');
+    const container = new PostgreSqlContainer(`postgres:${IMAGE_VERSIONS.POSTGRES}`);
     const pg = await container
         .withDatabase(dbName)
         .withUsername(user)
@@ -90,7 +91,7 @@ async function setupPostgres() {
 
 export async function setupActiveMQ() {
     console.log('Starting ActiveMQ...');
-    const amq = await new GenericContainer('apache/activemq-classic:5.18.3').withExposedPorts(61614).withName(`activemq-test-${randomUUID()}`).start();
+    const amq = await new GenericContainer(`apache/activemq-classic:${IMAGE_VERSIONS.ACTIVEMQ}`).withExposedPorts(61614).withName(`activemq-test-${randomUUID()}`).start();
     containers.push(amq);
 
     const url = `ws://${amq.getHost()}:${amq.getMappedPort(61614)}`;
@@ -103,7 +104,7 @@ export async function setupActiveMQ() {
 
 export async function setupRedis() {
     console.log('Starting Redis...');
-    const redis = await new GenericContainer('redis:8.0.4-alpine').withExposedPorts(6379).withName(`redis-test-${randomUUID()}`).start();
+    const redis = await new GenericContainer(`redis:${IMAGE_VERSIONS.REDIS}`).withExposedPorts(6379).withName(`redis-test-${randomUUID()}`).start();
     containers.push(redis);
 
     const url = `redis://${redis.getHost()}:${redis.getMappedPort(6379)}`;
@@ -114,7 +115,7 @@ export async function setupRedis() {
 
 export async function setupClickhouse() {
     console.log('Starting Clickhouse...');
-    const clickhouse = await new GenericContainer('clickhouse/clickhouse-server:26.2')
+    const clickhouse = await new GenericContainer(`clickhouse/clickhouse-server:${IMAGE_VERSIONS.CLICKHOUSE}`)
         .withExposedPorts(8123)
         .withName(`clickhouse-test-${randomUUID()}`)
         .withEnvironment({ CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1', ALLOW_EMPTY_PASSWORD: 'yes' })
