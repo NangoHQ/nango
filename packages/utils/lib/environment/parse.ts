@@ -636,6 +636,14 @@ export const ENVS = z.object({
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
     E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
+    // Feature Flags
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_UNLEASH_URL: z.url().optional(),
+    NANGO_UNLEASH_API_TOKEN: z.string().optional(),
+    NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
+    NANGO_UNLEASH_REFRESH_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    NANGO_UNLEASH_INIT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: z.stringbool().optional().default(false),
