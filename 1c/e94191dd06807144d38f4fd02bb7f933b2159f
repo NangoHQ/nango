@@ -1,0 +1,31 @@
+nango-functions-customers-report.html
+  s_a7d1e8b3773a3e::t_a6d5cdeb9d626f 212-248,289,294-439205
+  s_a7d1e8b3773a3e::t_c27c0b34b08223 1-211,249-288,290-293,439206-493123
+template-first-activation-findings.md
+  s_f0fbc5e4e8693c::t_f3baf69e4581f7 18-24
+  s_f0fbc5e4e8693c::t_f9b168438bdc5e 1-17,25-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "1ce94191dd06807144d38f4fd02bb7f933b2159f",
+  "prompts": {},
+  "sessions": {
+    "s_a7d1e8b3773a3e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1733bd8f6ffe8p3I1mgNa0Y5NM",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_f0fbc5e4e8693c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_17227f573ffe8ZqebKjGvAjWqW",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
