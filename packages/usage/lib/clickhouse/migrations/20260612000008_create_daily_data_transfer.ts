@@ -11,7 +11,7 @@ export const sql = [
         package          LowCardinality(String),
         callsite         String,
         sync_id          String DEFAULT '',
-        value            Int64
+        value            UInt64
     )
     ENGINE = SummingMergeTree(value)
     PARTITION BY toYYYYMM(day)
