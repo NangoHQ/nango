@@ -22643,7 +22643,7 @@ yotpo:
 youcanbook-me:
     display_name: YouCanBookMe
     categories:
-        - scheduling
+        - productivity
     auth_mode: BASIC
     proxy:
         base_url: https://api.youcanbook.me
