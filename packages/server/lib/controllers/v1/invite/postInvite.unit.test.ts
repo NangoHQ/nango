@@ -99,4 +99,57 @@ describe('postInvite', () => {
         expect(status).toHaveBeenCalledWith(200);
         expect(send).toHaveBeenCalledWith({ data: { invited: ['invitee@example.com'] } });
     });
+
+    it('sends isExistingUser=false for new users', async () => {
+        mockGetUserByEmail.mockResolvedValue(null);
+
+        const req = {
+            body: { emails: ['newuser@example.com'] },
+            query: { env: 'dev' },
+            route: { path: '/api/v1/invite' },
+            originalUrl: '/api/v1/invite',
+            header: vi.fn()
+        } as unknown as Request;
+        const { res } = createResponse();
+
+        await postInvite(req, res, vi.fn());
+
+        expect(mockSendInviteEmail).toHaveBeenCalledWith(expect.objectContaining({ email: 'newuser@example.com', isExistingUser: false }));
+    });
+
+    it('sends isExistingUser=true when invitee already has an account on a different team', async () => {
+        mockGetUserByEmail.mockResolvedValue({ id: 99, account_id: 999 });
+
+        const req = {
+            body: { emails: ['existing@example.com'] },
+            query: { env: 'dev' },
+            route: { path: '/api/v1/invite' },
+            originalUrl: '/api/v1/invite',
+            header: vi.fn()
+        } as unknown as Request;
+        const { res } = createResponse();
+
+        await postInvite(req, res, vi.fn());
+
+        expect(mockSendInviteEmail).toHaveBeenCalledWith(expect.objectContaining({ email: 'existing@example.com', isExistingUser: true }));
+    });
+
+    it('skips invite when invitee is already a member of the same team', async () => {
+        mockGetUserByEmail.mockResolvedValue({ id: 99, account_id: 1 }); // same account_id as res.locals.account.id
+
+        const req = {
+            body: { emails: ['member@example.com'] },
+            query: { env: 'dev' },
+            route: { path: '/api/v1/invite' },
+            originalUrl: '/api/v1/invite',
+            header: vi.fn()
+        } as unknown as Request;
+        const { res, send, status } = createResponse();
+
+        await postInvite(req, res, vi.fn());
+
+        expect(mockSendInviteEmail).not.toHaveBeenCalled();
+        expect(status).toHaveBeenCalledWith(200);
+        expect(send).toHaveBeenCalledWith({ data: { invited: [] } });
+    });
 });

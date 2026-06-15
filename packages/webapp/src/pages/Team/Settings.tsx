@@ -4,11 +4,11 @@ import { AddTeamMemberButton } from './components/AddTeamMemberButton';
 import { TeamMembers } from './components/TeamMembers';
 import { TeamSettings } from './components/TeamSettings';
 import { ErrorPageComponent } from '../../components/patterns/ErrorComponent';
-import { Skeleton } from '../../components/ui/Skeleton';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { ImpersonateForm } from './components/ImpersonateForm';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { ApiError } from '@nangohq/types';
 
@@ -24,7 +24,7 @@ export const TeamSettingsPage: React.FC = () => {
                     <title>Team Settings - Nango</title>
                 </Helmet>
                 <div className="flex items-center justify-between">
-                    <h2 className="text-heading-large text-text-primary">Team settings</h2>
+                    <h2 className="text-heading-large text-text-strong">Team settings</h2>
                 </div>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
@@ -46,7 +46,7 @@ export const TeamSettingsPage: React.FC = () => {
                 <title>Team Settings - Nango</title>
             </Helmet>
             <div className="flex items-center justify-between">
-                <h2 className="text-heading-large text-text-primary">Team settings</h2>
+                <h2 className="text-heading-large text-text-strong">Team settings</h2>
                 <AddTeamMemberButton />
             </div>
 

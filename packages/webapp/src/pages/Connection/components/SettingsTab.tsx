@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 
 import { ConnectionTabLayout } from './ConnectionTabLayout';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button } from '@/components-v2/ui/Button';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button } from '@/components/ui/Button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -45,7 +45,7 @@ export const SettingsTab = () => {
             {DialogComponent}
             <ConnectionTabLayout connectionData={connectionData}>
                 <div className="w-full flex items-center justify-between">
-                    <span className="text-body-medium-semi text-text-primary">Connection deletion</span>
+                    <span className="text-body-medium-semi text-text-strong">Connection deletion</span>
                     <PermissionGate condition={canDeleteConnection} asChild>
                         {(allowed) => (
                             <Button

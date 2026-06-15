@@ -69,6 +69,7 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: connection.id,
             environmentId: env.id,
+            plan: null,
             model: 'Contact'
         });
 
@@ -143,6 +144,7 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: connection.id,
             environmentId: env.id,
+            plan: null,
             model: 'Contact'
         });
 
@@ -175,6 +177,7 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: connection.id,
             environmentId: env.id,
+            plan: null,
             model: 'Contact::delta'
         });
 
@@ -222,6 +225,7 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: connection.id,
             environmentId: env.id,
+            plan: null,
             model: 'Contact'
         });
 
@@ -295,6 +299,7 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: connectionA.id,
             environmentId: env.id,
+            plan: null,
             model: 'Contact'
         });
 
@@ -340,6 +345,7 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: connection.id,
             environmentId: env.id,
+            plan: null,
             model: 'Issue'
         });
 

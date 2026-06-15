@@ -85,6 +85,7 @@ describe('route', () => {
                     parentApiKeyId: apiKey.id,
                     environmentId: env.id,
                     purpose: 'dryrun',
+                    dryrunId: '00000000-0000-4000-8000-000000000001',
                     expiresAt: new Date(Date.now() + 60 * 1000)
                 })
             ).unwrap();

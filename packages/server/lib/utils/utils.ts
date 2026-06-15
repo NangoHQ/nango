@@ -61,9 +61,11 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
 
     const parts = strWithoutConnectionConfig.split('||');
     if (parts[1]) {
+        const primary = parts[0]!.trim();
         const fallback = parts[1].trim();
+        const interpolatedPrimary = interpolateString(primary, replacers);
         const interpolatedFallback = interpolateString(fallback, replacers);
-        return /\${([^{}]*)}/g.test(interpolatedFallback);
+        return /\${([^{}]*)}/g.test(interpolatedPrimary) && /\${([^{}]*)}/g.test(interpolatedFallback);
     }
 
     const interpolatedStr = interpolateString(strWithoutConnectionConfig, replacers);

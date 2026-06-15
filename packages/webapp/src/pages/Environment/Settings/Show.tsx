@@ -14,9 +14,9 @@ import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { useStore } from '../../../store';
-import { Badge } from '@/components-v2/ui/Badge';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Badge } from '@/components/ui/Badge';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 
 import type { ReactNode } from 'react';
@@ -46,7 +46,7 @@ export const EnvironmentSettings: React.FC = () => {
                     <title>Environment Settings - Nango</title>
                 </Helmet>
                 <div className="flex justify-between mb-8 items-center">
-                    <div className="flex text-left text-3xl tracking-tight text-white">
+                    <div className="flex text-left text-3xl tracking-tight text-text-strong">
                         <h2 className="font-semibold">Environment Settings &mdash;</h2>&nbsp;{env}
                     </div>
                 </div>
@@ -66,7 +66,7 @@ export const EnvironmentSettings: React.FC = () => {
             </Helmet>
 
             <div className="flex flex-col gap-2.5">
-                <h2 className="text-title-subsection text-text-primary">Environment settings</h2>
+                <h2 className="text-title-subsection text-text-strong">Environment settings</h2>
                 <div className="flex gap-2.5">
                     <span className="text-heading-sm text-text-secondary">{env}</span>
                     {isProd && (

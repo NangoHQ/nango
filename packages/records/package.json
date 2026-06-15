@@ -18,6 +18,8 @@
     },
     "dependencies": {
         "@fastify/deepmerge": "2.0.1",
+        "@nangohq/kms": "file:../kms",
+        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "dayjs": "1.11.19",
         "dd-trace": "5.52.0",
@@ -28,6 +30,6 @@
     },
     "devDependencies": {
         "@types/md5": "2.3.2",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     }
 }

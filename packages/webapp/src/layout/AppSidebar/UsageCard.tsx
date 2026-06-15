@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { Skeleton } from '../../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { cn } from '../../utils/utils.js';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 
@@ -65,7 +65,7 @@ export default function UsageCard() {
     ) : (
         Object.entries(usage?.data ?? {}).map(([metric, usage]) => (
             <div key={metric} className="flex flex-row justify-between items-center">
-                <span className="text-text-primary font-medium">{usage.label}</span>
+                <span className="text-text-strong font-medium">{usage.label}</span>
                 <div>
                     <UsageBadge usage={usage.usage} limit={usage.limit} />
                 </div>
@@ -73,14 +73,14 @@ export default function UsageCard() {
         ))
     );
 
-    const baseClassName = 'flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted';
+    const baseClassName = 'flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-surface-panel border-[0.5px] border-border-muted';
 
     if (!canManageBilling) {
         return <div className={baseClassName}>{content}</div>;
     }
 
     return (
-        <Link to={`/team/billing#usage`} className={cn(baseClassName, 'cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent')}>
+        <Link to={`/team/billing#usage`} className={cn(baseClassName, 'cursor-pointer transition-colors hover:bg-surface-page hover:border-transparent')}>
             {content}
         </Link>
     );
@@ -88,15 +88,15 @@ export default function UsageCard() {
 
 function getStylesForUsage(usage: number, limit: number | null) {
     if (!limit) {
-        return 'text-text-primary bg-bg-subtle';
+        return 'text-text-strong bg-surface-panel-inset';
     }
     if (usage >= limit) {
-        return 'text-feedback-error-fg bg-feedback-error-bg';
+        return 'text-status-danger-text bg-status-danger-bg';
     }
     if (usage >= limit * 0.8) {
-        return 'text-feedback-warning-fg bg-feedback-warning-bg';
+        return 'text-status-warning-text bg-status-warning-bg';
     }
-    return 'text-text-primary bg-bg-subtle';
+    return 'text-text-strong bg-surface-panel-inset';
 }
 
 interface UsageBadgeProps {
@@ -108,7 +108,7 @@ function UsageBadge({ usage, limit }: UsageBadgeProps) {
     return (
         <div>
             <span className={cn('font-semibold px-1 py-0.5 rounded', getStylesForUsage(usage, limit))}>{formatUsage(usage)}</span>
-            {limit && <span className="text-text-tertiary">/{formatLimit(limit)}</span>}
+            {limit && <span className="text-text-muted">/{formatLimit(limit)}</span>}
         </div>
     );
 }

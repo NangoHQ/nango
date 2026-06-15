@@ -17,7 +17,7 @@ import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
-import encryptionManager, { pbkdf2 } from './utils/encryption.manager.js';
+import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
 export { productTracking } from './utils/productTracking.js';
@@ -26,6 +26,7 @@ export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
+export * as awsSigV4Client from './auth/aws-sigv4.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/sandbox-api-key.js';
 export * from './services/functions/index.js';
@@ -74,13 +75,13 @@ export {
     configService,
     connectionService,
     customerKeyService,
-    encryptionManager,
     environmentService,
     errorManager,
     errorNotificationService,
     externalWebhookService,
     flowService,
     generateSlackConnectionId,
+    getEncryptionManager,
     hmacService,
     localFileService,
     pbkdf2,

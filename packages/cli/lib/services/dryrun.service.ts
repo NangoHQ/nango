@@ -373,7 +373,8 @@ export class DryRunService {
                     validateActionInput: this.validation, // irrelevant for cli
                     validateActionOutput: this.validation, // irrelevant for cli
                     validateSyncRecords: this.validation,
-                    validateSyncMetadata: false
+                    validateSyncMetadata: false,
+                    exportRunnerTelemetry: false // irrelevant for cli
                 },
                 startedAt: new Date(),
                 endUser: null,

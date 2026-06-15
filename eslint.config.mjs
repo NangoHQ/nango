@@ -273,10 +273,13 @@ export default tseslint.config(
     {
         // Design-system: disable type-aware rules to avoid loading a second
         // TypeScript program alongside the root one, which OOMs in CI.
-        files: ['packages/design-system/{src,tokens,.storybook}/**/*.{tsx,ts}'],
+        files: ['packages/design-system/{src,tokens,.storybook,stories}/**/*.{tsx,ts}'],
         extends: [tseslint.configs.disableTypeChecked],
         rules: {
-            'import/extensions': 'off'
+            'import/extensions': 'off',
+            // Stories import webapp packages (lucide-react, recharts, etc.) that live in
+            // the monorepo root node_modules but are not listed in design-system's package.json.
+            'import/no-extraneous-dependencies': 'off'
         }
     },
     {

@@ -3,9 +3,12 @@ import type { CursorOffset, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface RecordsStore {
+    // Lifecycle operations
     migrate: () => Promise<void>;
     close: () => Promise<void>;
+    startDaemons: () => void;
 
+    // Dataset operations
     getRecords: ({
         connectionId,
         model,
@@ -94,18 +97,12 @@ export interface RecordsStore {
         batchSize?: number;
     }) => Promise<Result<string[]>>;
 
+    // Aggregation operations
     getCountsByModel: ({ connectionId, environmentId }: { connectionId: number; environmentId: number }) => Promise<Result<Record<string, RecordCount>>>;
 
-    paginateCounts: ({
-        environmentIds,
-        connectionIds,
-        batchSize
-    }: {
-        connectionIds?: number[];
-        environmentIds?: number[];
-        batchSize?: number;
-    }) => AsyncGenerator<Result<RecordCount[]>>;
+    paginateCounts: (params?: { connectionIds?: number[]; environmentIds?: number[]; batchSize?: number }) => AsyncGenerator<Result<RecordCount[]>>;
 
+    // Pruning operations
     autoPruningCandidate: ({ staleAfterMs }: { staleAfterMs: number }) => Promise<
         Result<{
             partition: number;

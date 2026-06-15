@@ -1,79 +1,68 @@
-import { forwardRef } from 'react';
+import * as React from 'react';
 
-import { cn } from '../../utils/utils';
+import { cn } from '@/utils/utils';
 
-import type React from 'react';
+function Table({ className, ...props }: React.ComponentProps<'table'>) {
+    return (
+        <div data-slot="table-container" className="relative w-full overflow-x-auto border border-border-muted rounded">
+            <table data-slot="table" className={cn('w-full caption-bottom text-sm text-text-strong', className)} {...props} />
+        </div>
+    );
+}
 
-const Table = forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
-    <table ref={ref} className={cn('w-full caption-bottom text-s border-separate border-spacing-0', className)} {...props} />
-));
-Table.displayName = 'Table';
+function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
+    return <thead data-slot="table-header" className={cn('[&_tr]:border-b [&_tr]:border-border-muted bg-surface-canvas', className)} {...props} />;
+}
 
-const Header = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('text-grayscale-100', className)} {...props} />
-));
-Header.displayName = 'Header';
+function TableBody({ className, ...props }: React.ComponentProps<'tbody'>) {
+    return <tbody data-slot="table-body" className={cn('[&_tr:last-child]:border-0', className)} {...props} />;
+}
 
-const Body = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(({ className, ...props }, ref) => (
-    <tbody ref={ref} className={cn('text-gray-400 [&_tr:last-child]:border-0', className)} {...props} />
-));
-Body.displayName = 'Body';
+function TableFooter({ className, ...props }: React.ComponentProps<'tfoot'>) {
+    return <tfoot data-slot="table-footer" className={cn('bg-surface-canvas border-t font-medium [&>tr]:last:border-b-0', className)} {...props} />;
+}
 
-const Footer = forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(({ className, ...props }, ref) => (
-    <tfoot ref={ref} className={cn('bg-muted/50 font-medium last:[&>tr]:border-b-0', className)} {...props} />
-));
-Footer.displayName = 'Footer';
-
-const Row = forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(({ className, ...props }, ref) => (
-    <tr
-        ref={ref}
-        className={cn(
-            'text-s transition-colors data-[state=selected]:bg-muted border-transparent border-b border-b-active-gray hover:bg-grayscale-900 hover:text-white',
-            className
-        )}
-        {...props}
-    />
-));
-Row.displayName = 'Row';
-
-const Head = forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(({ className, ...props }, ref) => (
-    <th
-        ref={ref}
-        className={cn(
-            'bg-grayscale-900 first-of-type:rounded-l last-of-type:rounded-r px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold [&:has([role=checkbox])]:pr-0',
-            className
-        )}
-        {...props}
-    />
-));
-Head.displayName = 'Head';
-
-const Cell = forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement> & { bordered?: boolean }>(
-    ({ className, bordered, ...props }, ref) => (
-        <td
-            ref={ref}
-            className={cn('px-3 py-2.5 align-middle [&:has([role=checkbox])]:pr-0', bordered && 'border-b border-b-active-gray', className)}
+function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
+    return (
+        <tr
+            data-slot="table-row"
+            className={cn(
+                'px-6 h-11 hover:bg-state-selected-muted [thead_&]:hover:bg-transparent data-[state=selected]:bg-state-selected border-b border-border-muted transition-colors',
+                className
+            )}
             {...props}
         />
-    )
-);
-Cell.displayName = 'Cell';
-
-const Caption = forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTableCaptionElement>>(({ className, ...props }, ref) => (
-    <caption ref={ref} className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />
-));
-Caption.displayName = 'Caption';
-
-const Empty: React.FC<{ children: React.ReactNode; colSpan?: number }> = ({ children, colSpan }) => {
-    return (
-        <Row className="hover:bg-transparent">
-            <Cell className="h-24 text-center p-0" colSpan={colSpan}>
-                <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-5">
-                    <div className="text-center">{children}</div>
-                </div>
-            </Cell>
-        </Row>
     );
-};
+}
 
-export { Body, Caption, Cell, Empty, Footer, Head, Header, Row, Table };
+function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
+    return (
+        <th
+            data-slot="table-head"
+            className={cn(
+                'px-6 h-11 text-left align-middle text-body-small-semi whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                className
+            )}
+            {...props}
+        />
+    );
+}
+
+function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
+    return (
+        <td
+            data-slot="table-cell"
+            className={cn(
+                'px-6 py-2 align-middle text-body-small-regular whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                className
+            )}
+            {...props}
+        />
+    );
+}
+
+function TableCaption({ className, ...props }: React.ComponentProps<'caption'>) {
+    return <caption data-slot="table-caption" className={cn('text-text-muted mt-4 text-s', className)} {...props} />;
+}
+
+export { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow };

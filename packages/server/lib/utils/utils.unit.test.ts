@@ -213,6 +213,24 @@ describe('missesInterpolationParam', () => {
         const replacers = {};
         expect(missesInterpolationParam(template, replacers)).toBe(false);
     });
+
+    it('Should return false when primary connectionConfig param is provided and fallback is missing', () => {
+        const template = 'https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token';
+        const replacers = { hostname: 'trial-123.okta.com' };
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return false when primary connectionConfig param is missing but fallback is provided', () => {
+        const template = 'https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token';
+        const replacers = { subdomain: 'trial-123' };
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return true when both primary and fallback connectionConfig params are missing', () => {
+        const template = 'https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token';
+        const replacers = {};
+        expect(missesInterpolationParam(template, replacers)).toBe(true);
+    });
 });
 
 describe('isBinaryContentType', () => {

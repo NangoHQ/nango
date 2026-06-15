@@ -32,10 +32,7 @@ initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NA
 let api: Server;
 const autoPruning = autoPruningDaemon();
 const autoDeleting = autoDeletingDaemon();
-records.startDaemon({
-    tickIntervalMs: envs.PERSIST_SEEN_PARTITION_INTERVAL_MS,
-    maxAgeMs: envs.PERSIST_SEEN_PARTITION_MAX_AGE_MS
-});
+records.startDaemons();
 
 try {
     const pubsubConnect = await pubsub.connect();

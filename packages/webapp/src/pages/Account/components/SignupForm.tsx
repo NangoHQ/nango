@@ -5,12 +5,12 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import GoogleButton from '@/components/ui/button/Auth/Google';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import GoogleButton from '@/components/patterns/GoogleButton';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSignupAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { Password, passwordSchema } from '@/pages/Account/components/Password';
@@ -46,9 +46,11 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [showResendEmail, setShowResendEmail] = useState(false);
+    const [showLoginForInvite, setShowLoginForInvite] = useState(false);
 
     const onSubmitForm = async (data: SignupFormData) => {
         setServerErrorMessage('');
+        setShowLoginForInvite(false);
         try {
             const res = await signupMutation(token ? { ...data, token } : data);
             if (res.status === 200) {
@@ -61,6 +63,12 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         toast({ title: 'You are now a member of the team', variant: 'success' });
                     }
                 }
+                return;
+            }
+
+            if (res.json.error.code === 'user_already_exists' && token) {
+                setShowResendEmail(false);
+                setShowLoginForInvite(true);
                 return;
             }
 
@@ -97,6 +105,16 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
     return (
         <div className="flex flex-col gap-10 w-full">
             <div className="flex flex-col gap-5 w-full">
+                {showLoginForInvite && (
+                    <Alert variant="error">
+                        <CircleX />
+                        <AlertDescription>
+                            An account with this email already exists. <StyledLink to={`/signin?next=/signup/${token}`}>Log in</StyledLink> to accept the
+                            invitation.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 {serverErrorMessage && !showResendEmail && (
                     <Alert variant="error">
                         <CircleX />
@@ -177,7 +195,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                     </div>
                 )}
 
-                <span className="text-center w-full text-body-medium-regular text-text-tertiary">
+                <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing up, you agree to our <br />{' '}
                     <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
                         Terms of Service

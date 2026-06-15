@@ -6,11 +6,11 @@ import { z } from 'zod';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
-import { Button } from '@/components-v2/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/Card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
-import { Input } from '@/components-v2/ui/Input';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
+import { Input } from '@/components/ui/Input';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { usePutBillingInvoicingDetails } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -18,7 +18,7 @@ import { useStore } from '@/store';
 import type { BillingCustomer } from '@nangohq/types';
 
 export const OptionalTag = () => (
-    <span className="bg-bg-elevated border border-border-strong rounded px-2 py-0.5 text-body-small-regular text-text-muted">Optional</span>
+    <span className="bg-surface-page border border-border-strong rounded px-2 py-0.5 text-body-small-regular text-text-muted">Optional</span>
 );
 
 const countryValues = countryCodes.map((c) => c.value) as [string, ...string[]];
@@ -95,9 +95,9 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
-                    <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
-                        <CardTitle className="text-text-primary !text-heading-sm">Billing information</CardTitle>
+                <Card className="bg-surface-page rounded border border-border-muted py-0 gap-0">
+                    <CardHeader className="bg-surface-panel h-10 flex items-center px-6">
+                        <CardTitle className="text-text-strong !text-heading-sm">Billing information</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-row gap-5 items-start [&>*]:flex-1 px-6 py-9">
                         <FormField
@@ -106,7 +106,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex gap-1 items-center">
-                                        Legal entity name <span className="text-alert-400">*</span>
+                                        Legal entity name <span className="text-text-danger">*</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input placeholder="Acme Inc." {...field} />
@@ -121,7 +121,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="flex gap-1 items-center">
-                                        Billing email <span className="text-alert-400">*</span>
+                                        Billing email <span className="text-text-danger">*</span>
                                     </FormLabel>
                                     <FormControl>
                                         <Input type="email" placeholder="billing@company.com" {...field} />

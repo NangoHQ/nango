@@ -1,10 +1,10 @@
-import { getFunctionDryrunRow, markFunctionDryrunFailed, markFunctionDryrunSuccess, parseDryrunSuccessOutput } from '@nangohq/sandbox';
+import { cleanupFunctionSandbox, getFunctionDryrunRow, markFunctionDryrunFailed, markFunctionDryrunSuccess, parseDryrunSuccessOutput } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { normalizeFunctionErrorCode } from '../errors.js';
 import { functionDryrunParamsSchema, functionDryrunResultBodySchema } from '../validation.js';
-import { verifyDryrunResultSandboxToken } from './helpers.js';
+import { toFunctionDryrunError, verifyDryrunResultSandboxToken } from './helpers.js';
 
 import type { PostFunctionDryrunResult } from '@nangohq/types';
 
@@ -40,20 +40,31 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
 
     if (current.status === 'success' || current.status === 'failed') {
         res.status(200).send({ ok: true });
+        await cleanupFunctionSandbox({ sandboxId: current.sandbox_id });
         return;
     }
 
     const body = valBody.data;
     if (body.status === 'success') {
-        const output = parseDryrunSuccessOutput(body.output);
-        await markFunctionDryrunSuccess({
-            environmentId: environment.id,
-            id: current.id,
-            output: output.output,
-            result: output.result,
-            hasResult: output.hasResult,
-            durationMs: body.duration_ms
-        });
+        try {
+            const output = parseDryrunSuccessOutput(body.output);
+            await markFunctionDryrunSuccess({
+                environmentId: environment.id,
+                id: current.id,
+                output: output.output,
+                result: output.result,
+                hasResult: output.hasResult,
+                durationMs: body.duration_ms
+            });
+        } catch (err) {
+            await markFunctionDryrunFailed({
+                environmentId: environment.id,
+                id: current.id,
+                output: body.output,
+                durationMs: body.duration_ms,
+                error: toFunctionDryrunError(err)
+            });
+        }
     } else {
         await markFunctionDryrunFailed({
             environmentId: environment.id,
@@ -69,4 +80,5 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
     }
 
     res.status(200).send({ ok: true });
+    await cleanupFunctionSandbox({ sandboxId: current.sandbox_id });
 });

@@ -7,6 +7,7 @@ on:
             - master
         paths:
             - 'packages/design-system/**'
+            - 'packages/webapp/**'
     workflow_dispatch: {}
 
 permissions: {}
@@ -28,7 +29,7 @@ jobs:
                   persist-credentials: false
 
             - name: Setup Node.js
-              uses: actions/setup-node@1d817b21320d076a0e0a54e9adc2a01bbcdeff49 # v4.4.0
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version-file: '.nvmrc'
                   cache: 'npm'
@@ -44,7 +45,7 @@ jobs:
               with:
                   role-to-assume: ${{ vars.STORYBOOK_DEPLOY_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ vars.AWS_REGION }}
+                  aws-region: us-west-2
 
             - name: Deploy to S3
               run: |

@@ -7,10 +7,10 @@ import z from 'zod';
 
 import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { useToast } from '@/hooks/useToast';
 
 const forgotPasswordSchema = z.object({
@@ -57,7 +57,7 @@ export default function Signin() {
                 <title>Forgot Password - Nango</title>
             </Helmet>
 
-            <h2 className="text-title-group text-text-primary">Request password reset</h2>
+            <h2 className="text-title-group text-text-strong">Request password reset</h2>
 
             {serverErrorMessage && (
                 <Alert variant="error">
@@ -92,8 +92,8 @@ export default function Signin() {
             )}
 
             {done && (
-                <span className="text-body-medium-regular text-text-tertiary text-center text-wrap">
-                    We&apos;ve sent a password reset email to <span className="text-text-primary">{form.getValues('email')}</span>.
+                <span className="text-body-medium-regular text-text-muted text-center text-wrap">
+                    We&apos;ve sent a password reset email to <span className="text-text-strong">{form.getValues('email')}</span>.
                 </span>
             )}
         </DefaultLayout>

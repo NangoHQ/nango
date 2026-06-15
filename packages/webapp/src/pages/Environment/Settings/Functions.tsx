@@ -8,9 +8,9 @@ import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment'
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
@@ -99,7 +99,7 @@ export const Functions: React.FC = () => {
                         {errors.length > 0 && (
                             <div className="flex flex-col gap-1">
                                 {errors.map((err, i) => (
-                                    <div key={i} className="text-body-small-regular text-feedback-error-fg">
+                                    <div key={i} className="text-body-small-regular text-status-danger-text">
                                         Row {err.index + 1}, {err.key}: {err.error}
                                     </div>
                                 ))}

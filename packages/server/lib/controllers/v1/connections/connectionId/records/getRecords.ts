@@ -65,7 +65,7 @@ export const getConnectionRecords = asyncWrapper<GetConnectionRecords>(async (re
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, plan } = res.locals;
     const query = queryParamValues.data satisfies GetConnectionRecords['Querystring'];
     const params = paramValues.data satisfies GetConnectionRecords['Params'];
 
@@ -89,7 +89,8 @@ export const getConnectionRecords = asyncWrapper<GetConnectionRecords>(async (re
             model: modelName,
             externalIds: [query.record_id],
             limit: 1,
-            metadataOnly: false
+            metadataOnly: false,
+            plan: plan ?? null
         });
 
         if (records.isErr()) {
@@ -112,7 +113,8 @@ export const getConnectionRecords = asyncWrapper<GetConnectionRecords>(async (re
         cursor: query.cursor,
         limit: query.limit,
         metadataOnly: query.metadata_only,
-        sort: 'desc'
+        sort: 'desc',
+        plan: plan ?? null
     });
 
     if (records.isErr()) {

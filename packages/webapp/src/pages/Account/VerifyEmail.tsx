@@ -6,9 +6,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { APIError } from '../../utils/api';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useToast } from '@/hooks/useToast';
 
 export function VerifyEmail() {
@@ -58,7 +58,7 @@ export function VerifyEmail() {
             </Helmet>
 
             <div className="flex flex-col items-center gap-3">
-                <h2 className="text-title-group text-text-primary">Verify your email</h2>
+                <h2 className="text-title-group text-text-strong">Verify your email</h2>
 
                 {serverErrorMessage && (
                     <Alert variant="error">

@@ -2,18 +2,18 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
-import { Badge } from '@/components-v2/ui/Badge';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { Checkbox } from '@/components-v2/ui/Checkbox';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components-v2/ui/Dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu';
-import { EmptyCard } from '@/components-v2/ui/EmptyCard';
-import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
-import { SimpleCodeBlock } from '@/components-v2/ui/SimpleCodeBlock';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Badge } from '@/components/ui/Badge';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { SimpleCodeBlock } from '@/components/ui/SimpleCodeBlock';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
@@ -45,7 +45,7 @@ export const SyncsTab = () => {
         const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
         return (
             <EmptyCard>
-                <span className="text-text-primary text-title-body">No models are syncing for {integrationName}.</span>
+                <span className="text-text-strong text-title-body">No models are syncing for {integrationName}.</span>
                 <span className="text-text-secondary text-body-medium-regular">Start syncing models for {integrationName} on the Function settings tab.</span>
                 <ButtonLink variant="primary" to={`/${env}/integrations/${providerConfigKey}/functions#syncs`}>
                     <Wrench />
@@ -146,7 +146,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 {/* Name & Variant */}
                 <TableCell>
                     <div className="flex gap-2 items-center">
-                        <span className="text-code-body-small-medium text-text-secondary">{sync.name}</span>
+                        <span className="text-body-small-semi text-text-strong">{sync.name}</span>
                         {sync.variant !== 'base' && (
                             <Tooltip>
                                 <TooltipTrigger>
@@ -165,7 +165,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell className="max-w-38">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-body-small-semi text-text-primary truncate block">{models}</span>
+                            <span className="text-body-small-semi text-text-strong truncate block">{models}</span>
                         </TooltipTrigger>
                         <TooltipContent className="p-2">{models}</TooltipContent>
                     </Tooltip>
@@ -280,23 +280,23 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                     <DialogHeader>
                         <DialogTitle>Trigger sync execution</DialogTitle>
                         <DialogDescription>
-                            Trigger a sync execution for function <span className="font-mono text-text-primary">{sync.name}</span> in the current connection.
+                            Trigger a sync execution for function <span className="font-mono text-text-strong">{sync.name}</span> in the current connection.
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-8">
                         <div className="inline-flex gap-2 items-center">
                             <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
-                            <span className="text-text-primary text-body-medium-medium">Resync entire dataset</span>
+                            <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
                             <InfoTooltip icon={<Info />} side="bottom">
-                                The current checkpoint (and the deprecated <span className="font-mono text-text-primary">nango.lastSyncDate</span>) will be set
-                                to <span className="font-mono text-text-primary">null</span>. The whole dataset will be resynced.
+                                The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be set
+                                to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
                             </InfoTooltip>
                         </div>
 
                         <div className="inline-flex gap-2 items-center">
                             <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
-                            <span className="text-text-primary text-body-medium-medium">Empty cache</span>
+                            <span className="text-text-strong text-body-medium-medium">Empty cache</span>
                             <InfoTooltip icon={<Info />} side="bottom">
                                 All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
                             </InfoTooltip>

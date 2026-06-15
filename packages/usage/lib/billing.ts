@@ -4,9 +4,10 @@ import { RateLimiterQueue, RateLimiterRedis, RateLimiterRes } from 'rate-limiter
 import { stringify as stableStringify } from 'safe-stable-stringify';
 
 import { billing } from '@nangohq/billing';
-import { Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { logger } from './logger.js';
 
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetrics, GetBillingUsageOpts } from '@nangohq/types';
@@ -32,14 +33,17 @@ export class UsageBillingClient {
         this.billingClient = billing;
     }
 
-    public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
+    // `fromCache` is exposed so the caller can fire a shadow-CH comparison
+    // only on misses. Temporary — revert to plain `Result<BillingUsageMetrics>`
+    // once the shadow path is removed.
+    public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
         const cached = await this.redis.get(cacheKey);
         if (cached) {
             try {
                 const parsed: BillingUsageMetrics = JSON.parse(cached);
                 metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'true' });
-                return Ok(parsed);
+                return Ok({ value: parsed, fromCache: true });
             } catch {
                 // ignore parse errors and proceed to fetch from API
             }
@@ -59,13 +63,13 @@ export class UsageBillingClient {
                     await this.redis.set(cacheKey, JSON.stringify(res.value), {
                         EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS
                     });
-                } catch {
-                    // ignore cache set errors
+                } catch (err) {
+                    logger.warning(`billing usage Orb cache write failed for subscription=${subscriptionId}: ${stringifyError(err)}`);
                 }
-            } else {
-                metrics.increment(metrics.Types.BILLING_USAGE_ORB_ERRORS, 1, tags);
+                return Ok({ value: res.value, fromCache: false });
             }
-            return res;
+            metrics.increment(metrics.Types.BILLING_USAGE_ORB_ERRORS, 1, tags);
+            return Err(res.error);
         });
     }
 

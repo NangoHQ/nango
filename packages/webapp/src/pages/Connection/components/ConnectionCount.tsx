@@ -1,5 +1,5 @@
-import { Dot } from '@/components-v2/ui/Dot';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Dot } from '@/components/ui/Dot';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useConnectionsCount } from '@/hooks/useConnections';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
@@ -21,7 +21,7 @@ export const ConnectionCount = ({ className, ...rest }: ConnectionCountProps) =>
     return (
         <div className={cn('inline-flex items-center gap-1.5', className)} {...rest}>
             <Dot variant="error" />
-            <span className="text-text-tertiary text-body-medium-medium">
+            <span className="text-text-muted text-body-medium-medium">
                 {total} connections ({withError} errored)
             </span>
         </div>

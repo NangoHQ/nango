@@ -6,31 +6,37 @@
     },
     "references": [
         {
-            "path": "../types"
-        },
-        {
-            "path": "../utils"
-        },
-        {
-            "path": "../pubsub"
-        },
-        {
             "path": "../billing"
         },
         {
             "path": "../database"
         },
         {
+            "path": "../kms"
+        },
+        {
             "path": "../kvstore"
+        },
+        {
+            "path": "../pubsub"
         },
         {
             "path": "../records"
         },
         {
+            "path": "../sandbox"
+        },
+        {
             "path": "../shared"
         },
         {
+            "path": "../types"
+        },
+        {
             "path": "../usage"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*"]

@@ -75,6 +75,21 @@ import type {
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
+// Sec-Fetch-* are forbidden headers for browsers (they set them, JS can't), but a non-browser caller can
+// send arbitrary values. Validate against the spec-defined sets before tagging so untrusted input can't blow
+// up metric cardinality, while still preserving the values we actually discriminate on (navigate/cors/...).
+const SEC_FETCH_MODE_VALUES = new Set(['navigate', 'cors', 'no-cors', 'same-origin', 'websocket']);
+const SEC_FETCH_DEST_VALUES = new Set(['document', 'empty', 'iframe', 'frame', 'nested-document']);
+const SEC_FETCH_SITE_VALUES = new Set(['cross-site', 'same-origin', 'same-site', 'none']);
+
+function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): string {
+    if (!value) {
+        return 'absent';
+    }
+    const normalized = value.toLowerCase();
+    return allowed.has(normalized) ? normalized : 'other';
+}
+
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
         const { account, environment, connectSession } = res.locals;
@@ -921,7 +936,12 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
 
+            const reservedOAuthKeys = new Set(['response_type', 'code_challenge', 'code_challenge_method', 'state', 'redirect_uri', 'scope', 'client_id']);
+            const providerAuthParams = Object.fromEntries(
+                Object.entries(interpolateObjectValues(provider.authorization_params || {}, connectionConfig)).filter(([key]) => !reservedOAuthKeys.has(key))
+            );
             const authParams = {
+                ...providerAuthParams,
                 response_type: 'code',
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256'
@@ -1195,17 +1215,37 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (
-                (session.authMode === 'OAUTH2' ||
-                    session.authMode === 'CUSTOM' ||
-                    session.authMode === 'MCP_OAUTH2' ||
-                    session.authMode === 'MCP_OAUTH2_GENERIC') &&
-                req.cookies[`oauth2-${session.id}`] !== '1'
-            ) {
-                metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
-                    account_id: account.id,
-                    auth_mode: session.authMode
-                });
+            const usesStateCookie =
+                session.authMode === 'OAUTH2' ||
+                session.authMode === 'CUSTOM' ||
+                session.authMode === 'MCP_OAUTH2' ||
+                session.authMode === 'MCP_OAUTH2_GENERIC';
+            if (usesStateCookie) {
+                const cookiePresent = req.cookies[`oauth2-${session.id}`] === '1';
+                if (cookiePresent) {
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'true'
+                    });
+                } else {
+                    // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
+                    // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
+                    // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
+                    const userAgent = req.get('user-agent') ?? '';
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'false',
+                        auth_mode: session.authMode,
+                        provider: config.provider,
+                        sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
+                        sec_fetch_dest: normalizeHeaderTag(req.get('sec-fetch-dest'), SEC_FETCH_DEST_VALUES),
+                        sec_fetch_site: normalizeHeaderTag(req.get('sec-fetch-site'), SEC_FETCH_SITE_VALUES),
+                        is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
+                        has_referer: String(Boolean(req.get('referer'))),
+                        has_any_cookie: String(Boolean(req.get('cookie'))),
+                        req_secure: String(req.secure)
+                    });
+                }
             }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
@@ -1620,11 +1660,13 @@ class OAuthController {
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(
                     config,
+                    provider as ProviderOAuth2,
                     interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
                     session.codeVerifier!,
-                    connectionConfig
+                    connectionConfig,
+                    session.id
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
@@ -1719,12 +1761,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_id_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                const { oauth_client_id_override: _, ...rest } = connectionConfig;
+                connectionConfig = rest;
             }
 
             if (connectionConfig['oauth_client_secret_override']) {
@@ -1736,12 +1774,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_secret_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                const { oauth_client_secret_override: _, ...rest } = connectionConfig;
+                connectionConfig = rest;
             }
 
             if (connectionConfig['oauth_scopes_override']) {
@@ -1761,15 +1795,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce(
-                    (acc: Record<string, string | boolean>, key: string) => {
-                        if (key !== 'oauth_refresh_token_override') {
-                            acc[key] = connectionConfig[key] as string;
-                        }
-                        return acc;
-                    },
-                    { overrideTokenRefresh: true }
-                );
+                const { oauth_refresh_token_override: _, ...rest } = connectionConfig;
+                connectionConfig = { ...rest, overrideTokenRefresh: true };
             }
 
             let connectSession: ConnectSessionAndEndUser | undefined;

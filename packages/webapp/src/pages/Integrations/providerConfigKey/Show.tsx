@@ -8,12 +8,12 @@ import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 import { IntegrationSideInfo } from './components/IntegrationSideInfo';
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { ButtonLink } from '@/components-v2/ui/Button';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/ui/Tabs';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { ButtonLink } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
@@ -75,7 +75,7 @@ export const ShowIntegration: React.FC = () => {
                 <div className="inline-flex justify-between">
                     <div className="inline-flex items-center gap-2">
                         <IntegrationLogo provider={integration.integration.provider} className="size-15" />
-                        <span className="text-text-primary text-body-large-semi">
+                        <span className="text-text-strong text-body-large-semi">
                             {integration.integration.display_name ?? integration.template.display_name}
                         </span>
                     </div>

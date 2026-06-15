@@ -9,10 +9,10 @@ import { PlaygroundResult } from './PlaygroundResult';
 import { PlaygroundSelectors } from './PlaygroundSelectors';
 import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button } from '@/components-v2/ui/Button';
-import { Sheet, SheetContent } from '@/components-v2/ui/Sheet';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button } from '@/components/ui/Button';
+import { Sheet, SheetContent } from '@/components/ui/Sheet';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -108,7 +108,7 @@ export const Playground: React.FC = () => {
                     onPointerDownOutside={(e) => e.preventDefault()}
                     onFocusOutside={(e) => e.preventDefault()}
                     className={cn(
-                        'text-text-primary rounded-lg border border-border-muted shadow-lg p-6',
+                        'text-text-strong rounded-lg border border-border-muted shadow-lg p-6',
                         'flex flex-col items-start gap-2.5',
                         'w-[537px] max-w-none sm:max-w-none',
                         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
@@ -120,7 +120,7 @@ export const Playground: React.FC = () => {
                             {/* Header */}
                             <div className="flex w-full items-start justify-between">
                                 <div className="min-w-0 flex flex-col gap-2">
-                                    <h2 className="text-text-primary text-heading-medium">Playground</h2>
+                                    <h2 className="text-text-strong text-heading-medium">Playground</h2>
                                     <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">

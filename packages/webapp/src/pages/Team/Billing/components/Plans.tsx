@@ -4,15 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { permissions } from '@nangohq/authz';
 
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/Dialog.jsx';
-import { Dot } from '../../../../components-v2/ui/Dot.js';
-import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert.js';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { Dialog } from '@/components-v2/ui/Dialog.js';
-import { StyledLink } from '@/components-v2/ui/StyledLink.js';
-import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/Table';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
+import { Dot } from '../../../../components/ui/Dot.js';
+import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { Alert, AlertDescription } from '@/components/ui/Alert.js';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog.js';
+import { StyledLink } from '@/components/ui/StyledLink.js';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/Table';
 import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
@@ -197,7 +196,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         }
 
         return (
-            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/support" target="_blank">
+            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/demo" target="_blank">
                 Contact us
             </ButtonLink>
         );
@@ -206,7 +205,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     return (
         <TableRow>
             <TableCell className="w-1/3 font-medium">
-                <div className="inline-flex items-center gap-1 py-3 text-text-primary text-body-medium-medium">
+                <div className="inline-flex items-center gap-1 py-3 text-text-strong text-body-medium-medium">
                     {plan.title} {active && <Dot />}
                 </div>
             </TableCell>
@@ -400,9 +399,7 @@ const PlanChangeDialog: React.FC<{
                 </DialogHeader>
                 <div className="flex flex-col gap-1">
                     <p>{description}</p>
-                    {longWait && (
-                        <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
-                    )}
+                    {longWait && <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>}
                 </div>
                 {error && (
                     <Alert variant="error">

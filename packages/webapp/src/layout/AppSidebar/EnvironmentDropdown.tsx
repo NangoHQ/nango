@@ -6,13 +6,13 @@ import { permissions } from '@nangohq/authz';
 
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { LogoInverted } from '@/assets/LogoInverted';
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip.js';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
-import { Badge } from '@/components-v2/ui/Badge.js';
-import { Button } from '@/components-v2/ui/Button.js';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu.js';
-import { SidebarMenu, SidebarMenuItem } from '@/components-v2/ui/Sidebar.js';
-import { StyledLink } from '@/components-v2/ui/StyledLink.js';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
+import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { Badge } from '@/components/ui/Badge.js';
+import { Button } from '@/components/ui/Button.js';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
+import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
+import { StyledLink } from '@/components/ui/StyledLink.js';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
@@ -72,15 +72,15 @@ export const EnvironmentDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default border-[0.5px] border-border-muted hover:bg-dropdown-bg-press hover:border-0 hover:border-l-[0.5px] hover:border-r-[0.5px] hover:border-r-transparent data-[state=closed]:hover:my-[0.5px] data-[state=open]:bg-dropdown-bg-press data-[state=open]:border-[0.5px] data-[state=open]:border-border-muted">
+                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-surface-overlay border-[0.5px] border-border-muted hover:bg-surface-overlay hover:border-0 hover:border-l-[0.5px] hover:border-r-[0.5px] hover:border-r-transparent data-[state=closed]:hover:my-[0.5px] data-[state=open]:bg-surface-overlay data-[state=open]:border-[0.5px] data-[state=open]:border-border-muted">
                         <div className="flex gap-2 items-center">
-                            <LogoInverted className="h-6 w-6 text-text-primary" />
+                            <LogoInverted className="h-6 w-6 text-text-strong" />
                             <div className="flex flex-col items-start">
                                 <span className="text-body-small-regular leading-3 text-text-secondary">Environment</span>
-                                <span className="text-body-medium-semi leading-4 text-text-primary font-semibold truncate max-w-28">{env}</span>
+                                <span className="text-body-medium-semi leading-4 text-text-strong font-semibold truncate max-w-28">{env}</span>
                             </div>
                         </div>
-                        <ChevronsUpDown className="w-4.5 h-4.5 text-text-primary" />
+                        <ChevronsUpDown className="w-4.5 h-4.5 text-text-strong" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
                         <div className="flex flex-col">
@@ -96,11 +96,11 @@ export const EnvironmentDropdown: React.FC = () => {
                                             disabled={!allowed}
                                             onSelect={() => onSelect(environment.name)}
                                             data-active={env === environment.name}
-                                            className="flex flex-row items-center justify-between gap-2 cursor-pointer data-[active=true]:text-text-primary"
+                                            className="flex flex-row items-center justify-between gap-2 cursor-pointer data-[active=true]:text-text-strong"
                                         >
                                             <div className="flex flex-row items-center gap-2 ">
                                                 <Check
-                                                    className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                                                    className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-strong"
                                                     data-active={env === environment.name}
                                                 />
                                                 <span>{environment.name}</span>
