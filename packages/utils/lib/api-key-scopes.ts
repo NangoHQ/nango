@@ -55,7 +55,6 @@ export const apiKeyScopes = [
 ] as const satisfies readonly ApiKeyScope[];
 
 // The `satisfies` above rejects entries that aren't valid `ApiKeyScope`s;
-// the check below rejects any `ApiKeyScope` missing from this array.
-// Together they fail the build if the two lists drift apart.
-type Expect<T extends true> = T;
-export type _ApiKeyScopesAreExhaustive = Expect<[Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [never] ? true : false>;
+// the assertion below rejects any `ApiKeyScope` missing from this array.
+// Together they keep the two lists in sync.
+true satisfies [Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [never] ? true : never;
