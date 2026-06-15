@@ -24,3 +24,13 @@ REMOTE_API=dev npm run dev -w packages/webapp       # https://api-development.na
 REMOTE_API=staging npm run dev -w packages/webapp   # https://api-staging.nango.dev
 REMOTE_API=prod npm run dev -w packages/webapp      # https://api.nango.dev
 ```
+
+## Design system
+
+`@nangohq/design-system` components (`Button`, `IconButton`, …) own their styling. In any consuming package (webapp, connect-ui, …), **don't override it with `className` or `style`** — a lint rule (`react/forbid-component-props`) flags these props where the design system is used. Instead:
+
+- Use the component's `variant`/`size` and other props.
+- Put layout (margin, positioning, width) on a **wrapper element**, not the component.
+- Need a look no prop covers? Add a variant to the design system — see `packages/design-system/AGENTS.md`.
+
+Full guidance: [Styling & Customization](http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs) in Storybook.

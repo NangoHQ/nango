@@ -2,6 +2,10 @@
 
 This package contains the Nango design system: design tokens, React components, and Storybook.
 
+## Adding a variant for a new look
+
+Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See the [Styling & Customization](http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs) guide.
+
 ## Adding a new component
 
 Components are added on-demand when first needed in a real screen — don't add components speculatively.
