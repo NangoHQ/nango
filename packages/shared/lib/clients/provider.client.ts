@@ -32,6 +32,7 @@ const logger = getLogger('Provider.Client');
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
         switch (provider) {
+            case 'agiloft':
             case 'braintree':
             case 'braintree-sandbox':
             case 'bullhorn':
@@ -95,6 +96,8 @@ class ProviderClient {
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'agiloft':
+                return this.createAgiloftToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'braintree':
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
@@ -189,6 +192,8 @@ class ProviderClient {
         }
 
         switch (config.provider) {
+            case 'agiloft':
+                return this.refreshAgiloftToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_secret);
             case 'bullhorn':
                 return this.refreshBullhornSession(
                     provider.token_url as string,
@@ -349,6 +354,52 @@ class ProviderClient {
                 return this.introspectedSalesforceTokenExpired(accessToken, clientId, clientSecret, connectionConfig);
             default:
                 throw new NangoError('unknown_provider_client');
+        }
+    }
+
+    private async createAgiloftToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri
+            });
+            const response = await axios.post(tokenUrl, body.toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                auth: { username: clientId, password: clientSecret }
+            });
+            if (response.status === 200 && response.data) {
+                return { ...response.data };
+            }
+            throw new NangoError('agiloft_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('agiloft_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshAgiloftToken(tokenUrl: string, refreshToken: string, clientSecret: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken,
+                md5_secret: clientSecret.substring(0, 20)
+            });
+            const response = await axios.post(tokenUrl, body.toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            if (response.status === 200 && response.data) {
+                return { ...response.data, refresh_token: refreshToken };
+            }
+            throw new NangoError('agiloft_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('agiloft_refresh_token_request_error', stringifyError(err));
         }
     }
 
