@@ -59,11 +59,11 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
     }, [template]);
 
     return (
-        <div className="flex flex-col gap-6 p-6 rounded-md border border-border-muted bg-bg-elevated">
+        <div className="flex flex-col gap-6 p-6 rounded-md border border-border-muted bg-surface-page">
             <div className="flex items-start justify-between gap-4">
                 <div className="flex flex-col gap-2">
                     <div className="inline-flex items-center gap-2">
-                        <span className="text-text-primary text-body-large-semi">{template.name}</span>
+                        <span className="text-text-strong text-body-large-semi">{template.name}</span>
                         <Badge variant="gray" className="uppercase">
                             {template.type}
                         </Badge>
@@ -83,7 +83,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                             </DialogHeader>
                             <div className="flex flex-col gap-1.5">
                                 <LineSnippet
-                                    className="bg-bg-surface border border-border-muted min-w-0"
+                                    className="bg-surface-canvas border border-border-muted min-w-0"
                                     snippet={buildPullCommand({ integration: provider, name: template.name, type: template.type, source: { catalog: true } })}
                                 />
                                 <StyledLink
@@ -126,7 +126,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
             )}
 
             <section className="flex flex-col gap-2">
-                <span className="text-text-primary text-body-medium-semi">Required scopes</span>
+                <span className="text-text-strong text-body-medium-semi">Required scopes</span>
                 {template.scopes && template.scopes.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5">
                         {template.scopes.map((scope) => (
@@ -216,7 +216,7 @@ const CodeTab: React.FC<CodeTabProps> = ({ provider, templateType, templateName,
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Spinner className="size-5 text-text-tertiary" />
+                <Spinner className="size-5 text-text-muted" />
             </div>
         );
     }

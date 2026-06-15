@@ -161,10 +161,10 @@ export const Templates: React.FC = () => {
                     {integrationData ? (
                         <div className="inline-flex items-center gap-2.5 shrink-0 pt-6">
                             <IntegrationLogo provider={integrationData.integration.provider} className="size-10.5" />
-                            <span className="text-text-primary text-body-large-semi">
+                            <span className="text-text-strong text-body-large-semi">
                                 {integrationData.integration.display_name ?? integrationData.template.display_name}
                             </span>
-                            <span className="text-text-tertiary text-body-medium-regular">Templates</span>
+                            <span className="text-text-muted text-body-medium-regular">Templates</span>
                         </div>
                     ) : (
                         <div className="inline-flex items-center gap-2.5 shrink-0 pt-6">
@@ -218,13 +218,13 @@ export const Templates: React.FC = () => {
                                                     void setSelectedType(t.type);
                                                 }}
                                                 className={cn(
-                                                    'w-full flex flex-col gap-1 p-3 rounded-md border border-border-muted bg-bg-elevated text-left cursor-pointer hover:bg-bg-subtle transition-colors',
+                                                    'w-full flex flex-col gap-1 p-3 rounded-md border border-border-muted bg-surface-page text-left cursor-pointer hover:bg-surface-panel-inset transition-colors',
                                                     isDeployed && 'opacity-50',
-                                                    isSelected && 'bg-bg-subtle border-l-2 border-l-border-brand'
+                                                    isSelected && 'bg-surface-panel-inset border-l-2 border-l-border-selected'
                                                 )}
                                             >
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-text-primary text-body-medium-medium truncate">{t.name}</span>
+                                                    <span className="text-text-strong text-body-medium-medium truncate">{t.name}</span>
                                                     <Badge variant="gray" className="uppercase shrink-0">
                                                         {t.type}
                                                     </Badge>

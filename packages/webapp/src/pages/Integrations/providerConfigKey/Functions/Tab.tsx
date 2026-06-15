@@ -106,7 +106,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                 <Skeleton className="w-full h-50" />
             ) : showEmptyNoFilters ? (
                 <EmptyCard>
-                    <h3 className="text-title-body text-text-primary">No functions deployed in this integration yet</h3>
+                    <h3 className="text-title-body text-text-strong">No functions deployed in this integration yet</h3>
                     <p className="text-text-secondary text-body-medium-regular text-center">Browse the template catalog or build your own custom functions.</p>
                     <div className="flex items-center gap-2">
                         <ConditionalTooltip condition={templatesCount === 0} content="There are no templates available for this provider yet.">
@@ -157,7 +157,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         <div className="flex items-center gap-4">
                                             <LibraryBig />
                                             <div>
-                                                <span className="text-text-primary text-body-medium-medium">
+                                                <span className="text-text-strong text-body-medium-medium">
                                                     Browse {templatesCount ? `${templatesCount} ` : ''}templates
                                                 </span>
                                                 <p className="text-text-secondary text-body-small-regular">
@@ -176,7 +176,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                     >
                                         <Code />
                                         <div>
-                                            <span className="text-text-primary text-body-medium-medium">Build custom</span>
+                                            <span className="text-text-strong text-body-medium-medium">Build custom</span>
                                             <p className="text-text-secondary text-body-small-regular">
                                                 Bring your own code or leverage AI agents to build for your use case.
                                             </p>
@@ -203,14 +203,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             </TableHeader>
                             <TableBody>
                                 {functions.map((fn) => (
-                                    <TableRow key={`${fn.type}:${fn.id}`} className="cursor-pointer hover:bg-bg-subtle" onClick={() => onFunctionClick(fn)}>
+                                    <TableRow
+                                        key={`${fn.type}:${fn.id}`}
+                                        className="cursor-pointer hover:bg-surface-panel-inset"
+                                        onClick={() => onFunctionClick(fn)}
+                                    >
                                         <TableCell>
                                             <div className="flex items-center gap-1.5">
                                                 {fn.name}
                                                 {fn.description && (
                                                     <Tooltip>
                                                         <TooltipTrigger>
-                                                            <Info className="size-3.5 text-icon-tertiary cursor-pointer" />
+                                                            <Info className="size-3.5 text-icon-muted cursor-pointer" />
                                                         </TooltipTrigger>
                                                         <TooltipContent>{fn.description}</TooltipContent>
                                                     </Tooltip>

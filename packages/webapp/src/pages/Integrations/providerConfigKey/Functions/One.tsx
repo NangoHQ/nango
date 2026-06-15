@@ -258,11 +258,11 @@ export const FunctionsOne: React.FC = () => {
                 <CardSubheader>
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col gap-1">
-                            <span className="text-text-primary text-body-medium-semi">Customize this function</span>
+                            <span className="text-text-strong text-body-medium-semi">Customize this function</span>
                             <Link
                                 to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
                                 target="_blank"
-                                className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
+                                className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
                             >
                                 Get started with the Nango CLI <ExternalLink className="size-3.5" />
                             </Link>

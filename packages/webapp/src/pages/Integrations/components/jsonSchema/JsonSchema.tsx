@@ -74,13 +74,13 @@ const JsonSchemaGenericInfo: React.FC<{
     return (
         <div className="w-full flex flex-col gap-1.5">
             <div className="flex flex-row items-start justify-between">
-                <span className="text-text-primary text-body-small-semi">{name}</span>{' '}
+                <span className="text-text-strong text-body-small-semi">{name}</span>{' '}
                 <div className="flex gap-1.5">
                     <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
                     {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
                 </div>
             </div>
-            {description && <p className="text-text-tertiary text-body-small-medium">{description}</p>}
+            {description && <p className="text-text-muted text-body-small-medium">{description}</p>}
             {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
         </div>
     );
@@ -162,7 +162,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                     {Object.entries(properties || {}).map(([name, property]) => (
                         <div
                             key={name}
-                            className={cn('px-4 py-2 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-extra-strong' : 'border-border-default')}
+                            className={cn('px-4 py-2 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}
                         >
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>
@@ -180,5 +180,5 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
 };
 
 const TopLevelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <div className="p-2 bg-bg-elevated rounded flex flex-col gap-2">{children}</div>;
+    return <div className="p-2 bg-surface-page rounded flex flex-col gap-2">{children}</div>;
 };
