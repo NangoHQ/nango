@@ -15,7 +15,7 @@ function mockResponse() {
 }
 
 describe('function controller errors', () => {
-    it('sends structured remote function errors with their status and code', () => {
+    it('sends structured sandboxed function errors with their status and code', () => {
         const { res, status, send } = mockResponse();
 
         sendStepError({
@@ -71,7 +71,7 @@ describe('function controller errors', () => {
         expect(send).toHaveBeenCalledWith({ error: { code: 'server_error', message: 'Fetch failed /sync/deploy?env=dev' } });
     });
 
-    it('keeps sandbox project paths relative and redacts other absolute paths', () => {
+    it('redacts absolute paths', () => {
         const { res, send } = mockResponse();
 
         sendStepError({
@@ -80,7 +80,7 @@ describe('function controller errors', () => {
         });
 
         expect(send).toHaveBeenCalledWith({
-            error: { code: 'server_error', message: 'Failed at github/syncs/foo.ts:12:3 while reading <path>' }
+            error: { code: 'server_error', message: 'Failed at <path> while reading <path>' }
         });
     });
 

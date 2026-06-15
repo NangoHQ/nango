@@ -31,3 +31,4 @@ export * from './map.js';
 export * from './daemon.js';
 export * from './batcher.js';
 export * from './checkpoint/checkpoint.js';
+export * from './proxy/baseUrlOverrideDenylist.js';

@@ -4,9 +4,10 @@ import { RateLimiterQueue, RateLimiterRedis, RateLimiterRes } from 'rate-limiter
 import { stringify as stableStringify } from 'safe-stable-stringify';
 
 import { billing } from '@nangohq/billing';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { logger } from './logger.js';
 
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetrics, GetBillingUsageOpts } from '@nangohq/types';
@@ -62,8 +63,8 @@ export class UsageBillingClient {
                     await this.redis.set(cacheKey, JSON.stringify(res.value), {
                         EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS
                     });
-                } catch {
-                    // ignore cache set errors
+                } catch (err) {
+                    logger.warning(`billing usage Orb cache write failed for subscription=${subscriptionId}: ${stringifyError(err)}`);
                 }
                 return Ok({ value: res.value, fromCache: false });
             }

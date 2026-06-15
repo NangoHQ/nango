@@ -7,6 +7,7 @@ export * from './scripts.js';
 export * from './checkpoint.js';
 export { executeUncontrolledFetch } from './uncontrolledFetch.js';
 export type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
+export { isBaseUrlOverridePolicyEnabledFromEnv, resolveProxyBaseUrlOverrideDenylist } from './baseUrlOverrideDenylist.js';
 import PaginationService from './paginate.service.js';
 
 export { PaginationService };

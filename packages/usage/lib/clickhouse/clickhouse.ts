@@ -535,14 +535,17 @@ export class Clickhouse {
     // Returns all five COUNTER billing metrics in one call (matches Orb's
     // shape). One revalidate amortises the cache refresh across every billing
     // metric — keep this fanned-out even though the trigger is per-metric.
-    async getCurrentMonthBillingMetrics(accountId: number, now: Date): Promise<Result<BillingUsageMetrics>> {
+    async getCurrentMonthBillingMetrics(accountId: number, now: Date, opts?: { maxExecutionSeconds?: number }): Promise<Result<BillingUsageMetrics>> {
         const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
         const timeframe = { start: monthStart, end: nextMonth };
+        const maxExecOpt = opts?.maxExecutionSeconds !== undefined ? { maxExecutionSeconds: opts.maxExecutionSeconds } : {};
 
         const results = await Promise.all(
             COUNTER_METRICS.map((metric) =>
-                this.getDailyCounter({ accountId, metric, dimension: 'none', timeframe } as GetDailyCounterQuery).then((r) => [metric, r] as const)
+                this.getDailyCounter({ accountId, metric, dimension: 'none', timeframe, ...maxExecOpt } as GetDailyCounterQuery).then(
+                    (r) => [metric, r] as const
+                )
             )
         );
 

@@ -35,7 +35,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+import { executionEnvironmentUnavailableMessage } from '../sandbox-service.js';
 
 import type { FunctionError } from './helpers.js';
 
@@ -50,7 +50,7 @@ const request = {
     nango_host: 'https://api.example.test'
 };
 
-describe('remote function dryrun client', () => {
+describe('sandboxed function dryrun client', () => {
     beforeEach(() => {
         mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);
