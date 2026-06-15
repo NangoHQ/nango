@@ -1,10 +1,9 @@
 import * as z from 'zod';
 
-import { configService, getFunction } from '@nangohq/shared';
-import { report, zodErrorToHTTP } from '@nangohq/utils';
+import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
-import { startFunctionDeletion } from '../../../../../tasks/startFunctionDeletion.js';
+import { handleDeleteIntegrationFunction } from './helpers.js';
+import { deletableFunctionTypeSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 
 import type { DeleteIntegrationFunction } from '@nangohq/types';
@@ -13,7 +12,7 @@ const querystringValidation = z
     .object({
         env: envSchema,
         // Required (unlike GET) to disambiguate a sync and an action that share a name.
-        type: z.enum(['sync', 'action'])
+        type: deletableFunctionTypeSchema
     })
     .strict();
 
@@ -41,41 +40,5 @@ export const deleteIntegrationFunction = asyncWrapper<DeleteIntegrationFunction>
     const { providerConfigKey, functionName } = valParams.data;
     const { type } = queryStringValues.data;
 
-    const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
-    if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
-        return;
-    }
-
-    const fnResult = await getFunction({ environmentId: environment.id, providerConfigKey, name: functionName, type });
-    if (fnResult.isErr()) {
-        report(fnResult.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get function' } });
-        return;
-    }
-    if (!fnResult.value) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Function does not exist' } });
-        return;
-    }
-
-    const fn = fnResult.value;
-    if (fn.source === 'repo') {
-        res.status(400).send({
-            error: { code: 'function_managed_by_deploy', message: 'repo functions are deleted through `nango deploy`, not this endpoint' }
-        });
-        return;
-    }
-
-    const enqueued = await startFunctionDeletion({
-        syncConfigId: fn.id,
-        environmentId: environment.id,
-        models: fn.type === 'on-event' ? [] : fn.returns
-    });
-    if (enqueued.isErr()) {
-        report(enqueued.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete function' } });
-        return;
-    }
-
-    res.status(200).send({ data: { success: true } });
+    await handleDeleteIntegrationFunction({ res, environment, providerConfigKey, name: functionName, type });
 });
