@@ -69,6 +69,11 @@ describe('generate function tests', () => {
         expect(usedCorrectly).toBe(false);
     });
 
+    it('should allow trackDeletes for multiple models authored sequentially', () => {
+        const usedCorrectly = parserService.callsAreUsedCorrectly(join(fixturesPath, 'track-deletes-multi-model-sync.ts'), 'sync', ['ModelA', 'ModelB']);
+        expect(usedCorrectly).toBe(true);
+    });
+
     it('should be able to compile files in nested directories', async () => {
         const dir = await getTestDirectory('nested');
         init({ absolutePath: dir });

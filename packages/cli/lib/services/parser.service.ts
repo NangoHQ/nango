@@ -101,6 +101,7 @@ class ParserService {
         );
         const proxyLines: number[] = [];
         const batchingRecordsLines: number[] = [];
+        const batchingRecordsLinesByModel = new Map<string, number[]>();
         const setMergingStrategyLines: number[] = [];
         const deleteRecordsFromPreviousExecutionsLines: number[] = [];
         const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
@@ -190,6 +191,16 @@ class ParserService {
                     }
                     if (callsBatchingRecords.includes(callee.property.name)) {
                         batchingRecordsLines.push(lineNumber);
+                        // The model is the second argument of batchSave/batchUpdate/batchDelete.
+                        // Track it per-model so trackDeletesStart/End ordering is validated against
+                        // the model's own batching calls, not every model's calls globally.
+                        const batchingArgs = path.node.arguments as t.Expression[];
+                        if (batchingArgs.length > 1 && t.isStringLiteral(batchingArgs[1])) {
+                            const batchingModel = batchingArgs[1].value;
+                            const modelLines = batchingRecordsLinesByModel.get(batchingModel) ?? [];
+                            modelLines.push(lineNumber);
+                            batchingRecordsLinesByModel.set(batchingModel, modelLines);
+                        }
                     }
                     if (callee.property.name === 'setMergingStrategy') {
                         setMergingStrategyLines.push(lineNumber);
@@ -294,6 +305,7 @@ class ParserService {
         }
 
         for (const [model, { startLines, endLines }] of trackDeletesByModel) {
+            const modelBatchingRecordsLines = batchingRecordsLinesByModel.get(model) ?? [];
             if (startLines.length > 1) {
                 console.log(chalk.red(`trackDeletesStart for model '${model}' should be called only once in "${filePath}:${Math.max(...startLines)}".`));
                 usedCorrectly = false;
@@ -316,7 +328,7 @@ class ParserService {
                 );
                 usedCorrectly = false;
             }
-            if (startLines.length > 0 && batchingRecordsLines.some((line) => line < Math.max(...startLines))) {
+            if (startLines.length > 0 && modelBatchingRecordsLines.some((line) => line < Math.max(...startLines))) {
                 console.log(
                     chalk.red(
                         `trackDeletesStart for model '${model}' should be called before all batching records functions in "${filePath}:${Math.max(...startLines)}".`
@@ -324,7 +336,7 @@ class ParserService {
                 );
                 usedCorrectly = false;
             }
-            if (endLines.length > 0 && batchingRecordsLines.some((line) => line > Math.min(...endLines))) {
+            if (endLines.length > 0 && modelBatchingRecordsLines.some((line) => line > Math.min(...endLines))) {
                 console.log(
                     chalk.red(
                         `trackDeletesEnd for model '${model}' should be called after all batching records functions in "${filePath}:${Math.min(...endLines)}".`
