@@ -12,7 +12,6 @@ import { getProxyConfiguration } from '../proxy/utils.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { Config } from '../../models/Provider.js';
 import type { NangoError } from '../../utils/error.js';
-import type { FeatureFlags } from '@nangohq/kvstore';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -84,19 +83,13 @@ export const generateSlackConnectionId = (accountUUID: string, environmentId: nu
 
 export class SlackService {
     private logContextGetter: LogContextGetter;
-    private featureFlags: FeatureFlags;
 
     private integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
 
-    constructor({ logContextGetter, featureFlags }: { logContextGetter: LogContextGetter; featureFlags: FeatureFlags }) {
+    constructor({ logContextGetter }: { logContextGetter: LogContextGetter }) {
         this.logContextGetter = logContextGetter;
-        this.featureFlags = featureFlags;
-    }
-
-    private async isDisabled() {
-        return this.featureFlags.isSet('disable-slack-notifications');
     }
 
     /**
@@ -141,10 +134,6 @@ export class SlackService {
         originalActivityLogId: string;
         provider: string;
     }) {
-        if (await this.isDisabled()) {
-            return;
-        }
-
         if (!environment.slack_notifications) {
             return;
         }
@@ -206,10 +195,6 @@ export class SlackService {
         slack_timestamp: string,
         connectionCount: number
     ) {
-        if (await this.isDisabled()) {
-            return;
-        }
-
         const accountRes = await accountService.getAccountContext({ environmentId: connection.environment_id });
         if (!accountRes) {
             throw new Error('failed_to_get_account');
