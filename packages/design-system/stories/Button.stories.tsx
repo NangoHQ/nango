@@ -15,8 +15,9 @@ type Story = StoryObj<typeof meta>;
 
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
-// IconButton also supports 2xs (20px). 'xl' (40px) is a deprecated migration-only size — see the "Deprecated sizes" story.
+// 'xl' (40px) is a deprecated migration-only size (flagged in the "All sizes" story).
+const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
+// IconButton supports 2xs (20px) through lg; xl is not offered for icon buttons.
 const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 export const AllVariants: Story = {
@@ -53,6 +54,10 @@ export const AllSizes: Story = {
     name: 'All sizes',
     render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
+            <Alert variant="warning" className="max-w-2xl">
+                <AlertTitle>xl is deprecated</AlertTitle>
+                <AlertDescription>xl (40px) exists only to migrate legacy 40px webapp buttons. Use lg for new buttons.</AlertDescription>
+            </Alert>
             {SIZES.map((size) => (
                 <div key={size} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
                     <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '3rem', flexShrink: 0 }}>{size}</span>
@@ -110,32 +115,6 @@ export const IconButtonSizes: Story = {
                     </IconButton>
                 </div>
             ))}
-        </div>
-    )
-};
-
-export const DeprecatedSizes: Story = {
-    name: 'Deprecated sizes ⚠️',
-    parameters: {
-        docs: {
-            description: {
-                story: '`xl` (40px) exists only to migrate legacy 40px webapp buttons. Use `lg` for new buttons.'
-            }
-        }
-    },
-    render: () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
-            <Alert variant="warning" className="max-w-2xl">
-                <AlertTitle>Deprecated size</AlertTitle>
-                <AlertDescription>xl (40px) exists only to migrate legacy 40px webapp buttons. Use lg for new buttons.</AlertDescription>
-            </Alert>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
-                <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '6rem', flexShrink: 0 }}>xl</span>
-                <Button size="xl">Button</Button>
-                <Button size="xl" variant="outline">
-                    Outline
-                </Button>
-            </div>
         </div>
     )
 };
