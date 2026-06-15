@@ -42,7 +42,7 @@
         "exponential-backoff": "3.1.1",
         "fast-xml-parser": "5.5.9",
         "follow-redirects": "1.16.0",
-        "form-data": "4.0.4",
+        "form-data": "4.0.6",
         "he": "1.2.0",
         "js-yaml": "4.1.1",
         "jsonwebtoken": "9.0.3",
