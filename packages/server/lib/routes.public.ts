@@ -312,4 +312,4 @@ publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
 
 // Proxy
-publicAPI.route('/proxy/*splat').all(apiAuth, withScope('environment:proxy'), upload.any(), allPublicProxy);
+publicAPI.route('/proxy{/*splat}').all(apiAuth, withScope('environment:proxy'), upload.any(), allPublicProxy);
