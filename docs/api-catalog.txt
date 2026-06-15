@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 854
+Provider count: 855
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -72,6 +72,7 @@ URL patterns:
 | `atlassian-service-account-oauth2` | Atlassian Service Account (OAuth 2.0) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2.md) | [connect](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2/connect.md) |  | dev-tools |
 | `attention` | Attention | API_KEY | [docs](https://nango.dev/docs/api-integrations/attention.md) | [connect](https://nango.dev/docs/api-integrations/attention/connect.md) |  | productivity |
 | `attio` | Attio | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio.md) |  | [setup](https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app.md) | crm, popular |
+| `attio-mcp` | Attio (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio-mcp.md) |  |  | crm, mcp |
 | `auth0` | Auth0 | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/auth0.md) |  |  | iam |
 | `auth0-cc` | Auth0 (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/auth0-cc.md) | [connect](https://nango.dev/docs/integrations/all/auth0-cc/connect.md) |  | iam |
 | `autodesk` | Autodesk | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/autodesk.md) |  |  | design |
