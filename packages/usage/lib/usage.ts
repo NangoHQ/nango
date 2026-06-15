@@ -34,15 +34,14 @@ const cacheKeyPrefix = 'usageV2';
 // windows against Orb produces known-bad divergence (CH biases high until 30d
 // of depth). Anchor the shadow to a clean post-backfill date.
 const SHADOW_MIN_TIMEFRAME_START = new Date('2026-06-01T00:00:00.000Z');
-// CH server-side ceiling on time-bounded billing reads (shadow + capping
-// source). Bounded much tighter than the dashboard default (30s) so an
-// abandoned query doesn't keep burning CH compute after the wall-clock
-// race resolves.
-const CH_QUERY_MAX_EXECUTION_SECONDS = 5;
+// CH server-side ceiling on shadow reads. Bounded much tighter than the
+// dashboard default (30s) so an abandoned shadow doesn't keep burning CH
+// compute after the wall-clock race resolves.
+const SHADOW_CH_MAX_EXECUTION_SECONDS = 5;
 // Wall-clock fallback set ~0.5s above the CH ceiling so CH's own timeout
 // reliably fires first → `outcome:ch_error` is the deterministic signal and
 // the local race only catches network-level wedges.
-const CH_QUERY_TIMEOUT_MS = CH_QUERY_MAX_EXECUTION_SECONDS * 1000 + 500;
+const SHADOW_TIMEOUT_MS = SHADOW_CH_MAX_EXECUTION_SECONDS * 1000 + 500;
 
 export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is GetBillingUsageOpts & { timeframe: { start: Date; end: Date } } {
     if (!envs.FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE) return false;
@@ -424,9 +423,9 @@ export class UsageTracker implements IUsageTracker {
         const timeoutErr = new Error('shadow_timeout');
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
         const chResult = await Promise.race<Result<BillingUsageMetrics>>([
-            this.getBillingUsageFromClickhouse(accountId, { timeframe, maxExecutionSeconds: CH_QUERY_MAX_EXECUTION_SECONDS }),
+            this.getBillingUsageFromClickhouse(accountId, { timeframe, maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
             new Promise((resolve) => {
-                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), CH_QUERY_TIMEOUT_MS);
+                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
             })
         ]);
         clearTimeout(timeoutId);
@@ -470,19 +469,8 @@ export class UsageTracker implements IUsageTracker {
             logger.warning(`capping CH cache read failed for account=${accountId}: ${stringifyError(err)}`);
         }
 
-        const timeoutErr = new Error('capping_ch_timeout');
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
-            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: CH_QUERY_MAX_EXECUTION_SECONDS }),
-            new Promise((resolve) => {
-                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), CH_QUERY_TIMEOUT_MS);
-            })
-        ]);
-        clearTimeout(timeoutId);
-
-        if (chResult.isErr()) {
-            return Err(chResult.error);
-        }
+        const chResult = await this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
+        if (chResult.isErr()) return Err(chResult.error);
 
         await this.writeCappingCache(accountId, chResult.value);
         return Ok(chResult.value);
@@ -501,9 +489,9 @@ export class UsageTracker implements IUsageTracker {
         const timeoutErr = new Error('shadow_timeout');
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
         const chResult = await Promise.race<Result<BillingUsageMetrics>>([
-            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: CH_QUERY_MAX_EXECUTION_SECONDS }),
+            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
             new Promise((resolve) => {
-                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), CH_QUERY_TIMEOUT_MS);
+                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
             })
         ]);
         clearTimeout(timeoutId);
