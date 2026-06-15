@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildDeployArgs, buildDryrunArgs } from './command-builders.js';
 
-describe('remote function command builders', () => {
+describe('sandboxed function command builders', () => {
     it('scopes deploy to the requested integration', () => {
         expect(
             buildDeployArgs({

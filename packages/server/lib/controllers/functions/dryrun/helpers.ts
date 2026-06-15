@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { FunctionError, remoteFunctionDryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { FunctionError, dryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
@@ -16,7 +16,7 @@ export async function createDryrunSandboxApiKey(parentApiKeyId: number, environm
         environmentId,
         purpose: 'dryrun',
         dryrunId,
-        expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+        expiresAt: new Date(Date.now() + dryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
 }
 

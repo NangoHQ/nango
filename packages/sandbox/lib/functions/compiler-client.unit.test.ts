@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildCompilerIndexTs, buildIndexTs, getCompilerFilePaths, getFilePaths } from './compiler-client.js';
 
-describe('remote function compiler client helpers', () => {
+describe('sandboxed function compiler client helpers', () => {
     it('builds action file paths', () => {
         expect(
             getFilePaths({
