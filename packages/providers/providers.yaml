@@ -1948,6 +1948,34 @@ attio:
     docs: https://nango.dev/docs/api-integrations/attio
     setup_guide_url: https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app
 
+attio-mcp:
+    display_name: Attio (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.attio.com/oidc/authorize
+    token_url: https://app.attio.com/oidc/token
+    registration_url: https://app.attio.com/oauth/register
+    authorization_params:
+        response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.attio.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/attio-mcp
+
 auth0:
     display_name: Auth0
     categories:

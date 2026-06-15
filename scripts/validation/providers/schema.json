@@ -490,6 +490,12 @@
                 "registration_url": {
                     "type": "string"
                 },
+                "registration_params": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                    }
+                },
                 "client_registration": {
                     "type": "string",
                     "enum": ["dynamic", "static", "metadata"]
