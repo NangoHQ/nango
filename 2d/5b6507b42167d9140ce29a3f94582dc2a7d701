@@ -1,0 +1,75 @@
+packages/sandbox/lib/functions/compiler-client.e2b.unit.test.ts
+  s_7949d22fd43c0a::t_cfc0be81110470 35
+  s_7949d22fd43c0a::t_e7bbb310470b6a 57-64
+packages/sandbox/lib/index.ts
+  s_7949d22fd43c0a::t_cfc0be81110470 10
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_7949d22fd43c0a::t_a954b07ac9740f 69
+  s_7949d22fd43c0a::t_d5869142b79069 95-98
+  s_7949d22fd43c0a::t_cfc0be81110470 56
+  s_7949d22fd43c0a::t_a11439694cf17b 102
+packages/sandbox/lib/functions/dryrun-client.ts
+  s_7949d22fd43c0a::t_e8221400f7e2ae 10-15,112-139
+  s_7949d22fd43c0a::t_cfc0be81110470 5
+  s_7949d22fd43c0a::t_e7bbb310470b6a 50
+  s_7949d22fd43c0a::t_4912ccd3e4f4a5 61,65,68,71,85
+packages/sandbox/lib/functions/compiler-client.ts
+  s_7949d22fd43c0a::t_cfc0be81110470 3
+  s_7949d22fd43c0a::t_e7bbb310470b6a 36
+packages/sandbox/lib/functions/dryrun-client.unit.test.ts
+  s_7949d22fd43c0a::t_5f8d9b09d87916 52-55
+  s_7949d22fd43c0a::t_cfc0be81110470 38
+  s_7949d22fd43c0a::t_d5869142b79069 85-88
+  s_7949d22fd43c0a::t_84f2ac8ae71dee 82-84,92,109,111,113
+packages/sandbox/lib/functions/deploy-client.ts
+  s_7949d22fd43c0a::t_d7f1d01136bf28 16,149-169
+  s_7949d22fd43c0a::t_e7bbb310470b6a 48,98
+  s_7949d22fd43c0a::t_2f109b8fb91d38 14-15
+  s_7949d22fd43c0a::t_cfc0be81110470 7
+  s_7949d22fd43c0a::t_fcb67518e3abab 60,72
+packages/server/lib/controllers/functions/errors.ts
+  s_7949d22fd43c0a::t_07c49b910c3c9f 15
+packages/utils/lib/environment/parse.unit.test.ts
+  s_7949d22fd43c0a::t_89e94f1534861b 43,45,47,49
+packages/sandbox/lib/sandbox-service.unit.test.ts
+  s_7949d22fd43c0a::t_07c49b910c3c9f 27-28,31,38
+  s_7949d22fd43c0a::t_d5869142b79069 3,6
+  s_7949d22fd43c0a::t_e7bbb310470b6a 4,19-20,22-26,29-30,32,37,39-40
+packages/sandbox/lib/sandbox-service.ts
+  s_7949d22fd43c0a::t_07c49b910c3c9f 18-22,26-31
+  s_7949d22fd43c0a::t_e7bbb310470b6a 3,17,23,32
+packages/sandbox/agentcore-runtime/server.mjs
+  s_7949d22fd43c0a::t_e860367b9c93f2 105,140-151,154,158-160,166-176
+  s_7949d22fd43c0a::t_9b02d00c2a53d9 10,95,127-137
+  s_7949d22fd43c0a::t_bd01d2c9b1578b 152-153,155-157
+packages/sandbox/lib/providers/errors.ts
+  s_7949d22fd43c0a::t_e7bbb310470b6a 29-37
+packages/sandbox/lib/providers/agentcore.unit.test.ts
+  s_7949d22fd43c0a::t_1429d48ac564dd 3
+  s_7949d22fd43c0a::t_6b61875a440d91 5-6,76,127,133,135,140,142,151,154,164,192,210
+  s_7949d22fd43c0a::t_37572e5600b6c1 8-12,15-17,20,28-29,31-32,35-36,40-44,60,75,77-107,110-111,115,120,131,139,141,149,152,156,163,177,191,209,218-219,223
+  s_7949d22fd43c0a::t_d5869142b79069 4,56-58
+packages/sandbox/lib/providers/agentcore.ts
+  s_7949d22fd43c0a::t_252e73fb92917b 42,65,125
+  s_7949d22fd43c0a::t_c2bd533910deb0 304-307
+packages/sandbox/lib/functions/sandbox.ts
+  s_7949d22fd43c0a::t_cfc0be81110470 1-5,7-21,24-30,32-38,41
+packages/types/lib/functions/api.ts
+  s_7949d22fd43c0a::t_07c49b910c3c9f 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "2d5b6507b42167d9140ce29a3f94582dc2a7d701",
+  "prompts": {},
+  "sessions": {
+    "s_7949d22fd43c0a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb538-094b-7d33-96df-cfe5efca83a6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
