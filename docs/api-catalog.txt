@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 854
+Provider count: 856
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -35,6 +35,8 @@ URL patterns:
 | `adyntel` | Adyntel | API_KEY | [docs](https://nango.dev/docs/api-integrations/adyntel.md) | [connect](https://nango.dev/docs/api-integrations/adyntel/connect.md) |  | marketing |
 | `affinity` | Affinity (v1) | BASIC | [docs](https://nango.dev/docs/integrations/all/affinity.md) | [connect](https://nango.dev/docs/integrations/all/affinity/connect.md) |  | crm |
 | `affinity-v2` | Affinity (v2) | API_KEY | [docs](https://nango.dev/docs/integrations/all/affinity-v2.md) | [connect](https://nango.dev/docs/integrations/all/affinity-v2/connect.md) |  | crm |
+| `agiloft` | Agiloft | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/agiloft.md) | [connect](https://nango.dev/docs/api-integrations/agiloft/connect.md) | [setup](https://nango.dev/docs/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app.md) | productivity |
+| `agiloft-cc` | Agiloft (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/agiloft-cc.md) | [connect](https://nango.dev/docs/api-integrations/agiloft-cc/connect.md) |  | productivity |
 | `aimfox` | Aimfox | API_KEY | [docs](https://nango.dev/docs/integrations/all/aimfox.md) | [connect](https://nango.dev/docs/integrations/all/aimfox/connect.md) |  | surveys |
 | `aimfox-oauth` | Aimfox (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aimfox-oauth.md) |  |  | surveys |
 | `aircall` | Aircall (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aircall.md) |  |  | support |
