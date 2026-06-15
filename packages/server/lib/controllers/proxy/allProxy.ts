@@ -86,8 +86,16 @@ const PROXY_RESPONSE_FORBIDDEN_HEADERS = new Set([
 // letting Express set correct framing for the proxied response.
 function sanitizeForwardedHeaders(headers: Record<string, unknown>): Record<string, unknown> {
     const sanitized: Record<string, unknown> = {};
+    const connectionHeader = headers.connection ?? headers.Connection;
+    const connectionTokens = new Set(
+        (Array.isArray(connectionHeader) ? connectionHeader.join(',') : typeof connectionHeader === 'string' ? connectionHeader : '')
+            .split(',')
+            .map((token) => token.trim().toLowerCase())
+            .filter(Boolean)
+    );
     for (const [name, value] of Object.entries(headers)) {
-        if (!PROXY_RESPONSE_FORBIDDEN_HEADERS.has(name.toLowerCase())) {
+        const lowerName = name.toLowerCase();
+        if (!PROXY_RESPONSE_FORBIDDEN_HEADERS.has(lowerName) && !connectionTokens.has(lowerName)) {
             sanitized[name] = value;
         }
     }
