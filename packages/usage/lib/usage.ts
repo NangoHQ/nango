@@ -87,6 +87,10 @@ export function resolveBillingUsageSource(accountId: number, requestedSource: 'c
     return respected ?? (shouldUseClickhouseFor(accountId) ? 'clickhouse' : 'orb');
 }
 
+export function resolveCappingSource(accountId: number): 'clickhouse' | 'orb' {
+    return accountId % 100 < envs.FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE ? 'clickhouse' : 'orb';
+}
+
 async function resolveEnvironmentNamesInBreakdown(
     usage: BillingUsageMetrics,
     breakdown: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined
@@ -354,6 +358,10 @@ export class UsageTracker implements IUsageTracker {
             });
         }
 
+        if (!opts?.timeframe && resolveCappingSource(accountId) === 'clickhouse') {
+            return this.getCappingUsageFromClickhouse(accountId);
+        }
+
         // Orb path: strip CH-only fields so they don't pollute the billing
         // client's Redis cache key. Orb itself ignores them, but the cache key
         // hashes the full opts and would miss on otherwise-identical queries.
@@ -450,6 +458,43 @@ export class UsageTracker implements IUsageTracker {
         }
     }
 
+    private async getCappingUsageFromClickhouse(accountId: number): Promise<Result<BillingUsageMetrics>> {
+        const cacheKey = `billing:usage:ch:${accountId}`;
+        try {
+            const cached = await this.redis.get(cacheKey);
+            if (cached) {
+                return Ok(JSON.parse(cached) as BillingUsageMetrics);
+            }
+        } catch (err) {
+            logger.warning(`capping CH cache read failed for account=${accountId}: ${stringifyError(err)}`);
+        }
+
+        const timeoutErr = new Error('capping_ch_timeout');
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
+            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
+            new Promise((resolve) => {
+                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
+            })
+        ]);
+        clearTimeout(timeoutId);
+
+        if (chResult.isErr()) {
+            return Err(chResult.error);
+        }
+
+        await this.writeCappingCache(accountId, chResult.value);
+        return Ok(chResult.value);
+    }
+
+    private async writeCappingCache(accountId: number, value: BillingUsageMetrics): Promise<void> {
+        try {
+            await this.redis.set(`billing:usage:ch:${accountId}`, JSON.stringify(value), { EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS });
+        } catch (err) {
+            logger.warning(`capping CH cache write failed for account=${accountId}: ${stringifyError(err)}`);
+        }
+    }
+
     private async shadowCappingAgainstClickhouse({ accountId, orbResult }: { accountId: number; orbResult: BillingUsageMetrics }): Promise<void> {
         const start = process.hrtime.bigint();
         const timeoutErr = new Error('shadow_timeout');
@@ -467,14 +512,9 @@ export class UsageTracker implements IUsageTracker {
         metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DURATION_MS, elapsedMs, { outcome });
         if (chResult.isErr()) return;
 
-        // Populate `billing:usage:ch:<accountId>` so the eventual source flip
-        // from Orb to CH doesn't cold-start every account against CH on cutover.
-        const cacheKey = `billing:usage:ch:${accountId}`;
-        try {
-            await this.redis.set(cacheKey, JSON.stringify(chResult.value), { EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS });
-        } catch (err) {
-            logger.warning(`capping shadow CH cache write failed for account=${accountId}: ${stringifyError(err)}`);
-        }
+        // Populate the CH cache key so the eventual source flip from Orb to
+        // CH doesn't cold-start every account against CH on cutover.
+        await this.writeCappingCache(accountId, chResult.value);
 
         // Capping path covers only COUNTER metrics — connections/records read
         // from Postgres on the capping path and aren't returned by either Orb
