@@ -1,6 +1,6 @@
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
-import { getRedisUrl } from '@nangohq/kvstore';
+import { getRedisUrl } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -109,7 +109,7 @@ async function buildLimiter(): Promise<RateLimiterAbstract> {
         logger.error(`Redis (webhook-ingress rate-limiter) error: ${err}`);
     });
 
-    return new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...opts });
+    return new RateLimiterRedis({ storeClient: redisClient, ...opts });
 }
 
 function getDefaultLimiter(): Promise<RateLimiterAbstract> {

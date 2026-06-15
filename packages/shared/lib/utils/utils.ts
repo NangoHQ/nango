@@ -58,6 +58,21 @@ export function getServerBaseUrl() {
     return getServerHost() + `:${getServerPort()}`;
 }
 
+export function getRedisUrl() {
+    const url = process.env['NANGO_REDIS_URL'];
+    if (url) {
+        return url;
+    } else {
+        const endpoint = process.env['NANGO_REDIS_HOST'];
+        const port = process.env['NANGO_REDIS_PORT'] || 6379;
+        const auth = process.env['NANGO_REDIS_AUTH'];
+        if (endpoint && port && auth) {
+            return `rediss://:${auth}@${endpoint}:${port}`;
+        }
+        return undefined;
+    }
+}
+
 export function getOrchestratorUrl() {
     return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
 }

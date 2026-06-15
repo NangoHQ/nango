@@ -47,7 +47,6 @@ export class CircuitBreakerRedis implements CircuitBreaker {
         // Rate limiter for tracking failures
         this.failureLimiter = new RateLimiterRedis({
             storeClient: redis,
-            useRedisPackage: true,
             keyPrefix: `${this.keyPrefix}:failures`,
             points: options.failureThreshold,
             duration: options.windowSecs
@@ -129,42 +128,27 @@ export class CircuitBreakerRedis implements CircuitBreaker {
                 untilMs: now + this.cooldownDurationMs
             });
         } else {
-            try {
-                await this.failureLimiter.delete(key);
-            } catch {
-                // ignore, counter has a TTL
-            }
+            // Success in half-open = remove the key (back to closed/normal)
             await this.removeState(key);
+            await this.failureLimiter.delete(key);
         }
         return res;
     }
 
     private async getState(key: string): Promise<CircuitStateData | null> {
-        try {
-            const data = await this.redis.get(`${this.keyPrefix}:${key}`);
-            if (!data) {
-                return null;
-            }
-            return JSON.parse(data);
-        } catch {
+        const data = await this.redis.get(`${this.keyPrefix}:${key}`);
+        if (!data) {
             return null;
         }
+        return JSON.parse(data);
     }
 
     private async setState(key: string, state: CircuitStateData): Promise<void> {
-        try {
-            const ttlMs = this.autoResetSecs * 1000;
-            await this.redis.set(`${this.keyPrefix}:${key}`, JSON.stringify(state), { PX: ttlMs });
-        } catch {
-            // ignore state write errors — delivery proceeds fail-open
-        }
+        const ttlMs = this.autoResetSecs * 1000;
+        await this.redis.set(`${this.keyPrefix}:${key}`, JSON.stringify(state), { PX: ttlMs });
     }
 
     private async removeState(key: string): Promise<void> {
-        try {
-            await this.redis.del(`${this.keyPrefix}:${key}`);
-        } catch {
-            // ignore state delete errors
-        }
+        await this.redis.del(`${this.keyPrefix}:${key}`);
     }
 }

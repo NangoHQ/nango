@@ -253,35 +253,6 @@ Special characters in `RECORDS_DATABASE_URL` must be URL encoded. If it is not s
 Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
 </Tip>
 
-### External Redis
-
-The bundled Redis is fine for local use but not for production. Connect Nango to an external Redis (or Valkey) with either a full URL or discrete variables:
-
-```sh
-NANGO_REDIS_URL=rediss://:<password>@<host>:<port>
-# or
-NANGO_REDIS_HOST=<host>
-NANGO_REDIS_PORT=<port>
-NANGO_REDIS_AUTH=<password>
-```
-
-Use the `rediss://` scheme (or discrete variables, which default to TLS) to enable in-transit encryption.
-
-#### IAM / short-lived token authentication
-
-Managed Redis with IAM authentication (for example GCP Memorystore for Valkey) uses a short-lived token as the password and requires the token to be refreshed before it expires. Instead of a static `NANGO_REDIS_AUTH`, point Nango at a file that an external process (such as a sidecar) keeps up to date:
-
-```sh
-NANGO_REDIS_HOST=<host>
-NANGO_REDIS_PORT=<port>
-NANGO_REDIS_AUTH_TOKEN_FILE=/path/to/token   # re-read on every (re)connect
-NANGO_REDIS_USERNAME=<username>              # optional; defaults to "default"
-```
-
-Nango reads the token file on every connection and reconnection, so a rotated token is always picked up without a restart. This is cloud-agnostic: anything that writes the current token to the file works. The writer must update the file atomically — write a temporary file and `rename()` it into place — so a reconnect never reads a half-written token and fails authentication. When `NANGO_REDIS_AUTH_TOKEN_FILE` is set, do not embed credentials in `NANGO_REDIS_URL`.
-
-The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_REDIS_` (for example `NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE`); it falls back to the system Redis when unset.
-
 ### Securing your instance
 
 #### Proxy base URL override hardening

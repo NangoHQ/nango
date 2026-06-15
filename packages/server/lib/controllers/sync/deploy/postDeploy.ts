@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
 import { NangoError, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, productTracking, startTrial } from '@nangohq/shared';
-import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationWithNangoYaml as validation } from './validation.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
@@ -12,7 +12,6 @@ import { getOrchestrator } from '../../../utils/utils.js';
 import type { Lock } from '@nangohq/kvstore';
 import type { PostDeploy } from '@nangohq/types';
 
-const logger = getLogger('Server.PostDeploy');
 const orchestrator = getOrchestrator();
 
 export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
@@ -108,11 +107,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         res.send(syncConfigDeployResult.result);
     } finally {
         if (lock) {
-            try {
-                await locking.release(lock);
-            } catch (err) {
-                logger.error('Error releasing lock', { lock: lock.key, error: err });
-            }
+            await locking.release(lock);
         }
     }
 });
