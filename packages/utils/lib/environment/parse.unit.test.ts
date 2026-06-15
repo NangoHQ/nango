@@ -49,6 +49,14 @@ describe('parse', () => {
         expect(res.AGENTCORE_REGION).toBe('us-east-1');
     });
 
+    it('should default the AgentCore runtime qualifier', () => {
+        const res = parseEnvs(ENVS, {
+            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
+            AGENTCORE_REGION: 'us-east-1'
+        });
+        expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('DEFAULT');
+    });
+
     it('should coerce boolean and number', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });

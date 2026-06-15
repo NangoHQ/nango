@@ -19,9 +19,15 @@ type AgentCoreAdapterRequest =
     | { operation: 'readTextFile'; path: string }
     | { operation: 'startCommand'; command: string; timeoutMs: number; envs?: Record<string, string> | undefined };
 
-type AgentCoreAdapterResponse<T> =
-    | { ok: true; data: T }
-    | { ok: false; error: { message?: string; name?: string; stdout?: string; stderr?: string; exitCode?: number } };
+interface AgentCoreAdapterError {
+    message?: string;
+    name?: string;
+    stdout?: string;
+    stderr?: string;
+    exitCode?: number;
+}
+
+type AgentCoreAdapterResponse<T> = { ok: true; data: T } | { ok: false; error: AgentCoreAdapterError };
 
 const workspacePath = '/home/user/nango-integrations';
 const jsonContentType = 'application/json';
@@ -270,14 +276,56 @@ async function readSdkStream(stream: unknown): Promise<string> {
 }
 
 function parseAdapterResponse<T>(operation: string, text: string): AgentCoreAdapterResponse<T> {
+    let parsed: unknown;
     try {
-        return JSON.parse(text) as AgentCoreAdapterResponse<T>;
+        parsed = JSON.parse(text);
     } catch (err) {
         throw new Error(`AgentCore adapter returned invalid JSON for ${operation}: ${text}`, { cause: err });
     }
+
+    if (!isRecord(parsed)) {
+        throw invalidAdapterResponseError(operation);
+    }
+
+    if (parsed['ok'] === true) {
+        return { ok: true, data: parsed['data'] as T };
+    }
+
+    if (parsed['ok'] === false && isAdapterError(parsed['error'])) {
+        return { ok: false, error: parsed['error'] };
+    }
+
+    throw invalidAdapterResponseError(operation);
 }
 
-function toAdapterError(operation: string, error: { message?: string; name?: string; stdout?: string; stderr?: string; exitCode?: number }): Error {
+function invalidAdapterResponseError(operation: string): Error {
+    return new Error(`AgentCore adapter returned invalid response for ${operation}`);
+}
+
+function isAdapterError(value: unknown): value is AgentCoreAdapterError {
+    return (
+        isRecord(value) &&
+        optionalString(value['message']) &&
+        optionalString(value['name']) &&
+        optionalString(value['stdout']) &&
+        optionalString(value['stderr']) &&
+        optionalNumber(value['exitCode'])
+    );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function optionalString(value: unknown): boolean {
+    return value === undefined || typeof value === 'string';
+}
+
+function optionalNumber(value: unknown): boolean {
+    return value === undefined || typeof value === 'number';
+}
+
+function toAdapterError(operation: string, error: AgentCoreAdapterError): Error {
     const message = error.message || `AgentCore adapter ${operation} failed`;
     if (error.name === 'SandboxCommandTimeoutError') {
         return new SandboxCommandTimeoutError(message);

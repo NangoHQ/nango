@@ -8,6 +8,7 @@ const host = '0.0.0.0';
 const workspacePath = '/home/user/nango-integrations';
 const heartbeatIntervalMs = 5_000;
 const commandEnvAllowlist = ['PATH', 'HOME', 'NANGO_CLI_UPGRADE_MODE', 'NODE_ENV'];
+const maxInvocationBodyBytes = 10 * 1024 * 1024;
 
 let activeCommand = null;
 let timeOfLastUpdate = unixNow();
@@ -42,7 +43,7 @@ const server = http.createServer(async (req, res) => {
 
         sendJson(res, 404, { ok: false, error: { message: 'Not found' } });
     } catch (err) {
-        const statusCode = req.method === 'POST' && req.url === '/invocations' ? 200 : 500;
+        const statusCode = getErrorStatusCode(err) ?? (req.method === 'POST' && req.url === '/invocations' ? 200 : 500);
         sendJson(res, statusCode, { ok: false, error: serializeError(err) });
     }
 });
@@ -178,11 +179,65 @@ function resolvePath(value) {
 
 function readRequestBody(req) {
     return new Promise((resolve, reject) => {
+        const contentLength = Number(req.headers['content-length']);
+        if (Number.isFinite(contentLength) && contentLength > maxInvocationBodyBytes) {
+            req.resume();
+            reject(invocationBodyTooLargeError());
+            return;
+        }
+
         const chunks = [];
-        req.on('data', (chunk) => chunks.push(chunk));
-        req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-        req.on('error', reject);
+        let totalBytes = 0;
+        let done = false;
+
+        req.on('data', (chunk) => {
+            if (done) {
+                return;
+            }
+
+            const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+            totalBytes += buffer.byteLength;
+            if (totalBytes > maxInvocationBodyBytes) {
+                done = true;
+                req.removeAllListeners('data');
+                req.resume();
+                reject(invocationBodyTooLargeError());
+                return;
+            }
+
+            chunks.push(buffer);
+        });
+        req.on('end', () => {
+            if (done) {
+                return;
+            }
+
+            done = true;
+            resolve(Buffer.concat(chunks).toString('utf8'));
+        });
+        req.on('error', (err) => {
+            if (done) {
+                return;
+            }
+
+            done = true;
+            reject(err);
+        });
     });
+}
+
+function invocationBodyTooLargeError() {
+    const err = new Error(`Invocation body exceeds ${maxInvocationBodyBytes} bytes`);
+    err.statusCode = 413;
+    return err;
+}
+
+function getErrorStatusCode(err) {
+    if (err && typeof err === 'object' && Number.isInteger(err.statusCode) && err.statusCode >= 400 && err.statusCode <= 599) {
+        return err.statusCode;
+    }
+
+    return undefined;
 }
 
 function sendJson(res, statusCode, payload) {

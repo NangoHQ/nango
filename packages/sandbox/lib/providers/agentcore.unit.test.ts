@@ -65,6 +65,14 @@ function adapterResponse(data?: unknown): AdapterSdkResponse {
     };
 }
 
+function rawAdapterResponse(data: unknown): AdapterSdkResponse {
+    return {
+        response: {
+            transformToString: () => Promise.resolve(JSON.stringify(data))
+        }
+    };
+}
+
 async function* commandStream(events: unknown[]): AsyncGenerator {
     await Promise.resolve();
     for (const event of events) {
@@ -234,6 +242,24 @@ describe('AgentCoreSandboxProvider', () => {
         await expect(new AgentCoreSandboxProvider().create({ purpose: 'dryrun', timeoutMs: 30_000 })).rejects.toMatchObject({
             name: 'SandboxUnavailableError',
             cause: error
+        });
+    });
+
+    it('rejects malformed adapter error responses without throwing TypeError', async () => {
+        mocks.send.mockResolvedValueOnce(rawAdapterResponse({ ok: false }));
+
+        await expect(new AgentCoreSandboxProvider().create({ purpose: 'dryrun', timeoutMs: 30_000 })).rejects.toMatchObject({
+            name: 'Error',
+            message: 'AgentCore adapter returned invalid response for init'
+        });
+    });
+
+    it('rejects malformed adapter success responses', async () => {
+        mocks.send.mockResolvedValueOnce(rawAdapterResponse({ data: { workspacePath: '/tmp' } }));
+
+        await expect(new AgentCoreSandboxProvider().create({ purpose: 'dryrun', timeoutMs: 30_000 })).rejects.toMatchObject({
+            name: 'Error',
+            message: 'AgentCore adapter returned invalid response for init'
         });
     });
 });
