@@ -10,12 +10,11 @@ export const sql = [
         direction        LowCardinality(String),
         package          LowCardinality(String),
         callsite         String,
-        sync_id          String DEFAULT '',
         value            UInt64
     )
     ENGINE = SummingMergeTree(value)
     PARTITION BY toYYYYMM(day)
-    ORDER BY (account_id, day, environment_id, integration_id, connection_id, direction, package, callsite, sync_id)
+    ORDER BY (account_id, day, environment_id, integration_id, connection_id, direction, package, callsite)
     TTL day + INTERVAL 24 MONTH
     `,
     `
@@ -30,11 +29,10 @@ export const sql = [
         attributes.direction::String           AS direction,
         attributes.package::String             AS package,
         attributes.callsite::String            AS callsite,
-        coalesce(attributes.syncId::String, '') AS sync_id,
         sum(value)                             AS value
     FROM {database:Identifier}.raw_events
     WHERE type = 'usage.data_transfer'
     GROUP BY day, account_id, environment_id, integration_id, connection_id,
-             direction, package, callsite, sync_id
+             direction, package, callsite
     `
 ];
