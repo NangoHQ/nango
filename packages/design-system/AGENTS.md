@@ -4,7 +4,7 @@ This package contains the Nango design system: design tokens, React components, 
 
 ## Adding a variant for a new look
 
-Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See the [Styling & Customization](http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs) guide.
+Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See `stories/StylingAndCustomization.mdx` for the full guide.
 
 ## Adding a new component
 
@@ -219,6 +219,7 @@ src/
     cn.ts                  cn() helper: twMerge + clsx
   index.ts                 barrel — all public exports
   index.css                CSS entry (imports tokens.generated.css)
+stories/                   Storybook stories (*.stories.tsx) and MDX guides
 tokens/
   tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
   tokens.json              Tokens Studio export
