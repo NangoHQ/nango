@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { Err, getLogger, matchWith, metrics } from '@nangohq/utils';
+import { Err, getLogger, metrics } from '@nangohq/utils';
 
 import type { PublishBatchProps, PublishBatchResult, Transport } from './transport/transport.js';
 import type { Event } from '@nangohq/types';
@@ -69,23 +69,19 @@ export class Publisher {
 }
 
 function reportBatchPublishResults(subject: Event['subject'], batchSize: number, res: Result<PublishBatchResult>) {
-    const report = matchWith<PublishBatchResult, Error, void>(
-        (value) => {
-            if (value.failed.length > 0) {
-                logger.error(`publishBatch partial failure`, {
-                    subject: subject,
-                    failed: value.failed.length,
-                    total: batchSize,
-                    errors: value.failed
-                });
-                metrics.increment(metrics.Types.PUBSUB_PUBLISH, value.failed.length, { subject: subject, success: 'false' });
-            }
-        },
-        (error) => {
-            logger.error(`publishBatch total failure`, { subject: subject, total: batchSize, error });
-            metrics.increment(metrics.Types.PUBSUB_PUBLISH, batchSize, { subject: subject, success: 'false' });
+    if (res.isOk()) {
+        const res_ = res.value;
+        if (res_.failed.length > 0) {
+            logger.error(`publishBatch partial failure`, {
+                subject: subject,
+                failed: res_.failed.length,
+                total: batchSize,
+                errors: res_.failed
+            });
+            metrics.increment(metrics.Types.PUBSUB_PUBLISH, res_.failed.length, { subject: subject, success: 'false' });
         }
-    );
-
-    report(res);
+    } else {
+        logger.error(`publishBatch total failure`, { subject: subject, total: batchSize, error: res.error });
+        metrics.increment(metrics.Types.PUBSUB_PUBLISH, batchSize, { subject: subject, success: 'false' });
+    }
 }
