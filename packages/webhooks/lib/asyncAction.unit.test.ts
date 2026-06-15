@@ -4,6 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { sendAsyncActionWebhook } from './asyncAction.js';
+import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
 
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook } from '@nangohq/types';
@@ -43,6 +44,7 @@ describe('AsyncAction webhookds', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+        mockWebhookDenylistAllowAll();
     });
 
     it('should not be sent if on_async_action_completion is false', async () => {
