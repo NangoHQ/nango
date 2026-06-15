@@ -39,13 +39,7 @@ export class UsageBillingClient {
     // once the shadow path is removed.
     public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
-        let cached: string | null = null;
-        try {
-            cached = await this.redis.get(cacheKey);
-        } catch (err) {
-            metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'error' });
-            return Err(new Error('billing_usage_cache_error', { cause: err }));
-        }
+        const cached = await this.redis.get(cacheKey);
         if (cached) {
             try {
                 const parsed: BillingUsageMetrics = JSON.parse(cached);
@@ -93,12 +87,12 @@ export class UsageBillingClient {
     private async throttle<T>(key: string, fn: () => Promise<T>): Promise<T> {
         try {
             await this.throttler.removeTokens(1, key);
+            return await fn();
         } catch (err) {
             if (err instanceof RateLimiterRes) {
                 throw new Error('rate_limit_exceeded', { cause: err });
             }
-            throw new Error('billing_usage_throttle_error', { cause: err });
+            throw err;
         }
-        return await fn();
     }
 }

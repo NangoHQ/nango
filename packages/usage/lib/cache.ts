@@ -68,15 +68,11 @@ export class UsageCache {
     }
 
     public async tryAcquireLock(key: string, { ttlMs }: { ttlMs: number }): Promise<Result<string>> {
-        try {
-            const acquired = await this.store.set(key, '1', { NX: true, PX: ttlMs });
-            if (acquired) {
-                return Ok(key);
-            }
-            return Err(new Error(`lock_not_acquired`));
-        } catch (err) {
-            return Err(new Error(`lock_acquire_error`, { cause: err }));
+        const acquired = await this.store.set(key, '1', { NX: true, PX: ttlMs });
+        if (acquired) {
+            return Ok(key);
         }
+        return Err(new Error(`lock_not_acquired`));
     }
 
     public async releaseLock(key: string): Promise<void> {
@@ -95,11 +91,7 @@ export class UsageCache {
         const validated = UsageCacheEntryValueSchema.safeParse(data);
         if (!validated.success) {
             // if the data is invalid, we delete the key to avoid returning invalid data again
-            try {
-                await this.store.del(key);
-            } catch {
-                // ignore delete errors
-            }
+            await this.store.del(key);
             return Err(new Error(`cache_entry_invalid`));
         }
         return Ok({

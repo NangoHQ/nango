@@ -219,11 +219,7 @@ export async function exec(): Promise<void> {
         });
     } finally {
         if (lock) {
-            try {
-                await locking.release(lock);
-            } catch (err) {
-                logger.error('Error releasing lock', { lock: lock.key, error: err });
-            }
+            locking.release(lock);
         }
     }
 }

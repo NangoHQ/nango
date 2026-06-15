@@ -36,10 +36,6 @@ export async function exec(): Promise<void> {
             logger.info(`Timed out ${count} function async jobs`);
         }
     } finally {
-        try {
-            await locking.release(lock);
-        } catch (err) {
-            logger.error('Error releasing lock', { lock: lock.key, error: err });
-        }
+        await locking.release(lock);
     }
 }

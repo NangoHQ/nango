@@ -59,11 +59,7 @@ export async function exec(): Promise<void> {
         } catch (err) {
             logger.error('Failed to export usage metrics', err);
             if (lock) {
-                try {
-                    await locking.release(lock);
-                } catch (releaseErr) {
-                    logger.error('Error releasing lock', { lock: lock.key, error: releaseErr });
-                }
+                await locking.release(lock);
             }
             // only releasing the lock on error
             // and letting it expires otherwise so no other execution can occur until the next cron
