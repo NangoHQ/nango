@@ -1,9 +1,23 @@
+import crypto from 'node:crypto';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import * as JiraWebhookRouting from './jira-webhook-routing.js';
 
-const makeNango = (mock = vi.fn().mockResolvedValue({ connectionIds: ['conn-1'] })) => {
-    return { executeScriptForWebhooks: mock };
+const makeNango = (
+    mock = vi.fn().mockResolvedValue({ connectionIds: ['conn-1'] }),
+    webhookSecret?: string
+) => {
+    return {
+        executeScriptForWebhooks: mock,
+        integration: {
+            custom: webhookSecret ? { webhookSecret } : {}
+        }
+    };
+};
+
+const signJiraBody = (body: string, secret: string): string => {
+    return `sha256=${crypto.createHmac('sha256', secret).update(body, 'utf8').digest('hex')}`;
 };
 
 describe('jira-webhook-routing', () => {
@@ -165,5 +179,50 @@ describe('jira-webhook-routing', () => {
         expect(result.isOk()).toBe(true);
         expect((result.unwrap() as { connectionIds: string[] }).connectionIds).toEqual([]);
         expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('rejects unsigned Jira webhooks when a webhook secret is configured', async () => {
+        const mock = vi.fn();
+        const nango = makeNango(mock, 'jira-secret');
+        const body = {
+            webhookEvent: 'jira:issue_updated',
+            issue: {
+                self: 'https://acme.atlassian.net/rest/api/2/issue/42766'
+            }
+        };
+
+        const result = await JiraWebhookRouting.default(nango as any, {}, body, JSON.stringify(body));
+
+        expect(result.isErr()).toBe(true);
+        expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('routes signed Jira webhooks when the configured secret matches', async () => {
+        const mock = vi.fn().mockResolvedValue({ connectionIds: ['conn-signed'] });
+        const secret = 'jira-secret';
+        const nango = makeNango(mock, secret);
+        const body = {
+            webhookEvent: 'jira:issue_updated',
+            issue: {
+                self: 'https://acme.atlassian.net/rest/api/2/issue/42766'
+            }
+        };
+        const rawBody = JSON.stringify(body);
+
+        const result = await JiraWebhookRouting.default(
+            nango as any,
+            { 'x-hub-signature-256': signJiraBody(rawBody, secret) },
+            body,
+            rawBody
+        );
+
+        expect(result.isOk()).toBe(true);
+        expect((result.unwrap() as { connectionIds: string[] }).connectionIds).toEqual(['conn-signed']);
+        expect(mock).toHaveBeenCalledWith({
+            body,
+            webhookType: 'webhookEvent',
+            connectionIdentifierValue: 'https://acme.atlassian.net',
+            propName: 'baseUrl'
+        });
     });
 });

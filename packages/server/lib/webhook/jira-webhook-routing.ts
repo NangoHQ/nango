@@ -1,4 +1,7 @@
-import { Ok } from '@nangohq/utils';
+import crypto from 'node:crypto';
+
+import { NangoError } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
 
 import type { WebhookHandler } from './types.js';
 
@@ -12,6 +15,34 @@ const getOrigin = (url: string): string | null => {
     } catch {
         return null;
     }
+};
+
+const getHeader = (
+    headers: Record<string, string>,
+    headerName: string
+): string | undefined => {
+    const lowerName = headerName.toLowerCase();
+    for (const [key, value] of Object.entries(headers)) {
+        if (key.toLowerCase() === lowerName) {
+            return value;
+        }
+    }
+    return undefined;
+};
+
+const validateJiraSignature = (
+    secret: string,
+    headerSignature: string,
+    rawBody: string
+): boolean => {
+    const expectedSignature = `sha256=${crypto.createHmac('sha256', secret).update(rawBody, 'utf8').digest('hex')}`;
+    const trusted = Buffer.from(expectedSignature, 'utf8');
+    const untrusted = Buffer.from(headerSignature, 'utf8');
+
+    return (
+        trusted.length === untrusted.length &&
+        crypto.timingSafeEqual(trusted, untrusted)
+    );
 };
 
 const MAX_SELF_LINK_SCAN_NODES = 1_000;
@@ -59,7 +90,19 @@ const extractBaseUrlFromSelfLink = (value: unknown): string | null => {
     return null;
 };
 
-const route: WebhookHandler = async (nango, _headers, body) => {
+const route: WebhookHandler = async (nango, headers, body, rawBody) => {
+    const webhookSecret = nango.integration.custom?.['webhookSecret'];
+    if (webhookSecret) {
+        const signature = getHeader(headers, 'x-hub-signature-256');
+        if (!signature) {
+            return Err(new NangoError('webhook_missing_signature'));
+        }
+
+        if (!validateJiraSignature(webhookSecret, signature, rawBody)) {
+            return Err(new NangoError('webhook_invalid_signature'));
+        }
+    }
+
     if (Array.isArray(body)) {
         let connectionIds: string[] = [];
         for (const event of body) {
