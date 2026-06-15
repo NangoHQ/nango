@@ -88,6 +88,30 @@ const tseslintRules = {
     '@typescript-eslint/no-deprecated': 'off' // takes 33% of the whole linting time
 };
 
+// Shared rules for packages that consume @nangohq/design-system — spread into each consuming
+// package's block. Matches design-system components by name.
+const designSystemConsumerRules = {
+    'react/forbid-component-props': [
+        'warn',
+        {
+            forbid: [
+                {
+                    propName: 'className',
+                    disallowedFor: ['Button', 'IconButton'],
+                    message:
+                        "Don't override design-system styles via className — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
+                },
+                {
+                    propName: 'style',
+                    disallowedFor: ['Button', 'IconButton'],
+                    message:
+                        "Don't override design-system styles via the style prop — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
+                }
+            ]
+        }
+    ]
+};
+
 export default tseslint.config(
     {
         ignores: [
@@ -336,6 +360,9 @@ export default tseslint.config(
                 }
             ],
 
+            // Don't override design-system component styles — see designSystemConsumerRules above.
+            ...designSystemConsumerRules,
+
             'import/extensions': 'off'
         }
     },
@@ -380,6 +407,8 @@ export default tseslint.config(
             ...react.configs.flat.recommended.rules,
             ...react.configs.flat['jsx-runtime'].rules,
             ...reactHooks.configs.recommended.rules,
+
+            ...designSystemConsumerRules,
 
             'import/extensions': 'off',
             '@typescript-eslint/member-ordering': 'error',
