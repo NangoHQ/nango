@@ -152,6 +152,7 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
     client_registration: McpOAuth2ClientRegistration;
+    registration_params?: Record<string, string | string[]>;
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
