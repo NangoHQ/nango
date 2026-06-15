@@ -1,13 +1,178 @@
+### Auditing
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-logs` | Retrieve Gong audit logs by type and time range. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-logs.ts) |
+
+### CRM
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-crm-integration` | Delete a registered generic CRM integration from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/delete-crm-integration.ts) |
+| `get-crm-entities` | Retrieve CRM objects (accounts, contacts, deals, leads) from the Gong CRM integration. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-crm-entities.ts) |
+| `get-crm-entity-schema` | List CRM entity schema fields registered in Gong | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-crm-entity-schema.ts) |
+| `get-crm-request-status` | Check the status of an async CRM upload request. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-crm-request-status.ts) |
+| `upload-crm-entities` | Upload CRM objects (accounts, contacts, deals, leads) to Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/upload-crm-entities.ts) |
+| `upload-crm-entity-schema` | Upload or update the object schema fields for a CRM entity type in Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/upload-crm-entity-schema.ts) |
+
+### Call Outcomes
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-call-outcomes` | List all configured call outcomes in Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-call-outcomes.ts) |
+
 ### Calls
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
+| `fetch-call-extensive-data` | Fetch detailed Gong call data including content, interaction, and collaboration fields for specific calls. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-extensive-data.ts) |
 | `fetch-call-transcripts` | Fetch a page of Gong call transcripts, optionally filtered by date range, workspace, or call IDs. Use the returned nextCursor to retrieve subsequent pages. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts) |
+| `get-call-media` | Retrieve the media download URL for a Gong call recording | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-call-media.ts) |
+| `get-call-transcript` | Retrieve the transcript for a single Gong call. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-call-transcript.ts) |
+| `get-call` | Retrieve a single call from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-call.ts) |
+| `list-call-transcripts` | List call transcripts from Gong using date-range or other filters. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-call-transcripts.ts) |
+| `list-calls` | List calls from Gong with optional date-range filters. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-calls.ts) |
+| `upload-call` | Create a call record in Gong from an external telephony or recording system (step 1 of the two-step ingestion flow) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/upload-call.ts) |
+
+### Data Privacy
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-data-for-email` | Erase all Gong data associated with an email address (GDPR / data privacy). | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/delete-data-for-email.ts) |
+| `delete-data-for-phone` | Erase all Gong data associated with a phone number (GDPR / data privacy) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/delete-data-for-phone.ts) |
+| `get-data-for-email` | Retrieve all Gong references associated with a specific email address. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-data-for-email.ts) |
+| `get-data-for-phone` | Retrieve all Gong references associated with a specific phone number. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-data-for-phone.ts) |
+
+### Digital Interactions
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `post-digital-interaction` | Post a digital interaction event to Gong (web visits, email opens, content engagement, etc.) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/post-digital-interaction.ts) |
+
+### Engage Flows
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `unassign-flow-by-crm-id` | Unassign prospects from an Engage flow using their CRM prospect IDs | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/unassign-flow-by-crm-id.ts) |
+
+### Entities
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `ask-entity` | Ask a natural language question about a Gong entity using AI. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/ask-entity.ts) |
+| `get-entity-brief` | Generate an AI brief for a CRM entity using Gong's AI briefer | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-entity-brief.ts) |
+
+### Flows
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `assign-prospects-cool-off-override` | Assign prospects to a Gong Engage flow bypassing the cool-off period restriction. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/assign-prospects-cool-off-override.ts) |
+| `get-bulk-assignment-results` | Poll the results of a bulk prospect-to-flow assignment job. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-bulk-assignment-results.ts) |
+| `get-flow-steps` | Retrieve details and steps for one or more Gong Engage flows. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-flow-steps.ts) |
+| `list-flow-folders` | List Gong Engage flow folders | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-flow-folders.ts) |
+| `list-flow-prospects` | List prospects and their current flow assignment status. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-flow-prospects.ts) |
+| `list-flows` | List Gong Engage flows owned by a specific user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-flows.ts) |
+
+### Integration Settings
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-integration-settings` | Retrieve Gong integration settings. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-integration-settings.ts) |
+| `update-integration-settings` | Update Gong integration settings. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/update-integration-settings.ts) |
+
+### Library
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-library-folders` | Retrieve all Gong library folders. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-library-folders.ts) |
+
+### Meetings
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-meeting` | Create a new Gong meeting (Beta). | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/create-meeting.ts) |
+| `delete-meeting` | Delete a Gong meeting (Beta). | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/delete-meeting.ts) |
+| `get-meeting-integration-status` | Validate the Gong meeting integration status. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-meeting-integration-status.ts) |
+| `update-meeting` | Update an existing Gong meeting (Beta). | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/update-meeting.ts) |
+
+### Permissions
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-call-users-access` | Grant individual users access to specific calls. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/add-call-users-access.ts) |
+| `create-permission-profile` | Create a new permission profile in a Gong workspace | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/create-permission-profile.ts) |
+| `get-call-users-access` | Retrieve the list of users that have individual access to a specific call. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-call-users-access.ts) |
+| `get-permission-profile` | Retrieve a specific Gong permission profile by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-permission-profile.ts) |
+| `list-permission-profile-users` | List all users attached to a specific Gong permission profile | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-permission-profile-users.ts) |
+| `list-permission-profiles` | List all permission profiles in a Gong workspace. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-permission-profiles.ts) |
+| `remove-call-users-access` | Remove individual user access from specific calls | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/remove-call-users-access.ts) |
+| `update-permission-profile` | Update an existing Gong permission profile. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/update-permission-profile.ts) |
+
+### Scorecards
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-scorecards` | List scorecards from Gong | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-scorecards.ts) |
+
+### Settings
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-scorecard` | Retrieve a single scorecard from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-scorecard.ts) |
+
+### Stats
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-stats-activity-aggregate-by-period` | Retrieve aggregated activity statistics for users over a date range, grouped by time period. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-stats-activity-aggregate-by-period.ts) |
+| `get-stats-activity-aggregate` | Retrieve aggregated activity statistics for defined users on a specific date. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-stats-activity-aggregate.ts) |
+| `get-stats-activity-day-by-day` | Retrieve daily activity statistics for applicable users over a date range. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-stats-activity-day-by-day.ts) |
+| `get-stats-activity-scorecards` | Retrieve answered scorecard statistics for reviewed users or specific scorecards over a date range. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-stats-activity-scorecards.ts) |
+| `get-stats-interaction` | Retrieve interaction statistics for users on a specific date | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-stats-interaction.ts) |
+
+### Tasks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-tasks` | List tasks for the current Gong user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-tasks.ts) |
+| `update-task` | Update a Gong task for the current user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/update-task.ts) |
+
+### Trackers
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-tracker` | Retrieve a single keyword tracker from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-tracker.ts) |
+| `list-trackers` | List keyword trackers from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-trackers.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-user-settings-history` | Retrieve the settings change history for a specific Gong user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-user-settings-history.ts) |
+| `get-user` | Retrieve a single user from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-user.ts) |
+| `list-users` | List users from Gong | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-users.ts) |
+
+### Workspaces
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-workspace` | Retrieve a single Gong workspace by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-workspace.ts) |
+| `list-workspaces` | List all workspaces in the Gong account. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-workspaces.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
+| `get-coaching-metrics` | Retrieve all coaching metrics from Gong. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-coaching-metrics.ts) |
+| `get-crm-integration` | Retrieve details of the registered generic CRM integration | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/get-crm-integration.ts) |
+| `list-library-folder-content` | List calls within a specific Gong library folder | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/list-library-folder-content.ts) |
+| `register-crm-integration` | Register a generic CRM integration with Gong | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/register-crm-integration.ts) |
+| `remove-prospects-from-flow` | Unassign prospects from an Engage flow by their flow instance IDs. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/remove-prospects-from-flow.ts) |
+| `call-outcomes` | Sync configured call outcomes from Gong. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/call-outcomes.ts) |
 | `call-transcripts` | Sync call transcripts from Gong | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/call-transcripts.ts) |
 | `calls` | Sync calls from Gong. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/calls.ts) |
+| `library-folders` | Sync Gong library folders | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/library-folders.ts) |
+| `scorecards` | Sync scorecards from Gong | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/scorecards.ts) |
+| `trackers` | Sync keyword trackers from Gong. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/trackers.ts) |
 | `users` | Sync users from Gong | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/users.ts) |
+| `workspaces` | Sync workspaces from Gong. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/syncs/workspaces.ts) |

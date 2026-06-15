@@ -8,7 +8,15 @@ import knex from 'knex';
 
 import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
 
-import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_ROUTING_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import {
+    DEFAULT_RECORDS_LIMIT,
+    RECORDS_DATA_TABLE,
+    RECORDS_ROUTING_TABLE,
+    RECORDS_SEEN_MAX_IDS_PER_ROW,
+    RECORDS_SEEN_TABLE,
+    RECORDS_TABLE,
+    RECORD_COUNTS_TABLE
+} from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { deepMergeRecordData } from '../../helpers/merge.js';
@@ -1759,12 +1767,19 @@ export class PostgresStore implements RecordsStore {
         if (ensureRes.isErr()) {
             throw new Error('Failed to ensure seen partition', { cause: ensureRes.error });
         }
-        await trx(RECORDS_SEEN_TABLE).insert({
-            connection_id: connectionId,
-            model,
-            generation: syncJobId,
-            record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
-        });
+        // Split the ids across multiple rows so no single record_ids array
+        // grows past PostgreSQL's TOAST tuple threshold (~2KB)
+        const rows: { connection_id: number; model: string; generation: number; record_ids: Knex.Raw }[] = [];
+        for (let i = 0; i < recordIds.length; i += RECORDS_SEEN_MAX_IDS_PER_ROW) {
+            const chunk = recordIds.slice(i, i + RECORDS_SEEN_MAX_IDS_PER_ROW);
+            rows.push({
+                connection_id: connectionId,
+                model,
+                generation: syncJobId,
+                record_ids: trx.raw(`ARRAY[${chunk.map(() => '?::uuid').join(',')}]`, chunk)
+            });
+        }
+        await trx(RECORDS_SEEN_TABLE).insert(rows);
     }
 }
 
