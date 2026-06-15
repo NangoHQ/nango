@@ -333,9 +333,8 @@ export const ConnectionList = () => {
                                             </span>
                                             <Button
                                                 type="button"
-                                                variant="secondary"
-                                                size="md"
-                                                className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
+                                                variant="outline"
+                                                size="sm"
                                                 onClick={() => {
                                                     navigate(`/${env}/integrations/create`);
                                                 }}

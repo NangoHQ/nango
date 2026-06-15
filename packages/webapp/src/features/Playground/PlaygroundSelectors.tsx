@@ -150,9 +150,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                         <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new integration?</span>
                         <Button
                             type="button"
-                            variant="secondary"
-                            size="md"
-                            className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/integrations/create`);
