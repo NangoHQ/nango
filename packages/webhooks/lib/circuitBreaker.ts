@@ -129,27 +129,42 @@ export class CircuitBreakerRedis implements CircuitBreaker {
                 untilMs: now + this.cooldownDurationMs
             });
         } else {
-            // Success in half-open = remove the key (back to closed/normal)
+            try {
+                await this.failureLimiter.delete(key);
+            } catch {
+                // ignore, counter has a TTL
+            }
             await this.removeState(key);
-            await this.failureLimiter.delete(key);
         }
         return res;
     }
 
     private async getState(key: string): Promise<CircuitStateData | null> {
-        const data = await this.redis.get(`${this.keyPrefix}:${key}`);
-        if (!data) {
+        try {
+            const data = await this.redis.get(`${this.keyPrefix}:${key}`);
+            if (!data) {
+                return null;
+            }
+            return JSON.parse(data);
+        } catch {
             return null;
         }
-        return JSON.parse(data);
     }
 
     private async setState(key: string, state: CircuitStateData): Promise<void> {
-        const ttlMs = this.autoResetSecs * 1000;
-        await this.redis.set(`${this.keyPrefix}:${key}`, JSON.stringify(state), { PX: ttlMs });
+        try {
+            const ttlMs = this.autoResetSecs * 1000;
+            await this.redis.set(`${this.keyPrefix}:${key}`, JSON.stringify(state), { PX: ttlMs });
+        } catch {
+            // ignore state write errors — delivery proceeds fail-open
+        }
     }
 
     private async removeState(key: string): Promise<void> {
-        await this.redis.del(`${this.keyPrefix}:${key}`);
+        try {
+            await this.redis.del(`${this.keyPrefix}:${key}`);
+        } catch {
+            // ignore state delete errors
+        }
     }
 }

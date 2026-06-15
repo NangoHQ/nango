@@ -44,7 +44,11 @@ class Gate {
     }
 
     async exit(lock: Lock) {
-        await this.locking.release(lock);
+        try {
+            await this.locking.release(lock);
+        } catch {
+            // best-effort release; lock TTL is the safety net
+        }
     }
 }
 
@@ -136,7 +140,12 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
 
     const abort = setInterval(async () => {
-        const shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
+        let shouldAbort = false;
+        try {
+            shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
+        } catch {
+            // best-effort abort poll; retry on next interval
+        }
         if (shouldAbort) {
             logger.info('Aborting task', { taskId: request.taskId });
             abortController.abort();
