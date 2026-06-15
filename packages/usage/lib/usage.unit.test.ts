@@ -1,7 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { envs } from './env.js';
-import { resolveBillingUsageSource, shouldShadow, shouldUseClickhouseFor, toCounterBillingMetricSeries, toRunningAvgUsage } from './usage.js';
+import {
+    resolveBillingUsageSource,
+    shouldShadow,
+    shouldShadowCapping,
+    shouldUseClickhouseFor,
+    toCounterBillingMetricSeries,
+    toRunningAvgUsage
+} from './usage.js';
 
 import type { GetDailyCounterResult, GetDailySumAndBatchesResult } from './clickhouse/clickhouse.query.js';
 
@@ -312,6 +319,54 @@ describe('shouldShadow', () => {
         (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = true;
         expect(shouldShadow({ timeframe: junePlus })).toBe(true);
         expect(shouldShadow({ timeframe: { start: new Date('2026-06-01T00:00:00.000Z'), end: new Date('2026-06-02T00:00:00.000Z') } })).toBe(true);
+    });
+});
+
+describe('shouldShadowCapping', () => {
+    const someTimeframe = { start: new Date('2026-06-15T00:00:00.000Z'), end: new Date('2026-06-20T00:00:00.000Z') };
+
+    let originalPct: number;
+    let randomSpy: ReturnType<typeof vi.spyOn>;
+    beforeEach(() => {
+        originalPct = envs.FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE;
+        randomSpy = vi.spyOn(Math, 'random');
+    });
+    afterEach(() => {
+        (envs as any).FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE = originalPct;
+        randomSpy.mockRestore();
+    });
+
+    it('returns false when the percentage is at the default 0 (killswitch)', () => {
+        (envs as any).FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE = 0;
+        randomSpy.mockReturnValue(0); // even a 0 roll shouldn't fire
+        expect(shouldShadowCapping(undefined)).toBe(false);
+        expect(shouldShadowCapping({})).toBe(false);
+    });
+
+    it('returns false when a timeframe is present (dashboard path, not capping)', () => {
+        (envs as any).FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE = 100;
+        randomSpy.mockReturnValue(0);
+        expect(shouldShadowCapping({ timeframe: someTimeframe })).toBe(false);
+    });
+
+    it('fires when the random roll is under the percentage', () => {
+        (envs as any).FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE = 25;
+        randomSpy.mockReturnValue(0.24); // 24% — under 25%
+        expect(shouldShadowCapping(undefined)).toBe(true);
+    });
+
+    it('does not fire when the random roll is at or over the percentage', () => {
+        (envs as any).FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE = 25;
+        randomSpy.mockReturnValue(0.25); // 25% — boundary, NOT under
+        expect(shouldShadowCapping(undefined)).toBe(false);
+        randomSpy.mockReturnValue(0.99);
+        expect(shouldShadowCapping(undefined)).toBe(false);
+    });
+
+    it('always fires at 100%', () => {
+        (envs as any).FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE = 100;
+        randomSpy.mockReturnValue(0.999);
+        expect(shouldShadowCapping(undefined)).toBe(true);
     });
 });
 
