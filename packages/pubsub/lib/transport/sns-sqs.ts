@@ -2,7 +2,7 @@ import { PublishBatchCommand, PublishCommand, SNSClient } from '@aws-sdk/client-
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
-import { Err, Ok, chunk, getLogger, matchWith, report, runWithConcurrencyLimit } from '@nangohq/utils';
+import { Err, Ok, chunk, getLogger, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { PublishFailure } from './transport.js';
@@ -208,12 +208,13 @@ export class SnsSqs implements Transport {
         const entries: PublishBatchRequestEntry[] = [];
 
         try {
-            events.map(toSnsEntry).forEach(
-                matchWith(
-                    (entry) => entries.push(entry),
-                    (err) => failed.push(err)
-                )
-            );
+            events.map(toSnsEntry).forEach((entry) => {
+                if (entry.isOk()) {
+                    entries.push(entry.value);
+                } else {
+                    failed.push(entry.error);
+                }
+            });
 
             const batches = chunk(
                 entries,
