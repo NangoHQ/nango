@@ -77,7 +77,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                             {cancelButtonText}
                         </Button>
                     </DialogClose>
-                    <Button variant={confirmVariant} onClick={handleConfirm} disabled={isLoading || loading}>
+                    <Button variant={confirmVariant} onClick={handleConfirm} loading={isLoading || loading}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>
