@@ -64,7 +64,7 @@
         "passport-local": "1.0.0",
         "qs": "6.15.0",
         "rate-limiter-flexible": "5.0.3",
-        "redis": "4.6.13",
+        "redis": "5.12.1",
         "semver": "7.6.3",
         "serialize-error": "11.0.3",
         "simple-oauth2": "5.1.0",
