@@ -174,11 +174,11 @@ Key rules:
 
 ### Step 4: Add a Storybook story
 
-Create `src/components/ui/<component-name>.stories.tsx` co-located with the component. Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
+Add the story to the top-level `stories/` dir as `stories/<ComponentName>.stories.tsx` (not co-located with the component). Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
-import { MyComponent } from './my-component';
+import { MyComponent } from '../src/components/ui/my-component';
 
 const meta: Meta<typeof MyComponent> = {
     title: 'Design System/Components/MyComponent',
