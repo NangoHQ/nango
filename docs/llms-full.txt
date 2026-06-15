@@ -14485,6 +14485,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `torii` | Torii | API_KEY | [docs](https://nango.dev/docs/api-integrations/torii.md) | [connect](https://nango.dev/docs/api-integrations/torii/connect.md) |  | productivity |
 | `trafft` | Trafft | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/trafft.md) | [connect](https://nango.dev/docs/integrations/all/trafft/connect.md) |  | productivity |
 | `trakstar-hire` | Trakstar Hire | BASIC | [docs](https://nango.dev/docs/integrations/all/trakstar-hire.md) | [connect](https://nango.dev/docs/integrations/all/trakstar-hire/connect.md) |  | ats |
+| `travel-code` | Travel Code | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/travel-code.md) | [connect](https://nango.dev/docs/api-integrations/travel-code/connect.md) | [setup](https://nango.dev/docs/api-integrations/travel-code/how-to-register-your-own-travel-code-api-oauth-app.md) | other |
 | `trello` | Trello | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/trello.md) |  |  | productivity, ticketing |
 | `trello-scim` | Trello (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/trello-scim.md) | [connect](https://nango.dev/docs/integrations/all/trello-scim/connect.md) |  | productivity, ticketing |
 | `tremendous` | Tremendous | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tremendous.md) |  |  | payment |

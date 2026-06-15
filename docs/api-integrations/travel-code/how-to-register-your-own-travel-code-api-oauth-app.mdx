@@ -1,0 +1,40 @@
+---
+title: 'How to register your own Travel Code OAuth app'
+sidebarTitle: 'Travel Code setup'
+description: 'Register an OAuth 2.0 client with Travel Code and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth 2.0 client with Travel Code to obtain a **client ID**. Dynamically registered clients are public PKCE clients and do not receive a client secret. The client ID is required to let your users grant your app access to their Travel Code account.
+
+## Creating an OAuth 2.0 client
+
+Travel Code supports [OAuth 2.0 dynamic client registration](https://apidocs.travel-code.com/).
+
+<Steps>
+  <Step id="register-client" title="Register a new OAuth client">
+    Send a registration request with your app name and Nango's redirect URI:
+
+    ```bash
+    curl -X POST "https://travel-code.com/oauth/register" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "client_name": "Your App Name",
+        "redirect_uris": ["https://api.nango.dev/oauth/callback"]
+      }'
+    ```
+
+    The response contains your **client ID**.
+  </Step>
+  <Step id="get-credentials" title="Copy your credentials">
+    Copy the **client ID** from the response — you'll need it when configuring the integration in Nango.
+
+    Dynamically registered clients are public clients secured with PKCE; they don't have a client secret. If you need confidential client credentials (client ID and client secret), request them from your Travel Code account manager or via [support](https://docs.travel-code.com/).
+  </Step>
+  <Step id="next-steps" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details on Travel Code's OAuth implementation, see the [Travel Code API documentation](https://apidocs.travel-code.com/).
+
+---
