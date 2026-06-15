@@ -14,7 +14,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 async function signupVerifiedUser(): Promise<{ email: string; password: string }> {
     const email = `${nanoid()}@example.com`;
-    const password = 'aZ1-foobar!';
+    const password = 'aZ1-foobar!?';
 
     const signupRes = await api.fetch(signupRoute, {
         method: 'POST',
@@ -58,7 +58,7 @@ describe(`PUT ${passwordRoute}`, () => {
         const { res, json } = await api.fetch(passwordRoute, {
             method: 'PUT',
             session: currentSession,
-            body: { oldPassword: password, newPassword: 'aZ1-newpass!' }
+            body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
         });
         expect(res.status).toBe(200);
         isSuccess(json);
