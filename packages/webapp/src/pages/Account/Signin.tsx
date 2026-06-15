@@ -197,7 +197,7 @@ export const Signin: React.FC = () => {
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="xl" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>

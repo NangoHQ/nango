@@ -447,9 +447,11 @@ export const ConnectionList = () => {
                     )}
 
                     {hasNextPage && (
-                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline" className="self-center">
-                            Load More
-                        </Button>
+                        <div className="self-center">
+                            <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline">
+                                Load More
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>

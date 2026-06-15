@@ -74,9 +74,11 @@ export function VerifyEmail() {
                 </span>
             </div>
 
-            <Button onClick={handleResendEmail} size="xl" className="w-full" loading={isResendingVerificationEmailByUuid}>
-                Resend email
-            </Button>
+            <div className="grid w-full">
+                <Button onClick={handleResendEmail} size="xl" loading={isResendingVerificationEmailByUuid}>
+                    Resend email
+                </Button>
+            </div>
         </DefaultLayout>
     );
 }

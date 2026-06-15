@@ -202,16 +202,17 @@ export const ConnectUISettings = () => {
                             {([canSubmit, isDirty]) => (
                                 <PermissionGate asChild condition={canManageConnectUI}>
                                     {(allowed) => (
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            size="md"
-                                            className="self-start"
-                                            disabled={!canSubmit || !isDirty || !allowed}
-                                            loading={isUpdatingConnectUISettings}
-                                        >
-                                            Save
-                                        </Button>
+                                        <div className="self-start">
+                                            <Button
+                                                type="submit"
+                                                variant="primary"
+                                                size="md"
+                                                disabled={!canSubmit || !isDirty || !allowed}
+                                                loading={isUpdatingConnectUISettings}
+                                            >
+                                                Save
+                                            </Button>
+                                        </div>
                                     )}
                                 </PermissionGate>
                             )}
