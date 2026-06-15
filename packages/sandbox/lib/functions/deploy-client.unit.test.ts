@@ -53,7 +53,7 @@ vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildAsyncDeployScript, invokeDeploy, prepareAsyncDeploy } from './deploy-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+import { executionEnvironmentUnavailableMessage } from '../sandbox-service.js';
 
 import type { FunctionError } from './helpers.js';
 
@@ -67,7 +67,7 @@ const request = {
     nango_host: 'https://api.example.test'
 };
 
-describe('remote function deploy client', () => {
+describe('sandboxed function deploy client', () => {
     beforeEach(() => {
         mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);
