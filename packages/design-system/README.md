@@ -167,13 +167,7 @@ The consumer must also import the token CSS once at the app root (see above). Co
 
 ### Focus rings
 
-Components apply focus rings via `box-shadow` using `--focus-outline-default` (or `--focus-outline-danger` for destructive actions). The app shell should include:
-
-```css
-*:focus-visible { outline: none; }
-```
-
-This is included in Storybook's `preview.css` automatically.
+Components apply focus rings via `box-shadow` using `--focus-outline-default` (or `--focus-outline-danger` for destructive actions) and suppress the native outline themselves with `focus-visible:outline-none`. No global `*:focus-visible` reset is needed — the webapp scopes the same behaviour per-component via its `focus-default` utility.
 
 ---
 

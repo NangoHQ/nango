@@ -15,6 +15,8 @@ npx shadcn@latest add <component-name>
 
 This writes the file to `src/components/ui/<component-name>.tsx`. The generated component uses shadcn's default CSS variables (`bg-primary`, `text-muted-foreground`, etc.) — those need to be replaced in the next step.
 
+> **Note:** The shadcn CLI resolves the `@/*` aliases in `components.json` via a tsconfig path. That path is intentionally absent from `tsconfig.json` (it would collide with Storybook's `@` → webapp alias). Temporarily add `"baseUrl": ".", "paths": { "@/*": ["./src/*"] }` to `tsconfig.json` while scaffolding, then remove it once the component is in place (its imports get rewritten to relative paths anyway).
+
 ### Step 2: Replace shadcn CSS variables with design tokens
 
 shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from `tokens/tokens.generated.css` via `var(--token-name)`.
