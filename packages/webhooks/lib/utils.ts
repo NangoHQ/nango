@@ -184,7 +184,7 @@ export const deliver = async ({
     for (const webhook of webhooks) {
         const { url, type } = webhook;
 
-        if (webhookUrlDenylist.size > 0 && isBaseUrlOverrideDenied(url, webhookUrlDenylist)) {
+        if (isBaseUrlOverrideDenied(url, webhookUrlDenylist)) {
             void logCtx?.warn(`Skipping webhook delivery to denied URL (${type})`);
             continue;
         }
