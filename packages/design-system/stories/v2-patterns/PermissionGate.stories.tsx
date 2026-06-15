@@ -1,5 +1,5 @@
-import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Button } from '../../src/components/ui/button';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
