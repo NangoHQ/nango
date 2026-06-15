@@ -16,7 +16,7 @@
         "@nangohq/database": "file:../database",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "e2b": "2.18.0",
+        "e2b": "2.29.1",
         "jsonwebtoken": "9.0.3"
     },
     "devDependencies": {

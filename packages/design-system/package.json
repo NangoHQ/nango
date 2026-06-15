@@ -30,7 +30,7 @@
         "storybook": "10.4.1",
         "style-dictionary": "5.4.1",
         "tailwindcss": "4.1.13",
-        "vite": "7.3.2",
+        "vite": "8.0.16",
         "vitest": "4.1.8"
     }
 }
