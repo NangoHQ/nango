@@ -47,7 +47,6 @@ export class CircuitBreakerRedis implements CircuitBreaker {
         // Rate limiter for tracking failures
         this.failureLimiter = new RateLimiterRedis({
             storeClient: redis,
-            useRedisPackage: true,
             keyPrefix: `${this.keyPrefix}:failures`,
             points: options.failureThreshold,
             duration: options.windowSecs
