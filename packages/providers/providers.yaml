@@ -22701,6 +22701,36 @@ yotpo:
             doc_section: '#step-2-generating-your-secret-key'
             pattern: '^[A-Za-z0-9]{40}$'
 
+youcanbook-me:
+    display_name: YouCanBookMe
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.youcanbook.me
+        verification:
+            method: GET
+            endpoints:
+                - /v1/profiles
+    docs: https://nango.dev/docs/api-integrations/youcanbook-me
+    docs_connect: https://nango.dev/docs/api-integrations/youcanbook-me/connect
+    credentials:
+        username:
+            type: string
+            title: Account ID
+            description: Your YouCanBookMe Account ID.
+            format: uuid
+            example: 78c3430e-21f5-483b-8e26-84cd6dabf7a6
+            doc_section: '#step-1-finding-your-account-id'
+        password:
+            type: string
+            title: API Key
+            description: Your YouCanBookMe API key.
+            pattern: '^ak_[A-Za-z0-9_-]+$'
+            example: ak_xxxxxxxxxxxxxxxxxxxxx
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
+
 yandex:
     display_name: Yandex
     categories:

@@ -226,6 +226,16 @@ export type GetIntegrationFunction = Endpoint<{
     Success: { data: DeployedNangoFunction };
 }>;
 
+export type DeleteIntegrationFunction = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
+    /** TODO: support deleting on-event functions */
+    Querystring: { env: string; type: 'sync' | 'action' };
+    Params: { providerConfigKey: string; functionName: string };
+    Error: ApiError<'function_managed_by_deploy'>;
+    Success: { data: { success: boolean } };
+}>;
+
 export type GetProviderTemplates = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/providers/:providerConfigKey/templates';

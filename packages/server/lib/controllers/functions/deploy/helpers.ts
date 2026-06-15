@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { FunctionError, remoteFunctionDeploySandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { FunctionError, deploySandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
@@ -14,7 +14,7 @@ export async function createDeploySandboxApiKey(parentApiKeyId: number, environm
         environmentId,
         purpose: 'deploy',
         deploymentId,
-        expiresAt: new Date(Date.now() + remoteFunctionDeploySandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+        expiresAt: new Date(Date.now() + deploySandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
 }
 

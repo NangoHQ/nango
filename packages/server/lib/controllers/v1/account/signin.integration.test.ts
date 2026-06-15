@@ -12,7 +12,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 async function signupUser({ emailVerified }: { emailVerified: boolean }): Promise<{ email: string; password: string }> {
     const email = `${nanoid()}@example.com`;
-    const password = 'aZ1-foobar!';
+    const password = 'aZ1-foobar!?';
 
     const signupRes = await api.fetch(signupRoute, {
         method: 'POST',
