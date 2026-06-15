@@ -290,7 +290,10 @@ const VirtualizedRecordRows = ({
                     return (
                         <tr
                             key={String(record.id)}
-                            className={cn('absolute left-0 flex w-full border-b border-border-muted bg-bg-surface hover:bg-bg-elevated', 'transition-colors')}
+                            className={cn(
+                                'absolute left-0 flex w-full border-b border-border-muted bg-surface-canvas hover:bg-surface-raised',
+                                'transition-colors'
+                            )}
                             style={{
                                 height: RECORD_ROW_HEIGHT_PX,
                                 transform: `translateY(${vRow.start}px)`
