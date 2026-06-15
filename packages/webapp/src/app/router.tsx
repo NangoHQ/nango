@@ -279,7 +279,13 @@ export const router = sentryCreateBrowserRouter([
                                                 path: ':model',
                                                 element: <ConnectionShowRecordModel />,
                                                 handle: {
-                                                    breadcrumb: (params) => params.model || 'Model'
+                                                    breadcrumb: (params, searchParams) => {
+                                                        if (!params.model) {
+                                                            return 'Model';
+                                                        }
+                                                        const variant = searchParams.get('variant');
+                                                        return variant ? `${params.model} (${variant})` : params.model;
+                                                    }
                                                 } as BreadcrumbHandle
                                             }
                                         ]

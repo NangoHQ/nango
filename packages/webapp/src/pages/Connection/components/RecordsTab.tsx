@@ -1,15 +1,17 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUpRight, ChevronRight, Info, Loader, X } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertActions, AlertButton, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
@@ -17,7 +19,7 @@ import { useConnectionContext } from '@/pages/Connection/Show';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { cn, formatDateToPreciseUSFormat } from '@/utils/utils';
+import { cn, formatDateToUSFormat } from '@/utils/utils';
 
 import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
 
@@ -82,14 +84,13 @@ const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
     return (
         <Alert variant="info">
             <Info />
-            <AlertDescription>Learn how to sync records.</AlertDescription>
-            <AlertActions className="gap-2">
-                <AlertButton asChild variant="info">
-                    <a href={RECORDS_DOCS_URL} target="_blank" rel="noreferrer">
-                        Docs
-                        <ArrowUpRight />
-                    </a>
-                </AlertButton>
+            <AlertDescription>
+                Records are populated by syncs.{' '}
+                <StyledLink to={RECORDS_DOCS_URL} type="external" icon variant="info">
+                    Docs
+                </StyledLink>
+            </AlertDescription>
+            <AlertActions>
                 <Button
                     variant="ghost"
                     size="icon"
@@ -111,7 +112,6 @@ const RecordModelsTable = ({ models, onSelect }: { models: ConnectionRecordModel
                 <TableRow>
                     <TableHead>Model</TableHead>
                     <TableHead>Record count</TableHead>
-                    <TableHead className="w-12" />
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -120,11 +120,8 @@ const RecordModelsTable = ({ models, onSelect }: { models: ConnectionRecordModel
 
                     return (
                         <TableRow key={modelKey} className="cursor-pointer" onClick={() => onSelect(model)}>
-                            <TableCell className="text-code-body-small-medium text-text-strong">{formatModelLabel(model)}</TableCell>
+                            <TableCell>{formatModelLabel(model)}</TableCell>
                             <TableCell>{formatCount(model.count)}</TableCell>
-                            <TableCell className="text-right text-text-muted">
-                                <ChevronRight className="ml-auto size-4" />
-                            </TableCell>
                         </TableRow>
                     );
                 })}
@@ -190,7 +187,10 @@ export const ConnectionRecordTable = ({
     return (
         <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between gap-3">
-                <span className="text-body-large-semi text-text-strong">{formatModelLabel(model)}</span>
+                <Link to=".." aria-label="Back to records" className="group inline-flex w-fit items-center gap-2 focus-default">
+                    <ChevronLeft className="size-5 shrink-0 text-text-muted transition-colors group-hover:text-text-strong" />
+                    <span className="text-body-large-semi text-text-strong">{formatModelLabel(model)}</span>
+                </Link>
                 {model.count > 0 && (
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -265,23 +265,21 @@ const VirtualizedRecordRows = ({
         overscan: 2
     });
 
-    const cellBase = 'flex items-center px-4 py-2 first:pl-6 last:pr-6';
-    const headerBase = `${cellBase} text-left text-text-strong`;
+    const cellBase = 'flex items-center px-6 py-2';
+    const headerBase = `${cellBase} text-left text-body-small-semi`;
     const col = {
         id: 'min-w-0 flex-1 basis-0',
         action: 'w-36 shrink-0 whitespace-nowrap',
-        modified: 'w-56 shrink-0 min-w-0 whitespace-nowrap',
-        payload: 'w-36 shrink-0 whitespace-nowrap'
+        modified: 'w-56 shrink-0 min-w-0 whitespace-nowrap'
     } as const;
 
     return (
         <table className="w-full min-w-0 border-collapse text-sm text-text-strong">
-            <thead className="sticky top-0 z-10 bg-surface-raised shadow-[inset_0_-1px_0_0_var(--color-border-muted)]">
+            <thead className="sticky top-0 z-10 bg-surface-canvas border-b border-border-muted">
                 <tr className="flex w-full">
                     <th className={cn(headerBase, col.id)}>ID</th>
                     <th className={cn(headerBase, col.action)}>Action</th>
                     <th className={cn(headerBase, col.modified)}>Modified</th>
-                    <th className={cn(headerBase, col.payload)}>Payload</th>
                 </tr>
             </thead>
             <tbody className="relative block" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
@@ -290,26 +288,22 @@ const VirtualizedRecordRows = ({
                     return (
                         <tr
                             key={String(record.id)}
-                            className={cn('absolute left-0 flex w-full border-b border-border-muted bg-surface-canvas hover:bg-surface-raised', 'transition-colors')}
+                            className={cn(
+                                'absolute left-0 flex w-full cursor-pointer border-b border-border-muted hover:bg-state-selected-muted',
+                                'transition-colors'
+                            )}
                             style={{
                                 height: RECORD_ROW_HEIGHT_PX,
                                 transform: `translateY(${vRow.start}px)`
                             }}
+                            onClick={() => onOpenPayload(String(record.id))}
                         >
-                            <td className={cn(cellBase, col.id, 'truncate text-text-strong')}>{String(record.id)}</td>
-                            <td className={cn(cellBase, col.action)}>{formatRecordAction(record._nango_metadata.last_action)}</td>
-                            <td className={cn(cellBase, col.modified, 'text-code-body-small-regular text-text-secondary')}>
-                                {formatDateToPreciseUSFormat(record._nango_metadata.last_modified_at)}
+                            <td className={cn(cellBase, col.id, 'truncate text-body-small-regular')}>{String(record.id)}</td>
+                            <td className={cn(cellBase, col.action)}>
+                                <RecordActionBadge action={record._nango_metadata.last_action} />
                             </td>
-                            <td className={cn(cellBase, col.payload, 'justify-start')}>
-                                <button
-                                    aria-label={`View payload for ${String(record.id)}`}
-                                    className="inline-flex h-6 min-w-6 cursor-pointer items-center justify-center rounded bg-surface-panel-muted px-2 text-code-body-small-medium text-text-secondary transition-colors hover:bg-surface-raised hover:text-text-strong"
-                                    onClick={() => onOpenPayload(String(record.id))}
-                                    type="button"
-                                >
-                                    {'{}'}
-                                </button>
+                            <td className={cn(cellBase, col.modified, 'text-body-small-regular text-text-secondary')}>
+                                {formatDateToUSFormat(record._nango_metadata.last_modified_at)}
                             </td>
                         </tr>
                     );
@@ -401,15 +395,15 @@ function formatCountCompact(count: number) {
     return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(count).toLowerCase();
 }
 
-function formatRecordAction(action: string) {
+function RecordActionBadge({ action }: { action: string }) {
     switch (action.toUpperCase()) {
         case 'ADDED':
-            return 'Added';
+            return <Badge variant="green">Added</Badge>;
         case 'UPDATED':
-            return 'Updated';
+            return <Badge variant="yellow">Updated</Badge>;
         case 'DELETED':
-            return 'Deleted';
+            return <Badge variant="gray">Deleted</Badge>;
         default:
-            return action;
+            return <Badge variant="gray">{action}</Badge>;
     }
 }
