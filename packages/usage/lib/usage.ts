@@ -302,12 +302,17 @@ export class UsageTracker implements IUsageTracker {
                     span?.setTag('count', count.value);
                     return Ok(undefined);
                 }
+                case 'data_transfer': {
+                    // Not yet tracked via Orb; write 0 so the cache entry exists and avoids a revalidate loop
+                    const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
+                    await this.cache.overwrite(cacheKey, 0);
+                    return Ok(undefined);
+                }
                 case 'proxy':
                 case 'function_executions':
                 case 'function_compute_gbms':
                 case 'webhook_forwards':
-                case 'function_logs':
-                case 'data_transfer': {
+                case 'function_logs': {
                     const billingUsage = await this.getBillingMetrics(accountId);
                     if (billingUsage.isErr()) {
                         if (billingUsage.error.message === 'rate_limit_exceeded') {
