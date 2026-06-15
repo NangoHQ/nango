@@ -1,0 +1,29 @@
+packages/utils/lib/environment/parse.unit.test.ts
+  s_7949d22fd43c0a::t_e642d19d0f55a2 52-59
+packages/sandbox/lib/providers/agentcore.unit.test.ts
+  s_7949d22fd43c0a::t_e47cf840126290 68-75,247-262
+packages/sandbox/lib/providers/agentcore.ts
+  s_7949d22fd43c0a::t_e642d19d0f55a2 22-29,279,281,285-325,328
+  s_7949d22fd43c0a::t_a51273ac6da927 30
+packages/sandbox/agentcore-runtime/server.mjs
+  s_7949d22fd43c0a::t_6096016266f150 46,185,204,229-240
+  s_7949d22fd43c0a::t_158f5a502f75d2 182-184,186-188
+  s_7949d22fd43c0a::t_e47cf840126290 210-225
+  s_7949d22fd43c0a::t_e642d19d0f55a2 11,190-203,205-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "2797c5cb945b3bbabc2cec7da3ae1226db3d3de4",
+  "prompts": {},
+  "sessions": {
+    "s_7949d22fd43c0a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb538-094b-7d33-96df-cfe5efca83a6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
