@@ -1725,6 +1725,7 @@
               "integrations/all/yahoo",
               "integrations/all/yandex",
               "integrations/all/yotpo",
+              "api-integrations/youcanbook-me",
               "api-integrations/youtube",
               "api-integrations/zapier",
               "integrations/all/zapier-nla",
