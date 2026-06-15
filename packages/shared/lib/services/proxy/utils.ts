@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD, isBaseUrlOverrideDenied } from '@nangohq/utils';
 
 import { signAwsSigV4Request } from './aws-sigv4.js';
 import {
@@ -39,7 +39,9 @@ type ProxyErrorCode =
     | 'unknown_error'
     | 'failed_to_get_connection'
     | 'invalid_certificate_or_key_format'
-    | 'proxy_redirect_to_denied_host';
+    | 'proxy_redirect_to_denied_host'
+    | 'base_url_override_disabled'
+    | 'base_url_override_not_allowed';
 
 export interface RetryReason {
     retry: boolean;
@@ -94,7 +96,14 @@ export function getAxiosConfiguration({
     }
 
     const url = buildProxyURL({ config: proxyConfig, connection });
-
+    if (proxyConfig.validateProxyRequestUrl) {
+        proxyConfig.validateProxyRequestUrl({
+            absoluteUrl: url,
+            proxyConfig,
+            connection,
+            ...(integrationConfig !== undefined ? { integrationConfig } : {})
+        });
+    }
     // Merge proxy.body into proxyConfig.data before building headers so that any
     // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
     const injectedBody = buildProxyBody({ config: proxyConfig, connection });
@@ -194,6 +203,7 @@ export function getProxyConfiguration({
         baseUrlOverride,
         retryOn,
         forwardHeadersOnRedirect,
+        validateProxyRequestUrl,
         validateProxyRedirectUrl
     } = externalConfig;
     const { providerName } = internalConfig;
@@ -264,6 +274,7 @@ export function getProxyConfiguration({
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
         ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
+        ...(validateProxyRequestUrl !== undefined ? { validateProxyRequestUrl } : {}),
         ...(validateProxyRedirectUrl !== undefined ? { validateProxyRedirectUrl } : {})
     };
 
@@ -318,6 +329,68 @@ export function deriveIntegrationConfigProxy({
         ...proxyConfig,
         provider: { ...provider, proxy }
     };
+}
+
+/**
+ * Whether the outbound proxy URL is steered by a configurable override (SDK/header override,
+ * integration custom base URL, or AWS SigV4 per-connection base_url) rather than only the provider default.
+ */
+export function proxyUsesConfigurableBaseUrlOverride({
+    proxyConfig,
+    connection,
+    integrationConfig
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy;
+}): boolean {
+    if (proxyConfig.baseUrlOverride) {
+        return true;
+    }
+
+    if (connection.credentials.type === 'AWS_SIGV4') {
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            return true;
+        }
+    }
+
+    if (proxyConfig.provider.integration_config && integrationConfig?.custom?.['baseUrl']) {
+        return true;
+    }
+
+    return false;
+}
+
+export function enforceProxyOutboundUrlPolicy({
+    absoluteUrl,
+    proxyConfig,
+    connection,
+    integrationConfig,
+    overrideEnabled,
+    denylist
+}: {
+    absoluteUrl: string;
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy;
+    overrideEnabled: boolean;
+    denylist: Set<string>;
+}): void {
+    if (
+        !overrideEnabled &&
+        proxyUsesConfigurableBaseUrlOverride({
+            proxyConfig,
+            connection,
+            ...(integrationConfig !== undefined ? { integrationConfig } : {})
+        })
+    ) {
+        throw new ProxyError('base_url_override_disabled', 'Base URL override is disabled by server configuration.');
+    }
+
+    if (denylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, denylist)) {
+        throw new ProxyError('base_url_override_not_allowed', 'This base URL override is not allowed by server configuration.');
+    }
 }
 
 /**

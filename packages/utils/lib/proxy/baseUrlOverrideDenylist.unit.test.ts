@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { canonicalizeHostnameForDenylist, isBaseUrlOverrideDenied, normalizeDenylist, normalizeDenylistHost } from './baseUrlOverrideDenylist.js';
+import {
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+    canonicalizeHostnameForDenylist,
+    isBaseUrlOverrideDenied,
+    mergeProxyBaseUrlOverrideDenylist,
+    normalizeDenylist,
+    normalizeDenylistHost,
+    resolveProxyBaseUrlOverrideDenylist
+} from './baseUrlOverrideDenylist.js';
 
 describe('canonicalizeHostnameForDenylist', () => {
     it('strips trailing FQDN dot', () => {
@@ -81,6 +89,23 @@ describe('isBaseUrlOverrideDenied', () => {
         expect(isBaseUrlOverrideDenied('http://[::1]/', list)).toBe(true);
     });
 
+    it('matches IPv4-mapped IPv6 loopback when denylist uses normalized literal form', () => {
+        const list = normalizeDenylist(['[::ffff:127.0.0.1]']);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:127.0.0.1]/', list)).toBe(true);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:7f00:1]/', list)).toBe(true);
+    });
+
+    it('matches IPv4-mapped IPv6 metadata when denylist uses normalized literal form', () => {
+        const list = normalizeDenylist(['[::ffff:169.254.169.254]']);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:169.254.169.254]/', list)).toBe(true);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:a9fe:a9fe]/', list)).toBe(true);
+    });
+
+    it('blocks IPv4-mapped IPv6 loopback with default denylist', () => {
+        const list = normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(isBaseUrlOverrideDenied('http://[::ffff:127.0.0.1]/', list)).toBe(true);
+    });
+
     it('matches URL-form deny entry with bracketed IPv6', () => {
         const list = normalizeDenylist(['http://[::1]/']);
         expect(isBaseUrlOverrideDenied('http://[::1]/path', list)).toBe(true);
@@ -88,5 +113,38 @@ describe('isBaseUrlOverrideDenied', () => {
 
     it('fails closed when URL cannot be parsed and denylist is non-empty', () => {
         expect(isBaseUrlOverrideDenied('http://', new Set(['localhost']))).toBe(true);
+    });
+});
+
+describe('mergeProxyBaseUrlOverrideDenylist', () => {
+    it('merges custom entries with defaults and dedupes', () => {
+        expect(mergeProxyBaseUrlOverrideDenylist(['denylisted-proxy-test.invalid', 'localhost'])).toEqual([
+            ...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+            'denylisted-proxy-test.invalid'
+        ]);
+    });
+});
+
+describe('resolveProxyBaseUrlOverrideDenylist', () => {
+    it('returns defaults when env is unset', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist(undefined)).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+    });
+
+    it('returns empty array for explicit opt-out', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('[ ]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('[\n]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylist('  ')).toEqual([]);
+    });
+
+    it('merges custom JSON array with defaults', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist(JSON.stringify(['denylisted-proxy-test.invalid']))).toEqual(
+            mergeProxyBaseUrlOverrideDenylist(['denylisted-proxy-test.invalid'])
+        );
+    });
+
+    it('returns empty array on invalid JSON (fail-open for sandbox callers)', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('not-json')).toEqual([]);
     });
 });
