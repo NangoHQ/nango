@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 846
+Provider count: 854
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -32,6 +32,7 @@ URL patterns:
 | `adp-workforce-now` | ADP Workforce Now | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-workforce-now.md) | [connect](https://nango.dev/docs/integrations/all/adp-workforce-now/connect.md) |  | hr |
 | `adp-workforce-now-next-gen` | ADP Workforce Now Next Generation | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen.md) | [connect](https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen/connect.md) |  | hr |
 | `adyen` | Adyen | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adyen.md) |  |  | payment |
+| `adyntel` | Adyntel | API_KEY | [docs](https://nango.dev/docs/api-integrations/adyntel.md) | [connect](https://nango.dev/docs/api-integrations/adyntel/connect.md) |  | marketing |
 | `affinity` | Affinity (v1) | BASIC | [docs](https://nango.dev/docs/integrations/all/affinity.md) | [connect](https://nango.dev/docs/integrations/all/affinity/connect.md) |  | crm |
 | `affinity-v2` | Affinity (v2) | API_KEY | [docs](https://nango.dev/docs/integrations/all/affinity-v2.md) | [connect](https://nango.dev/docs/integrations/all/affinity-v2/connect.md) |  | crm |
 | `aimfox` | Aimfox | API_KEY | [docs](https://nango.dev/docs/integrations/all/aimfox.md) | [connect](https://nango.dev/docs/integrations/all/aimfox/connect.md) |  | surveys |
@@ -165,6 +166,7 @@ URL patterns:
 | `cloudbeds` | Cloudbeds | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cloudbeds.md) |  | [setup](https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app.md) | other |
 | `cloudentity` | Cloudentity | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/cloudentity.md) | [connect](https://nango.dev/docs/integrations/all/cloudentity/connect.md) |  | iam |
 | `cloudflare` | Cloudflare | API_KEY | [docs](https://nango.dev/docs/api-integrations/cloudflare.md) | [connect](https://nango.dev/docs/api-integrations/cloudflare/connect.md) |  | dev-tools |
+| `cloudflare-mcp` | Cloudflare (MCP) | MCP_OAUTH2_GENERIC | [docs](https://nango.dev/docs/api-integrations/cloudflare-mcp.md) | [connect](https://nango.dev/docs/api-integrations/cloudflare-mcp/connect.md) |  | dev-tools, mcp |
 | `cloudtalk` | CloudTalk | BASIC | [docs](https://nango.dev/docs/api-integrations/cloudtalk.md) | [connect](https://nango.dev/docs/api-integrations/cloudtalk/connect.md) |  | communication |
 | `clover` | Clover | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/clover.md) | [connect](https://nango.dev/docs/api-integrations/clover/connect.md) | [setup](https://nango.dev/docs/api-integrations/clover/how-to-register-your-own-clover-api-oauth-app.md) | e-commerce |
 | `coda` | Coda | API_KEY | [docs](https://nango.dev/docs/integrations/all/coda.md) | [connect](https://nango.dev/docs/integrations/all/coda/connect.md) |  | knowledge-base, productivity |
@@ -211,9 +213,11 @@ URL patterns:
 | `devin` | Devin | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin.md) | [connect](https://nango.dev/docs/integrations/all/devin/connect.md) |  | dev-tools |
 | `dialpad` | Dialpad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad.md) |  |  | communication |
 | `dialpad-sandbox` | Dialpad (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad-sandbox.md) |  |  | communication |
+| `diffbot` | Diffbot | API_KEY | [docs](https://nango.dev/docs/api-integrations/diffbot.md) | [connect](https://nango.dev/docs/api-integrations/diffbot/connect.md) |  | analytics |
 | `digitalocean` | DigitalOcean | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/digitalocean.md) |  |  | dev-tools |
 | `digits` | Digits | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits.md) |  | [setup](https://nango.dev/docs/api-integrations/digits/how-to-register-your-own-digits-api-oauth-app.md) | accounting |
 | `digits-mcp` | Digits (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits-mcp.md) |  |  | accounting, mcp |
+| `discolike` | DiscoLike | API_KEY | [docs](https://nango.dev/docs/api-integrations/discolike.md) | [connect](https://nango.dev/docs/api-integrations/discolike/connect.md) |  | marketing |
 | `discord` | Discord | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/discord.md) |  | [setup](https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-api-oauth-app.md) | gaming, social |
 | `discourse` | Discourse | API_KEY | [docs](https://nango.dev/docs/integrations/all/discourse.md) |  |  | communication |
 | `dixa` | Dixa | API_KEY | [docs](https://nango.dev/docs/integrations/all/dixa.md) |  |  | support |
@@ -449,6 +453,7 @@ URL patterns:
 | `malwarebytes` | Malwarebytes | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/malwarebytes.md) | [connect](https://nango.dev/docs/integrations/all/malwarebytes/connect.md) |  | other |
 | `manatal` | Manatal | API_KEY | [docs](https://nango.dev/docs/integrations/all/manatal.md) | [connect](https://nango.dev/docs/integrations/all/manatal/connect.md) |  | crm, hr, ats |
 | `marketo` | Marketo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/marketo.md) | [connect](https://nango.dev/docs/integrations/all/marketo/connect.md) |  | marketing |
+| `mattermost` | Mattermost | API_KEY | [docs](https://nango.dev/docs/api-integrations/mattermost.md) | [connect](https://nango.dev/docs/api-integrations/mattermost/connect.md) |  | communication |
 | `maximizer` | Maximizer (Cloud) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer.md) | [connect](https://nango.dev/docs/api-integrations/maximizer/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app.md) | crm |
 | `maximizer-on-premise` | Maximizer (On-Premise) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer-on-premise.md) | [connect](https://nango.dev/docs/api-integrations/maximizer-on-premise/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app.md) | crm |
 | `maxio` | Maxio | BASIC | [docs](https://nango.dev/docs/api-integrations/maxio.md) | [connect](https://nango.dev/docs/api-integrations/maxio/connect.md) |  | payment |
@@ -597,6 +602,7 @@ URL patterns:
 | `quickbooks-sandbox` | Quickbooks (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/quickbooks-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/quickbooks-sandbox/connect.md) | [setup](https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-api-oauth-app.md) | accounting |
 | `quipteams` | Quipteams | API_KEY | [docs](https://nango.dev/docs/api-integrations/quipteams.md) | [connect](https://nango.dev/docs/api-integrations/quipteams/connect.md) |  | other |
 | `ragieai` | Ragie AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/ragieai.md) |  |  | dev-tools |
+| `raindrop-mcp` | Raindrop (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/raindrop-mcp.md) |  |  | dev-tools, mcp |
 | `ramp` | Ramp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp.md) |  |  | banking |
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |
@@ -625,6 +631,7 @@ URL patterns:
 | `rippling` | Rippling | API_KEY | [docs](https://nango.dev/docs/integrations/all/rippling.md) | [connect](https://nango.dev/docs/integrations/all/rippling/connect.md) |  | hr |
 | `rippling-shop-app` | Rippling Shop App | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/rippling-shop-app.md) |  |  | hr |
 | `roam-scim` | Roam (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/roam-scim.md) | [connect](https://nango.dev/docs/integrations/all/roam-scim/connect.md) |  | productivity |
+| `robinhood-mcp` | Robinhood (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/robinhood-mcp.md) |  |  | payment, mcp |
 | `rock-gym-pro` | Rock Gym Pro | BASIC | [docs](https://nango.dev/docs/integrations/all/rock-gym-pro.md) |  |  | crm |
 | `rocketlane` | Rocketlane | API_KEY | [docs](https://nango.dev/docs/integrations/all/rocketlane.md) | [connect](https://nango.dev/docs/integrations/all/rocketlane/connect.md) |  | productivity |
 | `rocketreach` | RocketReach | API_KEY | [docs](https://nango.dev/docs/api-integrations/rocketreach.md) | [connect](https://nango.dev/docs/api-integrations/rocketreach/connect.md) |  | crm |
@@ -739,6 +746,7 @@ URL patterns:
 | `teamtailor` | Teamtailor | API_KEY | [docs](https://nango.dev/docs/integrations/all/teamtailor.md) |  |  | ats |
 | `teamwork` | Teamwork | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamwork.md) |  |  | productivity, ticketing |
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
+| `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |
 | `theirstack` | TheirStack | API_KEY | [docs](https://nango.dev/docs/api-integrations/theirstack.md) | [connect](https://nango.dev/docs/api-integrations/theirstack/connect.md) |  | marketing |

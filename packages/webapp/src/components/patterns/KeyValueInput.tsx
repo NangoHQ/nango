@@ -204,7 +204,7 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                 className={cn('py-2 px-2 h-full w-11', (pair.key === '' && pair.value === '') || disabled ? 'invisible' : '')}
                                 onClick={() => !disabled && onRemove(i)}
                             >
-                                <Trash2 className="text-fg-error" />
+                                <Trash2 className="text-text-danger" />
                             </Button>
                         </div>
                     </div>

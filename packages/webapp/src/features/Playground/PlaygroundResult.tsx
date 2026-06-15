@@ -39,7 +39,7 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
         <>
             <div className="flex flex-col gap-3">
                 <Separator className="bg-border-muted" />
-                <p className="text-text-primary text-body-small-semi">Results</p>
+                <p className="text-text-strong text-body-small-semi">Results</p>
 
                 <Alert
                     variant={

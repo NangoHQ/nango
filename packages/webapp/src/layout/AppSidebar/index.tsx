@@ -62,10 +62,9 @@ export const AppSidebar: React.FC = () => {
         ].filter((item) => item !== null);
     }, [env, meta, refetchMeta, showGettingStarted]);
 
-    const showUsageCard = useMemo(() => {
-        if (!plan) return false;
-        return ['free', 'starter-v2', 'growth-v2'].includes(plan?.name);
-    }, [plan]);
+    // Only free accounts see the usage/capping card. Paid accounts have no enforced caps, so the card
+    // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
+    const showUsageCard = plan?.name === 'free';
 
     return (
         <Sidebar collapsible="none">

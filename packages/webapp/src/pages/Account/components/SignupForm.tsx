@@ -195,7 +195,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                     </div>
                 )}
 
-                <span className="text-center w-full text-body-medium-regular text-text-tertiary">
+                <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing up, you agree to our <br />{' '}
                     <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
                         Terms of Service

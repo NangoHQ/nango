@@ -2,7 +2,7 @@ import * as uuid from 'uuid';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
+import { getEncryptionManager, pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
 import type { DBAPISecret, DBEnvironment, Result } from '@nangohq/types';
@@ -23,7 +23,7 @@ class SecretService {
                 // by throwing, and let the exception bubble up the call chain.
                 throw new NangoError('no_default_api_secret', { environment_id: env.id });
             }
-            const decrypted = encryptionManager.decryptAPISecret(secret); // Callers expect unencrypted secret.
+            const decrypted = getEncryptionManager().decryptAPISecret(secret); // Callers expect unencrypted secret.
 
             // Self-hosted operator override: NANGO_SECRET_KEY_<ENV_NAME> takes precedence,
             // mirroring the override honored by account.service#getAccountContextBySecretKey
@@ -43,7 +43,7 @@ class SecretService {
     public async getAllSecretsForEnv(trx: Knex, envId: number): Promise<Result<DBAPISecret[]>> {
         try {
             const secrets = await trx<DBAPISecret>(API_SECRETS_TABLE).select('*').where({ environment_id: envId });
-            const decrypted = secrets.map((secret) => encryptionManager.decryptAPISecret(secret)); // Callers expect unencrypted secret.
+            const decrypted = secrets.map((secret) => getEncryptionManager().decryptAPISecret(secret)); // Callers expect unencrypted secret.
             return Ok(decrypted);
         } catch (err) {
             return Err(err);
@@ -55,7 +55,7 @@ class SecretService {
             const out = new Map<(typeof envIds)[number], DBAPISecret>();
             const rows = await trx<DBAPISecret>(API_SECRETS_TABLE).select('*').where({ is_default: true }).whereIn('environment_id', envIds);
             for (const row of rows) {
-                out.set(row.environment_id, encryptionManager.decryptAPISecret(row)); // Callers expect unencrypted secrets.
+                out.set(row.environment_id, getEncryptionManager().decryptAPISecret(row)); // Callers expect unencrypted secrets.
             }
             if (envIds.length !== out.size) {
                 // Invariant violation: One of the given envIds didn't have a default secret.
@@ -80,7 +80,7 @@ class SecretService {
             const rows = await trx<DBAPISecret>(API_SECRETS_TABLE).select('*').whereIn('environment_id', envIds);
             for (const row of rows) {
                 const secrets = out.get(row.environment_id) || [];
-                secrets.push(encryptionManager.decryptAPISecret(row)); // Callers expect unencrypted secrets.
+                secrets.push(getEncryptionManager().decryptAPISecret(row)); // Callers expect unencrypted secrets.
                 out.set(row.environment_id, secrets);
             }
             return Ok(out);
@@ -130,7 +130,7 @@ class SecretService {
                 is_default: isDefault
             } satisfies Partial<DBAPISecret>;
 
-            const encrypted = encryptionManager.encryptAPISecret(secret);
+            const encrypted = getEncryptionManager().encryptAPISecret(secret);
 
             const [created] = await trx<DBAPISecret>(API_SECRETS_TABLE).insert(encrypted).returning('*');
             if (!created) {
@@ -180,10 +180,10 @@ class SecretService {
 
     public async hashSecret(plainText: string): Promise<Result<string>> {
         try {
-            if (!encryptionManager.shouldEncrypt()) {
+            if (!getEncryptionManager().shouldEncrypt()) {
                 return Ok(plainText);
             }
-            const key = encryptionManager.getKey();
+            const key = getEncryptionManager().getKey();
             const hash = (await pbkdf2(plainText, key, 310000, 32, 'sha256')).toString('base64');
             return Ok(hash);
         } catch (err) {

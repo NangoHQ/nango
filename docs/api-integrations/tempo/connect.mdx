@@ -1,0 +1,44 @@
+---
+title: Tempo - How do I link my account?
+sidebarTitle: Tempo
+---
+
+# Overview
+
+To connect to the Tempo API, you'll need:
+1. **Jira Cloud subdomain** - The subdomain of the Jira Cloud instance linked to your Tempo account.
+2. **API subdomain** - The Tempo API subdomain matching the region where your Tempo data resides.
+
+This guide walks through finding these values.
+
+### Prerequisites:
+- An active Tempo account linked to a Jira Cloud instance.
+
+## Instructions
+
+### Step 1: Find your Jira Cloud subdomain
+
+Your Jira Cloud subdomain is the first part of your Jira URL. For example, if your Jira URL is `https://acme.atlassian.net`, your subdomain is `acme`.
+
+### Step 2: Find your API subdomain
+
+Choose the API subdomain that matches the region where your Tempo data resides:
+
+| Value | Region |
+|-------|--------|
+| `api` | Global (use if unsure) |
+| `api.eu` | Europe |
+| `api.us` | Americas |
+
+### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Jira Cloud subdomain** and **API subdomain**:
+
+1. Open the form where you need to authenticate with Tempo.
+2. Enter your **Jira Cloud subdomain** and select your **API subdomain** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/tempo/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Tempo.

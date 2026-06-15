@@ -16,7 +16,7 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>
-            <h2 className="text-3xl font-semibold text-white mb-16">{title}</h2>
+            <h2 className="text-3xl font-semibold text-text-strong mb-16">{title}</h2>
             <Alert variant="error">
                 <AlertDescription>
                     An error occurred, refresh your page or reach out to the support.{' '}
