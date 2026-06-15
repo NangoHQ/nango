@@ -1,0 +1,53 @@
+packages/sandbox/package.json
+  s_7949d22fd43c0a::t_08abe29304faab 16
+packages/sandbox/agentcore-runtime/server.mjs
+  s_7949d22fd43c0a::t_4afb9fc7476456 44-45
+  s_7949d22fd43c0a::t_ca196893e33f0d 9,22-23,32-34,121-122
+  s_7949d22fd43c0a::t_e8687cf3594709 11,15,26,87-89,97-98,108,112-113,116-119
+  s_7949d22fd43c0a::t_a4f1086faf1432 114-115
+  s_7949d22fd43c0a::t_0a921573c221f7 1-8,10,12-14,16-21,24-25,27-31,35-43,46-86,90-96,99-107,109-111,120,123-162
+packages/utils/lib/environment/parse.ts
+  s_7949d22fd43c0a::t_17ccd73c24d764 636-638
+packages/sandbox/agentcore-runtime/README.md
+  s_7949d22fd43c0a::t_0a921573c221f7 1-16
+package-lock.json
+  s_7949d22fd43c0a::t_f1bae425cbd686 834-854,39494
+packages/sandbox/agentcore-runtime/Dockerfile
+  s_7949d22fd43c0a::t_e8687cf3594709 3-4,15,21,29
+  s_7949d22fd43c0a::t_02702749bc75ad 23,33
+  s_7949d22fd43c0a::t_30bfc830c44f63 16
+  s_7949d22fd43c0a::t_dd9cd28513fc92 22
+  s_7949d22fd43c0a::t_0a921573c221f7 1-2,5-14,17-20,24-28,34-36
+  s_7949d22fd43c0a::t_46ce0cdf8ec386 30-32
+packages/sandbox/lib/providers/agentcore.ts
+  s_7949d22fd43c0a::t_f1bae425cbd686 15,24-26
+  s_7949d22fd43c0a::t_d972b9b878a5c0 167,276,291,296
+  s_7949d22fd43c0a::t_d2f42ac59e1a32 1,3-14,16-23,27-31,36-109,111,114-120,122-166,168-173,179-182,191-275,277-290,292-295,297-327
+  s_7949d22fd43c0a::t_fb42422b773797 32,174-178,183-190
+packages/sandbox/lib/providers/agentcore.unit.test.ts
+  s_7949d22fd43c0a::t_9c527c6f1216e9 70
+  s_7949d22fd43c0a::t_9b1443221e1ffc 156
+  s_7949d22fd43c0a::t_f1bae425cbd686 69
+  s_7949d22fd43c0a::t_11d4176cf0435f 1-68,71-155,157-213
+packages/sandbox/agentcore-runtime/cleanup-nango-project.mjs
+  s_7949d22fd43c0a::t_0a921573c221f7 1-2,7-41
+  s_7949d22fd43c0a::t_e8687cf3594709 3-6
+packages/utils/lib/environment/parse.unit.test.ts
+  s_7949d22fd43c0a::t_02ee802fdca30e 41-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "ac0a60bf61ba573a1b9de15aa9c88fb8fd9ac654",
+  "prompts": {},
+  "sessions": {
+    "s_7949d22fd43c0a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb538-094b-7d33-96df-cfe5efca83a6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
