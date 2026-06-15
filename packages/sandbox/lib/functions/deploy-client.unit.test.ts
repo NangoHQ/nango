@@ -53,7 +53,7 @@ vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildAsyncDeployScript, invokeDeploy, prepareAsyncDeploy } from './deploy-client.js';
-import { executionEnvironmentUnavailableMessage } from '../sandbox-service.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
 
@@ -66,6 +66,7 @@ const request = {
     nango_secret_key: 'nango-secret',
     nango_host: 'https://api.example.test'
 };
+const asyncDeployScriptPath = '.nango/runtime/nango-function-deploy.mjs';
 
 describe('sandboxed function deploy client', () => {
     beforeEach(() => {
@@ -91,11 +92,14 @@ describe('sandboxed function deploy client', () => {
         expect(prepared.sandboxId).toBe(mocks.sandbox.sandboxId);
         expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/github/actions/listRepos.ts', 'export default {}');
         expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/index.ts', "import './github/actions/listRepos.js';\n");
-        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-function-deploy.mjs', expect.stringContaining('NANGO_DEPLOY_CALLBACK_URL'));
+        expect(mocks.write).toHaveBeenCalledWith(
+            `/home/user/nango-integrations/${asyncDeployScriptPath}`,
+            expect.stringContaining('NANGO_DEPLOY_CALLBACK_URL')
+        );
 
         await prepared.start();
 
-        expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-deploy.mjs', {
+        expect(mocks.run).toHaveBeenCalledWith(`node ${asyncDeployScriptPath}`, {
             cwd: '/home/user/nango-integrations',
             background: true,
             timeoutMs: 0,

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { SandboxUnavailableError } from './providers/errors.js';
-import { SandboxService, executionEnvironmentUnavailableMessage, toExecutionEnvironmentUnavailableError } from './sandbox-service.js';
+import { SandboxUnavailableError, sandboxInitializationFailedMessage } from './providers/errors.js';
+import { SandboxService } from './sandbox-service.js';
 
-import type { FunctionError } from './functions/helpers.js';
+import type { SandboxInitializationError } from './providers/errors.js';
 import type { SandboxProvider } from './providers/types.js';
 
 function createProvider(overrides: Partial<SandboxProvider> = {}): SandboxProvider {
@@ -16,17 +16,28 @@ function createProvider(overrides: Partial<SandboxProvider> = {}): SandboxProvid
 }
 
 describe('SandboxService', () => {
-    it('maps sandbox unavailable errors to function API errors', async () => {
+    it('preserves sandbox unavailable errors', async () => {
+        const error = new SandboxUnavailableError('capacity exceeded');
         const provider = createProvider({
-            create: vi.fn().mockRejectedValue(new SandboxUnavailableError('capacity exceeded'))
+            create: vi.fn().mockRejectedValue(error)
+        });
+        const service = new SandboxService(provider);
+
+        await expect(service.create({ purpose: 'dryrun', timeoutMs: 30_000 })).rejects.toBe(error);
+    });
+
+    it('wraps unexpected sandbox creation errors in a generic sandbox initialization error', async () => {
+        const cause = new Error('E2B_API_KEY is required for the E2B dryrun runtime');
+        const provider = createProvider({
+            create: vi.fn().mockRejectedValue(cause)
         });
         const service = new SandboxService(provider);
 
         await expect(service.create({ purpose: 'dryrun', timeoutMs: 30_000 })).rejects.toMatchObject({
-            code: 'execution_environment_unavailable',
-            message: executionEnvironmentUnavailableMessage,
-            status: 503
-        } satisfies Partial<FunctionError>);
+            name: 'SandboxInitializationError',
+            message: sandboxInitializationFailedMessage,
+            cause
+        } satisfies Partial<SandboxInitializationError>);
     });
 
     it('cleans up sandboxes through the configured provider', async () => {
@@ -56,13 +67,5 @@ describe('SandboxService', () => {
         );
 
         await expect(service.cleanup({ sandboxId: 'sandbox-id' })).resolves.toBeUndefined();
-    });
-
-    it('does not map provider-shaped errors directly', () => {
-        expect(toExecutionEnvironmentUnavailableError({ status: 429, message: 'too many sandboxes in parallel' })).toBeNull();
-    });
-
-    it('leaves unrelated errors unchanged', () => {
-        expect(toExecutionEnvironmentUnavailableError(new Error('Sandbox failed to write file'))).toBeNull();
     });
 });

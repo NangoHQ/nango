@@ -1,17 +1,19 @@
 import { readFileSync } from 'node:fs';
 
 import { NangoCliExitCode, getDeployErrorCode } from './cli-exit-codes.js';
-import { buildDeployArgs } from './command-builders.js';
 import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { FunctionError } from './helpers.js';
+import { createFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
 import { deploySandboxTimeoutMs, deployTimeoutMs } from './timeouts.js';
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
-import { sandboxService } from '../sandbox-service.js';
 
 const asyncDeployScriptUrl = new URL('./async-deploy-script.js', import.meta.url);
 const asyncDeployScript = readFileSync(asyncDeployScriptUrl, 'utf8');
+// This workspace-relative file is written through sandbox.writeFiles before
+// the background deploy command starts.
+const asyncDeployScriptPath = '.nango/runtime/nango-function-deploy.mjs';
 
 export interface DeployRequest {
     integration_id: string;
@@ -43,7 +45,7 @@ export interface PreparedAsyncDeploy {
 }
 
 export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<PreparedAsyncDeploy> {
-    const sandbox = await sandboxService.create({
+    const sandbox = await createFunctionSandbox({
         purpose: 'deploy',
         timeoutMs: deploySandboxTimeoutMs,
         metadata: { deploymentId: request.deployment_id }
@@ -55,7 +57,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
         await sandbox.writeFiles([
             { path: tsFilePath, contents: request.code },
             { path: 'index.ts', contents: buildIndexTs(request) },
-            { path: '/tmp/nango-function-deploy.mjs', contents: buildAsyncDeployScript() }
+            { path: asyncDeployScriptPath, contents: buildAsyncDeployScript() }
         ]);
 
         const startedAt = new Date();
@@ -67,7 +69,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
             executionTimeoutAt,
             start: async () => {
                 await sandbox.startCommand({
-                    command: 'node /tmp/nango-function-deploy.mjs',
+                    command: `node ${asyncDeployScriptPath}`,
                     timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
@@ -93,7 +95,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
 }
 
 export async function invokeDeploy(request: DeployRequest): Promise<DeployResult> {
-    const sandbox = await sandboxService.create({
+    const sandbox = await createFunctionSandbox({
         purpose: 'deploy',
         timeoutMs: deploySandboxTimeoutMs
     });
@@ -143,4 +145,26 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
 
 export function buildAsyncDeployScript(): string {
     return asyncDeployScript;
+}
+
+function buildDeployArgs(request: DeployRequest): string[] {
+    const args = [
+        'deploy',
+        request.environment_name,
+        '--integration',
+        request.integration_id,
+        request.function_type === 'action' ? '--action' : '--sync',
+        request.function_name,
+        '--auto-confirm',
+        '--no-interactive'
+    ];
+
+    if (request.version) {
+        args.push('--version', request.version);
+    }
+    if (request.allow_destructive) {
+        args.push('--allow-destructive');
+    }
+
+    return args;
 }

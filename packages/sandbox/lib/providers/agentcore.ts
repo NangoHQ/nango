@@ -7,8 +7,6 @@ import {
     StopRuntimeSessionCommand
 } from '@aws-sdk/client-bedrock-agentcore';
 
-import { stringifyError } from '@nangohq/utils';
-
 import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 import { envs } from '../env.js';
 
@@ -41,7 +39,7 @@ export class AgentCoreSandboxProvider implements SandboxProvider {
 
     async create(params: CreateSandboxParams): Promise<Sandbox> {
         const sandbox = new AgentCoreSandbox({
-            id: createRuntimeSessionId(params.purpose),
+            id: `nango-${params.purpose}-${randomUUID()}`,
             client: this.client,
             runtimeArn: getRuntimeArn(),
             qualifier: envs.AGENTCORE_RUNTIME_QUALIFIER
@@ -64,8 +62,7 @@ export class AgentCoreSandboxProvider implements SandboxProvider {
             new StopRuntimeSessionCommand({
                 agentRuntimeArn: getRuntimeArn(),
                 qualifier: envs.AGENTCORE_RUNTIME_QUALIFIER,
-                runtimeSessionId: sandboxId,
-                clientToken: createClientToken('nango-stop')
+                runtimeSessionId: sandboxId
             })
         );
     }
@@ -125,8 +122,7 @@ class AgentCoreSandbox implements Sandbox {
             new StopRuntimeSessionCommand({
                 agentRuntimeArn: this.runtimeArn,
                 qualifier: this.qualifier,
-                runtimeSessionId: this.id,
-                clientToken: createClientToken('nango-stop')
+                runtimeSessionId: this.id
             })
         );
     }
@@ -159,14 +155,6 @@ function getRuntimeArn(): string {
     }
 
     return envs.AGENTCORE_RUNTIME_ARN;
-}
-
-function createRuntimeSessionId(purpose: CreateSandboxParams['purpose']): string {
-    return `nango-${purpose}-${randomUUID()}`;
-}
-
-function createClientToken(prefix: string): string {
-    return `${prefix}-${randomUUID()}`;
 }
 
 function buildCommand(params: SandboxCommandParams): string {
@@ -312,17 +300,10 @@ function isExecutionEnvironmentUnavailableError(error: unknown): boolean {
     }
 
     const err = error as { name?: unknown; $metadata?: { httpStatusCode?: number } };
-    const name = typeof err.name === 'string' ? err.name : '';
-    const status = err.$metadata?.httpStatusCode;
-    const message = stringifyError(error).toLowerCase();
-
     return (
-        name === 'ThrottlingException' ||
-        name === 'ServiceQuotaExceededException' ||
-        status === 402 ||
-        status === 429 ||
-        message.includes('throttl') ||
-        message.includes('rate limit') ||
-        message.includes('quota')
+        err.name === 'ThrottlingException' ||
+        err.name === 'ThrottledException' ||
+        err.name === 'ServiceQuotaExceededException' ||
+        err.$metadata?.httpStatusCode === 429
     );
 }

@@ -1,12 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AgentCoreSandboxProvider } from './agentcore.js';
+
+import type { SandboxPurpose } from './types.js';
+
 const mocks = vi.hoisted(() => {
+    const defaults = {
+        runtimeArn: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-sandbox',
+        runtimeQualifier: 'DEFAULT',
+        runtimeRegion: 'us-east-1'
+    };
     const send = vi.fn();
     const envs = {
-        AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-west-2:123456789012:runtime/nango-sandbox',
-        AGENTCORE_RUNTIME_QUALIFIER: 'DEFAULT',
-        AGENTCORE_REGION: 'us-west-2'
+        AGENTCORE_RUNTIME_ARN: defaults.runtimeArn,
+        AGENTCORE_RUNTIME_QUALIFIER: defaults.runtimeQualifier,
+        AGENTCORE_REGION: defaults.runtimeRegion
     };
+
+    class AwsCommand {
+        public readonly input: unknown;
+
+        constructor(input: unknown) {
+            this.input = input;
+        }
+    }
 
     class BedrockAgentCoreClient {
         public readonly config: unknown;
@@ -20,31 +37,11 @@ const mocks = vi.hoisted(() => {
         }
     }
 
-    class InvokeAgentRuntimeCommand {
-        public readonly input: unknown;
+    class InvokeAgentRuntimeCommand extends AwsCommand {}
+    class InvokeAgentRuntimeCommandCommand extends AwsCommand {}
+    class StopRuntimeSessionCommand extends AwsCommand {}
 
-        constructor(input: unknown) {
-            this.input = input;
-        }
-    }
-
-    class InvokeAgentRuntimeCommandCommand {
-        public readonly input: unknown;
-
-        constructor(input: unknown) {
-            this.input = input;
-        }
-    }
-
-    class StopRuntimeSessionCommand {
-        public readonly input: unknown;
-
-        constructor(input: unknown) {
-            this.input = input;
-        }
-    }
-
-    return { BedrockAgentCoreClient, envs, InvokeAgentRuntimeCommand, InvokeAgentRuntimeCommandCommand, send, StopRuntimeSessionCommand };
+    return { BedrockAgentCoreClient, defaults, envs, InvokeAgentRuntimeCommand, InvokeAgentRuntimeCommandCommand, send, StopRuntimeSessionCommand };
 });
 
 vi.mock('@aws-sdk/client-bedrock-agentcore', () => ({
@@ -56,9 +53,11 @@ vi.mock('@aws-sdk/client-bedrock-agentcore', () => ({
 
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
-import { AgentCoreSandboxProvider } from './agentcore.js';
+interface AdapterSdkResponse {
+    response: { transformToString: () => Promise<string> };
+}
 
-function adapterResponse(data?: unknown): { response: { transformToString: () => Promise<string> } } {
+function adapterResponse(data?: unknown): AdapterSdkResponse {
     return {
         response: {
             transformToString: () => Promise.resolve(JSON.stringify({ ok: true, data }))
@@ -73,66 +72,96 @@ async function* commandStream(events: unknown[]): AsyncGenerator {
     }
 }
 
+async function createSandbox(purpose: SandboxPurpose) {
+    mocks.send.mockResolvedValueOnce(adapterResponse());
+    return await new AgentCoreSandboxProvider().create({ purpose, timeoutMs: 30_000 });
+}
+
+function resetAgentCoreEnv(): void {
+    mocks.envs.AGENTCORE_RUNTIME_ARN = mocks.defaults.runtimeArn;
+    mocks.envs.AGENTCORE_RUNTIME_QUALIFIER = mocks.defaults.runtimeQualifier;
+    mocks.envs.AGENTCORE_REGION = mocks.defaults.runtimeRegion;
+}
+
+function sentInputAt(index: number): Record<string, unknown> {
+    const command = mocks.send.mock.calls[index]?.[0] as { input?: unknown } | undefined;
+    if (!command || !command.input || typeof command.input !== 'object') {
+        throw new Error(`Missing AWS command input at call ${index}`);
+    }
+
+    return command.input as Record<string, unknown>;
+}
+
+function lastSentInput(): Record<string, unknown> {
+    return sentInputAt(mocks.send.mock.calls.length - 1);
+}
+
+function lastAdapterPayload(): unknown {
+    const input = lastSentInput() as { payload?: Buffer };
+    if (!input.payload) {
+        throw new Error('Last AWS command did not include an adapter payload');
+    }
+
+    return JSON.parse(Buffer.from(input.payload).toString('utf8'));
+}
+
 describe('AgentCoreSandboxProvider', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
-        mocks.envs.AGENTCORE_RUNTIME_ARN = 'arn:aws:bedrock-agentcore:us-west-2:123456789012:runtime/nango-sandbox';
-        mocks.envs.AGENTCORE_RUNTIME_QUALIFIER = 'DEFAULT';
-        mocks.envs.AGENTCORE_REGION = 'us-west-2';
-        mocks.send.mockResolvedValue(adapterResponse());
+        mocks.send.mockReset();
+        resetAgentCoreEnv();
     });
 
     it('creates a runtime session by invoking the adapter init operation', async () => {
-        const sandbox = await new AgentCoreSandboxProvider().create({ purpose: 'dryrun', timeoutMs: 30_000 });
+        const sandbox = await createSandbox('dryrun');
 
         expect(sandbox.id).toMatch(/^nango-dryrun-/);
         expect(sandbox.provider).toBe('agentcore');
         expect(mocks.send).toHaveBeenCalledWith(expect.any(mocks.InvokeAgentRuntimeCommand));
-        expect((mocks.send.mock.calls[0]![0] as { input: Record<string, unknown> }).input).toMatchObject({
+        expect(lastSentInput()).toMatchObject({
             agentRuntimeArn: mocks.envs.AGENTCORE_RUNTIME_ARN,
             qualifier: 'DEFAULT',
             runtimeSessionId: sandbox.id,
             contentType: 'application/json',
             accept: 'application/json'
         });
-        expect(JSON.parse(Buffer.from((mocks.send.mock.calls[0]![0] as { input: { payload: Buffer } }).input.payload).toString('utf8'))).toEqual({
-            operation: 'init'
-        });
+        expect(lastAdapterPayload()).toEqual({ operation: 'init' });
     });
 
     it('writes and reads files through the runtime adapter', async () => {
-        mocks.send.mockResolvedValueOnce(adapterResponse()).mockResolvedValueOnce(adapterResponse()).mockResolvedValueOnce(adapterResponse('compiled'));
+        const sandbox = await createSandbox('compile');
 
-        const sandbox = await new AgentCoreSandboxProvider().create({ purpose: 'compile', timeoutMs: 30_000 });
+        mocks.send.mockResolvedValueOnce(adapterResponse());
         await sandbox.writeFiles([{ path: 'index.ts', contents: 'export default true;' }]);
-        await expect(sandbox.readTextFile('build/index.cjs')).resolves.toBe('compiled');
-
-        expect(JSON.parse(Buffer.from((mocks.send.mock.calls[1]![0] as { input: { payload: Buffer } }).input.payload).toString('utf8'))).toEqual({
+        expect(lastAdapterPayload()).toEqual({
             operation: 'writeFiles',
             files: [{ path: 'index.ts', contents: 'export default true;' }]
         });
-        expect(JSON.parse(Buffer.from((mocks.send.mock.calls[2]![0] as { input: { payload: Buffer } }).input.payload).toString('utf8'))).toEqual({
+
+        mocks.send.mockResolvedValueOnce(adapterResponse('compiled'));
+        await expect(sandbox.readTextFile('build/index.cjs')).resolves.toBe('compiled');
+        expect(lastAdapterPayload()).toEqual({
             operation: 'readTextFile',
             path: 'build/index.cjs'
         });
     });
 
     it('starts async commands through the runtime adapter', async () => {
-        mocks.send.mockResolvedValueOnce(adapterResponse()).mockResolvedValueOnce(adapterResponse());
+        const sandbox = await createSandbox('deploy');
 
-        const sandbox = await new AgentCoreSandboxProvider().create({ purpose: 'deploy', timeoutMs: 30_000 });
-        await sandbox.startCommand({ command: 'node /tmp/deploy.mjs', timeoutMs: 0, envs: { NO_COLOR: '1' } });
+        mocks.send.mockResolvedValueOnce(adapterResponse());
+        await sandbox.startCommand({ command: 'node .nango/runtime/deploy.mjs', timeoutMs: 0, envs: { NO_COLOR: '1' } });
 
-        expect(JSON.parse(Buffer.from((mocks.send.mock.calls[1]![0] as { input: { payload: Buffer } }).input.payload).toString('utf8'))).toEqual({
+        expect(lastAdapterPayload()).toEqual({
             operation: 'startCommand',
-            command: 'node /tmp/deploy.mjs',
+            command: 'node .nango/runtime/deploy.mjs',
             timeoutMs: 0,
             envs: { NO_COLOR: '1' }
         });
     });
 
     it('runs synchronous commands with AgentCore command streaming', async () => {
-        mocks.send.mockResolvedValueOnce(adapterResponse()).mockResolvedValueOnce({
+        const sandbox = await createSandbox('compile');
+        mocks.send.mockResolvedValueOnce({
             stream: commandStream([
                 { chunk: { contentDelta: { stdout: 'hello ' } } },
                 { chunk: { contentDelta: { stderr: 'warn' } } },
@@ -141,12 +170,11 @@ describe('AgentCoreSandboxProvider', () => {
             ])
         });
 
-        const sandbox = await new AgentCoreSandboxProvider().create({ purpose: 'compile', timeoutMs: 30_000 });
         const result = await sandbox.runCommand({ command: 'nango compile', timeoutMs: 12_300, envs: { NO_COLOR: '1' } });
 
         expect(result).toEqual({ stdout: 'hello world', stderr: 'warn' });
         expect(mocks.send).toHaveBeenLastCalledWith(expect.any(mocks.InvokeAgentRuntimeCommandCommand));
-        expect((mocks.send.mock.calls[1]![0] as { input: Record<string, unknown> }).input).toMatchObject({
+        expect(lastSentInput()).toMatchObject({
             agentRuntimeArn: mocks.envs.AGENTCORE_RUNTIME_ARN,
             qualifier: 'DEFAULT',
             runtimeSessionId: sandbox.id,
@@ -160,15 +188,14 @@ describe('AgentCoreSandboxProvider', () => {
     });
 
     it('maps non-zero command exits to SandboxCommandExitError', async () => {
-        mocks.send.mockResolvedValueOnce(adapterResponse()).mockResolvedValueOnce({
+        const sandbox = await createSandbox('compile');
+        mocks.send.mockResolvedValueOnce({
             stream: commandStream([
                 { chunk: { contentDelta: { stdout: 'compile stdout' } } },
                 { chunk: { contentDelta: { stderr: 'compile stderr' } } },
                 { chunk: { contentStop: { exitCode: 2, status: 'COMPLETED' } } }
             ])
         });
-
-        const sandbox = await new AgentCoreSandboxProvider().create({ purpose: 'compile', timeoutMs: 30_000 });
 
         await expect(sandbox.runCommand({ command: 'nango compile', timeoutMs: 10_000 })).rejects.toMatchObject({
             name: 'SandboxCommandExitError',
@@ -179,11 +206,8 @@ describe('AgentCoreSandboxProvider', () => {
     });
 
     it('maps timed out command streams to SandboxCommandTimeoutError', async () => {
-        mocks.send.mockResolvedValueOnce(adapterResponse()).mockResolvedValueOnce({
-            stream: commandStream([{ chunk: { contentStop: { exitCode: -1, status: 'TIMED_OUT' } } }])
-        });
-
-        const sandbox = await new AgentCoreSandboxProvider().create({ purpose: 'compile', timeoutMs: 30_000 });
+        const sandbox = await createSandbox('compile');
+        mocks.send.mockResolvedValueOnce({ stream: commandStream([{ chunk: { contentStop: { exitCode: -1, status: 'TIMED_OUT' } } }]) });
 
         await expect(sandbox.runCommand({ command: 'nango compile', timeoutMs: 10_000 })).rejects.toMatchObject({
             name: 'SandboxCommandTimeoutError'
@@ -191,10 +215,12 @@ describe('AgentCoreSandboxProvider', () => {
     });
 
     it('stops runtime sessions for cleanup', async () => {
+        mocks.send.mockResolvedValueOnce({});
+
         await new AgentCoreSandboxProvider().cleanup('nango-dryrun-00000000-0000-4000-8000-000000000000');
 
         expect(mocks.send).toHaveBeenCalledWith(expect.any(mocks.StopRuntimeSessionCommand));
-        expect((mocks.send.mock.calls[0]![0] as { input: Record<string, unknown> }).input).toMatchObject({
+        expect(lastSentInput()).toMatchObject({
             agentRuntimeArn: mocks.envs.AGENTCORE_RUNTIME_ARN,
             qualifier: 'DEFAULT',
             runtimeSessionId: 'nango-dryrun-00000000-0000-4000-8000-000000000000'

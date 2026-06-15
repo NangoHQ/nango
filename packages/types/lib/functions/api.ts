@@ -5,6 +5,7 @@ export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
 
 export type FunctionErrorCode =
     | 'invalid_request'
+    | 'server_error'
     | 'integration_not_found'
     | 'compilation_error'
     | 'dryrun_error'

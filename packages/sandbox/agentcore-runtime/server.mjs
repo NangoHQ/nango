@@ -7,6 +7,7 @@ const port = 8080;
 const host = '0.0.0.0';
 const workspacePath = '/home/user/nango-integrations';
 const heartbeatIntervalMs = 5_000;
+const commandEnvAllowlist = ['PATH', 'HOME', 'NANGO_CLI_UPGRADE_MODE', 'NODE_ENV'];
 
 let activeCommand = null;
 let timeOfLastUpdate = unixNow();
@@ -91,7 +92,7 @@ function startCommand(payload) {
     const child = spawn('sh', ['-lc', payload.command], {
         cwd: workspacePath,
         detached: true,
-        env: { ...process.env, ...(payload.envs ?? {}) },
+        env: buildCommandEnv(payload.envs),
         stdio: 'ignore'
     });
     activeCommand = child;
@@ -101,7 +102,7 @@ function startCommand(payload) {
     const timeoutHandle =
         Number.isFinite(timeout) && timeout > 0
             ? setTimeout(() => {
-                  child.kill('SIGTERM');
+                  terminateCommand(child);
               }, timeout).unref()
             : undefined;
 
@@ -123,12 +124,56 @@ function startCommand(payload) {
     child.unref();
 }
 
+function buildCommandEnv(overrides = {}) {
+    const inherited = Object.fromEntries(
+        commandEnvAllowlist.flatMap((name) => {
+            const value = process.env[name];
+            return value === undefined ? [] : [[name, value]];
+        })
+    );
+
+    // Only inherit runtime variables needed to locate and run the CLI. Nango
+    // secrets and command inputs must come from the explicit invocation envs.
+    return { ...inherited, ...overrides };
+}
+
+function terminateCommand(child) {
+    if (!child.pid) {
+        child.kill('SIGTERM');
+        return;
+    }
+
+    try {
+        // `detached: true` makes the child the leader of a new process group.
+        // A negative pid targets that whole group, so timeouts stop the shell
+        // and any nested command it started.
+        process.kill(-child.pid, 'SIGTERM');
+    } catch (err) {
+        if (err?.code === 'ESRCH') {
+            return;
+        }
+
+        console.error('Failed to terminate command process group', err);
+        child.kill('SIGTERM');
+    }
+}
+
 function resolvePath(value) {
     if (!value || value === '.') {
         return workspacePath;
     }
 
-    return path.isAbsolute(value) ? value : path.join(workspacePath, value);
+    if (path.isAbsolute(value)) {
+        throw new Error('Sandbox paths must be relative to the workspace');
+    }
+
+    const resolvedPath = path.resolve(workspacePath, value);
+    const relativePath = path.relative(workspacePath, resolvedPath);
+    if (relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath))) {
+        return resolvedPath;
+    }
+
+    throw new Error('Sandbox paths must stay within the workspace');
 }
 
 function readRequestBody(req) {

@@ -1,13 +1,18 @@
 import { readFileSync } from 'node:fs';
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
-import { buildDryrunArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
+import { createFunctionSandbox } from './sandbox.js';
 import { compileTimeoutMs, dryrunSandboxTimeoutMs, dryrunTimeoutMs } from './timeouts.js';
-import { sandboxService } from '../sandbox-service.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
 const asyncDryrunScript = readFileSync(asyncDryrunScriptUrl, 'utf8');
+// These workspace-relative files are written through sandbox.writeFiles before
+// the background dry-run command starts.
+const asyncDryrunScriptPath = '.nango/runtime/nango-function-dryrun.mjs';
+const dryrunInputPath = '.nango/runtime/nango-dryrun-input.json';
+const dryrunMetadataPath = '.nango/runtime/nango-dryrun-metadata.json';
+const dryrunCheckpointPath = '.nango/runtime/nango-dryrun-checkpoint.json';
 
 export interface DryrunRequest {
     integration_id: string;
@@ -42,7 +47,7 @@ export interface PreparedAsyncDryrun {
 }
 
 export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<PreparedAsyncDryrun> {
-    const sandbox = await sandboxService.create({
+    const sandbox = await createFunctionSandbox({
         purpose: 'dryrun',
         timeoutMs: dryrunSandboxTimeoutMs,
         metadata: { dryrunId: request.dryrun_id }
@@ -53,17 +58,17 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
         const files = [
             { path: tsFilePath, contents: request.code },
             { path: 'index.ts', contents: buildIndexTs(request) },
-            { path: '/tmp/nango-function-dryrun.mjs', contents: buildAsyncDryrunScript() }
+            { path: asyncDryrunScriptPath, contents: buildAsyncDryrunScript() }
         ];
 
         if (request.input !== undefined) {
-            files.push({ path: '/tmp/nango-dryrun-input.json', contents: JSON.stringify(request.input) });
+            files.push({ path: dryrunInputPath, contents: JSON.stringify(request.input) });
         }
         if (request.metadata) {
-            files.push({ path: '/tmp/nango-dryrun-metadata.json', contents: JSON.stringify(request.metadata) });
+            files.push({ path: dryrunMetadataPath, contents: JSON.stringify(request.metadata) });
         }
         if (request.checkpoint) {
-            files.push({ path: '/tmp/nango-dryrun-checkpoint.json', contents: JSON.stringify(request.checkpoint) });
+            files.push({ path: dryrunCheckpointPath, contents: JSON.stringify(request.checkpoint) });
         }
 
         await sandbox.writeFiles(files);
@@ -77,7 +82,7 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
             executionTimeoutAt,
             start: async () => {
                 await sandbox.startCommand({
-                    command: 'node /tmp/nango-function-dryrun.mjs',
+                    command: `node ${asyncDryrunScriptPath}`,
                     timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
@@ -103,4 +108,33 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
 
 export function buildAsyncDryrunScript(): string {
     return asyncDryrunScript;
+}
+
+function buildDryrunArgs(request: DryrunRequest): string[] {
+    const args = [
+        'dryrun',
+        request.function_name,
+        request.connection_id,
+        '--environment',
+        request.environment_name,
+        '--integration-id',
+        request.integration_id,
+        '--auto-confirm',
+        '--no-interactive'
+    ];
+
+    if (request.input !== undefined) {
+        args.push('--input', `@${dryrunInputPath}`);
+    }
+    if (request.metadata) {
+        args.push('--metadata', `@${dryrunMetadataPath}`);
+    }
+    if (request.checkpoint) {
+        args.push('--checkpoint', `@${dryrunCheckpointPath}`);
+    }
+    if (request.last_sync_date) {
+        args.push('--lastSyncDate', request.last_sync_date);
+    }
+
+    return args;
 }
