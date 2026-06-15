@@ -37,7 +37,8 @@ export async function migrate({ database }: { database: string } = { database: u
 
     const client = clickhouseClient({ database });
     if (!client) {
-        return Err(Error('Clickhouse client not configured'));
+        logger.info('Clickhouse migration: config not set, skipping migration');
+        return Ok(undefined);
     }
     try {
         const migrationTable = `${database}.migrations`;

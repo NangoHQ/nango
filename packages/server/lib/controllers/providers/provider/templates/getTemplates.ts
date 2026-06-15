@@ -4,7 +4,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerNameSchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handleGetProviderTemplates } from '../../../v1/providers/providerConfigKey/templates/getTemplates.js';
+import { handleGetProviderTemplates } from '../../../v1/providers/providerConfigKey/templates/helpers.js';
 
 import type { GetPublicProviderTemplates } from '@nangohq/types';
 

@@ -4,7 +4,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { functionListQueryFields, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handleListIntegrationFunctions } from '../../../v1/integrations/providerConfigKey/functions/getFunctions.js';
+import { handleListIntegrationFunctions } from '../../../v1/integrations/providerConfigKey/functions/helpers.js';
 
 import type { GetPublicIntegrationFunctions } from '@nangohq/types';
 

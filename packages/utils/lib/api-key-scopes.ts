@@ -31,6 +31,9 @@ export const apiKeyScopes = [
     'environment:syncs:variant:delete',
     'environment:syncs:*',
     // Functions
+    'environment:functions:list',
+    'environment:functions:read',
+    'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
     'environment:functions:*',
@@ -50,3 +53,9 @@ export const apiKeyScopes = [
     // MCP
     'environment:mcp'
 ] as const satisfies readonly ApiKeyScope[];
+
+// The `satisfies` above rejects entries that aren't valid `ApiKeyScope`s;
+// the check below rejects any `ApiKeyScope` missing from this array.
+// Together they fail the build if the two lists drift apart.
+type Expect<T extends true> = T;
+export type _ApiKeyScopesAreExhaustive = Expect<[Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [never] ? true : false>;
