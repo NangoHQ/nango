@@ -715,7 +715,7 @@ agiloft:
             prefix: https://
             example: example.agiloft.com
             order: 1
-            doc_section: '#creating-an-api-application'
+            doc_section: '#step-1-find-your-hostname'
 
 agiloft-cc:
     display_name: Agiloft (Client Credentials)
@@ -739,19 +739,19 @@ agiloft-cc:
             prefix: https://
             example: example.agiloft.com
             order: 1
-            doc_section: '#client-credentials-grant'
+            doc_section: '#step-2-find-your-hostname'
     credentials:
         client_id:
             type: string
             title: Client ID
             description: The Client ID from your Agiloft API application settings.
-            doc_section: '#creating-an-api-application'
+            doc_section: '#step-1-create-an-api-application-and-get-your-credentials'
         client_secret:
             type: string
             title: Client Secret
             description: The Client Secret from your Agiloft API application settings.
             secret: true
-            doc_section: '#creating-an-api-application'
+            doc_section: '#step-1-create-an-api-application-and-get-your-credentials'
 
 aimfox:
     display_name: Aimfox
