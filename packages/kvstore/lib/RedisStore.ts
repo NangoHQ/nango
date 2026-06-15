@@ -152,17 +152,14 @@ export class RedisKVStore implements KVStore {
             multi.pExpire(key, opts.ttlMs);
         }
         const [count] = await multi.exec();
-        return Number(count);
+        return count as number;
     }
 
     public async *scan(pattern: string): AsyncGenerator<string> {
-        // node-redis v5 scanIterator yields a batch of keys per iteration (not a single key).
-        for await (const keys of this.client.scanIterator({
+        for await (const key of this.client.scanIterator({
             MATCH: pattern
         })) {
-            for (const key of keys) {
-                yield key;
-            }
+            yield key;
         }
     }
 }
