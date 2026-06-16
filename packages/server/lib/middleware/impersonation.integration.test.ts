@@ -45,7 +45,6 @@ describe('impersonation role override', () => {
         const adminSession = await authenticateUser(api, admin.user);
         const res = await api.fetch('/api/v1/admin/impersonate', {
             method: 'POST',
-            // @ts-expect-error query not in endpoint type
             query: { env: 'dev' },
             session: adminSession,
             body: { accountUUID: targetAccountUUID, loginReason: 'regression test' }
