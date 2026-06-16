@@ -1,0 +1,50 @@
+customer-code-risk-scan/default/missing-files.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-3724
+customer-code-risk-scan/default/risky-unique-files.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-9066
+customer-code-risk-scan/critical/summary.json
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-433
+customer-code-risk-scan/default/summary.json
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-433
+customer-code-risk-scan/default/skipped-rows.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1
+customer-code-risk-scan/critical/skipped-rows.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1
+customer-code-risk-scan/critical/missing-files.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-3724
+customer-code-risk-scan/critical/llm-candidates.jsonl
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-253
+scripts/one-off/customer-code-risk-scan.ts
+  s_a7d1e8b3773a3e::t_5738b6a3761c4a 116
+  s_a7d1e8b3773a3e::t_8787c79e823761 94
+  s_a7d1e8b3773a3e::t_9db01ac3a97945 1-84,91-93,95-115,117-171,173-449,451,453-732,734-735,737-749,752-797,801-809,811,822-942,947,949,960-979,1017-1022
+  s_a7d1e8b3773a3e::t_180ff5aae54195 450,452
+  s_a7d1e8b3773a3e::t_8616e4913da5a6 85-90,733,736,750-751,798-800,810,812-821,943-946,948,950-959,980-1016
+  s_a7d1e8b3773a3e::t_6c264ce21bab0b 172
+customer-code-risk-scan/default/deployment-index.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-20607
+nango-functions-customers-report.html
+  s_a7d1e8b3773a3e::t_fe61a9e660fbe9 300-301,303,307-310,314,493123
+customer-code-risk-scan/critical/deployment-index.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-20607
+customer-code-risk-scan/critical/risky-unique-files.csv
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-9066
+customer-code-risk-scan/default/llm-candidates.jsonl
+  s_a7d1e8b3773a3e::t_dc315ace7ffa28 1-313
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "9b73cb81d57cfd67e92f9756da251f54384fee14",
+  "prompts": {},
+  "sessions": {
+    "s_a7d1e8b3773a3e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1733bd8f6ffe8p3I1mgNa0Y5NM",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
