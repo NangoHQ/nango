@@ -1,8 +1,8 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { NangoError, customerKeyService, externalWebhookService, getProvider, makeDataTransferEvents, pubsub } from '@nangohq/shared';
-import { Err, getLogger } from '@nangohq/utils';
+import { NangoError, customerKeyService, externalWebhookService, getProvider, pubsub } from '@nangohq/shared';
+import { Err, getLogger, metrics } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
 import * as webhookHandlers from './index.js';
@@ -11,7 +11,6 @@ import { capping } from '../utils/usage.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
-import type { MaybeStampedEvent } from '@nangohq/pubsub';
 import type { Config } from '@nangohq/shared';
 import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -121,7 +120,6 @@ export async function routeWebhook({
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
         const forwardSpan = tracer.startSpan('webhook.forward');
-        const pendingEvents: MaybeStampedEvent<'usage'>[] = [];
 
         void forwardWebhook({
             integration,
@@ -133,25 +131,15 @@ export async function routeWebhook({
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
             logContextGetter,
-            onBytes: (bytes, connectionId) => {
-                pendingEvents.push(
-                    ...makeDataTransferEvents(
-                        'server',
-                        'webhook_forward',
-                        account.id,
-                        connectionId,
-                        integration.unique_key,
-                        environment.id,
-                        bytes,
-                        environment.name
-                    )
-                );
+            onBytes: (bytes) => {
+                metrics.increment(metrics.Types.WEBHOOK_REQUEST_SIZE_IN_BYTES, bytes.sent, { callsite: 'forward' });
+                metrics.increment(metrics.Types.WEBHOOK_RESPONSE_SIZE_IN_BYTES, bytes.received, { callsite: 'forward' });
             }
         })
             .then((res) => {
                 if (res.isOk()) {
-                    for (const { connectionId, success } of res.value.results) {
-                        pendingEvents.push({
+                    for (const connectionId of connectionIds.length > 0 ? connectionIds : ['unkown']) {
+                        pubsub.publisher.publish({
                             subject: 'usage',
                             type: 'usage.webhook_forward',
                             payload: {
@@ -162,20 +150,14 @@ export async function routeWebhook({
                                     environmentName: environment.name,
                                     integrationId: integration.unique_key,
                                     connectionId,
-                                    success
+                                    success: true
                                 }
                             }
                         });
                     }
                 }
             })
-            .finally(() => {
-                if (pendingEvents.length > 0) {
-                    void pubsub.publisher.publishBatch({ subject: 'usage', events: pendingEvents });
-                }
-
-                forwardSpan.finish();
-            });
+            .finally(() => forwardSpan.finish());
     }
 
     return res;

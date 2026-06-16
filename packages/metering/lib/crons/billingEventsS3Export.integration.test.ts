@@ -26,10 +26,6 @@ const baseAttributes = {
 // per-branch inside `gen()`.
 type FixtureAttrs = Record<string, unknown>;
 
-// 'usage.data_transfer' excluded: not ingested into Clickhouse yet.
-// TODO: Remove Exclude when CH ingestion is added.
-type IngestedEventType = Exclude<ClickhouseRawUsageEvent['type'], 'usage.data_transfer'>;
-
 function genN({
     n,
     day,
@@ -39,7 +35,7 @@ function genN({
 }: {
     n: number;
     day: string;
-    type: IngestedEventType;
+    type: ClickhouseRawUsageEvent['type'];
     accountId: number;
     attributes?: FixtureAttrs;
 }): ClickhouseRawUsageEvent[] {
@@ -54,7 +50,7 @@ function gen({
     attributes = {}
 }: {
     day: string;
-    type: IngestedEventType;
+    type: ClickhouseRawUsageEvent['type'];
     accountId: number;
     value?: number;
     attributes?: FixtureAttrs;
