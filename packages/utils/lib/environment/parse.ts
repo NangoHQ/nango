@@ -472,6 +472,8 @@ export const ENVS = z.object({
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
+    // When set, impersonation sessions are forced to this role instead of the impersonated user's real role.
+    NANGO_IMPERSONATION_ROLE: z.enum(roles).optional(),
 
     // Stripe
     PUBLIC_STRIPE_KEY: z.string().optional(),

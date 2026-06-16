@@ -19,6 +19,7 @@ import {
 } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { resolveImpersonationRole } from './impersonation.js';
 import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
 import * as connectSessionService from '../services/connectSession.service.js';
 
@@ -635,6 +636,8 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             res.status(401).send({ error: { code: 'unknown_user' } });
             return;
         }
+
+        user.role = resolveImpersonationRole({ role: user.role, debugMode: req.session.debugMode, override: envs.NANGO_IMPERSONATION_ROLE });
 
         const account = await accountService.getAccountById(db.knex, user.account_id);
         if (!account) {
