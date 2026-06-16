@@ -41,7 +41,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",
-        "axios": "1.16.1",
+        "axios": "1.18.0",
         "body-parser": "2.2.1",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.7",
@@ -69,7 +69,7 @@
         "serialize-error": "11.0.3",
         "simple-oauth2": "5.1.0",
         "ua-parser-js": "2.0.2",
-        "uuid": "9.0.0",
+        "uuid": "14.0.0",
         "ws": "8.21.0",
         "zod": "4.0.5"
     },
@@ -96,6 +96,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "4.1.8"
+        "vitest": "4.1.9"
     }
 }
