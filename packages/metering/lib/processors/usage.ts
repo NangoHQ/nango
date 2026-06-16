@@ -81,7 +81,7 @@ export class UsageProcessor {
                         delta: event.payload.value
                     });
                     if (incrRecords.isErr()) {
-                        logger.error(`Failed to increment records for account ${accountId}: ${incrRecords.error}`);
+                        logger.error(`Failed to increment records for account ${accountId}: ${stringifyError(incrRecords.error, { cause: true })}`);
                     }
                     return Ok(undefined); // No billing action for records, just tracking usage
                 }
@@ -147,7 +147,7 @@ export class UsageProcessor {
                         delta: event.payload.value
                     });
                     if (incrExecutions.isErr()) {
-                        logger.error(`Failed to increment function_executions for account ${accountId}: ${incrExecutions.error}`);
+                        logger.error(`Failed to increment function_executions for account ${accountId}: ${stringifyError(incrExecutions.error, { cause: true })}`);
                     }
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
@@ -155,7 +155,7 @@ export class UsageProcessor {
                         delta: compute
                     });
                     if (incrCompute.isErr()) {
-                        logger.error(`Failed to increment function_compute_ms for account ${accountId}: ${incrCompute.error}`);
+                        logger.error(`Failed to increment function_compute_ms for account ${accountId}: ${stringifyError(incrCompute.error, { cause: true })}`);
                     }
                     const incrLogs = await this.usageTracker.incr({
                         accountId: accountId,
@@ -163,7 +163,7 @@ export class UsageProcessor {
                         delta: customLogs
                     });
                     if (incrLogs.isErr()) {
-                        logger.error(`Failed to increment logs for account ${accountId}: ${incrLogs.error}`);
+                        logger.error(`Failed to increment logs for account ${accountId}: ${stringifyError(incrLogs.error, { cause: true })}`);
                     }
 
                     // Clickhouse
@@ -263,7 +263,7 @@ export class UsageProcessor {
                         delta: event.payload.value
                     });
                     if (incrWebhook.isErr()) {
-                        logger.error(`Failed to increment webhook_forwards for account ${accountId}: ${incrWebhook.error}`);
+                        logger.error(`Failed to increment webhook_forwards for account ${accountId}: ${stringifyError(incrWebhook.error, { cause: true })}`);
                     }
                     // Clickhouse
                     this.clickhouse.add([event]);
