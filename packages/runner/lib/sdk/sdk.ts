@@ -320,7 +320,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 acc.push(...Object.values(conn.connection.credentials));
                 return acc;
             }, []),
-            this.nango.secretKey
+            this.nango.apiKey
         ];
 
         const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase

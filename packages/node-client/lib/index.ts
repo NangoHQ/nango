@@ -80,9 +80,9 @@ export class Nango {
     serverUrl: string;
     apiKey: string;
     /**
-     * @deprecated Use `apiKey` instead. Populated with the same value for backward compatibility.
+     * @deprecated Use `apiKey` instead.
      */
-    secretKey: string;
+    secretKey?: string | undefined;
     webhookSigningKey?: string | undefined;
     connectionId?: string;
     providerConfigKey?: string;
@@ -101,6 +101,10 @@ export class Nango {
             this.serverUrl = this.serverUrl.slice(0, -1);
         }
 
+        if (config.apiKey && config.secretKey) {
+            throw new Error('You must specify only one of apiKey or secretKey, not both (cf. documentation).');
+        }
+
         const apiKey = config.apiKey ?? config.secretKey;
         if (!apiKey) {
             throw new Error('You must specify an API key (cf. documentation).');
@@ -113,7 +117,7 @@ export class Nango {
         }
 
         this.apiKey = apiKey;
-        this.secretKey = apiKey;
+        this.secretKey = config.secretKey;
         this.webhookSigningKey = config.webhookSigningKey;
         this.connectionId = config.connectionId || '';
         this.providerConfigKey = config.providerConfigKey || '';
@@ -1273,7 +1277,10 @@ export class Nango {
     }
 
     private _verifyWebhookSignatureImpl(signatureInHeader: string, jsonPayload: unknown): boolean {
-        const signingKey = this.webhookSigningKey ?? this.apiKey;
+        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        if (!signingKey) {
+            return false;
+        }
         return (
             crypto
                 .createHash('sha256')
@@ -1286,10 +1293,10 @@ export class Nango {
      *
      * Verify incoming webhooks request
      *
-     * Uses `webhookSigningKey` when provided, otherwise falls back to `secretKey`. On environments
-     * created after 2026-04-20 (or any environment that later rotated its API key), the signing key
-     * differs from the API key, so construct the client with `webhookSigningKey` to verify webhooks
-     * without a second client.
+     * Uses `webhookSigningKey` when provided, otherwise falls back to the deprecated `secretKey`.
+     * The API key is never used to sign webhooks, so a client constructed with `apiKey` must also
+     * set `webhookSigningKey`; otherwise this returns false. On environments created after 2026-04-20
+     * (or any environment that later rotated its API key), the signing key differs from the API key.
      *
      * @param body - The raw HTTP body as a string
      * @param headers - The HTTP headers including X-Nango-Hmac-Sha256
@@ -1301,7 +1308,11 @@ export class Nango {
             return false;
         }
 
-        const signingKey = this.webhookSigningKey ?? this.apiKey;
+        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        if (!signingKey) {
+            return false;
+        }
+
         const expectedSignature = crypto.createHmac('sha256', signingKey).update(body).digest('hex');
         const actualSignature = headers[signatureInHeader];
 
