@@ -14,7 +14,8 @@ export const buttonVariants = cva(
         'text-ds-md leading-ds-normal',
         'tracking-ds-normal cursor-pointer select-none',
         'transition-[background-color,border-color,color,box-shadow]',
-        'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
+        // native equivalents of --ds-motion-duration-fast (100ms) and --ds-motion-easing-standard
+        'duration-100 ease-in-out',
         'focus-visible:outline-none',
         'disabled:cursor-not-allowed aria-disabled:cursor-not-allowed',
         // inline icons auto-size to 16px unless they set an explicit size-* class (matches shadcn / the old webapp button)

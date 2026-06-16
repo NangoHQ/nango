@@ -2,12 +2,13 @@ import { Loader2Icon } from 'lucide-react';
 
 import { cn } from '../../lib/cn';
 
+// Native size utilities — the 4px scale matches the --ds-icon-size-* tokens exactly.
 const sizeClasses = {
-    xs: 'size-[var(--ds-icon-size-xs)]',
-    sm: 'size-[var(--ds-icon-size-sm)]',
-    md: 'size-[var(--ds-icon-size-md)]',
-    lg: 'size-[var(--ds-icon-size-lg)]',
-    xl: 'size-[var(--ds-icon-size-xl)]'
+    xs: 'size-3', // 12px
+    sm: 'size-3.5', // 14px
+    md: 'size-4', // 16px
+    lg: 'size-5', // 20px
+    xl: 'size-6' // 24px
 } as const;
 
 export type SpinnerSize = keyof typeof sizeClasses;
