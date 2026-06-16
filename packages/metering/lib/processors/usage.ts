@@ -154,7 +154,7 @@ export class UsageProcessor {
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_compute_gbms',
-                        delta: Math.round(compute) // HINCRBY requires an integer; compute (durationMs * memoryGb) is fractional
+                        delta: compute > 0 ? Math.max(1, Math.round(compute)) : 0 // HINCRBY needs an integer; floor non-zero compute at 1 so small values aren't dropped
                     });
                     if (incrCompute.isErr()) {
                         logger.error(
