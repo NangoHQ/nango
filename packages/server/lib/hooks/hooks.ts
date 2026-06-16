@@ -9,11 +9,12 @@ import {
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
+    makeDataTransferEvents,
     productTracking,
     pubsub,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted, metrics, report } from '@nangohq/utils';
+import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { slackService } from '../services/slack.js';
@@ -29,6 +30,7 @@ import type {
     ApplicationConstructedProxyConfiguration,
     BasicApiCredentials,
     ConnectionConfig,
+    DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
     DBPlan,
@@ -218,6 +220,35 @@ export const connectionCreationFailed = async (
     }
 };
 
+export const reconnectionFailed = async ({
+    account,
+    connection,
+    logCtx,
+    authError,
+    environment,
+    provider,
+    config
+}: {
+    account: DBTeam;
+    connection: DBConnection;
+    environment: DBEnvironment;
+    provider: Provider;
+    config: IntegrationConfig;
+    authError: { type: string; description: string };
+    logCtx: LogContext;
+}): Promise<void> => {
+    await connectionRefreshFailed({
+        account,
+        connection,
+        logCtx,
+        authError,
+        environment,
+        provider,
+        config,
+        action: 'override'
+    });
+};
+
 export const connectionRefreshSuccess = async ({
     connection,
     config
@@ -257,14 +288,17 @@ export const connectionRefreshFailed = async ({
     action
 }: {
     account: DBTeam;
-    connection: DBConnectionDecrypted;
+    connection: DBConnection | DBConnectionDecrypted;
     environment: DBEnvironment;
     provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
-    action: 'token_refresh' | 'connection_test';
+    action: 'token_refresh' | 'connection_test' | 'override';
 }): Promise<void> => {
+    const errorMessage = action === 'override' ? 'connection_override_hook_failed' : 'refresh_failed_hook_failed';
+    const operation = action === 'override' ? 'override' : 'refresh';
+
     try {
         await errorNotificationService.auth.create({
             type: 'auth',
@@ -274,7 +308,7 @@ export const connectionRefreshFailed = async ({
             active: true
         });
     } catch (err) {
-        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+        report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
@@ -291,7 +325,7 @@ export const connectionRefreshFailed = async ({
             secret: webhookSigningKey.value,
             webhookSettings,
             auth_mode: provider.auth_mode,
-            operation: 'refresh',
+            operation,
             error: authError,
             success: false,
             providerConfig: config,
@@ -310,7 +344,7 @@ export const connectionRefreshFailed = async ({
             provider: config.provider
         });
     } catch (err) {
-        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+        report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 };
 
@@ -414,9 +448,19 @@ export async function credentialsTest({
                     oauth_client_id: config.oauth_client_id,
                     oauth_client_secret: config.oauth_client_secret
                 }),
-                onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_credential_test_hook' });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_credential_test_hook' });
+                onBytes: (meteredBytes) => {
+                    const events = makeDataTransferEvents(
+                        'server',
+                        'credential_test_hook',
+                        logCtx.accountId,
+                        connectionId,
+                        config.unique_key,
+                        config.environment_id,
+                        meteredBytes
+                    );
+                    if (events.length > 0) {
+                        void pubsub.publisher.publishBatch({ subject: 'usage', events });
+                    }
                 }
             });
 

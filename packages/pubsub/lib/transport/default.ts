@@ -6,7 +6,7 @@ import { NoOpTransport } from './noop.js';
 import { SnsSqs } from './sns-sqs.js';
 import { envs } from '../env.js';
 
-import type { SubscribeProps, Transport } from './transport.js';
+import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -60,6 +60,10 @@ export class DefaultTransport implements Transport {
 
     async publish(event: Event): Promise<Result<void>> {
         return this.transport.publish(event);
+    }
+
+    async publishBatch<TSubject extends Event['subject']>(props: PublishBatchProps<TSubject>): Promise<Result<PublishBatchResult>> {
+        return this.transport.publishBatch(props);
     }
 
     subscribe<TSubject extends Event['subject']>(params: SubscribeProps<TSubject>): void {

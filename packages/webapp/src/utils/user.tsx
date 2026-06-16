@@ -3,6 +3,7 @@ import { useSWRConfig } from 'swr';
 
 import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
 import { useLogoutAPI } from '../hooks/useAuth';
+import { resetPlayground } from '../store/playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 
 import type { ApiUser } from '@nangohq/types';
@@ -28,6 +29,7 @@ export function useSignout() {
 
     return async () => {
         storage.clearSession();
+        resetPlayground(); // playground selections belong to the session's account/env
         analyticsReset();
         await logoutAPI(); // Destroy server session.
 

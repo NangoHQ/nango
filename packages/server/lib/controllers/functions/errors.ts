@@ -12,6 +12,7 @@ const maxFunctionErrorMessageLength = 20_000;
  */
 const functionErrorCodes = new Set<string>([
     'invalid_request',
+    'server_error',
     'integration_not_found',
     'compilation_error',
     'dryrun_error',

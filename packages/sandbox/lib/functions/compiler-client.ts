@@ -1,8 +1,8 @@
 import { getCommandOutput } from './command-output.js';
 import { FunctionError } from './helpers.js';
+import { createFunctionSandbox } from './sandbox.js';
 import { compileSandboxTimeoutMs, compileTimeoutMs } from './timeouts.js';
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
-import { sandboxService } from '../sandbox-service.js';
 
 interface FunctionFilePathRequest {
     integration_id: string;
@@ -33,7 +33,7 @@ export class CompilerError extends FunctionError {
 }
 
 export async function invokeCompiler(request: CompileRequest): Promise<CompileResult> {
-    const sandbox = await sandboxService.create({
+    const sandbox = await createFunctionSandbox({
         purpose: 'compile',
         timeoutMs: compileSandboxTimeoutMs
     });

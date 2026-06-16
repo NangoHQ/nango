@@ -451,12 +451,18 @@ export const ENVS = z.object({
     NANGO_REDIS_HOST: z.string().optional(),
     NANGO_REDIS_PORT: z.coerce.number().optional().default(6379),
     NANGO_REDIS_AUTH: z.string().optional(),
+    // Optional AUTH username (e.g. IAM principal). Defaults to 'default' when a token is provided without a username.
+    NANGO_REDIS_USERNAME: z.string().optional(),
+    // Path to a file holding a short-lived auth token (e.g. IAM). Re-read on every (re)connect so rotated tokens work.
+    NANGO_REDIS_AUTH_TOKEN_FILE: z.string().optional(),
 
     // Redis (customer boundary)
     NANGO_CUSTOMER_REDIS_URL: z.url().optional(),
     NANGO_CUSTOMER_REDIS_HOST: z.string().optional(),
     NANGO_CUSTOMER_REDIS_PORT: z.coerce.number().optional().default(6379),
     NANGO_CUSTOMER_REDIS_AUTH: z.string().optional(),
+    NANGO_CUSTOMER_REDIS_USERNAME: z.string().optional(),
+    NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE: z.string().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),
@@ -638,6 +644,9 @@ export const ENVS = z.object({
 
     // Sandboxes
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
+    AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
+    AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
+    AGENTCORE_REGION: z.string().min(1).optional(),
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
