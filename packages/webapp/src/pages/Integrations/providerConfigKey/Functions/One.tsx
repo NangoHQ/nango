@@ -201,9 +201,10 @@ export const FunctionsOne: React.FC = () => {
                                 </Button>
                             </ConditionalTooltip>
                             {func.source !== 'repo' && (func.type === 'sync' || func.type === 'action') && (
-                                <Button
+                                <IconButton
                                     variant="ghost"
-                                    size="icon"
+                                    size="2xs"
+                                    label="Delete function"
                                     loading={isDeleting}
                                     onClick={() =>
                                         confirm({
@@ -213,13 +214,13 @@ export const FunctionsOne: React.FC = () => {
                                                     ? `You are about to permanently delete the sync "${func.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
                                                     : `You are about to permanently delete the action "${func.name}". This operation is not reversible, are you sure you wish to continue?`,
                                             confirmButtonText: 'Delete function',
-                                            confirmVariant: 'destructive',
+                                            confirmVariant: 'danger',
                                             onConfirm: onDelete
                                         })
                                     }
                                 >
                                     <Trash2 />
-                                </Button>
+                                </IconButton>
                             )}
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
