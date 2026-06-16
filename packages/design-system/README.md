@@ -160,7 +160,7 @@ Components are added on-demand as they're needed in product screens. See `AGENTS
 Available components:
 
 ```tsx
-import { Button, IconButton, Spinner, buttonVariants } from '@nangohq/design-system';
+import { Button, IconButton, buttonVariants } from '@nangohq/design-system';
 ```
 
 The consumer must also import the token CSS once at the app root (see above). Components use only semantic CSS variables — no raw hex, hardcoded sizes, or hardcoded spacing.
