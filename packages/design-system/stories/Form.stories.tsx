@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '../src/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
 
@@ -33,7 +33,7 @@ export const Default: Story = {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" size="sm">
+                    <Button type="submit" size="md">
                         Save
                     </Button>
                 </form>

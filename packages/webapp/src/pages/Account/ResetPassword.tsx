@@ -59,7 +59,7 @@ export default function ResetPassword() {
             <Helmet>
                 <title>Reset Password - Nango</title>
             </Helmet>
-            <h2 className="text-title-group text-text-primary">Reset password</h2>
+            <h2 className="text-title-group text-text-strong">Reset password</h2>
 
             {serverErrorMessage && (
                 <Alert variant="error">

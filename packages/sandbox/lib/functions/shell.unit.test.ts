@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildShellCommand, quoteShellArg } from './shell.js';
 
-describe('remote function shell helpers', () => {
+describe('sandboxed function shell helpers', () => {
     it('quotes single quotes safely', () => {
         expect(quoteShellArg("a'b")).toBe(`'a'"'"'b'`);
     });

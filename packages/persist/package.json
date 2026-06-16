@@ -19,11 +19,12 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/database": "file:../database",
+        "@nangohq/kms": "file:../kms",
         "@nangohq/logs": "file:../logs",
+        "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "@nangohq/pubsub": "file:../pubsub",
         "dayjs": "1.11.19",
         "dd-trace": "5.52.0",
         "express": "5.1.0",

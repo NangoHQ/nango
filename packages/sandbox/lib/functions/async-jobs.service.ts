@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { Err, Ok } from '@nangohq/utils';
 
-import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs } from './runtime.js';
+import { deploySandboxTimeoutMs, dryrunSandboxTimeoutMs } from './timeouts.js';
 
 import type {
     FunctionAsyncJobStatus,
@@ -437,8 +437,8 @@ async function markFunctionAsyncJobFailed({
 
 export async function timeoutFunctionAsyncJobs({ limit = 100, trx }: { limit?: number; trx?: Knex.Transaction } = {}): Promise<number> {
     const updateTimedOutJobs = async (transaction: Knex.Transaction): Promise<number> => {
-        const dryrunWaitingTimeoutThreshold = transaction.raw("CURRENT_TIMESTAMP - (? * INTERVAL '1 millisecond')", [remoteFunctionDryrunSandboxTimeoutMs]);
-        const deploymentWaitingTimeoutThreshold = transaction.raw("CURRENT_TIMESTAMP - (? * INTERVAL '1 millisecond')", [remoteFunctionDeploySandboxTimeoutMs]);
+        const dryrunWaitingTimeoutThreshold = transaction.raw("CURRENT_TIMESTAMP - (? * INTERVAL '1 millisecond')", [dryrunSandboxTimeoutMs]);
+        const deploymentWaitingTimeoutThreshold = transaction.raw("CURRENT_TIMESTAMP - (? * INTERVAL '1 millisecond')", [deploySandboxTimeoutMs]);
 
         // Hold locks through the update so a sandbox callback completing the row is not overwritten.
         const candidates = await transaction<DBFunctionAsyncJob>(functionAsyncJobsTable)

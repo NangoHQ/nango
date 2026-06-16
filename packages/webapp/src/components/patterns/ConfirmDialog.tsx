@@ -61,7 +61,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <DialogContent>
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        {icon && <div className="shrink-0 [&_svg]:size-5 [&_svg]:text-icon-primary ">{icon}</div>}
+                        {icon && <div className="shrink-0 [&_svg]:size-5 [&_svg]:text-icon-default ">{icon}</div>}
                         <DialogTitle>{title}</DialogTitle>
                     </div>
                     <DialogDescription>{description}</DialogDescription>
@@ -77,7 +77,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                             {cancelButtonText}
                         </Button>
                     </DialogClose>
-                    <Button variant={confirmVariant} onClick={handleConfirm} disabled={isLoading || loading}>
+                    <Button variant={confirmVariant} onClick={handleConfirm} loading={isLoading || loading}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

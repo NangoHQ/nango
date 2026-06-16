@@ -12,7 +12,7 @@ import {
 import secretService from './secret.service.js';
 import userService from './user.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { plansList } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
@@ -341,8 +341,8 @@ class AccountService {
             return null;
         }
 
-        const defaultSecret = encryptionManager.decryptAPISecret(res.default_secret);
-        const pendingKey = res.pending_secret ? encryptionManager.decryptAPISecret(res.pending_secret) : null;
+        const defaultSecret = getEncryptionManager().decryptAPISecret(res.default_secret);
+        const pendingKey = res.pending_secret ? getEncryptionManager().decryptAPISecret(res.pending_secret) : null;
 
         return {
             // getting data with row_to_json breaks the automatic string to date parser
@@ -468,8 +468,8 @@ class AccountService {
                 logger.warning('Failed to update sandbox API key last_used_at', { err, customerKeyId: row.auth_api_key_id });
             }
 
-            const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
-            const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+            const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
+            const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
             const auth =
                 verified.purpose === 'dryrun'
                     ? {
@@ -602,8 +602,8 @@ class AccountService {
 
         hashLocalCache.set(secretKey, hash);
 
-        const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
-        const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+        const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
+        const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
 
         return {
             account: {
@@ -684,8 +684,8 @@ class AccountService {
         // Store only successful lookups to avoid polluting the cache
         hashLocalCache.set(secretKey, hash);
 
-        const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
-        const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+        const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
+        const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
 
         return {
             account: {

@@ -49,6 +49,15 @@ export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is Get
     return opts.timeframe.start >= SHADOW_MIN_TIMEFRAME_START;
 }
 
+// Per-call random sample (not account-based) so we can ramp + killswitch CH
+// load without an account cohort being permanently in or out.
+export function shouldShadowCapping(opts: GetBillingUsageOpts | undefined): boolean {
+    if (opts?.timeframe) return false;
+    const pct = envs.FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE;
+    if (pct <= 0) return false;
+    return Math.random() * 100 < pct;
+}
+
 let cachedAllowlistCsv: string | undefined;
 let cachedAllowlist = new Set<number>();
 function getRolloutAllowlist(): Set<number> {
@@ -165,6 +174,7 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
+    private redis: Awaited<ReturnType<typeof getRedis>>;
     public billingClient: UsageBillingClient;
     // Read-only client for the dashboard CH path (gated by
     // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
@@ -174,6 +184,7 @@ export class UsageTracker implements IUsageTracker {
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
+        this.redis = redis;
         this.billingClient = new UsageBillingClient(redis);
     }
 
@@ -374,6 +385,12 @@ export class UsageTracker implements IUsageTracker {
             });
         }
 
+        if (!billingUsageMetrics.value.fromCache && shouldShadowCapping(opts)) {
+            void this.shadowCappingAgainstClickhouse({ accountId, orbResult: orbValue }).catch((err: unknown) => {
+                logger.error(`billing-usage capping shadow failed: ${stringifyError(err)}`);
+            });
+        }
+
         return Ok(formatted);
     }
 
@@ -430,6 +447,52 @@ export class UsageTracker implements IUsageTracker {
             const divergence = Math.abs(orbTotal - chTotal) / denom;
             const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
             metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
+        }
+    }
+
+    private async shadowCappingAgainstClickhouse({ accountId, orbResult }: { accountId: number; orbResult: BillingUsageMetrics }): Promise<void> {
+        const start = process.hrtime.bigint();
+        const timeoutErr = new Error('shadow_timeout');
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
+            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
+            new Promise((resolve) => {
+                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
+            })
+        ]);
+        clearTimeout(timeoutId);
+
+        const outcome = chResult.isOk() ? 'ok' : chResult.error === timeoutErr ? 'timeout' : 'ch_error';
+        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+        metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DURATION_MS, elapsedMs, { outcome });
+        if (chResult.isErr()) return;
+
+        // Populate `billing:usage:ch:<accountId>` so the eventual source flip
+        // from Orb to CH doesn't cold-start every account against CH on cutover.
+        const cacheKey = `billing:usage:ch:${accountId}`;
+        try {
+            await this.redis.set(cacheKey, JSON.stringify(chResult.value), { EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS });
+        } catch (err) {
+            logger.warning(`capping shadow CH cache write failed for account=${accountId}: ${stringifyError(err)}`);
+        }
+
+        // Capping path covers only COUNTER metrics — connections/records read
+        // from Postgres on the capping path and aren't returned by either Orb
+        // (no-timeframe scopes to billing period totals, AVG metrics are
+        // formatter-only) or the CH primitive here.
+        for (const metric of COUNTER_METRICS) {
+            const orbTotal = orbResult[metric]?.total ?? 0;
+            const chTotal = chResult.value[metric]?.total ?? 0;
+            if (orbTotal === 0 && chTotal === 0) continue;
+            if (orbTotal === 0 || chTotal === 0) {
+                const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
+                metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED, 1, { accountId, metric, zeroSide });
+                continue;
+            }
+            const denom = Math.max(orbTotal, chTotal);
+            const divergence = Math.abs(orbTotal - chTotal) / denom;
+            const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
+            metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
         }
     }
 

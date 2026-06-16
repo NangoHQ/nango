@@ -64,12 +64,17 @@ import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
+    DeleteIntegrationFunction,
+    DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
     GetProviderTemplates,
+    GetPublicIntegrationFunction,
+    GetPublicIntegrationFunctions,
+    GetPublicProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentResult,
@@ -107,7 +112,7 @@ import type {
 } from './sharedCredentials/api.js';
 import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PatchTeamUser, PutTeam } from './team/api.js';
-import type { GetUser, PatchUser } from './user/api.js';
+import type { GetUser, PatchUser, PutUserPassword } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
 
 export type PublicApiEndpoints =
@@ -165,6 +170,10 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | GetPublicFunctionCode
+    | GetPublicIntegrationFunctions
+    | GetPublicIntegrationFunction
+    | DeletePublicIntegrationFunction
+    | GetPublicProviderTemplates
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -180,6 +189,7 @@ export type PrivateApiEndpoints =
     | GetBillingUsageTopDimensionValues
     | GetUser
     | PatchUser
+    | PutUserPassword
     | PostInvite
     | DeleteInvite
     | DeleteTeamUser
@@ -195,6 +205,7 @@ export type PrivateApiEndpoints =
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions
+    | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates
     | DeleteIntegration

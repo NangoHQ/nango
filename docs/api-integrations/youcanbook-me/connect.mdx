@@ -1,0 +1,40 @@
+---
+title: YouCanBookMe - How do I link my account?
+sidebarTitle: YouCanBookMe
+---
+
+# Overview
+
+To authenticate with YouCanBookMe, you need two pieces of information:
+1. **Account ID** - A UUID that uniquely identifies your YouCanBookMe account.
+2. **API Key** - A key starting with `ak_` that grants Nango access to your YouCanBookMe account.
+
+This guide will walk you through finding both credentials in YouCanBookMe.
+
+### Prerequisites:
+
+- You must have a registered YouCanBookMe account.
+- If you are on a Team plan, you will need the **Organization Owner's** API key.
+
+### Instructions:
+
+#### Step 1: Finding your account ID and API key
+
+1. Log in to your YouCanBookMe account.
+2. Navigate to [Account Security settings](https://app.youcanbook.me/#/account/security).
+3. You will find your **Account ID** and your **API Key** (starting with `ak_`) on this page.
+
+<img src="/api-integrations/youcanbook-me/generate_api_key.png" style={{maxWidth: "450px" }}/>
+
+<Tip>If you are part of a Team plan, you must use the Organization Owner's API key — your own key will not work.</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Account ID** and **API Key**:
+1. Open the form where you need to authenticate with YouCanBookMe.
+2. Enter your **Account ID** and **API Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/youcanbook-me/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to YouCanBookMe.

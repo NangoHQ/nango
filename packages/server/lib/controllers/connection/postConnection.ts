@@ -7,7 +7,7 @@ import {
     buildTagsFromEndUser,
     configService,
     connectionService,
-    encryptionManager,
+    getEncryptionManager,
     getProvider,
     githubAppClient,
     linkConnection,
@@ -455,7 +455,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         });
     }
 
-    const connection = encryptionManager.decryptConnection(updatedConnection.connection);
+    const connection = getEncryptionManager().decryptConnection(updatedConnection.connection);
 
     await logCtx.enrichOperation({
         connectionId: updatedConnection.connection.id,

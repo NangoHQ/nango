@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { combineCommandOutput, getCommandOutput, getDryrunCommandSuccessOutput, parseDeploySuccessOutput, parseDryrunSuccessOutput } from './command-output.js';
 
-describe('remote function command output helpers', () => {
+describe('sandboxed function command output helpers', () => {
     describe('getCommandOutput', () => {
         it('falls back to the error message when streams are empty', () => {
             expect(getCommandOutput({ message: 'command failed' }, 'fallback')).toBe('command failed');

@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@nangohq/kvstore', () => ({
-    getKVStore: vi.fn(() => Promise.resolve({ set: vi.fn() })),
-    getFeatureFlagsClient: vi.fn(() => Promise.resolve({}))
+    getKVStore: vi.fn(() => Promise.resolve({ set: vi.fn() }))
 }));
 
 vi.mock('../../runner/runner.js', () => ({

@@ -164,7 +164,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             syncJobId: syncJob.id,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(plan),
+            runnerFlags: getRunnerFlags(plan),
             endUser: endUser,
             startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs

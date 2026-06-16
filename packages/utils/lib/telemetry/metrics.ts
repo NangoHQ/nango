@@ -152,6 +152,9 @@ export enum Types {
     BILLING_USAGE_SHADOW_DIVERGENCE = 'nango.billing.usage.shadow.divergence',
     BILLING_USAGE_SHADOW_ONE_SIDED = 'nango.billing.usage.shadow.one_sided',
     BILLING_USAGE_SHADOW_DURATION_MS = 'nango.billing.usage.shadow.duration_ms',
+    BILLING_USAGE_CAPPING_SHADOW_DIVERGENCE = 'nango.billing.usage.capping.shadow.divergence',
+    BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED = 'nango.billing.usage.capping.shadow.one_sided',
+    BILLING_USAGE_CAPPING_SHADOW_DURATION_MS = 'nango.billing.usage.capping.shadow.duration_ms',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 

@@ -9,7 +9,7 @@ import { cn } from '@/utils/utils';
 
 export const passwordSchema = z
     .string()
-    .min(8, 'Password must be at least 8 characters')
+    .min(12, 'Password must be at least 12 characters')
     .refine((value) => /[A-Z]/.test(value), 'Password must contain at least one uppercase letter')
     .refine((value) => /[0-9]/.test(value), 'Password must contain at least one number')
     .refine((value) => /[^a-zA-Z0-9]/.test(value), 'Password must contain at least one special character');
@@ -25,7 +25,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
 
     const checks = useMemo(
         () => ({
-            length: value.length >= 8,
+            length: value.length >= 12,
             uppercase: value.match(/[A-Z]/) !== null,
             number: value.match(/[0-9]/) !== null,
             special: value.match(/[^a-zA-Z0-9]/) !== null
@@ -57,8 +57,8 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
                 id="password-requirements"
                 className={cn('flex flex-col gap-1.5 overflow-hidden transition-[max-height] duration-200 ease-out', open ? 'max-h-40' : 'max-h-0 absolute')}
             >
-                <span className="text-body-small-regular text-text-primary">Password must contain:</span>
-                <Requirement text="At least 8 characters" check={checks.length} />
+                <span className="text-body-small-regular text-text-strong">Password must contain:</span>
+                <Requirement text="At least 12 characters" check={checks.length} />
                 <Requirement text="At least one uppercase letter" check={checks.uppercase} />
                 <Requirement text="At least one number" check={checks.number} />
                 <Requirement text="At least one special character" check={checks.special} />
@@ -70,10 +70,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
 const Requirement: React.FC<{ text: string; check: boolean }> = ({ text, check }) => {
     return (
         <span
-            className={cn(
-                'inline-flex items-center gap-1 !text-body-small-regular text-text-primary',
-                check ? 'text-feedback-success-fg' : 'text-text-tertiary'
-            )}
+            className={cn('inline-flex items-center gap-1 !text-body-small-regular text-text-strong', check ? 'text-status-success-text' : 'text-text-muted')}
         >
             {check ? <CheckIcon className="size-4" /> : <X className="size-4" />}
             {text}

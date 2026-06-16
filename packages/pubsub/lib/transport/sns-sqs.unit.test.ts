@@ -1,4 +1,4 @@
-import { PublishCommand } from '@aws-sdk/client-sns';
+import { PublishBatchCommand, PublishCommand } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -34,7 +34,7 @@ function abortError(): Error {
     return err;
 }
 
-function usageEvent(): Event {
+function usageEvent() {
     return {
         idempotencyKey: 'idem-1',
         subject: 'usage',
@@ -51,7 +51,7 @@ function usageEvent(): Event {
             }
         },
         createdAt: new Date()
-    };
+    } satisfies Event;
 }
 
 describe('SnsSqs transport', () => {
@@ -283,6 +283,141 @@ describe('SnsSqs transport', () => {
         const deleteCalls = mockSqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
         expect(deleteCalls).toHaveLength(0);
         await t.disconnect();
+    });
+
+    describe('publishBatch', () => {
+        it('returns Err when not connected', async () => {
+            const t = createTransport();
+            const res = await t.publishBatch({ subject: 'usage', events: [usageEvent()] });
+            assert(res.isErr());
+            expect(res.error.message).toContain('not connected');
+            expect(mockSnsSend).not.toHaveBeenCalled();
+        });
+
+        it('returns Err when no topic ARN configured for subject', async () => {
+            const t = new SnsSqs({ topicArns: {}, queueUrls: {}, snsClient, sqsClient });
+            await t.connect();
+
+            const res = await t.publishBatch({ subject: 'usage', events: [usageEvent()] });
+            assert(res.isErr());
+            expect(res.error.message).toContain('No SNS topic ARN');
+            expect(mockSnsSend).not.toHaveBeenCalled();
+        });
+
+        it('sends PublishBatchCommand with positional entry Id', async () => {
+            const t = createTransport();
+            await t.connect();
+
+            const event = usageEvent();
+            mockSnsSend.mockResolvedValue({ Successful: [{ Id: '0', MessageId: 'msg-1' }], Failed: [] });
+
+            await t.publishBatch({ subject: 'usage', events: [event] });
+
+            expect(mockSnsSend).toHaveBeenCalledTimes(1);
+            const [cmd] = mockSnsSend.mock.calls[0]!;
+            expect(cmd).toBeInstanceOf(PublishBatchCommand);
+            const encoded = serde.serialize(event).unwrap().toString('base64');
+            expect(cmd.input).toMatchObject({
+                TopicArn: topicArn,
+                PublishBatchRequestEntries: [
+                    {
+                        Id: '0',
+                        Message: encoded,
+                        MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } }
+                    }
+                ]
+            });
+        });
+
+        it('maps successful response Ids back to idempotency keys', async () => {
+            const t = createTransport();
+            await t.connect();
+
+            const event = usageEvent();
+            mockSnsSend.mockResolvedValue({ Successful: [{ Id: '0', MessageId: 'msg-1' }], Failed: [] });
+
+            const res = await t.publishBatch({ subject: 'usage', events: [event] });
+            assert(res.isOk());
+            expect(res.value.successful).toEqual([event.idempotencyKey]);
+            expect(res.value.failed).toHaveLength(0);
+        });
+
+        it('maps SNS Failed entry Ids back to idempotency keys with failure message', async () => {
+            const t = createTransport();
+            await t.connect();
+
+            const events = [
+                { ...usageEvent(), idempotencyKey: 'ok-key' },
+                { ...usageEvent(), idempotencyKey: 'fail-key' }
+            ];
+            mockSnsSend.mockResolvedValue({
+                Successful: [{ Id: '0', MessageId: 'msg-1' }],
+                Failed: [{ Id: '1', Code: 'InvalidParameter', Message: 'bad message', SenderFault: true }]
+            });
+
+            const res = await t.publishBatch({ subject: 'usage', events });
+            assert(res.isOk());
+            expect(res.value.successful).toEqual(['ok-key']);
+            expect(res.value.failed).toHaveLength(1);
+            expect(res.value.failed[0]!.idempotencyKey).toBe('fail-key');
+            expect(res.value.failed[0]!.message).toBe('bad message');
+        });
+
+        it('puts all batch entries in failed when PublishBatchCommand throws', async () => {
+            const t = createTransport();
+            await t.connect();
+            mockSnsSend.mockRejectedValue(new Error('network error'));
+
+            const events = [
+                { ...usageEvent(), idempotencyKey: 'key-1' },
+                { ...usageEvent(), idempotencyKey: 'key-2' }
+            ];
+            const res = await t.publishBatch({ subject: 'usage', events });
+            assert(res.isOk());
+            expect(res.value.successful).toHaveLength(0);
+            expect(res.value.failed).toHaveLength(2);
+            expect(res.value.failed.map((f) => f.idempotencyKey)).toEqual(['key-1', 'key-2']);
+            expect(res.value.failed[0]!.message).toBe('Batch publish request failed');
+            expect(res.value.failed[0]!.cause).toMatchObject({ message: 'network error' });
+        });
+
+        it('chunks groups larger than 10 into multiple PublishBatchCommand calls', async () => {
+            const t = createTransport();
+            await t.connect();
+
+            const events = Array.from({ length: 11 }, (_, i) => ({ ...usageEvent(), idempotencyKey: `idem-${i}` }));
+            mockSnsSend
+                .mockResolvedValueOnce({
+                    Successful: events.slice(0, 10).map((_, i) => ({ Id: String(i), MessageId: `msg-${i}` })),
+                    Failed: []
+                })
+                .mockResolvedValueOnce({
+                    Successful: [{ Id: '0', MessageId: 'msg-10' }],
+                    Failed: []
+                });
+
+            const res = await t.publishBatch({ subject: 'usage', events });
+            assert(res.isOk());
+            expect(res.value.successful).toHaveLength(11);
+            expect(res.value.successful).toEqual(events.map((e) => e.idempotencyKey));
+            expect(res.value.failed).toHaveLength(0);
+
+            const batchCalls = mockSnsSend.mock.calls.filter((c) => c[0] instanceof PublishBatchCommand);
+            expect(batchCalls).toHaveLength(2);
+            expect(batchCalls[0]![0].input.PublishBatchRequestEntries).toHaveLength(10);
+            expect(batchCalls[1]![0].input.PublishBatchRequestEntries).toHaveLength(1);
+        });
+
+        it('does not accept events with different subjects', async () => {
+            const t = createTransport();
+            await t.connect();
+            const teamEv = { idempotencyKey: 'team-key', subject: 'team' as const, type: 'team.updated' as const, payload: { id: 1 }, createdAt: new Date() };
+            // @ts-expect-error: publishBatch enforces all events share the subject parameter
+            const res = await t.publishBatch({ subject: 'usage', events: [usageEvent(), teamEv] });
+            assert(res.isErr());
+            expect(res.error.message).toContain('All events must be of the provided subject: "usage"');
+            expect(mockSnsSend).not.toHaveBeenCalled();
+        });
     });
 
     it('disconnect aborts long polling', async () => {

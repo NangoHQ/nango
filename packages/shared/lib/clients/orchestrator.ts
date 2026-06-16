@@ -62,6 +62,7 @@ export interface OrchestratorClientInterface {
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
@@ -596,6 +597,24 @@ export class Orchestrator {
                 operation: LogActionEnum.SYNC,
                 environmentId,
                 metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
+
+    /**
+     * Unschedule many syncs of one environment in a single call — used to stop a deleted function's syncs
+     * in batches instead of one orchestrator round-trip per sync.
+     */
+    async deleteSyncs({ syncIds, environmentId }: { syncIds: string[]; environmentId: number }): Promise<Result<void>> {
+        const scheduleNames = syncIds.map((syncId) => ScheduleName.get({ environmentId, syncId }));
+        const res = await this.client.deleteSyncs({ scheduleNames });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { environmentId, syncCount: syncIds.length }
             });
         }
         return res;

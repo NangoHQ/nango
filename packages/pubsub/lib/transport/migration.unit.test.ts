@@ -13,6 +13,7 @@ function mockTransport(partial?: Partial<Transport>): Transport {
         connect: vi.fn().mockResolvedValue(Ok(undefined)),
         disconnect: vi.fn().mockResolvedValue(Ok(undefined)),
         publish: vi.fn().mockResolvedValue(Ok(undefined)),
+        publishBatch: vi.fn().mockResolvedValue(Ok({ successful: [], failed: [] })),
         subscribe: vi.fn(),
         ...partial
     };

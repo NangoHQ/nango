@@ -692,6 +692,67 @@ affinity-v2:
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
 
+agiloft:
+    display_name: Agiloft
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/ewws/oauth
+    token_url: https://${connectionConfig.hostname}/ewws/otoken
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/agiloft
+    docs_connect: https://nango.dev/docs/api-integrations/agiloft/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Agiloft instance.
+            format: hostname
+            prefix: https://
+            example: example.agiloft.com
+            order: 1
+            doc_section: '#step-1-find-your-hostname'
+
+agiloft-cc:
+    display_name: Agiloft (Client Credentials)
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ewws/otoken
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/agiloft-cc
+    docs_connect: https://nango.dev/docs/api-integrations/agiloft-cc/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Agiloft instance.
+            format: hostname
+            prefix: https://
+            example: example.agiloft.com
+            order: 1
+            doc_section: '#step-2-find-your-hostname'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID from your Agiloft API application settings.
+            doc_section: '#step-1-create-an-api-application-and-get-your-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret from your Agiloft API application settings.
+            secret: true
+            doc_section: '#step-1-create-an-api-application-and-get-your-credentials'
+
 aimfox:
     display_name: Aimfox
     categories:
@@ -1886,6 +1947,34 @@ attio:
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/attio
     setup_guide_url: https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app
+
+attio-mcp:
+    display_name: Attio (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.attio.com/oidc/authorize
+    token_url: https://app.attio.com/oidc/token
+    registration_url: https://app.attio.com/oauth/register
+    authorization_params:
+        response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.attio.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/attio-mcp
 
 auth0:
     display_name: Auth0
@@ -4542,6 +4631,27 @@ cloudflare:
             description: The API token for your Cloudflare user or account
             example: lGlHlGZN3iPR9z7CupZlMB3nzMpTCdfxeUPNj_pf
             pattern: '^[a-zA-Z0-9_-]+$'
+
+cloudflare-mcp:
+    display_name: Cloudflare (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    proxy:
+        base_url: ${connectionConfig.mcp_server_url}
+        headers:
+            accept: application/json,text/event-stream
+    connection_config:
+        mcp_server_url:
+            type: string
+            title: Worker URL
+            description: The full URL of your Cloudflare Worker MCP server.
+            example: https://my-mcp.myusername.workers.dev
+            pattern: '^https://[a-zA-Z0-9.-]+(?:\:[0-9]+)?(?:/.*)?$'
+            doc_section: '#step-1-finding-your-worker-url'
+    docs: https://nango.dev/docs/api-integrations/cloudflare-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/cloudflare-mcp/connect
 
 clover:
     display_name: Clover
@@ -11939,6 +12049,43 @@ marketo:
             order: 2
             doc_section: '#step-3-find-your-domain-and-identity-url'
 
+mattermost:
+    display_name: Mattermost
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /v4/users/me
+    docs: https://nango.dev/docs/api-integrations/mattermost
+    docs_connect: https://nango.dev/docs/api-integrations/mattermost/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Server URL
+            description: The hostname of your Mattermost server.
+            example: mattermost.example.com
+            pattern: '^[a-zA-Z0-9.-]+(?::[0-9]+)?$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-mattermost-server-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Mattermost personal access token.
+            example: 'hx3mq8n0vy6***************'
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-generate-a-personal-access-token'
+
 malwarebytes:
     display_name: Malwarebytes
     categories:
@@ -16081,6 +16228,26 @@ razorpay:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-key-id-and-secret'
 
+read-ai:
+    display_name: Read.ai
+    categories:
+        - productivity
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://api.read.ai/oauth/ui
+    token_url: https://authn.read.ai/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.read.ai
+    docs: https://nango.dev/docs/api-integrations/read-ai
+    setup_guide_url: https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app
+
 readwise:
     display_name: Readwise
     categories:
@@ -16315,6 +16482,29 @@ render-mcp:
             doc_section: '#step-1-create-a-render-api-key'
             example: rnd_****************************
             pattern: '^rnd_[A-Za-z0-9]+$'
+
+raindrop-mcp:
+    display_name: Raindrop (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://auth.raindrop.ai/oauth/2.1/authorize
+    token_url: https://auth.raindrop.ai/oauth/2.1/token
+    registration_url: https://auth.raindrop.ai/oauth/2.1/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.raindrop.ai/mcp
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.raindrop.ai
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/raindrop-mcp
 
 reddit:
     display_name: Reddit
@@ -16687,6 +16877,29 @@ roam-scim:
             example: rmk-uu9zt58h-EYHyLJ3ay4Mc-wuWQTOk-Y2yY-gZlW7Ys8AdVXBRZks_SGrCyZ09_IDvX9ikahdxushGYKcT77Fjw
             pattern: '^rmk-[A-Za-z0-9_-]{86}$'
             doc_section: '#step-1-generating-your-scim-api-token'
+
+robinhood-mcp:
+    display_name: Robinhood (MCP)
+    categories:
+        - payment
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://robinhood.com/oauth
+    token_url: https://api.robinhood.com/oauth2/token/
+    registration_url: https://agent.robinhood.com/oauth/trading/register
+    authorization_params:
+        response_type: code
+        resource: https://agent.robinhood.com/mcp/trading
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://agent.robinhood.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/robinhood-mcp
 
 rock-gym-pro:
     display_name: Rock Gym Pro
@@ -19970,6 +20183,48 @@ telegram:
             pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
             doc_section: '#step-1-creating-your-telegram-bot'
 
+tempo:
+    display_name: Tempo
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.tempo.io/oauth/authorize/redirect
+    token_url: https://api.tempo.io/oauth/token/
+    disable_pkce: true
+    authorization_params:
+        jira_url: https://${connectionConfig.jiraSubdomain}.atlassian.net
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.tempo.io
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/tempo
+    setup_guide_url: https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/tempo/connect
+    connection_config:
+        jiraSubdomain:
+            type: string
+            title: Jira Cloud Subdomain
+            description: The subdomain of your Jira Cloud instance.
+            example: acme
+            pattern: '^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'
+            doc_section: '#step-1-find-your-jira-cloud-subdomain'
+            order: 2
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The subdomain of the Tempo API.
+            enum:
+                - api
+                - api.eu
+                - api.us
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
+
 the-swarm:
     display_name: The Swarm
     categories:
@@ -20300,6 +20555,18 @@ trafft:
             prefix: https://
             suffix: .admin.trafft.com
             doc_section: '#step-1-access-api-settings'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Trafft OAuth2 Client ID.
+            doc_section: '#step-2-get-your-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Trafft OAuth2 Client Secret.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
 
 tremendous:
     display_name: Tremendous
@@ -20777,7 +21044,7 @@ twitter-v2:
         - marketing
         - social
     auth_mode: OAUTH2
-    authorization_url: https://twitter.com/i/oauth2/authorize
+    authorization_url: https://x.com/i/oauth2/authorize
     token_url: https://api.twitter.com/2/oauth2/token
     token_request_auth_method: basic
     authorization_params:
@@ -22481,6 +22748,36 @@ yotpo:
             example: tHrwXaIBaWETHLRwxWaNktfYeEteyTcSjiNJY4IH
             doc_section: '#step-2-generating-your-secret-key'
             pattern: '^[A-Za-z0-9]{40}$'
+
+youcanbook-me:
+    display_name: YouCanBookMe
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.youcanbook.me
+        verification:
+            method: GET
+            endpoints:
+                - /v1/profiles
+    docs: https://nango.dev/docs/api-integrations/youcanbook-me
+    docs_connect: https://nango.dev/docs/api-integrations/youcanbook-me/connect
+    credentials:
+        username:
+            type: string
+            title: Account ID
+            description: Your YouCanBookMe Account ID.
+            format: uuid
+            example: 78c3430e-21f5-483b-8e26-84cd6dabf7a6
+            doc_section: '#step-1-finding-your-account-id'
+        password:
+            type: string
+            title: API Key
+            description: Your YouCanBookMe API key.
+            pattern: '^ak_[A-Za-z0-9_-]+$'
+            example: ak_xxxxxxxxxxxxxxxxxxxxx
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
 
 yandex:
     display_name: Yandex

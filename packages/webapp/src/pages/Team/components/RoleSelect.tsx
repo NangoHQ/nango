@@ -45,7 +45,7 @@ export const RoleSelect: React.FC<{
                             <span className="block">
                                 <SelectItem value={v} className="h-fit p-2" disabled={locked}>
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-text-primary text-body-medium-regular">{label}</span>
+                                        <span className="text-text-strong text-body-medium-regular">{label}</span>
                                         <p className="text-text-secondary text-body-small-regular">{description}</p>
                                     </div>
                                 </SelectItem>

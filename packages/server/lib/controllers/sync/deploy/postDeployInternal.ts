@@ -6,6 +6,7 @@ import { cleanIncomingFlow, configService, connectionService, deploy, environmen
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationWithNangoYaml as validation } from './validation.js';
+import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
@@ -113,7 +114,8 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             deployMode: body.deployMode,
             logCtx,
             logContextGetter,
-            orchestrator
+            orchestrator,
+            onFunctionDeleted: ({ syncConfigId, models }) => startFunctionDeletion({ syncConfigId, environmentId: environment.id, models })
         });
         if (!success) {
             res.status(500).send({
