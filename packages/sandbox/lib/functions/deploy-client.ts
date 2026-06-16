@@ -1,13 +1,9 @@
 import { readFileSync } from 'node:fs';
 
-import { NangoCliExitCode, getDeployErrorCode } from './cli-exit-codes.js';
-import { getCommandOutput } from './command-output.js';
+import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
-import { FunctionError } from './helpers.js';
 import { createFunctionSandbox } from './sandbox.js';
-import { buildShellCommand } from './shell.js';
 import { deploySandboxTimeoutMs, deployTimeoutMs } from './timeouts.js';
-import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
 
 const asyncDeployScriptUrl = new URL('./async-deploy-script.js', import.meta.url);
 const asyncDeployScript = readFileSync(asyncDeployScriptUrl, 'utf8');
@@ -25,10 +21,6 @@ export interface DeployRequest {
     nango_host: string;
     version?: string;
     allow_destructive?: boolean;
-}
-
-export interface DeployResult {
-    output: string;
 }
 
 export interface AsyncDeployRequest extends DeployRequest {
@@ -91,55 +83,6 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
     } catch (err) {
         await sandbox.stop().catch(() => undefined);
         throw err;
-    }
-}
-
-export async function invokeDeploy(request: DeployRequest): Promise<DeployResult> {
-    const sandbox = await createFunctionSandbox({
-        purpose: 'deploy',
-        timeoutMs: deploySandboxTimeoutMs
-    });
-
-    try {
-        const { tsFilePath } = getFilePaths(request);
-
-        await sandbox.writeFiles([
-            { path: tsFilePath, contents: request.code },
-            { path: 'index.ts', contents: buildIndexTs(request) }
-        ]);
-
-        const commandEnvs = {
-            NO_COLOR: '1',
-            NANGO_SECRET_KEY: request.nango_secret_key,
-            NANGO_HOSTPORT: request.nango_host,
-            NANGO_DEPLOY_AUTO_CONFIRM: 'true',
-            NANGO_DEPLOY_SOURCE: 'standalone'
-        };
-        const command = buildShellCommand(['nango', ...buildDeployArgs(request)]);
-
-        try {
-            const result = await sandbox.runCommand({
-                command,
-                timeoutMs: deployTimeoutMs,
-                envs: commandEnvs
-            });
-            return { output: result.stdout };
-        } catch (err) {
-            if (err instanceof SandboxCommandExitError) {
-                const output = getCommandOutput(err, 'Deployment failed');
-                throw new FunctionError({
-                    code: getDeployErrorCode(err),
-                    message: output,
-                    status: 400
-                });
-            }
-            if (err instanceof SandboxCommandTimeoutError) {
-                throw new FunctionError({ code: 'timeout', message: 'Deployment timed out', status: 504 });
-            }
-            throw err;
-        }
-    } finally {
-        await sandbox.stop().catch(() => undefined);
     }
 }
 

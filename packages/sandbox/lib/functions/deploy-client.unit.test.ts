@@ -51,8 +51,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 });
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
-import { NangoCliExitCode } from './cli-exit-codes.js';
-import { buildAsyncDeployScript, invokeDeploy, prepareAsyncDeploy } from './deploy-client.js';
+import { buildAsyncDeployScript, prepareAsyncDeploy } from './deploy-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
@@ -122,47 +121,16 @@ describe('sandboxed function deploy client', () => {
         });
     });
 
-    it('returns deploy output when the command succeeds', async () => {
-        mocks.run.mockResolvedValueOnce({ stdout: 'Successfully deployed the functions', stderr: '' });
-
-        await expect(invokeDeploy(request)).resolves.toStrictEqual({
-            output: 'Successfully deployed the functions'
-        });
-
-        expect(mocks.write).toHaveBeenCalledTimes(2);
-        expect(mocks.run).toHaveBeenCalledTimes(1);
-        expect(mocks.kill).toHaveBeenCalledTimes(1);
-    });
-
-    it('returns a compilation_error when deploy exits with the compile phase exit code', async () => {
-        mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NangoCliExitCode.CompileError));
-
-        await expect(invokeDeploy(request)).rejects.toMatchObject({
-            code: 'compilation_error',
-            message: 'type error details\nFound 1 error',
-            status: 400
-        } satisfies Partial<FunctionError>);
-
-        expect(mocks.run).toHaveBeenCalledTimes(1);
-        expect(mocks.run.mock.calls[0]?.[0]).toContain("'deploy'");
-    });
-
-    it('returns a deployment_error when deploy exits with the deploy phase exit code regardless of output text', async () => {
-        mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'Found 1 error from deployment API', '', NangoCliExitCode.DeployError));
-
-        await expect(invokeDeploy(request)).rejects.toMatchObject({
-            code: 'deployment_error',
-            message: 'Found 1 error from deployment API',
-            status: 400
-        } satisfies Partial<FunctionError>);
-
-        expect(mocks.run).toHaveBeenCalledTimes(1);
-    });
-
     it('returns execution_environment_unavailable when the deploy sandbox cannot be created', async () => {
         mocks.create.mockRejectedValueOnce(new mocks.RateLimitError('Rate limit exceeded - too many sandboxes'));
 
-        await expect(invokeDeploy(request)).rejects.toMatchObject({
+        await expect(
+            prepareAsyncDeploy({
+                ...request,
+                deployment_id: '7b539769-6d39-4442-89fc-33fbac96ea66',
+                callback_url: 'https://api.example.test/functions/deployments/7b539769-6d39-4442-89fc-33fbac96ea66/result'
+            })
+        ).rejects.toMatchObject({
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503

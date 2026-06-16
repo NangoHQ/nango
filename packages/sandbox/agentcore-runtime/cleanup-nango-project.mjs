@@ -31,11 +31,23 @@ await Promise.all(
 await fs.writeFile(path.join(projectDir, 'index.ts'), indexContents);
 
 const envPath = path.join(projectDir, '.env');
-const currentEnv = await fs.readFile(envPath, 'utf8');
+const currentEnv = await readTextIfExists(envPath);
 const nextEnv = envLinesToEnsure.reduce((contents, line) => {
     return contents.includes(line) ? contents : `${contents.trimEnd()}\n${line}\n`;
 }, currentEnv);
 
 if (nextEnv !== currentEnv) {
     await fs.writeFile(envPath, nextEnv);
+}
+
+async function readTextIfExists(filePath) {
+    try {
+        return await fs.readFile(filePath, 'utf8');
+    } catch (err) {
+        if (err?.code === 'ENOENT') {
+            return '';
+        }
+
+        throw err;
+    }
 }
