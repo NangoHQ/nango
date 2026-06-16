@@ -49,10 +49,11 @@ function apiProxyConfig() {
     // Local dev (no REMOTE_API): dashboard talks to the local API directly. Dev CORS trusts
     // any localhost port, so worktree dashboards on 3000/3001/... work without a proxy, and
     // Connect UI reaches the real API (and its OAuth WebSocket) since apiUrl stays the backend
-    // URL. Only /env.js is proxied, so the app loads window._env same-origin.
+    // URL. We still proxy /env.js because the app requests it as a relative path (it can't
+    // know the backend origin until env.js sets window._env) and only the backend serves it.
     if (!remoteUrl) {
         return {
-            envProxyPlugin: null as Plugin | null,
+            envProxyPlugin: null,
             proxy: { '/env.js': { target: `http://localhost:${LOCAL_API_PORT}` } }
         };
     }
@@ -60,7 +61,7 @@ function apiProxyConfig() {
     // REMOTE_API mode: proxy all API traffic to the remote backend and rewrite apiUrl.
     const proxyOpts = { target: remoteUrl, changeOrigin: true };
     return {
-        envProxyPlugin: apiEnvProxyPlugin(remoteUrl) as Plugin | null,
+        envProxyPlugin: apiEnvProxyPlugin(remoteUrl),
         proxy: {
             '/api': proxyOpts,
             // Extra routes for connection creation and auth flows; most of the dashboard works with /api alone.
@@ -82,7 +83,8 @@ export default defineConfig(() => {
     const { envProxyPlugin, proxy } = apiProxyConfig();
 
     return {
-        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin].filter((p): p is Plugin => p !== null),
+        // Vite ignores falsy plugins, so envProxyPlugin can be null in local dev (no REMOTE_API).
+        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin],
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
