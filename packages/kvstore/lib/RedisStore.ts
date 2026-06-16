@@ -1,5 +1,5 @@
 import type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
-import type { RedisClientType } from 'redis';
+import type { NangoRedisClient } from './redisClient.js';
 
 /** Atomically refresh TTL only if the current value still matches (same-owner lock refresh). */
 const COMPARE_AND_SET = `
@@ -60,9 +60,9 @@ return 1
 `;
 
 export class RedisKVStore implements KVStore {
-    protected client: RedisClientType;
+    protected client: NangoRedisClient;
 
-    constructor(client: RedisClientType) {
+    constructor(client: NangoRedisClient) {
         this.client = client;
     }
 

@@ -7,27 +7,26 @@ import { RedisKVStore } from './RedisStore.js';
 import { getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
 
 import type { KVStore } from './KVStore.js';
-import type { RedisBoundary } from './redisClient.js';
-import type { RedisClientType } from 'redis';
+import type { NangoRedisClient, RedisBoundary } from './redisClient.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
-export { type RedisBoundary, getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
+export { type NangoRedisClient, type RedisBoundary, getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
 
 type KvBoundary = RedisBoundary;
 
 // Those getters can be accessed at any point so we store the promise to avoid race condition
 // Not my best code
-const mapRedis = new Map<string, RedisClientType>();
+const mapRedis = new Map<string, NangoRedisClient>();
 
 function redisClientCacheKey(url: string, boundary: RedisBoundary): string {
     return `${boundary}:${url}`;
 }
 
-export async function getRedis(url: string, boundary: RedisBoundary = 'system'): Promise<RedisClientType> {
+export async function getRedis(url: string, boundary: RedisBoundary = 'system'): Promise<NangoRedisClient> {
     const cacheKey = redisClientCacheKey(url, boundary);
     if (mapRedis.has(cacheKey)) {
         return mapRedis.get(cacheKey)!;
@@ -39,8 +38,8 @@ export async function getRedis(url: string, boundary: RedisBoundary = 'system'):
     });
 
     await redis.connect();
-    mapRedis.set(cacheKey, redis as RedisClientType);
-    return redis as RedisClientType;
+    mapRedis.set(cacheKey, redis);
+    return redis;
 }
 
 export async function destroy() {

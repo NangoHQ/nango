@@ -7,9 +7,9 @@ import { getLogger } from '@nangohq/utils';
 import { authHtml } from '../utils/html.js';
 
 import type { WSErr } from '../utils/web-socket-error.js';
+import type { NangoRedisClient } from '@nangohq/kvstore';
 import type { WebSocketConnectionAck, WebSocketConnectionError, WebSocketConnectionResponseSuccess } from '@nangohq/types';
 import type { Response } from 'express';
-import type { RedisClientType } from 'redis';
 import type { WebSocket } from 'ws';
 
 const logger = getLogger('Server.Publisher');
@@ -19,8 +19,8 @@ export type WebSocketClientId = string;
 export class Redis {
     // Two redis clients are needed because the same client cannot be used for both publishing and subscribing
     // more at https://redis.io/commands/subscribe/
-    private pub: RedisClientType;
-    private sub: RedisClientType;
+    private pub: NangoRedisClient;
+    private sub: NangoRedisClient;
 
     constructor(url: string) {
         // Separate options objects: node-redis mutates the options it receives,

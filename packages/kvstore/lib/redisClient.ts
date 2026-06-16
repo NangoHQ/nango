@@ -2,7 +2,10 @@ import { readFileSync } from 'node:fs';
 
 import { envs } from './env.js';
 
+import type { RedisClientType, RedisDefaultModules, RedisFunctions, RedisScripts } from 'redis';
+
 export type RedisBoundary = 'system' | 'customer';
+export type NangoRedisClient = RedisClientType<RedisDefaultModules, RedisFunctions, RedisScripts, 3>;
 
 const reconnectStrategy = (retries: number): number => Math.min(retries * 200, 2000);
 
