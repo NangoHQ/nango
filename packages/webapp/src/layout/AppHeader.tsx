@@ -1,7 +1,7 @@
 import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { SlackIcon } from '@/assets/SlackIcon';
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
@@ -44,15 +44,9 @@ export const AppHeader: React.FC = () => {
                     <SlackIcon />
                     Help
                 </ButtonLink>
-                <Button
-                    variant="outline"
-                    size="md"
-                    className="size-8 p-0"
-                    onClick={toggleDarkMode}
-                    title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                    {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
-                </Button>
+                <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>
+                    {darkMode ? <Sun /> : <Moon />}
+                </IconButton>
             </div>
         </header>
     );

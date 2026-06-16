@@ -1,7 +1,7 @@
 import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { Input } from '@/components/ui/Input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
@@ -205,14 +205,11 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                     disabled={disabled}
                                 />
                             )}
-                            <Button
-                                variant="ghost"
-                                size="xl"
-                                className={cn('py-2 px-2 h-full w-11', (pair.key === '' && pair.value === '') || disabled ? 'invisible' : '')}
-                                onClick={() => !disabled && onRemove(i)}
-                            >
-                                <Trash2 className="text-text-danger" />
-                            </Button>
+                            <div className={cn((pair.key === '' && pair.value === '') || disabled ? 'invisible' : '')}>
+                                <IconButton type="button" variant="ghost" size="lg" label="Remove entry" onClick={() => !disabled && onRemove(i)}>
+                                    <Trash2 className="text-text-danger" />
+                                </IconButton>
+                            </div>
                         </div>
                     </div>
                 );
