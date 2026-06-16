@@ -147,7 +147,9 @@ export class UsageProcessor {
                         delta: event.payload.value
                     });
                     if (incrExecutions.isErr()) {
-                        logger.error(`Failed to increment function_executions for account ${accountId}: ${stringifyError(incrExecutions.error, { cause: true })}`);
+                        logger.error(
+                            `Failed to increment function_executions for account ${accountId}: ${stringifyError(incrExecutions.error, { cause: true })}`
+                        );
                     }
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
@@ -155,7 +157,9 @@ export class UsageProcessor {
                         delta: compute
                     });
                     if (incrCompute.isErr()) {
-                        logger.error(`Failed to increment function_compute_ms for account ${accountId}: ${stringifyError(incrCompute.error, { cause: true })}`);
+                        logger.error(
+                            `Failed to increment function_compute_gbms for account ${accountId}: ${stringifyError(incrCompute.error, { cause: true })}`
+                        );
                     }
                     const incrLogs = await this.usageTracker.incr({
                         accountId: accountId,
