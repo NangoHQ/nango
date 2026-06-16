@@ -154,11 +154,11 @@ export class UsageProcessor {
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_compute_gbms',
-                        delta: compute
+                        delta: Math.round(compute) // HINCRBY requires an integer; compute (durationMs * memoryGb) is fractional
                     });
                     if (incrCompute.isErr()) {
                         logger.error(
-                            `Failed to increment function_compute_gbms for account ${accountId} (durationMs=${telemetryBag?.durationMs}, memoryGb=${telemetryBag?.memoryGb}, compute=${compute}): ${stringifyError(incrCompute.error, { cause: true })}`
+                            `Failed to increment function_compute_gbms for account ${accountId}: ${stringifyError(incrCompute.error, { cause: true })}`
                         );
                     }
                     const incrLogs = await this.usageTracker.incr({
