@@ -114,9 +114,11 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                         />
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

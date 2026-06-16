@@ -150,9 +150,11 @@ export const CustomAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                         />
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

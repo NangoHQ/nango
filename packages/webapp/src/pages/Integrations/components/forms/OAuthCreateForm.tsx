@@ -105,9 +105,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         </div>
                     </div>
 
-                    <Button loading={loading} onClick={onCreatePreProvisioned}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button loading={loading} onClick={onCreatePreProvisioned}>
+                            Create
+                        </Button>
+                    </div>
                 </div>
             </NavigationContent>
             <NavigationContent value="custom">
@@ -172,9 +174,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                 />
                             </div>
 
-                            <Button type="submit" loading={loading}>
-                                Create
-                            </Button>
+                            <div>
+                                <Button type="submit" loading={loading}>
+                                    Create
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                 </div>
