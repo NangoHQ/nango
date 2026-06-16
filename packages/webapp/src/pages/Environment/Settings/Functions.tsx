@@ -111,7 +111,7 @@ export const Functions: React.FC = () => {
                         {!edit && (
                             <PermissionGate asChild condition={canEditEnvironmentVars}>
                                 {(allowed) => (
-                                    <Button variant="secondary" onClick={() => setEdit(true)} disabled={!allowed}>
+                                    <Button variant="outline" onClick={() => setEdit(true)} disabled={!allowed}>
                                         Edit
                                     </Button>
                                 )}

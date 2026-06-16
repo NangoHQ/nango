@@ -138,7 +138,7 @@ export const Telemetry: React.FC = () => {
                             {!editHeaders && (
                                 <PermissionGate asChild condition={canEditEnvironment}>
                                     {(allowed) => (
-                                        <Button variant={'secondary'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
+                                        <Button variant={'outline'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
                                             Edit
                                         </Button>
                                     )}
