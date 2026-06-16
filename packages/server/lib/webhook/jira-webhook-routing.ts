@@ -93,7 +93,7 @@ const extractBaseUrlFromSelfLink = (value: unknown): string | null => {
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const webhookSecret = nango.integration.custom?.['webhookSecret'];
     if (webhookSecret) {
-        const signature = getHeader(headers, 'x-hub-signature-256');
+        const signature = getHeader(headers, 'x-hub-signature');
         if (!signature) {
             return Err(new NangoError('webhook_missing_signature'));
         }
