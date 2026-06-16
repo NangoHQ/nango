@@ -81,6 +81,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
@@ -269,6 +270,9 @@ web.route('/connections/admin/:connectionId').delete(
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, patchUser);
 web.route('/user/password').put(webAuth, putUserPassword);
+
+// Plain (in-app support chat)
+web.route('/plain/hmac').get(webAuth, getPlainHmac);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
