@@ -1,0 +1,25 @@
+.github/workflows/deploy.yaml
+  s_6a617d6537e735::t_556d0e7077d064 32,179,284-350,361,379
+scripts/deploy-agentcore-sandbox.mjs
+  s_6a617d6537e735::t_f091d45ac2ac93 186-188
+  s_6a617d6537e735::t_80995566a88587 1-185,189-282
+.github/workflows/publish.yaml
+  s_6a617d6537e735::t_0543115c1e5d48 21-22,52-94,105-136
+  s_6a617d6537e735::t_7e2ff5ce610bb3 95-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "bb6b737d0aa4a1d93d0e88b1aff017cf75f4145b",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
