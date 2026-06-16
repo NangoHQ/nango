@@ -18771,8 +18771,8 @@ shopvox:
     proxy:
         base_url: https://api.shopvox.com/
         headers:
-            authToken: ${accessToken}
-            accountID: ${credentials.raw.accountID}
+            authtoken: ${accessToken}
+            accountid: ${credentials.raw.accountID}
     docs: https://nango.dev/docs/api-integrations/shopvox
     docs_connect: https://nango.dev/docs/api-integrations/shopvox/connect
     credentials:
@@ -18780,14 +18780,12 @@ shopvox:
             type: string
             title: Username
             description: Your ShopVox login username.
-            order: 1
             doc_section: '#step-1-finding-your-credentials'
         password:
             type: string
             title: Password
             description: Your ShopVox login password.
             secret: true
-            order: 2
             doc_section: '#step-1-finding-your-credentials'
 
 shopware:
