@@ -75,9 +75,7 @@ function reportBatchPublishResults(subject: Event['subject'], batchSize: number,
             res_.failed.forEach((error: PublishFailure) => {
                 logger.error(`publishBatch partial failure`, {
                     subject: subject,
-                    error_code: error.code,
-                    error: error.message,
-                    idempotency_key: error.idempotencyKey
+                    ...error.toJSON()
                 });
             });
             metrics.increment(metrics.Types.PUBSUB_PUBLISH, res_.failed.length, { subject: subject, success: 'false' });
