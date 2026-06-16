@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { spawnSync } from 'node:child_process';
 
 const runtimeName = requiredEnv('AGENTCORE_RUNTIME_NAME');
 const imageUri = requiredEnv('AGENTCORE_RUNTIME_IMAGE_URI');
@@ -52,9 +52,7 @@ async function findRuntime() {
         }
 
         if (byId.agentRuntimeName !== runtimeName) {
-            throw new Error(
-                `AGENTCORE_RUNTIME_ID ${configuredRuntimeId} is named ${byId.agentRuntimeName}, expected AGENTCORE_RUNTIME_NAME ${runtimeName}`
-            );
+            throw new Error(`AGENTCORE_RUNTIME_ID ${configuredRuntimeId} is named ${byId.agentRuntimeName}, expected AGENTCORE_RUNTIME_NAME ${runtimeName}`);
         }
 
         return byId;
