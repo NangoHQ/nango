@@ -126,6 +126,28 @@ describe('getFeatureFlagsClient', () => {
         await expect(client.isEnabled('any-flag', { 'account.uuid': 'abc' }, false)).resolves.toBe(true);
     });
 
+    it('returns a typed flags facade backed by the shared client', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { getFlags } = await import('./index.js');
+        const flags = await getFlags();
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to initialize');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(flags.isOAuthStateCookieEnforced(42)).resolves.toBe(true);
+        expect(unleash.isEnabled).toHaveBeenCalledWith(
+            'oauth-state-cookie-enforcement',
+            {
+                userId: '42',
+                properties: { accountId: '42' }
+            },
+            false
+        );
+    });
+
     it('reads non-boolean variant payloads (getString), falling back to default otherwise', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
@@ -199,6 +221,17 @@ describe('getFeatureFlagsClient', () => {
         await expect(getFeatureFlagsClient()).rejects.toThrow('init failed');
         const client = await getFeatureFlagsClient();
         await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(false);
+    });
+
+    it('propagates typed facade initialization errors and retries later', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { getFlags } = await import('./index.js');
+        await expect(getFlags()).rejects.toThrow('init failed');
+        const flags = await getFlags();
+        await expect(flags.isOAuthStateCookieEnforced(42)).resolves.toBe(false);
     });
 
     it('reconnects to unleash in the background after a failed initialization', async () => {

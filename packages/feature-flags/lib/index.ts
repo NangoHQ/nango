@@ -16,50 +16,28 @@ export type { Flags } from './flags.js';
 export { buildFlags } from './flags.js';
 export { FLAGS, type FlagKey } from './registry.js';
 
-/**
- * Typed flag facade backed by the shared (cached) client. The underlying client
- * is initialized lazily and reused; awaiting this is cheap after the first call.
- */
-export async function getFlags(): Promise<Flags> {
-    try {
-        return buildFlags(await getFeatureFlagsClient());
-    } catch (err) {
-        logger.error('Failed to initialize feature flags client; serving safe defaults until reconnect', err);
-        return buildFlags(buildFeatureFlagsClient(new NoopProvider()));
-    }
-}
-
+let flagsPromise: Promise<Flags> | undefined;
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
 let destroyPromise: Promise<void> | undefined;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
 const logger = getLogger('FeatureFlags');
 
-function cancelReconnect(): void {
-    if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = undefined;
-    }
-}
+/**
+ * Typed flag facade backed by the shared (cached) client. The underlying client
+ * is initialized lazily and reused; awaiting this is cheap after the first call.
+ */
+export async function getFlags(): Promise<Flags> {
+    if (flagsPromise) return flagsPromise;
 
-function scheduleReconnect(): void {
-    if (reconnectTimer) return;
-    if (envs.NANGO_FLAG_PROVIDER !== 'unleash' || !envs.NANGO_UNLEASH_URL) return;
+    flagsPromise = getFeatureFlagsClient()
+        .then((client) => buildFlags(client))
+        .catch((err: unknown) => {
+            flagsPromise = undefined;
+            throw err;
+        });
 
-    reconnectTimer = setTimeout(() => {
-        reconnectTimer = undefined;
-        if (clientPromise || destroyPromise) return;
-        void getFeatureFlagsClient()
-            .then(() => {
-                logger.info('Feature flags client reconnected to Unleash');
-            })
-            .catch(() => {
-                scheduleReconnect();
-            });
-    }, envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS);
-    if (typeof reconnectTimer.unref === 'function') {
-        reconnectTimer.unref();
-    }
+    return flagsPromise;
 }
 
 export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
@@ -77,25 +55,6 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
             throw err;
         });
     return clientPromise;
-}
-
-export async function destroy(): Promise<void> {
-    cancelReconnect();
-    if (destroyPromise) return destroyPromise;
-    const promise = clientPromise;
-    if (!promise) return;
-    destroyPromise = (async () => {
-        try {
-            logger.info('Destroying feature flags client');
-            const client = await promise;
-            await client.destroy();
-        } finally {
-            clientPromise = undefined;
-            destroyPromise = undefined;
-            cancelReconnect();
-        }
-    })();
-    return destroyPromise;
 }
 
 async function createClient(): Promise<FeatureFlagsClient> {
@@ -126,4 +85,51 @@ async function buildProvider(): Promise<Provider> {
     }
     logger.info('Using noop feature-flags provider');
     return new NoopProvider();
+}
+
+function cancelReconnect(): void {
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = undefined;
+    }
+}
+
+function scheduleReconnect(): void {
+    if (reconnectTimer) return;
+    if (envs.NANGO_FLAG_PROVIDER !== 'unleash' || !envs.NANGO_UNLEASH_URL) return;
+
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = undefined;
+        if (clientPromise || destroyPromise) return;
+        void getFeatureFlagsClient()
+            .then(() => {
+                logger.info('Feature flags client reconnected to Unleash');
+            })
+            .catch(() => {
+                scheduleReconnect();
+            });
+    }, envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS);
+    if (typeof reconnectTimer.unref === 'function') {
+        reconnectTimer.unref();
+    }
+}
+
+export async function destroy(): Promise<void> {
+    cancelReconnect();
+    flagsPromise = undefined;
+    if (destroyPromise) return destroyPromise;
+    const promise = clientPromise;
+    if (!promise) return;
+    destroyPromise = (async () => {
+        try {
+            logger.info('Destroying feature flags client');
+            const client = await promise;
+            await client.destroy();
+        } finally {
+            clientPromise = undefined;
+            destroyPromise = undefined;
+            cancelReconnect();
+        }
+    })();
+    return destroyPromise;
 }

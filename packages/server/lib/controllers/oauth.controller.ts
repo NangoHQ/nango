@@ -6,6 +6,7 @@ import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     ErrorSourceEnum,
@@ -44,7 +45,6 @@ import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.j
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
 import {
-    flags,
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
@@ -89,6 +89,16 @@ function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): st
     }
     const normalized = value.toLowerCase();
     return allowed.has(normalized) ? normalized : 'other';
+}
+
+async function isOAuthStateCookieEnforced(accountId: number): Promise<boolean> {
+    try {
+        const flags = await getFlags();
+        return await flags.isOAuthStateCookieEnforced(accountId);
+    } catch {
+        // Preserve the default rollout state if the flag client cannot initialize.
+        return false;
+    }
 }
 
 class OAuthController {
@@ -1234,7 +1244,7 @@ class OAuthController {
                     });
                 } else {
                     // Flag off (default) => keep current behaviour (measure only); on => reject below.
-                    const enforced = await flags.isOAuthStateCookieEnforced(account.id);
+                    const enforced = await isOAuthStateCookieEnforced(account.id);
                     // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
                     // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
                     // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
