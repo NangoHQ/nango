@@ -4,12 +4,11 @@ import get from 'lodash-es/get.js';
 
 import { OtlpSpan } from '@nangohq/logs';
 import { NangoError, connectionService, getSyncConfigsByConfigIdForWebhook } from '@nangohq/shared';
-import { errorToObject, metrics, report } from '@nangohq/utils';
+import { errorToObject, metrics, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { dispatchQueuePublisher } from './dispatch-queue/client.js';
 import { SQS_BATCH_MAX_BYTES } from './dispatch-queue/publisher.js';
-import { runWithConcurrencyLimit } from './runWithConcurrencyLimit.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { DispatchQueuePublisher, PreparedDispatchMessage } from './dispatch-queue/publisher.js';
