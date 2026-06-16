@@ -1,14 +1,11 @@
 import { getLogger, stringifyError } from '@nangohq/utils';
 
-import { FunctionError } from './functions/helpers.js';
-import { SandboxUnavailableError } from './providers/errors.js';
+import { SandboxInitializationError, SandboxUnavailableError } from './providers/errors.js';
 import { createSandboxProvider } from './providers/factory.js';
 
 import type { CreateSandboxParams, Sandbox, SandboxProvider } from './providers/types.js';
 
 const logger = getLogger('SandboxService');
-
-export const executionEnvironmentUnavailableMessage = 'The function execution environment is temporarily unavailable. Please try again shortly.';
 
 export class SandboxService {
     constructor(private readonly provider: SandboxProvider = createSandboxProvider()) {}
@@ -17,13 +14,22 @@ export class SandboxService {
         try {
             return await this.provider.create(params);
         } catch (err) {
-            const unavailableError = toExecutionEnvironmentUnavailableError(err);
-            if (unavailableError) {
-                logger.warning('Function execution environment unavailable', { err });
-                throw unavailableError;
+            if (err instanceof SandboxUnavailableError) {
+                logger.warning('Function execution environment unavailable', {
+                    provider: this.provider.name,
+                    purpose: params.purpose,
+                    err: stringifyError(err)
+                });
+                throw err;
             }
 
-            throw err;
+            logger.error('Failed to initialize sandbox', {
+                provider: this.provider.name,
+                purpose: params.purpose,
+                err: stringifyError(err, { stack: true, cause: true })
+            });
+
+            throw new SandboxInitializationError({ cause: err });
         }
     }
 
@@ -45,15 +51,3 @@ export class SandboxService {
 }
 
 export const sandboxService = new SandboxService();
-
-export function toExecutionEnvironmentUnavailableError(error: unknown): FunctionError | null {
-    if (!(error instanceof SandboxUnavailableError)) {
-        return null;
-    }
-
-    return new FunctionError({
-        code: 'execution_environment_unavailable',
-        message: executionEnvironmentUnavailableMessage,
-        status: 503
-    });
-}

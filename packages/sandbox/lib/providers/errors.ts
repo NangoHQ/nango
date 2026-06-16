@@ -26,6 +26,15 @@ export class SandboxUnavailableError extends Error {
     }
 }
 
+export const sandboxInitializationFailedMessage = 'Failed to initialize the function execution environment';
+
+export class SandboxInitializationError extends Error {
+    constructor(options?: ErrorOptions) {
+        super(sandboxInitializationFailedMessage, options);
+        this.name = 'SandboxInitializationError';
+    }
+}
+
 export class SandboxNotImplementedError extends Error {
     constructor(message: string) {
         super(message);

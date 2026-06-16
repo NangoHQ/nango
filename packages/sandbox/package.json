@@ -13,6 +13,7 @@
         "directory": "packages/sandbox"
     },
     "dependencies": {
+        "@aws-sdk/client-bedrock-agentcore": "3.1066.0",
         "@nangohq/database": "file:../database",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
