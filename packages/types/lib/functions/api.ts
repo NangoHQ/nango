@@ -201,21 +201,38 @@ export type PostFunctionDeploymentResult = Endpoint<{
     Success: { ok: true };
 }>;
 
+// Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
+// path, param names, and the `env` querystring (private) — the payloads and filters below are identical.
+export interface FunctionListFilters {
+    type?: FunctionType;
+    search?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface FunctionListSuccess {
+    data: DeployedNangoFunction[];
+    pagination: { total: number; page: number; limit: number };
+}
+
+export interface DeployedFunctionSuccess {
+    data: DeployedNangoFunction;
+}
+
+export interface FunctionDeletionSuccess {
+    data: { success: boolean };
+}
+
+export interface ProviderTemplatesSuccess {
+    data: (NangoSyncFunction | NangoActionFunction)[];
+}
+
 export type GetIntegrationFunctions = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions';
-    Querystring: {
-        env: string;
-        type?: FunctionType;
-        search?: string;
-        page?: number;
-        limit?: number;
-    };
+    Querystring: { env: string } & FunctionListFilters;
     Params: { providerConfigKey: string };
-    Success: {
-        data: DeployedNangoFunction[];
-        pagination: { total: number; page: number; limit: number };
-    };
+    Success: FunctionListSuccess;
 }>;
 
 export type GetIntegrationFunction = Endpoint<{
@@ -223,7 +240,17 @@ export type GetIntegrationFunction = Endpoint<{
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     Querystring: { env: string; type?: FunctionType };
     Params: { providerConfigKey: string; functionName: string };
-    Success: { data: DeployedNangoFunction };
+    Success: DeployedFunctionSuccess;
+}>;
+
+export type DeleteIntegrationFunction = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
+    /** TODO: support deleting on-event functions */
+    Querystring: { env: string; type: RunnableFunctionType };
+    Params: { providerConfigKey: string; functionName: string };
+    Error: ApiError<'function_managed_by_deploy'>;
+    Success: FunctionDeletionSuccess;
 }>;
 
 export type GetProviderTemplates = Endpoint<{
@@ -231,7 +258,40 @@ export type GetProviderTemplates = Endpoint<{
     Path: '/api/v1/providers/:providerConfigKey/templates';
     Querystring: { env: string };
     Params: { providerConfigKey: string };
-    Success: { data: (NangoSyncFunction | NangoActionFunction)[] };
+    Success: ProviderTemplatesSuccess;
+}>;
+
+export type GetPublicIntegrationFunctions = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/functions';
+    Querystring: FunctionListFilters;
+    Params: { uniqueKey: string };
+    Success: FunctionListSuccess;
+}>;
+
+export type GetPublicIntegrationFunction = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/functions/:name';
+    Querystring: { type?: FunctionType };
+    Params: { uniqueKey: string; name: string };
+    Success: DeployedFunctionSuccess;
+}>;
+
+export type DeletePublicIntegrationFunction = Endpoint<{
+    Method: 'DELETE';
+    Path: '/integrations/:uniqueKey/functions/:name';
+    /** TODO: support deleting on-event functions */
+    Querystring: { type: RunnableFunctionType };
+    Params: { uniqueKey: string; name: string };
+    Error: ApiError<'function_managed_by_deploy'>;
+    Success: FunctionDeletionSuccess;
+}>;
+
+export type GetPublicProviderTemplates = Endpoint<{
+    Method: 'GET';
+    Path: '/providers/:provider/templates';
+    Params: { provider: string };
+    Success: ProviderTemplatesSuccess;
 }>;
 
 export type GetIntegrationTemplates = Endpoint<{

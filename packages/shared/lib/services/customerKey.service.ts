@@ -3,9 +3,10 @@ import * as uuid from 'uuid';
 import { Err, Ok, stringToHash } from '@nangohq/utils';
 
 import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.js';
-import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
+import { getEncryptionManager, pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
+import type { EncryptionManager } from '../utils/encryption.manager.js';
 import type { DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
@@ -59,7 +60,9 @@ class CustomerKeyService {
                 deleted_at: null
             } satisfies Partial<DBCustomerKey>;
 
-            const encrypted = encryptionManager.encryptAPISecret(customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]) as typeof customerKey;
+            const encrypted = getEncryptionManager().encryptAPISecret(
+                customerKey as Parameters<EncryptionManager['encryptAPISecret']>[0]
+            ) as typeof customerKey;
 
             const [row] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
             if (!row) {
@@ -175,7 +178,9 @@ class CustomerKeyService {
                 deleted_at: null
             } satisfies Partial<DBCustomerKey>;
 
-            const encrypted = encryptionManager.encryptAPISecret(customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]) as typeof customerKey;
+            const encrypted = getEncryptionManager().encryptAPISecret(
+                customerKey as Parameters<EncryptionManager['encryptAPISecret']>[0]
+            ) as typeof customerKey;
 
             const [created] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
             if (!created) {
@@ -207,7 +212,7 @@ class CustomerKeyService {
                 .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
 
             const decrypted = rows.map(
-                (row) => encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey
+                (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey
             );
             return Ok(decrypted);
         } catch (err) {
@@ -235,7 +240,7 @@ class CustomerKeyService {
                 throw new NangoError('no_webhook_signing_key', { environment_id: envId });
             }
 
-            const decrypted = encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey;
+            const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
             webhookSigningKeyCache.set(envId, decrypted.secret);
             return Ok(decrypted.secret);
         } catch (err) {
@@ -336,10 +341,10 @@ class CustomerKeyService {
 
     private async hashSecret(plainText: string): Promise<Result<string>> {
         try {
-            if (!encryptionManager.shouldEncrypt()) {
+            if (!getEncryptionManager().shouldEncrypt()) {
                 return Ok(plainText);
             }
-            const key = encryptionManager.getKey();
+            const key = getEncryptionManager().getKey();
             const hash = (await pbkdf2(plainText, key, 310000, 32, 'sha256')).toString('base64');
             return Ok(hash);
         } catch (err) {

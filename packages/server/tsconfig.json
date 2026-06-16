@@ -9,19 +9,25 @@
             "path": "../authz"
         },
         {
+            "path": "../billing"
+        },
+        {
             "path": "../database"
         },
         {
-            "path": "../logs"
+            "path": "../email"
+        },
+        {
+            "path": "../fleet"
         },
         {
             "path": "../keystore"
         },
         {
-            "path": "../webhooks"
+            "path": "../kms"
         },
         {
-            "path": "../shared"
+            "path": "../logs"
         },
         {
             "path": "../nango-yaml"
@@ -30,10 +36,7 @@
             "path": "../node-client"
         },
         {
-            "path": "../types"
-        },
-        {
-            "path": "../utils"
+            "path": "../orchestrator"
         },
         {
             "path": "../records"
@@ -42,22 +45,22 @@
             "path": "../sandbox"
         },
         {
-            "path": "../orchestrator"
+            "path": "../shared"
         },
         {
             "path": "../tasks"
         },
         {
-            "path": "../fleet"
-        },
-        {
-            "path": "../billing"
+            "path": "../types"
         },
         {
             "path": "../usage"
         },
         {
-            "path": "../email"
+            "path": "../utils"
+        },
+        {
+            "path": "../webhooks"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts", "../shared/lib/utils/usage.ts"]

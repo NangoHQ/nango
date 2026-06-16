@@ -5,7 +5,7 @@ import { getProvider } from './providers.js';
 import { gettingStartedService } from '../index.js';
 import syncManager from './sync/manager.service.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -78,7 +78,7 @@ class ConfigService {
         }
         delete result.credentials;
 
-        return encryptionManager.decryptProviderConfig(result);
+        return getEncryptionManager().decryptProviderConfig(result);
     }
 
     async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {
@@ -100,7 +100,7 @@ class ConfigService {
                     result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
                 }
                 delete result.credentials;
-                return encryptionManager.decryptProviderConfig(result);
+                return getEncryptionManager().decryptProviderConfig(result);
             })
             .filter(Boolean) as ProviderConfig[];
     }
@@ -126,7 +126,7 @@ class ConfigService {
     }
 
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
-        const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config as ProviderConfig) : config;
+        const configToInsert = config.oauth_client_secret ? getEncryptionManager().encryptProviderConfig(config as ProviderConfig) : config;
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
         if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
             configToInsert.oauth_scopes = provider.default_scopes.join(',');
@@ -230,7 +230,7 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
-        const encrypted = encryptionManager.encryptProviderConfig(config);
+        const encrypted = getEncryptionManager().encryptProviderConfig(config);
         encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
         encrypted.updated_at = new Date();
 

@@ -1,7 +1,7 @@
-import { Download, ExternalLink, Info } from 'lucide-react';
+import { Download, ExternalLink, Info, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
@@ -19,9 +19,10 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction, useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -35,6 +36,8 @@ import type { JSONSchema7 } from 'json-schema';
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
     const { toast } = useToast();
+    const navigate = useNavigate();
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const env = useStore((state) => state.env);
     const debugMode = useStore((state) => state.debugMode);
@@ -44,6 +47,9 @@ export const FunctionsOne: React.FC = () => {
     const flowsData = flowsResponse?.data;
 
     const func = flowsData?.flows.find((flow) => flow.name === functionName);
+
+    const functionType = func?.type === 'sync' ? 'sync' : 'action';
+    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, providerConfigKey!, functionName!, functionType);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -100,6 +106,21 @@ export const FunctionsOne: React.FC = () => {
         }
     }, [func, env, toast]);
 
+    const onDelete = useCallback(async () => {
+        try {
+            await deleteFunction();
+            toast({ title: `Function "${functionName}" has been deleted`, variant: 'success' });
+            navigate(`/${env}/integrations/${providerConfigKey}`);
+        } catch (err) {
+            const errorCode = err instanceof APIError ? err.json?.error?.code : undefined;
+            toast({
+                title: 'Failed to delete function',
+                description: errorCode ? `Error code: ${errorCode}` : undefined,
+                variant: 'error'
+            });
+        }
+    }, [deleteFunction, toast, functionName, navigate, env, providerConfigKey]);
+
     if (isLoading) {
         return (
             <DashboardLayout>
@@ -111,17 +132,17 @@ export const FunctionsOne: React.FC = () => {
                     <CardHeader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="inline-flex items-center gap-2.5">
-                                <Skeleton className="bg-bg-subtle size-10.5" />
-                                <Skeleton className="bg-bg-subtle w-36 h-5" />
-                                <Skeleton className="bg-bg-subtle w-24 h-4" />
+                                <Skeleton className="bg-surface-panel-inset size-10.5" />
+                                <Skeleton className="bg-surface-panel-inset w-36 h-5" />
+                                <Skeleton className="bg-surface-panel-inset w-24 h-4" />
                             </div>
-                            <Skeleton className="bg-bg-subtle w-8 h-5" />
+                            <Skeleton className="bg-surface-panel-inset w-8 h-5" />
                         </div>
-                        <Skeleton className="bg-bg-subtle w-1/2 h-6" />
-                        <Skeleton className="bg-bg-subtle w-full h-6" />
+                        <Skeleton className="bg-surface-panel-inset w-1/2 h-6" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-6" />
                     </CardHeader>
                     <CardContent>
-                        <Skeleton className="bg-bg-subtle w-full h-50" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-50" />
                     </CardContent>
                 </CardLayout>
             </DashboardLayout>
@@ -146,7 +167,7 @@ export const FunctionsOne: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                         <div className="inline-flex items-center gap-2.5">
                             <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
-                            <span className="text-text-primary text-body-large-semi">
+                            <span className="text-text-strong text-body-large-semi">
                                 {integrationData.integration.display_name ?? integrationData.template.display_name}
                             </span>
                             <div className="inline-flex gap-1">
@@ -154,12 +175,13 @@ export const FunctionsOne: React.FC = () => {
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
-                        <div className="inline-flex items-center gap-2">
+                        <div className="inline-flex items-center gap-3">
                             {func.enabled && debugMode && (
                                 <Button onClick={downloadCode} variant="ghost" size="icon">
                                     <Download />
                                 </Button>
                             )}
+
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
                                 <Button
                                     variant="secondary"
@@ -176,6 +198,27 @@ export const FunctionsOne: React.FC = () => {
                                     Playground <ExternalLink />
                                 </Button>
                             </ConditionalTooltip>
+                            {func.source !== 'repo' && (func.type === 'sync' || func.type === 'action') && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    loading={isDeleting}
+                                    onClick={() =>
+                                        confirm({
+                                            title: 'Delete function?',
+                                            description:
+                                                func.type === 'sync'
+                                                    ? `You are about to permanently delete the sync "${func.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
+                                                    : `You are about to permanently delete the action "${func.name}". This operation is not reversible, are you sure you wish to continue?`,
+                                            confirmButtonText: 'Delete function',
+                                            confirmVariant: 'destructive',
+                                            onConfirm: onDelete
+                                        })
+                                    }
+                                >
+                                    <Trash2 />
+                                </Button>
+                            )}
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
                     </div>
@@ -207,11 +250,11 @@ export const FunctionsOne: React.FC = () => {
                     <CardSubheader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col gap-1">
-                                <span className="text-text-primary text-body-medium-semi">Customize this template</span>
+                                <span className="text-text-strong text-body-medium-semi">Customize this template</span>
                                 <Link
                                     to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
                                     target="_blank"
-                                    className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
+                                    className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
                                 >
                                     Get started with the Nango CLI <ExternalLink className="size-3.5" />
                                 </Link>
@@ -285,6 +328,7 @@ export const FunctionsOne: React.FC = () => {
                     </Tabs>
                 </CardContent>
             </CardLayout>
+            {DialogComponent}
         </DashboardLayout>
     );
 };

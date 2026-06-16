@@ -25,7 +25,7 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
             const syncConfigs = await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ nango_config_id: providerConfig.id! }).limit(opts.limit);
 
             for (const syncConfig of syncConfigs || []) {
-                await deleteSyncConfigData(syncConfig, opts);
+                await deleteSyncConfigData({ syncConfigId: syncConfig.id, environmentId: syncConfig.environment_id, models: syncConfig.models }, opts);
             }
 
             return syncConfigs?.length || 0;

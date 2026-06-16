@@ -1,15 +1,8 @@
-import path from 'node:path';
-
-import { CommandExitError, TimeoutError } from 'e2b';
-
-import { isLocal } from '@nangohq/utils';
-
 import { getCommandOutput } from './command-output.js';
 import { FunctionError } from './helpers.js';
-import { remoteFunctionCompileTimeoutMs, remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
-import { createFunctionSandbox } from './sandbox.js';
-import { envs } from '../env.js';
-import { invokeLocalCompiler } from '../local/compiler-client.js';
+import { compileSandboxTimeoutMs, compileTimeoutMs } from './timeouts.js';
+import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
+import { sandboxService } from '../sandbox-service.js';
 
 interface FunctionFilePathRequest {
     integration_id: string;
@@ -40,51 +33,43 @@ export class CompilerError extends FunctionError {
 }
 
 export async function invokeCompiler(request: CompileRequest): Promise<CompileResult> {
-    if (isLocal) {
-        return invokeLocalCompiler(request);
-    }
-
-    const apiKey = envs.E2B_API_KEY;
-    if (!apiKey) {
-        throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
-    }
-
-    const sandbox = await createFunctionSandbox({
+    const sandbox = await sandboxService.create({
         purpose: 'compile',
-        timeoutMs: remoteFunctionCompilerSandboxTimeoutMs,
-        apiKey
+        timeoutMs: compileSandboxTimeoutMs
     });
 
     try {
         const { tsFilePath, cjsFilePath } = getCompilerFilePaths();
 
-        await sandbox.files.write(path.join(remoteFunctionProjectPath, tsFilePath), request.code);
-        await sandbox.files.write(path.join(remoteFunctionProjectPath, 'index.ts'), buildCompilerIndexTs());
+        await sandbox.writeFiles([
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildCompilerIndexTs() }
+        ]);
 
         try {
-            await sandbox.commands.run('nango compile', {
-                cwd: remoteFunctionProjectPath,
-                timeoutMs: remoteFunctionCompileTimeoutMs,
+            await sandbox.runCommand({
+                command: 'nango compile',
+                timeoutMs: compileTimeoutMs,
                 envs: { NO_COLOR: '1' }
             });
         } catch (err) {
-            if (err instanceof CommandExitError) {
+            if (err instanceof SandboxCommandExitError) {
                 throw new CompilerError(getCommandOutput(err, 'Compilation failed'), 'compilation');
             }
-            if (err instanceof TimeoutError) {
+            if (err instanceof SandboxCommandTimeoutError) {
                 throw new FunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
             }
             throw err;
         }
 
-        const bundledJs = String(await sandbox.files.read(path.join(remoteFunctionProjectPath, cjsFilePath)));
+        const bundledJs = await sandbox.readTextFile(cjsFilePath);
 
         return {
             bundledJs,
             bundleSizeBytes: Buffer.byteLength(bundledJs, 'utf8')
         };
     } finally {
-        await sandbox.kill().catch(() => undefined);
+        await sandbox.stop().catch(() => undefined);
     }
 }
 

@@ -16,11 +16,11 @@ export const Breadcrumbs = () => {
             {breadcrumbs.map((breadcrumb) => (
                 <div className="group flex items-center gap-1.5" key={breadcrumb.path}>
                     <Link to={breadcrumb.path}>
-                        <span className="text-breadcrumb-default group-[&:last-child]:text-breadcrumb-press hover:text-breadcrumb-press transition-colors text-body-medium-medium">
+                        <span className="text-text-muted group-[&:last-child]:text-text-default hover:text-text-default transition-colors text-body-medium-medium">
                             {breadcrumb.label}
                         </span>
                     </Link>
-                    <ChevronRight className="size-4 text-breadcrumb-default group-[&:last-child]:hidden" />
+                    <ChevronRight className="size-4 text-text-muted group-[&:last-child]:hidden" />
                 </div>
             ))}
         </div>

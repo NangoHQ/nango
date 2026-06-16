@@ -2,6 +2,7 @@ import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/util
 
 import { Batcher } from './batcher.js';
 import {
+    COUNTER_METRICS,
     FILTER_PARAM_TYPE_FOR_DIM,
     TOP_N_BREAKDOWN_CAP,
     TOP_N_BREAKDOWN_DEFAULT,
@@ -25,7 +26,14 @@ import type {
     GetTopDimensionValuesQuery,
     GetTopDimensionValuesResult
 } from './clickhouse.query.js';
-import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageRecordsEvent } from '@nangohq/types';
+import type {
+    BillingUsageMetrics,
+    UsageActionsEvent,
+    UsageConnectionsEvent,
+    UsageEvent,
+    UsageFunctionExecutionsEvent,
+    UsageRecordsEvent
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const envs = parseEnvs(ENVS);
@@ -516,6 +524,43 @@ export class Clickhouse {
             logger.error(`Clickhouse getTopDimensionValues failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
             return Err(new Error('Failed to execute Clickhouse top-dimension-values query', { cause: err }));
         }
+    }
+
+    // CH-backed equivalent of `UsageBillingClient.getUsage(subscriptionId)` (no
+    // timeframe) — month-to-date COUNTER totals scoped to the calendar month
+    // containing `now`. Returned shape mirrors what Orb returns so the two are
+    // swappable at the caller. `records` / `connections` are not included;
+    // capping reads those from Postgres.
+    //
+    // Returns all five COUNTER billing metrics in one call (matches Orb's
+    // shape). One revalidate amortises the cache refresh across every billing
+    // metric — keep this fanned-out even though the trigger is per-metric.
+    async getCurrentMonthBillingMetrics(accountId: number, now: Date, opts?: { maxExecutionSeconds?: number }): Promise<Result<BillingUsageMetrics>> {
+        const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+        const timeframe = { start: monthStart, end: nextMonth };
+        const maxExecOpt = opts?.maxExecutionSeconds !== undefined ? { maxExecutionSeconds: opts.maxExecutionSeconds } : {};
+
+        const results = await Promise.all(
+            COUNTER_METRICS.map((metric) =>
+                this.getDailyCounter({ accountId, metric, dimension: 'none', timeframe, ...maxExecOpt } as GetDailyCounterQuery).then(
+                    (r) => [metric, r] as const
+                )
+            )
+        );
+
+        const usage: BillingUsageMetrics = {};
+        for (const [metric, res] of results) {
+            if (res.isErr()) return Err(res.error);
+            // Empty series → account has no events for this metric in the
+            // window (new account, paused, or partially active). Emit total: 0
+            // — capping needs an explicit zero, and skipping the entry would
+            // leave a stale cache value untouched.
+            const days = res.value.series[0]?.days ?? [];
+            const total = days.reduce((acc, d) => acc + d.value, 0);
+            usage[metric] = { externalId: metric, total, usage: [], view_mode: 'periodic' };
+        }
+        return Ok(usage);
     }
 
     async shutdown(opts?: { timeoutMs: number }): Promise<Result<void>> {

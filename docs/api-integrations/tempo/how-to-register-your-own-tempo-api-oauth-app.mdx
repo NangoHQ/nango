@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Tempo OAuth app'
+sidebarTitle: 'Tempo setup'
+description: 'Register an OAuth 2.0 app with Tempo and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Tempo to obtain OAuth 2.0 credentials (client ID and client secret). These are required to let your users grant your app access to their Tempo account.
+
+## Creating an OAuth 2.0 app
+
+<Steps>
+  <Step id="open-oauth-settings" title="Open OAuth 2.0 settings in Tempo">
+    1. In Jira, open the **Tempo** menu and go to **Settings**.
+    2. Scroll down to **Data Access** and select **OAuth 2.0 authentication**.
+  </Step>
+  <Step id="create-oauth-app" title="Create a new OAuth 2.0 application">
+    1. Click **Add new application**.
+    2. Enter a **Redirect URI**: `https://api.nango.dev/oauth/callback`
+    3. Set **Client type** to _Confidential_ and **Authorization grant type** to _Authorization code_.
+    4. Click **Add** to create the application.
+  </Step>
+  <Step id="get-credentials" title="Copy your credentials">
+    After the app is created, Tempo displays your **Client ID** and **Client secret**. Copy both, you'll need them when configuring the integration in Nango.
+  </Step>
+  <Step id="next-steps" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details on Tempo's OAuth implementation, see the [Tempo REST API authentication docs](https://apidocs.tempo.io/#section/Authentication).
+
+---

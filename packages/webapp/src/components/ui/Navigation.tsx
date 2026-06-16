@@ -8,7 +8,7 @@ export const NavigationList: React.FC<React.ComponentProps<typeof TabsPrimitive.
         <TabsPrimitive.List
             {...props}
             className={cn(
-                'w-46 h-fit shrink-0 p-2 bg-bg-elevated rounded',
+                'w-46 h-fit shrink-0 p-2 bg-surface-panel rounded',
                 // Horizontal
                 'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-10 data-[orientation=horizontal]:p-1',
                 props.className
@@ -21,7 +21,7 @@ export const NavigationTrigger: React.FC<React.ComponentProps<typeof TabsPrimiti
     return (
         <TabsPrimitive.Trigger
             className={cn(
-                'w-full p-2.5 cursor-pointer text-text-secondary !text-body-medium-medium text-start rounded transition-colors hover:bg-bg-surface hover:text-text-primary data-[state=active]:bg-bg-subtle data-[state=active]:text-text-primary focus-default',
+                'w-full p-2.5 cursor-pointer text-text-secondary !text-body-medium-medium text-start rounded transition-colors hover:bg-state-hover hover:text-text-strong data-[state=active]:bg-state-hover data-[state=active]:text-text-strong focus-default',
                 // Horizontal
                 'data-[orientation=horizontal]:w-fit data-[orientation=horizontal]:h-full data-[orientation=horizontal]:px-3 data-[orientation=horizontal]:py-0.5',
                 // Disabled

@@ -1,23 +1,17 @@
 import { readFileSync } from 'node:fs';
 
-import { CommandExitError, TimeoutError } from 'e2b';
-
-import { getLogger, isLocal, stringifyError } from '@nangohq/utils';
-
 import { NangoCliExitCode, getDeployErrorCode } from './cli-exit-codes.js';
 import { buildDeployArgs } from './command-builders.js';
 import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { FunctionError } from './helpers.js';
-import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
-import { createFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
-import { envs } from '../env.js';
-import { invokeLocalDeploy } from '../local/deploy-client.js';
+import { deploySandboxTimeoutMs, deployTimeoutMs } from './timeouts.js';
+import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
+import { sandboxService } from '../sandbox-service.js';
 
 const asyncDeployScriptUrl = new URL('./async-deploy-script.js', import.meta.url);
 const asyncDeployScript = readFileSync(asyncDeployScriptUrl, 'utf8');
-const logger = getLogger('FunctionDeploy');
 
 export interface DeployRequest {
     integration_id: string;
@@ -49,40 +43,31 @@ export interface PreparedAsyncDeploy {
 }
 
 export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<PreparedAsyncDeploy> {
-    if (isLocal) {
-        return prepareLocalAsyncDeploy(request);
-    }
-
-    const apiKey = envs.E2B_API_KEY;
-    if (!apiKey) {
-        throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
-    }
-
-    const sandbox = await createFunctionSandbox({
+    const sandbox = await sandboxService.create({
         purpose: 'deploy',
-        timeoutMs: remoteFunctionDeploySandboxTimeoutMs,
-        metadata: { deploymentId: request.deployment_id },
-        apiKey
+        timeoutMs: deploySandboxTimeoutMs,
+        metadata: { deploymentId: request.deployment_id }
     });
 
     try {
         const { tsFilePath } = getFilePaths(request);
 
-        await sandbox.files.write(`${remoteFunctionProjectPath}/${tsFilePath}`, request.code);
-        await sandbox.files.write(`${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
-        await sandbox.files.write('/tmp/nango-function-deploy.mjs', buildAsyncDeployScript());
+        await sandbox.writeFiles([
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildIndexTs(request) },
+            { path: '/tmp/nango-function-deploy.mjs', contents: buildAsyncDeployScript() }
+        ]);
 
         const startedAt = new Date();
-        const executionTimeoutAt = new Date(startedAt.getTime() + remoteFunctionDeploySandboxTimeoutMs);
+        const executionTimeoutAt = new Date(startedAt.getTime() + deploySandboxTimeoutMs);
 
         return {
-            sandboxId: sandbox.sandboxId,
+            sandboxId: sandbox.id,
             startedAt,
             executionTimeoutAt,
             start: async () => {
-                await sandbox.commands.run('node /tmp/nango-function-deploy.mjs', {
-                    cwd: remoteFunctionProjectPath,
-                    background: true,
+                await sandbox.startCommand({
+                    command: 'node /tmp/nango-function-deploy.mjs',
                     timeoutMs: 0,
                     envs: {
                         NO_COLOR: '1',
@@ -92,42 +77,34 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
                         NANGO_DEPLOY_SOURCE: 'standalone',
                         NANGO_DEPLOY_CALLBACK_URL: request.callback_url,
                         NANGO_DEPLOY_ARGS: JSON.stringify(buildDeployArgs(request)),
-                        NANGO_DEPLOY_TIMEOUT_MS: String(remoteFunctionDeployTimeoutMs),
+                        NANGO_DEPLOY_TIMEOUT_MS: String(deployTimeoutMs),
                         NANGO_DEPLOY_COMPILE_EXIT_CODE: String(NangoCliExitCode.CompileError)
                     }
                 });
             },
             kill: async () => {
-                await sandbox.kill().catch(() => undefined);
+                await sandbox.stop().catch(() => undefined);
             }
         };
     } catch (err) {
-        await sandbox.kill().catch(() => undefined);
+        await sandbox.stop().catch(() => undefined);
         throw err;
     }
 }
 
 export async function invokeDeploy(request: DeployRequest): Promise<DeployResult> {
-    if (isLocal) {
-        return invokeLocalDeploy(request);
-    }
-
-    const apiKey = envs.E2B_API_KEY;
-    if (!apiKey) {
-        throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
-    }
-
-    const sandbox = await createFunctionSandbox({
+    const sandbox = await sandboxService.create({
         purpose: 'deploy',
-        timeoutMs: remoteFunctionDeploySandboxTimeoutMs,
-        apiKey
+        timeoutMs: deploySandboxTimeoutMs
     });
 
     try {
         const { tsFilePath } = getFilePaths(request);
 
-        await sandbox.files.write(`${remoteFunctionProjectPath}/${tsFilePath}`, request.code);
-        await sandbox.files.write(`${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
+        await sandbox.writeFiles([
+            { path: tsFilePath, contents: request.code },
+            { path: 'index.ts', contents: buildIndexTs(request) }
+        ]);
 
         const commandEnvs = {
             NO_COLOR: '1',
@@ -139,14 +116,14 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         const command = buildShellCommand(['nango', ...buildDeployArgs(request)]);
 
         try {
-            const result = await sandbox.commands.run(command, {
-                cwd: remoteFunctionProjectPath,
-                timeoutMs: remoteFunctionDeployTimeoutMs,
+            const result = await sandbox.runCommand({
+                command,
+                timeoutMs: deployTimeoutMs,
                 envs: commandEnvs
             });
             return { output: result.stdout };
         } catch (err) {
-            if (err instanceof CommandExitError) {
+            if (err instanceof SandboxCommandExitError) {
                 const output = getCommandOutput(err, 'Deployment failed');
                 throw new FunctionError({
                     code: getDeployErrorCode(err),
@@ -154,74 +131,13 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
                     status: 400
                 });
             }
-            if (err instanceof TimeoutError) {
+            if (err instanceof SandboxCommandTimeoutError) {
                 throw new FunctionError({ code: 'timeout', message: 'Deployment timed out', status: 504 });
             }
             throw err;
         }
     } finally {
-        await sandbox.kill().catch(() => undefined);
-    }
-}
-
-function prepareLocalAsyncDeploy(request: AsyncDeployRequest): PreparedAsyncDeploy {
-    const startedAt = new Date();
-    const executionTimeoutAt = new Date(startedAt.getTime() + remoteFunctionDeploySandboxTimeoutMs);
-
-    return {
-        sandboxId: 'local',
-        startedAt,
-        executionTimeoutAt,
-        start: () => {
-            void runLocalAsyncDeploy(request, startedAt).catch((err: unknown) => {
-                logger.error(`Failed to complete local async deployment callback: ${stringifyError(err)}`, { deploymentId: request.deployment_id });
-            });
-            return Promise.resolve();
-        },
-        kill: () => Promise.resolve()
-    };
-}
-
-async function runLocalAsyncDeploy(request: AsyncDeployRequest, startedAt: Date): Promise<void> {
-    try {
-        const result = await invokeLocalDeploy(request);
-        await postDeployCallback(request, {
-            status: 'success',
-            output: result.output,
-            duration_ms: Date.now() - startedAt.getTime()
-        });
-    } catch (err) {
-        const error =
-            err instanceof FunctionError
-                ? { code: err.code, message: err.message, ...(err.payload !== undefined ? { payload: err.payload } : {}) }
-                : { code: 'deployment_error' as const, message: stringifyError(err) };
-
-        await postDeployCallback(request, {
-            status: 'failed',
-            duration_ms: Date.now() - startedAt.getTime(),
-            error
-        });
-    }
-}
-
-async function postDeployCallback(
-    request: Pick<AsyncDeployRequest, 'callback_url' | 'nango_secret_key'>,
-    payload:
-        | { status: 'success'; output: string; duration_ms?: number }
-        | { status: 'failed'; output?: string; duration_ms?: number; error: { code?: string; message: string; payload?: unknown } }
-): Promise<void> {
-    const res = await fetch(request.callback_url, {
-        method: 'POST',
-        headers: {
-            authorization: `Bearer ${request.nango_secret_key}`,
-            'content-type': 'application/json',
-            'Nango-Is-Script': 'true'
-        },
-        body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-        throw new Error(`Deployment callback failed with status ${res.status}`);
+        await sandbox.stop().catch(() => undefined);
     }
 }
 

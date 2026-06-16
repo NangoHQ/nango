@@ -4,6 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { axiosInstance } from '@nangohq/utils';
 
 import { forwardWebhook } from './forward.js';
+import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
 
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
@@ -55,6 +56,7 @@ describe('Webhooks: forward notification tests', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+        mockWebhookDenylistAllowAll();
     });
 
     it('Should not send a forward webhook if the webhook url is not present', async () => {
