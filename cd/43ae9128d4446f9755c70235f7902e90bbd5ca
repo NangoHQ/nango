@@ -1,0 +1,501 @@
+docs/api-integrations/attio-mcp.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-102
+packages/design-system/stories/ConditionalTooltip.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,17,27
+packages/server/lib/controllers/v1/account/putResetPassword.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-74
+packages/webapp/src/hooks/useIntegration.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 5-13,107-124
+packages/pubsub/lib/transport/sns-sqs.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,5,8,11-12,16-18,36-71,192-251
+packages/server/lib/controllers/providers/provider/templates/getTemplates.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-33
+packages/cli/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,43-46,80
+packages/design-system/src/components/ui/button.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-175
+packages/design-system/stories/Card.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,25,39
+packages/usage/lib/cache.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 71-78,98-102
+packages/kvstore/lib/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 6,9,15,17,21,23-32,39-40,56-61,64-66
+packages/design-system/stories/DestructiveActionModal.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,21
+packages/types/lib/api-keys/scopes.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 32-34
+packages/utils/lib/environment/parse.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 454-457,464-465
+packages/server/lib/clients/publisher.client.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4,10,22-23,26-28,36
+packages/orchestrator/lib/routes/v1/putRecurringStates.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-55
+packages/lambda-runner/lib/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 47-51,143-148
+packages/pubsub/lib/transport/sns-sqs.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,37,54,288-420
+packages/server/lib/tasks/handlers/deleteRecords.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-54
+docs/api-catalog.txt
+  s_6a617d6537e735::t_93dc9bf11e4c48 5,38-39,77,613,847
+packages/kvstore/lib/redisClient.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-129
+packages/server/lib/tasks/handlers/deleteRecords.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-45
+packages/server/lib/controllers/integrations/uniqueKey/functions/getFunction.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-72
+packages/server/lib/controllers/providers/provider/templates/getTemplates.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-66
+packages/shared/lib/services/notification/error.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 78-79
+.github/workflows/publish.yaml
+  s_6a617d6537e735::t_93dc9bf11e4c48 35,37,40-42
+packages/shared/lib/services/user.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 8,150-151,167-168
+scripts/validation/providers/schema.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 493-498
+packages/jobs/lib/clients.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 15
+packages/server/lib/controllers/v1/providers/providerConfigKey/templates/getTemplates.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,24
+packages/server/lib/routes.public.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 48,50-51,58,191,218-222,325
+packages/runner/lib/sdk/sdk.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 375
+docs/api-integrations/youcanbook-me.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-79
+packages/server/lib/tasks/handlers/deleteFunction.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-65
+packages/jobs/lib/utils/flags.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,5-8
+packages/webapp/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 31
+packages/design-system/stories/Popover.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,18
+packages/shared/lib/services/connections/credentials/refresh.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 528-532
+packages/webapp/src/utils/user.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 6,32
+docs/api-integrations/agiloft-cc/connect.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-46
+packages/metering/lib/crons/billingEventsS3Export.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 259-263
+packages/webapp/src/pages/Integrations/providerConfigKey/Functions/One.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,4,22,25,39-40,51-53,109-123,178,184,201-221,331
+packages/shared/lib/services/sync/sync.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 31,338,340,434-435,445-450,600-617
+packages/utils/lib/runWithConcurrencyLimit.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-72
+packages/server/lib/hooks/connection/on/validate-connection.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,6,10,63-111
+packages/server/lib/crons/delete/deleteSyncRecords.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-92
+packages/utils/lib/chunk.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-107
+packages/pubsub/lib/transport/migration.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 16
+packages/usage/lib/billing.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-57
+packages/server/lib/controllers/v1/account/putResetPassword.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4,9,55-67
+packages/server/lib/crons/delete/batchDelete.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 5-12,19-20,25,36-39
+packages/server/lib/routes.private.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 66,246-248
+packages/shared/lib/services/sync/manager.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 234,236-243
+packages/server/lib/crons/delete/deleteConnectionData.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4,25-28
+packages/server/lib/crons/timeoutFunctionAsyncJobs.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 39-43
+docs/llms-full.txt
+  s_6a617d6537e735::t_93dc9bf11e4c48 3891,3897-3899,3906,3908-3913,3916,3918,3938-3989,3992-3997,4002,4007,4031,4039,6674-6702,6943,6948-6949,6951-6954,9866,9874-9883,11927,11930-11934,13869-13870,13908,14444,14678
+snippets/generated/agiloft/PreBuiltUseCases.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-3
+packages/server/lib/controllers/auth/postOauthOutbound.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,166-175,177
+packages/server/lib/controllers/auth/postAwsSigV4.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 23,292-303,305
+packages/server/lib/crons/lambdaKeepWarm.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 103-107
+packages/jobs/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 43
+packages/frontend/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,18
+packages/server/lib/controllers/sync/deploy/postDeploy.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 5,8,15,92-93,111-115
+packages/design-system/stories/Sheet.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,18
+packages/server/lib/middleware/access.middleware.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 38
+packages/node-client/lib/index.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 7-8,259-341
+packages/utils/lib/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 25,36
+docs/docs.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 922-923,962,1498,1732
+packages/server/lib/middleware/webhook-ingress-ratelimit.middleware.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,112
+packages/server/lib/controllers/auth/postSignature.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 19,206-215,217
+packages/server/lib/controllers/integrations/uniqueKey/functions/deleteFunction.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-127
+packages/server/lib/crons/delete/deleteSyncConfigData.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-264
+packages/server/lib/controllers/auth/postApiKey.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,191-200,202
+packages/server/lib/controllers/sync/deploy/postDeployInternal.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 9,117-118
+packages/design-system/components.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-21
+packages/kvstore/lib/Locking.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 41,53-57
+packages/server/lib/controllers/auth/postUnauthenticated.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 9,153-162,164
+packages/server/lib/crons/delete/deleteSyncRecords.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-61
+packages/webhooks/lib/forward.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 7,59
+packages/server/lib/controllers/integrations/uniqueKey/functions/deleteFunction.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-43
+packages/server/lib/tasks/startFunctionDeletion.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-34
+packages/webapp/src/components/patterns/ConfirmDialog.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 80
+packages/design-system/.storybook/main.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 12
+packages/pubsub/lib/transport/activemq.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 9,12,151-169
+packages/server/lib/webhook/dispatch-queue/publisher.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4,74-79
+packages/jobs/lib/execution/onEvent.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 126
+packages/design-system/stories/Dialog.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,18,28,31
+packages/server/lib/services/slack.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 5
+packages/design-system/src/components/ui/spinner.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-24
+packages/design-system/stories/Form.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,36
+packages/kvstore/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,21
+packages/server/lib/controllers/connection/postConnection.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 30,404,406-415,418,428-429
+packages/utils/lib/runWithConcurrencyLimit.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-27
+packages/server/lib/crons/trial.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 132-136
+docs/api-integrations/read-ai.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-81
+packages/usage/lib/billing.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 25,42-48,100,102
+packages/shared/lib/clients/mcp.client.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 36-37
+packages/design-system/src/index.css
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+packages/server/lib/tasks/handlers/deleteFunction.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-89
+packages/shared/lib/utils/utils.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3
+snippets/generated/youcanbook-me/PreBuiltUseCases.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-3
+packages/kms/lib/registry.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 78-82
+packages/webhooks/lib/auth.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 6,63
+docs/api-integrations/youcanbook-me/connect.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-40
+packages/shared/lib/services/sync/config/deploy.service.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 32
+packages/server/lib/webhook/internal-nango.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 7
+packages/jobs/lib/execution/action.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 153
+packages/design-system/src/components/ui/button.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-115
+packages/server/lib/controllers/v1/integrations/providerConfigKey/functions/helpers.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-143
+packages/server/lib/helpers/validation.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 25-35
+packages/server/lib/crons/delete/deleteSyncConfigData.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 2,5-6,12-38,40-48,50-55,57,59-61,63,65-69,72-78
+packages/shared/lib/services/sync/config/config.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 24,377-378,632-682
+packages/server/lib/controllers/auth/postBasic.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,190-199,201
+packages/server/lib/controllers/auth/postBill.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 19,191-200,202
+packages/design-system/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 14-17,20-29
+packages/jobs/lib/execution/sync.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 201
+packages/kms/lib/registry.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 43-50
+packages/design-system/README.md
+  s_6a617d6537e735::t_93dc9bf11e4c48 94,97-98,116,119-127,134-142,144,154-189
+packages/providers/providers.yaml
+  s_6a617d6537e735::t_93dc9bf11e4c48 695-755,1951-1978,16231-16250,22752-22780
+packages/server/lib/crons/deleteOldData.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 25-27,148-157,185,222-226
+packages/webhooks/lib/helpers/setup.unit.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-11
+packages/server/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 67
+managed-manifest.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,5-7,212-218
+packages/orchestrator/lib/clients/client.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 9,126-142
+packages/utils/lib/api-key-scopes.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 34-36,56-60
+packages/nango-yaml/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,20
+packages/webapp/public/images/template-logos/agiloft.svg
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+packages/usage/lib/clickhouse/migrate.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 40-41
+packages/shared/lib/clients/provider.client.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 35,66,97-100,195-196,311-312,360-405,1983-2040
+packages/pubsub/lib/transport/transport.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 14-47,50-55
+packages/design-system/stories/Tooltip.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,19
+packages/pubsub/lib/transport/default.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 9,65-66
+docs/snippets/generated/read-ai/PreBuiltTooling.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-41
+packages/server/lib/clients/auth.client.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 16-18,25,29-39
+packages/webapp/public/images/template-logos/read-ai.svg
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-18
+packages/server/lib/controllers/v1/environment/webhook/patchWebhook.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-104
+packages/server/lib/hooks/hooks.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 32,222-250,290,296,298-300,310,327,346
+packages/webhooks/lib/circuitBreaker.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 9,12
+packages/jobs/lib/execution/operations/abort.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4
+packages/server/lib/controllers/integrations/uniqueKey/functions/getFunction.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-42
+packages/server/lib/utils/tests.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 13,160
+packages/shared/lib/utils/error.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 327-342
+packages/server/lib/crons/delete/deleteProviderConfigData.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 28
+packages/server/lib/controllers/integrations/uniqueKey/functions/getFunctions.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-37
+docs/snippets/generated/youcanbook-me/PreBuiltUseCases.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-3
+packages/server/lib/hooks/connection/on/validate-connection.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-113
+packages/server/lib/controllers/v1/integrations/providerConfigKey/functions/getFunctions.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,5-6,15,36
+docs/reference/backend/backend-sdk/node.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 22,30-39,2087,2090-2094
+docs/api-integrations/agiloft.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-90
+packages/jobs/lib/execution/webhook.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 167
+packages/shared/lib/services/notification/slack.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 91
+packages/types/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3
+packages/shared/lib/services/connection.service.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 417-431
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 50-52
+docs/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-58
+docs/spec.yaml
+  s_6a617d6537e735::t_93dc9bf11e4c48 68-98,318-501,3160-3286
+packages/scheduler/lib/scheduler.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 248-276
+packages/node-client/lib/types.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 102-121,123-131,138
+packages/webhooks/lib/utils.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,5,63-66,98-111
+docs/guides/platform/self-hosting.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 256-284
+packages/design-system/stories/v2-patterns/PermissionGate.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,20,30
+packages/pubsub/lib/transport/noop.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3-4,23-25
+packages/webhooks/lib/utils.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 7-19,34-35,187-190
+packages/shared/lib/services/sync/sync.service.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4,27,163-199
+packages/shared/lib/services/connection.service.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 491-501
+packages/server/lib/utils/cors.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,3-9,11-32,34-38,41-44,47-48,51-52,55-56,59-81,84-85,88-89,92-95,98-99
+packages/webapp/public/images/template-logos/youcanbook-me.svg
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+packages/metering/lib/crons/usage.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 62-66
+packages/server/lib/controllers/v1/providers/providerConfigKey/templates/helpers.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-26
+packages/server/lib/utils/cors.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,12-14,22-25
+packages/server/lib/controllers/auth/postTwoStep.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 19,199-208,210
+packages/server/lib/tasks/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 5-7,20
+packages/webapp/src/store/playground.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 127-137
+packages/design-system/AGENTS.md
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-238
+packages/server/lib/controllers/auth/postTba.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,230-239,241
+packages/server/lib/controllers/v1/user/password/putPassword.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-81
+packages/server/lib/controllers/integrations/uniqueKey/functions/getFunctions.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-125
+packages/shared/lib/clients/orchestrator.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 65,604-617
+docs/llms.txt
+  s_6a617d6537e735::t_93dc9bf11e4c48 137
+packages/server/lib/controllers/v1/integrations/providerConfigKey/functions/getFunction.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,5-6,14,42
+package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 4
+packages/server/lib/controllers/v1/integrations/providerConfigKey/functions/deleteFunction.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-44
+packages/design-system/stories/v2-patterns/ConfirmDialog.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,20
+packages/design-system/stories/DropdownMenu.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1,18
+packages/types/lib/providers/provider.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 155
+CHANGELOG.md
+  s_6a617d6537e735::t_93dc9bf11e4c48 5-201,7084
+docs/api-integrations/agiloft-cc.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-85
+packages/webhooks/lib/circuitBreaker.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-29
+packages/jobs/lib/runner/render.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 8-9,226,232-233
+packages/node-client/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,28
+packages/server/lib/controllers/oauth.controller.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 35,541-550,552,1854-1863,1865,2078-2087,2089,2253-2262,2264
+packages/cli/lib/version.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+packages/server/lib/crons/delete/deleteSyncs.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-95
+packages/server/lib/utils/rateLimiterRedisClient.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,5-6
+docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-41
+packages/node-client/lib/version.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+packages/orchestrator/lib/server.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 12,39
+packages/server/lib/controllers/v1/environment/webhook/patchWebhook.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 7,9,14-15,26-32
+AGENTS.md
+  s_6a617d6537e735::t_93dc9bf11e4c48 16
+packages/design-system/src/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+packages/types/lib/functions/api.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 205-230,234,236,244-254,262-295
+packages/scheduler/lib/scheduler.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 576-595,597-622,624-660,662-664,666,668,670-674
+packages/utils/lib/version.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1
+docs/snippets/generated/read-ai/PreBuiltUseCases.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-3
+packages/webapp/src/store/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 4,36
+packages/design-system/src/lib/cn.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-45
+packages/types/lib/api.endpoints.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 67-68,75-77,115,173-176,192,208
+packages/server/lib/middleware/ratelimit.middleware.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 5,52
+packages/kvstore/lib/RedisStore.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 2,63,65,155,159-160,163-165
+docs/snippets/generated/youcanbook-me/PreBuiltTooling.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-40
+snippets/generated/agiloft-cc/PreBuiltUseCases.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-3
+packages/webapp/vite.config.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 21-24,49-62,64,67,86
+docs/api-integrations/agiloft/connect.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-34
+docs/guides/functions/event-functions.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,24-26,33,35-40,43,45,65-116,119-124,129,134,158,166
+packages/pubsub/lib/transport/migration.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,57-58
+packages/server/lib/crons/delete/deleteSyncs.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-115
+packages/server/lib/controllers/auth/postAppStore.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 18,196-205,207
+packages/server/lib/tasks/startFunctionDeletion.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-85
+packages/usage/lib/cache.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-35
+packages/server/lib/controllers/auth/postJwt.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 19,200-209,211
+packages/server/lib/controllers/v1/user/password/putPassword.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 5,7,9,49-63
+packages/server/lib/controllers/sync/deploy/postDeploy.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 139
+packages/shared/flows.zero.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 139610,147774
+packages/server/lib/controllers/proxy/allProxy.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 143,244
+packages/runner-sdk/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,13-14,21
+packages/kvstore/lib/redisClient.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-51
+packages/webhooks/lib/asyncAction.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 7,47
+packages/metering/lib/processors/usage.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 2,48-53,56
+packages/node-client/lib/index.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 81-86,104-110,119,121,1280-1283,1287,1296-1300,1311-1316,1413
+snippets/generated/read-ai/PreBuiltUseCases.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-3
+packages/pubsub/lib/publisher.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,5,10-14,22,33-60
+packages/utils/lib/chunk.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-39
+packages/kvstore/lib/redisClient.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-112
+packages/server/lib/controllers/proxy/allProxy.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 106-112
+packages/server/lib/controllers/v1/integrations/providerConfigKey/functions/deleteFunction.integration.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-197
+packages/webhooks/lib/circuitBreaker.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 50,132-136,143-149,155-160,164-168
+packages/design-system/stories/Collapsible.stories.tsx
+  s_6a617d6537e735::t_93dc9bf11e4c48 3
+packages/providers/package.json
+  s_6a617d6537e735::t_93dc9bf11e4c48 3,19
+packages/server/lib/crons/refreshConnections.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 121-125
+packages/webhooks/lib/sync.unit.test.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 6,111
+docs/guides/platform/webhooks-from-nango.mdx
+  s_6a617d6537e735::t_93dc9bf11e4c48 44,49-50,52-55
+packages/server/lib/tasks/handlers/deleteArtifacts.ts
+  s_6a617d6537e735::t_93dc9bf11e4c48 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "cd43ae9128d4446f9755c70235f7902e90bbd5ca",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
