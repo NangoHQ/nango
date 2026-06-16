@@ -727,8 +727,6 @@ export class UsageTracker implements IUsageTracker {
         if (!plan.value.orb_subscription_id) {
             return Err(new Error('orb_subscription_id_missing'));
         }
-        // No timeframe / no granularity → CH path is bypassed inside
-        // getBillingUsage, capping continues to read from Orb.
         const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id, accountId);
         if (billingUsage.isErr()) {
             // Note: errors (including rate limit errors) are not being retried
