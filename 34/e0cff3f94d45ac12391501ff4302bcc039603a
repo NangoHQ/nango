@@ -1,0 +1,23 @@
+packages/sandbox/lib/functions/deploy-client.ts
+  s_7949d22fd43c0a::t_c8ba101ac67960 3
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_7949d22fd43c0a::t_c8ba101ac67960 54,127-133
+packages/sandbox/agentcore-runtime/cleanup-nango-project.mjs
+  s_7949d22fd43c0a::t_c8ba101ac67960 34,42-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "34e0cff3f94d45ac12391501ff4302bcc039603a",
+  "prompts": {},
+  "sessions": {
+    "s_7949d22fd43c0a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb538-094b-7d33-96df-cfe5efca83a6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
