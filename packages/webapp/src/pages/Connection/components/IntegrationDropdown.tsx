@@ -53,7 +53,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'secondary', size: 'xl' }), 'bg-surface-canvas justify-between grow w-full h-13')}
+                className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'bg-surface-canvas justify-between grow w-full h-13')}
                 disabled={disabled}
             >
                 {selectedIntegration ? (
