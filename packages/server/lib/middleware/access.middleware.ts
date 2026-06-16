@@ -637,7 +637,8 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
             return;
         }
 
-        user.role = resolveImpersonationRole({ role: user.role, debugMode: req.session.debugMode, override: envs.NANGO_IMPERSONATION_ROLE });
+        const impersonation = resolveImpersonationRole({ role: user.role, debugMode: req.session.debugMode, override: envs.NANGO_IMPERSONATION_ROLE });
+        user.role = impersonation.role;
 
         const account = await accountService.getAccountById(db.knex, user.account_id);
         if (!account) {
@@ -658,6 +659,7 @@ async function fillLocalsFromSession(req: Request, res: Response<any, RequestLoc
         res.locals['user'] = user;
         res.locals['account'] = account;
         res.locals['plan'] = plan;
+        res.locals['forceRbac'] = impersonation.forced;
 
         const fullPath = path.join(req.baseUrl, req.route.path);
         if (ignoreEnvPaths.includes(fullPath)) {

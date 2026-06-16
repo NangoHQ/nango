@@ -29,6 +29,7 @@ export interface RequestLocals {
     connectSession?: ConnectSession;
     endUser?: InternalEndUser | null;
     plan?: DBPlan | null;
+    forceRbac?: boolean;
     lang?: string;
     secret?: DBAPISecret;
     apiKeyScopes?: string[];

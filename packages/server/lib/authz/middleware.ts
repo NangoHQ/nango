@@ -12,14 +12,15 @@ type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: Request
 
 export function can(permission: Permission | ScopedPermission): RequestHandler {
     return async (_req, res, next) => {
-        if (!flags.hasAuthRoles) {
+        const { plan, user, forceRbac } = res.locals as RequestLocals;
+
+        // forceRbac (impersonation override) enforces RBAC regardless of the feature flag or plan entitlement.
+        if (!forceRbac && !flags.hasAuthRoles) {
             next();
             return;
         }
 
-        const { plan, user } = res.locals as RequestLocals;
-
-        if (flagHasPlan && (!plan || !plan.has_rbac)) {
+        if (!forceRbac && flagHasPlan && (!plan || !plan.has_rbac)) {
             next();
             return;
         }

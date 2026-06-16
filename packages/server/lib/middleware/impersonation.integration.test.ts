@@ -29,9 +29,9 @@ describe('impersonation role override', () => {
         (envs as any).NANGO_IMPERSONATION_ROLE = undefined;
     });
 
-    // Account with a production env and a default (administrator) user, RBAC enforced.
-    async function seedTargetWithProdEnv() {
-        const { account } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
+    // Account with a production env and a default (administrator) user.
+    async function seedTargetWithProdEnv({ hasRbac = true }: { hasRbac?: boolean } = {}) {
+        const { account } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: hasRbac } });
         const prodEnv = await seeders.createEnvironmentSeed(account.id, 'prod');
         await db.knex.from<DBEnvironment>('_nango_environments').where({ id: prodEnv.id }).update({ is_production: true });
         return { account };
@@ -75,6 +75,22 @@ describe('impersonation role override', () => {
 
     it('downgrades the impersonated session to the override role, denying prod writes', async () => {
         const { account } = await seedTargetWithProdEnv();
+        (envs as any).NANGO_IMPERSONATION_ROLE = 'production_support';
+        const session = await impersonate(account.uuid);
+
+        const res = await api.fetch('/api/v1/environments', {
+            method: 'PATCH',
+            // @ts-expect-error query not in endpoint type
+            query: { env: 'prod' },
+            body: { slack_notifications: false },
+            session
+        });
+
+        expect(res.res.status).toBe(403);
+    });
+
+    it('enforces the override role even when the impersonated plan has RBAC disabled', async () => {
+        const { account } = await seedTargetWithProdEnv({ hasRbac: false });
         (envs as any).NANGO_IMPERSONATION_ROLE = 'production_support';
         const session = await impersonate(account.uuid);
 
