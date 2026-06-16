@@ -1,13 +1,11 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
 import { Err, Ok, basePublicUrl, getLogger, metrics, stringToHash, truncateJson } from '@nangohq/utils';
 
-import { pubsub } from '../../utils/pubsub.js';
 import accountService from '../account.service.js';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
 import environmentService from '../environment.service.js';
-import { makeDataTransferEvents } from '../proxy/data-transfer-event.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
 
@@ -638,13 +636,7 @@ export class SlackService {
             return Err(refreshedConnection.error);
         }
 
-        const res = await this.proxySlackMessage({
-            slackConnection: refreshedConnection.value,
-            payload,
-            integration,
-            accountId: account.id,
-            environmentId: environment.id
-        });
+        const res = await this.proxySlackMessage({ slackConnection: refreshedConnection.value, payload, integration });
 
         if (res.isErr()) {
             metrics.increment(metrics.Types.SLACK_NOTIFICATION_FAILURE, 1, { accountId: account.id });
@@ -667,15 +659,11 @@ export class SlackService {
     private async proxySlackMessage({
         slackConnection,
         payload,
-        integration,
-        accountId,
-        environmentId
+        integration
     }: {
         slackConnection: DBConnectionDecrypted;
         payload: NotificationPayload;
         integration: Config;
-        accountId: number;
-        environmentId: number;
     }): Promise<Result<PostSlackMessageResponse>> {
         const color = payload.status === 'open' ? '#e01e5a' : '#36a64f';
 
@@ -710,19 +698,9 @@ export class SlackService {
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
                 }),
-                onBytes: (meteredBytes) => {
-                    const events = makeDataTransferEvents(
-                        'shared',
-                        'slack_join_channel',
-                        accountId,
-                        slackConnection.connection_id,
-                        slackConnection.provider_config_key,
-                        environmentId,
-                        meteredBytes
-                    );
-                    if (events.length > 0) {
-                        void pubsub.publisher.publishBatch({ subject: 'usage', events });
-                    }
+                onBytes: ({ sent, received }) => {
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'slack_join_channel' });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'slack_join_channel' });
                 }
             });
             const join = await proxy.request();
@@ -797,19 +775,9 @@ export class SlackService {
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
                 }),
-                onBytes: (meteredBytes) => {
-                    const events = makeDataTransferEvents(
-                        'shared',
-                        'slack_send_message',
-                        accountId,
-                        slackConnection.connection_id,
-                        slackConnection.provider_config_key,
-                        environmentId,
-                        meteredBytes
-                    );
-                    if (events.length > 0) {
-                        void pubsub.publisher.publishBatch({ subject: 'usage', events });
-                    }
+                onBytes: ({ sent, received }) => {
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'slack_send_message' });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'slack_send_message' });
                 }
             });
             const slackMessage = await proxy.request();
