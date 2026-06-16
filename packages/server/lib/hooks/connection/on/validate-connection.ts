@@ -97,19 +97,15 @@ export async function handleValidateConnectionFailure({
         await connectionService.hardDelete(connection.id);
     } else if (operation === 'override') {
         await connectionService.markConnectionAuthFailed({ id: connection.id });
-        await reconnectionFailed(
-            {
-                connection,
-                environment,
-                account,
-                auth_mode: provider.auth_mode,
-                error: { type: 'connection_validation_failed', description: message },
-                operation: 'override'
-            },
+        await reconnectionFailed({
             account,
-            logCtx,
-            config
-        );
+            connection,
+            environment,
+            provider,
+            config,
+            authError: { type: 'connection_validation_failed', description: message },
+            logCtx
+        });
     }
 
     return message;
