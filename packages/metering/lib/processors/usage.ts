@@ -1,4 +1,5 @@
 import { billing } from '@nangohq/billing';
+import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
 import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
@@ -44,11 +45,15 @@ export class UsageProcessor {
             switch (event.type) {
                 case 'usage.monthly_active_records': {
                     const { connectionId, environmentId, environmentName, integrationId, accountId, syncId, model } = event.payload.properties;
-                    const connection = await connectionService.getConnection(connectionId, integrationId, environmentId);
-                    if (!connection.response) {
+                    const connection = await connectionService.checkIfConnectionExists(db.knex, {
+                        connectionId,
+                        providerConfigKey: integrationId,
+                        environmentId
+                    });
+                    if (!connection) {
                         return Err(`Connection ${connectionId} not found`);
                     }
-                    if (connection.response.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
+                    if (connection.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
                         return Ok(undefined); // Skip MAR for connections younger than 30 days
                     }
                     const mar = event.payload.value;
