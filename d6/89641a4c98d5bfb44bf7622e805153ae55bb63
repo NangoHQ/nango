@@ -1,0 +1,19 @@
+scripts/deploy-agentcore-sandbox.mjs
+  s_6a617d6537e735::t_ea971ec709806f 2,55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "d689641a4c98d5bfb44bf7622e805153ae55bb63",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
