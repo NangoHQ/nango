@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '../src/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/Sheet';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -15,7 +15,7 @@ export const Default: Story = {
     render: () => (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="secondary" size="sm">
+                <Button variant="secondary" size="md">
                     Open sheet
                 </Button>
             </SheetTrigger>

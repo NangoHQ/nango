@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -22,7 +22,7 @@ export const Default: Story = {
                     <p className="text-body-small-regular text-text-secondary">Connected · Last synced 2 min ago</p>
                 </CardContent>
                 <CardFooter>
-                    <Button variant="secondary" size="sm">
+                    <Button variant="secondary" size="md">
                         Manage
                     </Button>
                 </CardFooter>
@@ -36,7 +36,7 @@ export const Default: Story = {
                     <p className="text-body-small-regular text-text-secondary">Not connected</p>
                 </CardContent>
                 <CardFooter>
-                    <Button variant="primary" size="sm">
+                    <Button variant="primary" size="md">
                         Connect
                     </Button>
                 </CardFooter>
