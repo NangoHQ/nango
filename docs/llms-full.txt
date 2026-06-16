@@ -6844,14 +6844,18 @@ Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verifi
 The webhook signature can be verified with the following code:
 
 <Warning>
-Initialize the client (or HMAC) with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. Using the API secret key will cause verification to fail on any environment where the keys differ.
+Verify the signature with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. With the Node SDK, pass it as `webhookSigningKey`; for raw HMAC verification, use it as the HMAC secret. Using the API secret key will cause verification to fail on any environment where the keys differ.
 </Warning>
 
 <Tabs>
   <Tab title="Node SDK">
+    Pass the webhook signing key as `webhookSigningKey` so a single client can make API calls with the API key and verify webhooks with the signing key. `webhookSigningKey` falls back to `secretKey` when omitted.
+
     ```typescript
-    // Initialize with the webhook signing key, not the API secret key
-    const nango = new Nango({ secretKey: process.env.NANGO_WEBHOOK_SIGNING_KEY });
+    const nango = new Nango({
+        apiKey: process.env.NANGO_API_KEY, // used for API calls
+        webhookSigningKey: process.env.NANGO_WEBHOOK_SIGNING_KEY // used to verify webhooks
+    });
 
     async (req, res) => {
         const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
@@ -9763,7 +9767,7 @@ Instantiate the `Nango` class:
 ```js
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<API-KEY>' });
 ```
 
 **Parameters**
@@ -9771,8 +9775,16 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="config" defaultOpen>
-      <ResponseField name="secretKey" type="string" required>
-        Get your secret key in the environment settings of the Nango UI. THis key should never be shared.
+      <ResponseField name="apiKey" type="string" required>
+        Your environment API key, found in **Environment Settings > API Keys** in the Nango UI. Sent as the bearer token for API calls. This key should never be shared.
+      </ResponseField>
+
+      <ResponseField name="secretKey" type="string" deprecated>
+        Deprecated alias for `apiKey`, kept for backward compatibility. Provide either `apiKey` or `secretKey`.
+      </ResponseField>
+
+      <ResponseField name="webhookSigningKey" type="string">
+        The environment's webhook signing key, found in **Environment Settings > Webhooks > Signing key**. Used by `verifyIncomingWebhookRequest` to validate incoming webhook signatures. Falls back to `secretKey` when omitted. On environments created after 2026-04-20 (or any environment that later rotated its API key), the signing key differs from the API key, so set this explicitly to verify webhooks.
       </ResponseField>
 
       <ResponseField name="host" type="string">
@@ -11816,9 +11828,14 @@ await nango.getProvider({ provider: <NAME> })
 
 ### Verify Webhook Signature
 
-Asserts that a Webhook is coming from Nango's backend.
+Asserts that a Webhook is coming from Nango's backend. Verification uses `webhookSigningKey` when the client is constructed with one, otherwise it falls back to `secretKey`. On environments created after 2026-04-20 (or any environment that later rotated its API key), the signing key differs from the API key, so construct the client with `webhookSigningKey` (from **Environment Settings > Webhooks > Signing key**).
 
 ```js
+const nango = new Nango({
+    apiKey: '<API-KEY>',
+    webhookSigningKey: '<WEBHOOK-SIGNING-KEY>'
+});
+
 async (req, res) => {
     const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
 }
