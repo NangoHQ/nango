@@ -327,7 +327,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                             <Button
                                                 onClick={onClickShareConnectionLink}
                                                 size="xl"
-                                                variant="secondary"
+                                                variant="ghost"
                                                 loading={isShareLinkLoading}
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                             >
