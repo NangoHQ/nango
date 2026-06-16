@@ -14,7 +14,7 @@ export async function deleteProviderConfigData(providerConfig: IntegrationConfig
     }
 
     const { logger, deadline, limit } = opts;
-    logger.info('Deleting provider config...', providerConfig.id, providerConfig.unique_key);
+    logger.info('Deleting provider config...', { providerConfigId: providerConfig.id, uniqueKey: providerConfig.unique_key });
 
     await batchDelete({
         name: 'syncConfigs < providerConfigs',

@@ -58,7 +58,7 @@ export async function deleteSyncConfigData({ syncConfigId, environmentId }: Dele
 
         const delEndpoints = await hardDeleteEndpoints({ syncConfigId: version.id });
         if (delEndpoints) {
-            logger.info('deleted', delEndpoints, 'endpoints');
+            logger.info('deleted endpoints', { count: delEndpoints });
         }
     }
 

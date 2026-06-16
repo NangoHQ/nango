@@ -1,9 +1,10 @@
-import { inspect } from 'node:util';
+import { format as utilFormat, inspect } from 'node:util';
 
 import colors from '@colors/colors';
 import winston from 'winston';
 
 import { isCloud, isEnterprise, isTest } from './environment/detection.js';
+import { errorToObject } from './errorSerialize.js';
 
 import type { LeveledLogMethod, Logform } from 'winston';
 
@@ -21,7 +22,81 @@ export interface StrictLogger {
 }
 
 const SPLAT = Symbol.for('splat');
+const ERROR_KEYS = ['err', 'error', 'cause'] as const;
+const FORMAT_TOKENS = /%[scdjifoO%]/g;
+
 const level = process.env['LOG_LEVEL'] ? process.env['LOG_LEVEL'] : isTest ? 'error' : 'info';
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Error);
+}
+
+function serializeErrorFields(info: Record<string, unknown>): void {
+    for (const key of ERROR_KEYS) {
+        if (info[key] != null) {
+            info[key] = errorToObject(info[key]);
+        }
+    }
+
+    if (info['stack']) {
+        return;
+    }
+
+    for (const key of ERROR_KEYS) {
+        const serialized = info[key];
+        if (serialized && typeof serialized === 'object' && typeof (serialized as { stack?: unknown }).stack === 'string') {
+            info['stack'] = (serialized as { stack: string }).stack;
+            return;
+        }
+    }
+}
+
+/**
+ * Replaces winston's splat formatter for cloud JSON output. Merges metadata objects, serializes
+ * err/error/cause fields, and collects leftover positional primitives into an `args` array.
+ */
+function normalizeSplatAndErrors() {
+    return winston.format((info) => {
+        const splat = info[SPLAT] as unknown[] | undefined;
+
+        if (splat?.length) {
+            const message = typeof info.message === 'string' ? info.message : String(info.message);
+            const tokens = message.match(FORMAT_TOKENS);
+
+            if (tokens?.length) {
+                info.message = utilFormat(message, ...splat);
+            } else if (splat.length === 1) {
+                const arg = splat[0];
+                if (isPlainObject(arg)) {
+                    Object.assign(info, arg);
+                } else if (arg instanceof Error) {
+                    info['err'] = arg;
+                } else if (arg !== undefined) {
+                    info['args'] = [arg];
+                }
+            } else {
+                const errors = splat.filter((arg): arg is Error => arg instanceof Error);
+                const objects = splat.filter(isPlainObject);
+                const rest = splat.filter((arg) => arg !== undefined && !(arg instanceof Error) && !isPlainObject(arg));
+
+                if (objects.length === 1 && errors.length <= 1 && rest.length === 0) {
+                    Object.assign(info, objects[0]);
+                    if (errors[0]) {
+                        info['err'] = errors[0];
+                    }
+                } else {
+                    info['args'] = splat.map((arg) => (arg instanceof Error ? errorToObject(arg) : arg));
+                    if (errors.length === 1 && info['err'] == null && info['error'] == null) {
+                        info['err'] = errors[0];
+                    }
+                }
+            }
+        }
+
+        serializeErrorFields(info as Record<string, unknown>);
+        return info;
+    })();
+}
 
 let formatters: Logform.Format[] = [];
 if (!isCloud && !isEnterprise) {
@@ -61,7 +136,7 @@ if (!isCloud && !isEnterprise) {
     // and stack traces don't split across multiple log entries.
     formatters = [
         winston.format.errors({ stack: true }),
-        winston.format.splat(),
+        normalizeSplatAndErrors(),
         winston.format.timestamp(),
         winston.format((info) => {
             info['status'] = info.level;

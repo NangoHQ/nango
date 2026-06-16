@@ -9,7 +9,7 @@ import type { DBConnection, DBSyncConfig } from '@nangohq/types';
 
 export async function deleteConnectionData(connection: DBConnection, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
-    logger.info('Deleting connection...', connection.id, connection.connection_id);
+    logger.info('Deleting connection...', { connectionId: connection.id, externalConnectionId: connection.connection_id });
 
     const resSyncs = await db.knex
         .select<
