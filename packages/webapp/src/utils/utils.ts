@@ -2,25 +2,31 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { extendTailwindMerge } from 'tailwind-merge';
 
-import { dsTwMergeConfig } from '@nangohq/design-system';
-
 import type { SyncResult } from '@/types';
 import type { ClassValue } from 'clsx';
 
-// Compose the design-system token groups (text-ds-*, border-ds-*, …) with the webapp's own
-// legacy typography utilities, so tailwind-merge dedupes both correctly. The ds-* groups come
-// from the shared config so they don't drift; webapp-only typography is added on top.
+// Teach tailwind-merge about the design-system @theme token utilities (text-ds-*, border-ds-*, …)
+// alongside the webapp's own typography utilities, so it dedupes both correctly instead of
+// mis-grouping them (e.g. treating text-* typography as a colour and dropping real colour classes
+// that appear earlier in the same class string).
 const customTwMerge = extendTailwindMerge({
     extend: {
         classGroups: {
-            // Design-system token groups (text-ds-*, border-ds-*, …) from the shared config — no drift.
-            ...dsTwMergeConfig.extend.classGroups,
-            // Webapp typography utilities — without these, tailwind-merge treats them as
-            // text-color utilities and silently drops real color classes that appear earlier
-            // in the same class string (e.g. text-status-success-text gets dropped by text-body-small-regular).
-            // Appended to the design-system font-size group above so both are recognised.
+            'font-weight': [{ 'font-ds': ['regular', 'medium', 'semibold', 'bold'] }],
+            'border-w': [{ 'border-ds': ['0', '1', '2', 'hairline'] }],
+            rounded: [{ 'rounded-ds': ['none', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] }],
+            leading: [{ 'leading-ds': ['tight', 'snug', 'normal', 'relaxed'] }],
+            tracking: [{ 'tracking-ds': ['tight', 'normal', 'wide'] }],
+            shadow: [
+                'shadow-focus-outline-default',
+                'shadow-focus-outline-danger',
+                'shadow-container-inset',
+                'shadow-container-panel',
+                'shadow-container-sheet'
+            ],
+            // Webapp typography sits in the same font-size group as text-ds-* so both dedupe.
             'font-size': [
-                ...(dsTwMergeConfig.extend.classGroups['font-size'] ?? []),
+                { 'text-ds': ['3xs', '2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'] },
                 'text-s',
                 { 'text-title': ['screen', 'section', 'subsection', 'group', 'body'] },
                 { 'text-label': ['large'] },
