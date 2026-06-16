@@ -29,6 +29,7 @@ on:
                     - connect_ui
                     - app_ui
                     - lambda
+                    - agentcore_sandbox
 
 # One deploy per service+stage at a time. UI deploys `aws s3 sync --delete` into a
 # shared bucket, so two concurrent runs silently corrupt it (left the live app
@@ -175,7 +176,7 @@ jobs:
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy:
-        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda'
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda' && inputs.service != 'agentcore_sandbox'
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -280,6 +281,73 @@ jobs:
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
+    deploy_agentcore_sandbox:
+        if: inputs.service == 'agentcore_sandbox' && inputs.stage != 'replit'
+        runs-on: ubuntu-24.04-arm
+        permissions:
+            id-token: write
+            contents: read
+        environment: ${{ inputs.stage }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Resolve Nango package version
+              id: nango-version
+              run: |
+                  echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+            - name: Resolve AgentCore image URI
+              id: agentcore-image
+              env:
+                  AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL: ${{ vars.AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL }}
+              run: |
+                  if [[ -z "$AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL" ]]; then
+                      echo "AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL is required" >&2
+                      exit 1
+                  fi
+                  echo "uri=${AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.DEPLOY_AGENTCORE_SANDBOX_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+            - name: Login to Amazon ECR
+              uses: aws-actions/amazon-ecr-login@v2
+            - name: Build and Push AgentCore Sandbox Image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: packages/sandbox/agentcore-runtime/Dockerfile
+                  platforms: linux/arm64
+                  push: true
+                  provenance: false
+                  tags: |
+                      ${{ steps.agentcore-image.outputs.uri }}
+                  build-args: |
+                      NANGO_VERSION=${{ steps.nango-version.outputs.version }}
+                  cache-from: type=gha,scope=agentcore-sandbox
+                  cache-to: type=gha,scope=agentcore-sandbox,mode=max
+            - name: Deploy AgentCore runtime
+              id: deploy-agentcore
+              env:
+                  AGENTCORE_RUNTIME_NAME: ${{ vars.AGENTCORE_RUNTIME_NAME || format('nango_sandbox_{0}', inputs.stage) }}
+                  AGENTCORE_RUNTIME_ID: ${{ vars.AGENTCORE_RUNTIME_ID }}
+                  AGENTCORE_RUNTIME_ROLE_ARN: ${{ vars.AGENTCORE_RUNTIME_ROLE_ARN }}
+                  AGENTCORE_RUNTIME_IMAGE_URI: ${{ steps.agentcore-image.outputs.uri }}
+                  AGENTCORE_RUNTIME_DESCRIPTION: ${{ vars.AGENTCORE_RUNTIME_DESCRIPTION }}
+                  AGENTCORE_RUNTIME_NETWORK_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_NETWORK_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_PROTOCOL_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_PROTOCOL_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_AUTHORIZER_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_AUTHORIZER_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_REQUEST_HEADER_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_REQUEST_HEADER_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_LIFECYCLE_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_LIFECYCLE_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_METADATA_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_METADATA_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_ENVIRONMENT_VARIABLES: ${{ vars.AGENTCORE_RUNTIME_ENVIRONMENT_VARIABLES }}
+                  AGENTCORE_RUNTIME_FILESYSTEM_CONFIGURATIONS: ${{ vars.AGENTCORE_RUNTIME_FILESYSTEM_CONFIGURATIONS }}
+                  AGENTCORE_RUNTIME_TAGS: ${{ vars.AGENTCORE_RUNTIME_TAGS }}
+              run: |
+                  node scripts/deploy-agentcore-sandbox.mjs
     notify_result:
         # Runs after whichever deploy job executed (the others are skipped) and reports the outcome.
         if: always()
@@ -290,6 +358,7 @@ jobs:
             - deploy
             - deploy_runners
             - deploy_lambda
+            - deploy_agentcore_sandbox
         runs-on: ubuntu-latest
         permissions:
             contents: read # checkout the repo to reach the local composite action
@@ -307,6 +376,7 @@ jobs:
                     "${{ needs.deploy.result }}"
                     "${{ needs.deploy_runners.result }}"
                     "${{ needs.deploy_lambda.result }}"
+                    "${{ needs.deploy_agentcore_sandbox.result }}"
                   )
                   outcome="skipped"
                   for r in "${results[@]}"; do

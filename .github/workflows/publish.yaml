@@ -18,6 +18,8 @@ jobs:
     npm-publish:
         if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
+        outputs:
+            release_sha: ${{ steps.release-commit.outputs.sha }}
         steps:
             - uses: actions/create-github-app-token@v2
               id: create_github_app_token
@@ -52,3 +54,88 @@ jobs:
                   GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
               run: |
                   npx zx ./scripts/gitrelease.mjs "${{ inputs.version }}" "${{ github.head_ref || github.ref_name }}"
+            - name: Resolve release commit
+              id: release-commit
+              run: |
+                  echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+    deploy-agentcore-sandbox:
+        needs: npm-publish
+        runs-on: ubuntu-24.04-arm
+        strategy:
+            fail-fast: false
+            matrix:
+                stage:
+                    - development
+                    - staging
+                    - production
+        environment: ${{ matrix.stage }}
+        permissions:
+            id-token: write
+            contents: read
+        steps:
+            - name: Checkout release commit
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.npm-publish.outputs.release_sha }}
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Resolve AgentCore image URI
+              id: agentcore-image
+              env:
+                  AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL: ${{ vars.AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL }}
+              run: |
+                  if [[ -z "$AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL" ]]; then
+                      echo "AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL is required" >&2
+                      exit 1
+                  fi
+                  echo "uri=${AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL}:${{ needs.npm-publish.outputs.release_sha }}" >> "$GITHUB_OUTPUT"
+            - name: Configure aws credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.DEPLOY_AGENTCORE_SANDBOX_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+            - name: Login to Amazon ECR
+              uses: aws-actions/amazon-ecr-login@v2
+            - name: Wait for nango package
+              run: |
+                  for attempt in {1..30}; do
+                      if npm view "nango@${{ inputs.version }}" version >/dev/null 2>&1; then
+                          exit 0
+                      fi
+                      sleep 10
+                  done
+                  echo "nango@${{ inputs.version }} was not available from npm in time" >&2
+                  exit 1
+            - name: Build and Push AgentCore Sandbox Image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: packages/sandbox/agentcore-runtime/Dockerfile
+                  platforms: linux/arm64
+                  push: true
+                  provenance: false
+                  tags: |
+                      ${{ steps.agentcore-image.outputs.uri }}
+                  build-args: |
+                      NANGO_VERSION=${{ inputs.version }}
+                  cache-from: type=gha,scope=agentcore-sandbox
+                  cache-to: type=gha,scope=agentcore-sandbox,mode=max
+            - name: Deploy AgentCore runtime
+              env:
+                  AGENTCORE_RUNTIME_NAME: ${{ vars.AGENTCORE_RUNTIME_NAME || format('nango_sandbox_{0}', matrix.stage) }}
+                  AGENTCORE_RUNTIME_ID: ${{ vars.AGENTCORE_RUNTIME_ID }}
+                  AGENTCORE_RUNTIME_ROLE_ARN: ${{ vars.AGENTCORE_RUNTIME_ROLE_ARN }}
+                  AGENTCORE_RUNTIME_IMAGE_URI: ${{ steps.agentcore-image.outputs.uri }}
+                  AGENTCORE_RUNTIME_DESCRIPTION: ${{ vars.AGENTCORE_RUNTIME_DESCRIPTION }}
+                  AGENTCORE_RUNTIME_NETWORK_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_NETWORK_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_PROTOCOL_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_PROTOCOL_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_AUTHORIZER_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_AUTHORIZER_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_REQUEST_HEADER_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_REQUEST_HEADER_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_LIFECYCLE_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_LIFECYCLE_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_METADATA_CONFIGURATION: ${{ vars.AGENTCORE_RUNTIME_METADATA_CONFIGURATION }}
+                  AGENTCORE_RUNTIME_ENVIRONMENT_VARIABLES: ${{ vars.AGENTCORE_RUNTIME_ENVIRONMENT_VARIABLES }}
+                  AGENTCORE_RUNTIME_FILESYSTEM_CONFIGURATIONS: ${{ vars.AGENTCORE_RUNTIME_FILESYSTEM_CONFIGURATIONS }}
+                  AGENTCORE_RUNTIME_TAGS: ${{ vars.AGENTCORE_RUNTIME_TAGS }}
+              run: |
+                  node scripts/deploy-agentcore-sandbox.mjs
