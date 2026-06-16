@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Err, getLogger, metrics } from '@nangohq/utils';
 
-import type { PublishBatchProps, PublishBatchResult, Transport } from './transport/transport.js';
+import type { PublishBatchProps, PublishBatchResult, PublishFailure, Transport } from './transport/transport.js';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
@@ -72,11 +72,11 @@ function reportBatchPublishResults(subject: Event['subject'], batchSize: number,
     if (res.isOk()) {
         const res_ = res.value;
         if (res_.failed.length > 0) {
-            logger.error(`publishBatch partial failure`, {
-                subject: subject,
-                failed: res_.failed.length,
-                total: batchSize,
-                errors: res_.failed
+            res_.failed.forEach((error: PublishFailure) => {
+                logger.error(`publishBatch partial failure`, {
+                    subject: subject,
+                    error: error.message
+                });
             });
             metrics.increment(metrics.Types.PUBSUB_PUBLISH, res_.failed.length, { subject: subject, success: 'false' });
         }
