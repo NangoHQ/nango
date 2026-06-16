@@ -38,6 +38,17 @@ describe('N-able Cove credentials verification', () => {
         await expect(execute(nango)).resolves.toBeUndefined();
     });
 
+    it('accepts a successful Login response without the optional PartnerId', async () => {
+        const { nango } = createNango({
+            jsonrpc: '2.0',
+            id: 'nango-credential-verification',
+            visa,
+            result: { result: { Name: 'api-user' } }
+        });
+
+        await expect(execute(nango)).resolves.toBeUndefined();
+    });
+
     it('rejects an HTTP 200 JSON-RPC error response', async () => {
         const { nango } = createNango({
             jsonrpc: '2.0',
@@ -60,13 +71,43 @@ describe('N-able Cove credentials verification', () => {
     });
 
     it.each([
+        null,
+        {
+            jsonrpc: '1.0',
+            id: 'nango-credential-verification',
+            visa,
+            result: { result: { PartnerId: 33491 } }
+        },
+        {
+            jsonrpc: '2.0',
+            id: 'unexpected-request-id',
+            visa,
+            result: { result: { PartnerId: 33491 } }
+        }
+    ])('rejects a malformed JSON-RPC envelope', async (response) => {
+        const { nango } = createNango(response);
+
+        await expect(execute(nango)).rejects.toThrow('N-able Cove returned an invalid login response');
+    });
+
+    it.each([
         { jsonrpc: '2.0', id: 'nango-credential-verification', visa },
         { jsonrpc: '2.0', id: 'nango-credential-verification', visa, result: {} },
         { jsonrpc: '2.0', id: 'nango-credential-verification', visa, result: { result: null } },
-        { jsonrpc: '2.0', id: 'nango-credential-verification', visa, result: { result: {} } },
-        { jsonrpc: '2.0', id: 'nango-credential-verification', visa, result: { result: { PartnerId: '33491' } } }
+        { jsonrpc: '2.0', id: 'nango-credential-verification', visa, result: { result: {} } }
     ])('rejects a malformed nested result', async (response) => {
         const { nango } = createNango(response);
+
+        await expect(execute(nango)).rejects.toThrow('N-able Cove returned an invalid login response');
+    });
+
+    it('rejects a non-integer PartnerId', async () => {
+        const { nango } = createNango({
+            jsonrpc: '2.0',
+            id: 'nango-credential-verification',
+            visa,
+            result: { result: { PartnerId: '33491' } }
+        });
 
         await expect(execute(nango)).rejects.toThrow('N-able Cove returned an invalid login response');
     });
