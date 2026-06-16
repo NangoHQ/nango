@@ -21,7 +21,12 @@ export { FLAGS, type FlagKey } from './registry.js';
  * is initialized lazily and reused; awaiting this is cheap after the first call.
  */
 export async function getFlags(): Promise<Flags> {
-    return buildFlags(await getFeatureFlagsClient());
+    try {
+        return buildFlags(await getFeatureFlagsClient());
+    } catch (err) {
+        logger.error('Failed to initialize feature flags client; serving safe defaults until reconnect', err);
+        return buildFlags(buildFeatureFlagsClient(new NoopProvider()));
+    }
 }
 
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
