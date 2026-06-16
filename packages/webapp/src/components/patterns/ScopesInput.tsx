@@ -159,7 +159,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <IconButton type="button" size="2xs" variant="ghost" label="Remove scope" onClick={() => void deleteAllScopes()}>
+                            <IconButton type="button" size="2xs" variant="ghost" label="Delete all scopes" onClick={() => void deleteAllScopes()}>
                                 <Trash2 />
                             </IconButton>
                         </TooltipTrigger>

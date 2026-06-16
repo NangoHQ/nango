@@ -24,7 +24,6 @@ export const ButtonLink = React.forwardRef<HTMLAnchorElement, ButtonLinkProps>((
     return (
         <Link
             ref={ref}
-            data-slot="button"
             aria-disabled={disabled || undefined}
             tabIndex={disabled ? -1 : undefined}
             className={cn(buttonVariants({ variant, size }), className)}

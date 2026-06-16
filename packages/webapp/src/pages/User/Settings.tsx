@@ -2,7 +2,7 @@ import { Edit } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
@@ -78,9 +78,10 @@ export const UserSettings: React.FC = () => {
                             {!edit && (
                                 <Tooltip delayDuration={0}>
                                     <TooltipTrigger asChild>
-                                        <Button
+                                        <IconButton
                                             variant={'ghost'}
                                             size={'2xs'}
+                                            label="Edit"
                                             onClick={() => {
                                                 setEdit(true);
                                                 setTimeout(() => {
@@ -89,7 +90,7 @@ export const UserSettings: React.FC = () => {
                                             }}
                                         >
                                             <Edit />
-                                        </Button>
+                                        </IconButton>
                                     </TooltipTrigger>
                                     <TooltipContent sideOffset={10}>Edit</TooltipContent>
                                 </Tooltip>

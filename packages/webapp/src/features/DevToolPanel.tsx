@@ -86,7 +86,7 @@ export const DevToolPanel: React.FC = () => {
                     size="2xs"
                     label="Close dev tools"
                     onClick={() => setOpen(false)}
-                    className="size-5 text-text-secondary hover:text-text-strong"
+                    className="text-text-secondary hover:text-text-strong"
                 >
                     <X className="size-3.5" />
                 </IconButton>
