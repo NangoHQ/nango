@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { IconButton } from '@nangohq/design-system';
 
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -74,28 +74,15 @@ function InputGroupAddon({ className, align = 'inline-start', ...props }: React.
     );
 }
 
-const inputGroupButtonVariants = cva('text-sm shadow-none flex gap-2 items-center', {
-    variants: {
-        size: {
-            xs: "h-6 gap-1 px-2 rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-3.5 has-[>svg]:px-2",
-            sm: 'h-8 px-2.5 gap-1.5 rounded-md has-[>svg]:px-2.5',
-            'icon-xs': 'size-4 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0',
-            'icon-sm': 'size-6 p-0 has-[>svg]:p-0'
-        }
-    },
-    defaultVariants: {
-        size: 'xs'
-    }
-});
-
+// Icon-only affordance for input groups (edit, clear, …). Renders the design-system IconButton;
+// the input-group icon sizes map to IconButton sizes: icon-sm → xs (24px), icon-xs → 2xs (20px).
 function InputGroupButton({
-    className,
     type = 'button',
     variant = 'ghost',
-    size = 'xs',
+    size = 'icon-xs',
     ...props
-}: Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>) {
-    return <Button type={type} data-size={size} variant={variant} className={cn(inputGroupButtonVariants({ size }), className)} {...props} />;
+}: Omit<React.ComponentProps<typeof IconButton>, 'size' | 'className'> & { size?: 'icon-xs' | 'icon-sm' }) {
+    return <IconButton type={type} variant={variant} size={size === 'icon-sm' ? 'xs' : '2xs'} {...props} />;
 }
 
 function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {

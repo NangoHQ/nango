@@ -217,6 +217,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     {search && (
                         <InputGroupAddon align="inline-end">
                             <InputGroupButton
+                                label="Clear search"
                                 variant={'ghost'}
                                 size={'icon-xs'}
                                 onClick={() => {

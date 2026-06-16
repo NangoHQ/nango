@@ -268,7 +268,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
-                                <InputGroupButton variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
+                                <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
                                     <IconX stroke={1} size={18} />
                                 </InputGroupButton>
                             </InputGroupAddon>
