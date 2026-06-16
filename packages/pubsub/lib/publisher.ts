@@ -81,7 +81,7 @@ function reportBatchPublishResults(subject: Event['subject'], batchSize: number,
             metrics.increment(metrics.Types.PUBSUB_PUBLISH, res_.failed.length, { subject: subject, success: 'false' });
         }
     } else {
-        logger.error(`publishBatch total failure`, { subject: subject, total: batchSize, error: res.error });
+        logger.error(`publishBatch total failure`, { subject: subject, total: batchSize, error: res.error.message });
         metrics.increment(metrics.Types.PUBSUB_PUBLISH, batchSize, { subject: subject, success: 'false' });
     }
 }
