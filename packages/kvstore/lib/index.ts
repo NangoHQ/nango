@@ -1,6 +1,5 @@
 import { createClient } from 'redis';
 
-import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
@@ -10,7 +9,6 @@ import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
-export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
@@ -113,19 +111,6 @@ export async function getKVStore(usage: KvBoundary = 'system'): Promise<KVStore>
     const createKVStorePromise = createKVStore(usage);
     mapKVStore.set(usage, createKVStorePromise);
     return await createKVStorePromise;
-}
-
-let featureFlags: Promise<FeatureFlags> | undefined;
-export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
-    if (featureFlags) {
-        return await featureFlags;
-    }
-
-    featureFlags = (async () => {
-        const store = await getKVStore();
-        return new FeatureFlags(store);
-    })();
-    return await featureFlags;
 }
 
 const mapLocking = new Map<KvBoundary, Promise<Locking>>();
