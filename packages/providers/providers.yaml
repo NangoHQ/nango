@@ -18754,6 +18754,42 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopvox:
+    display_name: ShopVox
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.shopvox.com/v1/login
+    token_params:
+        user: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: authToken
+    proxy:
+        base_url: https://api.shopvox.com/
+        headers:
+            authToken: ${accessToken}
+            accountID: ${credentials.raw.accountID}
+    docs: https://nango.dev/docs/api-integrations/shopvox
+    docs_connect: https://nango.dev/docs/api-integrations/shopvox/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your ShopVox login username.
+            order: 1
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your ShopVox login password.
+            secret: true
+            order: 2
+            doc_section: '#step-1-finding-your-credentials'
+
 shopware:
     display_name: Shopware (Admin API)
     categories:
