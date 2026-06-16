@@ -140,7 +140,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         const method = req.method.toUpperCase() as HTTP_METHOD;
 
         // contains the path and querystring
-        const endpoint = req.originalUrl.replace(/^\/proxy\//, '/');
+        const endpoint = req.originalUrl.replace(/^\/proxy\/?/, '/');
 
         const headers = parseHeaders(req);
 
