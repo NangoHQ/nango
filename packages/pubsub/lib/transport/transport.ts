@@ -11,48 +11,8 @@ export interface SubscribeProps<TSubject extends Event['subject'] = Event['subje
     concurrency?: number;
 }
 
-export class PublishFailure extends Error {
-    idempotencyKey: string;
-    code?: string;
-
-    constructor(idempotencyKey: string, message: string, options?: { code?: string; cause?: unknown }) {
-        super(message, { cause: options?.cause });
-        this.idempotencyKey = idempotencyKey;
-        if (options?.code !== undefined) {
-            this.code = options.code;
-        }
-    }
-
-    toJSON() {
-        return {
-            idempotencyKey: this.idempotencyKey,
-            message: this.message,
-            ...(this.code !== undefined ? { code: this.code } : {}),
-            ...(this.cause instanceof Error ? { cause: this.cause.message } : typeof this.cause === 'string' ? { cause: this.cause } : {})
-        };
-    }
-}
-
-export interface PublishBatchResult {
-    successful: string[];
-    failed: PublishFailure[];
-}
-
-export interface PublishBatchProps<TSubject extends Event['subject'] = Event['subject']> {
-    subject: TSubject;
-    events: Extract<Event, { subject: NoInfer<TSubject> }>[];
-    /** SNS+SQS: Concurrent batch publish requests (default 10, clamped 1–10). Ignored by other transports. */
-    concurrency?: number;
-}
-
 export interface Transport {
     publish(event: Event): Promise<Result<void>>;
-    /**
-     * Publishes a batch of events in a best-effort manner: all events are attempted regardless of
-     * individual failures. Check `result.failed` for partial failures. Fatal failures are captured
-     * and returned as errors (e.g. transport unavailable).
-     */
-    publishBatch<TSubject extends Event['subject']>(props: PublishBatchProps<TSubject>): Promise<Result<PublishBatchResult>>;
     subscribe<TSubject extends Event['subject']>(params: SubscribeProps<TSubject>): void;
     connect(props?: { timeoutMs: number }): Promise<Result<void>>;
     disconnect(): Promise<Result<void>>;
