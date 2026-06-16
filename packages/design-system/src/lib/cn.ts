@@ -4,22 +4,21 @@ import { extendTailwindMerge } from 'tailwind-merge';
 import type { ClassValue } from 'clsx';
 
 /**
- * Merges Tailwind CSS class names, resolving conflicts so the last value wins.
+ * Merges Tailwind class names, resolving conflicts so the last value wins
+ * (e.g. `cn('h-8', 'h-10')` → `'h-10'`). `clsx` handles conditional/array
+ * syntax; `tailwind-merge` deduplicates conflicting utilities.
  *
- * Uses `clsx` for conditional/array syntax and `tailwind-merge` to deduplicate
- * conflicting utilities (e.g. `cn('h-8', 'h-10')` → `'h-10'` instead of `'h-8 h-10'`).
+ * The class groups below teach tailwind-merge about our `@theme` token utilities
+ * so it resolves them in the right conflict group instead of mis-grouping them
+ * (e.g. `text-ds-*` as a colour) or skipping dedup:
  *
- * Extended with custom class groups for our `@theme` tokens so tailwind-merge assigns
- * them to the right conflict group. Without these, it either puts them in the wrong group
- * (false conflicts) or treats them as unknown (no dedup):
- *
- * - `text-ds-*`    → font-size   (not color — avoids conflict with `text-button-*`)
- * - `font-ds-*`    → font-weight (not font-family — avoids conflict with `font-sans`)
- * - `border-ds-*`  → border-width
- * - `rounded-ds-*` → border-radius
- * - `leading-ds-*` → line-height
- * - `tracking-ds-*`→ letter-spacing
- * - `shadow-*-ds`  → shadow
+ * - `text-ds-*`     → font-size       (not colour — avoids conflict with `text-*`)
+ * - `font-ds-*`     → font-weight     (not font-family — avoids conflict with `font-sans`)
+ * - `border-ds-*`   → border-width
+ * - `rounded-ds-*`  → border-radius
+ * - `leading-ds-*`  → line-height
+ * - `tracking-ds-*` → letter-spacing
+ * - `shadow-focus-outline-*`, `shadow-container-*` → box-shadow
  */
 const twMerge = extendTailwindMerge({
     extend: {

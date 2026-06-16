@@ -19,21 +19,19 @@ This writes the file to `src/components/ui/<component-name>.tsx`. The generated 
 
 ### Step 2: Replace shadcn CSS variables with design tokens
 
-shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from `tokens/tokens.generated.css` via `var(--token-name)`.
+shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in this package. Every colour, radius, spacing, and motion value must come from `tokens/tokens.generated.css` — via a token utility (preferred) or `var(--token-name)` when no utility exists.
 
 **Tailwind v4 syntax for token values:**
 
-All tokens in `tokens.generated.css` that are registered in `@theme` can be used as regular Tailwind utilities — no `[var(...)]` needed for colours:
-
-All tokens in `tokens.generated.css` are registered in `@theme` and can be used as plain Tailwind utilities:
+Semantic tokens and the primitive dimension/typography tokens are registered in `@theme`, so they're available as plain Tailwind utilities — no `[var(...)]` wrapper needed (primitive _colours_ are intentionally excluded; use the semantic ones):
 
 ```tsx
-// colours — component and semantic tokens
-'bg-button-primary-bg-default'
-'text-text-default'
-'border-input-border-default'
-'hover:bg-button-primary-bg-hover'
-'disabled:text-button-primary-text-disabled'
+// colours — semantic tokens (there are no component-level button-* tokens)
+'bg-interactive-primary'
+'text-text-on-accent'
+'border-border-default'
+'hover:bg-interactive-primary-hover'
+'disabled:text-text-disabled'
 
 // focus rings — registered as --shadow-* → shadow-*
 'focus-visible:shadow-focus-outline-default'
@@ -62,7 +60,9 @@ All tokens in `tokens.generated.css` are registered in `@theme` and can be used 
 
 **When to use DS utilities vs native Tailwind:**
 
-Use `ds-*` utilities for any value that is a design decision — something a designer would specify:
+Rule of thumb: **appearance** (a value a designer owns) comes from a DS token utility; **layout, sizing, and motion** use native Tailwind, whose default scales line up 1:1 with our tokens.
+
+Use `ds-*` / semantic utilities for anything a designer specifies:
 
 | Category | Use | Example |
 |---|---|---|
@@ -74,11 +74,17 @@ Use `ds-*` utilities for any value that is a design decision — something a des
 | Letter spacing | `tracking-ds-*` | `tracking-ds-tight` not `tracking-tight` |
 | Border radius | `rounded-ds-*` | `rounded-ds-sm` not `rounded` |
 | Border width | `border-ds-*` | `border-ds-1` not `border` |
-| Spacing | Native Tailwind scale | `gap-2`, `px-3` — the 4px scale matches `--ds-space-*` exactly |
 
-Use native Tailwind for everything structural — things that are about layout, not appearance:
-`flex`, `grid`, `block`, `hidden`, `items-center`, `justify-between`, `relative`, `absolute`,
-`overflow-hidden`, `truncate`, `whitespace-nowrap`, `cursor-pointer`, `z-10`, `transition`, `duration-200`, etc.
+Use native Tailwind for these — explicitly allowed because the default scale equals our tokens, so no DS utility is needed:
+
+| Category | Use | Example |
+|---|---|---|
+| Spacing | Native scale | `gap-2`, `px-3` — matches `--ds-space-*` (4px scale) |
+| Icon size | Native scale | `size-4` (16px), `size-3.5` (14px) — matches `--ds-icon-size-*` |
+| Motion | Native scale | `duration-100` = `--ds-motion-duration-fast`; `ease-in-out` = `--ds-motion-easing-standard` |
+| Layout / structural | Native | `flex`, `grid`, `items-center`, `justify-between`, `relative`, `overflow-hidden`, `truncate`, `whitespace-nowrap`, `transition`, `z-10`, … |
+
+> **Never inline a token as an arbitrary `[var(--ds-*)]` value in `className`.** Reach for a registered utility, or the native class above for spacing/icon-size/motion. If a token you need has neither, add it to the `@theme` block so it generates a class (e.g. motion could become `duration-motion-fast`) — don't fall back to `var()`.
 
 > **Note on existing app code:** Files written before the DS token pipeline may use `text-sm`, `rounded-md`,
 > `font-medium` etc. with Tailwind's built-in values. Those are not equivalent to the DS utilities — don't
@@ -88,7 +94,8 @@ Use native Tailwind for everything structural — things that are about layout, 
 
 | What | Token pattern | Example |
 |---|---|---|
-| Component colours | `--<component>-<variant>-<property>-<state>` | `--button-primary-bg-default` |
+| Interactive colours | `--interactive-<role>[-state]` | `--interactive-primary`, `--interactive-primary-hover`, `--interactive-danger` |
+| Surface colours | `--surface-<role>[-state]` | `--surface-inverse`, `--surface-inverse-hover` |
 | Text colours | `--text-<role>` | `--text-default`, `--text-secondary`, `--text-disabled` |
 | Spacing | `--ds-space-<n>` | `--ds-space-2` (8px), `--ds-space-2-5` (10px) |
 | Radius | `--ds-radius-<size>` | `--ds-radius-sm` (4px), `--ds-radius-full` |
@@ -105,10 +112,10 @@ Use native Tailwind for everything structural — things that are about layout, 
 'focus-visible:outline-none focus-visible:shadow-focus-outline-danger'
 ```
 
-**Motion** — all interactive components transition the same properties:
+**Motion** — all interactive components transition the same properties, using the native motion utilities (see the table above for the token mapping):
 ```tsx
 'transition-[background-color,border-color,color,box-shadow]',
-'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
+'duration-100 ease-in-out',
 ```
 
 ### Step 3: Follow the component pattern
@@ -124,7 +131,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 // 1. Export the variants object so consumers can compose it
 export const myVariants = cva(
-    ['base classes using var(--token-name)'],
+    ['base classes using token utilities (rounded-ds-*, bg-*, text-ds-*, …)'],
     {
         variants: { ... },
         defaultVariants: { ... }
@@ -155,7 +162,7 @@ MyComponent.displayName = 'MyComponent';
 ```
 
 Key rules:
-- **No raw hex colours, font sizes, or pixel values** — everything via `var(--token-name)`
+- **No raw hex colours, font sizes, or pixel values** — everything via a token utility (or `var(--token-name)` when no utility exists)
 - **`cn()` for className** — always merge via `cn(variants(...), className)` so consumers can override
 - **`asChild` via `@radix-ui/react-slot`** — include on any component that wraps an interactive element (links, router `<Link>`, etc.)
 - **`forwardRef`** — always, so refs work in consuming apps
@@ -200,10 +207,8 @@ export { MyComponent, type MyProps, myVariants } from './components/ui/my-compon
 src/
   components/
     ui/                    all components (flat, shadcn convention)
-      button.tsx
+      button.tsx           exports Button and IconButton
       button.stories.tsx
-      icon-button.tsx
-      icon-button.stories.tsx
       spinner.tsx          internal — used by Button for loading state
       …                    add new components here
   lib/
