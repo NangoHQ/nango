@@ -154,7 +154,7 @@ export class UsageProcessor {
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_compute_gbms',
-                        delta: compute
+                        delta: Math.round(compute) // HINCRBY requires an integer; compute is fractional gb*ms
                     });
                     if (incrCompute.isErr()) {
                         logger.error(
