@@ -9,7 +9,7 @@ import type { StorybookConfig } from '@storybook/react-vite';
 import type { InlineConfig } from 'vite';
 
 const config: StorybookConfig = {
-    stories: ['../tokens/**/*.stories.@(ts|tsx)', '../stories/**/*.stories.@(ts|tsx)'],
+    stories: ['../tokens/**/*.stories.@(ts|tsx)', '../src/**/*.stories.@(ts|tsx)', '../stories/**/*.stories.@(ts|tsx)'],
     addons: ['@storybook/addon-a11y', '@storybook/addon-mcp', '@storybook/addon-themes'],
     framework: {
         name: '@storybook/react-vite',

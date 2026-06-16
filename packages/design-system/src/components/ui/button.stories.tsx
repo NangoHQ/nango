@@ -1,7 +1,6 @@
 import { ChevronRight, Plus } from 'lucide-react';
 
-import { Button, IconButton } from '../src/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Button, IconButton } from './button';
 
 import type { Meta, StoryObj } from '@storybook/react';
 
@@ -52,10 +51,10 @@ export const AllSizes: Story = {
     name: 'All sizes',
     render: () => (
         <div className="flex flex-col gap-10">
-            <Alert variant="warning" className="max-w-2xl">
-                <AlertTitle>xl is deprecated</AlertTitle>
-                <AlertDescription>xl (40px) exists only to migrate legacy 40px webapp buttons. Use lg for new buttons.</AlertDescription>
-            </Alert>
+            <div className="max-w-2xl rounded-ds-sm border-ds-1 border-status-warning-border bg-status-warning-bg px-3 py-2 text-ds-sm text-status-warning-text">
+                <p className="font-ds-medium text-status-warning-strong">xl is deprecated</p>
+                <p>xl (40px) exists only to migrate legacy 40px webapp buttons. Use lg for new buttons.</p>
+            </div>
             {SIZES.map((size) => (
                 <div key={size} className="flex items-center gap-6">
                     <span className="text-ds-xs text-text-secondary w-12 shrink-0">{size}</span>
