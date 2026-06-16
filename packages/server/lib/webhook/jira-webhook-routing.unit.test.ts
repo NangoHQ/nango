@@ -211,7 +211,7 @@ describe('jira-webhook-routing', () => {
 
         const result = await JiraWebhookRouting.default(
             nango as any,
-            { 'x-hub-signature-256': signJiraBody(rawBody, secret) },
+            { 'X-Hub-Signature': signJiraBody(rawBody, secret) },
             body,
             rawBody
         );
