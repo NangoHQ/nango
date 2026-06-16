@@ -212,9 +212,7 @@ publicAPI
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
 
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environment:integrations:delete'), deletePublicIntegration);
-publicAPI
-    .route('/integrations/:uniqueKey/functions/:name/code')
-    .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
+publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(apiAuth, withScope('environment:functions:read'), getFunctionCode);
 publicAPI.route('/integrations/:uniqueKey/functions').get(apiAuth, withScope('environment:functions:list'), getPublicIntegrationFunctions);
 publicAPI
     .route('/integrations/:uniqueKey/functions/:name')
