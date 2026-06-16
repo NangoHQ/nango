@@ -100,14 +100,14 @@ describe('handleValidateConnectionFailure', () => {
         expect(message).toBe('Workspace mismatch');
         expect(mockHardDelete).not.toHaveBeenCalled();
         expect(mockMarkConnectionAuthFailed).toHaveBeenCalledWith({ id: 42 });
-        expect(mockReconnectionFailed).toHaveBeenCalledWith(
-            expect.objectContaining({
-                error: { type: 'connection_validation_failed', description: 'Workspace mismatch' },
-                operation: 'override'
-            }),
+        expect(mockReconnectionFailed).toHaveBeenCalledWith({
             account,
-            logCtx,
-            config
-        );
+            connection,
+            environment,
+            provider,
+            config,
+            authError: { type: 'connection_validation_failed', description: 'Workspace mismatch' },
+            logCtx
+        });
     });
 });
