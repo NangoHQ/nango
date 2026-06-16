@@ -463,8 +463,9 @@ export class UsageTracker implements IUsageTracker {
         try {
             const cached = await this.redis.get(cacheKey);
             if (cached) {
+                const value = JSON.parse(cached) as BillingUsageMetrics;
                 metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'true' });
-                return Ok(JSON.parse(cached) as BillingUsageMetrics);
+                return Ok(value);
             }
         } catch (err) {
             logger.warning(`capping CH cache read failed for account=${accountId}: ${stringifyError(err)}`);
