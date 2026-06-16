@@ -96,6 +96,11 @@ export function getRedisClientOptions(url: string, boundary: RedisBoundary = 'sy
 
     return {
         url,
+        // node-redis v5 defaults to RESP2, which mishandles pub/sub status replies
+        // (subscribe/unsubscribe acks) and can throw when the command queue is empty.
+        // RESP3 routes pub/sub through a dedicated push handler and also allows
+        // re-authentication while a subscriber connection is active.
+        RESP: 3 as const,
         disableOfflineQueue: true,
         pingInterval: 30_000,
         socket,

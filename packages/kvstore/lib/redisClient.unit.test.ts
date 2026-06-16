@@ -78,6 +78,7 @@ describe('getRedisClientOptions', () => {
 
     it('builds a TLS socket and no credentials provider for a rediss url without token file', () => {
         const options = getRedisClientOptions('rediss://host:6379');
+        expect(options.RESP).toBe(3);
         expect(options.socket).toMatchObject({ tls: true, connectTimeout: 10_000, servername: 'host' });
         expect(typeof options.socket.reconnectStrategy).toBe('function');
         expect('credentialsProvider' in options).toBe(false);
