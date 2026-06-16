@@ -1,6 +1,7 @@
 import tracer from 'dd-trace';
 
-import { ProxyRequest, getProvider, getProxyConfiguration, makeDataTransferEvents, pubsub } from '@nangohq/shared';
+import { ProxyRequest, getProvider, getProxyConfiguration } from '@nangohq/shared';
+import { metrics } from '@nangohq/utils';
 
 import * as verificationscriptHandlers from './index.js';
 
@@ -36,7 +37,7 @@ async function execute(
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
     connectionId: string,
     connectionConfig: ConnectionConfig,
-    accountId: number
+    _accountId: number
 ) {
     const { provider: providerName, unique_key: providerConfigKey } = config;
 
@@ -115,19 +116,9 @@ async function execute(
                         oauth_client_id: null,
                         oauth_client_secret: null
                     }),
-                    onBytes: (meteredBytes) => {
-                        const events = makeDataTransferEvents(
-                            'server',
-                            'credential_verification_hook',
-                            accountId,
-                            connectionId,
-                            config.unique_key,
-                            config.environment_id,
-                            meteredBytes
-                        );
-                        if (events.length > 0) {
-                            void pubsub.publisher.publishBatch({ subject: 'usage', events });
-                        }
+                    onBytes: ({ sent, received }) => {
+                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_credential_verification_hook' });
+                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_credential_verification_hook' });
                     }
                 });
                 return (await proxy.request()).unwrap();

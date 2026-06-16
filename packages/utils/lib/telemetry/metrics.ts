@@ -39,7 +39,8 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    DATA_TRANSFER = 'nango.dataTransfer',
+    PROXY_REQUEST_SIZE_IN_BYTES = 'nango.server.proxy.request.sizeInBytes',
+    PROXY_RESPONSE_SIZE_IN_BYTES = 'nango.server.proxy.response.sizeInBytes',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
@@ -55,6 +56,11 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
+    RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES = 'nango.runner.uncontrolledFetch.request.sizeBytes',
+    RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES = 'nango.runner.uncontrolledFetch.response.sizeBytes',
+    RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.records.sent.sizeInBytes',
+    RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES = 'nango.runner.persist.records.received.sizeInBytes',
+    RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.logs.sent.sizeInBytes',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 

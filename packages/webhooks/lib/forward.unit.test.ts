@@ -216,8 +216,8 @@ describe('Webhooks: forward notification tests', () => {
         expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
     });
 
-    it('Should not invoke onBytes when forwarding is skipped', async () => {
-        let called = false;
+    it('Should report zero bytes via onBytes when forwarding is skipped', async () => {
+        let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds: [],
             account,
@@ -228,18 +228,18 @@ describe('Webhooks: forward notification tests', () => {
             integration,
             payload: { some: 'data' },
             webhookOriginalHeaders: {},
-            onBytes: () => {
-                called = true;
+            onBytes: (b) => {
+                reportedBytes = b;
             }
         });
         expect(result.isOk()).toBe(true);
-        expect(called).toBe(false);
+        expect(reportedBytes).toEqual({ sent: 0, received: 0 });
     });
 
-    it('Should invoke onBytes once per connection with that connection id', async () => {
+    it('Should sum bytes across connections in fan-out via onBytes', async () => {
         const connectionIds = ['conn1', 'conn2'];
         const payload = { x: 1 };
-        const calls: { connectionId: string; sent: number }[] = [];
+        let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds,
             account,
@@ -250,18 +250,15 @@ describe('Webhooks: forward notification tests', () => {
             integration,
             payload,
             webhookOriginalHeaders: {},
-            onBytes: (b, connectionId) => {
-                calls.push({ connectionId, sent: b.sent });
+            onBytes: (b) => {
+                reportedBytes = b;
             }
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value.results.filter((r) => r.success).length).toBe(2);
+            expect(result.value.forwarded).toBe(2);
         }
-        expect(calls.map((c) => c.connectionId)).toEqual(['conn1', 'conn2']);
-        const minBytesPerConnection = Buffer.byteLength(JSON.stringify(payload));
-        for (const call of calls) {
-            expect(call.sent).toBeGreaterThanOrEqual(minBytesPerConnection);
-        }
+        const minBytes = Buffer.byteLength(JSON.stringify(payload)) * connectionIds.length;
+        expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
     });
 });
