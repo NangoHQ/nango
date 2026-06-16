@@ -18,11 +18,10 @@ const REMOTE_API_URLS: Record<string, string> = {
     prod: 'https://api.nango.dev'
 };
 
-// REMOTE_API mode only: fetch /env.js from the remote API and rewrite apiUrl to the
-// local Vite dev server origin so all API calls are routed through Vite's proxy instead
-// of going cross-origin to a backend whose CORS we don't control. The actual listening
-// port is resolved at request time (after the server binds) so Vite's automatic port
-// increment is reflected correctly.
+// REMOTE_API mode only: fetch /env.js from the remote API and rewrite apiUrl to the local
+// Vite origin, so API calls route through Vite's proxy instead of cross-origin to a backend
+// whose CORS we don't control. Port is read at request time (after bind) to track Vite's
+// automatic port increment.
 function apiEnvProxyPlugin(apiUrl: string): Plugin {
     return {
         name: 'api-env-proxy',
@@ -47,11 +46,10 @@ function apiProxyConfig() {
         throw new Error(`[nango] Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
     }
 
-    // Local dev (no REMOTE_API): the dashboard talks to the local API directly. The API's
-    // dev CORS trusts any localhost port, so multiple worktree dashboards on 3000/3001/...
-    // work without a proxy, and Connect UI reaches the real API (and its OAuth WebSocket)
-    // since apiUrl is left as the backend URL. We only proxy /env.js so the app can load
-    // window._env same-origin.
+    // Local dev (no REMOTE_API): dashboard talks to the local API directly. Dev CORS trusts
+    // any localhost port, so worktree dashboards on 3000/3001/... work without a proxy, and
+    // Connect UI reaches the real API (and its OAuth WebSocket) since apiUrl stays the backend
+    // URL. Only /env.js is proxied, so the app loads window._env same-origin.
     if (!remoteUrl) {
         return {
             envProxyPlugin: null as Plugin | null,
@@ -65,8 +63,7 @@ function apiProxyConfig() {
         envProxyPlugin: apiEnvProxyPlugin(remoteUrl) as Plugin | null,
         proxy: {
             '/api': proxyOpts,
-            // Extra routes needed for connection creation and auth flows.
-            // Most dashboard functionality (viewing connections, logs, settings) works with /api alone.
+            // Extra routes for connection creation and auth flows; most of the dashboard works with /api alone.
             '/connect': proxyOpts, // Connect UI session + telemetry
             '/integrations': proxyOpts, // Connect UI integration list
             '/providers': proxyOpts, // Connect UI provider details
