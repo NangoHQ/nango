@@ -85,6 +85,10 @@ describe('isAllowedWebCorsOrigin — local dev (isLocal=true)', () => {
         expect((await loadIsAllowed(utils))('http://127.0.0.1:3002')).toBe(true);
     });
 
+    it('allows IPv6 loopback [::1] on any port', async () => {
+        expect((await loadIsAllowed(utils))('http://[::1]:3002')).toBe(true);
+    });
+
     it('still blocks non-localhost origins', async () => {
         const isAllowed = await loadIsAllowed(utils);
         expect(isAllowed('http://evil.com')).toBe(false);
