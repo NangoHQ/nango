@@ -35,6 +35,7 @@ jobs:
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
+            # Trusted publishing requires npm CLI version 11.5.1 or later.
             - name: Update npm to latest trusted-publishing version
               run: npm install -g npm@11.5.1
 
