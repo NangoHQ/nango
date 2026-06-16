@@ -15,7 +15,7 @@ import {
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionCredential, connectionCredentialsApiKeySchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
+import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -187,15 +187,19 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
 
         if (customValidationResponse.isErr()) {
             void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+            const message = await handleValidateConnectionFailure({
+                operation: updatedConnection.operation,
+                connection: updatedConnection.connection,
+                config,
+                account,
+                environment,
+                provider,
+                error: customValidationResponse.error,
+                logCtx
+            });
+
             await logCtx.failed();
-
-            if (updatedConnection.operation === 'creation') {
-                // since this is a new invalid connection, delete it with no trace of it
-                await connectionService.hardDelete(updatedConnection.connection.id);
-            }
-
-            const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['error'] === 'string' ? payload['error'] : 'Connection failed validation';
 
             res.status(400).send({
                 error: {

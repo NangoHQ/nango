@@ -414,4 +414,19 @@ describe('Connection service integration tests', () => {
             expect(paginatedConnections).toEqual(connectionIds);
         });
     });
+
+    describe('markConnectionAuthFailed', () => {
+        it('should set refresh_exhausted and clear last_refresh_success', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createConfigSeed(env, 'test-auth-failed', 'google');
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
+
+            await connectionService.markConnectionAuthFailed({ id: connection.id });
+
+            const updated = await connectionService.getConnectionById(connection.id);
+            expect(updated?.refresh_exhausted).toBe(true);
+            expect(updated?.last_refresh_success).toBeNull();
+            expect(updated?.last_refresh_failure).not.toBeNull();
+        });
+    });
 });

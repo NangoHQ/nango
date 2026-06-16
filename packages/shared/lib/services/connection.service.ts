@@ -488,6 +488,17 @@ class ConnectionService {
         return getEncryptionManager().decryptConnection(res[0]!);
     }
 
+    public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
+        const now = new Date();
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id }).update({
+            updated_at: now,
+            last_refresh_failure: now,
+            last_refresh_success: null,
+            refresh_attempts: MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+            refresh_exhausted: true
+        });
+    }
+
     public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
         let attempt = currentAttempt || 1;
         const now = new Date();
