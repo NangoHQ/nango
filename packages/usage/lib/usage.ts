@@ -463,11 +463,13 @@ export class UsageTracker implements IUsageTracker {
         try {
             const cached = await this.redis.get(cacheKey);
             if (cached) {
+                metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'true' });
                 return Ok(JSON.parse(cached) as BillingUsageMetrics);
             }
         } catch (err) {
             logger.warning(`capping CH cache read failed for account=${accountId}: ${stringifyError(err)}`);
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'false' });
 
         const chResult = await this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
         if (chResult.isErr()) return Err(chResult.error);
