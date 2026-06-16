@@ -1,0 +1,22 @@
+customer-code-risk-scan/llm-review-prompt.md
+  s_a7d1e8b3773a3e::t_1f76901d4e6654 4,6-18,20-41
+  s_a7d1e8b3773a3e::t_45e8beeae9ef09 1-3,5,19,42
+customer-code-risk-scan/README.md
+  s_a7d1e8b3773a3e::t_adfe418fa2c26b 1-284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "da7cc3794e0a20da0161aa1fc15f53800ca5ff2d",
+  "prompts": {},
+  "sessions": {
+    "s_a7d1e8b3773a3e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1733bd8f6ffe8p3I1mgNa0Y5NM",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
