@@ -142,7 +142,7 @@ export const PlainChat: React.FC<{ user?: ApiUser }> = ({ user }) => {
         if (!appId) return;
 
         if (user) {
-            apiFetch('/api/v1/plain/hmac')
+            apiFetch('/api/v1/plain')
                 .then((r) => r.json() as Promise<{ data: { hash: string } }>)
                 .then(({ data }) => {
                     emailHashRef.current = data.hash;

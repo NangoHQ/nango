@@ -272,7 +272,7 @@ web.route('/user').patch(webAuth, patchUser);
 web.route('/user/password').put(webAuth, putUserPassword);
 
 // Plain (in-app support chat)
-web.route('/plain/hmac').get(webAuth, getPlainHmac);
+web.route('/plain').get(webAuth, getPlainHmac);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
