@@ -39,15 +39,13 @@ describe('getRedisClientOptions static auth', () => {
 
     it('is rejected by the server when no password is supplied', async () => {
         const url = `redis://${host}:${port}`;
-        const client = createClient(getRedisClientOptions(url));
-        client.on('error', () => {
-            // swallow the expected NOAUTH error event
+        // RESP3 sends AUTH inside HELLO during handshake, so a missing password
+        // fails at connect time (not on the first command). Disable reconnect so
+        // the client rejects immediately instead of retrying until timeout.
+        const client = createClient({
+            ...getRedisClientOptions(url),
+            socket: { reconnectStrategy: () => false }
         });
-        await client.connect();
-        try {
-            await expect(client.get('k')).rejects.toThrow(/NOAUTH/i);
-        } finally {
-            client.destroy();
-        }
+        await expect(client.connect()).rejects.toThrow(/NOAUTH/i);
     });
 });
