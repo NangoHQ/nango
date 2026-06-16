@@ -13,6 +13,11 @@ export const getPlainHmac = asyncWrapper<GetPlainHmac>((_req, res) => {
     }
 
     const { user } = res.locals;
+    if (!user?.email) {
+        res.status(401).send({ error: { code: 'unauthorized', message: 'User not found' } });
+        return;
+    }
+
     const hash = crypto.createHmac('sha256', secret).update(user.email).digest('hex');
 
     res.status(200).send({ data: { hash } });

@@ -157,7 +157,11 @@ export const PlainChat: React.FC<{ user?: ApiUser }> = ({ user }) => {
                 })
                 .catch(() => loadScript(appId));
         } else {
-            loadScript(appId);
+            if (window.Plain?.isInitialized()) {
+                window.Plain.update({ customerDetails: undefined, requireAuthentication: true });
+            } else {
+                loadScript(appId);
+            }
         }
 
         function loadScript(id: string) {
