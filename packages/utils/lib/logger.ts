@@ -57,11 +57,17 @@ if (!isCloud && !isEnterprise) {
         })
     ];
 } else {
+    // Structured JSON for log collectors (Datadog). One NDJSON line per event so payloads
+    // and stack traces don't split across multiple log entries.
     formatters = [
-        winston.format.printf((info) => {
-            const splat = info[SPLAT] && info[SPLAT].length > 0 ? JSON.stringify(info[SPLAT]) : '';
-            return `${info['service'] ? ` [${info['service']}] ` : ''}${info.message} ${splat}`;
-        })
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.timestamp(),
+        winston.format((info) => {
+            info['status'] = info.level;
+            return info;
+        })(),
+        winston.format.json()
     ];
 }
 
