@@ -118,12 +118,61 @@ function serializeErrorFields(info: Record<string, unknown>): void {
 }
 
 function stripWinstonMetaMessageAppend(message: string, splat: unknown[] | undefined): string {
-    if (splat?.length !== 1 || !isPlainObject(splat[0]) || typeof splat[0]['message'] !== 'string') {
+    const first = splat?.[0];
+    if (!isPlainObject(first) || typeof first['message'] !== 'string') {
         return message;
     }
 
-    const suffix = ` ${splat[0]['message']}`;
+    const suffix = ` ${first['message']}`;
     return message.endsWith(suffix) ? message.slice(0, -suffix.length) : message;
+}
+
+function resolveMessage(info: Record<string, unknown>, splat: unknown[] | undefined): string {
+    const raw = info['message'];
+
+    if (typeof raw === 'string') {
+        return stripWinstonMetaMessageAppend(raw, splat);
+    }
+
+    if (raw instanceof Error) {
+        if (info['err'] == null) {
+            info['err'] = raw;
+        }
+        return stripWinstonMetaMessageAppend(raw.message, splat);
+    }
+
+    if (isPlainObject(raw)) {
+        assignMetadata(info, raw);
+        const nestedMessage = raw['message'];
+        if (isPlainObject(nestedMessage)) {
+            assignMetadata(info, nestedMessage);
+        }
+
+        const text = typeof nestedMessage === 'string' ? nestedMessage : isPlainObject(nestedMessage) ? JSON.stringify(nestedMessage) : JSON.stringify(raw);
+        return stripWinstonMetaMessageAppend(text, splat);
+    }
+
+    if (raw == null) {
+        return stripWinstonMetaMessageAppend('', splat);
+    }
+
+    if (typeof raw === 'object') {
+        return stripWinstonMetaMessageAppend(JSON.stringify(raw), splat);
+    }
+
+    if (typeof raw === 'symbol') {
+        return stripWinstonMetaMessageAppend(raw.toString(), splat);
+    }
+
+    if (typeof raw === 'function') {
+        return stripWinstonMetaMessageAppend(raw.name || '[Function]', splat);
+    }
+
+    if (typeof raw === 'number' || typeof raw === 'boolean' || typeof raw === 'bigint') {
+        return stripWinstonMetaMessageAppend(String(raw), splat);
+    }
+
+    return stripWinstonMetaMessageAppend('', splat);
 }
 
 /**
@@ -134,7 +183,7 @@ function normalizeSplatAndErrors() {
     return winston.format((info) => {
         const canonicalLevel = info.level;
         const splat = info[SPLAT] as unknown[] | undefined;
-        let message = stripWinstonMetaMessageAppend(typeof info.message === 'string' ? info.message : String(info.message), splat);
+        let message = resolveMessage(info as Record<string, unknown>, splat);
 
         if (splat?.length) {
             const expectedFormatArgs = countExpectedFormatArgs(message);

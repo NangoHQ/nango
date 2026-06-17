@@ -130,4 +130,25 @@ describe('logger cloud format', () => {
         expect(parsed.status).toBe('info');
         expect(parsed.connectionId).toBe(1);
     });
+
+    it('strips winston meta.message append when extra splat args are present', async () => {
+        const logger = await getTestLogger();
+
+        logger.info('original message', { message: 'overridden', connectionId: 1 }, 'extra');
+
+        const parsed = JSON.parse(lines[0]!);
+        expect(parsed.message).toBe('original message');
+        expect(parsed.connectionId).toBe(1);
+    });
+
+    it('preserves structured object messages as metadata', async () => {
+        const logger = await getTestLogger();
+
+        logger.info({ level: 'info', message: { event: 'started', connectionId: 42 } });
+
+        const parsed = JSON.parse(lines[0]!);
+        expect(parsed.message).toBe('{"event":"started","connectionId":42}');
+        expect(parsed.event).toBe('started');
+        expect(parsed.connectionId).toBe(42);
+    });
 });
