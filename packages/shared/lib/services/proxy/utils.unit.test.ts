@@ -1364,6 +1364,82 @@ describe('buildProxyURL', () => {
 
         expect(url).toBe('https://my-secret-key.example.com/api/test');
     });
+
+    it('TWO_STEP: interpolates ${accessToken} in proxy.query from credentials.token', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'TWO_STEP',
+                    proxy: {
+                        base_url: 'https://api.example.com',
+                        query: {
+                            authToken: '${accessToken}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'my-auth-token',
+                    raw: { authToken: 'my-auth-token', accountID: 'acc-123' }
+                }
+            })
+        });
+
+        expect(url).toBe('https://api.example.com/api/test?authToken=my-auth-token');
+    });
+
+    it('TWO_STEP: interpolates ${credentials.raw.xxx} in proxy.query', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'TWO_STEP',
+                    proxy: {
+                        base_url: 'https://api.example.com',
+                        query: {
+                            account_id: '${credentials.raw.accountID}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'my-auth-token',
+                    raw: { authToken: 'my-auth-token', accountID: 'acc-123' }
+                }
+            })
+        });
+
+        expect(url).toBe('https://api.example.com/api/test?account_id=acc-123');
+    });
+
+    it('TWO_STEP: interpolates both ${accessToken} and ${credentials.raw.xxx} in proxy.query (ShopVox pattern)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'TWO_STEP',
+                    proxy: {
+                        base_url: 'https://api.shopvox.com/',
+                        query: {
+                            authToken: '${accessToken}',
+                            account_id: '${credentials.raw.accountID}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'shopvox-auth-token',
+                    raw: { authToken: 'shopvox-auth-token', accountID: '42' }
+                }
+            })
+        });
+
+        expect(url).toBe('https://api.shopvox.com/api/test?authToken=shopvox-auth-token&account_id=42');
+    });
 });
 
 describe('getAxiosConfiguration', () => {

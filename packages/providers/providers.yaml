@@ -18782,7 +18782,7 @@ shopvox:
     body_format: json
     token_url: https://api.shopvox.com/v1/login
     token_params:
-        user: ${credentials.username}
+        user: ${credentials.email}
         password: ${credentials.password}
     token_headers:
         content-type: application/json
@@ -18790,16 +18790,17 @@ shopvox:
         token: authToken
     proxy:
         base_url: https://api.shopvox.com/
-        headers:
-            authtoken: ${accessToken}
-            accountid: ${credentials.raw.accountID}
+        query:
+            authToken: ${accessToken}
+            account_id: ${credentials.raw.accountID}
     docs: https://nango.dev/docs/api-integrations/shopvox
     docs_connect: https://nango.dev/docs/api-integrations/shopvox/connect
     credentials:
-        username:
+        email:
             type: string
-            title: Username
-            description: Your ShopVox login username.
+            title: Email
+            format: email
+            description: Your ShopVox login email.
             doc_section: '#step-1-finding-your-credentials'
         password:
             type: string
