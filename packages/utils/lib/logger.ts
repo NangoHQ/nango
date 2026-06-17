@@ -24,11 +24,68 @@ export interface StrictLogger {
 const SPLAT = Symbol.for('splat');
 const ERROR_KEYS = ['err', 'error', 'cause'] as const;
 const FORMAT_TOKENS = /%[scdjifoO%]/g;
+const ESCAPED_PERCENT = /%%/g;
 
 const level = process.env['LOG_LEVEL'] ? process.env['LOG_LEVEL'] : isTest ? 'error' : 'info';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Error);
+}
+
+function countExpectedFormatArgs(message: string): number {
+    const tokens = message.match(FORMAT_TOKENS);
+    if (!tokens) {
+        return 0;
+    }
+
+    const escapes = message.match(ESCAPED_PERCENT)?.length ?? 0;
+    return tokens.length - escapes;
+}
+
+function mergeSplatArgs(info: Record<string, unknown>, splat: unknown[]): void {
+    if (splat.length === 0) {
+        return;
+    }
+
+    if (splat.length === 1) {
+        const arg = splat[0];
+        if (isPlainObject(arg)) {
+            Object.assign(info, arg);
+        } else if (arg instanceof Error) {
+            info['err'] = arg;
+        } else if (arg !== undefined) {
+            info['args'] = [arg];
+        }
+        return;
+    }
+
+    const errors = splat.filter((arg): arg is Error => arg instanceof Error);
+    const objects = splat.filter(isPlainObject);
+    const rest = splat.filter((arg) => arg !== undefined && !(arg instanceof Error) && !isPlainObject(arg));
+
+    if (objects.length === 1 && errors.length <= 1 && rest.length === 0) {
+        Object.assign(info, objects[0]);
+        if (errors[0]) {
+            info['err'] = errors[0];
+        }
+        return;
+    }
+
+    info['args'] = splat.map((arg) => (arg instanceof Error ? errorToObject(arg) : arg));
+    if (errors.length === 1 && info['err'] == null && info['error'] == null) {
+        info['err'] = errors[0];
+    }
+}
+
+function promoteFormatArgErrors(info: Record<string, unknown>, formatArgs: unknown[]): void {
+    if (info['err'] != null || info['error'] != null) {
+        return;
+    }
+
+    const err = formatArgs.find((arg): arg is Error => arg instanceof Error);
+    if (err) {
+        info['err'] = err;
+    }
 }
 
 function serializeErrorFields(info: Record<string, unknown>): void {
@@ -61,35 +118,19 @@ function normalizeSplatAndErrors() {
 
         if (splat?.length) {
             const message = typeof info.message === 'string' ? info.message : String(info.message);
-            const tokens = message.match(FORMAT_TOKENS);
+            const expectedFormatArgs = countExpectedFormatArgs(message);
 
-            if (tokens?.length) {
-                info.message = utilFormat(message, ...splat);
-            } else if (splat.length === 1) {
-                const arg = splat[0];
-                if (isPlainObject(arg)) {
-                    Object.assign(info, arg);
-                } else if (arg instanceof Error) {
-                    info['err'] = arg;
-                } else if (arg !== undefined) {
-                    info['args'] = [arg];
-                }
+            if (expectedFormatArgs > 0) {
+                const splatCopy = [...splat];
+                const extraCount = expectedFormatArgs - splatCopy.length;
+                const metas = extraCount < 0 ? splatCopy.splice(extraCount) : [];
+                const formatArgs = splatCopy;
+
+                info.message = utilFormat(message, ...formatArgs);
+                mergeSplatArgs(info as Record<string, unknown>, metas);
+                promoteFormatArgErrors(info as Record<string, unknown>, formatArgs);
             } else {
-                const errors = splat.filter((arg): arg is Error => arg instanceof Error);
-                const objects = splat.filter(isPlainObject);
-                const rest = splat.filter((arg) => arg !== undefined && !(arg instanceof Error) && !isPlainObject(arg));
-
-                if (objects.length === 1 && errors.length <= 1 && rest.length === 0) {
-                    Object.assign(info, objects[0]);
-                    if (errors[0]) {
-                        info['err'] = errors[0];
-                    }
-                } else {
-                    info['args'] = splat.map((arg) => (arg instanceof Error ? errorToObject(arg) : arg));
-                    if (errors.length === 1 && info['err'] == null && info['error'] == null) {
-                        info['err'] = errors[0];
-                    }
-                }
+                mergeSplatArgs(info as Record<string, unknown>, splat);
             }
         }
 

@@ -6,7 +6,7 @@ import type { ErrorObject } from 'serialize-error';
  * Transform any Error or primitive to a json-serializable object for structured logging.
  */
 export function errorToObject(err: unknown): ErrorObject {
-    if (!err) {
+    if (err == null) {
         return { message: 'Unknown error' };
     }
 

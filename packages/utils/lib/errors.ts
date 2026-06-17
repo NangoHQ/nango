@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { serializeError } from 'serialize-error';
 
+import { errorToObject } from './errorSerialize.js';
 import { getLogger } from './logger.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -90,7 +91,7 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
 
 const logger = getLogger('err');
 export function report(err: unknown, extra?: Record<string, unknown>) {
-    const message = err instanceof Error ? err.message : 'Unhandled error';
+    const message = errorToObject(err).message || 'Unknown error';
     logger.error(message, { err, ...extra });
 
     if (!sentry) {

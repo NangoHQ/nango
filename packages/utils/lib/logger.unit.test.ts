@@ -93,4 +93,29 @@ describe('logger cloud format', () => {
         expect(parsed.environmentId).toBe(1);
         expect(parsed.environmentName).toBe('prod');
     });
+
+    it('merges metadata after tokenized message interpolation', async () => {
+        const logger = await getTestLogger();
+        const err = new Error('tokenized');
+
+        logger.error('request %s failed', 'abc-123', { err, statusCode: 500 });
+
+        const parsed = JSON.parse(lines[0]!);
+        expect(parsed.message).toBe('request abc-123 failed');
+        expect(parsed.statusCode).toBe(500);
+        expect(parsed.err.message).toBe('tokenized');
+        expect(parsed.stack).toBeDefined();
+    });
+
+    it('serializes Error used as a format token argument', async () => {
+        const logger = await getTestLogger();
+        const err = new Error('format-arg');
+
+        logger.error('failed: %s', err);
+
+        const parsed = JSON.parse(lines[0]!);
+        expect(parsed.message).toContain('failed:');
+        expect(parsed.err.message).toBe('format-arg');
+        expect(parsed.stack).toBeDefined();
+    });
 });
