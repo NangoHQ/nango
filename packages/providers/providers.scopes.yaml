@@ -4258,8 +4258,10 @@ gusto-demo:
     - workers_compensation:read
     - workers_compensation:write
 
-# source: providers.yaml (no official scopes page or discovery endpoint found)
-halo-psa: []
+# source: providers.yaml (Halo PSA grants requested scopes from the API application's configured permissions)
+halo-psa:
+    - all
+    - all:teams
 
 # source: https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/
 harvest:
