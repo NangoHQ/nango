@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const runtimeName = requiredEnv('AGENTCORE_RUNTIME_NAME');
@@ -48,8 +47,7 @@ async function createRuntime() {
         roleArn: runtimeRoleArn,
         networkConfiguration: defaultNetworkConfiguration,
         protocolConfiguration: defaultProtocolConfiguration,
-        description: runtimeDescription,
-        clientToken: clientToken('create')
+        description: runtimeDescription
     };
 
     console.log(`Creating AgentCore runtime ${runtimeName}`);
@@ -66,8 +64,7 @@ async function updateRuntime(runtime) {
         roleArn: runtimeRoleArn,
         networkConfiguration: defaultNetworkConfiguration,
         protocolConfiguration: defaultProtocolConfiguration,
-        description: runtimeDescription,
-        clientToken: clientToken('update')
+        description: runtimeDescription
     };
 
     console.log(`Updating AgentCore runtime ${runtime.agentRuntimeName} to ${imageUri}`);
@@ -136,11 +133,6 @@ function awsJson(args) {
 
 function awsJsonWithInput(args, input) {
     return awsJson([...args, '--cli-input-json', JSON.stringify(input)]);
-}
-
-function clientToken(operation) {
-    const hash = createHash('sha256').update(`${operation}:${runtimeName}:${imageUri}`).digest('hex');
-    return `nango-agentcore-${operation}-${hash}`;
 }
 
 function requiredEnv(name) {
