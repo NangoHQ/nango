@@ -243,6 +243,15 @@ describe('toggleGroup', () => {
         expect(result).toContain('environment:integrations:*');
         expect(result).toContain('environment:deploy');
     });
+
+    it('keeps unmodeled same-prefix scopes when enabling the group wildcard', () => {
+        // A scope the UI does not render a checkbox for (e.g. legacy/not-yet-modeled) must
+        // not be silently dropped — the new wildcard grants it, and dropping it would lose it
+        // permanently once a leaf is later deselected.
+        const result = toggleGroup(integrations, ['environment:integrations:legacy_unmodeled']);
+        expect(result).toContain('environment:integrations:*');
+        expect(result).toContain('environment:integrations:legacy_unmodeled');
+    });
 });
 
 describe('nested subgroups (integration functions)', () => {

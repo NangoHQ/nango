@@ -188,7 +188,8 @@ export function toggleGroup(group: ScopeGroup, selectedScopes: string[]): string
         return selectedScopes.filter((s) => s !== wc);
     } else if (wc) {
         const prefix = wc.slice(0, -1);
-        const cleaned = selectedScopes.filter((s) => !s.startsWith(prefix));
+        // Keep everything except this group's leaves and any narrower wildcard it replaces
+        const cleaned = selectedScopes.filter((s) => !all.includes(s) && !(s.endsWith(':*') && s.startsWith(prefix)));
         return [...cleaned, wc];
     } else {
         const allSelected = all.every((s) => selectedScopes.includes(s));
