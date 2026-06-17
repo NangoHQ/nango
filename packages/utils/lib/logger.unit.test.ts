@@ -147,8 +147,22 @@ describe('logger cloud format', () => {
         logger.info({ level: 'info', message: { event: 'started', connectionId: 42 } });
 
         const parsed = JSON.parse(lines[0]!);
-        expect(parsed.message).toBe('{"event":"started","connectionId":42}');
+        expect(JSON.parse(parsed.message)).toEqual({ event: 'started', connectionId: 42 });
         expect(parsed.event).toBe('started');
         expect(parsed.connectionId).toBe(42);
+    });
+
+    it('does not throw on circular object messages', async () => {
+        const logger = await getTestLogger();
+        const circular: Record<string, unknown> = { event: 'started', connectionId: 42 };
+        circular['self'] = circular;
+
+        expect(() => logger.info({ message: circular })).not.toThrow();
+
+        const parsed = JSON.parse(lines[0]!);
+        expect(parsed.event).toBe('started');
+        expect(parsed.connectionId).toBe(42);
+        expect(parsed.message).toContain('started');
+        expect(parsed.message).toContain('[Circular]');
     });
 });

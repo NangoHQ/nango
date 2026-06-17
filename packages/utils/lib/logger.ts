@@ -5,6 +5,7 @@ import winston from 'winston';
 
 import { isCloud, isEnterprise, isTest } from './environment/detection.js';
 import { errorToObject } from './errorSerialize.js';
+import { stringifyObject } from './json.js';
 
 import type { LeveledLogMethod, Logform } from 'winston';
 
@@ -127,6 +128,14 @@ function stripWinstonMetaMessageAppend(message: string, splat: unknown[] | undef
     return message.endsWith(suffix) ? message.slice(0, -suffix.length) : message;
 }
 
+function stringifyMessageValue(value: unknown): string {
+    try {
+        return stringifyObject(value);
+    } catch {
+        return inspect(value, { depth: 5, breakLength: Infinity, compact: true });
+    }
+}
+
 function resolveMessage(info: Record<string, unknown>, splat: unknown[] | undefined): string {
     const raw = info['message'];
 
@@ -148,7 +157,12 @@ function resolveMessage(info: Record<string, unknown>, splat: unknown[] | undefi
             assignMetadata(info, nestedMessage);
         }
 
-        const text = typeof nestedMessage === 'string' ? nestedMessage : isPlainObject(nestedMessage) ? JSON.stringify(nestedMessage) : JSON.stringify(raw);
+        const text =
+            typeof nestedMessage === 'string'
+                ? nestedMessage
+                : isPlainObject(nestedMessage)
+                  ? stringifyMessageValue(nestedMessage)
+                  : stringifyMessageValue(raw);
         return stripWinstonMetaMessageAppend(text, splat);
     }
 
@@ -157,7 +171,7 @@ function resolveMessage(info: Record<string, unknown>, splat: unknown[] | undefi
     }
 
     if (typeof raw === 'object') {
-        return stripWinstonMetaMessageAppend(JSON.stringify(raw), splat);
+        return stripWinstonMetaMessageAppend(stringifyMessageValue(raw), splat);
     }
 
     if (typeof raw === 'symbol') {
