@@ -118,4 +118,16 @@ describe('logger cloud format', () => {
         expect(parsed.err.message).toBe('format-arg');
         expect(parsed.stack).toBeDefined();
     });
+
+    it('does not let metadata overwrite canonical log fields', async () => {
+        const logger = await getTestLogger();
+
+        logger.info('original message', { message: 'overridden', level: 'error', connectionId: 1 });
+
+        const parsed = JSON.parse(lines[0]!);
+        expect(parsed.message).toBe('original message');
+        expect(parsed.level).toBe('info');
+        expect(parsed.status).toBe('info');
+        expect(parsed.connectionId).toBe(1);
+    });
 });

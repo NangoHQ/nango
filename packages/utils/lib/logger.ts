@@ -25,6 +25,7 @@ const SPLAT = Symbol.for('splat');
 const ERROR_KEYS = ['err', 'error', 'cause'] as const;
 const FORMAT_TOKENS = /%[scdjifoO%]/g;
 const ESCAPED_PERCENT = /%%/g;
+const RESERVED_INFO_KEYS = new Set(['level', 'message', 'service', 'timestamp', 'status', 'stack', 'splat']);
 
 const level = process.env['LOG_LEVEL'] ? process.env['LOG_LEVEL'] : isTest ? 'error' : 'info';
 
@@ -42,6 +43,14 @@ function countExpectedFormatArgs(message: string): number {
     return tokens.length - escapes;
 }
 
+function assignMetadata(info: Record<string, unknown>, meta: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(meta)) {
+        if (!RESERVED_INFO_KEYS.has(key)) {
+            info[key] = value;
+        }
+    }
+}
+
 function mergeSplatArgs(info: Record<string, unknown>, splat: unknown[]): void {
     if (splat.length === 0) {
         return;
@@ -50,7 +59,7 @@ function mergeSplatArgs(info: Record<string, unknown>, splat: unknown[]): void {
     if (splat.length === 1) {
         const arg = splat[0];
         if (isPlainObject(arg)) {
-            Object.assign(info, arg);
+            assignMetadata(info, arg);
         } else if (arg instanceof Error) {
             info['err'] = arg;
         } else if (arg !== undefined) {
@@ -64,7 +73,7 @@ function mergeSplatArgs(info: Record<string, unknown>, splat: unknown[]): void {
     const rest = splat.filter((arg) => arg !== undefined && !(arg instanceof Error) && !isPlainObject(arg));
 
     if (objects.length === 1 && errors.length <= 1 && rest.length === 0) {
-        Object.assign(info, objects[0]);
+        assignMetadata(info, objects[0]!);
         if (errors[0]) {
             info['err'] = errors[0];
         }
@@ -108,16 +117,26 @@ function serializeErrorFields(info: Record<string, unknown>): void {
     }
 }
 
+function stripWinstonMetaMessageAppend(message: string, splat: unknown[] | undefined): string {
+    if (splat?.length !== 1 || !isPlainObject(splat[0]) || typeof splat[0]['message'] !== 'string') {
+        return message;
+    }
+
+    const suffix = ` ${splat[0]['message']}`;
+    return message.endsWith(suffix) ? message.slice(0, -suffix.length) : message;
+}
+
 /**
  * Replaces winston's splat formatter for cloud JSON output. Merges metadata objects, serializes
  * err/error/cause fields, and collects leftover positional primitives into an `args` array.
  */
 function normalizeSplatAndErrors() {
     return winston.format((info) => {
+        const canonicalLevel = info.level;
         const splat = info[SPLAT] as unknown[] | undefined;
+        let message = stripWinstonMetaMessageAppend(typeof info.message === 'string' ? info.message : String(info.message), splat);
 
         if (splat?.length) {
-            const message = typeof info.message === 'string' ? info.message : String(info.message);
             const expectedFormatArgs = countExpectedFormatArgs(message);
 
             if (expectedFormatArgs > 0) {
@@ -126,13 +145,16 @@ function normalizeSplatAndErrors() {
                 const metas = extraCount < 0 ? splatCopy.splice(extraCount) : [];
                 const formatArgs = splatCopy;
 
-                info.message = utilFormat(message, ...formatArgs);
+                message = utilFormat(message, ...formatArgs);
                 mergeSplatArgs(info as Record<string, unknown>, metas);
                 promoteFormatArgErrors(info as Record<string, unknown>, formatArgs);
             } else {
                 mergeSplatArgs(info as Record<string, unknown>, splat);
             }
         }
+
+        info.message = message;
+        info.level = canonicalLevel;
 
         serializeErrorFields(info as Record<string, unknown>);
         return info;
