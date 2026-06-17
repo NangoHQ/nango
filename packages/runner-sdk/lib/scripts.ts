@@ -1,4 +1,5 @@
 import type { NangoActionBase } from './action.js';
+import type { NangoFunctionBase } from './function.js';
 import type { NangoSyncBase } from './sync.js';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
@@ -13,6 +14,7 @@ export type CreateAnyResponse =
 
 export type { ActionError } from './errors.js';
 export type { NangoActionBase as NangoAction, ProxyConfiguration } from './action.js';
+export type { NangoFunctionBase as NangoFunction } from './function.js';
 export type { NangoSyncBase as NangoSync } from './sync.js';
 
 // ----- Sync
@@ -647,7 +649,7 @@ export interface CreateFunctionProps<
      * }
      * ```
      */
-    exec: (nango: NangoSyncBase<TModels, TMetadata, TCheckpoint>, event: FunctionEvent<z.infer<TInput>>) => MaybePromise<z.infer<TOutput>>;
+    exec: (nango: NangoFunctionBase<TModels, TMetadata, TCheckpoint>, event: FunctionEvent<z.infer<TInput>>) => MaybePromise<z.infer<TOutput>>;
 }
 
 export interface CreateFunctionResponse<
@@ -715,7 +717,7 @@ export interface CreateWebhookProps<
     output?: TOutput;
     metadata?: TMetadata;
     checkpoint?: TCheckpoint;
-    exec: (nango: NangoSyncBase<TModels, TMetadata, TCheckpoint>, event: FunctionEvent) => MaybePromise<z.infer<TOutput>>;
+    exec: (nango: NangoFunctionBase<TModels, TMetadata, TCheckpoint>, event: FunctionEvent) => MaybePromise<z.infer<TOutput>>;
 }
 
 /**
