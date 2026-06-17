@@ -5,7 +5,17 @@ import { operationIdRegex } from '@nangohq/logs';
 import type { Feature } from '@nangohq/types';
 
 export const nangoPropsSchema = z.looseObject({
-    scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
+    scriptType: z.enum(['action', 'webhook', 'sync', 'on-event', 'function']),
+    functionEvent: z
+        .looseObject({
+            trigger: z.object({ type: z.enum(['http', 'schedule', 'event']), name: z.string().optional() }).optional(),
+            payload: z.any().optional(),
+            headers: z.record(z.string(), z.string()).optional(),
+            rawBody: z.string().optional(),
+            coalesced: z.object({ count: z.number(), firstSeenAt: z.string(), lastSeenAt: z.string(), overflowed: z.boolean() }).optional()
+        })
+        .optional(),
+    connectionBound: z.boolean().optional(),
     connectionId: z.string().min(1),
     nangoConnectionId: z.number(),
     environmentId: z.number(),
@@ -20,7 +30,7 @@ export const nangoPropsSchema = z.looseObject({
     syncConfig: z.looseObject({
         id: z.number(),
         sync_name: z.string().min(1),
-        type: z.enum(['sync', 'action', 'on-event']),
+        type: z.enum(['sync', 'action', 'on-event', 'function']),
         environment_id: z.number(),
         models: z.array(z.string()),
         file_location: z.string(),

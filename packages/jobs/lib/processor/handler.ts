@@ -3,6 +3,7 @@ import tracer from 'dd-trace';
 import { Err, Ok } from '@nangohq/utils';
 
 import { startAction } from '../execution/action.js';
+import { startFunction } from '../execution/function.js';
 import { startOnEvent } from '../execution/onEvent.js';
 import { abortTask } from '../execution/operations/abort.js';
 import { abortSync, startSync } from '../execution/sync.js';
@@ -48,6 +49,14 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
         const span = tracer.startSpan('jobs.handler.onEvent');
         return await tracer.scope().activate(span, async () => {
             const res = startOnEvent(task);
+            span.finish();
+            return res;
+        });
+    }
+    if (task.isFunction()) {
+        const span = tracer.startSpan('jobs.handler.function');
+        return await tracer.scope().activate(span, async () => {
+            const res = await startFunction(task);
             span.finish();
             return res;
         });

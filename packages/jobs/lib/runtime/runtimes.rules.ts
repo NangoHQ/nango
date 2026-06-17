@@ -4,11 +4,13 @@ import { envs } from '../env.js';
 
 import type { DBPlan, NangoProps, Result, RoutingContext } from '@nangohq/types';
 
-const runtimeSelectors = {
+const runtimeSelectors: Record<NangoProps['scriptType'], (plan: DBPlan) => 'runner' | 'lambda'> = {
     sync: (plan: DBPlan) => plan.sync_function_runtime,
     action: (plan: DBPlan) => plan.action_function_runtime,
     webhook: (plan: DBPlan) => plan.webhook_function_runtime,
-    'on-event': (plan: DBPlan) => plan.on_event_function_runtime
+    'on-event': (plan: DBPlan) => plan.on_event_function_runtime,
+    // Functions always run on the runner fleet for now (no lambda routing yet).
+    function: () => 'runner'
 };
 
 export async function getFleetId({

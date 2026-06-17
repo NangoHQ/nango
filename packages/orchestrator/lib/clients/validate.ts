@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
-import { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
+import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 import { jsonSchema } from '../utils/validation.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
@@ -73,6 +73,19 @@ export const onEventArgsSchema = z.object({
     activityLogId: z.string(),
     ...commonSchemaArgsFields
 });
+export const functionArgsSchema = z.object({
+    type: z.literal('function'),
+    functionName: z.string().min(1),
+    providerConfigKey: z.string().min(1),
+    // null for connection-less runs (e.g. an integration-level webhook routing run)
+    connection: commonSchemaArgsFields.connection.nullable(),
+    activityLogId: z.string(),
+    trigger: z
+        .object({ type: z.enum(['http', 'schedule', 'event']), name: z.string().nullable().default(null) })
+        .nullable()
+        .default(null),
+    input: jsonSchema
+});
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -109,6 +122,10 @@ const webhookSchema = z.object({
 const onEventSchema = z.object({
     ...commonSchemaFields,
     payload: onEventArgsSchema
+});
+const functionSchema = z.object({
+    ...commonSchemaFields,
+    payload: functionArgsSchema
 });
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
@@ -223,6 +240,29 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 sdkVersion: onEvent.data.payload.sdkVersion,
                 activityLogId: onEvent.data.payload.activityLogId,
                 heartbeatTimeoutSecs: onEvent.data.heartbeatTimeoutSecs
+            })
+        );
+    }
+    const fn = functionSchema.safeParse(task);
+    if (fn.success) {
+        return Ok(
+            TaskFunction({
+                id: fn.data.id,
+                state: fn.data.state,
+                name: fn.data.name,
+                attempt: fn.data.retryCount + 1,
+                attemptMax: fn.data.retryMax + 1,
+                functionName: fn.data.payload.functionName,
+                providerConfigKey: fn.data.payload.providerConfigKey,
+                connection: fn.data.payload.connection,
+                activityLogId: fn.data.payload.activityLogId,
+                trigger: fn.data.payload.trigger,
+                input: fn.data.payload.input,
+                groupKey: fn.data.groupKey,
+                groupMaxConcurrency: fn.data.groupMaxConcurrency,
+                ownerKey: fn.data.ownerKey,
+                retryKey: fn.data.retryKey,
+                heartbeatTimeoutSecs: fn.data.heartbeatTimeoutSecs
             })
         );
     }

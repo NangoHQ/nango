@@ -19,6 +19,7 @@ import type {
     ClientError,
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
     ExecuteOnEventProps,
     ExecuteProps,
     ExecuteReturn,
@@ -303,6 +304,31 @@ export class OrchestratorClient {
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
         const res = await this.immediate(this.buildWebhookSchedulingProps(props));
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({ taskId: res.value.taskId, retryKey: res.value.retryKey });
+    }
+
+    private buildFunctionSchedulingProps(props: ExecuteFunctionProps) {
+        const { args, ...rest } = props;
+        return {
+            ...rest,
+            retry: { count: 0, max: 0 },
+            timeoutSettingsInSecs: {
+                createdToStarted: 5 * 60,
+                startedToCompleted: 60 * 60,
+                heartbeat: 5 * 60
+            },
+            args: {
+                ...args,
+                type: 'function' as const
+            }
+        };
+    }
+
+    public async executeFunction(props: ExecuteFunctionProps): Promise<ExecuteReturn> {
+        const res = await this.immediate(this.buildFunctionSchedulingProps(props));
         if (res.isErr()) {
             return Err(res.error);
         }
