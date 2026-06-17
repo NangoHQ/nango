@@ -426,6 +426,7 @@ async function compileDeployInfo({
                 input: typeof flow.input === 'string' ? flow.input : null,
                 sync_type: flow.sync_type || null,
                 webhook_subscriptions: flow.webhookSubscriptions || [],
+                function_config: flow.function_config ?? null,
                 enabled: lastSyncWasEnabled,
                 model_schema: null,
                 models_json_schema,

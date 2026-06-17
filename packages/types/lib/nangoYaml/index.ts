@@ -6,12 +6,7 @@ export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /** @deprecated **/
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'functions' | 'webhooks' | 'post-connection-scripts'; // post-connection-scripts is deprecated
-export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
-/**
- * The `function` primitive is authored via `createFunction()` / `createWebhook()`. It is tracked
- * separately from {@link ScriptTypeLiteral} (sync/action/on-event) while it is introduced additively.
- */
-export type FunctionScriptTypeLiteral = 'function';
+export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event' | 'function';
 
 // --------------
 // YAML V1
@@ -135,9 +130,9 @@ export interface ParsedFunctionTrigger {
     /** http trigger: URL path segment. schedule/event triggers: disambiguates multiple of the same type. */
     name?: string;
     /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
-    scope?: 'integration' | 'connection';
+    scope?: 'integration' | 'connection' | undefined;
     /** schedule trigger. */
-    schedule?: string;
+    schedule?: string | undefined;
     /** event trigger. */
     event?: string;
     /** Whether the trigger ships one or more `ingressHooks` (executed at ingress). */
@@ -165,6 +160,16 @@ export interface ParsedNangoFunction {
     version: string;
     json_schema?: JSONSchema7 | undefined;
     features?: Feature[] | undefined;
+}
+
+/**
+ * Function-specific configuration persisted alongside a deployed function (in `_nango_sync_configs.function_config`).
+ * Captures what makes a function distinct from a sync/action: its triggers (and their ingress/debounce config).
+ */
+export interface FunctionConfig {
+    name?: string | undefined;
+    triggers: ParsedFunctionTrigger[];
+    debounce?: ParsedNangoFunction['debounce'];
 }
 
 export interface ParsedNangoAction {
