@@ -81,7 +81,7 @@ export const InviteSignup: React.FC = () => {
                     <p className="text-text-secondary text-body-medium-regular">This invitation no longer exists or is expired.</p>
                 </div>
 
-                <ButtonLink to={'/signup'} variant="secondary" className="w-full" size="xl">
+                <ButtonLink to={'/signup'} variant="outline" className="w-full" size="xl">
                     Back to signup
                 </ButtonLink>
             </DefaultLayout>
@@ -106,7 +106,7 @@ export const InviteSignup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 items-center justify-center">
-                    <ButtonLink to={'/'} variant="secondary" size="xl">
+                    <ButtonLink to={'/'} variant="outline" size="xl">
                         Back to home
                     </ButtonLink>
                     <Button onClick={signout} variant="primary" size="xl">
@@ -141,7 +141,7 @@ export const InviteSignup: React.FC = () => {
 
             {isLogged ? (
                 <div className="flex gap-2 items-center justify-center">
-                    <Button variant="secondary" size="xl" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
+                    <Button variant="outline" size="xl" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
                         Decline
                     </Button>
                     <Button variant="danger" size="xl" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>

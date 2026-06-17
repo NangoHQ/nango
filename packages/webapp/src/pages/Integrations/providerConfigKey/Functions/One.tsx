@@ -186,7 +186,7 @@ export const FunctionsOne: React.FC = () => {
 
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
                                 <Button
-                                    variant="secondary"
+                                    variant="outline"
                                     size="md"
                                     disabled={!func.enabled}
                                     onClick={() => {
@@ -264,7 +264,7 @@ export const FunctionsOne: React.FC = () => {
                             </div>
                             <div className="inline-flex gap-3">
                                 <LineSnippet snippet={`nango clone ${gitDir}`} />
-                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="xl">
+                                <ButtonLink to={gitUrl} target="_blank" variant="outline" size="xl">
                                     View code <ExternalLink />
                                 </ButtonLink>
                             </div>

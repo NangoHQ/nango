@@ -74,7 +74,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary" onClick={handleCancel} disabled={isLoading || loading}>
+                        <Button variant="outline" onClick={handleCancel} disabled={isLoading || loading}>
                             {cancelButtonText}
                         </Button>
                     </DialogClose>

@@ -311,7 +311,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="outline">Cancel</Button>
                         </DialogClose>
                         <Button variant="primary" onClick={onTrigger} loading={isRunningSyncCommand}>
                             Trigger

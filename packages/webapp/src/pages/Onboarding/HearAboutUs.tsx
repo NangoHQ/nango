@@ -78,7 +78,7 @@ export const HearAboutUs: React.FC = () => {
 
             <div className="flex w-full flex-col gap-4">
                 {HEAR_ABOUT_OPTIONS.map(({ label, value }) => (
-                    <Button variant="secondary" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
+                    <Button variant="outline" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
                         {label}
                     </Button>
                 ))}

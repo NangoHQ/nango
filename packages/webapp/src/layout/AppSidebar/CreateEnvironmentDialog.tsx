@@ -84,7 +84,7 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
                         />
                         <DialogFooter>
                             <DialogClose asChild>
-                                <Button variant="secondary">Cancel</Button>
+                                <Button variant="outline">Cancel</Button>
                             </DialogClose>
                             <Button variant="primary" type="submit" disabled={isPending}>
                                 {isPending && <Loader className="animate-spin h-full w-full" />}

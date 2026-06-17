@@ -171,7 +171,7 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
             </div>
             <DialogFooter>
                 <DialogClose asChild>
-                    <Button variant="secondary" size="xl">
+                    <Button variant="outline" size="xl">
                         Cancel
                     </Button>
                 </DialogClose>

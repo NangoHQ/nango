@@ -76,7 +76,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                         <Tag variant="neutral">{snippets[0].language}</Tag>
                     )}
                     {onExecute && (
-                        <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>
+                        <Button variant="outline" onClick={onClickExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
                                     <Loader className="w-4 h-4 animate-spin text-text-secondary" />

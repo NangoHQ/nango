@@ -96,7 +96,7 @@ export const CreateIntegration = () => {
                                 ))}
                             </div>
                         </div>
-                        <ButtonLink to={provider.docs} variant="secondary">
+                        <ButtonLink to={provider.docs} variant="outline">
                             <BookOpen />
                             Full setup guide
                         </ButtonLink>

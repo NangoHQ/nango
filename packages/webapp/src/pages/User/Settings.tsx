@@ -100,7 +100,7 @@ export const UserSettings: React.FC = () => {
                     {edit && (
                         <div className="flex justify-end gap-2 items-center">
                             <Button
-                                variant={'secondary'}
+                                variant={'outline'}
                                 onClick={() => {
                                     setName(user.name);
                                     setEdit(false);

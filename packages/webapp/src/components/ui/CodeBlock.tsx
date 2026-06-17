@@ -74,7 +74,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         </Badge>
                     )}
                     {onExecute && (
-                        <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>
+                        <Button variant="outline" onClick={onClickExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
                                     <Loader className="size-4 animate-spin text-text-secondary" />

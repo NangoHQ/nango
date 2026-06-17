@@ -26,7 +26,7 @@ export const OAuth2CredentialsComponent: React.FC<{
                     {credentials.refresh_token && (
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
-                                <Button variant="secondary" size="md" className="h-full" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
+                                <Button variant="outline" size="md" className="h-full" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
                                     <RefreshCwIcon />
                                     Refresh
                                 </Button>

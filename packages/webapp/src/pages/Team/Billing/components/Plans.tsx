@@ -138,14 +138,14 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     const ButtonComponent = useMemo(() => {
         if (active) {
             return (
-                <Button disabled variant="secondary" className="w-27">
+                <Button disabled variant="outline" className="w-27">
                     Current plan
                 </Button>
             );
         }
         if (isFuture) {
             return (
-                <Button disabled variant="secondary" className="w-27">
+                <Button disabled variant="outline" className="w-27">
                     Scheduled
                 </Button>
             );
@@ -197,7 +197,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         }
 
         return (
-            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/demo" target="_blank">
+            <ButtonLink variant="outline" className="w-27" to="https://nango.dev/demo" target="_blank">
                 Contact us
             </ButtonLink>
         );
@@ -409,7 +409,7 @@ const PlanChangeDialog: React.FC<{
                 )}
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button variant="primary" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
                         {loading && <Loader className="size-4 animate-spin" />}

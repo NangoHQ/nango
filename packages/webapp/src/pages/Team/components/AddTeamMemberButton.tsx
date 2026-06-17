@@ -116,7 +116,7 @@ export const AddTeamMemberButton = () => {
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button type="submit" form="invite-form" variant="primary" loading={isPending}>
                         Invite
