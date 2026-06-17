@@ -104,7 +104,9 @@ export class SyncManagerService {
             // Resume soft-deleted syncs if needed
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
             if (existing.isOk()) {
-                await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                if (syncData.auto_start !== false) {
+                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                }
                 continue;
             }
             // If the sync doesn't exist, create it and schedule it
@@ -159,7 +161,9 @@ export class SyncManagerService {
                 // Resume soft-deleted syncs if needed
                 const existing = await undeleteSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (existing.isOk()) {
-                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    if (flowConfig.auto_start !== false) {
+                        await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    }
                     continue;
                 }
                 // If the sync doesn't exist, create it and schedule it
