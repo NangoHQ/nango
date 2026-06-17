@@ -181,8 +181,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                         <Button
                             type="button"
                             variant="outline"
-                            size="md"
-                            className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
+                            size="sm"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/connections/create${playgroundIntegration ? `?integration_id=${playgroundIntegration}` : ''}`);
@@ -210,9 +209,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Activate more functions</span>
                             <Button
                                 type="button"
-                                variant="outline"
-                                size="md"
-                                className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
+                                variant="secondary"
+                                size="sm"
                                 onClick={() => {
                                     setPlaygroundOpen(false);
                                     navigate(`/${env}/integrations/${playgroundIntegration}`);
