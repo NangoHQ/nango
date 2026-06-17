@@ -333,7 +333,6 @@ jobs:
               id: deploy-agentcore
               env:
                   AGENTCORE_RUNTIME_NAME: ${{ vars.AGENTCORE_RUNTIME_NAME || format('nango_sandbox_{0}', inputs.stage) }}
-                  AGENTCORE_RUNTIME_ID: ${{ vars.AGENTCORE_RUNTIME_ID }}
                   AGENTCORE_RUNTIME_ROLE_ARN: ${{ vars.AGENTCORE_RUNTIME_ROLE_ARN }}
                   AGENTCORE_RUNTIME_IMAGE_URI: ${{ steps.agentcore-image.outputs.uri }}
               run: |
