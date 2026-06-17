@@ -214,6 +214,6 @@ exports[`edge cases > should catch invalid setMergingStrategy 1`] = `
 
 exports[`edge cases > should catch multiple exports 1`] = `
 "err - ./zero/cases/multipleExports.ts:25 
-  Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent are permitted.
+  Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent, createFunction, createWebhook are permitted.
 "
 `;
