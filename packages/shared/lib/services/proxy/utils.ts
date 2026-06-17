@@ -458,20 +458,26 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     if (config.provider?.proxy?.query) {
+        const creds = connection.credentials;
+        let accessToken = '';
+        if (creds.type === 'OAUTH2') {
+            accessToken = creds.access_token || '';
+        } else if ('token' in creds && typeof creds.token === 'string') {
+            accessToken = creds.token;
+        }
+        const replacers = {
+            accessToken,
+            connectionConfig: connection.connection_config,
+            credentials: creds,
+            ...(creds as unknown as Record<string, string>)
+        };
         for (const [key, value] of Object.entries(config.provider.proxy.query)) {
             if (typeof value !== 'string') {
                 continue;
             }
-            if (connection.credentials.type === 'API_KEY' && value.includes('${apiKey}')) {
-                url.searchParams.set(key, interpolateIfNeeded(value, { ...(connection.credentials as unknown as Record<string, string>) }));
-            } else if (value.includes('connectionConfig.')) {
-                const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
-
-                if (interpolatedValue && !interpolatedValue.includes('${')) {
-                    url.searchParams.set(key, interpolatedValue);
-                }
-            } else if (!value.includes('$')) {
-                url.searchParams.set(key, value);
+            const interpolated = interpolateIfNeeded(value, replacers);
+            if (!interpolated.includes('${')) {
+                url.searchParams.set(key, interpolated);
             }
         }
     }
