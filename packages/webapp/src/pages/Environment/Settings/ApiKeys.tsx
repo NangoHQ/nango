@@ -9,6 +9,7 @@ import {
     SCOPE_GROUPS,
     allGroupScopes,
     groupWildcard,
+    isScopeGroup,
     isScopeSelected,
     toggleCredential as toggleCredentialFn,
     toggleGroup as toggleGroupFn,
@@ -92,24 +93,79 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
         return wc ? selectedScopes.includes(wc) : false;
     };
 
-    const isGroupAllSelected = (group: ScopeGroup) => {
-        const all = allGroupScopes(group);
-        return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
-    };
+    const isGroupAllSelected = (group: ScopeGroup) => allGroupScopes(group).every((s) => isScopeSelected(s, selectedScopes));
 
-    const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
+    const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => isScopeSelected(s, selectedScopes));
 
-    const countGroupTotal = (group: ScopeGroup): number => {
-        return group.items.reduce((acc, item) => acc + (item.credentials ? 2 : 1), 0);
-    };
+    const countGroupTotal = (group: ScopeGroup): number => allGroupScopes(group).length;
 
-    const countGroupSelected = (group: ScopeGroup): number => {
-        if (isGroupWildcardSelected(group)) return countGroupTotal(group);
-        return group.items.reduce((acc, item) => {
-            const baseSelected = isScopeSelected(item.value, selectedScopes) || (!!item.credentials && isScopeSelected(item.credentials, selectedScopes));
-            const credSelected = !!item.credentials && isScopeSelected(item.credentials, selectedScopes);
-            return acc + (baseSelected ? 1 : 0) + (credSelected ? 1 : 0);
-        }, 0);
+    const countGroupSelected = (group: ScopeGroup): number => allGroupScopes(group).filter((s) => isScopeSelected(s, selectedScopes)).length;
+
+    const renderGroup = (group: ScopeGroup, depth: number, ancestorWildcardSelected: boolean): React.ReactNode => {
+        const groupSelected = isGroupAllSelected(group);
+        const wildcardActive = isGroupWildcardSelected(group) || ancestorWildcardSelected;
+        const headerIndent = depth === 0 ? '' : 'pl-7';
+        const itemIndent = depth === 0 ? 'pl-7' : 'pl-14';
+
+        return (
+            <div key={group.group} className={`flex flex-col ${depth === 0 ? 'border-b border-border-muted last:border-b-0' : ''}`}>
+                <div className={`flex items-center gap-2 py-2 ${headerIndent}`}>
+                    <label className="flex items-center gap-2 cursor-pointer flex-1">
+                        <input
+                            type="checkbox"
+                            checked={groupSelected}
+                            disabled={disabled || ancestorWildcardSelected}
+                            ref={(el) => {
+                                if (el) el.indeterminate = !groupSelected && hasAnyChildSelected(group);
+                            }}
+                            onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
+                            className="accent-brand shrink-0"
+                        />
+                        <span className="text-body-small-semi text-text-strong">{group.group}</span>
+                    </label>
+                    <span className="text-body-small-regular text-text-muted">
+                        {countGroupSelected(group)}/{countGroupTotal(group)}
+                    </span>
+                </div>
+                <div className="flex flex-col pb-2">
+                    {group.items.map((item) =>
+                        isScopeGroup(item) ? (
+                            renderGroup(item, depth + 1, wildcardActive)
+                        ) : (
+                            <div key={item.value} className="flex flex-col">
+                                <label className={`flex items-center gap-2 ${itemIndent} cursor-pointer py-1`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            isScopeSelected(item.value, selectedScopes) ||
+                                            (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
+                                        }
+                                        disabled={disabled || wildcardActive}
+                                        onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
+                                        className="accent-brand shrink-0"
+                                    />
+                                    <span className={`text-body-small-regular ${wildcardActive ? 'text-text-muted' : 'text-text-strong'}`}>{item.label}</span>
+                                </label>
+                                {item.credentials && (
+                                    <label className={`flex items-center gap-2 ${itemIndent} cursor-pointer py-1`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={isScopeSelected(item.credentials, selectedScopes)}
+                                            disabled={disabled || wildcardActive}
+                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                            className="accent-brand shrink-0"
+                                        />
+                                        <span className={`text-body-small-regular ${wildcardActive ? 'text-text-muted' : 'text-text-strong'}`}>
+                                            {item.label}:with_credentials
+                                        </span>
+                                    </label>
+                                )}
+                            </div>
+                        )
+                    )}
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -153,72 +209,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                     <label className="text-body-medium-semi text-text-strong">
                         Selected scopes<span className="text-status-danger-text">*</span>
                     </label>
-                    <div className="max-h-[320px] overflow-y-auto flex flex-col px-1">
-                        {SCOPE_GROUPS.map((group) => {
-                            const groupSelected = isGroupAllSelected(group);
-                            const wildcardSelected = isGroupWildcardSelected(group);
-
-                            return (
-                                <div key={group.group} className="flex flex-col border-b border-border-muted last:border-b-0">
-                                    <div className="flex items-center gap-2 py-2">
-                                        <label className="flex items-center gap-2 cursor-pointer flex-1">
-                                            <input
-                                                type="checkbox"
-                                                checked={groupSelected}
-                                                disabled={disabled}
-                                                ref={(el) => {
-                                                    if (el) el.indeterminate = !groupSelected && hasAnyChildSelected(group);
-                                                }}
-                                                onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
-                                                className="accent-brand shrink-0"
-                                            />
-                                            <span className="text-body-small-semi text-text-strong">{group.group}</span>
-                                        </label>
-                                        <span className="text-body-small-regular text-text-muted">
-                                            {countGroupSelected(group)}/{countGroupTotal(group)}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col pb-2">
-                                        {group.items.map((item) => (
-                                            <div key={item.value} className="flex flex-col">
-                                                <label className="flex items-center gap-2 pl-7 cursor-pointer py-1">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={
-                                                            isScopeSelected(item.value, selectedScopes) ||
-                                                            (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
-                                                        }
-                                                        disabled={disabled || wildcardSelected}
-                                                        onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
-                                                        className="accent-brand shrink-0"
-                                                    />
-                                                    <span className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}>
-                                                        {item.label}
-                                                    </span>
-                                                </label>
-                                                {item.credentials && (
-                                                    <label className="flex items-center gap-2 pl-7 cursor-pointer py-1">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isScopeSelected(item.credentials, selectedScopes)}
-                                                            disabled={disabled || wildcardSelected}
-                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
-                                                            className="accent-brand shrink-0"
-                                                        />
-                                                        <span
-                                                            className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}
-                                                        >
-                                                            {item.label}:with_credentials
-                                                        </span>
-                                                    </label>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    <div className="max-h-[320px] overflow-y-auto flex flex-col px-1">{SCOPE_GROUPS.map((group) => renderGroup(group, 0, false))}</div>
                     {selectedScopes.length === 0 && <p className="text-body-small-regular text-status-danger-text">Select at least one scope to continue</p>}
                 </div>
             )}

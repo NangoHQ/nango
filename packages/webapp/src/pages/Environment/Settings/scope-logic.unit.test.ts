@@ -6,6 +6,7 @@ import {
     allGroupScopes,
     expandScopes,
     groupWildcard,
+    isScopeGroup,
     isScopeSelected,
     toggleCredential,
     toggleGroup,
@@ -241,6 +242,54 @@ describe('toggleGroup', () => {
         const result = toggleGroup(integrations, ['environment:deploy']);
         expect(result).toContain('environment:integrations:*');
         expect(result).toContain('environment:deploy');
+    });
+});
+
+describe('nested subgroups (integration functions)', () => {
+    const integrations = SCOPE_GROUPS.find((g) => g.group === 'Integrations')!;
+    const functions = integrations.items.filter(isScopeGroup).find((g) => g.group === 'Functions')!;
+
+    it('subgroup derives its own wildcard', () => {
+        expect(groupWildcard(functions)).toBe('environment:integrations:functions:*');
+    });
+
+    it('allGroupScopes on the parent includes nested subgroup scopes', () => {
+        const scopes = allGroupScopes(integrations);
+        expect(scopes).toContain('environment:integrations:functions:list');
+        expect(scopes).toContain('environment:integrations:functions:read');
+        expect(scopes).toContain('environment:integrations:functions:delete');
+    });
+
+    it('toggling the subgroup stores the subgroup wildcard', () => {
+        expect(toggleGroup(functions, [])).toEqual(['environment:integrations:functions:*']);
+    });
+
+    it('parent wildcard covers nested scopes', () => {
+        expect(isScopeSelected('environment:integrations:functions:read', ['environment:integrations:*'])).toBe(true);
+    });
+
+    it('selecting the parent wildcard subsumes a previously selected subgroup wildcard', () => {
+        expect(toggleGroup(integrations, ['environment:integrations:functions:*'])).toEqual(['environment:integrations:*']);
+    });
+
+    it('deselecting a nested scope under the parent wildcard drops only that scope', () => {
+        const result = toggleScope('environment:integrations:functions:read', undefined, ['environment:integrations:*']);
+        expect(result).not.toContain('environment:integrations:*');
+        expect(result).not.toContain('environment:integrations:functions:read');
+        expect(result).toContain('environment:integrations:functions:list');
+        expect(result).toContain('environment:integrations:functions:delete');
+        expect(result).toContain('environment:integrations:read');
+        expect(result).toContain('environment:integrations:list');
+    });
+
+    it('deselecting a nested scope under the subgroup wildcard expands only the subgroup', () => {
+        const result = toggleScope('environment:integrations:functions:read', undefined, ['environment:integrations:functions:*', 'environment:deploy']);
+        expect(result).not.toContain('environment:integrations:functions:*');
+        expect(result).not.toContain('environment:integrations:functions:read');
+        expect(result).toContain('environment:integrations:functions:list');
+        expect(result).toContain('environment:integrations:functions:delete');
+        expect(result).toContain('environment:deploy');
+        expect(result).not.toContain('environment:integrations:list');
     });
 });
 
