@@ -192,9 +192,10 @@ describe('scripts', () => {
             const fn = createFunction({
                 description: 'Handle contact updates',
                 triggers: [
-                    { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
+                    { type: 'http', name: 'contacts-updated' },
                     { type: 'schedule', schedule: 'every hour' }
                 ],
+                debounce: { key: { body: '$.objectId' }, windowMs: 5000 },
                 exec: async (nango, event) => {
                     // No input schema declared → payload is unknown, not any.
                     expectTypeOf(event.payload).toBeUnknown();
@@ -205,9 +206,10 @@ describe('scripts', () => {
             expect(fn).toStrictEqual({
                 description: 'Handle contact updates',
                 triggers: [
-                    { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
+                    { type: 'http', name: 'contacts-updated' },
                     { type: 'schedule', schedule: 'every hour' }
                 ],
+                debounce: { key: { body: '$.objectId' }, windowMs: 5000 },
                 type: 'function',
                 exec: expect.any(Function)
             });
@@ -243,12 +245,13 @@ describe('scripts', () => {
             expect(webhook.type).toBe('function');
             expect(webhook.name).toBe('contacts-updated');
             expect(webhook.triggers).toHaveLength(1);
+            // ingress hooks live on the trigger; debounce stays at the function level
             expect(webhook.triggers[0]).toStrictEqual({
                 type: 'http',
                 name: 'contacts-updated',
-                ingressValidation,
-                debounce: { key: { body: '$.portalId' }, windowMs: 5000 }
+                ingressValidation
             });
+            expect(webhook.debounce).toStrictEqual({ key: { body: '$.portalId' }, windowMs: 5000 });
             // ingress hooks live on the trigger, not at the top level of the function
             expect((webhook as unknown as Record<string, unknown>)['ingressValidation']).toBeUndefined();
         });
