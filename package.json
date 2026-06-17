@@ -57,7 +57,9 @@
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
         "changelog:providers": "tsx scripts/provider-changelog.ts",
-        "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
+        "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts",
+        "deploy:status": "tsx scripts/deploy-status/cli.ts",
+        "deploy:affected": "tsx scripts/deploy-status/affected.ts"
     },
     "devDependencies": {
         "@eslint/js": "9.28.0",
