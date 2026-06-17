@@ -37,9 +37,40 @@ const nangoModel = z
     })
     .strict();
 
+const functionTrigger = z
+    .object({
+        type: z.enum(['http', 'schedule', 'event']),
+        name: z.string().max(255).optional(),
+        scope: z.enum(['integration', 'connection']).optional(),
+        schedule: z.string().max(255).optional(),
+        event: z.string().max(255).optional(),
+        hasIngressChallenge: z.boolean().optional(),
+        hasIngressValidation: z.boolean().optional()
+    })
+    .strict();
+
+const functionDebounce = z
+    .object({
+        key: z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]).optional(),
+        windowMs: z.number(),
+        maxWindowMs: z.number().optional(),
+        maxEntities: z.number().optional(),
+        payloadMode: z.enum(['latest', 'all']).optional()
+    })
+    .strict();
+
+const functionConfig = z
+    .object({
+        name: z.string().max(255).optional(),
+        triggers: z.array(functionTrigger),
+        debounce: functionDebounce.optional()
+    })
+    .strict();
+
 export const flowConfig = z
     .object({
-        type: z.enum(['action', 'sync']),
+        type: z.enum(['action', 'sync', 'function']),
+        function_config: functionConfig.optional(),
         models: z.array(z.string().min(1).max(255)),
         runs: z.union([z.string().length(0), frequencySchema]).nullable(), // TODO: remove or after >0.58.5 is widely adopted
         auto_start: z.boolean().optional().default(false),
