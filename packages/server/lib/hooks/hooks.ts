@@ -29,6 +29,7 @@ import type {
     ApplicationConstructedProxyConfiguration,
     BasicApiCredentials,
     ConnectionConfig,
+    DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
     DBPlan,
@@ -218,6 +219,35 @@ export const connectionCreationFailed = async (
     }
 };
 
+export const reconnectionFailed = async ({
+    account,
+    connection,
+    logCtx,
+    authError,
+    environment,
+    provider,
+    config
+}: {
+    account: DBTeam;
+    connection: DBConnection;
+    environment: DBEnvironment;
+    provider: Provider;
+    config: IntegrationConfig;
+    authError: { type: string; description: string };
+    logCtx: LogContext;
+}): Promise<void> => {
+    await connectionRefreshFailed({
+        account,
+        connection,
+        logCtx,
+        authError,
+        environment,
+        provider,
+        config,
+        action: 'override'
+    });
+};
+
 export const connectionRefreshSuccess = async ({
     connection,
     config
@@ -257,14 +287,17 @@ export const connectionRefreshFailed = async ({
     action
 }: {
     account: DBTeam;
-    connection: DBConnectionDecrypted;
+    connection: DBConnection | DBConnectionDecrypted;
     environment: DBEnvironment;
     provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
-    action: 'token_refresh' | 'connection_test';
+    action: 'token_refresh' | 'connection_test' | 'override';
 }): Promise<void> => {
+    const errorMessage = action === 'override' ? 'connection_override_hook_failed' : 'refresh_failed_hook_failed';
+    const operation = action === 'override' ? 'override' : 'refresh';
+
     try {
         await errorNotificationService.auth.create({
             type: 'auth',
@@ -274,7 +307,7 @@ export const connectionRefreshFailed = async ({
             active: true
         });
     } catch (err) {
-        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+        report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
@@ -291,7 +324,7 @@ export const connectionRefreshFailed = async ({
             secret: webhookSigningKey.value,
             webhookSettings,
             auth_mode: provider.auth_mode,
-            operation: 'refresh',
+            operation,
             error: authError,
             success: false,
             providerConfig: config,
@@ -310,7 +343,7 @@ export const connectionRefreshFailed = async ({
             provider: config.provider
         });
     } catch (err) {
-        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+        report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 };
 

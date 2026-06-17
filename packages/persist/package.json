@@ -35,6 +35,6 @@
         "@nangohq/types": "file:../types",
         "node-fetch": "3.3.2",
         "typescript": "5.8.3",
-        "vitest": "4.1.8"
+        "vitest": "4.1.9"
     }
 }

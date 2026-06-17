@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
+import { Button } from '../src/components/ui/button';
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
-import { Button } from '@/components/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -18,7 +18,7 @@ export const Default: Story = {
         const [open, setOpen] = useState(false);
         return (
             <>
-                <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
+                <Button variant="danger" size="md" onClick={() => setOpen(true)}>
                     Delete integration
                 </Button>
                 <DestructiveActionModal

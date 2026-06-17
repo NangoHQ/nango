@@ -35,7 +35,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
-import { executionEnvironmentUnavailableMessage } from '../sandbox-service.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
 
@@ -49,6 +49,10 @@ const request = {
     nango_secret_key: 'nango-secret',
     nango_host: 'https://api.example.test'
 };
+const asyncDryrunScriptPath = '.nango/runtime/nango-function-dryrun.mjs';
+const dryrunInputPath = '.nango/runtime/nango-dryrun-input.json';
+const dryrunMetadataPath = '.nango/runtime/nango-dryrun-metadata.json';
+const dryrunCheckpointPath = '.nango/runtime/nango-dryrun-checkpoint.json';
 
 describe('sandboxed function dryrun client', () => {
     beforeEach(() => {
@@ -75,14 +79,17 @@ describe('sandboxed function dryrun client', () => {
         expect(prepared.sandboxId).toBe(mocks.sandbox.sandboxId);
         expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/github/actions/listRepos.ts', 'export default {}');
         expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/index.ts', "import './github/actions/listRepos.js';\n");
-        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-dryrun-input.json', JSON.stringify({ ok: true }));
-        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-dryrun-metadata.json', JSON.stringify({ source: 'test' }));
-        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-dryrun-checkpoint.json', JSON.stringify({ cursor: 'abc' }));
-        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-function-dryrun.mjs', expect.stringContaining('NANGO_DRYRUN_CALLBACK_URL'));
+        expect(mocks.write).toHaveBeenCalledWith(`/home/user/nango-integrations/${dryrunInputPath}`, JSON.stringify({ ok: true }));
+        expect(mocks.write).toHaveBeenCalledWith(`/home/user/nango-integrations/${dryrunMetadataPath}`, JSON.stringify({ source: 'test' }));
+        expect(mocks.write).toHaveBeenCalledWith(`/home/user/nango-integrations/${dryrunCheckpointPath}`, JSON.stringify({ cursor: 'abc' }));
+        expect(mocks.write).toHaveBeenCalledWith(
+            `/home/user/nango-integrations/${asyncDryrunScriptPath}`,
+            expect.stringContaining('NANGO_DRYRUN_CALLBACK_URL')
+        );
 
         await prepared.start();
 
-        expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-dryrun.mjs', {
+        expect(mocks.run).toHaveBeenCalledWith(`node ${asyncDryrunScriptPath}`, {
             cwd: '/home/user/nango-integrations',
             background: true,
             timeoutMs: 0,
@@ -99,11 +106,11 @@ describe('sandboxed function dryrun client', () => {
                     '--auto-confirm',
                     '--no-interactive',
                     '--input',
-                    '@/tmp/nango-dryrun-input.json',
+                    `@${dryrunInputPath}`,
                     '--metadata',
-                    '@/tmp/nango-dryrun-metadata.json',
+                    `@${dryrunMetadataPath}`,
                     '--checkpoint',
-                    '@/tmp/nango-dryrun-checkpoint.json'
+                    `@${dryrunCheckpointPath}`
                 ])
             })
         });

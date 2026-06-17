@@ -17,7 +17,6 @@
         "@aws-sdk/client-s3": "3.993.0",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",
-        "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
@@ -32,6 +31,6 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "vitest": "4.1.8"
+        "vitest": "4.1.9"
     }
 }

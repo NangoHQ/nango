@@ -3887,26 +3887,35 @@ Supported events:
 
 | Event | When it runs | Common use |
 | --- | --- | --- |
-| `validate-connection` | During connection creation | Reject invalid credentials or missing provider permissions |
 | `post-connection-creation` | Immediately after a connection is created | Register provider webhooks, seed metadata, run setup checks |
+| `validate-connection` | During connection creation and reconnect | Reject invalid credentials, missing provider permissions, or policy violations (e.g. same-account enforcement) |
 | `pre-connection-deletion` | Before a connection is deleted | Delete provider webhook subscriptions or external resources |
 
 <Accordion title="For agents">
   Before generating an event function, identify the lifecycle event, provider endpoint, required metadata, and desired failure behavior.
 
-  For `validate-connection`, throwing rejects and deletes the connection. For cleanup functions, make the provider call idempotent because the external resource may already be gone.
+  For `validate-connection`, throwing rejects the auth attempt. On first connect, the connection is deleted. On reconnect, the connection is marked as an auth error (`refresh_exhausted`) and the user must reconnect explicitly. For cleanup functions, make the provider call idempotent because the external resource may already be gone.
+
+  For same-account enforcement on reconnect, store the provider account identifier in **connection metadata** during `post-connection-creation`, then compare it to a live identity API call in `validate-connection`. Do not compare `connection_config` fields: reconnect upserts new credentials before validation runs, so config values already reflect the newly authenticated account.
 </Accordion>
 
 ## Create a setup function
 
 Add a file under the integration's `on-events/` folder:
 
-```typescript salesforce/on-events/register-webhook.ts
+```typescript salesforce/on-events/post-connection-setup.ts
 import { createOnEvent } from 'nango';
+import * as z from 'zod';
+
+const Metadata = z.object({
+    organization_id: z.string().optional(),
+    webhookId: z.string().optional()
+});
 
 export default createOnEvent({
-    description: 'Register a Salesforce webhook after a connection is created',
+    description: 'Register a Salesforce webhook after a successful connection',
     event: 'post-connection-creation',
+    metadata: Metadata,
     exec: async (nango) => {
         const response = await nango.post({
             endpoint: '/webhooks',
@@ -3926,18 +3935,76 @@ export default createOnEvent({
 Import it from `index.ts`:
 
 ```typescript index.ts
-import './salesforce/on-events/register-webhook';
+import './salesforce/on-events/post-connection-setup';
 ```
+
+## Create a connection validation function
+
+Add a file under the integration's `on-events/` folder:
+
+```typescript salesforce/on-events/validate-connection.ts
+import { createOnEvent } from 'nango';
+import * as z from 'zod';
+
+const Metadata = z.object({
+    organizationId: z.string().optional(),
+    webhookId: z.string().optional()
+});
+
+export default createOnEvent({
+    description: 'Validate connection against saved organization id to prevent changing account on reconnect',
+    event: 'validate-connection',
+    metadata: Metadata,
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const lockedOrganizationId = metadata?.organizationId;
+
+        const response = await nango.get<{organization_id: string}>({
+            endpoint: '/services/oauth2/userinfo'
+        });
+        const organizationId = response.data?.organization_id;
+        if (!organizationId) {
+            throw new nango.ActionError('Salesforce connection missing organization_id from /services/oauth2/userinfo');
+        }
+
+        // On initial connection, save organization id to connection metadata
+        if (!lockedOrganizationId) {
+            await nango.setMetadata({organizationId});
+            return;
+        }
+
+        // On subsequent connections, check if new organization id matches stored value
+        if (lockedOrganizationId !== organizationId) {
+            throw new nango.ActionError(
+                `Salesforce org mismatch: expected ${lockedOrganizationId}, got ${organizationId}`
+            );
+        }
+    }
+});
+```
+
+Import it from `index.ts`:
+
+```typescript index.ts
+import './salesforce/on-events/validate-connection';
+```
+
+On first connect, validation passes when metadata has no locked org yet; the setup function records `organization_id` after auth succeeds. On reconnect, validation compares the new credentials against the saved org ID and rejects the attempt if they differ.
+
+<Info>
+Compare the locked value in **metadata** to a live value from the provider API. Do not compare `connection_config` fields: on reconnect, Nango upserts the new credentials and overwrites `connection_config` **before** `validate-connection` runs, so config already reflects the account the user just authenticated with.
+</Info>
 
 ## Create a cleanup function
 
 If the provider webhook is registered per connection, clean it up before the Nango connection is deleted:
 
-```typescript salesforce/on-events/delete-webhook.ts
+```typescript salesforce/on-events/pre-connection-cleanup.ts
 import { createOnEvent } from 'nango';
 import * as z from 'zod';
 
 const Metadata = z.object({
+    organization_id: z.string().optional(),
     webhookId: z.string().optional()
 });
 
@@ -3961,7 +4028,7 @@ export default createOnEvent({
 Import it from `index.ts`:
 
 ```typescript index.ts
-import './salesforce/on-events/delete-webhook';
+import './salesforce/on-events/pre-connection-cleanup';
 ```
 
 ## Test and deploy
@@ -3969,7 +4036,7 @@ import './salesforce/on-events/delete-webhook';
 Dry run an event function against an existing connection:
 
 ```bash
-nango dryrun register-webhook '<CONNECTION-ID>' -e dev
+nango dryrun post-connection-setup '<CONNECTION-ID>' -e dev
 ```
 
 Deploy your functions:
@@ -6480,10 +6547,6 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 - **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
 - **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
 
-## Exporting billing metrics
-
-For usage-based billing, certain anonymous metrics must be exported to Nango. This can be done automatically or manually, depending on your preference. We’ll coordinate with your team during setup.
-
 ## Exporting metrics & logs
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
@@ -6603,6 +6666,35 @@ Special characters in `RECORDS_DATABASE_URL` must be URL encoded. If it is not s
 <Tip>
 Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
 </Tip>
+
+### External Redis
+
+The bundled Redis is fine for local use but not for production. Connect Nango to an external Redis (or Valkey) with either a full URL or discrete variables:
+
+```sh
+NANGO_REDIS_URL=rediss://:<password>@<host>:<port>
+# or
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH=<password>
+```
+
+Use the `rediss://` scheme (or discrete variables, which default to TLS) to enable in-transit encryption.
+
+#### IAM / short-lived token authentication
+
+Managed Redis with IAM authentication (for example GCP Memorystore for Valkey) uses a short-lived token as the password and requires the token to be refreshed before it expires. Instead of a static `NANGO_REDIS_AUTH`, point Nango at a file that an external process (such as a sidecar) keeps up to date:
+
+```sh
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH_TOKEN_FILE=/path/to/token   # re-read on every (re)connect
+NANGO_REDIS_USERNAME=<username>              # optional; defaults to "default"
+```
+
+Nango reads the token file on every connection and reconnection, so a rotated token is always picked up without a restart. This is cloud-agnostic: anything that writes the current token to the file works. The writer must update the file atomically — write a temporary file and `rename()` it into place — so a reconnect never reads a half-written token and fails authentication. When `NANGO_REDIS_AUTH_TOKEN_FILE` is set, do not embed credentials in `NANGO_REDIS_URL`.
+
+The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_REDIS_` (for example `NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE`); it falls back to the system Redis when unset.
 
 ### Securing your instance
 
@@ -6844,14 +6936,18 @@ Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verifi
 The webhook signature can be verified with the following code:
 
 <Warning>
-Initialize the client (or HMAC) with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. Using the API secret key will cause verification to fail on any environment where the keys differ.
+Verify the signature with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. With the Node SDK, pass it as `webhookSigningKey`; for raw HMAC verification, use it as the HMAC secret. Using the API secret key will cause verification to fail on any environment where the keys differ.
 </Warning>
 
 <Tabs>
   <Tab title="Node SDK">
+    Pass the webhook signing key as `webhookSigningKey` so a single client can make API calls with the API key and verify webhooks with the signing key. `webhookSigningKey` falls back to `secretKey` when omitted.
+
     ```typescript
-    // Initialize with the webhook signing key, not the API secret key
-    const nango = new Nango({ secretKey: process.env.NANGO_WEBHOOK_SIGNING_KEY });
+    const nango = new Nango({
+        apiKey: process.env.NANGO_API_KEY, // used for API calls
+        webhookSigningKey: process.env.NANGO_WEBHOOK_SIGNING_KEY // used to verify webhooks
+    });
 
     async (req, res) => {
         const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
@@ -9763,7 +9859,7 @@ Instantiate the `Nango` class:
 ```js
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<API-KEY>' });
 ```
 
 **Parameters**
@@ -9771,8 +9867,16 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="config" defaultOpen>
-      <ResponseField name="secretKey" type="string" required>
-        Get your secret key in the environment settings of the Nango UI. THis key should never be shared.
+      <ResponseField name="apiKey" type="string" required>
+        Your environment API key, found in **Environment Settings > API Keys** in the Nango UI. Sent as the bearer token for API calls. This key should never be shared.
+      </ResponseField>
+
+      <ResponseField name="secretKey" type="string" deprecated>
+        Deprecated alias for `apiKey`, kept for backward compatibility. Provide either `apiKey` or `secretKey`.
+      </ResponseField>
+
+      <ResponseField name="webhookSigningKey" type="string">
+        The environment's webhook signing key, found in **Environment Settings > Webhooks > Signing key**. Used by `verifyIncomingWebhookRequest` to validate incoming webhook signatures. Falls back to `secretKey` when omitted. On environments created after 2026-04-20 (or any environment that later rotated its API key), the signing key differs from the API key, so set this explicitly to verify webhooks.
       </ResponseField>
 
       <ResponseField name="host" type="string">
@@ -11816,9 +11920,14 @@ await nango.getProvider({ provider: <NAME> })
 
 ### Verify Webhook Signature
 
-Asserts that a Webhook is coming from Nango's backend.
+Asserts that a Webhook is coming from Nango's backend. Verification uses `webhookSigningKey` when the client is constructed with one, otherwise it falls back to `secretKey`. On environments created after 2026-04-20 (or any environment that later rotated its API key), the signing key differs from the API key, so construct the client with `webhookSigningKey` (from **Environment Settings > Webhooks > Signing key**).
 
 ```js
+const nango = new Nango({
+    apiKey: '<API-KEY>',
+    webhookSigningKey: '<WEBHOOK-SIGNING-KEY>'
+});
+
 async (req, res) => {
     const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
 }
@@ -14328,6 +14437,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |
 | `razorpay` | Razorpay | BASIC | [docs](https://nango.dev/docs/integrations/all/razorpay.md) | [connect](https://nango.dev/docs/integrations/all/razorpay/connect.md) |  | payment |
+| `read-ai` | Read.ai | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/read-ai.md) |  | [setup](https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app.md) | productivity, video |
 | `readwise` | Readwise | API_KEY | [docs](https://nango.dev/docs/integrations/all/readwise.md) | [connect](https://nango.dev/docs/integrations/all/readwise/connect.md) |  | productivity |
 | `readwise-reader` | Readwise Reader | API_KEY | [docs](https://nango.dev/docs/integrations/all/readwise-reader.md) | [connect](https://nango.dev/docs/integrations/all/readwise-reader/connect.md) |  | productivity |
 | `reapit` | Reapit Connect | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/reapit.md) |  | [setup](https://nango.dev/docs/api-integrations/reapit/how-to-register-your-own-reapit-oauth-app.md) | crm |

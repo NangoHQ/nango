@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '../src/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -15,7 +15,7 @@ export const Default: Story = {
     render: () => (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="secondary" size="sm">
+                <Button variant="secondary" size="md">
                     Open popover
                 </Button>
             </PopoverTrigger>

@@ -11,15 +11,30 @@
         "build-storybook": "NODE_PATH=./node_modules storybook build"
     },
     "exports": {
+        ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+        },
         "./tokens/tokens.generated.css": "./tokens/tokens.generated.css"
     },
+    "dependencies": {
+        "@radix-ui/react-slot": "1.2.4",
+        "class-variance-authority": "0.7.1",
+        "clsx": "2.1.1",
+        "lucide-react": "0.542.0",
+        "tailwind-merge": "3.6.0"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0"
+    },
     "devDependencies": {
-        "@storybook/addon-a11y": "10.4.1",
+        "@storybook/addon-a11y": "10.4.6",
         "@storybook/addon-mcp": "0.6.0",
-        "@storybook/addon-themes": "10.4.1",
-        "@storybook/react": "10.4.1",
-        "@storybook/react-vite": "10.4.1",
-        "@tailwindcss/vite": "4.2.0",
+        "@storybook/addon-themes": "10.4.6",
+        "@storybook/react": "10.4.6",
+        "@storybook/react-vite": "10.4.6",
+        "@tailwindcss/vite": "4.3.1",
         "@tokens-studio/sd-transforms": "2.0.3",
         "@types/react": "18.3.4",
         "@types/react-dom": "18.3.0",
@@ -27,10 +42,10 @@
         "prettier": "3.6.2",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "storybook": "10.4.1",
+        "storybook": "10.4.6",
         "style-dictionary": "5.4.1",
-        "tailwindcss": "4.1.13",
-        "vite": "7.3.2",
-        "vitest": "4.1.8"
+        "tailwindcss": "4.3.1",
+        "vite": "8.0.16",
+        "vitest": "4.1.9"
     }
 }

@@ -25,7 +25,6 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { capping } from '../../utils/usage.js';
-import { featureFlags } from '../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
@@ -141,12 +140,10 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         const method = req.method.toUpperCase() as HTTP_METHOD;
 
         // contains the path and querystring
-        const endpoint = req.originalUrl.replace(/^\/proxy\//, '/');
+        const endpoint = req.originalUrl.replace(/^\/proxy\/?/, '/');
 
         const headers = parseHeaders(req);
 
-        const rawBodyFlag = await featureFlags.isSet('proxy:rawbody');
-        const data: unknown = rawBodyFlag ? req.rawBody : req.body;
         let files: ProxyFile[] = [];
         if (Array.isArray(req.files)) {
             files = req.files as ProxyFile[];
@@ -244,7 +241,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     endpoint,
                     providerConfigKey,
                     retries,
-                    data,
+                    data: req.body,
                     files,
                     headers,
                     baseUrlOverride,
