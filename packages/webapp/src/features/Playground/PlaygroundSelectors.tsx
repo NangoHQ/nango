@@ -209,7 +209,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Activate more functions</span>
                             <Button
                                 type="button"
-                                variant="secondary"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => {
                                     setPlaygroundOpen(false);
