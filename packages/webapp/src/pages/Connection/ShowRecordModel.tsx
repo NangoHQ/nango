@@ -1,8 +1,8 @@
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ConnectionRecordTable } from './components/RecordsTab';
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useConnectionRecordModels } from '@/hooks/useRecords';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';

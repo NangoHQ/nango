@@ -54,6 +54,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [
@@ -132,6 +133,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: Array.from({ length: 25 }, (_, index) => ({ id: `contact-${index + 1}`, name: `Contact ${index + 1}` })),
@@ -164,6 +166,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [{ id: 'contact-variant-1', name: 'Ada' }],
@@ -211,6 +214,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [{ id: 'meta-only-1', name: 'Payload' }],
@@ -280,6 +284,7 @@ describe(`GET ${route}`, () => {
         const connectionB = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [
@@ -329,6 +334,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [{ id: 'by-id-1', title: 'Full row' }],

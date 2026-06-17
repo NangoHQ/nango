@@ -65,7 +65,7 @@ export const getConnectionRecords = asyncWrapper<GetConnectionRecords>(async (re
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, plan } = res.locals;
     const query = queryParamValues.data satisfies GetConnectionRecords['Querystring'];
     const params = paramValues.data satisfies GetConnectionRecords['Params'];
 
@@ -85,6 +85,7 @@ export const getConnectionRecords = asyncWrapper<GetConnectionRecords>(async (re
 
     if (query.record_id) {
         const records = await recordsService.getRecords({
+            plan,
             connectionId: connectionPkId,
             model: modelName,
             externalIds: [query.record_id],
@@ -107,6 +108,7 @@ export const getConnectionRecords = asyncWrapper<GetConnectionRecords>(async (re
     }
 
     const records = await recordsService.getRecords({
+        plan,
         connectionId: connectionPkId,
         model: modelName,
         cursor: query.cursor,

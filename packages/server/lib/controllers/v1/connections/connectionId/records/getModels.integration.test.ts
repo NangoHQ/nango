@@ -49,6 +49,7 @@ describe(`GET ${route}`, () => {
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [
@@ -67,6 +68,7 @@ describe(`GET ${route}`, () => {
         });
 
         await records.upsert({
+            plan: null,
             records: format
                 .formatRecords({
                     data: [{ id: 'contact-3', name: 'Grace' }],

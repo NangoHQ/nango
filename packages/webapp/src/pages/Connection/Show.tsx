@@ -3,9 +3,9 @@ import { Helmet } from 'react-helmet';
 import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/components-v2/ui/Tabs';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConnection } from '@/hooks/useConnections';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
