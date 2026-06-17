@@ -308,6 +308,7 @@ export function parseFunction({
         name: params.name || basename,
         description: params.description || '',
         triggers: params.triggers.map(toParsedTrigger),
+        ...(params.debounce !== undefined ? { debounce: params.debounce } : {}),
         input: inputName,
         output: outputNames.length > 0 ? outputNames : null,
         scopes: params.scopes || [],
@@ -328,9 +329,6 @@ function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
         }
         if (trigger.scope !== undefined) {
             parsed.scope = trigger.scope;
-        }
-        if (trigger.debounce !== undefined) {
-            parsed.debounce = trigger.debounce;
         }
         parsed.hasIngressChallenge = typeof trigger.ingressChallenge === 'function';
         parsed.hasIngressValidation = typeof trigger.ingressValidation === 'function';

@@ -140,14 +140,6 @@ export interface ParsedFunctionTrigger {
     schedule?: string;
     /** event trigger. */
     event?: string;
-    /** Whether ingress coalescing is configured (the window/key config). */
-    debounce?: {
-        key?: { body: string } | { header: string };
-        windowMs: number;
-        maxWindowMs?: number;
-        maxEntities?: number;
-        payloadMode?: 'latest' | 'all';
-    };
     /** Whether the trigger ships an `ingressChallenge` hook (executed at ingress). */
     hasIngressChallenge?: boolean;
     /** Whether the trigger ships an `ingressValidation` hook (executed at ingress). */
@@ -159,6 +151,14 @@ export interface ParsedNangoFunction {
     type: 'function';
     description: string;
     triggers: ParsedFunctionTrigger[];
+    /** Ingress coalescing config (the window/key). Applies to http-triggered runs. */
+    debounce?: {
+        key?: { body: string } | { header: string };
+        windowMs: number;
+        maxWindowMs?: number;
+        maxEntities?: number;
+        payloadMode?: 'latest' | 'all';
+    };
     input: string | null;
     output: string[] | null;
     scopes: string[];
