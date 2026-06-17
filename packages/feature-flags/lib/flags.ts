@@ -10,11 +10,9 @@ import type { FeatureFlagsClient } from './client.js';
  * mirror the name in both places. An unknown / unprovisioned flag simply
  * resolves to the default value passed to `isEnabled`, so drift is safe.
  */
-export const FLAGS = {
+const FLAGS = {
     OAUTH_STATE_COOKIE_ENFORCEMENT: 'oauth-state-cookie-enforcement'
 } as const;
-
-export type FlagKey = (typeof FLAGS)[keyof typeof FLAGS];
 
 /**
  * Typed facade over the generic OpenFeature client: one named method per flag
