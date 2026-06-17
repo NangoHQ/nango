@@ -16237,6 +16237,7 @@ read-ai:
     authorization_url: https://authn.read.ai/oauth2/auth
     token_url: https://authn.read.ai/oauth2/token
     token_request_auth_method: basic
+    authorization_method: header
     authorization_params:
         response_type: code
     token_params:
