@@ -21,7 +21,6 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "@types/uuid": "9.0.0",
         "@types/ws": "8.18.1",
         "vitest": "4.1.9"
     }

@@ -90,7 +90,6 @@
         "@types/passport-http": "0.3.9",
         "@types/passport-local": "1.0.38",
         "@types/simple-oauth2": "4.1.1",
-        "@types/uuid": "8.3.4",
         "@types/ws": "8.18.1",
         "get-port": "7.1.0",
         "nodemon": "3.1.10",
