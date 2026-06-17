@@ -28,7 +28,7 @@ console.log(`AgentCore runtime ARN: ${finalRuntime.agentRuntimeArn}`);
 console.log(`AgentCore runtime image: ${imageUri}`);
 
 function findRuntime() {
-    const listed = awsJson(['bedrock-agentcore-control', 'list-agent-runtimes']);
+    const listed = agentCoreControl(['list-agent-runtimes']);
     const matches = (listed.agentRuntimes || []).filter((candidate) => candidate.agentRuntimeName === runtimeName);
     if (matches.length > 1) {
         throw new Error(`Found multiple AgentCore runtimes named ${runtimeName}; remove the duplicate runtime before deploying`);
@@ -51,7 +51,7 @@ async function createRuntime() {
     };
 
     console.log(`Creating AgentCore runtime ${runtimeName}`);
-    const created = awsJsonWithInput(['bedrock-agentcore-control', 'create-agent-runtime'], input);
+    const created = agentCoreControl(['create-agent-runtime'], input);
     return await waitForReady(created.agentRuntimeId);
 }
 
@@ -68,7 +68,7 @@ async function updateRuntime(runtime) {
     };
 
     console.log(`Updating AgentCore runtime ${runtime.agentRuntimeName} to ${imageUri}`);
-    const updated = awsJsonWithInput(['bedrock-agentcore-control', 'update-agent-runtime'], input);
+    const updated = agentCoreControl(['update-agent-runtime'], input);
     return await waitForReady(updated.agentRuntimeId);
 }
 
@@ -109,11 +109,12 @@ function failedRuntimeError(runtime) {
 }
 
 function getRuntime(runtimeId) {
-    return awsJson(['bedrock-agentcore-control', 'get-agent-runtime', '--agent-runtime-id', runtimeId]);
+    return agentCoreControl(['get-agent-runtime', '--agent-runtime-id', runtimeId]);
 }
 
-function awsJson(args) {
-    const result = spawnSync('aws', [...args, '--output', 'json'], {
+function agentCoreControl(args, input) {
+    const command = ['bedrock-agentcore-control', ...args, ...(input ? ['--cli-input-json', JSON.stringify(input)] : [])];
+    const result = spawnSync('aws', [...command, '--output', 'json'], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -122,17 +123,13 @@ function awsJson(args) {
         throw new Error(`Failed to run aws: ${result.error.message}`);
     }
     if (result.status !== 0) {
-        throw new Error(`aws ${args.join(' ')} failed\n${result.stderr || result.stdout}`);
+        throw new Error(`aws ${command.join(' ')} failed\n${result.stderr || result.stdout}`);
     }
     if (!result.stdout.trim()) {
         return {};
     }
 
     return JSON.parse(result.stdout);
-}
-
-function awsJsonWithInput(args, input) {
-    return awsJson([...args, '--cli-input-json', JSON.stringify(input)]);
 }
 
 function requiredEnv(name) {
