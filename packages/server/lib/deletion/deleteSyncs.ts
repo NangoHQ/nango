@@ -2,8 +2,8 @@ import db from '@nangohq/database';
 import { getLatestSyncJob, hardDeleteJobs, hardDeleteSync } from '@nangohq/shared';
 
 import { batchDelete } from './batchDelete.js';
-import { tasks } from '../../tasks/index.js';
-import { getOrchestrator } from '../../utils/utils.js';
+import { tasks } from '../tasks/index.js';
+import { getOrchestrator } from '../utils/utils.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 import type { ActiveLog } from '@nangohq/types';

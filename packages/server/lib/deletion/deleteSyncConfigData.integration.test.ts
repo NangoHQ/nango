@@ -6,12 +6,12 @@ import { Ok, getLogger } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from './batchDelete.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
-import { tasks } from '../../tasks/index.js';
+import { tasks } from '../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
-import type * as serverUtils from '../../utils/utils.js';
+import type * as serverUtils from '../utils/utils.js';
 
-vi.mock('../../utils/utils.js', async (importOriginal) => {
+vi.mock('../utils/utils.js', async (importOriginal) => {
     const actual = await importOriginal<typeof serverUtils>();
     return {
         ...actual,

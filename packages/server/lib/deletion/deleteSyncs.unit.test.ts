@@ -11,13 +11,13 @@ const enqueue = vi.fn(() => {
     order.push('enqueue:deleteRecords');
     return Promise.resolve(Ok({ taskId: 't' }));
 });
-vi.mock('../../tasks/index.js', () => ({ tasks: { enqueue } }));
+vi.mock('../tasks/index.js', () => ({ tasks: { enqueue } }));
 
 const deleteSyncsClient = vi.fn((..._args: unknown[]) => {
     order.push('unschedule');
     return Promise.resolve(Ok(undefined));
 });
-vi.mock('../../utils/utils.js', () => ({ getOrchestrator: () => ({ deleteSyncs: (...args: unknown[]) => deleteSyncsClient(...args) }) }));
+vi.mock('../utils/utils.js', () => ({ getOrchestrator: () => ({ deleteSyncs: (...args: unknown[]) => deleteSyncsClient(...args) }) }));
 
 const getLatestSyncJob = vi.fn();
 const hardDeleteSync = vi.fn((..._args: unknown[]) => {
