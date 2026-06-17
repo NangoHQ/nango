@@ -13,8 +13,7 @@ import type { Provider } from '@openfeature/server-sdk';
 export type { FeatureFlagsClient } from './client.js';
 export type { FlagContext } from './types.js';
 export type { Flags } from './flags.js';
-export { buildFlags } from './flags.js';
-export { FLAGS, type FlagKey } from './registry.js';
+export { FLAGS, type FlagKey, buildFlags } from './flags.js';
 
 let flagsPromise: Promise<Flags> | undefined;
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
