@@ -1053,6 +1053,29 @@ export class Nango {
     }
 
     /**
+     * Schedule a function run. Optionally bind a connection (connection-bound run); omit it for a
+     * connection-less run that resolves its own targets.
+     * @param providerConfigKey - The integration the function belongs to
+     * @param functionName - The function to run
+     * @param options.connectionId - Optional connection to bind to the run
+     * @param options.payload - Arbitrary data passed to the function as event.payload
+     */
+    public async triggerFunction<In = unknown>(
+        providerConfigKey: string,
+        functionName: string,
+        options?: { connectionId?: string; payload?: In }
+    ): Promise<{ taskId: string }> {
+        const url = `${this.serverUrl}/function/trigger`;
+        const headers = {
+            'Provider-Config-Key': providerConfigKey,
+            ...(options?.connectionId ? { 'Connection-Id': options.connectionId } : {})
+        };
+        const body = { function_name: functionName, payload: options?.payload ?? null };
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
      * Triggers an action asynchronously for a connection
      * @param providerConfigKey - The key identifying the provider configuration on Nango
      * @param connectionId - The ID of the connection for which the action should be triggered

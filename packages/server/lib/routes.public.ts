@@ -42,6 +42,7 @@ import { postFunctionDeploymentResult } from './controllers/functions/deploy/pos
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
+import { postPublicTriggerFunction } from './controllers/functions/postTriggerFunction.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -308,6 +309,10 @@ publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResu
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, withScope('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
 publicAPI.route('/action/:id').get(apiAuth, withScope('environment:actions:execute'), getAsyncActionResult);
+
+// Functions
+publicAPI.use('/function', jsonContentTypeMiddleware);
+publicAPI.route('/function/trigger').post(apiAuth, withScope('environment:actions:execute'), postPublicTriggerFunction);
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);

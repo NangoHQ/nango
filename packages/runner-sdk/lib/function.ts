@@ -17,7 +17,7 @@ export abstract class NangoFunctionBase<
     /**
      * Search this integration's connections that this function can route to.
      *
-     * Used by connection-less function runs (e.g. an integration-level webhook) to find the
+     * Only available on connection-less function runs (e.g. an integration-level webhook) to find the
      * connection(s) an incoming event targets, before fanning out work to them.
      *
      * @example
@@ -30,6 +30,10 @@ export abstract class NangoFunctionBase<
      */
     public async searchConnections(filter: { tags: Record<string, string> }): Promise<ApiPublicConnection[]> {
         this.throwIfAbortedOrKilled();
+
+        if (this.connectionBound) {
+            throw new Error('searchConnections is only available on connection-less function runs. This run is bound to a connection.');
+        }
 
         const { connections } = await this.nango.listConnections({
             tags: filter.tags,
@@ -52,5 +56,22 @@ export abstract class NangoFunctionBase<
      */
     public async ignore(reason?: string): Promise<void> {
         await this.log(reason ? `Event ignored: ${reason}` : 'Event ignored', { level: 'info' });
+    }
+
+    /**
+     * Schedule another function run, optionally bound to a connection. Fire-and-schedule:
+     * it enqueues the run and returns its task id, it does not wait for or return the output.
+     *
+     * @example
+     * ```ts
+     * // Fan out a connection-bound run per matched connection
+     * for (const connection of connections) {
+     *     await nango.triggerFunction('contacts-handler', { connectionId: connection.connection_id, payload: event.payload });
+     * }
+     * ```
+     */
+    public async triggerFunction<In = unknown>(functionName: string, options?: { connectionId?: string; payload?: In }): Promise<{ taskId: string }> {
+        this.throwIfAbortedOrKilled();
+        return await this.nango.triggerFunction(this.providerConfigKey, functionName, options);
     }
 }
