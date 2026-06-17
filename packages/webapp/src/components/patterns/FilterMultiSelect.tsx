@@ -180,7 +180,7 @@ export function FilterMultiSelect<T extends string = string>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="md" className={cn('h-9 rounded bg-surface-canvas text-text-muted', isDirty && 'text-text-strong')}>
+                <Button variant="outline" size="lg" className={cn('text-text-muted', isDirty && 'text-text-strong')}>
                     {label}
                     {isDirty && (
                         <span
