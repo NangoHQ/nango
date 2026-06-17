@@ -2,13 +2,15 @@ import jwt from 'jsonwebtoken';
 import * as z from 'zod';
 
 import { userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendResetPasswordEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 
 import type { PostForgotPassword } from '@nangohq/types';
+
+const logger = getLogger('Server.PostForgotPassword');
 
 const validation = z.object({ email: z.string().email() }).strict();
 
@@ -29,17 +31,23 @@ export const postForgotPassword = asyncWrapper<PostForgotPassword>(async (req, r
 
     const { email } = val.data;
 
-    const user = await userService.getUserByEmail(email);
-    if (user) {
-        const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
+    try {
+        const user = await userService.getUserByEmail(email);
+        if (user) {
+            const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
 
-        user.reset_password_token = resetToken;
-        await userService.editUserPassword(user);
+            user.reset_password_token = resetToken;
+            await userService.editUserPassword(user);
 
-        await sendResetPasswordEmail({ user, token: resetToken });
+            await sendResetPasswordEmail({ user, token: resetToken });
+        }
+    } catch (err) {
+        logger.error('Failed to process password reset request', err);
+        report(err);
     }
 
-    // Always respond with success, regardless of whether the email matches an account
+    // Always respond with success, regardless of whether the email matches an account or the
+    // reset flow fails internally
     res.status(200).json({
         success: true
     });

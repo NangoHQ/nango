@@ -1,9 +1,17 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
+import { sendResetPasswordEmail } from '../../../helpers/email.js';
 import { isSuccess, runServer } from '../../../utils/tests.js';
+
+import type * as emailHelpers from '../../../helpers/email.js';
+
+vi.mock('../../../helpers/email.js', async (importActual) => ({
+    ...(await importActual<typeof emailHelpers>()),
+    sendResetPasswordEmail: vi.fn(() => Promise.resolve())
+}));
 
 const signupRoute = '/api/v1/account/signup';
 const forgotPasswordRoute = '/api/v1/account/forgot-password';
@@ -35,6 +43,11 @@ describe(`POST ${forgotPasswordRoute}`, () => {
         api.server.close();
     });
 
+    afterEach(() => {
+        vi.mocked(sendResetPasswordEmail).mockReset();
+        vi.mocked(sendResetPasswordEmail).mockResolvedValue(undefined);
+    });
+
     it('should respond identically whether or not the email matches an account (no user enumeration)', async () => {
         const existingEmail = await signupVerifiedUser();
         const unknownEmail = `${nanoid()}@example.com`;
@@ -47,5 +60,15 @@ describe(`POST ${forgotPasswordRoute}`, () => {
         isSuccess(existing.json);
         isSuccess(unknown.json);
         expect(unknown.json).toEqual(existing.json);
+    });
+
+    it('should still respond with success when the reset flow fails internally (no user enumeration via errors)', async () => {
+        const existingEmail = await signupVerifiedUser();
+        vi.mocked(sendResetPasswordEmail).mockRejectedValueOnce(new Error('email provider down'));
+
+        const { res, json } = await api.fetch(forgotPasswordRoute, { method: 'POST', body: { email: existingEmail } });
+
+        expect(res.status).toBe(200);
+        isSuccess(json);
     });
 });
