@@ -1,5 +1,4 @@
-import { ProxyRequest, configService, connectionService, getProxyConfiguration } from '@nangohq/shared';
-import { metrics } from '@nangohq/utils';
+import { ProxyRequest, configService, connectionService, getProxyConfiguration, makeDataTransferEvents, pubsub } from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
@@ -13,7 +12,7 @@ export interface InternalNango {
     getIntegration: () => Promise<Config | null>;
 }
 
-export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, _accountId: number): InternalNango {
+export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, accountId: number): InternalNango {
     const internalConfig: InternalProxyConfiguration = {
         providerName
     };
@@ -53,9 +52,19 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     }
                     return { oauth_client_id: null, oauth_client_secret: null };
                 },
-                onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_connection_hook' });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_connection_hook' });
+                onBytes: (meteredBytes) => {
+                    const events = makeDataTransferEvents(
+                        'server',
+                        'connection_hook',
+                        accountId,
+                        connection.connection_id,
+                        connection.provider_config_key,
+                        connection.environment_id,
+                        meteredBytes
+                    );
+                    if (events.length > 0) {
+                        void pubsub.publisher.publishBatch({ subject: 'usage', events });
+                    }
                 }
             });
             const response = (await proxyInstance.request()).unwrap();
