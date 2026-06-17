@@ -59,7 +59,8 @@
         "changelog:providers": "tsx scripts/provider-changelog.ts",
         "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts",
         "deploy:status": "tsx scripts/deploy-status/cli.ts",
-        "deploy:affected": "tsx scripts/deploy-status/affected.ts"
+        "deploy:affected": "tsx scripts/deploy-status/affected.ts",
+        "deploy:snapshot": "tsx scripts/deploy-status/snapshot.ts"
     },
     "devDependencies": {
         "@eslint/js": "9.28.0",
