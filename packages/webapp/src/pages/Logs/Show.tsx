@@ -19,11 +19,10 @@ export const LogsShow: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout fullWidth className="p-6">
+            <DashboardLayout fullWidth title="Logs" className="p-6">
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
-                <h2 className="text-3xl font-semibold text-text-strong mb-4">Logs</h2>
                 <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-text-muted">
@@ -39,7 +38,7 @@ export const LogsShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="p-6 h-full">
+        <DashboardLayout fullWidth title="Logs" className="p-6 h-full">
             <Helmet>
                 <title>Logs - Nango</title>
             </Helmet>

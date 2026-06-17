@@ -31,12 +31,11 @@ export const TeamBilling: React.FC = () => {
     }, [canManageBilling, activeTab, setActiveTab]);
 
     return (
-        <DashboardLayout className="flex flex-col gap-8">
+        <DashboardLayout title="Billing & usage" className="flex flex-col gap-8">
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            <header className="flex justify-between items-center">
-                <h2 className="text-text-strong text-2xl font-semibold">Billing & usage</h2>
+            <header className="flex justify-end items-center">
                 {isUsageTab && (
                     <div className="flex items-center gap-4">
                         <MonthSelector onMonthChange={setSelectedMonth} />

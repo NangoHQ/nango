@@ -101,12 +101,17 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-8">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
-            <header className="flex justify-between items-center">
-                <h2 className="text-text-strong text-title-subsection">Integrations</h2>
+            <header className="flex items-center gap-3">
+                <InputGroup className="h-10 flex-1">
+                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
+                    <InputGroupAddon>
+                        <Search />
+                    </InputGroupAddon>
+                </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
                         <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
@@ -115,13 +120,6 @@ export const IntegrationsList = () => {
                     )}
                 </PermissionGate>
             </header>
-
-            <InputGroup>
-                <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
-                <InputGroupAddon>
-                    <Search />
-                </InputGroupAddon>
-            </InputGroup>
 
             <AutoIdlingBanner />
 
