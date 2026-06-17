@@ -27,17 +27,19 @@ export const DefaultCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                     <AlertDescription>{infoMessage}</AlertDescription>
                 </Alert>
             )}
-            <Button
-                variant="primary"
-                onClick={() =>
-                    onSubmit?.({
-                        provider: provider.name,
-                        useSharedCredentials: false
-                    })
-                }
-            >
-                Create
-            </Button>
+            <div>
+                <Button
+                    variant="primary"
+                    onClick={() =>
+                        onSubmit?.({
+                            provider: provider.name,
+                            useSharedCredentials: false
+                        })
+                    }
+                >
+                    Create
+                </Button>
+            </div>
         </div>
     );
 };
