@@ -16234,7 +16234,7 @@ read-ai:
         - productivity
         - video
     auth_mode: OAUTH2
-    authorization_url: https://api.read.ai/oauth/ui
+    authorization_url: https://authn.read.ai/oauth2/auth
     token_url: https://authn.read.ai/oauth2/token
     token_request_auth_method: basic
     authorization_params:
