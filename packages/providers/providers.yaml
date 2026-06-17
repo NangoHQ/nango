@@ -17777,7 +17777,7 @@ sap-success-factors:
             title: Company ID
             description: The company ID of your SAP SuccessFactors account
             example: SFSALES012345
-            pattern: '^[A-Z0-9]+$'
+            pattern: '^[A-Za-z0-9]+$'
             doc_section: '#step-2-finding-your-company-id'
             order: 2
     credentials:
