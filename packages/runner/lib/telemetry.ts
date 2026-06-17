@@ -45,7 +45,7 @@ function createTelemetryBatcher({ environmentId, persistClient }: { environmentI
         process: async (events) => {
             const res = await persistClient.postRunnerTelemetry(environmentId, events);
             if (res.isErr()) {
-                logger.warning('Failed to post runner telemetry, might retry later', {
+                logger.warning('Failed to post runner telemetry, will retry later', {
                     environmentId: environmentId,
                     events,
                     reason: res.error.message
