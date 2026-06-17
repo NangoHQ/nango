@@ -30,20 +30,16 @@ export const postForgotPassword = asyncWrapper<PostForgotPassword>(async (req, r
     const { email } = val.data;
 
     const user = await userService.getUserByEmail(email);
-    if (!user) {
-        res.status(400).send({
-            error: { code: 'user_not_found' }
-        });
-        return;
+    if (user) {
+        const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
+
+        user.reset_password_token = resetToken;
+        await userService.editUserPassword(user);
+
+        await sendResetPasswordEmail({ user, token: resetToken });
     }
 
-    const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
-
-    user.reset_password_token = resetToken;
-    await userService.editUserPassword(user);
-
-    await sendResetPasswordEmail({ user, token: resetToken });
-
+    // Always respond with success, regardless of whether the email matches an account
     res.status(200).json({
         success: true
     });
