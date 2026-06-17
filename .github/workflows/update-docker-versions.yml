@@ -1,0 +1,158 @@
+name: Update Docker image versions
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Fetch latest Docker image versions
+        id: versions
+        run: |
+          fetch_latest() {
+            local image=$1
+            local filter=$2
+            local suffix=$3
+            local library_name=$4
+            local url="https://hub.docker.com/v2/repositories/${library_name}/${image}/tags?page_size=100&name=${filter}"
+            local all_tags=""
+
+            for page in {1..5}; do
+              [ -z "$url" ] || [ "$url" = "null" ] && break
+              
+              local response
+              response=$(curl -sf "$url") || return 1
+              
+              local page_tags
+              page_tags=$(echo "$response" | jq -r --arg suffix "$suffix" '
+                .results[].name
+                | select(test("^[0-9]+\\.[0-9]+(\\.[0-9]+)?" + $suffix + "$"))
+              ')
+              
+              all_tags=$(printf "%s\n%s" "$all_tags" "$page_tags")
+              url=$(echo "$response" | jq -r '.next // empty')
+            done
+
+            echo "$all_tags" | sed '/^$/d' | sort -V | tail -n1
+          }
+
+          POSTGRES=$(fetch_latest "postgres"       "16."  "-alpine" "library")
+          REDIS=$(fetch_latest "redis"             "7."   "-alpine" "library")
+          ELASTICSEARCH=$(fetch_latest "elasticsearch" "8." "" "library")
+          OPENSEARCH_RAW=$(fetch_latest "opensearch" "2." "" "opensearchproject") 
+          ACTIVEMQ_RAW=$(fetch_latest "activemq-classic" "5." "" "apache")  
+          CLICKHOUSE_RAW=$(fetch_latest "clickhouse-server" "26." "" "clickhouse")
+
+          if [ -z "$POSTGRES" ] || [ -z "$REDIS" ] || [ -z "$ELASTICSEARCH" ] || \
+             [ -z "$OPENSEARCH_RAW" ] || [ -z "$ACTIVEMQ_RAW" ] || [ -z "$CLICKHOUSE_RAW" ]; then
+            echo "::error::Error crítico: One or more Docker images returned an empty tag. Aborting to avoid PRs with invalid versions."
+            exit 1
+          fi
+
+          echo "POSTGRES=$POSTGRES"             >> $GITHUB_OUTPUT
+          echo "REDIS=$REDIS"                   >> $GITHUB_OUTPUT
+          echo "ELASTICSEARCH=$ELASTICSEARCH"   >> $GITHUB_OUTPUT
+          echo "OPENSEARCH=$OPENSEARCH_RAW"     >> $GITHUB_OUTPUT
+          echo "ACTIVEMQ=$ACTIVEMQ_RAW"         >> $GITHUB_OUTPUT
+          echo "CLICKHOUSE=$CLICKHOUSE_RAW"     >> $GITHUB_OUTPUT
+
+      - name: Check if versions changed
+        id: changed
+        env:
+          NEW_POSTGRES: ${{ steps.versions.outputs.POSTGRES }}
+          NEW_REDIS: ${{ steps.versions.outputs.REDIS }}
+          NEW_ELASTICSEARCH: ${{ steps.versions.outputs.ELASTICSEARCH }}
+          NEW_OPENSEARCH: ${{ steps.versions.outputs.OPENSEARCH }}
+          NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
+          NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
+        run: |
+          source .env.example 2>/dev/null || true
+
+          echo "PREV_POSTGRES=$POSTGRES_VERSION"           >> $GITHUB_ENV
+          echo "PREV_REDIS=$REDIS_VERSION"                 >> $GITHUB_ENV
+          echo "PREV_ELASTICSEARCH=$ELASTICSEARCH_VERSION" >> $GITHUB_ENV
+          echo "PREV_OPENSEARCH=$OPENSEARCH_VERSION"       >> $GITHUB_ENV
+          echo "PREV_ACTIVEMQ=$ACTIVEMQ_VERSION"           >> $GITHUB_ENV
+          echo "PREV_CLICKHOUSE=$CLICKHOUSE_VERSION"       >> $GITHUB_ENV
+
+          CHANGED=false
+          [ "$POSTGRES_VERSION"      != "$NEW_POSTGRES"      ] && CHANGED=true
+          [ "$REDIS_VERSION"         != "$NEW_REDIS"         ] && CHANGED=true
+          [ "$ELASTICSEARCH_VERSION" != "$NEW_ELASTICSEARCH" ] && CHANGED=true
+          [ "$OPENSEARCH_VERSION"    != "$NEW_OPENSEARCH"    ] && CHANGED=true
+          [ "$ACTIVEMQ_VERSION"      != "$NEW_ACTIVEMQ"      ] && CHANGED=true
+          [ "$CLICKHOUSE_VERSION"    != "$NEW_CLICKHOUSE"    ] && CHANGED=true
+
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Update .env.example
+        if: steps.changed.outputs.changed == 'true'
+        env:
+          NEW_POSTGRES: ${{ steps.versions.outputs.POSTGRES }}
+          NEW_REDIS: ${{ steps.versions.outputs.REDIS }}
+          NEW_ELASTICSEARCH: ${{ steps.versions.outputs.ELASTICSEARCH }}
+          NEW_OPENSEARCH: ${{ steps.versions.outputs.OPENSEARCH }}
+          NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
+          NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
+        run: |
+          sed -i "s|POSTGRES_VERSION=.*|POSTGRES_VERSION=${NEW_POSTGRES}|"             .env.example
+          sed -i "s|REDIS_VERSION=.*|REDIS_VERSION=${NEW_REDIS}|"                       .env.example
+          sed -i "s|ELASTICSEARCH_VERSION=.*|ELASTICSEARCH_VERSION=${NEW_ELASTICSEARCH}|" .env.example
+          sed -i "s|OPENSEARCH_VERSION=.*|OPENSEARCH_VERSION=${NEW_OPENSEARCH}|"        .env.example
+          sed -i "s|ACTIVEMQ_VERSION=.*|ACTIVEMQ_VERSION=${NEW_ACTIVEMQ}|"              .env.example
+          sed -i "s|CLICKHOUSE_VERSION=.*|CLICKHOUSE_VERSION=${NEW_CLICKHOUSE}|"        .env.example
+
+      - name: Update tests/versions.ts defaults
+        if: steps.changed.outputs.changed == 'true'
+        env:
+          NEW_POSTGRES: ${{ steps.versions.outputs.POSTGRES }}
+          NEW_REDIS: ${{ steps.versions.outputs.REDIS }}
+          NEW_ELASTICSEARCH: ${{ steps.versions.outputs.ELASTICSEARCH }}
+          NEW_OPENSEARCH: ${{ steps.versions.outputs.OPENSEARCH }}
+          NEW_ACTIVEMQ: ${{ steps.versions.outputs.ACTIVEMQ }}
+          NEW_CLICKHOUSE: ${{ steps.versions.outputs.CLICKHOUSE }}
+        run: |
+          cat > tests/versions.ts << EOF
+          export const IMAGE_VERSIONS = {
+              POSTGRES:      process.env['POSTGRES_VERSION']      ?? '${NEW_POSTGRES}',
+              REDIS:         process.env['REDIS_VERSION']         ?? '${NEW_REDIS}',
+              ELASTICSEARCH: process.env['ELASTICSEARCH_VERSION'] ?? '${NEW_ELASTICSEARCH}',
+              OPENSEARCH:    process.env['OPENSEARCH_VERSION']    ?? '${NEW_OPENSEARCH}',
+              ACTIVEMQ:      process.env['ACTIVEMQ_VERSION']      ?? '${NEW_ACTIVEMQ}',
+              CLICKHOUSE:    process.env['CLICKHOUSE_VERSION']    ?? '${NEW_CLICKHOUSE}',
+          };
+          EOF
+
+      - name: Open PR
+        if: steps.changed.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@00f43a059d0a793a540b6167c1340b66b2675005 # v7.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(docker): update image versions"
+          branch: chore/update-docker-versions
+          title: "chore(docker): update Docker image versions"
+          body: |
+            Monthly automated update of Docker image versions.
+
+            | Image | Previous | Updated |
+            |-------|----------|---------|
+            | postgres | `${{ env.PREV_POSTGRES }}` | `${{ steps.versions.outputs.POSTGRES }}` |
+            | redis | `${{ env.PREV_REDIS }}` | `${{ steps.versions.outputs.REDIS }}` |
+            | elasticsearch | `${{ env.PREV_ELASTICSEARCH }}` | `${{ steps.versions.outputs.ELASTICSEARCH }}` |
+            | opensearch | `${{ env.PREV_OPENSEARCH }}` | `${{ steps.versions.outputs.OPENSEARCH }}` |
+            | activemq | `${{ env.PREV_ACTIVEMQ }}` | `${{ steps.versions.outputs.ACTIVEMQ }}` |
+            | clickhouse | `${{ env.PREV_CLICKHOUSE }}` | `${{ steps.versions.outputs.CLICKHOUSE }}` |
+
+            Auto-generated by the `update-docker-versions` workflow. Please review before merging.
+          labels: dependencies,automated

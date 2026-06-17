@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     nango-db:
-        image: postgres:16.0-alpine
+        image: postgres:${POSTGRES_VERSION:-16.14-alpine}
         container_name: nango-db
         environment:
             POSTGRES_PASSWORD: nango
@@ -17,7 +17,7 @@ services:
     nango-server:
         # It's recommended to pin the version using the commit hash tag or a version tag
         # https://hub.docker.com/r/nangohq/nango-server/tags
-        image: nangohq/nango-server:hosted
+        image: nangohq/nango-server:${NANGO_SERVER_VERSION:-hosted}
         container_name: nango-server
         platform: linux/amd64
         environment:
@@ -59,7 +59,7 @@ services:
             - nango
 
     nango-redis:
-        image: redis:7.2.4
+        image: redis:${REDIS_VERSION:-7.2-alpine}
         container_name: nango-redis
         ports:
             - '6379:6379'
@@ -69,7 +69,7 @@ services:
     # Optional dependency
     # To load elasticsearch, set NANGO_LOGS_ENABLED=true in nango-server and uncomment this dependency
     # nango-elasticsearch:
-    #     image: elasticsearch:8.13.0
+    #     image: elasticsearch:${ELASTICSEARCH_VERSION:-8.13.0}
     #     container_name: nango-elasticsearch
     #     ulimits:
     #         memlock:
