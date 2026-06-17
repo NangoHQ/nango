@@ -29,7 +29,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should reject a key lacking the list scope', async () => {
-        const seed = await seedWithScopes(['environment:connections:read']);
+        const seed = await seedWithScopes(['environment:integrations:functions:read']);
 
         const res = await api.fetch(route, { method: 'GET', token: seed.apiKey.secret, params: { uniqueKey: 'github' }, query: {} });
 

@@ -56,7 +56,10 @@ describe('expandScopes', () => {
             'environment:integrations:read_credentials',
             'environment:integrations:create',
             'environment:integrations:update',
-            'environment:integrations:delete'
+            'environment:integrations:delete',
+            'environment:integrations:functions:list',
+            'environment:integrations:functions:read',
+            'environment:integrations:functions:delete'
         ]);
     });
 

@@ -188,7 +188,7 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngr
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
-publicAPI.route('/providers/:provider/templates').get(apiAuth, withScope('environment:functions:list'), getPublicProviderTemplates);
+publicAPI.route('/providers/:provider/templates').get(apiAuth, getPublicProviderTemplates);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -212,14 +212,12 @@ publicAPI
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
 
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environment:integrations:delete'), deletePublicIntegration);
-publicAPI
-    .route('/integrations/:uniqueKey/functions/:name/code')
-    .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
-publicAPI.route('/integrations/:uniqueKey/functions').get(apiAuth, withScope('environment:functions:list'), getPublicIntegrationFunctions);
+publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(apiAuth, withScope('environment:integrations:functions:read'), getFunctionCode);
+publicAPI.route('/integrations/:uniqueKey/functions').get(apiAuth, withScope('environment:integrations:functions:list'), getPublicIntegrationFunctions);
 publicAPI
     .route('/integrations/:uniqueKey/functions/:name')
-    .get(apiAuth, withScope('environment:functions:read'), getPublicIntegrationFunction)
-    .delete(apiAuth, withScope('environment:functions:delete'), deletePublicIntegrationFunction);
+    .get(apiAuth, withScope('environment:integrations:functions:read'), getPublicIntegrationFunction)
+    .delete(apiAuth, withScope('environment:integrations:functions:delete'), deletePublicIntegrationFunction);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);

@@ -45,11 +45,16 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         ]
     },
     {
+        group: 'Integration Functions',
+        items: [
+            { value: 'environment:integrations:functions:list', label: 'list' },
+            { value: 'environment:integrations:functions:read', label: 'read' },
+            { value: 'environment:integrations:functions:delete', label: 'delete' }
+        ]
+    },
+    {
         group: 'Functions',
         items: [
-            { value: 'environment:functions:list', label: 'list' },
-            { value: 'environment:functions:read', label: 'read' },
-            { value: 'environment:functions:delete', label: 'delete' },
             { value: 'environment:functions:compile', label: 'compile' },
             { value: 'environment:functions:dryrun', label: 'dryrun' }
         ]

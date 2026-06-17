@@ -9,6 +9,10 @@ export const API_KEY_SCOPES = [
     'environment:integrations:create',
     'environment:integrations:update',
     'environment:integrations:delete',
+    'environment:integrations:functions:list',
+    'environment:integrations:functions:read',
+    'environment:integrations:functions:delete',
+    'environment:integrations:functions:*',
     'environment:integrations:*',
     // Connections
     'environment:connections:list',
@@ -29,9 +33,6 @@ export const API_KEY_SCOPES = [
     'environment:syncs:variant:delete',
     'environment:syncs:*',
     // Functions
-    'environment:functions:list',
-    'environment:functions:read',
-    'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
     'environment:functions:*',

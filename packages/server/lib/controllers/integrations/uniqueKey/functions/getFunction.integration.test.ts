@@ -29,7 +29,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should reject a key lacking the read scope', async () => {
-        const seed = await seedWithScopes(['environment:functions:list']);
+        const seed = await seedWithScopes(['environment:integrations:functions:list']);
 
         const res = await api.fetch(route, { method: 'GET', token: seed.apiKey.secret, params: { uniqueKey: 'github', name: 'my-sync' }, query: {} });
 

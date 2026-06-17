@@ -77,6 +77,25 @@ describe(`GET ${endpoint}`, () => {
         shouldBeProtected(res);
     });
 
+    it('should reject a key lacking the read scope', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        await db
+            .knex('customer_keys')
+            .where('id', apiKey.id)
+            .update({ scopes: ['environment:integrations:functions:list'] });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'get-issues' },
+            query: {}
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(403);
+        expect(res.json.error.code).toBe('forbidden');
+    });
+
     it('returns 404 when integration is not found', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
 

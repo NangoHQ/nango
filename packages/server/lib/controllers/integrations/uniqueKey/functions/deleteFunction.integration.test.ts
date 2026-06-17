@@ -35,7 +35,7 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should reject a key lacking the delete scope', async () => {
-        const seed = await seedWithScopes(['environment:functions:read']);
+        const seed = await seedWithScopes(['environment:integrations:functions:read']);
 
         const res = await api.fetch(route, {
             method: 'DELETE',
