@@ -20,9 +20,9 @@
     "devDependencies": {
         "@nangohq/types": "0.70.7",
         "@types/json-schema": "7.0.15",
-        "axios": "1.16.1",
+        "axios": "1.18.0",
         "json-schema": "0.4.0",
-        "vitest": "4.1.8"
+        "vitest": "4.1.9"
     },
     "peerDependencies": {
         "zod": "4.3.6"

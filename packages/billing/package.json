@@ -14,13 +14,13 @@
     "dependencies": {
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
-        "orb-billing": "5.44.0",
+        "orb-billing": "5.48.0",
         "stripe": "18.2.1",
         "uuidv7": "1.0.2",
         "zod": "4.0.5"
     },
     "devDependencies": {
-        "vitest": "4.1.8"
+        "vitest": "4.1.9"
     },
     "files": [
         "dist/**/*"

@@ -40,6 +40,12 @@ export class UsageProcessor {
         });
     }
 
+    private logIncrError(metric: string, accountId: number, result: Result<unknown>): void {
+        if (result.isErr()) {
+            logger.error(`Failed to increment ${metric} for account ${accountId}: ${stringifyError(result.error, { cause: true })}`);
+        }
+    }
+
     public async process(event: UsageEvent): Promise<Result<void>> {
         try {
             switch (event.type) {
@@ -85,9 +91,7 @@ export class UsageProcessor {
                         metric: 'records',
                         delta: event.payload.value
                     });
-                    if (incrRecords.isErr()) {
-                        logger.error(`Failed to increment records for account ${accountId}: ${incrRecords.error}`);
-                    }
+                    this.logIncrError('records', accountId, incrRecords);
                     return Ok(undefined); // No billing action for records, just tracking usage
                 }
                 case 'usage.actions': {
@@ -151,25 +155,19 @@ export class UsageProcessor {
                         metric: 'function_executions',
                         delta: event.payload.value
                     });
-                    if (incrExecutions.isErr()) {
-                        logger.error(`Failed to increment function_executions for account ${accountId}: ${incrExecutions.error}`);
-                    }
+                    this.logIncrError('function_executions', accountId, incrExecutions);
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_compute_gbms',
-                        delta: compute
+                        delta: compute > 0 ? Math.max(1, Math.round(compute)) : 0 // HINCRBY needs an integer; floor non-zero compute at 1 so small values aren't dropped
                     });
-                    if (incrCompute.isErr()) {
-                        logger.error(`Failed to increment function_compute_ms for account ${accountId}: ${incrCompute.error}`);
-                    }
+                    this.logIncrError('function_compute_gbms', accountId, incrCompute);
                     const incrLogs = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_logs',
                         delta: customLogs
                     });
-                    if (incrLogs.isErr()) {
-                        logger.error(`Failed to increment logs for account ${accountId}: ${incrLogs.error}`);
-                    }
+                    this.logIncrError('function_logs', accountId, incrLogs);
 
                     // Clickhouse
                     this.clickhouse.add([event]);
@@ -267,9 +265,7 @@ export class UsageProcessor {
                         metric: 'webhook_forwards',
                         delta: event.payload.value
                     });
-                    if (incrWebhook.isErr()) {
-                        logger.error(`Failed to increment webhook_forwards for account ${accountId}: ${incrWebhook.error}`);
-                    }
+                    this.logIncrError('webhook_forwards', accountId, incrWebhook);
                     // Clickhouse
                     this.clickhouse.add([event]);
                     // Billing
