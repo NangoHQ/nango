@@ -132,7 +132,7 @@ export interface ParsedNangoSync {
 /** Serializable view of a function trigger (the executable hooks live in the deployed file body). */
 export interface ParsedFunctionTrigger {
     type: 'http' | 'schedule' | 'event';
-    /** http trigger: maps to the URL path segment. */
+    /** http trigger: URL path segment. schedule/event triggers: disambiguates multiple of the same type. */
     name?: string;
     /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
     scope?: 'integration' | 'connection';
@@ -140,10 +140,8 @@ export interface ParsedFunctionTrigger {
     schedule?: string;
     /** event trigger. */
     event?: string;
-    /** Whether the trigger ships an `ingressChallenge` hook (executed at ingress). */
-    hasIngressChallenge?: boolean;
-    /** Whether the trigger ships an `ingressValidation` hook (executed at ingress). */
-    hasIngressValidation?: boolean;
+    /** Whether the trigger ships one or more `ingressHooks` (executed at ingress). */
+    hasIngressHooks?: boolean;
 }
 
 export interface ParsedNangoFunction {
@@ -151,9 +149,10 @@ export interface ParsedNangoFunction {
     type: 'function';
     description: string;
     triggers: ParsedFunctionTrigger[];
-    /** Ingress coalescing config (the window/key). Applies to http-triggered runs. */
+    /** Function-level ingress coalescing config (the window/key). Applies to concurrent triggers (today: http). */
     debounce?: {
-        key?: { body: string } | { header: string };
+        /** One source, or an array combined into a composite key. */
+        key?: { body: string } | { header: string } | ({ body: string } | { header: string })[];
         windowMs: number;
         maxWindowMs?: number;
         maxEntities?: number;

@@ -229,11 +229,11 @@ describe('scripts', () => {
 
     describe('createWebhook', () => {
         it('should desugar into a function with a single implicit http trigger', () => {
-            const ingressValidation = () => true;
+            const ingressHooks = [() => undefined];
             const webhook = createWebhook({
                 name: 'contacts-updated',
                 description: 'Contacts webhook',
-                ingressValidation,
+                ingressHooks,
                 debounce: { key: { body: '$.portalId' }, windowMs: 5000 },
                 exec: async (nango, event) => {
                     // Webhook bodies are provider-defined → payload is unknown.
@@ -249,11 +249,11 @@ describe('scripts', () => {
             expect(webhook.triggers[0]).toStrictEqual({
                 type: 'http',
                 name: 'contacts-updated',
-                ingressValidation
+                ingressHooks
             });
             expect(webhook.debounce).toStrictEqual({ key: { body: '$.portalId' }, windowMs: 5000 });
             // ingress hooks live on the trigger, not at the top level of the function
-            expect((webhook as unknown as Record<string, unknown>)['ingressValidation']).toBeUndefined();
+            expect((webhook as unknown as Record<string, unknown>)['ingressHooks']).toBeUndefined();
         });
 
         it('should default the trigger name from the absence of name (left to the file basename downstream)', () => {

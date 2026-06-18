@@ -460,8 +460,12 @@ export type DebounceKeySource = { body: string } | { header: string };
 /**
  * Coalesces multiple inbound events into a single function run within a sliding window.
  */
-export interface WebhookDebounceConfig {
-    key?: DebounceKeySource;
+export interface DebounceConfig {
+    /**
+     * One source, or an array of sources combined into a composite key (e.g. an object id plus an
+     * event type). Events sharing the same resolved key coalesce together.
+     */
+    key?: DebounceKeySource | DebounceKeySource[];
     /** Sliding window in milliseconds. */
     windowMs: number;
     /** Hard ceiling for the window regardless of incoming events. */
@@ -479,39 +483,52 @@ export interface IngressEvent {
     query: Record<string, string | string[] | undefined>;
 }
 
-/**
- * Runs synchronously at ingress before enqueueing. Return a response object to short-circuit
- * the HTTP exchange (provider handshake), or `undefined` to let the request proceed.
- */
-export type IngressChallenge = (event: IngressEvent) => MaybePromise<{ status?: number; body?: unknown; headers?: Record<string, string> } | undefined | void>;
-
-/**
- * Runs synchronously at ingress before enqueueing. Return `true` to accept the event,
- * or `false` (or throw) to reject it with a 401.
- */
-export type IngressValidation = (event: IngressEvent) => MaybePromise<boolean>;
-
-export interface HttpTrigger {
-    type: 'http';
-    /** Maps to the webhook URL path segment. Defaults to the file basename. */
-    name?: string;
-    /** `connection` opts into connection-level URLs (`/:webhookName/:targetToken`). */
-    scope?: 'integration' | 'connection';
-    ingressChallenge?: IngressChallenge;
-    ingressValidation?: IngressValidation;
+/** A response that short-circuits the HTTP exchange at ingress (e.g. a provider handshake). */
+export interface IngressResponse {
+    status?: number;
+    body?: unknown;
+    headers?: Record<string, string>;
 }
-export interface ScheduleTrigger {
+
+/**
+ * Runs synchronously at ingress before the event is enqueued. No SDK, no I/O, hard timeout.
+ * Hooks run in declared order and each can:
+ * - return an `IngressResponse` to short-circuit the HTTP exchange (e.g. a provider handshake),
+ * - throw to reject the request (responds 401),
+ * - return `undefined` to fall through to the next hook (and ultimately run the function).
+ *
+ * This can be used to implement webhook validation and/or challenges.
+ */
+export type IngressHook = (event: IngressEvent) => MaybePromise<IngressResponse | undefined | void>;
+
+/** Fields shared by every declared trigger. */
+interface TriggerBase {
+    /**
+     * For http triggers maps to the webhook URL path segment (defaults to the file basename).
+     * For schedule/event triggers, disambiguates multiple triggers of the same type. Surfaced on
+     * the ingress event.
+     */
+    name?: string;
+}
+export interface HttpTrigger extends TriggerBase {
+    type: 'http';
+    /** `connection` opts into connection-level URLs (`/:webhookName/:connectionId`). */
+    scope?: 'integration' | 'connection';
+    /** Ordered ingress hooks (handshake and/or validation). Run in sequence before enqueueing. */
+    ingressHooks?: IngressHook[];
+}
+export interface ScheduleTrigger extends TriggerBase {
     type: 'schedule';
     /** e.g. 'every hour', 'every 2 minutes'. */
     schedule: string;
 }
-export interface EventTrigger {
+export interface EventTrigger extends TriggerBase {
     type: 'event';
     event: string;
 }
 export type FunctionTrigger = HttpTrigger | ScheduleTrigger | EventTrigger;
 
-/** Coalescing summary, present on an http ingress event when `debounce` is configured. */
+/** Coalescing summary, present on an ingress event when `debounce` is configured and coalescing happened. */
 export interface CoalescedInfo {
     count: number;
     firstSeenAt: Date;
@@ -521,6 +538,8 @@ export interface CoalescedInfo {
 
 /** Fields shared by every ingress event a function `exec` receives. */
 interface IngressEventBase<TPayload> {
+    /** The name of the trigger that fired, when declared. */
+    name?: string;
     /**
      * The payload that initiated the run. Typed as the function's `input` schema when declared,
      * otherwise `unknown`.
@@ -531,6 +550,11 @@ interface IngressEventBase<TPayload> {
      * `triggerFunction({ connectionId })`, or CLI `--connection`). Undefined for connection-less runs.
      */
     connection?: { connection_id: string; provider_config_key: string };
+    /**
+     * Coalescing summary when function-level `debounce` is configured and a burst was coalesced
+     * into this run. Undefined for single, non-coalesced runs.
+     */
+    coalesced?: CoalescedInfo;
 }
 
 /**
@@ -540,28 +564,22 @@ interface IngressEventBase<TPayload> {
  */
 export interface HttpIngressEvent<TPayload = unknown> extends IngressEventBase<TPayload> {
     type: 'http';
-    /** The name of the trigger that fired, when declared. */
-    name?: string;
     /** Raw headers from the provider. */
     headers: Record<string, string>;
     /** Original request body as received by ingress. */
     rawBody: string;
-    /** Coalescing summary when `debounce` is configured. */
-    coalesced?: CoalescedInfo;
 }
 
 /** Ingress event for a `schedule` trigger. */
 export interface ScheduleIngressEvent<TPayload = unknown> extends IngressEventBase<TPayload> {
     type: 'schedule';
-    /** The name of the trigger that fired, when declared. */
-    name?: string;
+    /** The cadence the trigger was declared with (e.g. 'every hour'), exposed read-only. */
+    schedule?: string;
 }
 
 /** Ingress event for an `event` trigger (an internal Nango event). */
 export interface EventIngressEvent<TPayload = unknown> extends IngressEventBase<TPayload> {
     type: 'event';
-    /** The name of the trigger that fired, when declared. */
-    name?: string;
 }
 
 /**
@@ -597,9 +615,8 @@ export interface CreateFunctionProps<
 
     /**
      * Coalesces a burst of inbound events into a single run within a sliding window.
-     * Applies to http-triggered runs.
      */
-    debounce?: WebhookDebounceConfig;
+    debounce?: DebounceConfig;
 
     /** Models the function can `batchSave`/`batchUpdate`/`batchDelete` against. */
     models?: TModels;
@@ -607,7 +624,11 @@ export interface CreateFunctionProps<
     /** Optional input schema. When set, it types `event.payload` and is used for API invocation. */
     input?: TInput;
 
-    /** Optional output schema. Types `exec`'s return value. Ignored for http-triggered runs. */
+    /**
+     * Optional output schema, typing `exec`'s return value. The return value is surfaced to
+     * on-demand callers (`triggerFunction()`, the API). Trigger-driven runs (http, schedule,
+     * event) are fire-and-forget and discard it.
+     */
     output?: TOutput;
 
     metadata?: TMetadata;
@@ -651,9 +672,10 @@ export interface CreateFunctionResponse<
  * ```ts
  * export default createFunction({
  *     triggers: [
- *         { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
+ *         { type: 'http', name: 'contacts-updated' },
  *         { type: 'schedule', schedule: 'every hour' }
  *     ],
+ *     debounce: { key: { body: '$.objectId' }, windowMs: 5000 },
  *     exec: async (nango, event) => { ... }
  * });
  * ```
@@ -673,7 +695,9 @@ export function createFunction<
 
 export interface CreateWebhookProps<
     TModels extends Record<string, ZodModel>,
-    TOutput extends z.ZodTypeAny = z.ZodTypeAny,
+    // Webhook runs are fire-and-forget, the return value is discarded. Default the output to
+    // `void`. Authors who need a typed return for on-demand invocation opt in via `output`.
+    TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined
 > {
@@ -683,12 +707,11 @@ export interface CreateWebhookProps<
     description?: string;
     /** `connection` opts into connection-level URLs (`/:webhookName/:targetToken`). */
     scope?: 'integration' | 'connection';
-    ingressChallenge?: IngressChallenge;
-    ingressValidation?: IngressValidation;
+    /** Ordered ingress hooks (handshake and/or validation). Run in sequence before enqueueing. */
+    ingressHooks?: IngressHook[];
     /** Coalesces a burst of inbound events into a single run within a sliding window. */
-    debounce?: WebhookDebounceConfig;
+    debounce?: DebounceConfig;
     models?: TModels;
-    /** Optional output schema. Types `exec`'s return value. Ignored at ingress. */
     output?: TOutput;
     metadata?: TMetadata;
     checkpoint?: TCheckpoint;
@@ -699,8 +722,8 @@ export interface CreateWebhookProps<
  * Create a webhook handler — sugar for a function with a single implicit `http` trigger.
  *
  * Routing lives entirely in `exec` (customer-owned, runs on your runner). Provider protocol
- * mechanics (handshake, signature verification) live in `ingressChallenge` / `ingressValidation`,
- * which run synchronously at ingress with no SDK access.
+ * mechanics (handshake, signature verification) live in `ingressHooks`, an ordered list of
+ * hooks that run synchronously at ingress with no SDK access.
  *
  * @example
  * ```ts
@@ -718,19 +741,18 @@ export interface CreateWebhookProps<
  */
 export function createWebhook<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
-    TOutput extends z.ZodTypeAny = z.ZodTypeAny,
+    TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined
 >(params: CreateWebhookProps<TModels, TOutput, TMetadata, TCheckpoint>): CreateFunctionResponse<TModels, z.ZodTypeAny, TOutput, TMetadata, TCheckpoint> {
     // `debounce` is a function-level prop, so it stays in `rest` and lands at the top level — only
     // the trigger-shaped props are lifted into the implicit http trigger.
-    const { name, scope, ingressChallenge, ingressValidation, ...rest } = params;
+    const { name, scope, ingressHooks, ...rest } = params;
     const trigger: HttpTrigger = {
         type: 'http',
         ...(name !== undefined ? { name } : {}),
         ...(scope !== undefined ? { scope } : {}),
-        ...(ingressChallenge !== undefined ? { ingressChallenge } : {}),
-        ...(ingressValidation !== undefined ? { ingressValidation } : {})
+        ...(ingressHooks !== undefined ? { ingressHooks } : {})
     };
     return {
         type: 'function',
