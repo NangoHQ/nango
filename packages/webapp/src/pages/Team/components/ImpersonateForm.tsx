@@ -82,9 +82,11 @@ export const ImpersonateForm: React.FC = () => {
                             <span>Impersonating an account will allow you to login as that account and perform actions on their behalf.</span>
                         </AlertDescription>
                     </Alert>
-                    <Button type="submit" variant="danger" className="self-end">
-                        Impersonate
-                    </Button>
+                    <div className="self-end">
+                        <Button type="submit" variant="danger">
+                            Impersonate
+                        </Button>
+                    </div>
                     {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
                 </form>
             </Form>

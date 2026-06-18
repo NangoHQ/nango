@@ -81,7 +81,7 @@ export default function Signin() {
                             )}
                         />
 
-                        <Button type="submit" className="w-full" size={'xl'} loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size={'xl'} loading={isPending} disabled={!form.formState.isValid}>
                             Send password reset email
                         </Button>
                     </form>
