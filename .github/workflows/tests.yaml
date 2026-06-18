@@ -108,6 +108,7 @@ jobs:
         needs: [should-run, tests-integration-shards]
         if: always()
         runs-on: ubuntu-latest
+        permissions: {}
         steps:
             - name: Verify all integration shards passed
               run: |
