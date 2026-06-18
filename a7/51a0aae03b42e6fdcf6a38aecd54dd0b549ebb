@@ -1,0 +1,23 @@
+packages/sandbox/lib/providers/agentcore.unit.test.ts
+  s_6a617d6537e735::t_e0c60c82cc03bd 10,15
+packages/utils/lib/environment/parse.unit.test.ts
+  s_6a617d6537e735::t_46f39e244dbde4 44,52
+packages/sandbox/lib/providers/agentcore.ts
+  s_6a617d6537e735::t_e0c60c82cc03bd 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "a751a0aae03b42e6fdcf6a38aecd54dd0b549ebb",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
