@@ -1,0 +1,34 @@
+scripts/deploy-agentcore-sandbox.mjs
+  s_6a617d6537e735::t_ea971ec709806f 2
+  s_6a617d6537e735::t_0a44d3bd77e02b 7,47-49,64-66
+  s_6a617d6537e735::t_e0d813bad8091a 9
+  s_6a617d6537e735::t_9ec1253943c299 10-11,15-19,46,63,87,95,111
+  s_6a617d6537e735::t_f813dc20fa34a8 21,30
+  s_6a617d6537e735::t_5a5f2cb93f2b9d 34
+  s_6a617d6537e735::t_a68197b21dbff7 44,51,61,68
+  s_6a617d6537e735::t_7a2cc48ec55b53 136
+  s_6a617d6537e735::t_60c179824f1b33 50,67
+  h_518893e5552779 31,54,71,112,115
+  s_6a617d6537e735::t_e3807749441e4c 116-117,126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "b3a6eba5a3d1847a31d783f8b309b54619c3439b",
+  "prompts": {},
+  "humans": {
+    "h_518893e5552779": {
+      "author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  },
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

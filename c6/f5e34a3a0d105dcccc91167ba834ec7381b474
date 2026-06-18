@@ -1,0 +1,19 @@
+.github/workflows/publish.yaml
+  s_6a617d6537e735::t_93dc9bf11e4c48 33,35,38-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "c6f5e34a3a0d105dcccc91167ba834ec7381b474",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
