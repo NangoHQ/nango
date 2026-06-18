@@ -221,7 +221,7 @@ describe('handleResponse', () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('{"ok":true}', {
             headers: {
-                'transfer-encoding': 'chunked',
+                'transfer-encoding': 'gzip, CHUNKED',
                 'content-length': '11',
                 connection: 'keep-alive, x-provider-hop',
                 'keep-alive': 'timeout=5',

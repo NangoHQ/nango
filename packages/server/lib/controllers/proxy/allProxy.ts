@@ -437,14 +437,17 @@ function isOutgoingHttpHeader(value: unknown): value is OutgoingHttpHeader {
     return typeof value === 'string' || typeof value === 'number' || (Array.isArray(value) && value.every((item) => typeof item === 'string'));
 }
 
+function parseHeaderTokens(value: unknown): string[] {
+    const values = Array.isArray(value) ? value : [value];
+    return values
+        .flatMap((item) => (typeof item === 'string' ? item.split(',') : []))
+        .map((token) => token.trim().toLowerCase())
+        .filter(Boolean);
+}
+
 function sanitizeStreamResponseHeaders(headers: Record<string, unknown>, { stripContentLength }: { stripContentLength: boolean }) {
     const connectionHeader = headers['connection'];
-    const connectionTokens = new Set(
-        (Array.isArray(connectionHeader) ? connectionHeader.join(',') : typeof connectionHeader === 'string' ? connectionHeader : '')
-            .split(',')
-            .map((token) => token.trim().toLowerCase())
-            .filter(Boolean)
-    );
+    const connectionTokens = new Set(parseHeaderTokens(connectionHeader));
 
     const sanitized: OutgoingHttpHeaders = {};
     for (const [name, value] of Object.entries(headers)) {
@@ -465,14 +468,15 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
 
-    const isChunked = transferEncoding === 'chunked';
+    const transferEncodingTokens = parseHeaderTokens(transferEncoding);
+    const isChunked = transferEncodingTokens.includes('chunked');
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
     if (isChunked || isAttachmentOrInline) {
         const responseHeaders = sanitizeStreamResponseHeaders(responseStream.headers, {
             // Chunked framing belongs to the provider-to-Nango hop. Axios can
             // also decompress the body, invalidating the provider's length.
-            stripContentLength: isChunked || checkWasCompressed(responseStream) === true
+            stripContentLength: transferEncodingTokens.length > 0 || checkWasCompressed(responseStream) === true
         });
         res.writeHead(responseStream.status, responseHeaders);
         responseStream.data.pipe(res);
