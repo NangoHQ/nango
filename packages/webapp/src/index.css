@@ -10,6 +10,9 @@
 
 @import '@nangohq/design-system/tokens/tokens.generated.css';
 
+/* Scan the design-system package so Tailwind generates classes used only by its components (Button, IconButton, …). */
+@source '../../design-system/src';
+
 /*
   ---break---
 */
@@ -72,7 +75,6 @@
         box-shadow: var(--shadow-focus-outline-default);
     }
 }
-
 
 @utility focus-error {
     @variant focus {

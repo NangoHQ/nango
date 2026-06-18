@@ -106,13 +106,12 @@ export const ConnectionCreate: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout title="Create test connection">
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
                 <div className="grid grid-cols-2 text-text-strong">
                     <div className="pr-10 flex flex-col gap-10">
-                        <h1 className="text-2xl">Create test connection</h1>
                         <div className="flex flex-col gap-4">
                             <Skeleton className="w-full h-10" />
                             <Skeleton className="w-full" />
@@ -125,14 +124,13 @@ export const ConnectionCreate: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className={'max-w-[1250px]'}>
+        <DashboardLayout fullWidth title="Create test connection" className={'max-w-[1250px]'}>
             <Helmet>
                 <title>Create Test Connection - Nango</title>
             </Helmet>
             <div className="grid grid-cols-[2fr_1fr] text-text-strong">
                 <div className="pr-5">
                     <div className="flex flex-col gap-8">
-                        <h1 className="text-2xl">Create a test connection</h1>
                         <CreateConnectionSelector
                             integration={integration}
                             setIntegration={setIntegration}

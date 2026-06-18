@@ -19,13 +19,10 @@ export const TeamSettingsPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout title="Team settings">
                 <Helmet>
                     <title>Team Settings - Nango</title>
                 </Helmet>
-                <div className="flex items-center justify-between">
-                    <h2 className="text-heading-large text-text-strong">Team settings</h2>
-                </div>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
@@ -41,12 +38,11 @@ export const TeamSettingsPage: React.FC = () => {
     const isNangoAdmin = data?.data.isAdminTeam;
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-10">
+        <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-10">
             <Helmet>
                 <title>Team Settings - Nango</title>
             </Helmet>
-            <div className="flex items-center justify-between">
-                <h2 className="text-heading-large text-text-strong">Team settings</h2>
+            <div className="flex items-center justify-end">
                 <AddTeamMemberButton />
             </div>
 

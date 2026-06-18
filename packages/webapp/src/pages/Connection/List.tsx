@@ -276,26 +276,12 @@ export const ConnectionList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout fullWidth title="Connections">
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-3">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-title-subsection text-text-strong">Connections</h2>
-                    {(hasConnections || hasFiltered) && (
-                        <PermissionGate condition={canCreateTestConnection}>
-                            {(allowed) => (
-                                <ButtonLink to={`/${env}/connections/create`} size="xl" disabled={!allowed}>
-                                    Add test connection
-                                </ButtonLink>
-                            )}
-                        </PermissionGate>
-                    )}
-                </div>
-
                 {/* Content */}
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
@@ -355,6 +341,13 @@ export const ConnectionList = () => {
                                     reorderOnSelect={false}
                                     showSearch={false}
                                 />
+                                <PermissionGate condition={canCreateTestConnection}>
+                                    {(allowed) => (
+                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                            Add test connection
+                                        </ButtonLink>
+                                    )}
+                                </PermissionGate>
                             </div>
 
                             {/* Table */}

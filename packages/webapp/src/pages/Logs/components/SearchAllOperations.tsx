@@ -253,8 +253,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     return (
         <>
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-text-strong mb-2 flex gap-4 items-center">Logs {(isLoading || isFetching) && <Spinner />}</h2>
+            <div className="flex justify-end items-center gap-2 mb-2">
+                {(isLoading || isFetching) && <Spinner />}
                 <div className="text-text-strong text-xs">
                     {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
                 </div>
