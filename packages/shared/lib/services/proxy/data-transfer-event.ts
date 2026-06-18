@@ -1,5 +1,5 @@
 import type { MeteredBytes } from './byte-metering-transport.js';
-import type { UsageDataTransferEvent } from '@nangohq/types';
+import type { DataTransferCallsite, UsageDataTransferEvent } from '@nangohq/types';
 
 export function makeDataTransferEvent({
     pkg,
@@ -14,7 +14,7 @@ export function makeDataTransferEvent({
     count = 1
 }: {
     pkg: 'runner' | 'server' | 'shared';
-    callsite: string;
+    callsite: DataTransferCallsite;
     accountId: number;
     connectionId: string;
     integrationId: string;
