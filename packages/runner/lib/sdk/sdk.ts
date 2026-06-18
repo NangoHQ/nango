@@ -140,7 +140,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 integrationId: this.providerConfigKey,
                 syncId: this.syncId,
                 bytesSent,
-                bytesReceived
+                bytesReceived,
+                count: 1
             });
         });
     }
@@ -230,7 +231,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     bytesReceived: received,
                     integrationId: providerConfigKey ?? this.providerConfigKey,
                     connectionId: connectionId ?? this.connectionId,
-                    syncId: this.syncId
+                    syncId: this.syncId,
+                    count: 1
                 });
             }
         });
@@ -345,7 +347,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             bytesReceived: 0,
             integrationId: this.providerConfigKey,
             connectionId: this.connectionId,
-            syncId: this.syncId
+            syncId: this.syncId,
+            count: 1
         });
         const res = await this.persistClient.postLog({
             environmentId: this.environmentId,
@@ -592,7 +595,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 bytesReceived: 0,
                 integrationId: this.providerConfigKey,
                 connectionId: this.connectionId,
-                syncId: this.syncId
+                syncId: this.syncId,
+                count: 1
             });
             this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
@@ -632,7 +636,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 bytesReceived: 0,
                 integrationId: this.providerConfigKey,
                 connectionId: this.connectionId,
-                syncId: this.syncId
+                syncId: this.syncId,
+                count: 1
             });
             this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
@@ -673,7 +678,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 bytesReceived: 0,
                 integrationId: this.providerConfigKey,
                 connectionId: this.connectionId,
-                syncId: this.syncId
+                syncId: this.syncId,
+                count: 1
             });
             this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
@@ -803,7 +809,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             bytesReceived: Buffer.byteLength(JSON.stringify(res.value), 'utf8'),
             integrationId: this.providerConfigKey,
             connectionId: this.connectionId,
-            syncId: this.syncId
+            syncId: this.syncId,
+            count: 1
         });
 
         return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };

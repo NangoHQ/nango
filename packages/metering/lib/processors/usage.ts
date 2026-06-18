@@ -294,8 +294,9 @@ export class UsageProcessor {
                     return Ok(undefined);
                 }
                 case 'usage.data_transfer': {
-                    const { package: pkg, callsite, direction } = event.payload.properties;
-                    metrics.increment(metrics.Types.DATA_TRANSFER, event.payload.value, { package: pkg, callsite, direction });
+                    const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
+                    metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
+                    metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
                     return Ok(undefined);
                 }
                 default:

@@ -152,14 +152,25 @@ export type UsageWebhookForwardEvent = UsageEventBase<
     }
 >;
 
+export type DataTransferCallsite =
+    | 'credential_test_hook'
+    | 'credential_verification_hook'
+    | 'connection_hook'
+    | 'webhook_forward'
+    | 'proxy'
+    | 'uncontrolled_fetch'
+    | 'persist_logs'
+    | 'persist_records';
+
 export type UsageDataTransferEvent = UsageEventBase<
     'usage.data_transfer',
     {
         value: number;
         properties: {
             package: 'server' | 'runner' | 'shared';
-            callsite: string;
-            direction: 'ingress' | 'egress';
+            callsite: DataTransferCallsite;
+            ingressedBytes: number;
+            egressedBytes: number;
             syncId?: string;
         };
     }

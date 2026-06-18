@@ -29,7 +29,8 @@ const telemetryGrouping: Grouping<RunnerTelemetry> = {
                     integrationId: event.integrationId,
                     syncId: event.syncId,
                     bytesSent: Math.min(_acc.bytesSent + event.bytesSent, Number.MAX_SAFE_INTEGER),
-                    bytesReceived: Math.min(_acc.bytesReceived + event.bytesReceived, Number.MAX_SAFE_INTEGER)
+                    bytesReceived: Math.min(_acc.bytesReceived + event.bytesReceived, Number.MAX_SAFE_INTEGER),
+                    count: _acc.count + event.count
                 };
             default:
                 throw new Error(`Unsupported telemetry type: ${event.type}`);
