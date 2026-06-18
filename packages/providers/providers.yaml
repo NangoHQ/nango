@@ -1958,6 +1958,9 @@ attio-mcp:
     authorization_url: https://app.attio.com/oidc/authorize
     token_url: https://app.attio.com/oidc/token
     registration_url: https://app.attio.com/oauth/register
+    scope_separator: '+'
+    authorization_url_skip_encode:
+        - scopes
     authorization_params:
         response_type: code
     registration_params:

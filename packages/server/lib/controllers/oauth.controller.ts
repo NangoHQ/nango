@@ -951,13 +951,27 @@ class OAuthController {
                 code_challenge_method: 'S256'
             };
 
-            const authorizationUri = simpleOAuthClient.authorizeURL({
+            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : '';
+
+            let authorizationUri = simpleOAuthClient.authorizeURL({
                 client_id: config.oauth_client_id,
                 redirect_uri: callbackUrl,
-                scope: config.oauth_scopes || '',
+                scope: scopes,
                 state: session.id,
                 ...authParams
             });
+
+            if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                const url = new URL(authorizationUri);
+                const queryParams = new URLSearchParams(url.search);
+                queryParams.delete('scope');
+                let newQuery = queryParams.toString();
+                if (scopes) {
+                    newQuery = newQuery ? `${newQuery}&scope=${scopes}` : `scope=${scopes}`;
+                }
+                url.search = newQuery;
+                authorizationUri = url.toString();
+            }
 
             void logCtx.info('Redirecting', {
                 authorizationUri,
@@ -966,7 +980,7 @@ class OAuthController {
                 allAuthParams: authParams,
                 connectionConfig,
                 grantType: provider.token_params?.['grant_type'] as string,
-                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+                scopes
             });
 
             res.cookie(`oauth2-${session.id}`, '1', {
