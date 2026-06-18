@@ -62,8 +62,10 @@ function startProcedure() {
                 input: codeParams
             });
 
+            const persistClient = distributedCoordination ? new PersistClient({ secretKey: nangoProps.secretKey }) : undefined;
+
             // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
-            await usage.track(nangoProps, taskId);
+            await usage.track(nangoProps, taskId, persistClient ? { persistClient } : undefined);
 
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
@@ -74,8 +76,6 @@ function startProcedure() {
                 const heartbeatTimeoutMs = arg.input.nangoProps.heartbeatTimeoutSecs
                     ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
                     : heartbeatIntervalMs * 3;
-
-                const persistClient = distributedCoordination ? new PersistClient({ secretKey: nangoProps.secretKey }) : null;
 
                 const abortPoll = distributedCoordination
                     ? setInterval(async () => {
@@ -106,12 +106,10 @@ function startProcedure() {
                     if (res.isOk()) {
                         lastSuccessHeartbeatAt = Date.now();
                     }
-                    if (distributedCoordination) {
-                        try {
-                            await usage.trackForConflicts(nangoProps, { refresh: true });
-                        } catch (err) {
-                            logger.error('Failed to update conflict tracking with new ttl', { error: err });
-                        }
+                    try {
+                        await usage.trackForConflicts(taskId, { refresh: true });
+                    } catch (err) {
+                        logger.error('Failed to update conflict tracking with new ttl', { error: err });
                     }
                 }, heartbeatIntervalMs);
 
@@ -121,7 +119,7 @@ function startProcedure() {
                         code,
                         codeParams,
                         abortController,
-                        ...(distributedCoordination ? { locks: new HttpLocks({ persistClient: persistClient!, environmentId: nangoProps.environmentId }) } : {})
+                        ...(persistClient ? { locks: new HttpLocks({ persistClient, environmentId: nangoProps.environmentId }) } : {})
                     });
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;

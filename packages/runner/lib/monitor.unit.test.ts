@@ -2,14 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import { PersistClient } from './clients/persist.js';
 import { RunnerMonitor } from './monitor.js';
 
+import type { PersistClient } from './clients/persist.js';
 import type { DBSyncConfig, NangoProps, ScriptType } from '@nangohq/types';
 
 vi.hoisted(() => {
     vi.stubEnv('RUNNER_NODE_ID', '1');
-    vi.stubEnv('RUNNER_CONFLICT_RESOLUTION_MODE', 'DISTRIBUTED');
 });
 
 function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; environmentId: number }): NangoProps {
@@ -46,16 +45,20 @@ function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; e
     };
 }
 
+function createPersistClientMock() {
+    const putSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
+    const deleteSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
+    return {
+        client: { putSyncConflict, deleteSyncConflict } as unknown as PersistClient,
+        putSyncConflict,
+        deleteSyncConflict
+    };
+}
+
 describe('RunnerMonitor conflict tracking', () => {
     let monitor: RunnerMonitor;
-    let putSyncConflict: ReturnType<typeof vi.fn>;
-    let deleteSyncConflict: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
-        putSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
-        deleteSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
-        vi.spyOn(PersistClient.prototype, 'putSyncConflict').mockImplementation(putSyncConflict as never);
-        vi.spyOn(PersistClient.prototype, 'deleteSyncConflict').mockImplementation(deleteSyncConflict as never);
         vi.spyOn(global, 'setInterval').mockImplementation(() => null as unknown as NodeJS.Timeout);
         vi.spyOn(global, 'setTimeout').mockImplementation(() => null as unknown as NodeJS.Timeout);
         monitor = new RunnerMonitor({ runnerId: 1 });
@@ -65,38 +68,91 @@ describe('RunnerMonitor conflict tracking', () => {
         vi.restoreAllMocks();
     });
 
-    describe('track', () => {
-        it('acquires sync conflict lock when scriptType is sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123', environmentId: 1 });
-            await monitor.track(nangoProps, 'task-1');
+    describe('distributed conflicts', () => {
+        let putSyncConflict: ReturnType<typeof vi.fn>;
+        let deleteSyncConflict: ReturnType<typeof vi.fn>;
+        let persistClient: PersistClient;
 
-            expect(putSyncConflict).toHaveBeenCalledWith({
-                environmentId: 1,
-                scriptType: 'sync',
-                syncId: 'sync-123',
-                refresh: false
+        beforeEach(() => {
+            const mock = createPersistClientMock();
+            putSyncConflict = mock.putSyncConflict;
+            deleteSyncConflict = mock.deleteSyncConflict;
+            persistClient = mock.client;
+        });
+
+        describe('track', () => {
+            it('acquires sync conflict lock when scriptType is sync', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-1', { persistClient });
+
+                expect(putSyncConflict).toHaveBeenCalledWith({
+                    environmentId: 1,
+                    scriptType: 'sync',
+                    syncId: 'sync-123',
+                    refresh: false
+                });
+            });
+
+            it('does not acquire sync conflict lock when scriptType is not sync', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-3', { persistClient });
+
+                expect(putSyncConflict).not.toHaveBeenCalled();
             });
         });
 
-        it('does not acquire sync conflict lock when scriptType is not sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789', environmentId: 1 });
-            await monitor.track(nangoProps, 'task-3');
+        describe('untrack', () => {
+            it('releases sync conflict lock when task had tracked sync', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-untrack', { persistClient });
+                await monitor.untrack('task-untrack');
 
-            expect(putSyncConflict).not.toHaveBeenCalled();
+                expect(deleteSyncConflict).toHaveBeenCalledWith({
+                    environmentId: 1,
+                    scriptType: 'sync',
+                    syncId: 'sync-untrack'
+                });
+            });
+        });
+
+        describe('trackForConflicts', () => {
+            it('refreshes sync conflict lock via persist client', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-refresh', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-refresh', { persistClient });
+
+                await monitor.trackForConflicts('task-refresh', { refresh: true });
+
+                expect(putSyncConflict).toHaveBeenLastCalledWith({
+                    environmentId: 1,
+                    scriptType: 'sync',
+                    syncId: 'sync-refresh',
+                    refresh: true
+                });
+            });
         });
     });
 
-    describe('untrack', () => {
-        it('releases sync conflict lock when task had tracked sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack', environmentId: 1 });
-            await monitor.track(nangoProps, 'task-untrack');
-            await monitor.untrack('task-untrack');
+    describe('local conflicts', () => {
+        it('tracks sync conflicts in-process when no persist client is passed', async () => {
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-local', environmentId: 1 });
+            await monitor.track(nangoProps, 'task-local');
 
-            expect(deleteSyncConflict).toHaveBeenCalledWith({
-                environmentId: 1,
-                scriptType: 'sync',
-                syncId: 'sync-untrack'
-            });
+            await expect(monitor.track(nangoProps, 'task-local-2')).rejects.toThrow('Conflicting sync detected');
+        });
+
+        it('releases local sync conflict on untrack', async () => {
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-release', environmentId: 1 });
+            await monitor.track(nangoProps, 'task-release');
+            await monitor.untrack('task-release');
+
+            await expect(monitor.track(nangoProps, 'task-release-2')).resolves.toBeUndefined();
+        });
+
+        it('refreshes local sync conflict on heartbeat', async () => {
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-heartbeat', environmentId: 1 });
+            await monitor.track(nangoProps, 'task-heartbeat');
+
+            await expect(monitor.trackForConflicts('task-heartbeat', { refresh: true })).resolves.toBeUndefined();
         });
     });
 });

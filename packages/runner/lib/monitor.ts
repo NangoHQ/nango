@@ -11,9 +11,21 @@ import { logger } from './logger.js';
 import type { NangoProps } from '@nangohq/types';
 
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
+
+interface TrackedTask {
+    nangoProps: NangoProps;
+    persistClient?: PersistClient;
+}
+
+interface LocalConflictEntry {
+    timestamp: number;
+    ttlMs: number;
+}
+
 export class RunnerMonitor {
     private runnerId: number;
-    private tracked = new Map<string, { nangoProps: NangoProps }>();
+    private tracked = new Map<string, TrackedTask>();
+    private localConflicts = new Map<string, LocalConflictEntry>();
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -38,16 +50,50 @@ export class RunnerMonitor {
         }
     }
 
-    private getPersistClient(nangoProps: NangoProps): PersistClient {
-        return new PersistClient({ secretKey: nangoProps.secretKey });
+    private conflictKey(environmentId: number, scriptType: string, syncId: string): string {
+        return `function:${environmentId}:${scriptType}:${syncId}`;
     }
 
-    async trackForConflicts(nangoProps: NangoProps, opts = { refresh: false }): Promise<void> {
-        if (envs.RUNNER_CONFLICT_RESOLUTION_MODE !== 'DISTRIBUTED') {
+    private conflictTtlMs(): number {
+        return envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER;
+    }
+
+    private isLocalConflictExpired(entry: LocalConflictEntry): boolean {
+        return entry.ttlMs > 0 && Date.now() - entry.timestamp > entry.ttlMs;
+    }
+
+    private acquireLocalConflict(nangoProps: NangoProps, refresh: boolean): void {
+        const key = this.conflictKey(nangoProps.environmentId, nangoProps.scriptType, nangoProps.syncId!);
+        const existing = this.localConflicts.get(key);
+        const isExpired = existing !== undefined && this.isLocalConflictExpired(existing);
+        if (isExpired || refresh || existing === undefined) {
+            this.localConflicts.set(key, { timestamp: Date.now(), ttlMs: this.conflictTtlMs() });
             return;
         }
-        if (nangoProps.scriptType == 'sync' && nangoProps.syncId) {
-            const res = await this.getPersistClient(nangoProps).putSyncConflict({
+        throw new Error('Conflicting sync detected');
+    }
+
+    private releaseLocalConflict(nangoProps: NangoProps): void {
+        const key = this.conflictKey(nangoProps.environmentId, nangoProps.scriptType, nangoProps.syncId!);
+        this.localConflicts.delete(key);
+    }
+
+    private getMemoryPersistClient(entry: TrackedTask): PersistClient {
+        return entry.persistClient ?? new PersistClient({ secretKey: entry.nangoProps.secretKey });
+    }
+
+    async trackForConflicts(taskId: string, opts = { refresh: false }): Promise<void> {
+        const entry = this.tracked.get(taskId);
+        if (!entry) {
+            return;
+        }
+        const { nangoProps, persistClient } = entry;
+        if (nangoProps.scriptType !== 'sync' || !nangoProps.syncId) {
+            return;
+        }
+
+        if (persistClient) {
+            const res = await persistClient.putSyncConflict({
                 environmentId: nangoProps.environmentId,
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId,
@@ -60,25 +106,35 @@ export class RunnerMonitor {
                 }
                 throw res.error;
             }
+            return;
         }
+
+        this.acquireLocalConflict(nangoProps, opts.refresh);
     }
 
-    async track(nangoProps: NangoProps, taskId: string): Promise<void> {
-        await this.trackForConflicts(nangoProps);
+    async track(nangoProps: NangoProps, taskId: string, opts?: { persistClient?: PersistClient }): Promise<void> {
+        this.tracked.set(taskId, {
+            nangoProps,
+            ...(opts?.persistClient ? { persistClient: opts.persistClient } : {})
+        });
+        await this.trackForConflicts(taskId);
         this.lastIdleTrackingDate = Date.now();
-        this.tracked.set(taskId, { nangoProps });
     }
 
     async untrack(taskId: string): Promise<void> {
-        const nangoProps = this.tracked.get(taskId)?.nangoProps;
-        if (nangoProps && nangoProps.scriptType == 'sync' && nangoProps.syncId && envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'DISTRIBUTED') {
-            const res = await this.getPersistClient(nangoProps).deleteSyncConflict({
-                environmentId: nangoProps.environmentId,
-                scriptType: nangoProps.scriptType,
-                syncId: nangoProps.syncId
-            });
-            if (res.isErr()) {
-                logger.error('Failed to untrack sync', { error: res.error });
+        const entry = this.tracked.get(taskId);
+        if (entry && entry.nangoProps.scriptType === 'sync' && entry.nangoProps.syncId) {
+            if (entry.persistClient) {
+                const res = await entry.persistClient.deleteSyncConflict({
+                    environmentId: entry.nangoProps.environmentId,
+                    scriptType: entry.nangoProps.scriptType,
+                    syncId: entry.nangoProps.syncId
+                });
+                if (res.isErr()) {
+                    logger.error('Failed to untrack sync', { error: res.error });
+                }
+            } else {
+                this.releaseLocalConflict(entry.nangoProps);
             }
         }
         this.tracked.delete(taskId);
@@ -114,11 +170,12 @@ export class RunnerMonitor {
         }
 
         this.lastMemoryReportDate = new Date();
-        for (const { nangoProps } of this.tracked.values()) {
+        for (const entry of this.tracked.values()) {
+            const { nangoProps } = entry;
             if (!nangoProps.environmentId || !nangoProps.activityLogId) {
                 continue;
             }
-            await this.getPersistClient(nangoProps).postLog({
+            await this.getMemoryPersistClient(entry).postLog({
                 environmentId: nangoProps.environmentId,
                 data: JSON.stringify({
                     activityLogId: nangoProps.activityLogId,
