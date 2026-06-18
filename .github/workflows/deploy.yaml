@@ -29,7 +29,7 @@ on:
                     - connect_ui
                     - app_ui
                     - lambda
-                    - agentcore_sandbox
+                    - agentcore
 
 # One deploy per service+stage at a time. UI deploys `aws s3 sync --delete` into a
 # shared bucket, so two concurrent runs silently corrupt it (left the live app
@@ -176,7 +176,7 @@ jobs:
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy:
-        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda' && inputs.service != 'agentcore_sandbox'
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda' && inputs.service != 'agentcore'
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -281,8 +281,8 @@ jobs:
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
-    deploy_agentcore_sandbox:
-        if: inputs.service == 'agentcore_sandbox' && inputs.stage != 'replit'
+    deploy_agentcore:
+        if: inputs.service == 'agentcore' && inputs.stage != 'replit'
         runs-on: ubuntu-24.04-arm
         permissions:
             id-token: write
@@ -347,7 +347,7 @@ jobs:
             - deploy
             - deploy_runners
             - deploy_lambda
-            - deploy_agentcore_sandbox
+            - deploy_agentcore
         runs-on: ubuntu-latest
         permissions:
             contents: read # checkout the repo to reach the local composite action
@@ -365,7 +365,7 @@ jobs:
                     "${{ needs.deploy.result }}"
                     "${{ needs.deploy_runners.result }}"
                     "${{ needs.deploy_lambda.result }}"
-                    "${{ needs.deploy_agentcore_sandbox.result }}"
+                    "${{ needs.deploy_agentcore.result }}"
                   )
                   outcome="skipped"
                   for r in "${results[@]}"; do
