@@ -36,17 +36,13 @@ export default function Signin() {
         setServerErrorMessage('');
 
         try {
-            const result = await requestPasswordReset({ email: data.email });
+            await requestPasswordReset({ email: data.email });
 
-            if (result.status === 200) {
-                toast({
-                    title: 'Email sent!',
-                    variant: 'success'
-                });
-                setDone(true);
-            } else {
-                setServerErrorMessage('No user matching this email.');
-            }
+            toast({
+                title: 'Email sent!',
+                variant: 'success'
+            });
+            setDone(true);
         } catch {
             setServerErrorMessage('Issue sending password reset email. Please try again.');
         }
