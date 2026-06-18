@@ -257,10 +257,12 @@ const VirtualizedRecordRows = ({
     scrollParentRef: React.RefObject<HTMLDivElement | null>;
     onOpenPayload: (recordId: string) => void;
 }) => {
-    const rowVirtualizer = useVirtualizer({
+    const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
         count: records.length,
         getScrollElement: () => scrollParentRef.current,
         estimateSize: () => RECORD_ROW_HEIGHT_PX,
+        measureElement:
+            typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1 ? (element) => element?.getBoundingClientRect().height : undefined,
         overscan: 2
     });
 
@@ -273,26 +275,27 @@ const VirtualizedRecordRows = ({
     } as const;
 
     return (
-        <table className="w-full min-w-0 border-collapse text-sm text-text-strong">
-            <thead className="sticky top-0 z-10 bg-surface-canvas border-b border-border-muted">
+        <table className="grid w-full min-w-0 caption-bottom border-separate border-spacing-0 text-sm text-text-strong">
+            <thead className="grid sticky top-0 z-10 bg-surface-canvas border-b border-border-muted">
                 <tr className="flex w-full">
                     <th className={cn(headerBase, col.id)}>ID</th>
                     <th className={cn(headerBase, col.action)}>Action</th>
                     <th className={cn(headerBase, col.modified)}>Modified</th>
                 </tr>
             </thead>
-            <tbody className="relative block" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+            <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
                 {rowVirtualizer.getVirtualItems().map((vRow) => {
                     const record = records[vRow.index];
                     return (
                         <tr
                             key={String(record.id)}
+                            data-index={vRow.index}
+                            ref={(node) => rowVirtualizer.measureElement(node)}
                             className={cn(
                                 'absolute left-0 flex w-full cursor-pointer border-b border-border-muted hover:bg-state-selected-muted',
                                 'transition-colors'
                             )}
                             style={{
-                                height: RECORD_ROW_HEIGHT_PX,
                                 transform: `translateY(${vRow.start}px)`
                             }}
                             onClick={() => onOpenPayload(String(record.id))}
