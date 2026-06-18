@@ -16,7 +16,14 @@ import {
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
 
-import type { CreateActionResponse, CreateFunctionResponse, CreateOnEventResponse, CreateSyncResponse, FunctionTrigger } from '@nangohq/runner-sdk';
+import type {
+    CreateActionResponse,
+    CreateFunctionResponse,
+    CreateOnEventResponse,
+    CreateSyncResponse,
+    DebounceConfig,
+    FunctionTrigger
+} from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type {
     NangoYamlParsed,
@@ -299,6 +306,11 @@ export function parseFunction({
         }
     }
 
+    const debounce = normalizeDebounce(params.debounce, { filePath, basename });
+    if (debounce instanceof Error) {
+        return Err(debounce);
+    }
+
     const outputNames = Object.keys(params.models ?? {});
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
     const features = detectFeatures({ entryPoint: filePath });
@@ -308,7 +320,7 @@ export function parseFunction({
         name: params.name || basename,
         description: params.description || '',
         triggers: params.triggers.map(toParsedTrigger),
-        ...(params.debounce !== undefined ? { debounce: params.debounce } : {}),
+        ...(debounce !== undefined ? { debounce } : {}),
         input: inputName,
         output: outputNames.length > 0 ? outputNames : null,
         scopes: params.scopes || [],
@@ -330,14 +342,51 @@ function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
         if (trigger.scope !== undefined) {
             parsed.scope = trigger.scope;
         }
-        parsed.hasIngressChallenge = typeof trigger.ingressChallenge === 'function';
-        parsed.hasIngressValidation = typeof trigger.ingressValidation === 'function';
+        parsed.hasIngressHooks = Array.isArray(trigger.ingressHooks) && trigger.ingressHooks.length > 0;
     } else if (trigger.type === 'schedule') {
+        if (trigger.name !== undefined) {
+            parsed.name = trigger.name;
+        }
         parsed.schedule = trigger.schedule;
     } else if (trigger.type === 'event') {
+        if (trigger.name !== undefined) {
+            parsed.name = trigger.name;
+        }
         parsed.event = trigger.event;
     }
     return parsed;
+}
+
+const MAX_DEBOUNCE_KEY_SOURCES = 10;
+
+/**
+ * Normalizes the function-level debounce config: dedups composite key sources ad caps them
+ */
+function normalizeDebounce(
+    debounce: DebounceConfig | undefined,
+    { filePath, basename }: { filePath: string; basename: string }
+): ParsedNangoFunction['debounce'] | Error {
+    if (debounce === undefined || debounce.key === undefined || !Array.isArray(debounce.key)) {
+        return debounce;
+    }
+
+    // Drop duplicate sources, preserving declared order.
+    const seen = new Set<string>();
+    const sources = debounce.key.filter((source) => {
+        const signature = 'body' in source ? `body:${source.body}` : `header:${source.header.toLowerCase()}`;
+        if (seen.has(signature)) {
+            return false;
+        }
+        seen.add(signature);
+        return true;
+    });
+
+    if (sources.length > MAX_DEBOUNCE_KEY_SOURCES) {
+        return new Error(`Function "${basename}" debounce.key cannot have more than ${MAX_DEBOUNCE_KEY_SOURCES} sources (${filePath})`);
+    }
+
+    const { key, ...rest } = debounce;
+    return sources.length === 0 ? rest : { ...rest, key: sources };
 }
 
 function postValidation(parsed: NangoYamlParsed): Result<void> {
