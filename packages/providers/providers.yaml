@@ -1958,8 +1958,10 @@ attio-mcp:
     authorization_url: https://app.attio.com/oidc/authorize
     token_url: https://app.attio.com/oidc/token
     registration_url: https://app.attio.com/oauth/register
+    scope_separator: '+'
     authorization_params:
         response_type: code
+        resource: https://mcp.attio.com/mcp
     registration_params:
         response_types:
             - code
@@ -10627,6 +10629,7 @@ jobadder:
         - hr
         - ats
     auth_mode: OAUTH2
+    disable_pkce: true
     authorization_url: https://id.jobadder.com/connect/authorize
     token_url: https://id.jobadder.com/connect/token
     default_scopes:
@@ -10635,12 +10638,6 @@ jobadder:
         response_type: code
     proxy:
         base_url: https://api.jobadder.com
-        verification:
-            method: GET
-            headers:
-                content-type: application/json
-            endpoints:
-                - /v2/users/current
     docs: https://nango.dev/docs/integrations/all/jobadder
 
 jobdiva:
@@ -19188,13 +19185,15 @@ snowflake:
     proxy:
         base_url: https://${connectionConfig.snowflake_account_url}
     post_connection_script: snowflakePostConnection
-    docs: https://nango.dev/docs/integrations/all/snowflake
+    docs: https://nango.dev/docs/api-integrations/snowflake
+    docs_connect: https://nango.dev/docs/api-integrations/snowflake/connect
     connection_config:
         snowflake_account_url:
             type: string
             title: Domain
-            description: The domain of your Snowflake account
+            description: The domain of your Snowflake account.
             format: hostname
+            example: myorg-myaccount.snowflakecomputing.com
             prefix: https://
 
 snowflake-jwt:
