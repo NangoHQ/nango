@@ -18,11 +18,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/node": "file:../node-client",
         "@nangohq/runner-sdk": "file:../runner-sdk",
-        "@nangohq/shared": "file:../shared",
         "@nangohq/providers": "file:../providers",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "10.45.3",
         "@trpc/server": "10.45.3",

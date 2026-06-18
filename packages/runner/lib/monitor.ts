@@ -8,13 +8,11 @@ import { envs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
 
-import type { KVStore } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
 export class RunnerMonitor {
     private runnerId: number;
-    private conflictTracking: { tracker: KVStore };
     private tracked = new Map<string, { nangoProps: NangoProps }>();
     private persistClient: PersistClient | null = null;
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
@@ -24,9 +22,8 @@ export class RunnerMonitor {
     private memoryInterval: NodeJS.Timeout | null = null;
     private runnerAccountId: string | null = null;
 
-    constructor({ runnerId, conflictTracking }: { runnerId: number; conflictTracking: { tracker: KVStore } }) {
+    constructor({ runnerId }: { runnerId: number }) {
         this.runnerId = runnerId;
-        this.conflictTracking = conflictTracking;
         this.memoryInterval = this.checkMemoryUsage();
         this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
@@ -42,43 +39,53 @@ export class RunnerMonitor {
         }
     }
 
-    generateConflictKey(nangoProps: NangoProps): string {
-        return `function:${nangoProps.environmentId}:${nangoProps.scriptType}:${nangoProps.syncId}`;
-    }
-
     async trackForConflicts(nangoProps: NangoProps, opts = { refresh: false }): Promise<void> {
-        if (nangoProps.scriptType == 'sync') {
-            try {
-                await this.conflictTracking.tracker.set(this.generateConflictKey(nangoProps), '1', {
-                    canOverride: opts.refresh,
-                    ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER
-                });
-            } catch (err) {
-                logger.error('Failed to track sync for conflicts', { error: err });
-                if (err instanceof Error && err.message.includes('set_key_already_exists')) {
+        if (envs.RUNNER_CONFLICT_RESOLUTION_MODE !== 'DISTRIBUTED') {
+            return;
+        }
+        if (!this.persistClient) {
+            return;
+        }
+        if (nangoProps.scriptType == 'sync' && nangoProps.syncId) {
+            const res = await this.persistClient.putSyncConflict({
+                environmentId: nangoProps.environmentId,
+                scriptType: nangoProps.scriptType,
+                syncId: nangoProps.syncId,
+                refresh: opts.refresh
+            });
+            if (res.isErr()) {
+                logger.error('Failed to track sync for conflicts', { error: res.error });
+                if (res.error.message === 'Conflicting sync detected') {
                     throw new Error('Conflicting sync detected');
                 }
-                throw err;
+                throw res.error;
             }
         }
     }
 
     async track(nangoProps: NangoProps, taskId: string): Promise<void> {
+        this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
         await this.trackForConflicts(nangoProps);
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
-        if (!this.persistClient) {
-            this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
-        }
     }
 
     async untrack(taskId: string): Promise<void> {
         const nangoProps = this.tracked.get(taskId)?.nangoProps;
-        if (nangoProps && nangoProps.scriptType == 'sync') {
-            try {
-                await this.conflictTracking.tracker.delete(this.generateConflictKey(nangoProps));
-            } catch (err) {
-                logger.error('Failed to untrack sync', { error: err });
+        if (
+            nangoProps &&
+            nangoProps.scriptType == 'sync' &&
+            nangoProps.syncId &&
+            this.persistClient &&
+            envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'DISTRIBUTED'
+        ) {
+            const res = await this.persistClient.deleteSyncConflict({
+                environmentId: nangoProps.environmentId,
+                scriptType: nangoProps.scriptType,
+                syncId: nangoProps.syncId
+            });
+            if (res.isErr()) {
+                logger.error('Failed to untrack sync', { error: res.error });
             }
         }
         this.tracked.delete(taskId);

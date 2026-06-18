@@ -1,9 +1,9 @@
-import { getKVStore } from '@nangohq/kvstore';
-import { accountService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { PersistClient } from '@nangohq/nango-runner';
+import { accountService, secretService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { orchestratorClient } from '../../clients.js';
-import { envs } from '../../env.js';
 import { logger } from '../../logger.js';
 import { getRunners } from '../../runner/runner.js';
 import { setTaskSuccess } from './state.js';
@@ -18,7 +18,11 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
     }
     const { account: team } = accountRes;
 
-    const abortedScript = await abortTaskWithId({ taskId: task.abortedTask.id, teamId: team.id });
+    const abortedScript = await abortTaskWithId({
+        taskId: task.abortedTask.id,
+        teamId: team.id,
+        environmentId: task.connection.environment_id
+    });
 
     if (abortedScript.isErr()) {
         logger.error(`failed to abort script for task ${task.abortedTask.id}`, abortedScript.error);
@@ -34,9 +38,12 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
     return abortedScript;
 }
 
-export async function abortTaskWithId({ taskId, teamId }: { taskId: string; teamId: number }): Promise<Result<void>> {
+export async function abortTaskWithId({ taskId, teamId, environmentId }: { taskId: string; teamId: number; environmentId: number }): Promise<Result<void>> {
     try {
-        await setAbortFlag(taskId);
+        const abortFlag = await setAbortFlag({ taskId, environmentId });
+        if (abortFlag.isErr()) {
+            return abortFlag;
+        }
         // Broadcast abort to all runners as a task might still be running on a different active runner during/after rollouts (e.g. deploying a new runner version).
         const runners = await getRunners(teamId);
         if (runners.isErr()) {
@@ -55,10 +62,24 @@ export async function abortTaskWithId({ taskId, teamId }: { taskId: string; team
     }
 }
 
-export async function setAbortFlag(taskId: string): Promise<Result<void>> {
+export async function setAbortFlag({ taskId, environmentId }: { taskId: string; environmentId: number }): Promise<Result<void>> {
     try {
-        const kvStore = await getKVStore('customer');
-        await kvStore.set(`function:${taskId}:abort`, '1', { ttlMs: envs.RUNNER_ABORT_CHECK_INTERVAL_MS * 5 });
+        const accountRes = await accountService.getAccountContext({ environmentId });
+        if (!accountRes) {
+            return Err(new Error(`Error setting abort flag for task: ${taskId}: environment not found`));
+        }
+
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, accountRes.environment);
+        if (defaultSecret.isErr()) {
+            return Err(new Error(`Error setting abort flag for task: ${taskId}`, { cause: defaultSecret.error }));
+        }
+
+        const persistClient = new PersistClient({ secretKey: defaultSecret.value.secret });
+        const result = await persistClient.putTaskAbort({ environmentId, taskId });
+        if (result.isErr()) {
+            logger.error(`Error setting abort flag for task: ${taskId}`, result.error);
+            return Err(new Error(`Error setting abort flag for task: ${taskId}`, { cause: result.error }));
+        }
         return Ok(undefined);
     } catch (err) {
         logger.error(`Error setting abort flag for task: ${taskId}`, err);

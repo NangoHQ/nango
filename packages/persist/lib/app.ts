@@ -1,6 +1,7 @@
 import './tracer.js';
 
 import db from '@nangohq/database';
+import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getLogger, initSentry, once, report } from '@nangohq/utils';
@@ -61,12 +62,11 @@ const close = once(() => {
         await db.readOnly.destroy();
         await records.close();
         await pubsub.disconnect();
+        await destroyKvstore();
 
         logger.close();
 
         console.info('Closed');
-
-        // TODO: close redis
 
         process.exit();
     });

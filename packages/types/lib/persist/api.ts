@@ -85,3 +85,126 @@ export interface PutCheckpointSuccess {
     checkpoint: Checkpoint;
     version: number;
 }
+
+export interface GetTaskAbortSuccess {
+    aborted: boolean;
+}
+
+export type PutTaskAbort = Endpoint<{
+    Method: 'PUT';
+    Path: '/environment/:environmentId/runner/task/:taskId/abort';
+    Params: {
+        environmentId: number;
+        taskId: string;
+    };
+    Error: ApiError<'put_task_abort_failed'>;
+    Success: never;
+}>;
+
+export type GetTaskAbort = Endpoint<{
+    Method: 'GET';
+    Path: '/environment/:environmentId/runner/task/:taskId/abort';
+    Params: {
+        environmentId: number;
+        taskId: string;
+    };
+    Error: ApiError<'get_task_abort_failed'>;
+    Success: GetTaskAbortSuccess;
+}>;
+
+export type PutSyncConflict = Endpoint<{
+    Method: 'PUT';
+    Path: '/environment/:environmentId/runner/sync-conflict';
+    Params: {
+        environmentId: number;
+    };
+    Body: {
+        scriptType: string;
+        syncId: string;
+        refresh?: boolean;
+    };
+    Error: ApiError<'sync_conflict' | 'put_sync_conflict_failed'>;
+    Success: never;
+}>;
+
+export type DeleteSyncConflict = Endpoint<{
+    Method: 'DELETE';
+    Path: '/environment/:environmentId/runner/sync-conflict';
+    Params: {
+        environmentId: number;
+    };
+    Body: {
+        scriptType: string;
+        syncId: string;
+    };
+    Error: ApiError<'delete_sync_conflict_failed'>;
+    Success: never;
+}>;
+
+export interface TryAcquireLockSuccess {
+    acquired: boolean;
+}
+
+export type PostRunnerLockTryAcquire = Endpoint<{
+    Method: 'POST';
+    Path: '/environment/:environmentId/runner/locks/try-acquire';
+    Params: {
+        environmentId: number;
+    };
+    Body: {
+        owner: string;
+        key: string;
+        ttlMs: number;
+    };
+    Error: ApiError<'try_acquire_lock_failed'>;
+    Success: TryAcquireLockSuccess;
+}>;
+
+export interface ReleaseLockSuccess {
+    released: boolean;
+}
+
+export type PostRunnerLockRelease = Endpoint<{
+    Method: 'POST';
+    Path: '/environment/:environmentId/runner/locks/release';
+    Params: {
+        environmentId: number;
+    };
+    Body: {
+        owner: string;
+        key: string;
+    };
+    Error: ApiError<'release_lock_failed'>;
+    Success: ReleaseLockSuccess;
+}>;
+
+export type PostRunnerLockReleaseAll = Endpoint<{
+    Method: 'POST';
+    Path: '/environment/:environmentId/runner/locks/release-all';
+    Params: {
+        environmentId: number;
+    };
+    Body: {
+        owner: string;
+    };
+    Error: ApiError<'release_all_locks_failed'>;
+    Success: never;
+}>;
+
+export interface HasLockSuccess {
+    hasLock: boolean;
+}
+
+export type GetRunnerLock = Endpoint<{
+    Method: 'GET';
+    Path: '/environment/:environmentId/runner/locks';
+    Params: {
+        environmentId: number;
+    };
+    Querystring: {
+        owner: string;
+        key: string;
+    };
+    Error: ApiError<'has_lock_failed'>;
+    Success: HasLockSuccess;
+}>;

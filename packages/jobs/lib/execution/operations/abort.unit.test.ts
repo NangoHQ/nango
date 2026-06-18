@@ -1,22 +1,25 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+const { mockPutTaskAbort } = vi.hoisted(() => ({
+    mockPutTaskAbort: vi.fn()
+}));
 
-import { getRunners } from '../../runner/runner.js';
-import { abortTaskWithId } from './abort.js';
+vi.mock('@nangohq/nango-runner', () => ({
+    PersistClient: vi.fn(function PersistClient() {
+        return {
+            putTaskAbort: mockPutTaskAbort
+        };
+    })
+}));
 
-vi.mock('@nangohq/kvstore', () => ({
-    getKVStore: vi.fn(() => Promise.resolve({ set: vi.fn() }))
+vi.mock('../../clients.js', () => ({
+    orchestratorClient: {
+        failed: vi.fn()
+    }
 }));
 
 vi.mock('../../runner/runner.js', () => ({
     getRunners: vi.fn()
-}));
-
-vi.mock('../../env.js', () => ({
-    envs: {
-        RUNNER_ABORT_CHECK_INTERVAL_MS: 1000
-    }
 }));
 
 vi.mock('../../logger.js', () => ({
@@ -25,9 +28,26 @@ vi.mock('../../logger.js', () => ({
     }
 }));
 
+import * as shared from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
+import { abortTaskWithId } from './abort.js';
+import { logger } from '../../logger.js';
+import { getRunners } from '../../runner/runner.js';
+
+import type { DBAPISecret } from '@nangohq/types';
+
 describe('abortTaskWithId', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        vi.spyOn(shared.accountService, 'getAccountContext').mockResolvedValue({
+            environment: { id: 1, name: 'dev' }
+        } as never);
+        vi.spyOn(shared.secretService, 'getDefaultSecretForEnv').mockResolvedValue(Ok({ secret: 'secret-key' } as DBAPISecret));
+        mockPutTaskAbort.mockResolvedValue(Ok(undefined));
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it('broadcasts abort and succeeds when any runner confirms', async () => {
@@ -38,9 +58,10 @@ describe('abortTaskWithId', () => {
             Ok([{ client: { abort: { mutate: abortA } } }, { client: { abort: { mutate: abortB } } }] as any[])
         );
 
-        const result = await abortTaskWithId({ taskId: 'task-1', teamId: 42 });
+        const result = await abortTaskWithId({ taskId: 'task-1', teamId: 42, environmentId: 1 });
 
         expect(result.isOk()).toBe(true);
+        expect(mockPutTaskAbort).toHaveBeenCalledWith({ environmentId: 1, taskId: 'task-1' });
         expect(abortA).toHaveBeenCalledWith({ taskId: 'task-1' });
         expect(abortB).toHaveBeenCalledWith({ taskId: 'task-1' });
     });
@@ -50,10 +71,23 @@ describe('abortTaskWithId', () => {
 
         (getRunners as unknown as { mockResolvedValue: (value: any) => void }).mockResolvedValue(Ok([{ client: { abort: { mutate: abortA } } }] as any[]));
 
-        const result = await abortTaskWithId({ taskId: 'task-2', teamId: 7 });
+        const result = await abortTaskWithId({ taskId: 'task-2', teamId: 7, environmentId: 1 });
 
         expect(result.isOk()).toBe(true);
         expect(abortA).toHaveBeenCalledWith({ taskId: 'task-2' });
+    });
+
+    it('broadcasts abort when setting abort flag fails but a runner confirms', async () => {
+        mockPutTaskAbort.mockResolvedValue(Err(new Error('persist unavailable')));
+        const abortA = vi.fn().mockResolvedValue(true);
+
+        (getRunners as unknown as { mockResolvedValue: (value: any) => void }).mockResolvedValue(Ok([{ client: { abort: { mutate: abortA } } }] as any[]));
+
+        const result = await abortTaskWithId({ taskId: 'task-flag-fail', teamId: 42, environmentId: 1 });
+
+        expect(result.isOk()).toBe(true);
+        expect(logger.error).toHaveBeenCalled();
+        expect(abortA).toHaveBeenCalledWith({ taskId: 'task-flag-fail' });
     });
 
     it('returns error when all runners fail to abort', async () => {
@@ -64,7 +98,7 @@ describe('abortTaskWithId', () => {
             Ok([{ client: { abort: { mutate: abortA } } }, { client: { abort: { mutate: abortB } } }] as any[])
         );
 
-        const result = await abortTaskWithId({ taskId: 'task-3', teamId: 9 });
+        const result = await abortTaskWithId({ taskId: 'task-3', teamId: 9, environmentId: 1 });
 
         expect(result.isErr()).toBe(true);
         expect(abortA).toHaveBeenCalledWith({ taskId: 'task-3' });

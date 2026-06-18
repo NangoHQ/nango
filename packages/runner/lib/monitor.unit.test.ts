@@ -1,10 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { InMemoryKVStore } from '@nangohq/kvstore';
+import { Ok } from '@nangohq/utils';
 
+import { PersistClient } from './clients/persist.js';
 import { RunnerMonitor } from './monitor.js';
 
 import type { DBSyncConfig, NangoProps, ScriptType } from '@nangohq/types';
+
+vi.mock('./env.js', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual,
+        envs: {
+            ...actual.envs,
+            RUNNER_CONFLICT_RESOLUTION_MODE: 'DISTRIBUTED'
+        }
+    };
+});
 
 function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; environmentId: number }): NangoProps {
     return {
@@ -41,55 +53,56 @@ function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; e
 }
 
 describe('RunnerMonitor conflict tracking', () => {
-    let tracker: InMemoryKVStore;
     let monitor: RunnerMonitor;
+    let putSyncConflict: ReturnType<typeof vi.fn>;
+    let deleteSyncConflict: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
-        tracker = new InMemoryKVStore();
+        putSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
+        deleteSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
+        vi.spyOn(PersistClient.prototype, 'putSyncConflict').mockImplementation(putSyncConflict as never);
+        vi.spyOn(PersistClient.prototype, 'deleteSyncConflict').mockImplementation(deleteSyncConflict as never);
         vi.spyOn(global, 'setInterval').mockImplementation(() => null as unknown as NodeJS.Timeout);
         vi.spyOn(global, 'setTimeout').mockImplementation(() => null as unknown as NodeJS.Timeout);
-        monitor = new RunnerMonitor({
-            runnerId: 1,
-            conflictTracking: {
-                tracker
-            }
-        });
+        monitor = new RunnerMonitor({ runnerId: 1 });
     });
 
-    afterEach(async () => {
+    afterEach(() => {
         vi.restoreAllMocks();
-        await tracker.destroy();
     });
 
     describe('track', () => {
-        it('writes conflict key to KV store when scriptType is sync', async () => {
+        it('acquires sync conflict lock when scriptType is sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123', environmentId: 1 });
             await monitor.track(nangoProps, 'task-1');
 
-            const key = 'function:1:sync:sync-123';
-            const exists = await tracker.exists(key);
-            expect(exists).toBe(true);
-
-            const value = await tracker.get(key);
-            expect(value).toBe('1');
+            expect(putSyncConflict).toHaveBeenCalledWith({
+                environmentId: 1,
+                scriptType: 'sync',
+                syncId: 'sync-123',
+                refresh: false
+            });
         });
 
-        it('does not write to KV store when scriptType is not sync', async () => {
+        it('does not acquire sync conflict lock when scriptType is not sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789', environmentId: 1 });
             await monitor.track(nangoProps, 'task-3');
 
-            expect(await tracker.exists('function:1:webhook:webhook-789')).toBe(false);
+            expect(putSyncConflict).not.toHaveBeenCalled();
         });
     });
 
     describe('untrack', () => {
-        it('removes conflict key from KV store when task had tracked sync', async () => {
+        it('releases sync conflict lock when task had tracked sync', async () => {
             const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack', environmentId: 1 });
             await monitor.track(nangoProps, 'task-untrack');
-            expect(await tracker.exists('function:1:sync:sync-untrack')).toBe(true);
-
             await monitor.untrack('task-untrack');
-            expect(await tracker.exists('function:1:sync:sync-untrack')).toBe(false);
+
+            expect(deleteSyncConflict).toHaveBeenCalledWith({
+                environmentId: 1,
+                scriptType: 'sync',
+                syncId: 'sync-untrack'
+            });
         });
     });
 });
