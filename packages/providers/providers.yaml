@@ -19271,6 +19271,34 @@ splitwise:
         base_url: https://secure.splitwise.com
     docs: https://nango.dev/docs/integrations/all/splitwise
 
+splunk:
+    display_name: Splunk
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /services/authentication/current-context?output_mode=json
+    docs: https://nango.dev/docs/api-integrations/splunk
+    docs_connect: https://nango.dev/docs/api-integrations/splunk/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Splunk host (including port)
+            description: Your Splunk management host and port, e.g. my-splunk.example.com:8089
+            example: my-splunk.example.com:8089
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: A Splunk authentication token (Settings → Tokens in Splunk Web)
+            doc_section: '#step-1-create-an-authentication-token'
+
 spotify:
     display_name: Spotify (OAuth)
     categories:
