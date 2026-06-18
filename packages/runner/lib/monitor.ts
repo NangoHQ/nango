@@ -14,7 +14,6 @@ const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|defau
 export class RunnerMonitor {
     private runnerId: number;
     private tracked = new Map<string, { nangoProps: NangoProps }>();
-    private persistClient: PersistClient | null = null;
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -39,15 +38,16 @@ export class RunnerMonitor {
         }
     }
 
+    private getPersistClient(nangoProps: NangoProps): PersistClient {
+        return new PersistClient({ secretKey: nangoProps.secretKey });
+    }
+
     async trackForConflicts(nangoProps: NangoProps, opts = { refresh: false }): Promise<void> {
         if (envs.RUNNER_CONFLICT_RESOLUTION_MODE !== 'DISTRIBUTED') {
             return;
         }
-        if (!this.persistClient) {
-            return;
-        }
         if (nangoProps.scriptType == 'sync' && nangoProps.syncId) {
-            const res = await this.persistClient.putSyncConflict({
+            const res = await this.getPersistClient(nangoProps).putSyncConflict({
                 environmentId: nangoProps.environmentId,
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId,
@@ -64,7 +64,6 @@ export class RunnerMonitor {
     }
 
     async track(nangoProps: NangoProps, taskId: string): Promise<void> {
-        this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
         await this.trackForConflicts(nangoProps);
         this.lastIdleTrackingDate = Date.now();
         this.tracked.set(taskId, { nangoProps });
@@ -72,14 +71,8 @@ export class RunnerMonitor {
 
     async untrack(taskId: string): Promise<void> {
         const nangoProps = this.tracked.get(taskId)?.nangoProps;
-        if (
-            nangoProps &&
-            nangoProps.scriptType == 'sync' &&
-            nangoProps.syncId &&
-            this.persistClient &&
-            envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'DISTRIBUTED'
-        ) {
-            const res = await this.persistClient.deleteSyncConflict({
+        if (nangoProps && nangoProps.scriptType == 'sync' && nangoProps.syncId && envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'DISTRIBUTED') {
+            const res = await this.getPersistClient(nangoProps).deleteSyncConflict({
                 environmentId: nangoProps.environmentId,
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId
@@ -120,21 +113,15 @@ export class RunnerMonitor {
             }
         }
 
-        if (!this.persistClient) {
-            return;
-        }
-
         this.lastMemoryReportDate = new Date();
-        for (const {
-            nangoProps: { environmentId, activityLogId }
-        } of this.tracked.values()) {
-            if (!environmentId || !activityLogId) {
+        for (const { nangoProps } of this.tracked.values()) {
+            if (!nangoProps.environmentId || !nangoProps.activityLogId) {
                 continue;
             }
-            await this.persistClient.postLog({
-                environmentId,
+            await this.getPersistClient(nangoProps).postLog({
+                environmentId: nangoProps.environmentId,
                 data: JSON.stringify({
-                    activityLogId: activityLogId,
+                    activityLogId: nangoProps.activityLogId,
                     log: {
                         type: 'log',
                         level: 'warn',
