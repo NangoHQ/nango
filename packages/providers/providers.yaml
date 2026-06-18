@@ -19795,7 +19795,7 @@ tripletex:
         token: value.token
     token_expires_in_ms: 432000000
     proxy:
-        base_url: https://tripletex.no/v2
+        base_url: https://tripletex.no
         headers:
             authorization: Basic ${base64(${connectionConfig.proxyCompanyId}:${credentials.token})}
         retry:
@@ -19854,7 +19854,7 @@ tripletex-sandbox:
         token: value.token
     token_expires_in_ms: 432000000
     proxy:
-        base_url: https://api-test.tripletex.tech/v2
+        base_url: https://api-test.tripletex.tech
         headers:
             authorization: Basic ${base64(${connectionConfig.proxyCompanyId}:${credentials.token})}
         retry:
