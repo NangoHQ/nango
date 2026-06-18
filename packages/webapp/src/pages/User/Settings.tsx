@@ -11,7 +11,6 @@ import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useThemeStore } from '@/lib/theme';
 
 import type { Theme } from '@/lib/theme';
@@ -76,24 +75,19 @@ export const UserSettings: React.FC = () => {
                         <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
                         <InputGroupAddon align="inline-end">
                             {!edit && (
-                                <Tooltip delayDuration={0}>
-                                    <TooltipTrigger asChild>
-                                        <IconButton
-                                            variant={'ghost'}
-                                            size={'2xs'}
-                                            label="Edit"
-                                            onClick={() => {
-                                                setEdit(true);
-                                                setTimeout(() => {
-                                                    ref.current?.focus();
-                                                }, 100);
-                                            }}
-                                        >
-                                            <Edit />
-                                        </IconButton>
-                                    </TooltipTrigger>
-                                    <TooltipContent sideOffset={10}>Edit</TooltipContent>
-                                </Tooltip>
+                                <IconButton
+                                    variant={'ghost'}
+                                    size={'2xs'}
+                                    label="Edit"
+                                    onClick={() => {
+                                        setEdit(true);
+                                        setTimeout(() => {
+                                            ref.current?.focus();
+                                        }, 100);
+                                    }}
+                                >
+                                    <Edit />
+                                </IconButton>
                             )}
                         </InputGroupAddon>
                     </InputGroup>
