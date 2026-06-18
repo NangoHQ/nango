@@ -19790,7 +19790,7 @@ tripletex:
     token_params:
         consumerToken: ${credentials.consumerToken}
         employeeToken: ${credentials.employeeToken}
-        expirationDate: ${nowOffset(7, day, YYYY-MM-DD)}
+        expirationDate: ${now+7:days:YYYY-MM-DD}
     token_response:
         token: value.token
     token_expires_in_ms: 432000000
@@ -19849,7 +19849,7 @@ tripletex-sandbox:
     token_params:
         consumerToken: ${credentials.consumerToken}
         employeeToken: ${credentials.employeeToken}
-        expirationDate: ${nowOffset(7, day, YYYY-MM-DD)}
+        expirationDate: ${now+7:days:YYYY-MM-DD}
     token_response:
         token: value.token
     token_expires_in_ms: 432000000
