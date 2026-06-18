@@ -19806,10 +19806,6 @@ tripletex:
             offset_name_in_request: from
             limit_name_in_request: count
             offset_start_value: 0
-        verification:
-            method: GET
-            endpoints:
-                - /token/session/>whoAmI
     docs: https://nango.dev/docs/api-integrations/tripletex
     docs_connect: https://nango.dev/docs/api-integrations/tripletex/connect
     credentials:
@@ -19869,10 +19865,6 @@ tripletex-sandbox:
             offset_name_in_request: from
             limit_name_in_request: count
             offset_start_value: 0
-        verification:
-            method: GET
-            endpoints:
-                - /token/session/>whoAmI
     docs: https://nango.dev/docs/api-integrations/tripletex-sandbox
     docs_connect: https://nango.dev/docs/api-integrations/tripletex-sandbox/connect
     credentials:
