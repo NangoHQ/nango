@@ -951,7 +951,14 @@ class OAuthController {
                 code_challenge_method: 'S256'
             };
 
-            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : '';
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(scopeSeparator) : '';
+            const encodedScopes = config.oauth_scopes
+                ? config.oauth_scopes
+                      .split(',')
+                      .map((s) => encodeURIComponent(s.trim()))
+                      .join(scopeSeparator)
+                : '';
 
             let authorizationUri = simpleOAuthClient.authorizeURL({
                 client_id: config.oauth_client_id,
@@ -966,8 +973,8 @@ class OAuthController {
                 const queryParams = new URLSearchParams(url.search);
                 queryParams.delete('scope');
                 let newQuery = queryParams.toString();
-                if (scopes) {
-                    newQuery = newQuery ? `${newQuery}&scope=${scopes}` : `scope=${scopes}`;
+                if (encodedScopes) {
+                    newQuery = newQuery ? `${newQuery}&scope=${encodedScopes}` : `scope=${encodedScopes}`;
                 }
                 url.search = newQuery;
                 authorizationUri = url.toString();
