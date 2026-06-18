@@ -7,15 +7,9 @@ import { RunnerMonitor } from './monitor.js';
 
 import type { DBSyncConfig, NangoProps, ScriptType } from '@nangohq/types';
 
-vi.mock('./env.js', async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual,
-        envs: {
-            ...actual.envs,
-            RUNNER_CONFLICT_RESOLUTION_MODE: 'DISTRIBUTED'
-        }
-    };
+vi.hoisted(() => {
+    vi.stubEnv('RUNNER_NODE_ID', '1');
+    vi.stubEnv('RUNNER_CONFLICT_RESOLUTION_MODE', 'DISTRIBUTED');
 });
 
 function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; environmentId: number }): NangoProps {
