@@ -337,7 +337,6 @@ export const ENVS = z.object({
     FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
     FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
     FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
-    FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
