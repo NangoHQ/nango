@@ -34,27 +34,27 @@ The consumer token is shared once across all customers of an integration. The de
 2. Click the avatar in the top-right corner and pick **My profile**.
 3. Above the profile pane, click **More ▾** and choose **API access**.
 
-<img src="/api-integrations/tripletex/01-api-access-menu.png" />
+<img src="/api-integrations/tripletex/api_access_menu.png" />
 
 4. On the **API employee tokens** page, click **New token** at the bottom of the list.
 
-<img src="/api-integrations/tripletex/02-api-tokens.png" />
+<img src="/api-integrations/tripletex/api_tokens.png" />
 
 5. In the **New employee token** dialog, pick the developer's integration from the **Application** dropdown, or tick **Adapted setup** to configure the token yourself.
 
-<img src="/api-integrations/tripletex/03-new-token.png" />
+<img src="/api-integrations/tripletex/new_token.png" />
 
 6. To control exactly what the integration can access, tick **Adapted setup** and select **Manual set-up**. This grants granular, per-module entitlements instead of all-or-nothing access.
 
-<img src="/api-integrations/tripletex/04-manual-setup.png" />
+<img src="/api-integrations/tripletex/manual_setup.png" />
 
 7. Tripletex groups entitlements by module (general access, time sheet, invoicing, accounting, salary, and more). Enable only the scopes the integration needs.
 
-<img src="/api-integrations/tripletex/05-entitlements.png" />
+<img src="/api-integrations/tripletex/entitlements.png" />
 
 8. Give the token a memorable name and click **Create token**.
 
-<img src="/api-integrations/tripletex/06-new-token-filled.png" />
+<img src="/api-integrations/tripletex/new_token_filled.png" />
 
    <Warning>If you see *"The application could not be found"*, the application name does not match what the developer registered with Tripletex. The name is case-sensitive and must match exactly.</Warning>
 
@@ -65,15 +65,15 @@ The consumer token is shared once across all customers of an integration. The de
 
 Leave this at `0` unless the integration developer specifically told you otherwise. A non-zero value is only required for accountant-token flows where one token spans multiple client tenants.
 
-<a id="step-4-submit-the-connect-form"></a>
-#### Step 4: Submit the connect form
+<a id="step-4-enter-credentials-in-the-connect-ui"></a>
+#### Step 4: Enter credentials in the Connect UI
 
-Paste the **Consumer Token** (from the developer) and the **Employee Token** (from step 2), confirm the **Proxy Company ID**, and submit the form.
+Once you have your **Consumer Token**, **Employee Token**, and **Proxy Company ID**:
 
-<img src="/api-integrations/tripletex/07-connect-form.png" style={{maxWidth: "450px" }}/>
+1. Open the form where you need to authenticate with Tripletex.
+2. Enter your **Consumer Token**, **Employee Token**, and **Proxy Company ID** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
-<img src="/api-integrations/tripletex/08-connect-tokens.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/tripletex/form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to Tripletex.
-
-<img src="/api-integrations/tripletex/09-connect-success.png" style={{maxWidth: "450px" }}/>
