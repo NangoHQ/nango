@@ -94,8 +94,6 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
-                '403':
-                    $ref: '#/components/responses/Forbidden'
     /integrations:
         get:
             summary: List integrations
@@ -545,6 +543,8 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
                 '409':
