@@ -8,6 +8,7 @@ export interface WindowEnv {
     publicPosthogHost: string;
     publicLogoDevKey: string;
     publicStripeKey: string;
+    publicPlainAppId: string;
     isCloud: boolean;
     isHosted: boolean;
     isEnterprise: boolean;
