@@ -3,11 +3,12 @@ import { Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { ConnectUIPreview } from './components/ConnectUIPreview';
 import SettingsContent from '../components/SettingsContent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -204,7 +205,7 @@ export const ConnectUISettings = () => {
                                         <Button
                                             type="submit"
                                             variant="primary"
-                                            size="sm"
+                                            size="md"
                                             className="self-start"
                                             disabled={!canSubmit || !isDirty || !allowed}
                                             loading={isUpdatingConnectUISettings}
@@ -234,7 +235,7 @@ export const ConnectUISettings = () => {
                                 {!canCustomizeTheme && <ThemeColorPickers disabled={true} form={form} />}
                                 {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
 
-                                <ButtonLink to={`/team/billing#plans`} variant="secondary" target="_blank">
+                                <ButtonLink to={`/team/billing#plans`} variant="outline" target="_blank">
                                     Upgrade to &apos;Growth&apos; plan
                                 </ButtonLink>
                             </div>

@@ -145,9 +145,10 @@ export async function finalizeManagedAuthentication({
     if (!user) {
         isNewUser = true;
         let account: DBTeam;
+        const sanitize = (s: string | null | undefined) => (s && s !== 'null' ? s : '');
         let name =
             authorizedUser.firstName || authorizedUser.lastName
-                ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
+                ? `${sanitize(authorizedUser.firstName)} ${sanitize(authorizedUser.lastName)}`.trim()
                 : authorizedUser.email.split('@')[0];
         if (!name) {
             name = nanoid();

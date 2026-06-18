@@ -5,10 +5,11 @@ import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
 import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { useToast } from '@/hooks/useToast';
@@ -84,7 +85,7 @@ export default function Signin() {
                             )}
                         />
 
-                        <Button type="submit" className="w-full" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" className="w-full" size={'xl'} loading={isPending} disabled={!form.formState.isValid}>
                             Send password reset email
                         </Button>
                     </form>

@@ -63,7 +63,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
             title: 'Disable Webhook Forwarding?',
             description: 'Disabling webhook forwarding will stop forwarding incoming webhooks to your configured endpoint. Are you sure you want to continue?',
             confirmButtonText: 'Disable',
-            confirmVariant: 'destructive',
+            confirmVariant: 'danger',
             onConfirm: async () => {
                 await onSave({ forward_webhooks: false });
                 setWebhookForwarding(false);

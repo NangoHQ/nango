@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
 import { NangoProvidedInput } from '../NangoProvidedInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { Label } from '@/components/ui/Label';
@@ -104,9 +105,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         </div>
                     </div>
 
-                    <Button loading={loading} onClick={onCreatePreProvisioned}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button loading={loading} onClick={onCreatePreProvisioned}>
+                            Create
+                        </Button>
+                    </div>
                 </div>
             </NavigationContent>
             <NavigationContent value="custom">
@@ -171,9 +174,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                 />
                             </div>
 
-                            <Button type="submit" loading={loading}>
-                                Create
-                            </Button>
+                            <div>
+                                <Button type="submit" loading={loading}>
+                                    Create
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                 </div>

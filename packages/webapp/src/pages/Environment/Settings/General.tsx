@@ -14,7 +14,7 @@ import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -107,12 +107,7 @@ export const General: React.FC = () => {
                 label={
                     <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <ButtonLink
-                            to="https://nango.dev/docs/guides/platform/environments#production-environments"
-                            size="icon"
-                            variant="ghost"
-                            target="_blank"
-                        >
+                        <ButtonLink to="https://nango.dev/docs/guides/platform/environments#production-environments" size="2xs" variant="ghost" target="_blank">
                             <ExternalLink />
                         </ButtonLink>
                     </div>
@@ -140,7 +135,7 @@ export const General: React.FC = () => {
                                             });
                                         },
                                         confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
-                                        confirmVariant: 'destructive',
+                                        confirmVariant: 'danger',
                                         docs: {
                                             title: 'Learn more',
                                             url: 'https://nango.dev/docs/guides/platform/environments#production-environments'

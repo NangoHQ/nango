@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { APIError } from '../../utils/api';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useToast } from '@/hooks/useToast';
 
@@ -73,7 +74,7 @@ export function VerifyEmail() {
                 </span>
             </div>
 
-            <Button onClick={handleResendEmail} size="lg" className="w-full" loading={isResendingVerificationEmailByUuid}>
+            <Button onClick={handleResendEmail} size="xl" className="w-full" loading={isResendingVerificationEmailByUuid}>
                 Resend email
             </Button>
         </DefaultLayout>

@@ -6,6 +6,8 @@ import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parse
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
+import { Button } from '@nangohq/design-system';
+
 import { SearchableMultiSelect } from './SearchableMultiSelect';
 import { queryClient, useStore } from '../../../store';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
@@ -16,7 +18,6 @@ import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
-import { Button } from '@/components/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
@@ -267,7 +268,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
-                                <InputGroupButton variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
+                                <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
                                     <IconX stroke={1} size={18} />
                                 </InputGroupButton>
                             </InputGroupAddon>
@@ -322,7 +323,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectOperation={onSelectOperation} />}
 
                     {flatData.length > 0 && hasNextPage && (
-                        <Button onClick={onClickLoadMore} variant={'tertiary'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
+                        <Button onClick={onClickLoadMore} variant={'outline'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
                             Load more...
                         </Button>
                     )}
