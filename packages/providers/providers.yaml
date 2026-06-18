@@ -19783,7 +19783,6 @@ tripletex:
         - accounting
     auth_mode: TWO_STEP
     token_url: https://tripletex.no/v2/token/session/:create
-    token_success_status: 201
     token_headers:
         accept: application/json
         content-type: application/json
@@ -19842,7 +19841,6 @@ tripletex-sandbox:
         - accounting
     auth_mode: TWO_STEP
     token_url: https://api-test.tripletex.tech/v2/token/session/:create
-    token_success_status: 201
     token_headers:
         accept: application/json
         content-type: application/json
