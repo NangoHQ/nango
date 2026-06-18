@@ -1,0 +1,43 @@
+---
+title: 'How to register your own Snowflake OAuth app'
+sidebarTitle: 'Snowflake setup'
+description: 'Register an OAuth integration with Snowflake and connect it to Nango'
+---
+
+This guide shows you how to configure an OAuth integration in Snowflake to obtain credentials (client ID & secret). These are required to let your users grant your app access to their Snowflake account.
+
+<Steps>
+    <Step id="create-oauth-integration" title="Create an OAuth integration in Snowflake">
+        Run the following SQL in your Snowflake worksheet as an `ACCOUNTADMIN` (or a role with the `CREATE INTEGRATION` privilege):
+
+        ```sql
+        CREATE SECURITY INTEGRATION <integration_name>
+            TYPE = OAUTH
+            ENABLED = TRUE
+            OAUTH_CLIENT = CUSTOM
+            OAUTH_CLIENT_TYPE = 'CONFIDENTIAL'
+            OAUTH_REDIRECT_URI = 'https://api.nango.dev/oauth/callback'
+            OAUTH_ISSUE_REFRESH_TOKENS = TRUE
+            OAUTH_REFRESH_TOKEN_VALIDITY = 86400;
+        ```
+
+        Replace `<integration_name>` with a name for your integration.
+    </Step>
+    <Step id="get-credentials" title="Get your client ID and secret">
+        Run these queries to retrieve your credentials:
+
+        ```sql
+        SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('<integration_name>');
+        ```
+
+        Note your **OAuth client ID** and **OAuth client secret**.
+    </Step>
+    <Step id="configure-scopes" title="Configure scopes">
+        Assign the correct role/scope to the OAuth integration so the token has the right permissions. See [Snowflake OAuth scopes](https://docs.snowflake.com/en/user-guide/oauth-custom#scope) for details.
+    </Step>
+    <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart).
+    </Step>
+</Steps>
+
+For more on the Snowflake OAuth flow, see the [Snowflake OAuth API reference](https://docs.snowflake.com/en/user-guide/oauth-custom).

@@ -1,0 +1,57 @@
+---
+title: Snowflake - How do I link my account?
+sidebarTitle: Snowflake
+---
+
+# Overview
+
+To authenticate with Snowflake, you will need:
+1. **Domain** - Your Snowflake account domain (e.g., `myorg-myaccount.snowflakecomputing.com`)
+
+This guide will walk you through finding your **Snowflake account domain**.
+
+### Prerequisites:
+
+- You must have a Snowflake account with access to the account you want to connect
+
+### Instructions:
+
+#### Step 1: Find your Snowflake account domain
+
+Your Snowflake account domain follows the format `<account_identifier>.snowflakecomputing.com`.
+
+**Option 1: From the Snowflake URL**
+
+When logged in to Snowflake, your browser URL contains the account identifier:
+
+```
+https://<account_identifier>.snowflakecomputing.com
+```
+
+Copy everything between `https://` and the first `/` — that is your domain (e.g., `myorg-myaccount.snowflakecomputing.com`).
+
+**Option 2: From Snowflake Admin**
+
+1. Log into Snowflake with admin access.
+2. Navigate to **Admin** → **Accounts**.
+3. Find your account in the list and copy the **Account URL** (without the `https://` prefix).
+
+**Option 3: Via SQL**
+
+Run the following in a Snowflake worksheet:
+
+```sql
+SELECT CURRENT_ACCOUNT_URL();
+```
+
+Copy the result and remove the `https://` prefix.
+
+#### Step 2: Enter your domain in the Connect UI
+
+1. Open the form where you need to authenticate with Snowflake.
+2. Enter your domain in the **Domain** field (e.g., `myorg-myaccount.snowflakecomputing.com`).
+3. Click **Connect** and log in to your Snowflake account.
+
+<img src="/api-integrations/snowflake/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Snowflake.
