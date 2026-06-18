@@ -93,7 +93,7 @@ export const ENVS = z.object({
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Metering
-    METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().optional().default(1),
+    METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
