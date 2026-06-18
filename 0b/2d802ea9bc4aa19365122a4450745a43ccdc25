@@ -1,0 +1,19 @@
+packages/providers/providers.yaml
+  s_6a617d6537e735::t_93dc9bf11e4c48 695-755,1951-1978,16231-16236,16238-16239,16241-16251,22753-22781
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "0b2d802ea9bc4aa19365122a4450745a43ccdc25",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

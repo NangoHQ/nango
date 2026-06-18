@@ -1,0 +1,23 @@
+docs/llms-full.txt
+  s_6a617d6537e735::t_93dc9bf11e4c48 3891,3897-3899,3906,3908-3913,3916,3918,3938-3989,3992-3997,4002,4007,4031,4039,6670-6698,6939,6944-6945,6947-6950,9862,9870-9879,11923,11926-11930,13865-13866,13904,14440,14675
+packages/providers/providers.yaml
+  s_6a617d6537e735::t_93dc9bf11e4c48 695-755,1951-1978,16231-16236,16238-16239,16241-16251,22788-22816
+docs/api-catalog.txt
+  s_6a617d6537e735::t_93dc9bf11e4c48 38-39,77,613,848
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "8591ec2ec031be32ef3cd4b1ee64d963d292e49f",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
