@@ -1745,8 +1745,8 @@ paths:
             summary: Create a function deployment
             description: |
                 Deploys a function to an existing integration. Use `type: function` to deploy submitted TypeScript
-                source code (asynchronous), or `type: template` to deploy a template from the provider catalog
-                (synchronous; returns the deployed function).
+                source code, or `type: template` to deploy a template from the provider catalog. Requires an API key with the
+                `environment:deploy` scope.
             requestBody:
                 required: true
                 content:
@@ -3524,7 +3524,7 @@ components:
                 status:
                     type: string
                     enum: [waiting, running, success, failed]
-                    description: Async `function` deploys start at `waiting`/`running` (poll for completion); synchronous `template` deploys return a terminal `success`/`failed`.
+                    description: The status of the function deployment. Poll `GET /functions/deployments/{id}` to get the final status.
                 created_at:
                     type: string
                     format: date-time

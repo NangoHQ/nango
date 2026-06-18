@@ -31,8 +31,8 @@ function shouldAllowDestructiveDeploy(existingSyncConfig: Pick<DBSyncConfig, 'so
 }
 
 /**
- * Deploy a catalog template onto an integration. Runs synchronously, so the response carries a terminal
- * status — matching the shape the async code deploy returns (which starts at waiting/running and is polled).
+ * Deploy a catalog template onto an integration. Runs synchronously, the response carries a terminal
+ * status
  */
 async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeploymentTemplateBody): Promise<void> {
     const { environment, account, plan, user } = res.locals;
@@ -89,7 +89,7 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
 
 /**
  * Deploy submitted TypeScript source code. Runs asynchronously in a sandbox: returns a waiting/running
- * deployment that the sandbox completes via the `/functions/deployments/:id/result` callback.
+ * deployment status
  */
 async function handleDeployCode(res: DeploymentResponse, body: FunctionDeploymentCodeBody): Promise<void> {
     const { environment } = res.locals;
