@@ -11,6 +11,7 @@ import { PersistClient } from './clients/persist.js';
 import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
+import { HttpLocks } from './sdk/locks.js';
 import { abortControllers, distributedCoordination, usage } from './state.js';
 
 import type { NangoProps } from '@nangohq/types';
@@ -115,7 +116,13 @@ function startProcedure() {
                 }, heartbeatIntervalMs);
 
                 try {
-                    const execRes = await exec({ nangoProps, code, codeParams, abortController });
+                    const execRes = await exec({
+                        nangoProps,
+                        code,
+                        codeParams,
+                        abortController,
+                        ...(distributedCoordination ? { locks: new HttpLocks({ persistClient: persistClient!, environmentId: nangoProps.environmentId }) } : {})
+                    });
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
                     telemetryBag.durationMs = Date.now() - startTime;
