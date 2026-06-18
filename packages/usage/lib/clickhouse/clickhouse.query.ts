@@ -170,7 +170,7 @@ export function quantityForMetric(metric: CounterUsageMetric): string {
             // Read `duration_ms` so the CH path matches Orb 1:1.
             return `SUM(duration_ms)`;
         case 'data_transfer':
-            return `SUM(value)`;
+            return `SUM(ingressed_bytes + egressed_bytes)`;
     }
 }
 
