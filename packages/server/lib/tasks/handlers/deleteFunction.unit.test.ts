@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
+import { DeletionBudgetExceeded } from '../../deletion/batchDelete.js';
 
 // Mock the task-queue singleton (assert enqueues) and the tree node (covered by the deletion-tree tests).
 const enqueue = vi.fn().mockResolvedValue(Ok({ taskId: 'task-id' }));
 vi.mock('../index.js', () => ({ tasks: { enqueue } }));
 
 const deleteSyncConfigData = vi.fn().mockResolvedValue(undefined);
-vi.mock('../../crons/delete/deleteSyncConfigData.js', () => ({
+vi.mock('../../deletion/deleteSyncConfigData.js', () => ({
     deleteSyncConfigData: (...args: unknown[]) => deleteSyncConfigData(...args)
 }));
 
