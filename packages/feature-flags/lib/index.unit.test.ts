@@ -130,19 +130,19 @@ describe('getFeatureFlagsClient', () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
         vi.resetModules();
-        const { getFlags } = await import('./index.js');
-        const flags = await getFlags();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
         const [unleash] = unleashInstances;
         if (!unleash) {
             throw new Error('Expected Unleash provider to initialize');
         }
         unleash.isEnabled.mockReturnValue(true);
-        await expect(flags.isOAuthStateCookieEnforced(42)).resolves.toBe(true);
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(true);
         expect(unleash.isEnabled).toHaveBeenCalledWith(
             'oauth-state-cookie-enforcement',
             {
-                userId: '42',
-                properties: { accountId: '42' }
+                userId: 'uuid1',
+                properties: { accountUuid: 'uuid1' }
             },
             false
         );
@@ -223,15 +223,20 @@ describe('getFeatureFlagsClient', () => {
         await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(false);
     });
 
-    it('propagates typed facade initialization errors and retries later', async () => {
+    it('returns flag defaults when initialize cannot create the client', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
         unleashMockState.failNextInit = 1;
         vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
+    });
+
+    it('throws when getFlags is called before initialize', async () => {
+        vi.resetModules();
         const { getFlags } = await import('./index.js');
-        await expect(getFlags()).rejects.toThrow('init failed');
-        const flags = await getFlags();
-        await expect(flags.isOAuthStateCookieEnforced(42)).resolves.toBe(false);
+        expect(() => getFlags()).toThrow('Feature flags not initialized');
     });
 
     it('reconnects to unleash in the background after a failed initialization', async () => {
@@ -249,6 +254,32 @@ describe('getFeatureFlagsClient', () => {
         await Promise.resolve();
 
         expect(unleashInstances.length).toBe(1);
+        vi.useRealTimers();
+    });
+
+    it('updates initialized flags and emits a metric after reconnect succeeds', async () => {
+        vi.useFakeTimers();
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        mockEnvs.NANGO_UNLEASH_REFRESH_INTERVAL_MS = 1000;
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        const { metrics } = await import('@nangohq/utils');
+        const incrementSpy = vi.spyOn(metrics, 'increment');
+        await initialize();
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1000);
+        await Promise.resolve();
+
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to reconnect');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(true);
+        expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.FEATURE_FLAGS_CLIENT_RECONNECTED, 1);
         vi.useRealTimers();
     });
 

@@ -1,4 +1,4 @@
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import { buildFeatureFlagsClient } from './client.js';
 import { envs } from './env.js';
@@ -14,28 +14,35 @@ export type { FeatureFlagsClient } from './client.js';
 export type { FlagContext } from './types.js';
 export type { Flags } from './flags.js';
 
-let flagsPromise: Promise<Flags> | undefined;
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
 let destroyPromise: Promise<void> | undefined;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+let flagsInstance: Flags | undefined;
 
 const logger = getLogger('FeatureFlags');
+const noopClient = buildFeatureFlagsClient(new NoopProvider());
 
 /**
- * Typed flag facade backed by the shared (cached) client. The underlying client
- * is initialized lazily and reused; awaiting this is cheap after the first call.
+ * Initialize the typed flag facade for this process. Call once during service
+ * startup. Fail-open: uses flag defaults when the client cannot be created.
  */
-export async function getFlags(): Promise<Flags> {
-    if (flagsPromise) return flagsPromise;
+export async function initialize(): Promise<void> {
+    let client: FeatureFlagsClient;
+    try {
+        client = await getFeatureFlagsClient();
+    } catch {
+        metrics.increment(metrics.Types.FEATURE_FLAGS_CLIENT_UNAVAILABLE, 1);
+        client = noopClient;
+    }
+    flagsInstance = buildFlags(client);
+}
 
-    flagsPromise = getFeatureFlagsClient()
-        .then((client) => buildFlags(client))
-        .catch((err: unknown) => {
-            flagsPromise = undefined;
-            throw err;
-        });
-
-    return flagsPromise;
+/** Typed flag facade. Requires {@link initialize} to have completed. */
+export function getFlags(): Flags {
+    if (!flagsInstance) {
+        throw new Error('Feature flags not initialized. Call initialize() first.');
+    }
+    return flagsInstance;
 }
 
 export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
@@ -100,8 +107,10 @@ function scheduleReconnect(): void {
         reconnectTimer = undefined;
         if (clientPromise || destroyPromise) return;
         void getFeatureFlagsClient()
-            .then(() => {
+            .then((client) => {
+                setActiveClient(client);
                 logger.info('Feature flags client reconnected to Unleash');
+                metrics.increment(metrics.Types.FEATURE_FLAGS_CLIENT_RECONNECTED, 1);
             })
             .catch(() => {
                 scheduleReconnect();
@@ -112,9 +121,16 @@ function scheduleReconnect(): void {
     }
 }
 
+function setActiveClient(client: FeatureFlagsClient): void {
+    if (!flagsInstance) {
+        return;
+    }
+    flagsInstance = buildFlags(client);
+}
+
 export async function destroy(): Promise<void> {
     cancelReconnect();
-    flagsPromise = undefined;
+    flagsInstance = undefined;
     if (destroyPromise) return destroyPromise;
     const promise = clientPromise;
     if (!promise) return;

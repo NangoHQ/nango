@@ -91,16 +91,6 @@ function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): st
     return allowed.has(normalized) ? normalized : 'other';
 }
 
-async function isOAuthStateCookieEnforced(accountId: number): Promise<boolean> {
-    try {
-        const flags = await getFlags();
-        return await flags.isOAuthStateCookieEnforced(accountId);
-    } catch {
-        // Preserve the default rollout state if the flag client cannot initialize.
-        return false;
-    }
-}
-
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
         const { account, environment, connectSession } = res.locals;
@@ -1244,7 +1234,7 @@ class OAuthController {
                     });
                 } else {
                     // Flag off (default) => keep current behaviour (measure only); on => reject below.
-                    const enforced = await isOAuthStateCookieEnforced(account.id);
+                    const enforced = await getFlags().isOAuthStateCookieEnforced(account.uuid);
                     // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
                     // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
                     // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
