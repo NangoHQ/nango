@@ -1,0 +1,104 @@
+---
+title: 'N-able Cove Data Protection'
+sidebarTitle: 'N-able Cove Data Protection'
+description: 'Integrate your application with the N-able Cove Data Protection JSON-RPC API'
+---
+
+## 🚀 Quickstart
+
+Connect to N-able Cove Data Protection with Nango and start a Cove API session.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _N-able Cove Data Protection_.
+    </Step>
+    <Step title="Authorize N-able Cove Data Protection">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the parent customer name, API user login, and API user token.
+    </Step>
+    <Step title="Start a Cove JSON-RPC session">
+    Cove uses a stateful JSON-RPC API. Retrieve the credentials stored by Nango and send a `Login` request through the Nango proxy:
+
+    ```typescript
+    import { Nango } from '@nangohq/node';
+
+    type CoveLoginResponse = {
+        jsonrpc: '2.0';
+        visa?: string;
+        result?: {
+            result?: {
+                PartnerId?: number;
+            };
+        };
+        error?: {
+            code: number;
+            message: string;
+        };
+    };
+
+    const providerConfigKey = '<INTEGRATION-ID>';
+    const connectionId = '<CONNECTION-ID>';
+    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+    const connection = await nango.getConnection(providerConfigKey, connectionId);
+    const { apiKey } = connection.credentials as { apiKey: string };
+    const { partnerName, username } = connection.connection_config as {
+        partnerName: string;
+        username: string;
+    };
+
+    const login = await nango.post<CoveLoginResponse>({
+        endpoint: '/jsonapi',
+        providerConfigKey,
+        connectionId,
+        data: {
+            jsonrpc: '2.0',
+            id: 'login-1',
+            method: 'Login',
+            params: {
+                partner: partnerName,
+                username,
+                password: apiKey
+            }
+        }
+    });
+
+    const loginResult = login.data;
+    if (loginResult.error || !loginResult.visa?.trim() || !loginResult.result?.result) {
+        throw new Error('Cove Login failed');
+    }
+
+    let visa = loginResult.visa;
+    ```
+
+    The visa is valid for 15 minutes. Include the current visa in each subsequent JSON-RPC request and replace it with the renewed visa returned by every successful response.
+    </Step>
+    <Step title="Implement the visa chain">
+    Follow the [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+    Nango stores and verifies the Cove credentials. Your application actions or Nango Functions must perform `Login`, include the visa in subsequent calls, and keep the visa chain current. Nango's generic proxy does not automatically create or renew Cove sessions.
+    </Step>
+</Steps>
+
+## 📚 N-able Cove Data Protection integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my N-able Cove Data Protection account?](/api-integrations/nable-cove/connect)
+  Create a Cove API user and connect it to Nango.
+
+Official docs: [Cove JSON-RPC API guide](https://documentation.n-able.com/covedataprotection/USERGUIDE/documentation/Content/unused/service-management/json-api/home.htm)
+
+## Cove session behavior
+
+- Send all JSON-RPC requests to `POST https://api.backup.management/jsonapi`.
+- `Login` returns a visa that remains valid for 15 minutes.
+- Include the current visa in subsequent API requests.
+- Each successful response can return a renewed visa that should be used for the next call.
+- If the visa chain expires, call `Login` again with the stored credentials.
+
+## 🧩 Pre-built syncs & actions for N-able Cove Data Protection
+
+import PreBuiltUseCases from "/snippets/generated/nable-cove/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

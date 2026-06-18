@@ -1,0 +1,49 @@
+---
+title: N-able Cove Data Protection - How do I link my account?
+sidebarTitle: N-able Cove Data Protection
+---
+
+# Overview
+
+To authenticate with N-able Cove Data Protection, you need:
+
+1. **Parent customer name** - The exact Cove customer selected when the API user was created.
+2. **API user login** - The login name assigned to the API user.
+3. **API user token** - The token generated when the API user was created.
+
+### Prerequisites
+
+- A Cove Management Console SuperUser or Administrator account that can manage API users.
+- Permission to create an API user for the required parent or customer.
+- A clear list of the Cove API operations your integration needs so you can grant the minimum role and permissions.
+
+### Instructions
+
+#### Step 1: Create an API user
+
+1. Sign in to the Cove Management Console with a SuperUser or Administrator account.
+2. In the vertical menu, go to **Management** -> **Users** -> **API Users**.
+3. Click **Add API user**.
+4. In the customer dropdown, select the parent or customer under which the API user should be created.
+5. Enter a login name for the API user.
+6. Select the lowest role that permits the API operations your integration needs. Add Security Officer permission only when those operations require it.
+7. Click **Save and continue**.
+8. Copy the generated token from the **Copy token** window and store it securely.
+
+<Warning>Cove displays the generated API user token only once. If you close the window without saving it, generate a replacement token before continuing.</Warning>
+
+For the current role and permission matrix, see [Cove User Role Permissions](https://documentation.n-able.com/covedataprotection/USERGUIDE/RSG/Content/service-management/console-new/user-management/user-role-permissions.htm).
+
+#### Step 2: Enter the credentials in Nango
+
+1. Open the N-able Cove Data Protection connection form in Nango.
+2. Enter the exact **Parent customer name** selected when creating the API user.
+3. Enter the **API user login**.
+4. Enter the saved **API user token**.
+5. Submit the form. Nango sends a Cove `Login` request to verify the credentials but does not store the returned visa.
+
+<img src="/api-integrations/nable-cove/form.png" style={{maxWidth: "450px" }} alt="N-able Cove Data Protection connection form"/>
+
+You are now connected to N-able Cove Data Protection.
+
+For Cove's API-user creation steps, see [Add Users in Management Console](https://documentation.n-able.com/covedataprotection/USERGUIDE/QSG/Content/service-management/console-new/user-management/add-user.htm).
