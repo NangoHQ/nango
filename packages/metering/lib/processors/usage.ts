@@ -30,6 +30,7 @@ export class UsageProcessor {
         this.subscriber.subscribe({
             consumerGroup: 'billing', // Legacy name for backward compatibility and avoid processing duplication
             subject: 'usage',
+            concurrency: 4,
             callback: async (event) => {
                 const result = await this.process(event);
                 if (result.isErr()) {
