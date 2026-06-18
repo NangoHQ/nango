@@ -2,6 +2,8 @@ import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
 import { CodeXml, Loader } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { Button } from '@nangohq/design-system';
+
 import { MultiLanguageCodeBlock } from '../../components/ui/MultiLanguageCodeBlock';
 import { useApiKeys } from '../../hooks/useApiKeys';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -9,7 +11,6 @@ import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
 import { cn, truncateMiddle } from '../../utils/utils';
-import { Button } from '@/components/ui/Button';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
@@ -160,7 +161,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         />
                     </div>
                     <div className={cn('flex flex-col gap-5')}>
-                        <Button variant="primary" size="lg" onClick={onExecute} disabled={isExecuting}>
+                        <Button variant="primary" size="xl" onClick={onExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
                                     <Loader className="size-5 animate-spin" />

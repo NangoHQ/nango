@@ -138,7 +138,11 @@ const routing = new Routing(async (ctx: RoutingContext) => {
         routingCache.set(cacheKey, res.value);
         return res.value;
     }
-    logger.error('Routing error for connection', ctx.connectionId, 'model', ctx.model, ':', res.isErr() ? res.error : `invalid store ${res.value}`);
+    logger.error('Routing error for connection', {
+        connectionId: ctx.connectionId,
+        model: ctx.model,
+        error: res.isErr() ? res.error : `invalid store ${res.value}`
+    });
     return 'default';
 });
 

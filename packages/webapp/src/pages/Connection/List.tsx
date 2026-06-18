@@ -7,13 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Avatar } from '@/components/ui/Avatar';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
@@ -275,26 +276,12 @@ export const ConnectionList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout fullWidth title="Connections">
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-3">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-title-subsection text-text-strong">Connections</h2>
-                    {(hasConnections || hasFiltered) && (
-                        <PermissionGate condition={canCreateTestConnection}>
-                            {(allowed) => (
-                                <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed}>
-                                    Add test connection
-                                </ButtonLink>
-                            )}
-                        </PermissionGate>
-                    )}
-                </div>
-
                 {/* Content */}
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
@@ -332,9 +319,8 @@ export const ConnectionList = () => {
                                             </span>
                                             <Button
                                                 type="button"
-                                                variant="secondary"
+                                                variant="outline"
                                                 size="sm"
-                                                className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                                                 onClick={() => {
                                                     navigate(`/${env}/integrations/create`);
                                                 }}
@@ -355,6 +341,13 @@ export const ConnectionList = () => {
                                     reorderOnSelect={false}
                                     showSearch={false}
                                 />
+                                <PermissionGate condition={canCreateTestConnection}>
+                                    {(allowed) => (
+                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                            Add test connection
+                                        </ButtonLink>
+                                    )}
+                                </PermissionGate>
                             </div>
 
                             {/* Table */}
@@ -440,14 +433,14 @@ export const ConnectionList = () => {
                                 </StyledLink>
                                 , or manually here.
                             </p>
-                            <ButtonLink to={`/${env}/connections/create`} size="lg">
+                            <ButtonLink to={`/${env}/connections/create`} size="xl">
                                 Add test connection
                             </ButtonLink>
                         </div>
                     )}
 
                     {hasNextPage && (
-                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
+                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline" className="self-center">
                             Load More
                         </Button>
                     )}

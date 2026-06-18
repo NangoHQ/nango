@@ -3,7 +3,7 @@ import { getFunctionFileLocations, hardDeleteEndpoints, hardDeleteSyncConfig } f
 
 import { batchDelete } from './batchDelete.js';
 import { deleteSyncs } from './deleteSyncs.js';
-import { tasks } from '../../tasks/index.js';
+import { tasks } from '../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 import type { Sync } from '@nangohq/shared';
@@ -58,7 +58,7 @@ export async function deleteSyncConfigData({ syncConfigId, environmentId }: Dele
 
         const delEndpoints = await hardDeleteEndpoints({ syncConfigId: version.id });
         if (delEndpoints) {
-            logger.info('deleted', delEndpoints, 'endpoints');
+            logger.info('deleted endpoints', { count: delEndpoints });
         }
     }
 

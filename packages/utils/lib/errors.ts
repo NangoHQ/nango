@@ -1,27 +1,13 @@
 import * as Sentry from '@sentry/node';
 import { serializeError } from 'serialize-error';
 
+import { errorToObject } from './errorSerialize.js';
 import { getLogger } from './logger.js';
 import { NANGO_VERSION } from './version.js';
 
-import type { ErrorObject } from 'serialize-error';
+export { errorToObject } from './errorSerialize.js';
 
 const PROVIDER_ERROR_MESSAGE_FIELDS = ['message', 'error', 'error_description', 'error_message', 'detail', 'details', 'reason', 'description'];
-
-/**
- * Transform any Error or primitive to a json object
- */
-export function errorToObject(err: unknown): ErrorObject {
-    if (!err) {
-        return { message: 'Unknown error' };
-    }
-
-    if (typeof err === 'string' || typeof err === 'number' || typeof err === 'boolean') {
-        return { message: String(err) };
-    }
-
-    return serializeError(err, { maxDepth: 5 });
-}
 
 /**
  * Transform any Error or primitive to a string
@@ -105,12 +91,12 @@ export function initSentry({ dsn, hash, applicationName }: { dsn: string | undef
 
 const logger = getLogger('err');
 export function report(err: unknown, extra?: Record<string, unknown>) {
+    const message = errorToObject(err).message || 'Unknown error';
+    logger.error(message, { err, ...extra });
+
     if (!sentry) {
-        logger.error(stringifyError(err, { stack: true, cause: true, pretty: true }), extra);
         return;
     }
-
-    logger.error(err as any, extra);
 
     Sentry.withScope((scope) => {
         if (extra) {

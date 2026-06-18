@@ -92,6 +92,9 @@ export const ENVS = z.object({
     // snapshot it.
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
+    // Metering
+    METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
+
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
     PERSIST_HARD_DELETE_LIMIT: z.coerce.number().int().positive().optional().default(50_000),
@@ -235,8 +238,8 @@ export const ENVS = z.object({
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
     RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
-    RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().max(1000).default(100),
-    RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(5000),
+    RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().max(1000).default(500),
+    RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(10_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
@@ -337,6 +340,7 @@ export const ENVS = z.object({
     FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
     FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
     FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
+    FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
@@ -483,6 +487,10 @@ export const ENVS = z.object({
     PUBLIC_STRIPE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
+
+    // Plain (in-app support chat)
+    PLAIN_APP_ID: z.string().optional(),
+    PLAIN_HMAC_SECRET: z.string().optional(),
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),

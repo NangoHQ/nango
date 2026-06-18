@@ -38,6 +38,8 @@ import { putConnectUISettings } from './controllers/v1/connectUISettings/putConn
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
+import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { createApiKey } from './controllers/v1/environment/createApiKey.js';
@@ -81,6 +83,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
@@ -257,6 +260,12 @@ web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTem
 web.route('/connections').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnections);
 web.route('/connections/count').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionsCount);
 web.route('/connections/:connectionId').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionWeb);
+web.route('/connections/:connectionId/records/models').get(
+    webAuth,
+    can({ action: 'read', resource: 'connection', scopedBy: envScope }),
+    getConnectionRecordModels
+);
+web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
 web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
 web.route('/connections/admin/:connectionId').delete(
@@ -269,6 +278,9 @@ web.route('/connections/admin/:connectionId').delete(
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, patchUser);
 web.route('/user/password').put(webAuth, putUserPassword);
+
+// Plain (in-app support chat)
+web.route('/plain').get(webAuth, getPlainHmac);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));

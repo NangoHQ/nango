@@ -38,12 +38,24 @@ export class Ensure {
         }
     }
 
-    public async functionType(sync: boolean, action: boolean, onEvent: boolean): Promise<FunctionType> {
+    public async functionType({
+        sync,
+        action,
+        onEvent,
+        webhook
+    }: {
+        sync?: boolean;
+        action?: boolean;
+        onEvent?: boolean;
+        webhook?: boolean;
+    }): Promise<FunctionType> {
         if (sync) return 'sync';
         if (action) return 'action';
         if (onEvent) return 'on-event';
+        if (webhook) return 'webhook';
 
         if (!this.interactive) {
+            // TODO: add --webhook once released (NAN-5943)
             throw new MissingArgumentError('Must specify --sync, --action, or --on-event');
         }
 

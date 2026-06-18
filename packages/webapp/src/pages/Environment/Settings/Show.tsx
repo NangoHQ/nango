@@ -60,22 +60,23 @@ export const EnvironmentSettings: React.FC = () => {
     const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout
+            fullWidth
+            title="Environment settings"
+            titleBadge={
+                isProd ? (
+                    <Badge variant="brand" size="custom" className="type-code-regular-xs rounded-[2px] px-1 py-0">
+                        Prod
+                    </Badge>
+                ) : (
+                    <Badge variant="secondary">{env}</Badge>
+                )
+            }
+            className="flex flex-col gap-8"
+        >
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
-
-            <div className="flex flex-col gap-2.5">
-                <h2 className="text-title-subsection text-text-strong">Environment settings</h2>
-                <div className="flex gap-2.5">
-                    <span className="text-heading-sm text-text-secondary">{env}</span>
-                    {isProd && (
-                        <Badge variant="secondary" className="text-heading-sm text-text-secondary">
-                            Prod
-                        </Badge>
-                    )}
-                </div>
-            </div>
 
             <div className="flex h-fit justify-center" key={env}>
                 <Navigation value={activeTab} onValueChange={setActiveTab}>

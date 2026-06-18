@@ -91,14 +91,10 @@ export const CreateIntegrationList = () => {
     };
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Set up new integration" className="flex flex-col gap-8">
             <Helmet>
                 <title>Create integration - Nango</title>
             </Helmet>
-
-            <header>
-                <h2 className="text-text-strong text-title-subsection">Set up new integration</h2>
-            </header>
 
             <InputGroup className="bg-surface-panel-inset">
                 <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} autoFocus />

@@ -11,7 +11,7 @@ import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -81,7 +81,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <PermissionGate condition={canCreateTestConnection} asChild>
                         {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg" disabled={!allowed}>
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="xl" disabled={!allowed}>
                                 Add test connection
                             </ButtonLink>
                         )}

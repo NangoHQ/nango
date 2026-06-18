@@ -434,7 +434,7 @@ export async function refreshCredentialsIfNeeded({
                     return Ok({ connection, refreshed: false, credentials: freshCredentials });
                 }
 
-                logger.info('Refreshing', connection.id, 'because', shouldRefresh.reason);
+                logger.info('Refreshing connection', { connectionId: connection.id, reason: shouldRefresh.reason });
                 connectionToRefresh = connection;
             } catch (err) {
                 // lock acquisition might have timed out

@@ -51,12 +51,11 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout className="flex flex-col gap-10">
+        <DashboardLayout title="Getting started" className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>
             <header className="flex flex-col gap-3.5">
-                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-strong">Getting started</h2>
                 <p className="text-text-secondary text-sm">Try connecting Nango with Github to see how integrations work.</p>
             </header>
             <div className="flex flex-row gap-10 min-w-0">
