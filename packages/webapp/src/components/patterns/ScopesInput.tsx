@@ -1,8 +1,9 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { IconButton } from '@nangohq/design-system';
+
 import { Badge } from '../ui/Badge.js';
-import { Button } from '../ui/Button.js';
 import {
     Combobox,
     ComboboxChip,
@@ -158,9 +159,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button type="button" size="icon" variant="ghost" onClick={() => void deleteAllScopes()}>
+                            <IconButton type="button" size="2xs" variant="ghost" label="Delete all scopes" onClick={() => void deleteAllScopes()}>
                                 <Trash2 />
-                            </Button>
+                            </IconButton>
                         </TooltipTrigger>
                         <TooltipContent side="top">Delete all</TooltipContent>
                     </Tooltip>
@@ -195,9 +196,16 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button type="button" size="icon" variant="ghost" loading={loading} onClick={() => void addScopesFromText(inputValue)}>
+                                <IconButton
+                                    type="button"
+                                    size="2xs"
+                                    variant="ghost"
+                                    label="Add scope"
+                                    loading={loading}
+                                    onClick={() => void addScopesFromText(inputValue)}
+                                >
                                     <CornerDownLeft />
-                                </Button>
+                                </IconButton>
                             </TooltipTrigger>
                             <TooltipContent side="top">Add scope</TooltipContent>
                         </Tooltip>

@@ -84,7 +84,7 @@ export const AppSidebar: React.FC = () => {
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (
-                                        <SidebarMenuAction onClick={item.onClose}>
+                                        <SidebarMenuAction onClick={item.onClose} aria-label={`Close ${item.title}`}>
                                             <X />
                                         </SidebarMenuAction>
                                     )}

@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Badge } from '@/components/ui/Badge.js';
-import { Button } from '@/components/ui/Button.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { StyledLink } from '@/components/ui/StyledLink.js';

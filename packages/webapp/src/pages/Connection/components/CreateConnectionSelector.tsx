@@ -6,10 +6,10 @@ import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
 import { IntegrationDropdown } from './IntegrationDropdown';
-import { Button } from '../../../components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
@@ -306,7 +306,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         {(allowed) => (
                                             <Button
                                                 onClick={onClickConnectUI}
-                                                size="lg"
+                                                size="xl"
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                             >
                                                 Authorize
@@ -326,8 +326,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         {(allowed) => (
                                             <Button
                                                 onClick={onClickShareConnectionLink}
-                                                size="lg"
-                                                variant="secondary"
+                                                size="xl"
+                                                variant="ghost"
                                                 loading={isShareLinkLoading}
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                             >

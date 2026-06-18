@@ -53,7 +53,7 @@ export const FunctionSwitch: React.FC<{
                 description:
                     'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.',
                 confirmButtonText: 'Disable',
-                confirmVariant: 'destructive',
+                confirmVariant: 'danger',
                 onConfirm: async () => {
                     await onDisable();
                 }

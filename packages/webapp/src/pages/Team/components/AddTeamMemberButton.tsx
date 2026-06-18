@@ -5,10 +5,10 @@ import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { RoleSelect } from './RoleSelect';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
@@ -66,7 +66,7 @@ export const AddTeamMemberButton = () => {
             <PermissionGate condition={canManageTeam}>
                 {(allowed) => (
                     <DialogTrigger asChild>
-                        <Button size="lg" disabled={!allowed}>
+                        <Button size="xl" disabled={!allowed}>
                             <Plus /> Add Team Member
                         </Button>
                     </DialogTrigger>
@@ -116,7 +116,7 @@ export const AddTeamMemberButton = () => {
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button type="submit" form="invite-form" variant="primary" loading={isPending}>
                         Invite

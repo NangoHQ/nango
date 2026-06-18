@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
 import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
 import { useToast } from '../../../../../hooks/useToast.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
-import { Button } from '@/components/ui/Button.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { useEnvironment } from '@/hooks/useEnvironment.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
@@ -44,8 +44,8 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
             <PermissionGate condition={canDeleteIntegration} asChild>
                 {(allowed) => (
                     <Button
-                        variant="destructive"
-                        size="lg"
+                        variant="danger"
+                        size="xl"
                         loading={isPending}
                         className={className}
                         disabled={!allowed}
@@ -55,7 +55,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
                                 description:
                                     'You are about to permanently delete this integration, all of its associated connections and records. This operation is not reversible, are you sure you wish to continue?',
                                 confirmButtonText: 'Delete integration, connections and records',
-                                confirmVariant: 'destructive',
+                                confirmVariant: 'danger',
                                 onConfirm: onDelete
                             })
                         }
