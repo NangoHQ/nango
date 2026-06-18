@@ -1,0 +1,49 @@
+name: 'Deploy status snapshot'
+run-name: 'Refresh deploy-status snapshot'
+
+# Keeps the deploy-status snapshot in S3 fresh so `/deploy status` in Slack is an instant read.
+# Recomputes on the only events that change deploy state: a merge to master, and a deploy
+# completing. No cron — master pushes are frequent enough to keep relative dates current.
+on:
+    push:
+        branches:
+            - master
+    workflow_run:
+        workflows: ['[Release] Deploy service']
+        types:
+            - completed
+    workflow_dispatch:
+
+permissions:
+    id-token: write # assume the AWS OIDC role to write to S3
+    contents: read
+
+# Only the latest state matters; collapse bursts of merges/deploys.
+concurrency:
+    group: deploy-status-snapshot
+    cancel-in-progress: true
+
+jobs:
+    snapshot:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # the engine walks history to compute drift
+            - name: Setup Node.js
+              uses: ./.github/actions/setup-node
+            - name: Install dependencies
+              run: npm ci
+            - name: Generate snapshot
+              env:
+                  GH_TOKEN: ${{ github.token }} # the engine reads deploy run history + PRs via gh
+              run: npx tsx scripts/deploy-status/snapshot.ts > deploy-status.json
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.DEPLOY_STATUS_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+            - name: Upload snapshot to S3
+              run: aws s3 cp deploy-status.json s3://${{ vars.DEPLOY_STATUS_BUCKET }}/deploy-status.json --content-type application/json
