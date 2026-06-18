@@ -68,7 +68,7 @@ export const RecordsTab = () => {
 const EmptyRecordsState = () => {
     return (
         <EmptyCard className="h-65 gap-3">
-            <span className="text-title-body text-text-primary">No records found.</span>
+            <span className="text-title-body text-text-strong">No records found.</span>
             <span className="text-body-medium-regular text-text-secondary">Learn how to sync records.</span>
             <Button asChild size="lg">
                 <a href={RECORDS_DOCS_URL} target="_blank" rel="noreferrer">
@@ -194,7 +194,7 @@ export const ConnectionRecordTable = ({
                 {model.count > 0 && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-body-small-regular text-text-tertiary cursor-default">{formatCountCompact(model.count)} records found</span>
+                            <span className="text-body-small-regular text-text-muted cursor-default">{formatCountCompact(model.count)} records found</span>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">{formatCount(model.count)} records</TooltipContent>
                     </Tooltip>
@@ -207,7 +207,7 @@ export const ConnectionRecordTable = ({
 
             {!error && !isLoading && records.length === 0 && (
                 <EmptyCard className="h-52 gap-3">
-                    <span className="text-title-body text-text-primary">No records found for this model.</span>
+                    <span className="text-title-body text-text-strong">No records found for this model.</span>
                     <span className="text-body-medium-regular text-text-secondary">This model currently has no synced records available to inspect.</span>
                 </EmptyCard>
             )}
@@ -227,7 +227,7 @@ export const ConnectionRecordTable = ({
                                 className="flex min-h-12 w-full items-center justify-center py-3"
                                 role="status"
                             >
-                                {isFetchingNextPage && <Loader className="size-4 animate-spin text-text-tertiary" />}
+                                {isFetchingNextPage && <Loader className="size-4 animate-spin text-text-muted" />}
                             </div>
                         )}
                     </div>

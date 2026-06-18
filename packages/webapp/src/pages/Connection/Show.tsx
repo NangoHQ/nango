@@ -5,7 +5,7 @@ import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-ro
 import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Tabs, TabsList, TabsTrigger, tabsTriggerClassName } from '@/components/ui/Tabs';
 import { useConnection } from '@/hooks/useConnections';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -125,7 +125,7 @@ export const ConnectionShow = () => {
                         ))}
                         <button
                             type="button"
-                            className="w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-primary hover:border-text-tertiary focus-default"
+                            className={tabsTriggerClassName}
                             onClick={() => {
                                 openPlaygroundWithContext({
                                     integration: integrationData.integration.unique_key,
