@@ -1,5 +1,6 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Button, buttonVariants } from '@nangohq/design-system';
@@ -25,6 +26,7 @@ import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
 
 const RECORDS_DOCS_URL = 'https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync';
 const RECORDS_PAGE_SIZE = 20;
+const RECORD_ROW_HEIGHT_PX = 44;
 
 export const RecordsTab = () => {
     const env = useStore((state) => state.env);
@@ -213,9 +215,9 @@ export const ConnectionRecordTable = ({
                 <>
                     <div
                         ref={scrollParentRef}
-                        className="max-h-[70vh] w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                        className="h-[70vh] w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                     >
-                        <RecordRowsTable records={records} onOpenPayload={setActiveRecordId} />
+                        <VirtualizedRecordRows scrollParentRef={scrollParentRef} records={records} onOpenPayload={setActiveRecordId} />
                         {hasNextPage && (
                             <div
                                 ref={loadMoreSentinelRef}
@@ -246,40 +248,72 @@ export const ConnectionRecordTable = ({
     );
 };
 
-const RecordRowsTable = ({ records, onOpenPayload }: { records: NangoRecord[]; onOpenPayload: (recordId: string) => void }) => {
-    const cellBase = 'px-6 py-2';
+const VirtualizedRecordRows = ({
+    records,
+    scrollParentRef,
+    onOpenPayload
+}: {
+    records: NangoRecord[];
+    scrollParentRef: React.RefObject<HTMLDivElement | null>;
+    onOpenPayload: (recordId: string) => void;
+}) => {
+    const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+        count: records.length,
+        getScrollElement: () => scrollParentRef.current,
+        estimateSize: () => RECORD_ROW_HEIGHT_PX,
+        measureElement:
+            typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1 ? (element) => element?.getBoundingClientRect().height : undefined,
+        overscan: 5
+    });
+
+    useLayoutEffect(() => {
+        rowVirtualizer.measure();
+    }, [records.length, rowVirtualizer]);
+
+    const cellBase = 'flex items-center px-6 py-2';
     const headerBase = `${cellBase} text-left text-body-small-semi`;
     const col = {
-        id: 'min-w-0 max-w-0 w-[50%]',
-        action: 'w-36 whitespace-nowrap',
-        modified: 'w-56 whitespace-nowrap'
+        id: 'min-w-0 flex-1 basis-0',
+        action: 'w-36 shrink-0 whitespace-nowrap',
+        modified: 'w-56 shrink-0 min-w-0 whitespace-nowrap'
     } as const;
 
     return (
-        <table className="w-full min-w-0 table-fixed text-sm text-text-strong">
-            <thead className="sticky top-0 z-10 bg-surface-canvas border-b border-border-muted">
-                <tr>
+        <table className="grid w-full min-w-0 caption-bottom border-separate border-spacing-0 text-sm text-text-strong">
+            <thead className="grid sticky top-0 z-10 bg-surface-canvas border-b border-border-muted">
+                <tr className="flex w-full">
                     <th className={cn(headerBase, col.id)}>ID</th>
                     <th className={cn(headerBase, col.action)}>Action</th>
                     <th className={cn(headerBase, col.modified)}>Modified</th>
                 </tr>
             </thead>
-            <tbody>
-                {records.map((record) => (
-                    <tr
-                        key={String(record.id)}
-                        className="cursor-pointer border-b border-border-muted hover:bg-state-selected-muted transition-colors"
-                        onClick={() => onOpenPayload(String(record.id))}
-                    >
-                        <td className={cn(cellBase, col.id, 'truncate text-body-small-regular')}>{String(record.id)}</td>
-                        <td className={cn(cellBase, col.action)}>
-                            <RecordActionBadge action={record._nango_metadata.last_action} />
-                        </td>
-                        <td className={cn(cellBase, col.modified, 'text-body-small-regular text-text-secondary')}>
-                            {formatDateToUSFormat(record._nango_metadata.last_modified_at)}
-                        </td>
-                    </tr>
-                ))}
+            <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+                {rowVirtualizer.getVirtualItems().map((vRow) => {
+                    const record = records[vRow.index];
+                    return (
+                        <tr
+                            key={String(record.id)}
+                            data-index={vRow.index}
+                            ref={(node) => rowVirtualizer.measureElement(node)}
+                            className={cn(
+                                'absolute left-0 flex w-full cursor-pointer border-b border-border-muted hover:bg-state-selected-muted',
+                                'transition-colors'
+                            )}
+                            style={{
+                                transform: `translateY(${vRow.start}px)`
+                            }}
+                            onClick={() => onOpenPayload(String(record.id))}
+                        >
+                            <td className={cn(cellBase, col.id, 'truncate text-body-small-regular')}>{String(record.id)}</td>
+                            <td className={cn(cellBase, col.action)}>
+                                <RecordActionBadge action={record._nango_metadata.last_action} />
+                            </td>
+                            <td className={cn(cellBase, col.modified, 'text-body-small-regular text-text-secondary')}>
+                                {formatDateToUSFormat(record._nango_metadata.last_modified_at)}
+                            </td>
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     );
