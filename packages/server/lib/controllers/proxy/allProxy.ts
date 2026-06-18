@@ -1,5 +1,3 @@
-import { PassThrough } from 'node:stream';
-
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
 
@@ -30,7 +28,7 @@ import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Request, Response } from 'express';
-import type { OutgoingHttpHeaders } from 'node:http';
+import type { OutgoingHttpHeader, OutgoingHttpHeaders } from 'node:http';
 import type { Readable } from 'node:stream';
 
 type ForwardedHeaders = Record<string, string>;
@@ -64,6 +62,19 @@ const PROXY_RESPONSE_HEADER_ALLOWLIST = [
     'x-request-id',
     'x-correlation-id'
 ];
+
+// Transport headers describe a single HTTP hop and must be regenerated for
+// the Nango-to-client response rather than copied from the provider response.
+const PROXY_STREAM_RESPONSE_HOP_BY_HOP_HEADERS = new Set([
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailer',
+    'transfer-encoding',
+    'upgrade'
+]);
 
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
@@ -422,6 +433,34 @@ function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined 
     return ceIdx !== -1 && ceIdx + 1 < rawHeaders.length && Boolean(rawHeaders[ceIdx + 1]);
 }
 
+function isOutgoingHttpHeader(value: unknown): value is OutgoingHttpHeader {
+    return typeof value === 'string' || typeof value === 'number' || (Array.isArray(value) && value.every((item) => typeof item === 'string'));
+}
+
+function sanitizeStreamResponseHeaders(headers: Record<string, unknown>, { stripContentLength }: { stripContentLength: boolean }) {
+    const connectionHeader = headers['connection'];
+    const connectionTokens = new Set(
+        (Array.isArray(connectionHeader) ? connectionHeader.join(',') : typeof connectionHeader === 'string' ? connectionHeader : '')
+            .split(',')
+            .map((token) => token.trim().toLowerCase())
+            .filter(Boolean)
+    );
+
+    const sanitized: OutgoingHttpHeaders = {};
+    for (const [name, value] of Object.entries(headers)) {
+        const lowerName = name.toLowerCase();
+        if (
+            isOutgoingHttpHeader(value) &&
+            !PROXY_STREAM_RESPONSE_HOP_BY_HOP_HEADERS.has(lowerName) &&
+            !connectionTokens.has(lowerName) &&
+            !(stripContentLength && lowerName === 'content-length')
+        ) {
+            sanitized[name] = value;
+        }
+    }
+    return sanitized;
+}
+
 export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
@@ -430,15 +469,13 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
     if (isChunked || isAttachmentOrInline) {
-        const passthroughHeaders = Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders;
-        if (checkWasCompressed(responseStream)) {
-            // axios decompressed the response, so the `content-length` header is no longer valid
-            delete passthroughHeaders['content-length'];
-        }
-        const passThroughStream = new PassThrough();
-        responseStream.data.pipe(passThroughStream);
-        passThroughStream.pipe(res);
-        res.writeHead(responseStream.status, passthroughHeaders);
+        const responseHeaders = sanitizeStreamResponseHeaders(responseStream.headers, {
+            // Chunked framing belongs to the provider-to-Nango hop. Axios can
+            // also decompress the body, invalidating the provider's length.
+            stripContentLength: isChunked || checkWasCompressed(responseStream) === true
+        });
+        res.writeHead(responseStream.status, responseHeaders);
+        responseStream.data.pipe(res);
 
         metrics.increment(metrics.Types.PROXY_SUCCESS);
         await logCtx.success();
