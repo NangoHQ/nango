@@ -4,6 +4,7 @@ import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
 import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { logger } from '../utils.js';
 
 import type { Transport } from '@nangohq/pubsub';
@@ -25,11 +26,12 @@ export class UsageProcessor {
     }
 
     public start(): void {
-        logger.info('Starting usage subscriber...');
+        logger.info('Starting usage subscriber...', { concurrency: envs.METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY });
 
         this.subscriber.subscribe({
             consumerGroup: 'billing', // Legacy name for backward compatibility and avoid processing duplication
             subject: 'usage',
+            concurrency: envs.METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY,
             callback: async (event) => {
                 const result = await this.process(event);
                 if (result.isErr()) {
