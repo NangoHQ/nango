@@ -14,7 +14,7 @@ export const BREAKDOWN_DIMENSIONS = {
     function_executions: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     function_compute_gbms: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     function_logs: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
-    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'direction', 'package', 'callsite']
+    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'package', 'callsite']
 } as const satisfies { [M in UsageMetric]: readonly BreakdownDimensions[M][] };
 
 /** Union of every breakdown dimension across all metrics. */
@@ -38,7 +38,6 @@ export const DIMENSION_LABELS: Record<AnyBreakdownDimension, string> = {
     function_type: 'Function type',
     success: 'Status',
     environment_id: 'Environment',
-    direction: 'Direction',
     package: 'Package',
     callsite: 'Callsite'
 };

@@ -39,7 +39,7 @@ export const BREAKDOWN_DIMENSIONS = {
     webhook_forwards: ['environment_id', 'integration_id', 'connection_id', 'success'],
     records: ['environment_id', 'integration_id', 'connection_id', 'model'],
     connections: ['environment_id', 'integration_id'],
-    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'direction', 'package', 'callsite']
+    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'package', 'callsite']
 } as const satisfies { [M in keyof BreakdownDimensions]: readonly BreakdownDimensions[M][] };
 
 export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): boolean {

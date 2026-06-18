@@ -86,22 +86,22 @@ describe('Clickhouse', () => {
                 genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
                 genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } }),
                 // data_transfer
-                // day 0: 3 egress events × 1000 bytes = 3000 bytes egress
+                // day 0: 3 events × 1000 bytes via runner = 3000 bytes
                 ...genEventsN({
                     n: 3,
                     date: dayFromNow(),
                     type: 'usage.data_transfer',
                     accountId,
-                    attributes: { direction: 'egress', package: 'runner', callsite: 'test' },
+                    attributes: { egressedBytes: 1000, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
                     value: 1000
                 }),
-                // day 1: 2 ingress events × 500 bytes = 1000 bytes ingress
+                // day 1: 2 events × 500 bytes via server = 1000 bytes
                 ...genEventsN({
                     n: 2,
                     date: dayFromNow(1),
                     type: 'usage.data_transfer',
                     accountId,
-                    attributes: { direction: 'ingress', package: 'server', callsite: 'test' },
+                    attributes: { egressedBytes: 0, ingressedBytes: 500, package: 'server', callsite: 'proxy' },
                     value: 500
                 }),
                 // different account (must be excluded)
@@ -110,7 +110,7 @@ describe('Clickhouse', () => {
                     date: dayFromNow(),
                     type: 'usage.data_transfer',
                     accountId: 999,
-                    attributes: { direction: 'egress', package: 'runner', callsite: 'test' },
+                    attributes: { egressedBytes: 100, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
                     value: 100
                 }),
                 // out of timeframe (must be excluded)
@@ -119,7 +119,7 @@ describe('Clickhouse', () => {
                     type: 'usage.data_transfer',
                     accountId,
                     value: 999,
-                    attributes: { direction: 'egress', package: 'server', callsite: 'test' }
+                    attributes: { egressedBytes: 999, ingressedBytes: 0, package: 'server', callsite: 'proxy' }
                 })
             ]);
             await clickhouse.flush(); // force flush to make sure all events are ingested before we query
@@ -294,20 +294,20 @@ describe('Clickhouse', () => {
                 });
             });
 
-            it('data_transfer broken down by direction', async () => {
-                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'direction', timeframe: { start, end } });
+            it('data_transfer broken down by package', async () => {
+                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'package', timeframe: { start, end } });
                 expect(res.unwrap()).toStrictEqual({
                     accountId,
                     metric: 'data_transfer',
                     series: [
                         {
-                            dimension: 'direction',
-                            dimensionValue: 'egress',
+                            dimension: 'package',
+                            dimensionValue: 'runner',
                             days: [{ day: dayFromNow(), value: 3000 }]
                         },
                         {
-                            dimension: 'direction',
-                            dimensionValue: 'ingress',
+                            dimension: 'package',
+                            dimensionValue: 'server',
                             days: [{ day: dayFromNow(1), value: 1000 }]
                         }
                     ]
@@ -1094,9 +1094,10 @@ function genEvent({
                 value,
                 attributes: {
                     ...baseAttributes,
-                    direction: 'egress',
+                    egressedBytes: 0,
+                    ingressedBytes: 0,
                     package: 'runner',
-                    callsite: 'test',
+                    callsite: 'proxy',
                     ...attributes
                 }
             };
