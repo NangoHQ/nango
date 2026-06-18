@@ -1,4 +1,4 @@
-import { ProxyRequest, configService, connectionService, getProxyConfiguration, makeDataTransferEvents, pubsub } from '@nangohq/shared';
+import { ProxyRequest, configService, connectionService, getProxyConfiguration, makeDataTransferEvent, pubsub } from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
@@ -53,18 +53,17 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     return { oauth_client_id: null, oauth_client_secret: null };
                 },
                 onBytes: (meteredBytes) => {
-                    const events = makeDataTransferEvents(
-                        'server',
-                        'connection_hook',
-                        accountId,
-                        connection.connection_id,
-                        connection.provider_config_key,
-                        connection.environment_id,
-                        meteredBytes
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'connection_hook',
+                            accountId,
+                            connectionId: connection.connection_id,
+                            integrationId: connection.provider_config_key,
+                            environmentId: connection.environment_id,
+                            meteredBytes
+                        })
                     );
-                    if (events.length > 0) {
-                        void pubsub.publisher.publishBatch({ subject: 'usage', events });
-                    }
                 }
             });
             const response = (await proxyInstance.request()).unwrap();

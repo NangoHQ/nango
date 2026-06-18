@@ -215,6 +215,21 @@ describe('createMeteringTransport (socket bytes)', () => {
         expect(fires).toHaveLength(1);
     });
 
+    it('does not fire onBytes when request is destroyed before any bytes are written', async () => {
+        handle = await startServer((_req, res) => res.end('ok'));
+        const { port } = handle;
+
+        const fires: MeteredBytes[] = [];
+        const transport = createMeteringTransport((c) => fires.push({ ...c }));
+        // Destroy before req.end() so no HTTP headers are flushed — sent and received both remain 0.
+        const req = transport.request({ host: '127.0.0.1', port, method: 'GET', path: '/' }, () => {});
+        req.destroy();
+        req.on('error', () => {});
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(fires).toHaveLength(0);
+    });
+
     it('produces independent deltas across sequential requests on a keep-alive agent', async () => {
         let callCount = 0;
         const largeBody = Buffer.alloc(2000, 'a');
@@ -315,6 +330,40 @@ describe('createMeteringTransport (socket bytes)', () => {
                 await closeServer(targetHandle);
             }
         });
+    });
+
+    it('does not fire onBytes when keep-alive socket reuse produces zero byte delta', async () => {
+        // A keep-alive socket may already have bytesRead/bytesWritten > 0 from a prior request.
+        // If the next request completes with 0 delta bytes (e.g. aborted before any I/O), onBytes
+        // must not fire to avoid emitting a zero-value event to the metering pipeline.
+        handle = await startServer((_req, res) => res.end('ok'));
+        const agent = new http.Agent({ keepAlive: true });
+
+        const fires: MeteredBytes[] = [];
+        const transport = createMeteringTransport((c) => fires.push({ ...c }));
+        const { port } = handle;
+
+        // First request — establishes the keep-alive connection and accumulates socket bytes.
+        await new Promise<void>((resolve, reject) => {
+            const req = transport.request({ agent, host: '127.0.0.1', port, method: 'GET', path: '/' }, (res) => {
+                void drainResponse(res)
+                    .then(() => resolve())
+                    .catch(reject);
+            });
+            req.on('error', reject);
+            req.end();
+        });
+        const firstFires = fires.length;
+
+        // Simulate a request that would produce startRead === sock.bytesRead by destroying the socket
+        // immediately — the delta for sent and received both remain 0, so onBytes must be suppressed.
+        const req2 = transport.request({ agent, host: '127.0.0.1', port, method: 'GET', path: '/' }, () => {});
+        req2.destroy();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // Only the first request should have fired; the destroyed request had 0-byte delta.
+        expect(fires).toHaveLength(firstFires);
+        agent.destroy();
     });
 
     it('does not double-fire when both request write and response read complete', async () => {

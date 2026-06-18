@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { ProxyRequest, getProvider, getProxyConfiguration, makeDataTransferEvents, pubsub } from '@nangohq/shared';
+import { ProxyRequest, getProvider, getProxyConfiguration, makeDataTransferEvent, pubsub } from '@nangohq/shared';
 
 import * as verificationscriptHandlers from './index.js';
 
@@ -116,18 +116,17 @@ async function execute(
                         oauth_client_secret: null
                     }),
                     onBytes: (meteredBytes) => {
-                        const events = makeDataTransferEvents(
-                            'server',
-                            'credential_verification_hook',
-                            accountId,
-                            connectionId,
-                            config.unique_key,
-                            config.environment_id,
-                            meteredBytes
+                        void pubsub.publisher.publish(
+                            makeDataTransferEvent({
+                                pkg: 'server',
+                                callsite: 'credential_verification_hook',
+                                accountId,
+                                connectionId,
+                                integrationId: config.unique_key,
+                                environmentId: config.environment_id,
+                                meteredBytes
+                            })
                         );
-                        if (events.length > 0) {
-                            void pubsub.publisher.publishBatch({ subject: 'usage', events });
-                        }
                     }
                 });
                 return (await proxy.request()).unwrap();

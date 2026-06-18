@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { NangoError, customerKeyService, externalWebhookService, getProvider, makeDataTransferEvents, pubsub } from '@nangohq/shared';
+import { NangoError, customerKeyService, externalWebhookService, getProvider, makeDataTransferEvent, pubsub } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
@@ -135,16 +135,16 @@ export async function routeWebhook({
             logContextGetter,
             onBytes: (bytes, connectionId) => {
                 pendingEvents.push(
-                    ...makeDataTransferEvents(
-                        'server',
-                        'webhook_forward',
-                        account.id,
+                    makeDataTransferEvent({
+                        pkg: 'server',
+                        callsite: 'webhook_forward',
+                        accountId: account.id,
                         connectionId,
-                        integration.unique_key,
-                        environment.id,
-                        bytes,
-                        environment.name
-                    )
+                        integrationId: integration.unique_key,
+                        environmentId: environment.id,
+                        meteredBytes: bytes,
+                        environmentName: environment.name
+                    })
                 );
             }
         })

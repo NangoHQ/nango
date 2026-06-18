@@ -9,7 +9,7 @@ import {
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
-    makeDataTransferEvents,
+    makeDataTransferEvent,
     productTracking,
     pubsub,
     syncManager
@@ -449,18 +449,17 @@ export async function credentialsTest({
                     oauth_client_secret: config.oauth_client_secret
                 }),
                 onBytes: (meteredBytes) => {
-                    const events = makeDataTransferEvents(
-                        'server',
-                        'credential_test_hook',
-                        logCtx.accountId,
-                        connectionId,
-                        config.unique_key,
-                        config.environment_id,
-                        meteredBytes
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'credential_test_hook',
+                            accountId: logCtx.accountId,
+                            connectionId,
+                            integrationId: config.unique_key,
+                            environmentId: config.environment_id,
+                            meteredBytes
+                        })
                     );
-                    if (events.length > 0) {
-                        void pubsub.publisher.publishBatch({ subject: 'usage', events });
-                    }
                 }
             });
 

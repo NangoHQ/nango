@@ -159,7 +159,8 @@ export type UsageDataTransferEvent = UsageEventBase<
         properties: {
             package: 'server' | 'runner' | 'shared';
             callsite: string;
-            direction: 'ingress' | 'egress';
+            ingressedBytes: number;
+            egressedBytes: number;
             syncId?: string;
         };
     }
