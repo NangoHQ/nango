@@ -43,7 +43,7 @@ export const SettingsTab = () => {
     return (
         <>
             {DialogComponent}
-            <ConnectionSideInfo connectionData={connectionData}>
+            <div className="flex justify-between items-start gap-11">
                 <div className="w-full flex items-center justify-between">
                     <span className="text-body-medium-semi text-text-strong">Connection deletion</span>
                     <PermissionGate condition={canDeleteConnection} asChild>
@@ -69,7 +69,8 @@ export const SettingsTab = () => {
                         )}
                     </PermissionGate>
                 </div>
-            </ConnectionSideInfo>
+                <ConnectionSideInfo connectionData={connectionData} />
+            </div>
         </>
     );
 };

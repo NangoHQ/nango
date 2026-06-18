@@ -3,10 +3,11 @@ import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { Button, buttonVariants } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
@@ -70,12 +71,10 @@ const EmptyRecordsState = () => {
         <EmptyCard className="h-65 gap-3">
             <span className="text-title-body text-text-strong">No records found.</span>
             <span className="text-body-medium-regular text-text-secondary">Learn how to sync records.</span>
-            <Button asChild size="lg">
-                <a href={RECORDS_DOCS_URL} target="_blank" rel="noreferrer">
-                    View docs
-                    <ArrowUpRight />
-                </a>
-            </Button>
+            <a href={RECORDS_DOCS_URL} target="_blank" rel="noreferrer" className={cn(buttonVariants({ size: 'lg' }))}>
+                View docs
+                <ArrowUpRight />
+            </a>
         </EmptyCard>
     );
 };
@@ -93,7 +92,7 @@ const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
             <AlertActions>
                 <Button
                     variant="ghost"
-                    size="icon"
+                    size="xs"
                     className="text-status-info-text hover:text-status-info-text"
                     onClick={onClose}
                     aria-label="Dismiss records docs banner"
