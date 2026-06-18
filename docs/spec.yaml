@@ -68,7 +68,7 @@ paths:
     /providers/{provider}/templates:
         get:
             summary: List provider templates
-            description: Returns the template functions available in the catalog for a provider. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the template functions available in the catalog for a provider. Requires a valid API key (no specific scope).
             parameters:
                 - name: provider
                   in: path
@@ -502,7 +502,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}/code:
         get:
             summary: Get a function's source code
-            description: Returns the TypeScript source code of a function for a given integration.
+            description: Returns the TypeScript source code of a function for a given integration. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
