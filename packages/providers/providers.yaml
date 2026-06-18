@@ -16612,7 +16612,7 @@ reply-io:
         verification:
             method: GET
             endpoints:
-                - /v1/campaigns
+                - /v3/whoami
     docs: https://nango.dev/docs/api-integrations/reply-io
     docs_connect: https://nango.dev/docs/api-integrations/reply-io/connect
     credentials:
