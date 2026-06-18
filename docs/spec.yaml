@@ -1743,7 +1743,10 @@ paths:
         post:
             operationId: createFunctionDeployment
             summary: Create a function deployment
-            description: Deploys TypeScript function source code to an existing integration.
+            description: |
+                Deploys a function to an existing integration. Use `type: function` to deploy submitted TypeScript
+                source code (asynchronous), or `type: template` to deploy a template from the provider catalog
+                (synchronous; returns the deployed function).
             requestBody:
                 required: true
                 content:
@@ -1752,11 +1755,29 @@ paths:
                             $ref: '#/components/schemas/FunctionDeploymentRequest'
             responses:
                 '200':
-                    description: Successfully deployed the function.
+                    description: |
+                        Deployment record. For `type=function` the deploy is asynchronous, so `status` is `waiting`/`running`
+                        and the deployment is polled via `GET /functions/deployments/{id}`. For `type=template` the deploy is
+                        synchronous, so `status` is already terminal (`success`/`failed`).
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/FunctionDeployResponse'
+                                $ref: '#/components/schemas/FunctionDeploymentResponse'
+                '409':
+                    description: The template is already deployed, or the template name is ambiguous and `function_type` is required.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [template_already_deployed, ambiguous_function]
+                                            message:
+                                                type: string
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -3427,6 +3448,16 @@ components:
                             description: Optional error payload.
 
         FunctionDeploymentRequest:
+            oneOf:
+                - $ref: '#/components/schemas/FunctionDeploymentCodeRequest'
+                - $ref: '#/components/schemas/FunctionDeploymentTemplateRequest'
+            discriminator:
+                propertyName: type
+                mapping:
+                    function: '#/components/schemas/FunctionDeploymentCodeRequest'
+                    template: '#/components/schemas/FunctionDeploymentTemplateRequest'
+
+        FunctionDeploymentCodeRequest:
             type: object
             additionalProperties: false
             required:
@@ -3439,7 +3470,7 @@ components:
                 type:
                     type: string
                     enum: [function]
-                    description: Deploy a submitted function.
+                    description: Deploy submitted function source code.
                 integration_id:
                     type: string
                     description: The integration ID (unique_key) that you created in Nango.
@@ -3458,6 +3489,45 @@ components:
                 allow_destructive:
                     type: boolean
                     description: Allow overwriting an existing standalone function with the same name.
+
+        FunctionDeploymentTemplateRequest:
+            type: object
+            additionalProperties: false
+            required:
+                - type
+                - integration_id
+                - template
+            properties:
+                type:
+                    type: string
+                    enum: [template]
+                    description: Deploy a template from the provider catalog onto the integration.
+                integration_id:
+                    type: string
+                    description: The integration ID (unique_key) that you created in Nango.
+                template:
+                    type: string
+                    description: The template name to deploy, as listed by `GET /providers/{provider}/templates`.
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+
+        FunctionDeploymentResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - id
+                - status
+                - created_at
+            properties:
+                id:
+                    type: string
+                status:
+                    type: string
+                    enum: [waiting, running, success, failed]
+                    description: Async `function` deploys start at `waiting`/`running` (poll for completion); synchronous `template` deploys return a terminal `success`/`failed`.
+                created_at:
+                    type: string
+                    format: date-time
 
         FunctionDeployResponse:
             type: object

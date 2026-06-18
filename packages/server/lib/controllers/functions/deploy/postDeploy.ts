@@ -7,9 +7,10 @@ import {
     toFunctionDeploymentCreate
 } from '@nangohq/sandbox';
 import { configService, getSyncConfigRaw } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { deployIntegrationTemplate } from '../../v1/flows/preBuilt/helpers.js';
 import { sendStepError } from '../errors.js';
 import { getFunctionCallbackBaseUrl } from '../helpers.js';
 import { functionDeploymentBodySchema } from '../validation.js';
@@ -40,6 +41,66 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
 
     const body = valBody.data;
     const { environment } = res.locals;
+
+    if (body.type === 'template') {
+        const { account, plan, user } = res.locals;
+        const outcome = await deployIntegrationTemplate({
+            environment,
+            account,
+            plan,
+            user,
+            providerConfigKey: body.integration_id,
+            name: body.template,
+            type: body.function_type
+        });
+
+        if (!outcome.ok) {
+            switch (outcome.reason) {
+                case 'integration_not_found':
+                    res.status(404).send({ error: { code: 'integration_not_found', message: `Integration '${body.integration_id}' was not found` } });
+                    return;
+                case 'template_not_found':
+                    res.status(404).send({
+                        error: { code: 'template_not_found', message: `No template named '${body.template}' exists for this integration` }
+                    });
+                    return;
+                case 'ambiguous_template':
+                    res.status(409).send({
+                        error: {
+                            code: 'ambiguous_function',
+                            message: `'${body.template}' exists as both a sync and an action; specify 'function_type' to disambiguate`
+                        }
+                    });
+                    return;
+                case 'plan_limit':
+                    res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more functions, upgrade or extend your trial period" } });
+                    return;
+                case 'template_already_deployed':
+                    res.status(409).send({
+                        error: { code: 'template_already_deployed', message: `'${body.template}' is already deployed on this integration` }
+                    });
+                    return;
+                default:
+                    if (outcome.cause) {
+                        report(outcome.cause);
+                    }
+                    res.status(500).send({ error: { code: 'deployment_error', message: 'Failed to deploy the template' } });
+                    return;
+            }
+        }
+
+        const deployedId = outcome.result.id;
+        if (deployedId === undefined) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Template deployed but no function id was returned' } });
+            return;
+        }
+
+        // Template deploys run synchronously, so the response carries a terminal status — matching the shape the
+        // async `function` variant returns (which starts at waiting/running and is polled to completion).
+        res.status(200).send({ id: String(deployedId), status: 'success', created_at: new Date().toISOString() });
+        return;
+    }
+
     const parentCustomerKeyId = requireCustomerKeyId(res, 'Function deployments can only be started from a customer API key');
     if (!parentCustomerKeyId) {
         return;

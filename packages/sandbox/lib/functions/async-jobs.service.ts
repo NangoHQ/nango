@@ -5,7 +5,7 @@ import { deploySandboxTimeoutMs, dryrunSandboxTimeoutMs } from './timeouts.js';
 
 import type {
     FunctionAsyncJobStatus,
-    FunctionDeploymentBody,
+    FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
     FunctionDeploymentResultSuccess,
     FunctionDryrunBody,
@@ -27,7 +27,7 @@ export interface FunctionDryrunStoredRequest extends FunctionDryrunBody {
     function_name: string;
 }
 
-export type FunctionDeploymentStoredRequest = FunctionDeploymentBody;
+export type FunctionDeploymentStoredRequest = FunctionDeploymentCodeBody;
 
 export type FunctionAsyncJobStoredRequest = FunctionDryrunStoredRequest | FunctionDeploymentStoredRequest;
 
