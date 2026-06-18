@@ -1,6 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Button, buttonVariants } from '@nangohq/design-system';
@@ -27,6 +27,8 @@ import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
 const RECORDS_DOCS_URL = 'https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync';
 const RECORDS_PAGE_SIZE = 20;
 const RECORD_ROW_HEIGHT_PX = 44;
+const RECORD_HEADER_HEIGHT_PX = 44;
+const LOAD_MORE_SENTINEL_HEIGHT_PX = 48;
 
 export const RecordsTab = () => {
     const env = useStore((state) => state.env);
@@ -153,6 +155,7 @@ export const ConnectionRecordTable = ({
     );
 
     const records = data?.pages.flatMap((page) => page.records) || [];
+    const scrollContainerHeight = useMemo(() => getRecordScrollContainerHeight(records.length, Boolean(hasNextPage)), [records.length, hasNextPage]);
     const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
     const scrollParentRef = useRef<HTMLDivElement>(null);
     const loadMoreSentinelRef = useRef<HTMLDivElement>(null);
@@ -215,7 +218,8 @@ export const ConnectionRecordTable = ({
                 <>
                     <div
                         ref={scrollParentRef}
-                        className="h-[70vh] w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                        className="w-full min-w-0 overflow-auto rounded border border-border-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                        style={{ height: scrollContainerHeight }}
                     >
                         <VirtualizedRecordRows scrollParentRef={scrollParentRef} records={records} onOpenPayload={setActiveRecordId} />
                         {hasNextPage && (
@@ -270,8 +274,8 @@ const VirtualizedRecordRows = ({
         rowVirtualizer.measure();
     }, [records.length, rowVirtualizer]);
 
-    const cellBase = 'flex items-center px-6 py-2';
-    const headerBase = `${cellBase} text-left text-body-small-semi`;
+    const cellBase = 'flex items-center px-6';
+    const headerBase = `${cellBase} h-11 text-left text-body-small-semi`;
     const col = {
         id: 'min-w-0 flex-1 basis-0',
         action: 'w-36 shrink-0 whitespace-nowrap',
@@ -281,7 +285,7 @@ const VirtualizedRecordRows = ({
     return (
         <table className="grid w-full min-w-0 caption-bottom border-separate border-spacing-0 text-sm text-text-strong">
             <thead className="grid sticky top-0 z-10 bg-surface-canvas border-b border-border-muted">
-                <tr className="flex w-full">
+                <tr className="flex h-11 w-full">
                     <th className={cn(headerBase, col.id)}>ID</th>
                     <th className={cn(headerBase, col.action)}>Action</th>
                     <th className={cn(headerBase, col.modified)}>Modified</th>
@@ -296,7 +300,7 @@ const VirtualizedRecordRows = ({
                             data-index={vRow.index}
                             ref={(node) => rowVirtualizer.measureElement(node)}
                             className={cn(
-                                'absolute left-0 flex w-full cursor-pointer border-b border-border-muted hover:bg-state-selected-muted',
+                                'absolute left-0 flex h-11 w-full cursor-pointer border-b border-border-muted hover:bg-state-selected-muted',
                                 'transition-colors'
                             )}
                             style={{
@@ -399,6 +403,12 @@ function formatCount(count: number) {
 
 function formatCountCompact(count: number) {
     return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(count).toLowerCase();
+}
+
+function getRecordScrollContainerHeight(recordCount: number, hasNextPage: boolean): string {
+    const contentHeightPx = RECORD_HEADER_HEIGHT_PX + recordCount * RECORD_ROW_HEIGHT_PX + (hasNextPage ? LOAD_MORE_SENTINEL_HEIGHT_PX : 0);
+
+    return `min(70vh, ${contentHeightPx}px)`;
 }
 
 function RecordActionBadge({ action }: { action: string }) {
