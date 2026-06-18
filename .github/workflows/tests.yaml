@@ -73,9 +73,16 @@ jobs:
             - run: npm run test:unit -- --exclude packages/cli/
               if: needs.should-run.outputs.should_skip != 'true'
 
-    tests-integration:
+    # Integration tests run fully serially within a process (shared Postgres/ES),
+    # so we shard the file set across parallel runners to cut wall-clock time.
+    # Each shard spins up its own containers and stays internally serial.
+    tests-integration-shards:
         needs: should-run
         runs-on: blacksmith-4vcpu-ubuntu-2404
+        strategy:
+            fail-fast: false
+            matrix:
+                shard: [1, 2, 3, 4]
         steps:
             - name: Checkout
               if: needs.should-run.outputs.should_skip != 'true'
@@ -93,5 +100,21 @@ jobs:
             - run: npm run ts-build
               if: needs.should-run.outputs.should_skip != 'true'
 
-            - run: npm run test:integration
+            - run: npm run test:integration -- --shard=${{ matrix.shard }}/4
               if: needs.should-run.outputs.should_skip != 'true'
+
+    # Aggregates the sharded runs into the single `tests-integration` required status check.
+    tests-integration:
+        needs: [should-run, tests-integration-shards]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Verify all integration shards passed
+              run: |
+                  result="${{ needs.tests-integration-shards.result }}"
+                  if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+                      echo "Integration shards: $result"
+                      exit 0
+                  fi
+                  echo "Integration shards did not pass: $result"
+                  exit 1
