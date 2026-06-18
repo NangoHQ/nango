@@ -34,7 +34,13 @@ export default defineConfig({
         },
         fileParallelism: false,
         pool: 'forks',
-        // Vitest 4 removed test.poolOptions; poolOptions.forks.singleFork is now maxWorkers: 1.
-        maxWorkers: 1
+        // vitest 3's poolOptions.forks.singleFork ran every file in ONE long-lived fork, so the
+        // module graph was imported once. The vitest 4 equivalent is maxWorkers: 1 + isolate: false.
+        // Without isolate: false, each of the ~138 files gets a fresh fork and re-imports the whole
+        // graph (~minutes of redundant module loading, amplified by runner contention). Reusing one
+        // fork relies on the suite already being order-independent (it runs serially against shared
+        // Postgres/ES today), so no extra isolation is lost.
+        maxWorkers: 1,
+        isolate: false
     }
 });
