@@ -109,7 +109,7 @@ function startProcedure() {
                     try {
                         await usage.trackForConflicts(taskId, { refresh: true });
                     } catch (err) {
-                        logger.error('Failed to update conflict tracking with new ttl', { error: err });
+                        logger.error('Failed to update conflict tracking with new ttl', { error: err, taskId });
                     }
                 }, heartbeatIntervalMs);
 
