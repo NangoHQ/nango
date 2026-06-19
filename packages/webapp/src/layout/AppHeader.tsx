@@ -39,7 +39,12 @@ export const AppHeader: React.FC = () => {
                         <BookOpen />
                     </a>
                 </IconButton>
-                <IconButton variant="outline" size="md" label="Help" onClick={() => window.Plain?.open()}>
+                <IconButton
+                    variant="outline"
+                    size="md"
+                    label="Help"
+                    onClick={() => (window.Plain ? window.Plain.open() : window.open('https://nango.dev/slack', '_blank', 'noopener,noreferrer'))}
+                >
                     <HelpIcon />
                 </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>
