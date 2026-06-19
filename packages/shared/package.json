@@ -51,7 +51,7 @@
         "oauth-1.0a": "2.2.6",
         "parse-link-header": "2.0.0",
         "posthog-node": "5.37.1",
-        "qs": "6.15.0",
+        "qs": "6.15.2",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
         "undici": "6.24.1",
