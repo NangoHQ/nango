@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { envs } from './env.js';
 import {
     resolveBillingUsageSource,
-    resolveCappingSource,
     shouldShadow,
     shouldShadowCapping,
     shouldUseClickhouseFor,
@@ -478,35 +477,5 @@ describe('resolveBillingUsageSource', () => {
         (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '42';
         expect(resolveBillingUsageSource(42, undefined)).toBe('clickhouse');
         expect(resolveBillingUsageSource(7, undefined)).toBe('orb');
-    });
-});
-
-describe('resolveCappingSource', () => {
-    let originalPct: number;
-    beforeEach(() => {
-        originalPct = envs.FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE;
-    });
-    afterEach(() => {
-        (envs as any).FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE = originalPct;
-    });
-
-    it('returns orb when pct = 0 (killswitch)', () => {
-        (envs as any).FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
-        expect(resolveCappingSource(0)).toBe('orb');
-        expect(resolveCappingSource(99)).toBe('orb');
-    });
-
-    it('returns clickhouse for every account when pct >= 100', () => {
-        (envs as any).FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE = 100;
-        expect(resolveCappingSource(0)).toBe('clickhouse');
-        expect(resolveCappingSource(99)).toBe('clickhouse');
-    });
-
-    it('buckets accounts by accountId % 100 < pct', () => {
-        (envs as any).FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE = 25;
-        expect(resolveCappingSource(24)).toBe('clickhouse');
-        expect(resolveCappingSource(25)).toBe('orb');
-        expect(resolveCappingSource(124)).toBe('clickhouse');
-        expect(resolveCappingSource(125)).toBe('orb');
     });
 });
