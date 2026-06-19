@@ -49,18 +49,14 @@ export class UsageProcessor {
     }
 
     public async process(event: UsageEvent): Promise<Result<void>> {
-        const span = tracer.startSpan('nango.metering.usage.process', {
-            tags: { event_type: event.type }
-        });
-        try {
+        return tracer.trace<Promise<Result<void>>>('nango.metering.usage.process', async (span) => {
+            span.setTag('event_type', event.type);
             const result = await this._process(event);
             if (result.isErr()) {
-                span?.setTag('error', result.error);
+                span.setTag('error', result.error);
             }
             return result;
-        } finally {
-            span?.finish();
-        }
+        });
     }
 
     private async _process(event: UsageEvent): Promise<Result<void>> {

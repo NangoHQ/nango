@@ -221,7 +221,7 @@ export class UsageTracker implements IUsageTracker {
 
     public async getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>> {
         const now = new Date();
-        const result: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
+        const results: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
         await Promise.all(
             Object.keys(usageMetrics).map(async (metric) => {
                 const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
@@ -230,19 +230,19 @@ export class UsageTracker implements IUsageTracker {
                     metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
                     return;
                 }
-                const cacheResult = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
-                if (cacheResult !== 'fresh') {
+                const result = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+                if (result !== 'fresh') {
                     void this.revalidate({ accountId, metric: metric as UsageMetric });
                 }
-                metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: cacheResult });
-                result[metric as UsageMetric] = {
+                metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result });
+                results[metric as UsageMetric] = {
                     accountId,
                     metric: metric as UsageMetric,
                     current: entry.value?.count || 0
                 };
             })
         );
-        return Ok(result);
+        return Ok(results);
     }
 
     public async incr({
