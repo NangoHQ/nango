@@ -1,4 +1,4 @@
-import { BookOpen, Box, LifeBuoy, Moon, Sun } from 'lucide-react';
+import { BookOpen, Box, MessageCircle, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
@@ -39,10 +39,8 @@ export const AppHeader: React.FC = () => {
                         <BookOpen />
                     </a>
                 </IconButton>
-                <IconButton asChild variant="outline" size="md" label="Help">
-                    <a href="https://nango.dev/slack" target="_blank" rel="noreferrer">
-                        <LifeBuoy />
-                    </a>
+                <IconButton variant="outline" size="md" label="Help" onClick={() => window.Plain?.open()}>
+                    <MessageCircle />
                 </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>
                     {darkMode ? <Sun /> : <Moon />}
