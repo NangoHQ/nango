@@ -15,7 +15,7 @@ export const taskAbortParamsSchema = z
 
 export const syncConflictBodySchema = z
     .object({
-        scriptType: z.string().min(1),
+        scriptType: z.literal('sync'),
         syncId: z.string().min(1),
         refresh: z.boolean().optional().default(false)
     })

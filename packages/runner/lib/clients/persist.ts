@@ -439,7 +439,7 @@ export class PersistClient {
         refresh = false
     }: {
         environmentId: number;
-        scriptType: string;
+        scriptType: 'sync';
         syncId: string;
         refresh?: boolean;
     }): Promise<Result<void>> {
@@ -463,7 +463,7 @@ export class PersistClient {
         syncId
     }: {
         environmentId: number;
-        scriptType: string;
+        scriptType: 'sync';
         syncId: string;
     }): Promise<Result<void>> {
         const res = await this.fetch<void>({

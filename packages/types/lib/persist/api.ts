@@ -119,7 +119,7 @@ export type PutSyncConflict = Endpoint<{
         environmentId: number;
     };
     Body: {
-        scriptType: string;
+        scriptType: 'sync';
         syncId: string;
         refresh?: boolean;
     };
@@ -134,7 +134,7 @@ export type DeleteSyncConflict = Endpoint<{
         environmentId: number;
     };
     Body: {
-        scriptType: string;
+        scriptType: 'sync';
         syncId: string;
     };
     Error: ApiError<'delete_sync_conflict_failed'>;
