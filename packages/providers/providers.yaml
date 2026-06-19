@@ -13329,6 +13329,12 @@ netsuite-client-credentials:
             title: ''
             description: ''
             automated: true
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your NetSuite Account ID (e.g. 1234567 or 1234567_SB1 for sandbox).
+            example: '1234567'
     assertion_option:
         privateKey:
             type: string
