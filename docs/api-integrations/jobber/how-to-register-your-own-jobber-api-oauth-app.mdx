@@ -1,0 +1,35 @@
+---
+title: 'How to register your own Jobber OAuth app'
+sidebarTitle: 'Jobber Setup'
+description: 'Register an OAuth app with Jobber and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Jobber to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Jobber account.
+
+<Steps>
+  <Step id="create-developer-account" title="Create a developer account">
+    If you don't already have one, sign up for a [Jobber developer account](https://developer.getjobber.com/landing).
+  </Step>
+
+  <Step id="create-app" title="Create a new app">
+    1. Go to [Manage Apps](https://developer.getjobber.com/apps).
+    2. Click **+ New** in the top right corner.
+    3. Fill in the required details (app name, description, scopes).
+    4. For **Callback URL**, add `https://api.nango.dev/oauth/callback`.
+    5. Save the app.
+  </Step>
+
+  <Step id="get-credentials" title="Get your credentials">
+    After saving, copy the **Client ID** and **Client Secret** — you will need these when configuring the integration in Nango.
+
+    <Note>Keep your Client Secret safe. It is also used as the **Webhook Secret** for verifying incoming webhook payloads.</Note>
+  </Step>
+
+  <Step id="next" title="Start building your integration">
+    Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.
+  </Step>
+</Steps>
+
+For more details, see [Jobber's OAuth documentation](https://developer.getjobber.com/docs/building_your_app/app_authorization/).
+
+---

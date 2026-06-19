@@ -14228,7 +14228,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `jira-data-center-api-key` | Jira Data Center (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/jira-data-center-api-key.md) | [connect](https://nango.dev/docs/integrations/all/jira-data-center-api-key/connect.md) |  | productivity, ticketing |
 | `jira-data-center-basic` | Jira Data Center (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/jira-data-center-basic.md) | [connect](https://nango.dev/docs/integrations/all/jira-data-center-basic/connect.md) |  | productivity, ticketing |
 | `jobadder` | Jobadder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/jobadder.md) |  |  | hr, ats |
-| `jobber` | Jobber | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/jobber.md) |  |  | crm, invoicing |
+| `jobber` | Jobber | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/jobber.md) |  | [setup](https://nango.dev/docs/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app.md) | crm, invoicing |
 | `jobdiva` | JobDiva | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/jobdiva.md) | [connect](https://nango.dev/docs/integrations/all/jobdiva/connect.md) |  | hr, ats |
 | `jobvite` | Jobvite | API_KEY | [docs](https://nango.dev/docs/integrations/all/jobvite.md) | [connect](https://nango.dev/docs/integrations/all/jobvite/connect.md) |  | ats |
 | `jotform` | Jotform | API_KEY | [docs](https://nango.dev/docs/integrations/all/jotform.md) |  |  | surveys |
@@ -14661,6 +14661,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `workday` | Workday | BASIC | [docs](https://nango.dev/docs/integrations/all/workday.md) | [connect](https://nango.dev/docs/integrations/all/workday/connect.md) |  | hr, popular |
 | `workday-adaptive-planning` | Workday Adaptive Planning | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/workday-adaptive-planning.md) | [connect](https://nango.dev/docs/api-integrations/workday-adaptive-planning/connect.md) |  | accounting |
 | `workday-adaptive-planning-basic` | Workday Adaptive Planning (Basic Auth) | BASIC | [docs](https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic.md) | [connect](https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic/connect.md) |  | accounting |
+| `workday-cc` | Workday (Client Credentials) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/workday-cc.md) | [connect](https://nango.dev/docs/api-integrations/workday-cc/connect.md) |  | hr |
 | `workday-oauth` | Workday (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/workday-oauth.md) | [connect](https://nango.dev/docs/api-integrations/workday-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/workday-oauth/how-to-register-your-own-workday-oauth-app.md) | hr |
 | `workday-refresh-token` | Workday (Refresh Token Auth) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/workday-refresh-token.md) | [connect](https://nango.dev/docs/api-integrations/workday-refresh-token/connect.md) |  | hr |
 | `workos` | WorkOS | API_KEY | [docs](https://nango.dev/docs/api-integrations/workos.md) | [connect](https://nango.dev/docs/api-integrations/workos/connect.md) |  | productivity, iam |

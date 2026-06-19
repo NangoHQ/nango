@@ -1,0 +1,134 @@
+---
+title: 'Jobber'
+sidebarTitle: 'Jobber'
+description: 'Integrate your application with the Jobber API'
+---
+
+## 🚀 Quickstart
+
+Connect to Jobber with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Jobber_. Nango doesn't provide a test OAuth app for Jobber yet. You'll need to set up your own by following these [instructions](/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app). After that, make sure to add the OAuth client ID and secret in the integration settings in Nango.
+    </Step>
+    <Step id="authorize-jobber" title="Authorize Jobber">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Jobber. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-jobber-api" title="Call the Jobber API">
+    Let's make your first request to the Jobber API (fetch the current user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/graphql" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query":"{ user { id name { first last } } }"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/graphql',
+            data: { query: '{ user { id name { first last } } }' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Jobber integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Jobber OAuth app](/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app)  
+Register an OAuth app with Jobber and obtain credentials to connect it to Nango
+
+Official docs: [Jobber Developer Center](https://developer.getjobber.com/docs/)
+
+## 🔔 Webhooks
+
+Jobber sends webhooks when events occur on your account. Nango handles signature verification and routes each webhook to the correct connection.
+
+### Setup
+
+1. In your [Jobber app settings](https://developer.getjobber.com/apps), go to your app and add a webhook URL.
+2. Set the webhook URL to your Nango webhook endpoint:
+   ```
+   https://api.nango.dev/webhook/<NANGO-ENV-ID>/<INTEGRATION-ID>
+   ```
+3. In Nango, go to your Jobber integration settings and add your app's **OAuth Client Secret** as the **Webhook Secret**. Jobber uses this secret to sign webhook payloads.
+
+### Signature verification
+
+Every request includes an `X-Jobber-Hmac-SHA256` header — a Base64-encoded HMAC-SHA256 of the raw request body, signed with your app's OAuth client secret. Nango verifies this automatically.
+
+### Supported topics
+
+Webhooks fire for any topic configured in your Jobber app. Examples:
+
+| Topic | Description |
+| --- | --- |
+| `CLIENT_CREATE` | A new client was created |
+| `CLIENT_UPDATE` | A client was updated |
+| `CLIENT_DESTROY` | A client was deleted |
+
+For the full list, see `WebHookTopicEnum` in the [Jobber GraphQL schema](https://developer.getjobber.com/docs/).
+
+### Payload
+
+```json
+{
+  "data": {
+    "webHookEvent": {
+      "topic": "CLIENT_CREATE",
+      "appId": "3ef22a50-072d-430c-a78f-b7646657560b",
+      "accountId": "MQ==",
+      "itemId": "MQ==",
+      "occurredAt": "2021-08-12T16:31:36-06:00"
+    }
+  }
+}
+```
+
+<Note>
+Jobber provides at-least-once delivery. Your webhook handler should be idempotent and respond within 1 second — process payloads asynchronously to stay within this limit.
+</Note>
+
+## 🧩 Pre-built syncs & actions for Jobber
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/jobber/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
