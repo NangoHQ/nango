@@ -139,7 +139,10 @@ publicAPI.use(
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
-const upload = multer({ storage: multer.memoryStorage() });
+type ExtendedMulterLimits = multer.Options['limits'] & {
+    fieldNestingDepth?: number;
+};
+const upload = multer({ storage: multer.memoryStorage(), limits: { fieldNestingDepth: 50 } as ExtendedMulterLimits });
 
 const publicAPICorsHandler = cors({
     maxAge: 600,
