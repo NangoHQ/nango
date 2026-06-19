@@ -110,6 +110,7 @@ export const Templates: React.FC = () => {
             toast({
                 title: `${selected.name} deployed successfully`,
                 variant: 'success',
+                duration: 10_000, // 10 seconds
                 action: (
                     <AlertButton variant="success-secondary" onClick={() => navigate(functionPath)}>
                         View

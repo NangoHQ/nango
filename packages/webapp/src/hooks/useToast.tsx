@@ -10,8 +10,8 @@ interface ToastProps {
     action?: React.ReactNode;
 }
 
-function toast({ title, description, variant, action }: Omit<ToastProps, 'id'>) {
-    return sonnerToast.custom((id) => <Toast id={id} title={title} description={description} variant={variant} action={action} />);
+function toast({ title, description, variant, action, duration }: Omit<ToastProps, 'id'> & { duration?: number }) {
+    return sonnerToast.custom((id) => <Toast id={id} title={title} description={description} variant={variant} action={action} />, { duration });
 }
 
 export function useToast() {
