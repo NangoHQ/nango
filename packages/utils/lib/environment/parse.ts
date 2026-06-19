@@ -396,8 +396,6 @@ export const ENVS = z.object({
     SMTP_URL: z.url().optional(),
     SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
     SMTP_DOMAIN: z.string().default('email.nango.dev'),
-    // nodemailer 9+ validates TLS for SMTP, OAuth2 token fetches, and HTTPS proxies by default.
-    SMTP_TLS_REJECT_UNAUTHORIZED: z.stringbool().optional().default(true),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
