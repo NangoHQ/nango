@@ -3,19 +3,21 @@ import { metrics } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
 
-function trafficOrigin(res: Response<any, RequestLocals>): 'internal' | 'external' {
-    return res.locals['apiKeyAuthSource'] === 'api_secret' ? 'internal' : 'external';
-}
-
 export const egressMeterMiddleware = (req: Request, res: Response<any, RequestLocals>, next: NextFunction) => {
-    const origin = trafficOrigin(res);
+    if (res.locals['apiKeyAuthSource'] !== 'customer_key') {
+        next();
+        return;
+    }
+
     const baseline = req.socket?.bytesWritten ?? 0;
+
+    const withConnectionId = req.params['connectionId'] !== undefined;
 
     let recorded = false;
     const meterEgressedBytes = () => {
         if (recorded) return;
         const bytes = (req.socket?.bytesWritten ?? 0) - baseline;
-        metrics.increment(metrics.Types.EGRESS_BYTES, bytes, { traffic_origin: origin });
+        metrics.increment(metrics.Types.EGRESS_BYTES, bytes, { withConnectionId: withConnectionId.toString() });
         recorded = true;
     };
 
