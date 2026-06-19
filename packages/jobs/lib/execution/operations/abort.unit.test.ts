@@ -1,5 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import * as shared from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
+
+import { logger } from '../../logger.js';
+import { getRunners } from '../../runner/runner.js';
+import { abortTaskWithId } from './abort.js';
+
+import type { DBAPISecret } from '@nangohq/types';
+
 const { mockPutTaskAbort } = vi.hoisted(() => ({
     mockPutTaskAbort: vi.fn()
 }));
@@ -27,15 +36,6 @@ vi.mock('../../logger.js', () => ({
         error: vi.fn()
     }
 }));
-
-import * as shared from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
-
-import { abortTaskWithId } from './abort.js';
-import { logger } from '../../logger.js';
-import { getRunners } from '../../runner/runner.js';
-
-import type { DBAPISecret } from '@nangohq/types';
 
 describe('abortTaskWithId', () => {
     beforeEach(() => {
