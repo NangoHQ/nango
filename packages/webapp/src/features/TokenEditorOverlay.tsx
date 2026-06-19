@@ -183,11 +183,20 @@ const SURFACE_VARS = SEMANTIC_ENTRIES.filter(
 ).map((e) => e.cssVar);
 
 /**
- * Foreground tokens that participate in a contrast pair (structural — independent of resolved
- * values/theme). Used to hide irrelevant rows when contrast mode is on, so the list shows only
- * the tokens the checker actually scores.
+ * Tokens that participate in a contrast pair (structural — independent of resolved values/theme).
+ * Used to hide irrelevant rows when contrast mode is on. Includes BOTH sides of each pair plus the
+ * container surfaces transparent variants are scored against, so the backgrounds you'd tweak to fix
+ * a pair (e.g. --interactive-primary behind --text-on-accent) stay editable, not just the scored
+ * foregrounds.
  */
-const CONTRAST_FG_VARS = new Set(deriveContrastPairs((cssVar) => ENTRIES_BY_VAR.has(cssVar)).map((p) => p.fgVar));
+const CONTRAST_RELEVANT_VARS = (() => {
+    const set = new Set<string>(SURFACE_VARS);
+    for (const pair of deriveContrastPairs((cssVar) => ENTRIES_BY_VAR.has(cssVar))) {
+        set.add(pair.fgVar);
+        set.add(pair.bgVar);
+    }
+    return set;
+})();
 /** True when a semantic entry matches a specific primitive ref filter (incl. alias chains). */
 function semanticMatchesRef(entry: TokenEntry, filterRef: string): boolean {
     if (!entry.primitiveRef) return false;
@@ -913,10 +922,11 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 primitiveFilter.startsWith('{') ? semanticMatchesRef(e, primitiveFilter) : semanticMatchesCategory(e, primitiveFilter)
             );
         }
-        // When contrast mode is on, narrow to just the foreground tokens the checker scores.
-        // Pairs are semantic, so this only applies in semantic mode (primitives stay unfiltered).
+        // When contrast mode is on, narrow to the tokens that participate in a pair (both the
+        // scored foregrounds and the backgrounds/surfaces you'd tweak to fix them). Pairs are
+        // semantic, so this only applies in semantic mode (primitives stay unfiltered).
         if (contrastOn && mode === 'semantic') {
-            result = result.filter((e) => CONTRAST_FG_VARS.has(e.cssVar));
+            result = result.filter((e) => CONTRAST_RELEVANT_VARS.has(e.cssVar));
         }
         return result;
     }, [entries, search, primitiveFilter, mode, contrastOn]);
