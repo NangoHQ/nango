@@ -23,6 +23,7 @@ const de: Translation = {
     },
     go: {
         linkAccount: '{provider}-Konto verknüpfen',
+        fieldDocumentation: 'Dokumentation für {field} anzeigen',
         connect: 'Verbinden',
         success: 'Erfolgreich!',
         successMessage: 'Sie haben Ihre {provider}-Integration erfolgreich eingerichtet.',

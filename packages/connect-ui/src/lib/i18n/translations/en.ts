@@ -20,6 +20,7 @@ const en = {
     },
     go: {
         linkAccount: 'Link {provider} Account',
+        fieldDocumentation: 'View documentation for {field}',
         connect: 'Connect',
         success: 'Success!',
         successMessage: "You've successfully set up your {provider} integration.",

@@ -22,6 +22,7 @@ const es: Translation = {
     },
     go: {
         linkAccount: 'Vincular cuenta de {provider}',
+        fieldDocumentation: 'Ver la documentación de {field}',
         connect: 'Conectar',
         success: '¡Éxito!',
         successMessage: 'Has configurado exitosamente tu integración con {provider}.',
