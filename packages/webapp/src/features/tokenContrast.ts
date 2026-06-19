@@ -15,6 +15,11 @@ import { buttonVariantClasses } from '@nangohq/design-system';
  * Variants whose background is transparent (ghost/outline/link) have no intrinsic
  * background — the element sits on whatever surface contains it — so their foreground
  * tokens are scored against the set of container surface tokens instead.
+ *
+ * Three things are scored: text legibility on the component (1.4.3), border vs the
+ * component background (1.4.11), and — for solid-fill components — the fill itself vs the
+ * surrounding surfaces (1.4.11 component identifiability: a button with a transparent border
+ * is only distinguishable from the page by its fill, so that fill needs ≥3:1).
  */
 
 /** Sources to derive pairs from. Add more component variant maps here as the DS grows. */
@@ -148,11 +153,13 @@ export function contrastRatio(fgHex: string, bgHex: string): number | null {
 }
 
 export type Band = 'aaa' | 'aa' | 'aa-large' | 'fail';
+/** 'text' → 1.4.3 (4.5/7); 'border' and 'fill' → 1.4.11 UI-component contrast (3:1). */
+export type ContrastKind = 'text' | 'border' | 'fill';
 
 /** WCAG band for normal text. (Large text / UI surfaces are "aa-large" at ≥3.) */
-export function bandOf(ratio: number, kind: 'text' | 'border'): Band {
-    // Borders / UI components only need 3:1 (WCAG 1.4.11)
-    if (kind === 'border') return ratio >= 3 ? 'aa' : 'fail';
+export function bandOf(ratio: number, kind: ContrastKind): Band {
+    // Borders and solid component fills are UI-component contrast — only need 3:1 (WCAG 1.4.11)
+    if (kind === 'border' || kind === 'fill') return ratio >= 3 ? 'aa' : 'fail';
     if (ratio >= 7) return 'aaa';
     if (ratio >= 4.5) return 'aa';
     if (ratio >= 3) return 'aa-large';
@@ -163,7 +170,7 @@ export interface ContrastScore {
     bgVar: string;
     ratio: number;
     band: Band;
-    kind: 'text' | 'border';
+    kind: ContrastKind;
 }
 
 /** True when a resolved colour value is fully transparent (alpha 0). */
@@ -189,7 +196,11 @@ export function buildContrastIndex(opts: {
         index.set(fgVar, list);
     };
 
-    for (const pair of deriveContrastPairs(isKnownToken)) {
+    const pairs = deriveContrastPairs(isKnownToken);
+
+    // Text (1.4.3) and border (1.4.11) contrast: the variant's foreground against its background,
+    // expanding transparent backgrounds to the surfaces the element can sit on.
+    for (const pair of pairs) {
         const fgVal = resolve(pair.fgVar);
         const bgVal = resolve(pair.bgVar);
         const targets = isTransparent(bgVal) ? surfaces : [pair.bgVar];
@@ -197,6 +208,21 @@ export function buildContrastIndex(opts: {
             const ratio = contrastRatio(fgVal, resolve(bgVar));
             if (ratio == null) continue;
             push(pair.fgVar, { bgVar, ratio, band: bandOf(ratio, pair.kind), kind: pair.kind });
+        }
+    }
+
+    // Component identifiability (1.4.11): a solid (opaque) component fill is its own boundary, so it
+    // must contrast ≥3:1 with the surfaces behind it — otherwise you can't tell the control is there.
+    // Transparent fills (ghost/outline) have no fill to distinguish; their boundary is text/border.
+    const fillVars = new Set(pairs.map((p) => p.bgVar));
+    for (const fillVar of fillVars) {
+        const fill = parseHex(resolve(fillVar));
+        if (!fill || fill.a < 1) continue;
+        for (const surfaceVar of surfaces) {
+            if (surfaceVar === fillVar) continue;
+            const ratio = contrastRatio(resolve(fillVar), resolve(surfaceVar));
+            if (ratio == null) continue;
+            push(fillVar, { bgVar: surfaceVar, ratio, band: bandOf(ratio, 'fill'), kind: 'fill' });
         }
     }
     return index;
