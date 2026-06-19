@@ -1,12 +1,16 @@
-import { Button } from '@nangohq/design-system';
-import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Download, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Contrast, Download, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { Button } from '@nangohq/design-system';
+
+import { buildContrastIndex } from './tokenContrast';
 import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { Input } from '@/components/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
+
+import type { Band, ContrastScore } from './tokenContrast';
 
 // Raw import avoids TypeScript OOM on the 3k-line JSON (same technique as design-system/tokens/types.ts)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -172,6 +176,11 @@ const PRIMITIVE_ENTRIES = buildEntries('primitive');
 const ALL_ENTRIES = [...SEMANTIC_ENTRIES, ...PRIMITIVE_ENTRIES];
 const ENTRIES_BY_VAR = new Map(ALL_ENTRIES.map((e) => [e.cssVar, e]));
 const DARK_ENTRIES_BY_VAR = new Map([...DARK_SEMANTIC_ENTRIES, ...PRIMITIVE_ENTRIES].map((e) => [e.cssVar, e]));
+
+/** Container surfaces a transparent-bg component can sit on — used as contrast backgrounds. */
+const SURFACE_VARS = SEMANTIC_ENTRIES.filter(
+    (e) => e.category === 'surface' && /^(canvas|page|panel|panelMuted|panelInset|raised|overlay|input|inputMuted)$/i.test(e.path[1] ?? '')
+).map((e) => e.cssVar);
 /** True when a semantic entry matches a specific primitive ref filter (incl. alias chains). */
 function semanticMatchesRef(entry: TokenEntry, filterRef: string): boolean {
     if (!entry.primitiveRef) return false;
@@ -609,11 +618,56 @@ interface RowProps {
     onFilterByRef: (ref: string) => void;
     onJumpToPrimitive: (ref: string) => void;
     showRef: boolean;
+    /** Contrast scores for this token (foreground) against its real backgrounds; null when contrast mode is off. */
+    contrast: ContrastScore[] | null;
 }
 
 // True when the entry has a resolvable primitive ref — covers both semantic tokens and primitive aliases
 function hasPrimitiveLink(entry: TokenEntry): boolean {
     return !!entry.primitiveRef && entry.baseHex.startsWith('#');
+}
+
+const BAND_CLASS: Record<Band, string> = {
+    aaa: 'text-status-success-text',
+    aa: 'text-status-success-text',
+    'aa-large': 'text-status-warning-text',
+    fail: 'text-status-danger-text'
+};
+const BAND_LABEL: Record<Band, string> = { aaa: 'AAA', aa: 'AA', 'aa-large': 'AA Large', fail: 'Fail' };
+
+/** Strips the leading group from a cssVar for compact display: --surface-panel → surface/panel */
+function shortVar(cssVar: string): string {
+    return cssVar.replace(/^--/, '').replace(/-/g, '/');
+}
+
+/** Compact contrast badge: worst ratio across the token's pairs + WCAG band, breakdown on hover. */
+function ContrastBadge({ scores }: { scores: ContrastScore[] }) {
+    if (!scores.length) return <span className="w-16 shrink-0" />;
+    const worst = scores.reduce((a, b) => (b.ratio < a.ratio ? b : a));
+    return (
+        <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+                <span className={`flex w-16 shrink-0 cursor-help justify-end font-mono tabular-nums ${BAND_CLASS[worst.band]}`}>
+                    {worst.ratio.toFixed(1)}:1
+                </span>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+                <div className="flex flex-col gap-0.5">
+                    {scores
+                        .slice()
+                        .sort((a, b) => a.ratio - b.ratio)
+                        .map((s) => (
+                            <div key={s.bgVar} className="flex items-center justify-between gap-3 font-mono text-xs">
+                                <span>on {shortVar(s.bgVar)}</span>
+                                <span className={BAND_CLASS[s.band]}>
+                                    {s.ratio.toFixed(2)}:1 {BAND_LABEL[s.band]}
+                                </span>
+                            </div>
+                        ))}
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    );
 }
 
 function TokenRow({
@@ -628,7 +682,8 @@ function TokenRow({
     onPickRef,
     onFilterByRef,
     onJumpToPrimitive,
-    showRef
+    showRef,
+    contrast
 }: RowProps) {
     // Prefer the live CSS variable value over the JSON-derived baseHex, since some
     // semantic tokens reference other semantic tokens (e.g. {state.hover}) whose
@@ -684,6 +739,9 @@ function TokenRow({
                 ) : (
                     <span className="w-36 shrink-0" />
                 ))}
+
+            {/* Contrast ratio (worst across the token's real backgrounds), when contrast mode is on */}
+            {contrast && <ContrastBadge scores={contrast} />}
 
             {/* Swatch, hex input, and action buttons share a hover group so link icon is scoped */}
             <div className="group/picker flex shrink-0 items-center gap-1">
@@ -763,6 +821,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     // CSS vars explicitly unlinked from their primitive — shared across themes
     const [linkedVars, setLinkedVars] = useState<Set<string>>(new Set());
     const [showDiff, setShowDiff] = useState(false);
+    const [contrastOn, setContrastOn] = useState(false);
     const [search, setSearch] = useState('');
 
     // Stable refs for use in effects that must not re-run on every override change
@@ -809,6 +868,15 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const currentTheme: ThemeKey = darkMode ? 'dark' : 'light';
     const activeOverrides = overridesPerTheme[currentTheme];
     const activeRefOverrides = refOverridesPerTheme[currentTheme];
+
+    // Contrast scores keyed by foreground token cssVar; rebuilt when resolved colours change.
+    const contrastIndex = useMemo(() => {
+        if (!contrastOn) return null;
+        const resolve = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+        return buildContrastIndex({ resolve, isKnownToken: (v) => ENTRIES_BY_VAR.has(v), surfaces: SURFACE_VARS });
+        // resolved values change with edits/theme; themeSeq fires after the DOM vars settle
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [contrastOn, themeSeq, overridesPerTheme, refOverridesPerTheme, darkMode]);
 
     // Scroll to target token after mode switch re-renders the list
     useEffect(() => {
@@ -1073,6 +1141,21 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 {mode === 'semantic' && <FilterPicker value={primitiveFilter} onChange={setPrimitiveFilter} />}
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="2xs"
+                            onClick={() => setContrastOn((v) => !v)}
+                            aria-label={contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}
+                            aria-pressed={contrastOn}
+                            className={`size-8 shrink-0 ${contrastOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
+                        >
+                            <Contrast className="size-3.5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}</TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={500}>
+                    <TooltipTrigger asChild>
                         <Button variant="ghost" size="2xs" onClick={toggleDarkMode} className="size-8 shrink-0 text-text-muted hover:text-text-default">
                             {darkMode ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
                         </Button>
@@ -1103,6 +1186,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                                 onJumpToPrimitive={jumpToPrimitive}
                                 onPickRef={commitRef}
                                 showRef={true}
+                                contrast={contrastIndex ? (contrastIndex.get(entry.cssVar) ?? []) : null}
                             />
                         ))}
                     </div>
