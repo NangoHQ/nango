@@ -1509,7 +1509,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status !== 200) {
+            if (response.status < 200 || response.status >= 300) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 

@@ -1,0 +1,81 @@
+---
+title: Tripletex
+sidebarTitle: Tripletex
+description: 'Integrate your application with the Tripletex API'
+---
+
+## 🚀 Quickstart
+
+Connect to Tripletex with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Tripletex_.
+    </Step>
+    <Step title="Connect your Tripletex account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Consumer Token and Employee Token, set the Proxy Company ID (usually `0`), then save. See the [connect guide](/api-integrations/tripletex/connect) for how to generate these tokens.
+    </Step>
+    <Step title="Call the Tripletex API">
+    Make your first request (returns the employee the session represents). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/token/session/>whoAmI" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/token/session/>whoAmI',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To set up your own credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Tripletex integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to connect your Tripletex account](/api-integrations/tripletex/connect)  
+Generate an employee token in Tripletex and connect it to Nango
+
+Official docs: [Tripletex API documentation](https://developer.tripletex.no/docs/)
+
+## 🧩 Pre-built syncs & actions for Tripletex
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/tripletex/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
