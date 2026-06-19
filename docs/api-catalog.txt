@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 859
+Provider count: 860
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -115,6 +115,7 @@ URL patterns:
 | `bliro` | Bliro | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bliro.md) | [connect](https://nango.dev/docs/api-integrations/bliro/connect.md) |  | communication |
 | `boldsign` | BoldSign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/boldsign.md) |  |  | legal |
 | `booking-com` | Booking.com | BASIC | [docs](https://nango.dev/docs/integrations/all/booking-com.md) |  |  | e-commerce |
+| `boondmanager` | BoondManager | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/boondmanager.md) |  | [setup](https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app.md) | erp |
 | `box` | Box | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/box.md) |  | [setup](https://nango.dev/docs/api-integrations/box/how-to-register-your-own-box-api-oauth-app.md) | knowledge-base, storage |
 | `braintree` | Braintree | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/braintree.md) |  |  | payment |
 | `braintree-sandbox` | Braintree (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/braintree-sandbox.md) |  |  | payment |

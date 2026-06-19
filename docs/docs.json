@@ -1000,6 +1000,7 @@
               "api-integrations/bird",
               "api-integrations/buffer",
               "integrations/all/boldsign",
+              "api-integrations/boondmanager",
               "integrations/all/booking-com",
               "api-integrations/box",
               "integrations/all/braintree",

@@ -3225,6 +3225,18 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+boondmanager:
+    display_name: BoondManager
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://ui.boondmanager.com/api/oauth2/authorize
+    token_url: https://ui.boondmanager.com/api/oauth2/token
+    proxy:
+        base_url: https://ui.boondmanager.com/api
+    docs: https://nango.dev/docs/api-integrations/boondmanager
+    setup_guide_url: https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app
+
 box:
     display_name: Box
     categories:
