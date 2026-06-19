@@ -8,7 +8,15 @@ import knex from 'knex';
 
 import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
 
-import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import {
+    DEFAULT_RECORDS_LIMIT,
+    RECORDS_DATA_TABLE,
+    RECORDS_ROUTING_TABLE,
+    RECORDS_SEEN_MAX_IDS_PER_ROW,
+    RECORDS_SEEN_TABLE,
+    RECORDS_TABLE,
+    RECORD_COUNTS_TABLE
+} from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { deepMergeRecordData } from '../../helpers/merge.js';
@@ -124,10 +132,43 @@ export class PostgresStore implements RecordsStore {
         try {
             if (!promise) {
                 const next = day.add(1, 'day');
+                const partitionName = `records_seen_${suffix}`;
+                const indexName = `${partitionName}_connection_model_generation`;
+                // Atomic check-then-create. This code is called from the write path on every
+                // insertSeenEntry; the SELECT EXISTS short-circuits the hot path (existing
+                // partition → bail, no locks on records_seen). Only when the partition is
+                // actually new do we run CREATE TABLE PARTITION OF + CREATE INDEX inside the
+                // same transaction: the partition is empty at that point so the (non-
+                // CONCURRENTLY) index build is microseconds and the parent's brief
+                // ACCESS EXCLUSIVE window only affects concurrent new-partition attempts.
+                // Crucially this skips CREATE INDEX on pre-existing partitions (e.g. today's
+                // partition at deploy time) that have data and would block writes during a
+                // multi-second build.
+                //
+                // IF NOT EXISTS on both DDL statements is the defensive belt for the narrow
+                // race where two concurrent transactions both see "not exists" from their
+                // SELECT and queue up on the parent's ACCESS EXCLUSIVE — the second one's
+                // CREATE TABLE / CREATE INDEX no-ops silently once the first commits.
                 promise = this.db
-                    .raw(
-                        `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-                    )
+                    .transaction(async (trx) => {
+                        const { rows } = await trx.raw<{ rows: { exists: boolean }[] }>(
+                            `SELECT EXISTS (
+                                SELECT 1
+                                FROM pg_class c
+                                JOIN pg_namespace n ON n.oid = c.relnamespace
+                                WHERE n.nspname = current_schema()
+                                  AND c.relname = ?
+                                  AND c.relkind = 'r'
+                            ) AS exists`,
+                            [partitionName]
+                        );
+                        if (rows[0]?.exists) return;
+
+                        await trx.raw(
+                            `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                        );
+                        await trx.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, generation)', [indexName, partitionName]);
+                    })
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
@@ -169,7 +210,9 @@ export class PostgresStore implements RecordsStore {
         limit,
         filter,
         cursor,
-        externalIds
+        externalIds,
+        metadataOnly,
+        sort
     }: {
         connectionId: number;
         model: string;
@@ -178,6 +221,8 @@ export class PostgresStore implements RecordsStore {
         filter?: CombinedFilterAction | LastAction | undefined;
         cursor?: string | undefined;
         externalIds?: string[] | undefined;
+        metadataOnly?: boolean | undefined;
+        sort?: 'asc' | 'desc' | undefined;
     }): Promise<Result<GetRecordsResponse>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.getRecords', {
@@ -191,13 +236,16 @@ export class PostgresStore implements RecordsStore {
                 return Err(error);
             }
 
+            const sortOrder = sort ?? 'asc';
+            const isDesc = sortOrder === 'desc';
+
             let query = this.dbRead
                 .from<FormattedRecord>(RECORDS_TABLE)
                 .timeout(60000) // timeout after 1 minute
                 .where({ connection_id: connectionId, model })
                 .orderBy([
-                    { column: 'updated_at', order: 'asc' },
-                    { column: 'id', order: 'asc' }
+                    { column: 'updated_at', order: sortOrder },
+                    { column: 'id', order: sortOrder }
                 ]);
 
             if (cursor) {
@@ -207,8 +255,8 @@ export class PostgresStore implements RecordsStore {
                     return Err(error);
                 }
 
-                // Tuple comparison for efficient index usage
-                query = query.whereRaw(`(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
+                // Tuple comparison for efficient index usage (ASC/DESC reuse same index)
+                query = query.whereRaw(isDesc ? `(updated_at, id) < (?, ?)` : `(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
             }
 
             if (externalIds) {
@@ -283,7 +331,7 @@ export class PostgresStore implements RecordsStore {
                     tableoid::regclass as partition,
                     id,
                     external_id,
-                    json,
+                    ${metadataOnly ? '' : 'json,'}
                     to_json(created_at) as first_seen_at,
                     to_json(updated_at) as last_modified_at,
                     to_json(deleted_at) as deleted_at,
@@ -308,7 +356,7 @@ export class PostgresStore implements RecordsStore {
                 recordsMetadata.pop();
             }
             let budgetTotalBytes = 0;
-            if (budgetEnabled) {
+            if (budgetEnabled && !metadataOnly) {
                 let acc = 0;
                 let truncateAt: number | null = null;
                 for (let i = 0; i < recordsMetadata.length; i++) {
@@ -337,36 +385,10 @@ export class PostgresStore implements RecordsStore {
                 }
             }
 
-            const recordIds = recordsMetadata.map((r) => r.id);
-            const dataById = new Map<string, FormattedRecord['json']>();
-            {
-                // Drain the result rows into the Map and let the array go out of scope.
-                // Keeping both the array and the Map doubles the reference count on each
-                // encrypted blob, which prevents `dataById.delete()` below from making
-                // them eligible for GC during the loop.
-                const rows = await this.dbRead
-                    .from(RECORDS_DATA_TABLE)
-                    .where({ connection_id: connectionId, model })
-                    .whereIn('id', recordIds)
-                    .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-                while (rows.length > 0) {
-                    const r = rows.pop()!;
-                    dataById.set(r.id, r.data);
-                }
-            }
-
-            const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
-            try {
-                // TODO: decrypt in batch
+            if (metadataOnly) {
                 for (const item of recordsMetadata) {
-                    const data = dataById.get(item.id) ?? item.json ?? {};
-                    // Drop the only remaining reference to the encrypted blob so V8 can
-                    // reclaim it when GC fires under heap pressure.
-                    dataById.delete(item.id);
-                    const decryptedData = await decryptRecordData({ ...item, json: data });
                     results.push({
-                        ...decryptedData,
-                        id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                        id: item.external_id,
                         _nango_metadata: {
                             first_seen_at: item.first_seen_at,
                             last_modified_at: item.last_modified_at,
@@ -377,8 +399,62 @@ export class PostgresStore implements RecordsStore {
                         }
                     });
                 }
-            } finally {
-                decryptSpan.finish();
+            } else {
+                const recordIds = recordsMetadata.map((r) => r.id);
+                const dataById = new Map<string, FormattedRecord['json']>();
+                {
+                    // Drain the result rows into the Map and let the array go out of scope.
+                    // Keeping both the array and the Map doubles the reference count on each
+                    // encrypted blob, which prevents `dataById.delete()` below from making
+                    // them eligible for GC during the loop.
+                    const rows = await this.dbRead
+                        .from(RECORDS_DATA_TABLE)
+                        .where({ connection_id: connectionId, model })
+                        .whereIn('id', recordIds)
+                        .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+                    while (rows.length > 0) {
+                        const r = rows.pop()!;
+                        dataById.set(r.id, r.data);
+                    }
+                }
+
+                const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
+                try {
+                    // decryptRecordData offloads to the libuv threadpool, so awaiting one record at a
+                    // time leaves the other threads idle. We process in bounded chunks instead: each
+                    // chunk decrypts concurrently (saturating the threadpool) while never holding more
+                    // than RECORDS_DECRYPT_CONCURRENCY encrypted blobs / decrypted results live at once,
+                    // preserving the per-record GC drop. Results stay in recordsMetadata order, which
+                    // the cursor below depends on.
+                    const concurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+                    for (let start = 0; start < recordsMetadata.length; start += concurrency) {
+                        const chunk = recordsMetadata.slice(start, start + concurrency);
+                        const decryptedChunk = await Promise.all(
+                            chunk.map(async (item) => {
+                                const data = dataById.get(item.id) ?? item.json ?? {};
+                                // Drop the only remaining reference to the encrypted blob so V8 can
+                                // reclaim it when GC fires under heap pressure.
+                                dataById.delete(item.id);
+                                const decryptedData = await decryptRecordData({ ...item, json: data });
+                                return {
+                                    ...decryptedData,
+                                    id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                                    _nango_metadata: {
+                                        first_seen_at: item.first_seen_at,
+                                        last_modified_at: item.last_modified_at,
+                                        last_action: item.last_action,
+                                        deleted_at: item.deleted_at,
+                                        pruned_at: item.pruned_at,
+                                        cursor: Cursor.new(item)
+                                    }
+                                };
+                            })
+                        );
+                        results.push(...decryptedChunk);
+                    }
+                } finally {
+                    decryptSpan.finish();
+                }
             }
 
             // all records for the same connection/model are in the same partition
@@ -523,7 +599,7 @@ export class PostgresStore implements RecordsStore {
                                 r.external_id,
                                 r.data_hash,
                                 r.sync_id,
-                                r.sync_job_id,
+                                null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                 r.deleted_at ?? null,
                                 ...(hasUpdatedAt ? [r.updated_at ?? null] : [])
                             ]);
@@ -918,7 +994,7 @@ export class PostgresStore implements RecordsStore {
                                             json: trx.raw('NULL'),
                                             data_hash: r.data_hash,
                                             sync_id: r.sync_id,
-                                            sync_job_id: r.sync_job_id,
+                                            sync_job_id: null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                             pruned_at: null, // clear pruned_at when record is updated
                                             updated_at: r.updated_at
                                         }))
@@ -1383,7 +1459,7 @@ export class PostgresStore implements RecordsStore {
                                     FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
                                       AND model = :model
-                                      AND sync_job_id >= :generation
+                                      AND generation >= :generation
                                 ),
                                 to_delete AS (
                                     SELECT p.ctid, p.id
@@ -1672,6 +1748,39 @@ export class PostgresStore implements RecordsStore {
         }
     }
 
+    async getOrCreateRouting<K extends string>({
+        connectionId,
+        model,
+        storeKey,
+        ifExists
+    }: {
+        connectionId: number;
+        model: string;
+        storeKey: K;
+        ifExists: K;
+    }): Promise<Result<K>> {
+        try {
+            const result = await this.db.raw<{ rows: { store_key: string }[] }>(
+                `INSERT INTO "${RECORDS_ROUTING_TABLE}" (connection_id, model, store_key)
+                 VALUES (
+                     :connectionId,
+                     :model,
+                     CASE WHEN EXISTS (SELECT 1 FROM "${RECORDS_TABLE}" WHERE connection_id = :connectionId AND model = :model)
+                          THEN :ifExists
+                          ELSE :storeKey
+                     END
+                 )
+                 ON CONFLICT (connection_id, model) DO UPDATE SET store_key = "${RECORDS_ROUTING_TABLE}".store_key
+                 RETURNING store_key`,
+                { connectionId, model, storeKey, ifExists }
+            );
+            const [row] = result.rows;
+            return Ok(row!.store_key as K);
+        } catch (err) {
+            return Err(new Error('Failed to get or create routing', { cause: err }));
+        }
+    }
+
     private async insertSeenEntry(
         trx: Knex.Transaction,
         { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
@@ -1681,12 +1790,19 @@ export class PostgresStore implements RecordsStore {
         if (ensureRes.isErr()) {
             throw new Error('Failed to ensure seen partition', { cause: ensureRes.error });
         }
-        await trx(RECORDS_SEEN_TABLE).insert({
-            connection_id: connectionId,
-            model,
-            sync_job_id: syncJobId,
-            record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
-        });
+        // Split the ids across multiple rows so no single record_ids array
+        // grows past PostgreSQL's TOAST tuple threshold (~2KB)
+        const rows: { connection_id: number; model: string; generation: number; record_ids: Knex.Raw }[] = [];
+        for (let i = 0; i < recordIds.length; i += RECORDS_SEEN_MAX_IDS_PER_ROW) {
+            const chunk = recordIds.slice(i, i + RECORDS_SEEN_MAX_IDS_PER_ROW);
+            rows.push({
+                connection_id: connectionId,
+                model,
+                generation: syncJobId,
+                record_ids: trx.raw(`ARRAY[${chunk.map(() => '?::uuid').join(',')}]`, chunk)
+            });
+        }
+        await trx(RECORDS_SEEN_TABLE).insert(rows);
     }
 }
 

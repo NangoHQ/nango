@@ -1,9 +1,9 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
 import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/Alert';
-import { CodeBlock } from '@/components-v2/ui/CodeBlock';
-import { Input } from '@/components-v2/ui/Input';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { CodeBlock } from '@/components/ui/CodeBlock';
+import { Input } from '@/components/ui/Input';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
@@ -35,7 +35,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
     if (isSync) {
         return (
             <div className="grid grid-cols-[110px_1fr] gap-x-4">
-                <label className="text-text-primary text-label-large">Metadata</label>
+                <label className="text-text-strong text-label-large">Metadata</label>
                 <div className="min-w-0 flex flex-col gap-3">
                     <Alert variant="info" className="px-3 py-2" actionsBelow>
                         <Info />
@@ -45,7 +45,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
                                 <AlertButtonLink
-                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}#auth`}
+                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}
                                     variant="info-secondary"
                                     onClick={() => setPlaygroundOpen(false)}
                                 >
@@ -72,9 +72,9 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                             return (
                                 <div key={field.name} className="flex flex-col gap-1">
                                     <div className="flex items-center justify-between gap-3">
-                                        <span className="text-text-primary text-body-medium-medium">
+                                        <span className="text-text-strong text-body-medium-medium">
                                             {field.name}
-                                            {field.required && <span className="text-feedback-error-fg text-body-medium-medium">*</span>}
+                                            {field.required && <span className="text-status-danger-text text-body-medium-medium">*</span>}
                                         </span>
                                         <CatalogBadge variant="light">{field.type}</CatalogBadge>
                                     </div>
@@ -91,7 +91,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                             constrainHeight={false}
                                         />
                                     ) : (
-                                        <p className="text-text-tertiary text-body-small-regular">
+                                        <p className="text-text-muted text-body-small-regular">
                                             {rawValue !== undefined && rawValue !== null ? JSON.stringify(rawValue, null, 2) : '—'}
                                         </p>
                                     )}
@@ -99,9 +99,9 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                             );
                         })
                     ) : !playgroundIntegration || !playgroundConnection ? (
-                        <div className="text-text-tertiary text-body-small-regular">Select a connection to view its metadata.</div>
+                        <div className="text-text-muted text-body-small-regular">Select a connection to view its metadata.</div>
                     ) : (
-                        <div className="text-text-tertiary text-body-small-regular">This sync doesn&apos;t take inputs.</div>
+                        <div className="text-text-muted text-body-small-regular">This sync doesn&apos;t take inputs.</div>
                     )}
                 </div>
             </div>
@@ -110,18 +110,18 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
 
     return (
         <div className="grid grid-cols-[110px_1fr] gap-x-4">
-            <label className="text-text-primary text-label-large">Inputs</label>
+            <label className="text-text-strong text-label-large">Inputs</label>
             <div className="min-w-0 flex flex-col gap-3">
                 {inputFields.map((field) => (
                     <div key={field.name} className="flex flex-col gap-1">
                         <div className="flex items-center justify-between gap-3">
-                            <span className="text-text-primary text-body-medium-medium">
+                            <span className="text-text-strong text-body-medium-medium">
                                 {field.name}
-                                {field.required && <span className="text-feedback-error-fg text-body-medium-medium">*</span>}
+                                {field.required && <span className="text-status-danger-text text-body-medium-medium">*</span>}
                             </span>
                             <CatalogBadge variant="light">{field.type}</CatalogBadge>
                         </div>
-                        {field.description && <p className="text-text-tertiary text-body-small-regular">{field.description}</p>}
+                        {field.description && <p className="text-text-muted text-body-small-regular">{field.description}</p>}
                         <Input
                             className="border-border-muted data-[filled=true]:not-aria-invalid:border-border-muted"
                             value={inputValues[field.name] || ''}
@@ -132,7 +132,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                 clearInputError(field.name);
                             }}
                         />
-                        {inputErrors[field.name] && <p className="text-feedback-error-fg text-body-small-regular">{inputErrors[field.name]}</p>}
+                        {inputErrors[field.name] && <p className="text-status-danger-text text-body-small-regular">{inputErrors[field.name]}</p>}
                     </div>
                 ))}
             </div>

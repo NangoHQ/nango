@@ -35,9 +35,11 @@ const ignoreEnvPaths = [
     '/api/v1/meta',
     '/api/v1/user',
     '/api/v1/user/name',
+    '/api/v1/user/password',
     '/api/v1/signin',
     '/api/v1/invite/:id',
-    '/api/v1/account/onboarding/hear-about-us'
+    '/api/v1/account/onboarding/hear-about-us',
+    '/api/v1/plain'
 ];
 
 export class AccessMiddleware {
@@ -56,6 +58,7 @@ export class AccessMiddleware {
                 apiKeyId?: number;
                 purpose?: 'dryrun' | 'deploy';
                 dryrunId?: string;
+                deploymentId?: string;
             };
         }>
     > {
@@ -126,6 +129,9 @@ export class AccessMiddleware {
                 }
                 if (result.value.auth.dryrunId !== undefined) {
                     res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
+                }
+                if (result.value.auth.deploymentId !== undefined) {
+                    res.locals['sandboxTokenDeploymentId'] = result.value.auth.deploymentId;
                 }
             }
             const authSource = result.value.auth?.source ?? 'env_var';
@@ -412,6 +418,9 @@ export class AccessMiddleware {
                     }
                     if (apiKeyResult.value.auth.dryrunId !== undefined) {
                         res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
+                    }
+                    if (apiKeyResult.value.auth.deploymentId !== undefined) {
+                        res.locals['sandboxTokenDeploymentId'] = apiKeyResult.value.auth.deploymentId;
                     }
                 }
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {

@@ -6,9 +6,10 @@ import WebSocket from 'ws';
 import { Err, Ok, getLogger, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { PublishFailure } from './transport.js';
 import { serde } from '../utils/serde.js';
 
-import type { SubscribeProps, Transport } from './transport.js';
+import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { StompConfig, StompSubscription } from '@stomp/stompjs';
@@ -145,6 +146,27 @@ export class ActiveMQ implements Transport {
         } catch (err) {
             return Err(new Error(`Failed to publish message to ActiveMQ topic ${event.subject}`, { cause: err }));
         }
+    }
+
+    /**
+     * Iterates over and publishes events sequentially.
+     * Captures successful and failed events, and reports the results in a best-effort manner.
+     */
+    public async publishBatch<TSubject extends Event['subject']>({ events }: PublishBatchProps<TSubject>): Promise<Result<PublishBatchResult>> {
+        if (!this.client || !this.isConnected) {
+            return Err('ActiveMQ publisher not available');
+        }
+        const successful: string[] = [];
+        const failed: PublishFailure[] = [];
+        for (const event of events) {
+            const res = await this.publish(event);
+            if (res.isOk()) {
+                successful.push(event.idempotencyKey);
+            } else {
+                failed.push(new PublishFailure(event.idempotencyKey, `Failed to publish to ActiveMQ topic ${event.subject}`, { cause: res.error }));
+            }
+        }
+        return Ok({ successful, failed });
     }
 
     subscribe<TSubject extends Event['subject']>(props: SubscribeProps<TSubject>): void {

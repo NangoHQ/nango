@@ -2,20 +2,21 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { RoleSelect } from './RoleSelect';
 import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Badge } from '@/components-v2/ui/Badge';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components-v2/ui/Dialog';
-import { Dot } from '@/components-v2/ui/Dot';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu';
-import { Input } from '@/components-v2/ui/Input';
-import { StatusWithIcon } from '@/components-v2/ui/StatusWithIcon';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Badge } from '@/components/ui/Badge';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Dot } from '@/components/ui/Dot';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { Input } from '@/components/ui/Input';
+import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -65,7 +66,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button variant="primary" onClick={onSubmit} loading={isPending}>
                         Save
@@ -122,7 +123,7 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-heading-sm text-text-primary">Team members</h3>
+            <h3 className="text-heading-sm text-text-strong">Team members</h3>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -131,7 +132,7 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="icon" variant="ghost" target="_blank">
+                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="2xs" variant="ghost" target="_blank">
                                     <ExternalLink className="size-3" />
                                 </ButtonLink>
                             </div>
@@ -172,11 +173,11 @@ export const TeamMembers: React.FC = () => {
                             <TableCell>
                                 {user.is_invitation ? (
                                     <div className="inline-flex items-center gap-2 text-text-secondary">
-                                        <Dot className="bg-feedback-warning-fg" /> Invited
+                                        <Dot className="bg-status-warning-icon" /> Invited
                                     </div>
                                 ) : (
-                                    <div className="inline-flex items-center gap-2 text-text-primary">
-                                        <Dot className="bg-feedback-success-fg" /> Active
+                                    <div className="inline-flex items-center gap-2 text-text-strong">
+                                        <Dot className="bg-status-success-icon" /> Active
                                     </div>
                                 )}
                             </TableCell>
@@ -187,9 +188,9 @@ export const TeamMembers: React.FC = () => {
                                         <PermissionGate condition={canManageTeam}>
                                             {(allowed) => (
                                                 <DropdownMenuTrigger asChild disabled={!allowed}>
-                                                    <Button variant="ghost" size="icon" disabled={!allowed}>
+                                                    <IconButton variant="ghost" size="2xs" disabled={!allowed} label="Member actions">
                                                         <Ellipsis />
-                                                    </Button>
+                                                    </IconButton>
                                                 </DropdownMenuTrigger>
                                             )}
                                         </PermissionGate>
@@ -205,11 +206,11 @@ export const TeamMembers: React.FC = () => {
                                                             description: `Are you sure you want to remove ${user.name} from the team?`,
                                                             onConfirm: () => onRemoveUser(user),
                                                             confirmButtonText: 'Remove',
-                                                            confirmVariant: 'destructive'
+                                                            confirmVariant: 'danger'
                                                         })
                                                     }
                                                 >
-                                                    <span className="text-feedback-error-fg">Remove user</span>
+                                                    <span className="text-status-danger-text">Remove user</span>
                                                 </DropdownMenuItem>
                                             )}
 
@@ -222,11 +223,11 @@ export const TeamMembers: React.FC = () => {
                                                             description: `Are you sure you want to revoke the invitation for ${user.email}?`,
                                                             onConfirm: () => onCancelInvitation(user),
                                                             confirmButtonText: 'Revoke',
-                                                            confirmVariant: 'destructive'
+                                                            confirmVariant: 'danger'
                                                         })
                                                     }
                                                 >
-                                                    <span className="text-feedback-error-fg">Revoke invitation</span>
+                                                    <span className="text-status-danger-text">Revoke invitation</span>
                                                 </DropdownMenuItem>
                                             )}
                                         </DropdownMenuContent>

@@ -10,7 +10,7 @@ import { pubsub } from '../utils/pubsub.js';
 import { getPlan, lambdaKeepWarmProvisionedConcurrencyMultiplier } from './plans/plans.js';
 import secretService from './secret.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 import type { Orchestrator } from '../index.js';
@@ -202,6 +202,15 @@ class EnvironmentService {
         });
     }
 
+    // Cheap variant: skip secret decryption when only id→name is needed.
+    async getEnvironmentNamesByIds(environmentIds: number[]): Promise<Map<number, string>> {
+        if (environmentIds.length === 0) {
+            return new Map();
+        }
+        const rows = await db.readOnly<DBEnvironment>(TABLE).select('id', 'name').whereIn('id', environmentIds).andWhere({ deleted: false });
+        return new Map(rows.map((r) => [r.id, r.name]));
+    }
+
     async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
         const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false });
 
@@ -242,7 +251,7 @@ class EnvironmentService {
             return [];
         }
 
-        return encryptionManager.decryptEnvironmentVariables(result);
+        return getEncryptionManager().decryptEnvironmentVariables(result);
     }
 
     async editEnvironmentVariable(environment_id: number, values: { name: string; value: string }[]): Promise<number[] | null> {
@@ -263,7 +272,7 @@ class EnvironmentService {
             };
         });
 
-        const encryptedValues = encryptionManager.encryptEnvironmentVariables(mappedValues);
+        const encryptedValues = getEncryptionManager().encryptEnvironmentVariables(mappedValues);
 
         const results = await db.knex.from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ environment_id }).insert(encryptedValues);
 

@@ -1,11 +1,11 @@
 import { fn } from 'storybook/test';
 
-import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/KeyValueInput',
+    title: 'Components/Patterns/KeyValueInput',
     parameters: { layout: 'padded' }
 };
 export default meta;

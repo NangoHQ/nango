@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.70.5",
+    "version": "0.70.7",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -35,20 +35,20 @@
         "prepublishOnly": "npm run copy:files"
     },
     "dependencies": {
-        "@babel/core": "7.28.0",
-        "@babel/parser": "7.28.0",
-        "@babel/preset-typescript": "7.27.1",
-        "@babel/traverse": "7.28.0",
-        "@babel/types": "7.28.2",
-        "@nangohq/nango-yaml": "0.70.5",
-        "@nangohq/node": "0.70.5",
-        "@nangohq/providers": "0.70.5",
-        "@nangohq/runner-sdk": "0.70.5",
+        "@babel/core": "7.29.7",
+        "@babel/parser": "7.29.7",
+        "@babel/preset-typescript": "7.29.7",
+        "@babel/traverse": "7.29.7",
+        "@babel/types": "7.29.7",
+        "@nangohq/nango-yaml": "0.70.6",
+        "@nangohq/node": "0.70.7",
+        "@nangohq/providers": "0.70.7",
+        "@nangohq/runner-sdk": "0.70.7",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
         "ajv": "8.18.0",
         "ajv-errors": "3.0.0",
-        "axios": "1.15.2",
+        "axios": "1.18.0",
         "chalk": "5.4.1",
         "chokidar": "3.5.3",
         "columnify": "1.6.0",
@@ -57,7 +57,7 @@
         "copyfiles": "2.4.1",
         "dotenv": "16.5.0",
         "ejs": "3.1.10",
-        "esbuild": "0.25.5",
+        "esbuild": "0.28.1",
         "figlet": "1.8.2",
         "glob": "13.0.5",
         "import-meta-resolve": "4.1.0",
@@ -77,7 +77,7 @@
         "zod": "4.3.6"
     },
     "devDependencies": {
-        "@nangohq/types": "0.70.5",
+        "@nangohq/types": "0.70.7",
         "@types/babel__core": "7.20.5",
         "@types/babel__traverse": "7.20.7",
         "@types/columnify": "1.5.4",
@@ -94,7 +94,7 @@
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
         "type-fest": "4.41.0",
-        "vitest": "3.2.4"
+        "vitest": "4.1.9"
     },
     "engines": {
         "node": ">=22.22.2"

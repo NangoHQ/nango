@@ -22,6 +22,17 @@ export const scriptNameSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)
     .max(255);
+export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
+// On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
+export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
+// Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
+// derives the environment from the secret key, so it spreads these as-is.
+export const functionListQueryFields = {
+    type: functionTypeSchema.optional(),
+    search: z.string().trim().min(1).max(255).optional(),
+    page: z.coerce.number().int().min(0).optional().default(0),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+};
 export const connectionIdSchema = z
     .string()
     .regex(/^[a-zA-Z0-9,.;:=+~[\]|@${}"'\\/_ -]+$/) // For legacy reason (some people are stringifying json and passing email)

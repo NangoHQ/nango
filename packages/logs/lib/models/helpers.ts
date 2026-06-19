@@ -95,7 +95,7 @@ export function getFullIndexName(prefix: string, createdAt: string) {
     return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
 }
 
-export function createCursor({ sort }: estypes.SearchHit): string {
+export function createCursor({ sort }: Pick<estypes.SearchHit, 'sort'>): string {
     return Buffer.from(JSON.stringify(sort)).toString('base64');
 }
 

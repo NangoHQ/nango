@@ -9,6 +9,35 @@ const docsJsonPath = path.join(docsRoot, 'docs.json');
 const providersPath = 'packages/providers/providers.yaml';
 const baseUrl = 'https://nango.dev/docs';
 
+interface ResourceLink {
+    title: string;
+    url: string;
+    description: string;
+}
+
+const resourceLinks: ResourceLink[] = [
+    {
+        title: 'Blog',
+        url: 'https://nango.dev/blog',
+        description: 'Articles, product updates, and integration deep-dives from the Nango team.'
+    },
+    {
+        title: 'Pricing',
+        url: 'https://nango.dev/pricing',
+        description: 'Plans and pricing for Nango Cloud.'
+    },
+    {
+        title: 'Talk to the team',
+        url: 'https://nango.dev/demo',
+        description: 'Book a call with Nango for sales, onboarding, or technical questions.'
+    },
+    {
+        title: 'Community Slack',
+        url: 'https://nango.dev/slack',
+        description: 'Get help, share feedback, and connect with other Nango developers.'
+    }
+];
+
 type NavItem = string | NavGroup;
 
 interface NavGroup {
@@ -145,6 +174,12 @@ async function renderLlmsTxt(documentation: NavGroup, apiOverview: NavGroup, cha
     lines.push('- Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.');
     lines.push('');
 
+    lines.push('## Resources', '');
+    for (const link of resourceLinks) {
+        lines.push(`- [${link.title}](${link.url}): ${link.description}`);
+    }
+    lines.push('');
+
     if (changelogRoutes.length > 0) {
         lines.push('## Optional', '');
         for (const route of changelogRoutes) {
@@ -208,6 +243,13 @@ async function renderLlmsFullTxt(routes: string[], catalog: CatalogEntry[]): Pro
     lines.push('Use these slugs to construct provider-specific docs URLs only when needed.');
     lines.push('');
     lines.push(renderCatalogTable(catalog));
+    lines.push('');
+
+    lines.push('## Resources');
+    lines.push('');
+    for (const link of resourceLinks) {
+        lines.push(`- [${link.title}](${link.url}): ${link.description}`);
+    }
     lines.push('');
 
     return `${lines.join('\n').replace(/\n{3,}/g, '\n\n')}\n`;

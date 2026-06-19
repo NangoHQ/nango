@@ -17,6 +17,7 @@ import type { EndpointMethod } from './api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
+    PostPublicAwsSigV4Authorization,
     PostPublicBasicAuthorization,
     PostPublicBillAuthorization,
     PostPublicJwtAuthorization,
@@ -63,18 +64,22 @@ import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
+    DeleteIntegrationFunction,
+    DeletePublicIntegrationFunction,
+    GetFunctionDeployment,
     GetFunctionDryrun,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
     GetProviderTemplates,
+    GetPublicIntegrationFunction,
+    GetPublicIntegrationFunctions,
+    GetPublicProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
+    PostFunctionDeploymentResult,
     PostFunctionDryrun,
-    PostFunctionDryrunResult,
-    PostRemoteFunctionCompile,
-    PostRemoteFunctionDeploy,
-    PostRemoteFunctionDryrun
+    PostFunctionDryrunResult
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -94,10 +99,11 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
+import type { GetPlainHmac } from './plain/api.js';
+import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
-import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
+import type { GetConnectionRecordModels, GetConnectionRecords, GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
 import type {
     GetSharedCredentialsProvider,
@@ -107,7 +113,7 @@ import type {
 } from './sharedCredentials/api.js';
 import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PatchTeamUser, PutTeam } from './team/api.js';
-import type { GetUser, PatchUser } from './user/api.js';
+import type { GetUser, PatchUser, PutUserPassword } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
 
 export type PublicApiEndpoints =
@@ -149,6 +155,7 @@ export type PublicApiEndpoints =
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
+    | PostPublicAwsSigV4Authorization
     | PostPublicConnection
     | PatchPublicConnection
     | PostPublicSyncStart
@@ -161,10 +168,13 @@ export type PublicApiEndpoints =
     | GetFunctionDryrun
     | PostFunctionDryrunResult
     | PostFunctionDeployment
-    | PostRemoteFunctionCompile
-    | PostRemoteFunctionDryrun
-    | PostRemoteFunctionDeploy
+    | GetFunctionDeployment
+    | PostFunctionDeploymentResult
     | GetPublicFunctionCode
+    | GetPublicIntegrationFunctions
+    | GetPublicIntegrationFunction
+    | DeletePublicIntegrationFunction
+    | GetPublicProviderTemplates
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -176,8 +186,11 @@ export type PrivateApiEndpoints =
     | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
+    | GetBillingUsage
+    | GetBillingUsageTopDimensionValues
     | GetUser
     | PatchUser
+    | PutUserPassword
     | PostInvite
     | DeleteInvite
     | DeleteTeamUser
@@ -193,6 +206,7 @@ export type PrivateApiEndpoints =
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions
+    | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates
     | DeleteIntegration
@@ -202,6 +216,8 @@ export type PrivateApiEndpoints =
     | GetConnections
     | GetConnectionsCount
     | GetConnection
+    | GetConnectionRecordModels
+    | GetConnectionRecords
     | GetInvite
     | GetMeta
     | GetEmailByExpiredToken
@@ -238,7 +254,8 @@ export type PrivateApiEndpoints =
     | PutConnectUISettings
     | GetProviders
     | GetProvider
-    | PostInternalTriggerFunction;
+    | PostInternalTriggerFunction
+    | GetPlainHmac;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

@@ -17,7 +17,7 @@
     "dependencies": {
         "@colors/colors": "1.6.0",
         "@sentry/node": "9.3.0",
-        "axios": "1.15.2",
+        "axios": "1.18.0",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
         "fast-safe-stringify": "2.1.1",
@@ -34,7 +34,7 @@
         "@nangohq/types": "file:../types",
         "express": "5.1.0",
         "ms": "3.0.0-canary.1",
-        "vitest": "3.2.4"
+        "vitest": "4.1.9"
     },
     "files": [
         "dist/**/*"

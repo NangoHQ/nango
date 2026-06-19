@@ -22,6 +22,6 @@ export interface InternalDeployOptions {
     integration?: string;
 }
 
-export const FUNCTION_TYPES = ['sync', 'action', 'on-event'] as const;
+export const FUNCTION_TYPES = ['sync', 'action', 'on-event', 'webhook'] as const;
 
 export type FunctionType = (typeof FUNCTION_TYPES)[number];

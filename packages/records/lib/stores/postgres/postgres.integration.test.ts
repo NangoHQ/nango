@@ -4,15 +4,15 @@ import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { PostgresStore, incrCount } from './postgres.js';
-import { config } from '../../catalog/default.js';
 import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
+import { testConfig } from './tests/helpers.js';
 import { formatRecords } from '../../helpers/format.js';
 import { decryptRecordData, encryptRecords } from '../../utils/encryption.js';
 
-const db = knex(config);
-const store = new PostgresStore(config);
+const db = knex(testConfig);
+const store = new PostgresStore(testConfig);
 
 import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
@@ -110,7 +110,11 @@ describe('PostgresStore', () => {
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(556);
 
-        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({ external_id: '1', decrypted: { id: '1', name: 'John Doe' } });
+        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
+            external_id: '1',
+            sync_job_id: null,
+            decrypted: { id: '1', name: 'John Doe' }
+        });
         await expect(fromDb(connectionId, model, '2')).resolves.toMatchObject({
             external_id: '2',
             decrypted: { id: '2', name: 'Jane Much Longer Name Doe' }
@@ -133,6 +137,7 @@ describe('PostgresStore', () => {
         expect(stats[model]?.size_bytes).toBe(560);
         await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
             external_id: '1',
+            sync_job_id: null,
             decrypted: { id: '1', name: 'Maurice Doe' }
         });
     });
@@ -961,6 +966,45 @@ describe('PostgresStore', () => {
                 const { records, next_cursor } = response.unwrap();
                 expect(records.length).toBe(numOfRecords);
                 expect(next_cursor).toBeNull();
+            });
+        });
+
+        describe('bounded decrypt concurrency (RECORDS_DECRYPT_CONCURRENCY)', () => {
+            const originalConcurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+            afterAll(() => {
+                (envs as any).RECORDS_DECRYPT_CONCURRENCY = originalConcurrency;
+            });
+
+            // The decrypt loop processes records in chunks of RECORDS_DECRYPT_CONCURRENCY. The
+            // concern is that splitting a page into concurrent chunks could drop, duplicate or
+            // reorder records. We read the same dataset at several concurrencies (1 forces one
+            // record per chunk, the others straddle the chunk boundary) and assert the result is
+            // identical to a serial baseline, so any reordering across chunks would fail.
+            it('Should return the same records in the same order regardless of concurrency', async () => {
+                const numOfRecords = 25;
+                const { connectionId, model } = await upsertNRecords(numOfRecords);
+
+                const orderAt = async (concurrency: number) => {
+                    (envs as any).RECORDS_DECRYPT_CONCURRENCY = concurrency;
+                    const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
+                    expect(response.isOk()).toBe(true);
+                    return response.unwrap().records;
+                };
+
+                const baseline = await orderAt(1);
+
+                // Completeness + correctness on the baseline.
+                expect(baseline.length).toBe(numOfRecords);
+                expect(new Set(baseline.map((r) => r['id'])).size).toBe(numOfRecords);
+                for (const r of baseline) {
+                    expect(r['name']).toBe(`record ${r['id']}`);
+                }
+
+                const baselineIds = baseline.map((r) => r['id']);
+                for (const concurrency of [3, 7, numOfRecords + 1]) {
+                    const ids = (await orderAt(concurrency)).map((r) => r['id']);
+                    expect(ids).toEqual(baselineIds);
+                }
             });
         });
     }, 60_000);
@@ -2149,6 +2193,45 @@ describe('PostgresStore', () => {
             expect(res1.isOk()).toBe(true);
             expect(res2.isOk()).toBe(true);
         });
+
+        it('should create the (connection_id, model, generation) child index on the new partition', async () => {
+            const date = new Date('2025-01-17T00:00:00Z');
+            const res = await store.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { indexdef: string; indisvalid: boolean }[] }>(
+                `SELECT pg_get_indexdef(i.indexrelid) AS indexdef, i.indisvalid
+                 FROM pg_index i
+                 JOIN pg_class c ON c.oid = i.indexrelid
+                 WHERE c.relname = ?`,
+                ['records_seen_20250117_connection_model_generation']
+            );
+            expect(rows).toHaveLength(1);
+            expect(rows[0]?.indisvalid).toBe(true);
+            expect(rows[0]?.indexdef).toMatch(/\(connection_id, model, generation\)/);
+        });
+
+        it('should not build the generation index on a pre-existing partition', async () => {
+            // Simulate the deploy-time scenario: a partition that was created by a previous
+            // version of the code and so does not have the generation index yet. We must NOT
+            // build the index on it from the write path — that would take ACCESS EXCLUSIVE
+            // on the child for the duration of the build and block every concurrent
+            // records_seen write into that partition.
+            const date = new Date('2025-01-18T00:00:00Z');
+            const next = new Date('2025-01-19T00:00:00Z');
+            await db.raw(
+                `CREATE TABLE IF NOT EXISTS nango_records.records_seen_20250118 PARTITION OF nango_records.records_seen FOR VALUES FROM ('${date.toISOString()}') TO ('${next.toISOString()}')`
+            );
+            const indexName = 'records_seen_20250118_connection_model_generation';
+            const before = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [indexName]);
+            expect(before.rows[0]?.exists).toBe(false);
+
+            const res = await store.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const after = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [indexName]);
+            expect(after.rows[0]?.exists).toBe(false);
+        });
     });
 
     describe('dropSeenPartition', () => {
@@ -2169,6 +2252,25 @@ describe('PostgresStore', () => {
             const date = new Date('2025-02-11T00:00:00Z');
             const res = await store.dropSeenPartition({ date });
             expect(res.isOk()).toBe(true);
+        });
+    });
+
+    describe('records_seen write (Phase 2g: sync_job_id dropped)', () => {
+        it('should write generation', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = 'model-' + rnd.string();
+            const syncId = uuid.v4();
+            const syncJobId = rnd.number();
+            await upsertRecords({ records: [{ id: '1', name: 'a' }], connectionId, environmentId, model, syncId, syncJobId });
+
+            const { rows } = await db.raw<{ rows: { generation: string }[] }>(
+                `SELECT generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
+                [connectionId, model]
+            );
+            expect(rows).toHaveLength(1);
+            // node-pg returns bigint as string; coerce for the compare.
+            expect(Number(rows[0]?.generation)).toBe(syncJobId);
         });
     });
 });
@@ -2250,7 +2352,7 @@ async function fromDb(
     connectionId: number,
     model: string,
     externalId: string
-): Promise<{ external_id: string; sync_job_id: number; decrypted: UnencryptedRecordData }> {
+): Promise<{ external_id: string; sync_job_id: number | null; decrypted: UnencryptedRecordData }> {
     const metadata = await db.select<FormattedRecord[]>('*').from(RECORDS_TABLE).where({ connection_id: connectionId, model, external_id: externalId }).first();
     if (!metadata) {
         throw new Error(`Record with external_id ${externalId} not found`);
@@ -2341,6 +2443,6 @@ async function fromDbLegacy(
 }
 
 const rnd = {
-    number: () => Math.floor(Math.random() * 1000),
+    number: () => Math.floor(Math.random() * 1_000_000_000),
     string: () => Math.random().toString(36).substring(6)
 };

@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { RemoteFunctionError, remoteFunctionDryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { FunctionError, dryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
@@ -10,13 +10,13 @@ export const defaultFunctionName = 'function';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
-export async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number, dryrunId?: string) {
+export async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number, dryrunId: string) {
     return await sandboxApiKeyService.createSandboxApiKey(db.knex, {
         parentApiKeyId,
         environmentId,
         purpose: 'dryrun',
-        ...(dryrunId ? { dryrunId } : {}),
-        expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+        dryrunId,
+        expiresAt: new Date(Date.now() + dryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
 }
 
@@ -39,7 +39,7 @@ export function verifyDryrunResultSandboxToken<T>(res: Response<T, Required<Requ
 }
 
 export function toFunctionDryrunError(err: unknown): FunctionDryrunError {
-    if (err instanceof RemoteFunctionError) {
+    if (err instanceof FunctionError) {
         return {
             code: err.code,
             message: err.message,

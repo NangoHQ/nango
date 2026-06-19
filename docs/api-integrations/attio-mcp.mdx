@@ -1,0 +1,102 @@
+---
+title: 'Attio (MCP)'
+sidebarTitle: 'Attio (MCP)'
+description: 'Connect AI tools to Attio via the Model Context Protocol (MCP) to manage CRM data, records, and workflows'
+---
+
+## 🚀 Quickstart
+
+Connect to the Attio MCP server with Nango and call MCP tools in minutes. Attio MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _Attio (MCP)_.
+    </Step>
+    <Step id="authorize-attio" title="Authorize Attio">
+        Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Authorize_, then log in to your Attio account. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-attio-mcp" title="Call the Attio MCP API">
+        Make your first MCP request (initialize handshake). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/v2/mcp" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.post({
+                    endpoint: '/v2/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    body: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2024-11-05',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+
+        </Tabs>
+        ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Attio (MCP) guides
+
+Nango uses **dynamic client registration** with Attio's MCP OAuth server. You do not need to register an MCP application — just create the integration in Nango and authorize with your Attio account.
+
+Official resources: [Attio MCP](https://attio.com/help/reference/integrations-connections/mcp)
+
+## 🧩 Pre-built syncs & actions for Attio (MCP)
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/attio-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

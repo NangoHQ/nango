@@ -7,15 +7,19 @@ import {
     ProxyError,
     absoluteUrlFromRedirectRequestOptions,
     buildCanonicalParams,
+    buildProxyBody,
     buildProxyHeaders,
     buildProxyURL,
+    deriveIntegrationConfigProxy,
+    enforceProxyOutboundUrlPolicy,
     getAxiosConfiguration,
-    getProxyConfiguration
+    getProxyConfiguration,
+    proxyUsesConfigurableBaseUrlOverride
 } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
-import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
@@ -620,9 +624,160 @@ describe('buildProxyHeaders', () => {
             foo: 'Bar'
         });
     });
+
+    it('should include caller-supplied headers in the AWS SigV4 SignedHeaders list', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            headers: {
+                'x-amz-target': 'DynamoDB_20120810.GetItem',
+                'content-type': 'application/x-amz-json-1.0'
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://dynamodb.us-east-1.amazonaws.com/',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'AWS_SIGV4',
+                    raw: {},
+                    role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                    region: 'us-east-1',
+                    service: 'dynamodb',
+                    access_key_id: 'AKIDEXAMPLE',
+                    secret_access_key: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
+                    session_token: 'session-token'
+                }
+            })
+        });
+
+        // SignedHeaders must mention x-amz-target so AWS verifies the signature over it;
+        // omitting it produces SignatureDoesNotMatch for DynamoDB-style APIs.
+        expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bx-amz-target\b/);
+        expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bcontent-type\b/);
+        expect(result['x-amz-target']).toBe('DynamoDB_20120810.GetItem');
+        expect(result['content-type']).toBe('application/x-amz-json-1.0');
+    });
+});
+
+describe('proxyUsesConfigurableBaseUrlOverride', () => {
+    it('returns true for AWS SigV4 per-connection base_url', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+
+        expect(proxyUsesConfigurableBaseUrlOverride({ proxyConfig: config, connection })).toBe(true);
+    });
+
+    it('returns false for AWS SigV4 without per-connection base_url', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            }
+        });
+
+        expect(proxyUsesConfigurableBaseUrlOverride({ proxyConfig: config, connection })).toBe(false);
+    });
+});
+
+describe('enforceProxyOutboundUrlPolicy', () => {
+    it('blocks denylisted resolved URLs from AWS SigV4 connection base_url', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            endpoint: '/'
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+        const absoluteUrl = buildProxyURL({ config, connection });
+
+        expect(() =>
+            enforceProxyOutboundUrlPolicy({
+                absoluteUrl,
+                proxyConfig: config,
+                connection,
+                overrideEnabled: true,
+                denylist: new Set(['localhost'])
+            })
+        ).toThrow(
+            expect.objectContaining({
+                code: 'base_url_override_not_allowed'
+            })
+        );
+    });
 });
 
 describe('buildProxyURL', () => {
+    it('uses AWS SigV4 per-connection base_url when no explicit override is set', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            endpoint: '/tables'
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+
+        expect(buildProxyURL({ config, connection })).toBe('http://localhost:4566/tables');
+    });
+
     it('should correctly construct url with no trailing slash and no leading slash', () => {
         const config = getDefaultProxy({
             provider: {
@@ -1209,6 +1364,82 @@ describe('buildProxyURL', () => {
 
         expect(url).toBe('https://my-secret-key.example.com/api/test');
     });
+
+    it('TWO_STEP: interpolates ${accessToken} in proxy.query from credentials.token', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'TWO_STEP',
+                    proxy: {
+                        base_url: 'https://api.example.com',
+                        query: {
+                            authToken: '${accessToken}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'my-auth-token',
+                    raw: { authToken: 'my-auth-token', accountID: 'acc-123' }
+                }
+            })
+        });
+
+        expect(url).toBe('https://api.example.com/api/test?authToken=my-auth-token');
+    });
+
+    it('TWO_STEP: interpolates ${credentials.raw.xxx} in proxy.query', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'TWO_STEP',
+                    proxy: {
+                        base_url: 'https://api.example.com',
+                        query: {
+                            account_id: '${credentials.raw.accountID}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'my-auth-token',
+                    raw: { authToken: 'my-auth-token', accountID: 'acc-123' }
+                }
+            })
+        });
+
+        expect(url).toBe('https://api.example.com/api/test?account_id=acc-123');
+    });
+
+    it('TWO_STEP: interpolates both ${accessToken} and ${credentials.raw.xxx} in proxy.query (ShopVox pattern)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'TWO_STEP',
+                    proxy: {
+                        base_url: 'https://api.shopvox.com/',
+                        query: {
+                            authToken: '${accessToken}',
+                            account_id: '${credentials.raw.accountID}'
+                        }
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'shopvox-auth-token',
+                    raw: { authToken: 'shopvox-auth-token', accountID: '42' }
+                }
+            })
+        });
+
+        expect(url).toBe('https://api.shopvox.com/api/test?authToken=shopvox-auth-token&account_id=42');
+    });
 });
 
 describe('getAxiosConfiguration', () => {
@@ -1284,7 +1515,8 @@ describe('getAxiosConfiguration', () => {
         });
 
         const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
-        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails);
+        const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
+        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails);
 
         expect(seen).toEqual(['https://redirect.example/next']);
     });
@@ -1306,7 +1538,48 @@ describe('getAxiosConfiguration', () => {
         });
 
         const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
-        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails)).toThrow(ProxyError);
+        const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
+        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails)).toThrow(ProxyError);
+    });
+
+    it('invokes validateProxyRequestUrl with the resolved outbound URL', () => {
+        const seen: string[] = [];
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            endpoint: '/v1/items',
+            validateProxyRequestUrl: ({ absoluteUrl }) => {
+                seen.push(absoluteUrl);
+            }
+        });
+
+        getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(seen).toEqual(['https://api.example.com/v1/items']);
+    });
+
+    it('propagates throw from validateProxyRequestUrl', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            validateProxyRequestUrl: () => {
+                throw new ProxyError('base_url_override_not_allowed', 'blocked');
+            }
+        });
+
+        expect(() =>
+            getAxiosConfiguration({
+                proxyConfig: config,
+                connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+            })
+        ).toThrow(ProxyError);
     });
 });
 
@@ -1457,6 +1730,26 @@ describe('getProxyConfiguration', () => {
 
         expect(res.value.validateProxyRedirectUrl).toBe(validateProxyRedirectUrl);
     });
+
+    it('passes through validateProxyRequestUrl', () => {
+        const validateProxyRequestUrl = (): void => {};
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            endpoint: '/api/test',
+            validateProxyRequestUrl
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            providerName: 'github'
+        };
+
+        const res = getProxyConfiguration({ externalConfig, internalConfig });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        expect(res.value.validateProxyRequestUrl).toBe(validateProxyRequestUrl);
+    });
 });
 
 describe('buildCanonicalParams', () => {
@@ -1553,5 +1846,341 @@ describe('buildCanonicalParams', () => {
             const result = buildCanonicalParams('GET', undefined, 'q=a!b(c)d*e');
             expect(result).toBe('q=a%21b%28c%29d%2Ae');
         });
+    });
+});
+
+describe('buildProxyHeaders TWO_STEP', () => {
+    const twoStepBase = {
+        auth_mode: 'TWO_STEP' as const,
+        display_name: 'Test',
+        docs: '',
+        token_response: { token: 'token' }
+    };
+
+    const twoStepConnection = getTestConnection({
+        credentials: { type: 'TWO_STEP', token: 'sess-token-123' } as unknown as TwoStepCredentials
+    });
+
+    it('adds Bearer by default when no proxy headers are configured', () => {
+        const config = getDefaultProxy({ provider: { ...twoStepBase, proxy: { base_url: '' } } });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBe('Bearer sess-token-123');
+    });
+
+    it('adds Bearer when proxy headers do not contain ${accessToken} or cookie', () => {
+        const config = getDefaultProxy({
+            provider: { ...twoStepBase, proxy: { base_url: '', headers: { 'x-custom': 'value' } } }
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBe('Bearer sess-token-123');
+    });
+
+    it('still adds Bearer when cookie header does not reference ${credentials._cookies}', () => {
+        const config = getDefaultProxy({
+            provider: { ...twoStepBase, proxy: { base_url: '', headers: { cookie: 'static=value' } } }
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBe('Bearer sess-token-123');
+    });
+
+    it('suppresses Bearer when a proxy header contains ${accessToken}', () => {
+        const config = getDefaultProxy({
+            provider: { ...twoStepBase, proxy: { base_url: '', headers: { 'x-token': '${accessToken}' } } }
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBeUndefined();
+        expect(headers['x-token']).toBe('sess-token-123');
+    });
+
+    it('suppresses Bearer when a cookie proxy header is present (session-cookie auth)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                ...twoStepBase,
+                proxy: { base_url: '', headers: { cookie: '${credentials._cookies}' } }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: { type: 'TWO_STEP', token: 'sess-token-123', _cookies: 'B1SESSION=sess-token-123; ROUTEID=node1' } as unknown as TwoStepCredentials
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection });
+        expect(headers['authorization']).toBeUndefined();
+        expect(headers['cookie']).toBe('B1SESSION=sess-token-123; ROUTEID=node1');
+    });
+
+    it('cookie header resolves to only B1SESSION when ROUTEID is absent (single-node)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                ...twoStepBase,
+                proxy: { base_url: '', headers: { cookie: '${credentials._cookies}' } }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: { type: 'TWO_STEP', token: 'sess-token-123', _cookies: 'B1SESSION=sess-token-123' } as unknown as TwoStepCredentials
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection });
+        expect(headers['authorization']).toBeUndefined();
+        expect(headers['cookie']).toBe('B1SESSION=sess-token-123');
+    });
+});
+
+describe('deriveIntegrationConfigProxy (private-api-generic style)', () => {
+    const genericProvider = {
+        auth_mode: 'API_KEY' as const,
+        display_name: 'Private API (Generic)',
+        docs: '',
+        // presence of integration_config opts the provider into per-integration proxy injection
+        integration_config: { keyPlacement: { type: 'string' as const, title: 'Key placement', description: '', order: 1, automated: false } },
+        proxy: { base_url: 'https://my-private-api' }
+    };
+
+    it('injects the API key into a custom header using the value template', () => {
+        const config = getDefaultProxy({ provider: genericProvider });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret-key' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: 'Api-Key ${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect((axiosConfig.headers as Record<string, string>)['authorization']).toBe('Api-Key secret-key');
+        expect(axiosConfig.url).toBe('https://api.example.com/api/test');
+    });
+
+    it('injects the API key into a custom non-Authorization header', () => {
+        const config = getDefaultProxy({ provider: genericProvider });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'abc' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'x-ai-calls-api-key', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect((axiosConfig.headers as Record<string, string>)['x-ai-calls-api-key']).toBe('abc');
+    });
+
+    it('injects the API key into a query param', () => {
+        const config = getDefaultProxy({ provider: genericProvider });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'qkey' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'query', keyName: 'api_key', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect(axiosConfig.url).toBe('https://api.example.com/api/test?api_key=qkey');
+    });
+
+    it('is a no-op when the provider does not declare integration_config', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                display_name: 'x',
+                docs: '',
+                proxy: { base_url: 'https://static.example.com', headers: { authorization: 'Bearer ${apiKey}' } }
+            }
+        });
+        const derived = deriveIntegrationConfigProxy({
+            proxyConfig: config,
+            integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: { keyName: 'Authorization', valueTemplate: '${apiKey}' } }
+        });
+        expect(derived).toBe(config);
+    });
+
+    it('does not duplicate the base when the endpoint is absolute and equals the custom base', () => {
+        const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com/users' });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'k' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect(axiosConfig.url).toBe('https://api.example.com/users');
+    });
+
+    it('does not duplicate the base when the absolute endpoint continues with a query string', () => {
+        const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com?foo=1' });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'k' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        const parsed = new URL(axiosConfig.url as string);
+        expect(parsed.host).toBe('api.example.com');
+        expect(parsed.searchParams.get('foo')).toBe('1');
+    });
+
+    it('does not rewrite a different host that merely shares the base string prefix', () => {
+        const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com.evil.com/x' });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'k' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        // The base is not stripped (no path boundary), so the request stays under the configured host, not evil.com.
+        expect(new URL(axiosConfig.url as string).host).toBe('api.example.com');
+    });
+});
+
+describe('buildProxyBody', () => {
+    it('returns null when provider has no proxy.body defined', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com' } }
+        });
+        expect(buildProxyBody({ config, connection: getTestConnection() })).toBeNull();
+    });
+
+    it('returns null when proxy.body is empty', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: {} } }
+        });
+        expect(buildProxyBody({ config, connection: getTestConnection() })).toBeNull();
+    });
+
+    it('includes literal values that contain no $ placeholders', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: { grant_type: 'client_credentials' } } }
+        });
+        const result = buildProxyBody({ config, connection: getTestConnection() });
+        expect(result).toEqual({ grant_type: 'client_credentials' });
+    });
+
+    it('interpolates ${apiKey} for API_KEY credentials', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: { token: '${apiKey}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+        expect(result).toEqual({ token: 'my-secret-key' });
+    });
+
+    it('interpolates ${access_token} for OAUTH2 credentials', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'OAUTH2', proxy: { base_url: 'https://example.com', body: { bearer: '${access_token}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-tok', raw: {} } })
+        });
+        expect(result).toEqual({ bearer: 'oauth-tok' });
+    });
+
+    it('interpolates ${username} and ${password} for BASIC credentials', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: { base_url: 'https://example.com', body: { user: '${username}', pass: '${password}' } }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'BASIC', username: 'alice', password: 'secret' } })
+        });
+        expect(result).toEqual({ user: 'alice', pass: 'secret' });
+    });
+
+    it('interpolates ${credentials.token} for TWO_STEP credentials', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'TWO_STEP', proxy: { base_url: 'https://example.com', body: { session: '${credentials.token}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'TWO_STEP', token: 'sess-abc' } as any })
+        });
+        expect(result).toEqual({ session: 'sess-abc' });
+    });
+
+    it('omits a key whose placeholder cannot be resolved', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'OAUTH2', proxy: { base_url: 'https://example.com', body: { token: '${apiKey}' } } }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'tok', raw: {} } })
+        });
+        expect(result).toBeNull();
+    });
+
+    it('interpolates connectionConfig values', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://example.com', body: { account: '${connectionConfig.account_id}' } }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ connection_config: { account_id: 'acct-123' } })
+        });
+        expect(result).toEqual({ account: 'acct-123' });
+    });
+
+    it('omits a connectionConfig key when the value is missing from connection_config', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://example.com', body: { account: '${connectionConfig.account_id}' } }
+            }
+        });
+        const result = buildProxyBody({ config, connection: getTestConnection({ connection_config: {} }) });
+        expect(result).toBeNull();
+    });
+
+    it('mixes literal, credential, and connectionConfig values in one body', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: { grant_type: 'password', api_key: '${apiKey}', tenant: '${connectionConfig.tenant_id}' }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'key-abc' },
+                connection_config: { tenant_id: 'tenant-xyz' }
+            })
+        });
+        expect(result).toEqual({ grant_type: 'password', api_key: 'key-abc', tenant: 'tenant-xyz' });
+    });
+
+    it('skips non-string values in proxy.body', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: { count: 42 as unknown as string, label: 'static' }
+                }
+            }
+        });
+        const result = buildProxyBody({ config, connection: getTestConnection() });
+        expect(result).toEqual({ label: 'static' });
     });
 });

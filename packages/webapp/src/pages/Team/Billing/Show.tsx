@@ -8,8 +8,8 @@ import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -31,14 +31,13 @@ export const TeamBilling: React.FC = () => {
     }, [canManageBilling, activeTab, setActiveTab]);
 
     return (
-        <DashboardLayout className="flex flex-col gap-8">
+        <DashboardLayout title="Billing & usage" className="flex flex-col gap-8">
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            <header className="flex justify-between items-center">
-                <h2 className="text-text-primary text-2xl font-semibold">Billing & usage</h2>
+            <header className="flex justify-end items-center">
                 {isUsageTab && (
-                    <div>
+                    <div className="flex items-center gap-4">
                         <MonthSelector onMonthChange={setSelectedMonth} />
                     </div>
                 )}

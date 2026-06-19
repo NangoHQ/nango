@@ -6,8 +6,8 @@ import { useEnvironment } from '../../../hooks/useEnvironment.js';
 import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { APIError } from '../../../utils/api.js';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Switch } from '@/components-v2/ui/Switch';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
@@ -53,7 +53,7 @@ export const FunctionSwitch: React.FC<{
                 description:
                     'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.',
                 confirmButtonText: 'Disable',
-                confirmVariant: 'destructive',
+                confirmVariant: 'danger',
                 onConfirm: async () => {
                     await onDisable();
                 }

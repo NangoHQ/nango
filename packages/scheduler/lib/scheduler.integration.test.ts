@@ -245,6 +245,35 @@ describe('Scheduler', () => {
         expect(deleted.lastScheduledTaskId).toBe(task?.id);
         expect(deleted.lastScheduledTaskState).toBe('CANCELLED');
     });
+    it('should set the state of many schedules in one call', async () => {
+        const a = await recurring({ scheduler, state: 'STARTED' });
+        const b = await recurring({ scheduler, state: 'PAUSED' });
+
+        const res = await scheduler.setScheduleStates({ scheduleNames: [a.name, b.name], state: 'DELETED' });
+        expect(res.isOk()).toBe(true);
+
+        const found = (await scheduler.searchSchedules({ names: [a.name, b.name], limit: 2 })).unwrap();
+        expect(found.map((s) => s.state).sort()).toEqual(['DELETED', 'DELETED']);
+    });
+    it('should treat a missing schedule as success when setting states in bulk', async () => {
+        const a = await recurring({ scheduler, state: 'STARTED' });
+
+        const res = await scheduler.setScheduleStates({ scheduleNames: [a.name, 'does-not-exist'], state: 'DELETED' });
+
+        expect(res.isOk()).toBe(true);
+        const [deleted] = (await scheduler.searchSchedules({ names: [a.name], limit: 1 })).unwrap();
+        expect(deleted?.state).toBe('DELETED');
+    });
+    it('should cancel running tasks when bulk-deleting schedules', async () => {
+        const schedule = await recurring({ scheduler });
+        await immediate(scheduler, { schedule });
+
+        const res = await scheduler.setScheduleStates({ scheduleNames: [schedule.name], state: 'DELETED' });
+        expect(res.isOk()).toBe(true);
+
+        const [task] = (await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap();
+        expect(task?.state).toBe('CANCELLED');
+    });
     it('should update schedule frequency', async () => {
         const schedule = await recurring({ scheduler });
         const newFrequency = 1_800_000;
@@ -257,6 +286,27 @@ describe('Scheduler', () => {
         const found = (await scheduler.searchSchedules({ names: [schedule.name], limit: 1 })).unwrap();
         expect(found.length).toBe(1);
         expect(found[0]?.id).toBe(schedule.id);
+    });
+
+    describe('at', () => {
+        it('should create a task in CREATED state with the given startsAfter', async () => {
+            const startsAfter = new Date(Date.now() + 60_000);
+            const task = await at(scheduler, { startsAfter });
+            expect(task.state).toBe('CREATED');
+            expect(task.startsAfter).toBeWithinMs(startsAfter, 1_000);
+        });
+        it('should not be dequeue-able before startsAfter', async () => {
+            const task = await at(scheduler, { startsAfter: new Date(Date.now() + 60_000) });
+            const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+            expect(dequeued.length).toBe(0);
+        });
+        it('should become dequeue-able once startsAfter has passed', async () => {
+            const delayMs = 1_000;
+            const task = await at(scheduler, { startsAfter: new Date(Date.now() + delayMs) });
+            expect((await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap().length).toBe(0);
+            await new Promise((resolve) => setTimeout(resolve, delayMs + 300));
+            expect((await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap().length).toBe(1);
+        });
     });
 
     describe('immediateBatch', () => {
@@ -340,6 +390,28 @@ function batchProps(overrides: Partial<TaskProps> = {}): Parameters<Scheduler['i
         ownerKey: overrides.ownerKey ?? null,
         retryKey: overrides.retryKey ?? null
     };
+}
+
+async function at(
+    scheduler: Scheduler,
+    { startsAfter, taskProps }: { startsAfter: Date; taskProps?: Partial<Omit<TaskProps, 'startsAfter' | 'scheduleId'>> }
+): Promise<Task> {
+    return (
+        await scheduler.at({
+            name: taskProps?.name || nanoid(),
+            payload: taskProps?.payload || {},
+            groupKey: taskProps?.groupKey || nanoid(),
+            groupMaxConcurrency: taskProps?.groupMaxConcurrency || 0,
+            retryMax: taskProps?.retryMax ?? 1,
+            retryCount: taskProps?.retryCount || 0,
+            createdToStartedTimeoutSecs: taskProps?.createdToStartedTimeoutSecs || 3600,
+            startedToCompletedTimeoutSecs: taskProps?.startedToCompletedTimeoutSecs || 3600,
+            heartbeatTimeoutSecs: taskProps?.heartbeatTimeoutSecs || 600,
+            ownerKey: taskProps?.ownerKey || null,
+            retryKey: taskProps?.retryKey || null,
+            startsAfter
+        })
+    ).unwrap();
 }
 
 async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {

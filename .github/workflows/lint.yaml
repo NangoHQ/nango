@@ -55,11 +55,8 @@ jobs:
               with:
                   fetch-depth: '0'
 
-            - uses: actions/setup-node@v4
+            - uses: ./.github/actions/setup-node
               if: needs.should-run.outputs.should_skip != 'true'
-              with:
-                  cache: 'npm'
-                  node-version-file: '.nvmrc'
 
             - name: Install dependencies
               if: needs.should-run.outputs.should_skip != 'true'
@@ -71,6 +68,8 @@ jobs:
 
             - name: Lint
               if: needs.should-run.outputs.should_skip != 'true'
+              env:
+                  NODE_OPTIONS: --max-old-space-size=8192
               run: npm run lint -- --quiet
     typecheck:
         needs: should-run
@@ -83,11 +82,8 @@ jobs:
               with:
                   fetch-depth: 1
 
-            - uses: actions/setup-node@v4
+            - uses: ./.github/actions/setup-node
               if: needs.should-run.outputs.should_skip != 'true'
-              with:
-                  cache: 'npm'
-                  node-version-file: '.nvmrc'
 
             - name: Install dependencies
               if: needs.should-run.outputs.should_skip != 'true'

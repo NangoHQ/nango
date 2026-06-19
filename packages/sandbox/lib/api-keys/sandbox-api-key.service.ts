@@ -1,7 +1,6 @@
 import { createSandboxApiKeyToken, createSandboxSigningSecret, decryptSandboxSigningSecret, encryptSandboxSigningSecret } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import type { SandboxApiKeyPurpose } from '@nangohq/shared';
 import type { DBCustomerKey, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
@@ -24,24 +23,28 @@ export {
 } from '@nangohq/shared';
 export type { SandboxApiKeyPurpose } from '@nangohq/shared';
 
+interface CreateSandboxApiKeyBase {
+    parentApiKeyId: number;
+    environmentId: number;
+    expiresAt: Date;
+}
+
+interface CreateDryrunSandboxApiKey extends CreateSandboxApiKeyBase {
+    purpose: 'dryrun';
+    dryrunId: string;
+}
+
+interface CreateDeploySandboxApiKey extends CreateSandboxApiKeyBase {
+    purpose: 'deploy';
+    deploymentId: string;
+}
+
+type CreateSandboxApiKeyArgs = CreateDryrunSandboxApiKey | CreateDeploySandboxApiKey;
+
 class SandboxApiKeyService {
-    public async createSandboxApiKey(
-        trx: Knex,
-        {
-            parentApiKeyId,
-            environmentId,
-            purpose,
-            dryrunId,
-            expiresAt
-        }: {
-            parentApiKeyId: number;
-            environmentId: number;
-            purpose: SandboxApiKeyPurpose;
-            dryrunId?: string;
-            expiresAt: Date;
-        }
-    ): Promise<Result<string>> {
+    public async createSandboxApiKey(trx: Knex, args: CreateSandboxApiKeyArgs): Promise<Result<string>> {
         try {
+            const { parentApiKeyId, environmentId, expiresAt } = args;
             const now = Date.now();
             const expiresAtMs = expiresAt.getTime();
             if (!Number.isFinite(expiresAtMs) || expiresAtMs <= now) {
@@ -85,8 +88,9 @@ class SandboxApiKeyService {
                 return createSandboxApiKeyToken({
                     parentApiKeyId: parentKey.id,
                     signingSecret,
-                    purpose,
-                    ...(dryrunId ? { dryrunId } : {}),
+                    ...(args.purpose === 'dryrun'
+                        ? { purpose: args.purpose, dryrunId: args.dryrunId }
+                        : { purpose: args.purpose, deploymentId: args.deploymentId }),
                     expiresAt: cappedExpiresAt
                 });
             });

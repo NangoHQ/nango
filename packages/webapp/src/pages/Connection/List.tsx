@@ -7,20 +7,21 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Avatar } from '@/components-v2/ui/Avatar';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { ComboboxSelect } from '@/components-v2/ui/Combobox';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { StatusWithIcon } from '@/components-v2/ui/StatusWithIcon';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Avatar } from '@/components/ui/Avatar';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { ComboboxSelect } from '@/components/ui/Combobox';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
@@ -30,7 +31,7 @@ import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
 
-import type { ComboboxOption } from '@/components-v2/ui/Combobox';
+import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -69,8 +70,8 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 <div className="flex gap-2.5 items-center min-w-0">
                     <Avatar name={displayName} />
                     <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-body-small-semi text-text-primary truncate">{displayName}</span>
-                        <span className="text-body-small-regular text-text-tertiary truncate">{email ?? ''}</span>
+                        <span className="text-body-small-semi text-text-strong truncate">{displayName}</span>
+                        <span className="text-body-small-regular text-text-muted truncate">{email ?? ''}</span>
                     </div>
                 </div>
             );
@@ -86,7 +87,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             return (
                 <div className="flex gap-1.5 items-center">
                     <IntegrationLogo provider={row.original.provider} className="size-8 bg-transparent" />
-                    <span className="text-body-small-semi text-text-primary">{provider}</span>
+                    <span className="text-body-small-semi text-text-strong">{provider}</span>
                 </div>
             );
         }
@@ -114,7 +115,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             const { created_at } = row.original;
 
             return (
-                <time dateTime={created_at} title={created_at} className="text-code-body-small-regular text-text-tertiary">
+                <time dateTime={created_at} title={created_at} className="text-code-body-small-regular text-text-muted">
                     {formatDateToInternationalFormat(created_at)}
                 </time>
             );
@@ -275,26 +276,12 @@ export const ConnectionList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout fullWidth title="Connections">
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-3">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-title-subsection text-text-primary">Connections</h2>
-                    {(hasConnections || hasFiltered) && (
-                        <PermissionGate condition={canCreateTestConnection}>
-                            {(allowed) => (
-                                <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed}>
-                                    Add test connection
-                                </ButtonLink>
-                            )}
-                        </PermissionGate>
-                    )}
-                </div>
-
                 {/* Content */}
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
@@ -303,7 +290,7 @@ export const ConnectionList = () => {
                             <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="bg-bg-surface h-10">
+                                <InputGroup className="h-10">
                                     <InputGroupInput
                                         className="pr-2.5"
                                         type="text"
@@ -327,14 +314,13 @@ export const ConnectionList = () => {
                                     emptyText="No integrations found"
                                     footer={
                                         <div className="flex items-center justify-between gap-3">
-                                            <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                            <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">
                                                 Need a new integration?
                                             </span>
                                             <Button
                                                 type="button"
-                                                variant="secondary"
+                                                variant="outline"
                                                 size="sm"
-                                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                                                 onClick={() => {
                                                     navigate(`/${env}/integrations/create`);
                                                 }}
@@ -355,6 +341,13 @@ export const ConnectionList = () => {
                                     reorderOnSelect={false}
                                     showSearch={false}
                                 />
+                                <PermissionGate condition={canCreateTestConnection}>
+                                    {(allowed) => (
+                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                            Add test connection
+                                        </ButtonLink>
+                                    )}
+                                </PermissionGate>
                             </div>
 
                             {/* Table */}
@@ -424,15 +417,15 @@ export const ConnectionList = () => {
                             </Table>
 
                             {showEmptyStateWithFilters && (
-                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                                     <p className="text-text-secondary text-body-medium-regular">No connections found.</p>
                                 </div>
                             )}
                         </>
                     )}
                     {showEmptyStateNoFilters && (
-                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                            <h3 className="text-title-body text-text-primary">Connect to an external API</h3>
+                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
+                            <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
                                 <StyledLink to="https://nango.dev/docs/guides/auth/auth-guide" type="external">
@@ -440,16 +433,18 @@ export const ConnectionList = () => {
                                 </StyledLink>
                                 , or manually here.
                             </p>
-                            <ButtonLink to={`/${env}/connections/create`} size="lg">
+                            <ButtonLink to={`/${env}/connections/create`} size="xl">
                                 Add test connection
                             </ButtonLink>
                         </div>
                     )}
 
                     {hasNextPage && (
-                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
-                            Load More
-                        </Button>
+                        <div className="self-center">
+                            <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline">
+                                Load More
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>

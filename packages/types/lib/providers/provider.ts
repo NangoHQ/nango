@@ -37,6 +37,11 @@ export interface SimplifiedJSONSchema {
     doc_section?: string;
     secret?: string;
     automated: boolean;
+    enum?: string[];
+    // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
+    warnings?: Record<string, string>;
+    // Show/validate this field only when another field in the same `integration_config` holds `equals`.
+    visible_when?: { field: string; equals: string };
 }
 
 export interface BaseProvider {
@@ -48,6 +53,7 @@ export interface BaseProvider {
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;
+        body?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         forward_headers_on_redirect?: boolean;
@@ -89,6 +95,7 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    integration_config?: Record<string, SimplifiedJSONSchema>;
     assertion_option?: Record<string, SimplifiedJSONSchema>; // introduce another property since these params are not stored and can only be used once for assertion generation
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
@@ -145,6 +152,7 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
     client_registration: McpOAuth2ClientRegistration;
+    registration_params?: Record<string, string | string[]>;
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
@@ -217,6 +225,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_expiration_strategy?: 'expireAt' | 'expireIn';
         refresh_token?: string;
     };
+    token_response_headers?: string[];
     additional_steps?: {
         body_format?: 'json' | 'form';
         token_params?: Record<string, string>;
@@ -253,6 +262,10 @@ export interface ProviderSignature extends BaseProvider {
     };
 }
 
+export interface ProviderAwsSigV4 extends BaseProvider {
+    auth_mode: 'AWS_SIGV4';
+}
+
 export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
@@ -269,6 +282,7 @@ export type Provider =
     | ProviderJwt
     | ProviderTwoStep
     | ProviderSignature
+    | ProviderAwsSigV4
     | ProviderApiKey
     | ProviderBill
     | ProviderGithubApp
@@ -278,5 +292,5 @@ export type Provider =
     | ProviderMcpOAuth2Generic
     | ProviderInstallPlugin;
 
-export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic; // TODO: fix this type
+export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic | ProviderAwsSigV4; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

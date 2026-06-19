@@ -13,6 +13,7 @@ import { PersistClient } from '../clients/persist.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -105,6 +106,88 @@ describe('cache', () => {
             await nangoAction.getWebhookURL();
             expect(nango.getIntegration).toHaveBeenCalledTimes(1);
         });
+    });
+});
+
+describe('proxy base URL override denylist', () => {
+    beforeEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.clearAllMocks();
+    });
+
+    it('blocks denylisted base URL overrides using startup policy', async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/',
+                baseUrlOverride: 'http://localhost:4566/'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
+
+    it('does not allow bypassing denylist via runtime env mutation', async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
+
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', 'null');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'true');
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/',
+                baseUrlOverride: 'http://localhost:4566/'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
+
+    it('blocks AWS SigV4 per-connection base_url via resolved proxy URL validation', async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner(
+            { ...nangoProps, scriptType: 'action', provider: 'aws-sigv4', providerConfigKey: 'aws-sigv4' },
+            { persistClient, locks: new MapLocks() }
+        );
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/tables'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
     });
 });
 
@@ -675,16 +758,16 @@ describe('proxy 401 invalid credentials', () => {
     }
 
     let persistClient: PersistClient;
-    let getConnectionMock: ReturnType<typeof vi.fn>;
+    let getConnectionMock: Mock<Nango['getConnection']>;
 
     beforeEach(async () => {
         persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
 
         const nodeClient = (await import('@nangohq/node')).Nango;
-        getConnectionMock = vi.fn().mockResolvedValue({
+        getConnectionMock = vi.fn<Nango['getConnection']>().mockResolvedValue({
             credentials: stableCredentials
-        });
+        } as unknown as Awaited<ReturnType<Nango['getConnection']>>);
         nodeClient.prototype.getConnection = getConnectionMock;
         nodeClient.prototype.setMetadata = vi.fn().mockResolvedValue({});
         nodeClient.prototype.getIntegration = vi.fn().mockResolvedValue({ data: { provider: proxyProvider401TestKey } });
@@ -730,10 +813,10 @@ describe('proxy 401 invalid credentials', () => {
         getConnectionMock
             .mockResolvedValueOnce({
                 credentials: { ...stableCredentials, access_token: 'before-refresh' }
-            })
+            } as unknown as Awaited<ReturnType<Nango['getConnection']>>)
             .mockResolvedValueOnce({
                 credentials: { ...stableCredentials, access_token: 'after-refresh' }
-            });
+            } as unknown as Awaited<ReturnType<Nango['getConnection']>>);
 
         const httpSpy = vi.spyOn(ProxyRequest.prototype, 'httpCall');
         httpSpy.mockReset();

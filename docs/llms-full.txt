@@ -3887,26 +3887,35 @@ Supported events:
 
 | Event | When it runs | Common use |
 | --- | --- | --- |
-| `validate-connection` | During connection creation | Reject invalid credentials or missing provider permissions |
 | `post-connection-creation` | Immediately after a connection is created | Register provider webhooks, seed metadata, run setup checks |
+| `validate-connection` | During connection creation and reconnect | Reject invalid credentials, missing provider permissions, or policy violations (e.g. same-account enforcement) |
 | `pre-connection-deletion` | Before a connection is deleted | Delete provider webhook subscriptions or external resources |
 
 <Accordion title="For agents">
   Before generating an event function, identify the lifecycle event, provider endpoint, required metadata, and desired failure behavior.
 
-  For `validate-connection`, throwing rejects and deletes the connection. For cleanup functions, make the provider call idempotent because the external resource may already be gone.
+  For `validate-connection`, throwing rejects the auth attempt. On first connect, the connection is deleted. On reconnect, the connection is marked as an auth error (`refresh_exhausted`) and the user must reconnect explicitly. For cleanup functions, make the provider call idempotent because the external resource may already be gone.
+
+  For same-account enforcement on reconnect, store the provider account identifier in **connection metadata** during `post-connection-creation`, then compare it to a live identity API call in `validate-connection`. Do not compare `connection_config` fields: reconnect upserts new credentials before validation runs, so config values already reflect the newly authenticated account.
 </Accordion>
 
 ## Create a setup function
 
 Add a file under the integration's `on-events/` folder:
 
-```typescript salesforce/on-events/register-webhook.ts
+```typescript salesforce/on-events/post-connection-setup.ts
 import { createOnEvent } from 'nango';
+import * as z from 'zod';
+
+const Metadata = z.object({
+    organization_id: z.string().optional(),
+    webhookId: z.string().optional()
+});
 
 export default createOnEvent({
-    description: 'Register a Salesforce webhook after a connection is created',
+    description: 'Register a Salesforce webhook after a successful connection',
     event: 'post-connection-creation',
+    metadata: Metadata,
     exec: async (nango) => {
         const response = await nango.post({
             endpoint: '/webhooks',
@@ -3926,18 +3935,76 @@ export default createOnEvent({
 Import it from `index.ts`:
 
 ```typescript index.ts
-import './salesforce/on-events/register-webhook';
+import './salesforce/on-events/post-connection-setup';
 ```
+
+## Create a connection validation function
+
+Add a file under the integration's `on-events/` folder:
+
+```typescript salesforce/on-events/validate-connection.ts
+import { createOnEvent } from 'nango';
+import * as z from 'zod';
+
+const Metadata = z.object({
+    organizationId: z.string().optional(),
+    webhookId: z.string().optional()
+});
+
+export default createOnEvent({
+    description: 'Validate connection against saved organization id to prevent changing account on reconnect',
+    event: 'validate-connection',
+    metadata: Metadata,
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const lockedOrganizationId = metadata?.organizationId;
+
+        const response = await nango.get<{organization_id: string}>({
+            endpoint: '/services/oauth2/userinfo'
+        });
+        const organizationId = response.data?.organization_id;
+        if (!organizationId) {
+            throw new nango.ActionError('Salesforce connection missing organization_id from /services/oauth2/userinfo');
+        }
+
+        // On initial connection, save organization id to connection metadata
+        if (!lockedOrganizationId) {
+            await nango.setMetadata({organizationId});
+            return;
+        }
+
+        // On subsequent connections, check if new organization id matches stored value
+        if (lockedOrganizationId !== organizationId) {
+            throw new nango.ActionError(
+                `Salesforce org mismatch: expected ${lockedOrganizationId}, got ${organizationId}`
+            );
+        }
+    }
+});
+```
+
+Import it from `index.ts`:
+
+```typescript index.ts
+import './salesforce/on-events/validate-connection';
+```
+
+On first connect, validation passes when metadata has no locked org yet; the setup function records `organization_id` after auth succeeds. On reconnect, validation compares the new credentials against the saved org ID and rejects the attempt if they differ.
+
+<Info>
+Compare the locked value in **metadata** to a live value from the provider API. Do not compare `connection_config` fields: on reconnect, Nango upserts the new credentials and overwrites `connection_config` **before** `validate-connection` runs, so config already reflects the account the user just authenticated with.
+</Info>
 
 ## Create a cleanup function
 
 If the provider webhook is registered per connection, clean it up before the Nango connection is deleted:
 
-```typescript salesforce/on-events/delete-webhook.ts
+```typescript salesforce/on-events/pre-connection-cleanup.ts
 import { createOnEvent } from 'nango';
 import * as z from 'zod';
 
 const Metadata = z.object({
+    organization_id: z.string().optional(),
     webhookId: z.string().optional()
 });
 
@@ -3961,7 +4028,7 @@ export default createOnEvent({
 Import it from `index.ts`:
 
 ```typescript index.ts
-import './salesforce/on-events/delete-webhook';
+import './salesforce/on-events/pre-connection-cleanup';
 ```
 
 ## Test and deploy
@@ -3969,7 +4036,7 @@ import './salesforce/on-events/delete-webhook';
 Dry run an event function against an existing connection:
 
 ```bash
-nango dryrun register-webhook '<CONNECTION-ID>' -e dev
+nango dryrun post-connection-setup '<CONNECTION-ID>' -e dev
 ```
 
 Deploy your functions:
@@ -6407,7 +6474,14 @@ By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nan
 
 Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed. Notifications about new releases will be posted to your dedicated Nango Slack channel.
 
-You can also subscribe to release notifications in GitHub by watching **Releases** on the private [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository (your GitHub user or team must have read access). Each release includes the Docker tag, version metadata, and a generated changelog between managed releases.
+You can also subscribe to release notifications on the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
+
+- **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
+- **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
+
+Each release includes the managed image tag, application version, source commit hash, release date, Docker pull reference, a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
+
+### Image tags
 
 Managed image tags follow this format:
 
@@ -6415,12 +6489,23 @@ Managed image tags follow this format:
 nangohq/nango:managed-{managed-release-version}-{application-version}-{commit-sha}
 ```
 
-* `managed-release-version`: Semantic versioning for the image lifecycle (major = breaking, minor/patch = features/fixes)
+* `managed-release-version`: Semantic version for the managed image lifecycle (major = breaking, minor/patch = features/fixes)
 * `application-version`: Semantic version of the Nango application baked into the image
+* `commit-sha`: Full Git commit hash of the released source
+
+For example, pull a release from Docker Hub with:
+
+```bash
+docker pull nangohq/nango:managed-1.5.4-0.70.4-0fe07a6d83aea0becc4cea382c5cead2f555718d
+```
 
 Customers should **pin their CLI version to the `application-version`** specified in the tag for compatibility.
 
-You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/master/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release).
+### Versions and policy
+
+You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/main/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release). The in-repo [`CHANGELOG.md`](https://github.com/NangoHQ/managed-image-releases/blob/main/CHANGELOG.md) tracks release history.
+
+Each managed release maps to a specific source commit, and published image tags are never changed after release. Customers are encouraged to stay reasonably current with managed image releases.
 
 See the full [changelog](/updates/changelog) for details on each release.
 
@@ -6462,10 +6547,6 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 - **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
 - **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
 
-## Exporting billing metrics
-
-For usage-based billing, certain anonymous metrics must be exported to Nango. This can be done automatically or manually, depending on your preference. We’ll coordinate with your team during setup.
-
 ## Exporting metrics & logs
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
@@ -6478,7 +6559,9 @@ Any SMTP server can be configured to be used by Nango for these email communicat
 
 ## Encryption key
 
-You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
+You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
+
+The records cache always requires this key. If you run sync functions that persist records, the persist and records services fail to store or retrieve records when `NANGO_ENCRYPTION_KEY` is not set—they do not fall back to plaintext.
 
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
@@ -6507,7 +6590,7 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 | MCP server | No | Yes |
 | Customize auth branding | No | Yes |
 | Role-based permissions | No | Yes |
-| SAML SSO | No | Yes |
+| SAML SSO | No | On the roadmap |
 | Support SLA | No | Yes |
 
 ### Server URL, callback URL, and custom domains
@@ -6584,7 +6667,62 @@ Special characters in `RECORDS_DATABASE_URL` must be URL encoded. If it is not s
 Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
 </Tip>
 
+### External Redis
+
+The bundled Redis is fine for local use but not for production. Connect Nango to an external Redis (or Valkey) with either a full URL or discrete variables:
+
+```sh
+NANGO_REDIS_URL=rediss://:<password>@<host>:<port>
+# or
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH=<password>
+```
+
+Use the `rediss://` scheme (or discrete variables, which default to TLS) to enable in-transit encryption.
+
+#### IAM / short-lived token authentication
+
+Managed Redis with IAM authentication (for example GCP Memorystore for Valkey) uses a short-lived token as the password and requires the token to be refreshed before it expires. Instead of a static `NANGO_REDIS_AUTH`, point Nango at a file that an external process (such as a sidecar) keeps up to date:
+
+```sh
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH_TOKEN_FILE=/path/to/token   # re-read on every (re)connect
+NANGO_REDIS_USERNAME=<username>              # optional; defaults to "default"
+```
+
+Nango reads the token file on every connection and reconnection, so a rotated token is always picked up without a restart. This is cloud-agnostic: anything that writes the current token to the file works. The writer must update the file atomically — write a temporary file and `rename()` it into place — so a reconnect never reads a half-written token and fails authentication. When `NANGO_REDIS_AUTH_TOKEN_FILE` is set, do not embed credentials in `NANGO_REDIS_URL`.
+
+The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_REDIS_` (for example `NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE`); it falls back to the system Redis when unset.
+
 ### Securing your instance
+
+#### Proxy base URL override hardening
+
+The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
+
+Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync and action scripts), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+
+By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the **server** and **runners** after changes:
+
+```sh
+NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=true
+NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.internal","localhost","127.0.0.1","[::1]"]'
+```
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` | `true` | Set to `false` to reject all base URL overrides |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
+
+**Operator guidance:**
+
+- **Production:** keep the default denylist. Add environment-specific hosts if your deployment exposes additional internal endpoints.
+- **Legitimate localhost overrides (dev only):** set `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` to restore fail-open behavior.
+- **No overrides at all:** set `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false`.
+
+Denylist matching is hostname-based and applies to redirect hops as well as the initial override target.
 
 #### Securing the dashboard
 
@@ -6638,23 +6776,23 @@ let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '
 
 ### Telemetry
 
-Telemetry on self-hosted instances is light by default. Nango tracks core actions at a high level and does not track sensitive information.
-
-You can disable telemetry with:
-
-```sh
-TELEMETRY=false
-```
+Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on described above.
 
 ### Logs
 
-Nango uses Elasticsearch to store execution logs and power the logs UI. To keep free self-hosted deployments lighter, this stack is optional.
+Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep free self-hosted deployments lighter, this stack is optional.
 
 To enable logs:
 
-- Host an Elasticsearch cluster.
+- Host an Elasticsearch or OpenSearch cluster.
 - Set `NANGO_LOGS_ENABLED=true`.
-- Configure the relevant `NANGO_LOGS_ES_*` environment variables.
+- Configure the relevant `NANGO_LOGS_ES_*` environment variables (these apply to both providers).
+
+Nango uses Elasticsearch by default. To use OpenSearch instead, set:
+
+```sh
+NANGO_LOGS_PROVIDER=opensearch
+```
 
 Elasticsearch hosting options include:
 
@@ -6795,11 +6933,22 @@ It's an HMAC-SHA256 hash of the webhook payload, using the webhook signing key f
 Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.
 </Warning>
 
-The webhook signature can be generated with the following code:
+The webhook signature can be verified with the following code:
+
+<Warning>
+Verify the signature with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. With the Node SDK, pass it as `webhookSigningKey`; for raw HMAC verification, use it as the HMAC secret. Using the API secret key will cause verification to fail on any environment where the keys differ.
+</Warning>
 
 <Tabs>
   <Tab title="Node SDK">
+    Pass the webhook signing key as `webhookSigningKey` so a single client can make API calls with the API key and verify webhooks with the signing key. `webhookSigningKey` falls back to `secretKey` when omitted.
+
     ```typescript
+    const nango = new Nango({
+        apiKey: process.env.NANGO_API_KEY, // used for API calls
+        webhookSigningKey: process.env.NANGO_WEBHOOK_SIGNING_KEY // used to verify webhooks
+    });
+
     async (req, res) => {
         const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
     }
@@ -6809,9 +6958,10 @@ The webhook signature can be generated with the following code:
     ```typescript
     import crypto from 'crypto';
     
-    const secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    // From Environment Settings > Webhooks > Signing key
+    const webhookSigningKey = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     const body = // raw request body as string
-    const hash = crypto.createHmac('sha256', secretKeyDev).update(body).digest('hex');
+    const hash = crypto.createHmac('sha256', webhookSigningKey).update(body).digest('hex');
     ```
   </Tab>
   <Tab title="Python">
@@ -6819,9 +6969,10 @@ The webhook signature can be generated with the following code:
     import hmac
     import hashlib
     
-    secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    # From Environment Settings > Webhooks > Signing key
+    webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     body = # raw request body as bytes
-    hash = hmac.new(secret_key_dev.encode('utf-8'), body, hashlib.sha256).hexdigest()
+    hash = hmac.new(webhook_signing_key.encode('utf-8'), body, hashlib.sha256).hexdigest()
     ```
   </Tab>
   <Tab title="Java">
@@ -6832,11 +6983,12 @@ The webhook signature can be generated with the following code:
     
     public class Main {
         public static void main(String[] args) throws Exception {
-            String secretKeyDev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+            // From Environment Settings > Webhooks > Signing key
+            String webhookSigningKey = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
             String body = // raw request body as string
     
             Mac mac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secretKeyDev.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(webhookSigningKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKey);
             byte[] hashBytes = mac.doFinal(body.getBytes(StandardCharsets.UTF_8));
             
@@ -6853,9 +7005,10 @@ The webhook signature can be generated with the following code:
     ```ruby
     require 'openssl'
     
-    secret_key_dev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    # From Environment Settings > Webhooks > Signing key
+    webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     body = # raw request body 
-    hash = OpenSSL::HMAC.hexdigest('SHA256', secret_key_dev, body)
+    hash = OpenSSL::HMAC.hexdigest('SHA256', webhook_signing_key, body)
     ```
   </Tab>
   <Tab title="Go">
@@ -6871,10 +7024,11 @@ The webhook signature can be generated with the following code:
     )
     
     func main() {
-        secretKeyDev := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        // From Environment Settings > Webhooks > Signing key
+        webhookSigningKey := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         var body []byte // raw request body
     
-        h := hmac.New(sha256.New, []byte(secretKeyDev))
+        h := hmac.New(sha256.New, []byte(webhookSigningKey))
         h.Write(body)
         hash := hex.EncodeToString(h.Sum(nil))
     }
@@ -6887,9 +7041,10 @@ The webhook signature can be generated with the following code:
     
     type HmacSha256 = Hmac<Sha256>;
     
-    let secret_key_dev = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+    // From Environment Settings > Webhooks > Signing key
+    let webhook_signing_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
     let body = // raw request body as string or bytes
-    let mut mac = HmacSha256::new_from_slice(secret_key_dev.as_bytes()).unwrap();
+    let mut mac = HmacSha256::new_from_slice(webhook_signing_key.as_bytes()).unwrap();
     mac.update(body.as_bytes());
     let hash = format!("{:x}", mac.finalize().into_bytes());
     ```
@@ -6897,9 +7052,10 @@ The webhook signature can be generated with the following code:
   <Tab title="PHP">
     ```php
     <?php
-    $secretKeyDev = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    // From Environment Settings > Webhooks > Signing key
+    $webhookSigningKey = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     $body = // raw request body as string
-    $hash = hash_hmac('sha256', $body, $secretKeyDev);
+    $hash = hash_hmac('sha256', $body, $webhookSigningKey);
     ?>
     ```
   </Tab>
@@ -9703,7 +9859,7 @@ Instantiate the `Nango` class:
 ```js
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<API-KEY>' });
 ```
 
 **Parameters**
@@ -9711,8 +9867,16 @@ const nango = new Nango({ secretKey: '<SECRET-KEY>' });
 <Expandable>
   <ResponseField name="config" type="object" required>
     <Expandable title="config" defaultOpen>
-      <ResponseField name="secretKey" type="string" required>
-        Get your secret key in the environment settings of the Nango UI. THis key should never be shared.
+      <ResponseField name="apiKey" type="string" required>
+        Your environment API key, found in **Environment Settings > API Keys** in the Nango UI. Sent as the bearer token for API calls. This key should never be shared.
+      </ResponseField>
+
+      <ResponseField name="secretKey" type="string" deprecated>
+        Deprecated alias for `apiKey`, kept for backward compatibility. Provide either `apiKey` or `secretKey`.
+      </ResponseField>
+
+      <ResponseField name="webhookSigningKey" type="string">
+        The environment's webhook signing key, found in **Environment Settings > Webhooks > Signing key**. Used by `verifyIncomingWebhookRequest` to validate incoming webhook signatures. Falls back to `secretKey` when omitted. On environments created after 2026-04-20 (or any environment that later rotated its API key), the signing key differs from the API key, so set this explicitly to verify webhooks.
       </ResponseField>
 
       <ResponseField name="host" type="string">
@@ -11756,9 +11920,14 @@ await nango.getProvider({ provider: <NAME> })
 
 ### Verify Webhook Signature
 
-Asserts that a Webhook is coming from Nango's backend.
+Asserts that a Webhook is coming from Nango's backend. Verification uses `webhookSigningKey` when the client is constructed with one, otherwise it falls back to `secretKey`. On environments created after 2026-04-20 (or any environment that later rotated its API key), the signing key differs from the API key, so construct the client with `webhookSigningKey` (from **Environment Settings > Webhooks > Signing key**).
 
 ```js
+const nango = new Nango({
+    apiKey: '<API-KEY>',
+    webhookSigningKey: '<WEBHOOK-SIGNING-KEY>'
+});
+
 async (req, res) => {
     const isValid = nango.verifyIncomingWebhookRequest(req.body, req.headers);
 }
@@ -13673,6 +13842,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `1password-users` | 1Password (Users API) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/1password-users.md) | [connect](https://nango.dev/docs/api-integrations/1password-users/connect.md) |  | iam |
 | `3cx` | 3CX | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/3cx.md) | [connect](https://nango.dev/docs/api-integrations/3cx/connect.md) |  | communication |
 | `8x8` | 8x8 | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/8x8.md) | [connect](https://nango.dev/docs/api-integrations/8x8/connect.md) |  | communication |
+| `a-leads` | A-Leads | API_KEY | [docs](https://nango.dev/docs/api-integrations/a-leads.md) | [connect](https://nango.dev/docs/api-integrations/a-leads/connect.md) |  | marketing |
 | `absorb-lms` | Absorb LMS | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/absorb-lms.md) | [connect](https://nango.dev/docs/api-integrations/absorb-lms/connect.md) | [setup](https://nango.dev/docs/api-integrations/absorb-lms/how-to-register-your-own-absorb-lms-api-oauth-app.md) | other |
 | `accelo` | Accelo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/accelo.md) |  | [setup](https://nango.dev/docs/api-integrations/accelo/how-to-register-your-own-accelo-api-oauth-app.md) | invoicing, ticketing |
 | `active-campaign` | ActiveCampaign | API_KEY | [docs](https://nango.dev/docs/integrations/all/active-campaign.md) | [connect](https://nango.dev/docs/integrations/all/active-campaign/connect.md) |  | marketing, communication |
@@ -13689,8 +13859,11 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `adp-workforce-now` | ADP Workforce Now | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-workforce-now.md) | [connect](https://nango.dev/docs/integrations/all/adp-workforce-now/connect.md) |  | hr |
 | `adp-workforce-now-next-gen` | ADP Workforce Now Next Generation | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen.md) | [connect](https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen/connect.md) |  | hr |
 | `adyen` | Adyen | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adyen.md) |  |  | payment |
+| `adyntel` | Adyntel | API_KEY | [docs](https://nango.dev/docs/api-integrations/adyntel.md) | [connect](https://nango.dev/docs/api-integrations/adyntel/connect.md) |  | marketing |
 | `affinity` | Affinity (v1) | BASIC | [docs](https://nango.dev/docs/integrations/all/affinity.md) | [connect](https://nango.dev/docs/integrations/all/affinity/connect.md) |  | crm |
 | `affinity-v2` | Affinity (v2) | API_KEY | [docs](https://nango.dev/docs/integrations/all/affinity-v2.md) | [connect](https://nango.dev/docs/integrations/all/affinity-v2/connect.md) |  | crm |
+| `agiloft` | Agiloft | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/agiloft.md) | [connect](https://nango.dev/docs/api-integrations/agiloft/connect.md) | [setup](https://nango.dev/docs/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app.md) | productivity |
+| `agiloft-cc` | Agiloft (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/agiloft-cc.md) | [connect](https://nango.dev/docs/api-integrations/agiloft-cc/connect.md) |  | productivity |
 | `aimfox` | Aimfox | API_KEY | [docs](https://nango.dev/docs/integrations/all/aimfox.md) | [connect](https://nango.dev/docs/integrations/all/aimfox/connect.md) |  | surveys |
 | `aimfox-oauth` | Aimfox (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aimfox-oauth.md) |  |  | surveys |
 | `aircall` | Aircall (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aircall.md) |  |  | support |
@@ -13728,6 +13901,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `atlassian-service-account-oauth2` | Atlassian Service Account (OAuth 2.0) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2.md) | [connect](https://nango.dev/docs/api-integrations/atlassian-service-account-oauth2/connect.md) |  | dev-tools |
 | `attention` | Attention | API_KEY | [docs](https://nango.dev/docs/api-integrations/attention.md) | [connect](https://nango.dev/docs/api-integrations/attention/connect.md) |  | productivity |
 | `attio` | Attio | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio.md) |  | [setup](https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app.md) | crm, popular |
+| `attio-mcp` | Attio (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/attio-mcp.md) |  |  | crm, mcp |
 | `auth0` | Auth0 | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/auth0.md) |  |  | iam |
 | `auth0-cc` | Auth0 (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/auth0-cc.md) | [connect](https://nango.dev/docs/integrations/all/auth0-cc/connect.md) |  | iam |
 | `autodesk` | Autodesk | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/autodesk.md) |  |  | design |
@@ -13743,6 +13917,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `aws-inspector2` | AWS Inspector2 | BASIC | [docs](https://nango.dev/docs/api-integrations/aws-inspector2.md) | [connect](https://nango.dev/docs/api-integrations/aws-inspector2/connect.md) |  | dev-tools |
 | `aws-multi-service` | AWS Multi-Service | BASIC | [docs](https://nango.dev/docs/api-integrations/aws-multi-service.md) | [connect](https://nango.dev/docs/api-integrations/aws-multi-service/connect.md) |  | dev-tools |
 | `aws-scim` | AWS (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/aws-scim.md) | [connect](https://nango.dev/docs/integrations/all/aws-scim/connect.md) |  | dev-tools, iam |
+| `aws-sigv4` | AWS SigV4 Proxy | AWS_SIGV4 | [docs](https://nango.dev/docs/integrations/all/aws-sigv4.md) | [connect](https://nango.dev/docs/integrations/all/aws-sigv4/connect.md) |  | storage |
 | `axiom` | Axiom | API_KEY | [docs](https://nango.dev/docs/api-integrations/axiom.md) | [connect](https://nango.dev/docs/api-integrations/axiom/connect.md) |  | dev-tools, analytics |
 | `azure-blob-storage` | Azure Blob Storage | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/azure-blob-storage.md) | [connect](https://nango.dev/docs/integrations/all/azure-blob-storage/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | storage |
 | `azure-devops` | Azure DevOps | BASIC | [docs](https://nango.dev/docs/integrations/all/azure-devops.md) | [connect](https://nango.dev/docs/integrations/all/azure-devops/connect.md) |  | dev-tools |
@@ -13797,6 +13972,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
+| `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
 | `chattermill` | Chattermill | API_KEY | [docs](https://nango.dev/docs/integrations/all/chattermill.md) |  |  | support, analytics |
 | `checkhq` | Check | API_KEY | [docs](https://nango.dev/docs/integrations/all/checkhq.md) | [connect](https://nango.dev/docs/integrations/all/checkhq/connect.md) |  | accounting |
 | `checkout-com` | Checkout.com | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com/connect.md) |  | payment |
@@ -13820,6 +13996,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `cloudbeds` | Cloudbeds | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cloudbeds.md) |  | [setup](https://nango.dev/docs/api-integrations/cloudbeds/how-to-register-your-own-cloudbeds-oauth-app.md) | other |
 | `cloudentity` | Cloudentity | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/cloudentity.md) | [connect](https://nango.dev/docs/integrations/all/cloudentity/connect.md) |  | iam |
 | `cloudflare` | Cloudflare | API_KEY | [docs](https://nango.dev/docs/api-integrations/cloudflare.md) | [connect](https://nango.dev/docs/api-integrations/cloudflare/connect.md) |  | dev-tools |
+| `cloudflare-mcp` | Cloudflare (MCP) | MCP_OAUTH2_GENERIC | [docs](https://nango.dev/docs/api-integrations/cloudflare-mcp.md) | [connect](https://nango.dev/docs/api-integrations/cloudflare-mcp/connect.md) |  | dev-tools, mcp |
 | `cloudtalk` | CloudTalk | BASIC | [docs](https://nango.dev/docs/api-integrations/cloudtalk.md) | [connect](https://nango.dev/docs/api-integrations/cloudtalk/connect.md) |  | communication |
 | `clover` | Clover | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/clover.md) | [connect](https://nango.dev/docs/api-integrations/clover/connect.md) | [setup](https://nango.dev/docs/api-integrations/clover/how-to-register-your-own-clover-api-oauth-app.md) | e-commerce |
 | `coda` | Coda | API_KEY | [docs](https://nango.dev/docs/integrations/all/coda.md) | [connect](https://nango.dev/docs/integrations/all/coda/connect.md) |  | knowledge-base, productivity |
@@ -13866,9 +14043,11 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `devin` | Devin | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin.md) | [connect](https://nango.dev/docs/integrations/all/devin/connect.md) |  | dev-tools |
 | `dialpad` | Dialpad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad.md) |  |  | communication |
 | `dialpad-sandbox` | Dialpad (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad-sandbox.md) |  |  | communication |
+| `diffbot` | Diffbot | API_KEY | [docs](https://nango.dev/docs/api-integrations/diffbot.md) | [connect](https://nango.dev/docs/api-integrations/diffbot/connect.md) |  | analytics |
 | `digitalocean` | DigitalOcean | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/digitalocean.md) |  |  | dev-tools |
 | `digits` | Digits | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits.md) |  | [setup](https://nango.dev/docs/api-integrations/digits/how-to-register-your-own-digits-api-oauth-app.md) | accounting |
 | `digits-mcp` | Digits (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits-mcp.md) |  |  | accounting, mcp |
+| `discolike` | DiscoLike | API_KEY | [docs](https://nango.dev/docs/api-integrations/discolike.md) | [connect](https://nango.dev/docs/api-integrations/discolike/connect.md) |  | marketing |
 | `discord` | Discord | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/discord.md) |  | [setup](https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-api-oauth-app.md) | gaming, social |
 | `discourse` | Discourse | API_KEY | [docs](https://nango.dev/docs/integrations/all/discourse.md) |  |  | communication |
 | `dixa` | Dixa | API_KEY | [docs](https://nango.dev/docs/integrations/all/dixa.md) |  |  | support |
@@ -13882,6 +14061,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `dropbox` | Dropbox | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/dropbox.md) |  | [setup](https://nango.dev/docs/api-integrations/dropbox/how-to-register-your-own-dropbox-api-oauth-app.md) | knowledge-base, storage |
 | `dropbox-sign` | Dropbox Sign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dropbox-sign.md) |  |  | legal |
 | `drupal` | Drupal | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/drupal.md) | [connect](https://nango.dev/docs/integrations/all/drupal/connect.md) |  | dev-tools, design, cms |
+| `dualentry-mcp` | Dualentry (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/dualentry-mcp.md) |  |  | mcp |
 | `dynatrace` | Dynatrace | API_KEY | [docs](https://nango.dev/docs/api-integrations/dynatrace.md) | [connect](https://nango.dev/docs/api-integrations/dynatrace/connect.md) |  | analytics, dev-tools |
 | `dynatrace-oauth` | Dynatrace (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/dynatrace-oauth.md) | [connect](https://nango.dev/docs/api-integrations/dynatrace-oauth/connect.md) |  | analytics, dev-tools |
 | `e-conomic` | e-conomic | BASIC | [docs](https://nango.dev/docs/integrations/all/e-conomic.md) |  |  | accounting |
@@ -14070,6 +14250,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `lagrowthmachine` | La Growth Machine | API_KEY | [docs](https://nango.dev/docs/integrations/all/lagrowthmachine.md) | [connect](https://nango.dev/docs/integrations/all/lagrowthmachine/connect.md) |  | marketing |
 | `lastpass` | LastPass | BASIC | [docs](https://nango.dev/docs/integrations/all/lastpass.md) | [connect](https://nango.dev/docs/integrations/all/lastpass/connect.md) |  | productivity |
 | `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/integrations/all/lattice.md) | [connect](https://nango.dev/docs/integrations/all/lattice/connect.md) |  | hr |
+| `leadfeeder` | Leadfeeder | API_KEY | [docs](https://nango.dev/docs/api-integrations/leadfeeder.md) | [connect](https://nango.dev/docs/api-integrations/leadfeeder/connect.md) |  | marketing, crm |
 | `leadmagic` | LeadMagic | API_KEY | [docs](https://nango.dev/docs/integrations/all/leadmagic.md) | [connect](https://nango.dev/docs/integrations/all/leadmagic/connect.md) |  | marketing, crm |
 | `lemlist` | lemlist | BASIC | [docs](https://nango.dev/docs/integrations/all/lemlist.md) | [connect](https://nango.dev/docs/integrations/all/lemlist/connect.md) |  | marketing, communication |
 | `lessonly` | Lessonly | BASIC | [docs](https://nango.dev/docs/integrations/all/lessonly.md) |  |  | productivity |
@@ -14102,6 +14283,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `malwarebytes` | Malwarebytes | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/malwarebytes.md) | [connect](https://nango.dev/docs/integrations/all/malwarebytes/connect.md) |  | other |
 | `manatal` | Manatal | API_KEY | [docs](https://nango.dev/docs/integrations/all/manatal.md) | [connect](https://nango.dev/docs/integrations/all/manatal/connect.md) |  | crm, hr, ats |
 | `marketo` | Marketo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/marketo.md) | [connect](https://nango.dev/docs/integrations/all/marketo/connect.md) |  | marketing |
+| `mattermost` | Mattermost | API_KEY | [docs](https://nango.dev/docs/api-integrations/mattermost.md) | [connect](https://nango.dev/docs/api-integrations/mattermost/connect.md) |  | communication |
 | `maximizer` | Maximizer (Cloud) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer.md) | [connect](https://nango.dev/docs/api-integrations/maximizer/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app.md) | crm |
 | `maximizer-on-premise` | Maximizer (On-Premise) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer-on-premise.md) | [connect](https://nango.dev/docs/api-integrations/maximizer-on-premise/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer-on-premise/how-to-register-your-own-maximizer-on-premise-oauth-app.md) | crm |
 | `maxio` | Maxio | BASIC | [docs](https://nango.dev/docs/api-integrations/maxio.md) | [connect](https://nango.dev/docs/api-integrations/maxio/connect.md) |  | payment |
@@ -14141,6 +14323,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
 | `mural` | Mural | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mural.md) |  |  | design |
+| `nable-ncentral` | N-able N-central | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/nable-ncentral.md) | [connect](https://nango.dev/docs/api-integrations/nable-ncentral/connect.md) |  | support |
 | `namely` | Namely | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/namely.md) | [connect](https://nango.dev/docs/integrations/all/namely/connect.md) |  | hr |
 | `namely-pat` | Namely (PAT) | API_KEY | [docs](https://nango.dev/docs/integrations/all/namely-pat.md) | [connect](https://nango.dev/docs/integrations/all/namely-pat/connect.md) |  | hr |
 | `nationbuilder` | NationBuilder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/nationbuilder.md) |  |  | crm |
@@ -14231,6 +14414,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `printful` | Printful | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/printful.md) |  | [setup](https://nango.dev/docs/api-integrations/printful/how-to-register-your-own-printful-oauth-app.md) | e-commerce |
 | `private-api-basic` | Private API (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/private-api-basic.md) | [connect](https://nango.dev/docs/integrations/all/private-api-basic/connect.md) |  | other |
 | `private-api-bearer` | Private API (Bearer Auth) | API_KEY | [docs](https://nango.dev/docs/integrations/all/private-api-bearer.md) | [connect](https://nango.dev/docs/integrations/all/private-api-bearer/connect.md) |  | other |
+| `private-api-generic` | Private API (Generic) | API_KEY | [docs](https://nango.dev/docs/integrations/all/private-api-generic.md) | [connect](https://nango.dev/docs/integrations/all/private-api-generic/connect.md) |  | other |
 | `prive` | Prive | API_KEY | [docs](https://nango.dev/docs/integrations/all/prive.md) | [connect](https://nango.dev/docs/integrations/all/prive/connect.md) |  | e-commerce |
 | `procore` | Procore | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/procore.md) | [connect](https://nango.dev/docs/api-integrations/procore/connect.md) | [setup](https://nango.dev/docs/api-integrations/procore/how-to-register-your-own-procore-oauth-app.md) | erp |
 | `productboard` | Productboard | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/productboard.md) |  |  | productivity |
@@ -14248,10 +14432,12 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `quickbooks-sandbox` | Quickbooks (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/quickbooks-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/quickbooks-sandbox/connect.md) | [setup](https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-api-oauth-app.md) | accounting |
 | `quipteams` | Quipteams | API_KEY | [docs](https://nango.dev/docs/api-integrations/quipteams.md) | [connect](https://nango.dev/docs/api-integrations/quipteams/connect.md) |  | other |
 | `ragieai` | Ragie AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/ragieai.md) |  |  | dev-tools |
+| `raindrop-mcp` | Raindrop (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/raindrop-mcp.md) |  |  | dev-tools, mcp |
 | `ramp` | Ramp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp.md) |  |  | banking |
 | `ramp-sandbox` | Ramp (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ramp-sandbox.md) |  |  | banking |
 | `rapidapi` | RapidAPI | API_KEY | [docs](https://nango.dev/docs/integrations/all/rapidapi.md) |  |  | dev-tools |
 | `razorpay` | Razorpay | BASIC | [docs](https://nango.dev/docs/integrations/all/razorpay.md) | [connect](https://nango.dev/docs/integrations/all/razorpay/connect.md) |  | payment |
+| `read-ai` | Read.ai | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/read-ai.md) |  | [setup](https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app.md) | productivity, video |
 | `readwise` | Readwise | API_KEY | [docs](https://nango.dev/docs/integrations/all/readwise.md) | [connect](https://nango.dev/docs/integrations/all/readwise/connect.md) |  | productivity |
 | `readwise-reader` | Readwise Reader | API_KEY | [docs](https://nango.dev/docs/integrations/all/readwise-reader.md) | [connect](https://nango.dev/docs/integrations/all/readwise-reader/connect.md) |  | productivity |
 | `reapit` | Reapit Connect | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/reapit.md) |  | [setup](https://nango.dev/docs/api-integrations/reapit/how-to-register-your-own-reapit-oauth-app.md) | crm |
@@ -14276,6 +14462,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `rippling` | Rippling | API_KEY | [docs](https://nango.dev/docs/integrations/all/rippling.md) | [connect](https://nango.dev/docs/integrations/all/rippling/connect.md) |  | hr |
 | `rippling-shop-app` | Rippling Shop App | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/rippling-shop-app.md) |  |  | hr |
 | `roam-scim` | Roam (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/roam-scim.md) | [connect](https://nango.dev/docs/integrations/all/roam-scim/connect.md) |  | productivity |
+| `robinhood-mcp` | Robinhood (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/robinhood-mcp.md) |  |  | payment, mcp |
 | `rock-gym-pro` | Rock Gym Pro | BASIC | [docs](https://nango.dev/docs/integrations/all/rock-gym-pro.md) |  |  | crm |
 | `rocketlane` | Rocketlane | API_KEY | [docs](https://nango.dev/docs/integrations/all/rocketlane.md) | [connect](https://nango.dev/docs/integrations/all/rocketlane/connect.md) |  | productivity |
 | `rocketreach` | RocketReach | API_KEY | [docs](https://nango.dev/docs/api-integrations/rocketreach.md) | [connect](https://nango.dev/docs/api-integrations/rocketreach/connect.md) |  | crm |
@@ -14333,6 +14520,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `shopify-cc` | Shopify (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/shopify-cc.md) | [connect](https://nango.dev/docs/api-integrations/shopify-cc/connect.md) |  | e-commerce |
 | `shopify-partner` | Shopify Partner | API_KEY | [docs](https://nango.dev/docs/integrations/all/shopify-partner.md) | [connect](https://nango.dev/docs/integrations/all/shopify-partner/connect.md) |  | e-commerce |
 | `shopify-scim` | Shopify (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/shopify-scim.md) | [connect](https://nango.dev/docs/integrations/all/shopify-scim/connect.md) |  | e-commerce |
+| `shopvox` | ShopVox | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/shopvox.md) | [connect](https://nango.dev/docs/api-integrations/shopvox/connect.md) |  | other |
 | `shopware` | Shopware (Admin API) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/shopware.md) | [connect](https://nango.dev/docs/api-integrations/shopware/connect.md) |  | e-commerce |
 | `shopworks` | ShopWorks | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/shopworks.md) | [connect](https://nango.dev/docs/api-integrations/shopworks/connect.md) |  | other |
 | `shortcut` | Shortcut | API_KEY | [docs](https://nango.dev/docs/integrations/all/shortcut.md) |  |  | dev-tools, productivity |
@@ -14349,7 +14537,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `smugmug` | Smugmug | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/smugmug.md) |  |  | storage |
 | `snapchat` | Snapchat (Ads API) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/snapchat.md) |  |  | video, social |
 | `snipe-it` | Snipe-IT | API_KEY | [docs](https://nango.dev/docs/integrations/all/snipe-it.md) | [connect](https://nango.dev/docs/integrations/all/snipe-it/connect.md) |  | productivity, other |
-| `snowflake` | Snowflake | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/snowflake.md) |  |  | dev-tools |
+| `snowflake` | Snowflake | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/snowflake.md) | [connect](https://nango.dev/docs/api-integrations/snowflake/connect.md) | [setup](https://nango.dev/docs/api-integrations/snowflake/how-to-register-your-own-snowflake-api-oauth-app.md) | dev-tools |
 | `snowflake-jwt` | Snowflake (JWT) | JWT | [docs](https://nango.dev/docs/integrations/all/snowflake-jwt.md) | [connect](https://nango.dev/docs/integrations/all/snowflake-jwt/connect.md) |  | dev-tools |
 | `sophos-central` | Sophos Central | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/sophos-central.md) | [connect](https://nango.dev/docs/api-integrations/sophos-central/connect.md) |  | dev-tools |
 | `splitwise` | Splitwise | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/splitwise.md) |  |  | payment, social |
@@ -14378,6 +14566,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `supabase-mcp-oauth` | Supabase (MCP OAuth) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/supabase-mcp-oauth.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect.md) |  | dev-tools, mcp |
 | `superhuman-mcp` | Superhuman (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/superhuman-mcp.md) |  |  | communication, productivity, mcp |
 | `survey-monkey` | SurveyMonkey | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/survey-monkey.md) |  |  | surveys |
+| `swoogo` | Swoogo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/swoogo.md) | [connect](https://nango.dev/docs/api-integrations/swoogo/connect.md) |  | marketing |
 | `tableau` | Tableau (PAT) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tableau.md) | [connect](https://nango.dev/docs/integrations/all/tableau/connect.md) |  | analytics |
 | `tailscale` | Tailscale (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tailscale.md) | [connect](https://nango.dev/docs/integrations/all/tailscale/connect.md) |  | dev-tools, productivity |
 | `tailscale-api-key` | Tailscale (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/tailscale-api-key.md) | [connect](https://nango.dev/docs/integrations/all/tailscale-api-key/connect.md) |  | dev-tools, productivity |
@@ -14389,9 +14578,12 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `teamtailor` | Teamtailor | API_KEY | [docs](https://nango.dev/docs/integrations/all/teamtailor.md) |  |  | ats |
 | `teamwork` | Teamwork | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamwork.md) |  |  | productivity, ticketing |
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
+| `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |
 | `theirstack` | TheirStack | API_KEY | [docs](https://nango.dev/docs/api-integrations/theirstack.md) | [connect](https://nango.dev/docs/api-integrations/theirstack/connect.md) |  | marketing |
+| `thomson-reuters-legal-tracker` | Thomson Reuters Legal Tracker | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker.md) | [connect](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker/connect.md) |  | legal |
+| `thomson-reuters-legal-tracker-tr-account` | Thomson Reuters Legal Tracker (TR Account) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account.md) | [connect](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker-tr-account/connect.md) |  | legal |
 | `thrivecart-api-key` | ThriveCart (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/thrivecart-api-key.md) |  |  | e-commerce, payment |
 | `thrivecart-oauth` | ThriveCart (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/thrivecart-oauth.md) |  |  | e-commerce, payment |
 | `ticktick` | TickTick | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ticktick.md) |  |  | productivity, ticketing |
@@ -14449,6 +14641,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `vimeo-basic` | Vimeo (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/vimeo-basic.md) |  |  | video |
 | `vtex` | VTEX | API_KEY | [docs](https://nango.dev/docs/api-integrations/vtex.md) | [connect](https://nango.dev/docs/api-integrations/vtex/connect.md) |  | e-commerce |
 | `wakatime` | Wakatime | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wakatime.md) |  |  | analytics, dev-tools |
+| `walmart` | Walmart Marketplace | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/walmart.md) |  | [setup](https://nango.dev/docs/api-integrations/walmart/how-to-register-your-own-walmart-marketplace-oauth-app.md) | e-commerce |
 | `wappalyzer` | Wappalyzer | API_KEY | [docs](https://nango.dev/docs/api-integrations/wappalyzer.md) | [connect](https://nango.dev/docs/api-integrations/wappalyzer/connect.md) |  | marketing, analytics |
 | `wave-accounting` | Wave Accounting | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wave-accounting.md) |  |  | accounting |
 | `wealthbox` | Wealthbox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wealthbox.md) |  |  | crm |
@@ -14481,6 +14674,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `yahoo` | Yahoo | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/yahoo.md) |  |  | social |
 | `yandex` | Yandex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/yandex.md) |  |  | social |
 | `yotpo` | Yotpo | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/yotpo.md) | [connect](https://nango.dev/docs/integrations/all/yotpo/connect.md) |  | e-commerce |
+| `youcanbook-me` | YouCanBookMe | BASIC | [docs](https://nango.dev/docs/api-integrations/youcanbook-me.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me/connect.md) |  | productivity |
 | `youtube` | YouTube | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/youtube.md) |  | [setup](https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-api-oauth-app.md) | video |
 | `zapier` | Zapier | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/zapier.md) |  | [setup](https://nango.dev/docs/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app.md) | dev-tools |
 | `zapier-nla` | Zapier NLA | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zapier-nla.md) |  |  | productivity |
@@ -14505,4 +14699,11 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `zoominfo` | ZoomInfo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zoominfo.md) | [connect](https://nango.dev/docs/integrations/all/zoominfo/connect.md) |  | crm, marketing |
 | `zorus` | Zorus | API_KEY | [docs](https://nango.dev/docs/api-integrations/zorus.md) | [connect](https://nango.dev/docs/api-integrations/zorus/connect.md) |  | other |
 | `zuora` | Zuora | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zuora.md) | [connect](https://nango.dev/docs/integrations/all/zuora/connect.md) |  | erp |
+
+## Resources
+
+- [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
+- [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
+- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
 

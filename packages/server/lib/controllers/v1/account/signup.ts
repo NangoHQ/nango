@@ -15,11 +15,11 @@ import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
 export const passwordSchema = z
     .string()
-    .min(8)
+    .min(12)
     .max(64)
     .refine((value) => {
         return value.match(/[A-Z]+/) && value.match(/[0-9]/) && value.match(/[^a-zA-Z0-9]/);
-    }, 'Password should be least 8 characters with uppercase, a number and a special character');
+    }, 'Password should be least 12 characters with uppercase, a number and a special character');
 
 const validation = z
     .object({

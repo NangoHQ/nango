@@ -336,6 +336,27 @@ export default tseslint.config(
                 }
             ],
 
+            // Design-system components own their styling — don't override it with className/style.
+            'react/forbid-component-props': [
+                'warn',
+                {
+                    forbid: [
+                        {
+                            propName: 'className',
+                            disallowedFor: ['Button', 'IconButton'],
+                            message:
+                                "Don't override design-system styles via className — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
+                        },
+                        {
+                            propName: 'style',
+                            disallowedFor: ['Button', 'IconButton'],
+                            message:
+                                "Don't override design-system styles via the style prop — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
+                        }
+                    ]
+                }
+            ],
+
             'import/extensions': 'off'
         }
     },

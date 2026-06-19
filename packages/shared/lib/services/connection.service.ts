@@ -11,6 +11,7 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
+import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
@@ -26,7 +27,7 @@ import {
     getExpiresAtFromCredentials
 } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
@@ -57,6 +58,7 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     AuthModeType,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
@@ -122,7 +124,7 @@ class ConnectionService {
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
 
         if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
+            const encryptedConnection = getEncryptionManager().encryptConnection({
                 ...storedConnection,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -148,7 +150,7 @@ class ConnectionService {
             return [{ connection: connection[0]!, operation: 'override' }];
         }
 
-        const { id, ...data } = encryptionManager.encryptConnection({
+        const { id, ...data } = getEncryptionManager().encryptConnection({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             config_id: config_id as number,
@@ -186,7 +188,15 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
+        credentials:
+            | TwoStepCredentials
+            | TbaCredentials
+            | JwtCredentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | BillCredentials
+            | SignatureCredentials
+            | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -196,7 +206,7 @@ class ConnectionService {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
 
-            const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
+            const { id, ...encryptedConnection } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 config_id: config.id as number,
@@ -426,7 +436,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const connection = encryptionManager.decryptConnection(rawConnection);
+        const connection = getEncryptionManager().decryptConnection(rawConnection);
 
         // Parse the token expiration date.
         const credentials = connection.credentials;
@@ -461,7 +471,7 @@ class ConnectionService {
             return Err('failed_to_fetch_connection');
         }
 
-        return Ok({ connection: encryptionManager.decryptConnection(result.connection), end_user: result.end_user });
+        return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
     public async updateConnection(connection: DBConnectionDecrypted) {
@@ -473,9 +483,20 @@ class ConnectionService {
                 environment_id: connection.environment_id,
                 deleted: false
             })
-            .update(encryptionManager.encryptConnection(connection))
+            .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return encryptionManager.decryptConnection(res[0]!);
+        return getEncryptionManager().decryptConnection(res[0]!);
+    }
+
+    public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
+        const now = new Date();
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id }).update({
+            updated_at: now,
+            last_refresh_failure: now,
+            last_refresh_success: null,
+            refresh_attempts: MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+            refresh_exhausted: true
+        });
     }
 
     public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
@@ -668,7 +689,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection: DBConnection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -699,7 +720,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
@@ -715,7 +736,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     /**
@@ -944,9 +965,18 @@ class ConnectionService {
         switch (authMode) {
             case 'OAUTH2': {
                 let accessToken: string | undefined = rawCreds['access_token'];
+                let tokenContext: Record<string, any> = rawCreds;
 
                 if (!accessToken && template && 'alternate_access_token_response_path' in template && template.alternate_access_token_response_path) {
-                    accessToken = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    const alternateValue = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    if (alternateValue && typeof alternateValue === 'object') {
+                        // Path points to an object — extract access_token from it and use the whole object as context
+                        // so refresh_token/expires_in are also picked up.
+                        tokenContext = alternateValue as Record<string, any>;
+                        accessToken = tokenContext['access_token'];
+                    } else {
+                        accessToken = alternateValue;
+                    }
                 }
 
                 if (!accessToken) {
@@ -954,16 +984,16 @@ class ConnectionService {
                 }
                 let expiresAt: Date | undefined;
 
-                if (rawCreds['expires_at']) {
-                    expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
-                } else if (rawCreds['expires_in']) {
-                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                if (tokenContext['expires_at']) {
+                    expiresAt = parseTokenExpirationDate(tokenContext['expires_at']);
+                } else if (tokenContext['expires_in']) {
+                    expiresAt = new Date(Date.now() + Number.parseInt(tokenContext['expires_in'], 10) * 1000);
                 }
 
                 const oauth2Creds: OAuth2Credentials = {
                     type: 'OAUTH2',
                     access_token: accessToken,
-                    refresh_token: rawCreds['refresh_token'],
+                    refresh_token: tokenContext['refresh_token'],
                     expires_at: expiresAt,
                     raw: rawCreds
                 };
@@ -1208,8 +1238,11 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : null;
+        if (!tokenUrl?.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+        const url = makeUrl(tokenUrl, connectionConfig);
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
@@ -1492,6 +1525,11 @@ class ConnectionService {
                 responseData = parser.parse(response.data);
             }
 
+            const extractedHeaderValues: Record<string, string> = {};
+            if (provider.token_response_headers) {
+                Object.assign(extractedHeaderValues, extractResponseHeaderValues(response.headers, provider.token_response_headers));
+            }
+
             const stepResponses: any[] = [responseData];
             if (provider.additional_steps) {
                 for (let stepIndex = 1; stepIndex <= provider.additional_steps.length; stepIndex++) {
@@ -1561,6 +1599,16 @@ class ConnectionService {
                     }
 
                     stepResponses.push(stepResponse.data);
+                    if (provider.token_response_headers) {
+                        const stepValues = extractResponseHeaderValues(stepResponse.headers, provider.token_response_headers);
+                        for (const [key, value] of Object.entries(stepValues)) {
+                            if (key === '_cookies' && extractedHeaderValues['_cookies']) {
+                                extractedHeaderValues['_cookies'] = `${extractedHeaderValues['_cookies']}; ${value}`;
+                            } else {
+                                extractedHeaderValues[key] = value;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1577,8 +1625,16 @@ class ConnectionService {
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
 
+            const RESERVED_CRED_KEYS = new Set(['type', 'token', 'refresh_token', 'expires_at', 'raw']);
+
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined) {
+                    parsedCreds[key] = value;
+                }
+            }
+
+            for (const [key, value] of Object.entries(extractedHeaderValues)) {
+                if (!RESERVED_CRED_KEYS.has(key)) {
                     parsedCreds[key] = value;
                 }
             }
@@ -1617,6 +1673,7 @@ class ConnectionService {
             | TwoStepCredentials
             | SignatureCredentials
             | CombinedOauth2AppCredentials
+            | AwsSigV4Credentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1741,6 +1798,58 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if (provider.auth_mode === 'AWS_SIGV4') {
+            const settingsResult = awsSigV4Client.getAwsSigV4Settings(providerConfig);
+            if (settingsResult.isErr()) {
+                return { success: false, error: settingsResult.error, response: null };
+            }
+            const settings = settingsResult.value;
+
+            const roleArn = (connection.connection_config['role_arn'] as string) || (connection.credentials as AwsSigV4Credentials).role_arn;
+            const externalId = (connection.connection_config['external_id'] as string) || (connection.credentials as AwsSigV4Credentials).external_id || null;
+            const region =
+                (connection.connection_config['region'] as string) || (connection.credentials as AwsSigV4Credentials).region || settings.defaultRegion;
+
+            if (!roleArn) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_role_arn'), response: null };
+            }
+            if (!externalId) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_external_id'), response: null };
+            }
+            if (!region) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_region'), response: null };
+            }
+
+            const credsResult = await awsSigV4Client.fetchAwsTemporaryCredentials({
+                settings,
+                input: { roleArn, externalId, region }
+            });
+
+            if (credsResult.isErr()) {
+                return { success: false, error: credsResult.error, response: null };
+            }
+
+            const creds = credsResult.value;
+
+            const refreshed: AwsSigV4Credentials = {
+                type: 'AWS_SIGV4',
+                raw: {
+                    access_key_id: creds.accessKeyId,
+                    secret_access_key: creds.secretAccessKey,
+                    session_token: creds.sessionToken,
+                    expires_at: creds.expiresAt
+                },
+                role_arn: roleArn,
+                region,
+                service: settings.service,
+                access_key_id: creds.accessKeyId,
+                secret_access_key: creds.secretAccessKey,
+                session_token: creds.sessionToken,
+                expires_at: creds.expiresAt,
+                external_id: externalId
+            };
+
+            return { success: true, error: null, response: refreshed };
         } else if ((provider as any).auth_mode === 'MCP_OAUTH2_GENERIC') {
             const { success, error, response: creds } = await refreshMcpGenericCredentials({ connection, logCtx });
 
@@ -1959,6 +2068,42 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+}
+
+export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {
+    const result: Record<string, string> = {};
+    const cookiePairs: string[] = [];
+
+    for (const headerName of entries) {
+        const normalized = headerName.toLowerCase();
+        const value = headers[normalized];
+        if (!value) {
+            continue;
+        }
+
+        if (normalized === 'set-cookie') {
+            const cookies = Array.isArray(value) ? value : [value];
+            for (const cookie of cookies) {
+                const [pair] = (cookie as string).split(';');
+                if (pair) {
+                    const eqIdx = pair.indexOf('=');
+                    if (eqIdx > 0) {
+                        const cookieName = pair.slice(0, eqIdx).trim();
+                        const cookieValue = pair.slice(eqIdx + 1).trim();
+                        result[cookieName] = cookieValue;
+                        cookiePairs.push(`${cookieName}=${cookieValue}`);
+                    }
+                }
+            }
+        } else {
+            result[headerName] = Array.isArray(value) ? (value[0] as string) : String(value);
+        }
+    }
+
+    if (cookiePairs.length > 0) {
+        result['_cookies'] = cookiePairs.join('; ');
+    }
+    return result;
 }
 
 export default new ConnectionService();

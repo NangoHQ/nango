@@ -104,7 +104,9 @@ export class SyncManagerService {
             // Resume soft-deleted syncs if needed
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
             if (existing.isOk()) {
-                await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                if (syncData.auto_start !== false) {
+                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                }
                 continue;
             }
             // If the sync doesn't exist, create it and schedule it
@@ -159,7 +161,9 @@ export class SyncManagerService {
                 // Resume soft-deleted syncs if needed
                 const existing = await undeleteSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (existing.isOk()) {
-                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    if (flowConfig.auto_start !== false) {
+                        await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    }
                     continue;
                 }
                 // If the sync doesn't exist, create it and schedule it
@@ -231,9 +235,16 @@ export class SyncManagerService {
     }
 
     public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
+        // Unschedule first so no new run can start against a sync we're about to soft-delete.
         await orchestrator.deleteSync({ syncId, environmentId });
-        await softDeleteSync(syncId);
-        await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
+
+        await db.knex.transaction(async (trx) => {
+            const deleted = await softDeleteSync(syncId, trx);
+            if (deleted.isErr()) {
+                throw deleted.error;
+            }
+            await errorNotificationService.sync.clearBySyncId({ sync_id: syncId, trx });
+        });
     }
 
     public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {

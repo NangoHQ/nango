@@ -103,6 +103,13 @@ describe(`GET ${route}`, () => {
         });
     });
 
+    it.each(['/proxy?Param=IHaveNoPath', '/proxy/?Param=IHaveNoPath'])('should match proxy route for query-only path %s', async (path) => {
+        const res = await fetch(`${api.url}${path}`, { method: 'GET' });
+        const json = await res.json();
+
+        shouldBeProtected({ res, json });
+    });
+
     it('should use all the headers', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');

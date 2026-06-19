@@ -100,7 +100,7 @@ export async function exec(): Promise<void> {
 
             for (const env of envs) {
                 const syncs = await getSyncsByEnvironmentId(env.id);
-                logger.info('  pausing', syncs.length, 'syncs in env', env.name);
+                logger.info('  pausing syncs in env', { count: syncs.length, environmentName: env.name });
 
                 for (const sync of syncs) {
                     const updated = await disableScriptConfig({ id: sync.id, environmentId: sync.environment_id });
@@ -129,7 +129,11 @@ export async function exec(): Promise<void> {
         }
     } finally {
         if (lock) {
-            locking.release(lock);
+            try {
+                await locking.release(lock);
+            } catch (err) {
+                logger.error('Error releasing lock', { lock: lock.key, error: err });
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
 
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 const envs = parseEnvs(ENVS);
@@ -146,8 +147,8 @@ class UserService {
         return null;
     }
 
-    async editUserPassword(user: Pick<DBUser, 'id' | 'reset_password_token' | 'hashed_password'>) {
-        return db.knex.from<DBUser>(`_nango_users`).where({ id: user.id }).update({
+    async editUserPassword(user: Pick<DBUser, 'id' | 'reset_password_token' | 'hashed_password'>, trx: Knex = db.knex) {
+        return trx.from<DBUser>(`_nango_users`).where({ id: user.id }).update({
             reset_password_token: user.reset_password_token,
             hashed_password: user.hashed_password
         });
@@ -163,8 +164,8 @@ class UserService {
         return db.knex.from<DBUser>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
     }
 
-    async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<DBUser | null> {
-        const [up] = await db.knex
+    async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>, trx: Knex = db.knex): Promise<DBUser | null> {
+        const [up] = await trx
             .from<DBUser>(`_nango_users`)
             .update({ ...data, updated_at: new Date() })
             .where({ id })

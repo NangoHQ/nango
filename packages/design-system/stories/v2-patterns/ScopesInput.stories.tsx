@@ -1,9 +1,9 @@
-import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/ScopesInput',
+    title: 'Components/Patterns/ScopesInput',
     parameters: { layout: 'padded' }
 };
 export default meta;

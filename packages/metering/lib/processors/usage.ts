@@ -1,8 +1,10 @@
 import { billing } from '@nangohq/billing';
+import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
 import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { logger } from '../utils.js';
 
 import type { Transport } from '@nangohq/pubsub';
@@ -24,11 +26,12 @@ export class UsageProcessor {
     }
 
     public start(): void {
-        logger.info('Starting usage subscriber...');
+        logger.info('Starting usage subscriber...', { concurrency: envs.METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY });
 
         this.subscriber.subscribe({
             consumerGroup: 'billing', // Legacy name for backward compatibility and avoid processing duplication
             subject: 'usage',
+            concurrency: envs.METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY,
             callback: async (event) => {
                 const result = await this.process(event);
                 if (result.isErr()) {
@@ -39,16 +42,26 @@ export class UsageProcessor {
         });
     }
 
+    private logIncrError(metric: string, accountId: number, result: Result<unknown>): void {
+        if (result.isErr()) {
+            logger.error(`Failed to increment ${metric} for account ${accountId}: ${stringifyError(result.error, { cause: true })}`);
+        }
+    }
+
     public async process(event: UsageEvent): Promise<Result<void>> {
         try {
             switch (event.type) {
                 case 'usage.monthly_active_records': {
                     const { connectionId, environmentId, environmentName, integrationId, accountId, syncId, model } = event.payload.properties;
-                    const connection = await connectionService.getConnection(connectionId, integrationId, environmentId);
-                    if (!connection.response) {
+                    const connection = await connectionService.checkIfConnectionExists(db.knex, {
+                        connectionId,
+                        providerConfigKey: integrationId,
+                        environmentId
+                    });
+                    if (!connection) {
                         return Err(`Connection ${connectionId} not found`);
                     }
-                    if (connection.response.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
+                    if (connection.created_at > new Date(Date.now() - 30 * DAY_IN_MS)) {
                         return Ok(undefined); // Skip MAR for connections younger than 30 days
                     }
                     const mar = event.payload.value;
@@ -80,9 +93,7 @@ export class UsageProcessor {
                         metric: 'records',
                         delta: event.payload.value
                     });
-                    if (incrRecords.isErr()) {
-                        logger.error(`Failed to increment records for account ${accountId}: ${incrRecords.error}`);
-                    }
+                    this.logIncrError('records', accountId, incrRecords);
                     return Ok(undefined); // No billing action for records, just tracking usage
                 }
                 case 'usage.actions': {
@@ -146,25 +157,19 @@ export class UsageProcessor {
                         metric: 'function_executions',
                         delta: event.payload.value
                     });
-                    if (incrExecutions.isErr()) {
-                        logger.error(`Failed to increment function_executions for account ${accountId}: ${incrExecutions.error}`);
-                    }
+                    this.logIncrError('function_executions', accountId, incrExecutions);
                     const incrCompute = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_compute_gbms',
-                        delta: compute
+                        delta: compute > 0 ? Math.max(1, Math.round(compute)) : 0 // HINCRBY needs an integer; floor non-zero compute at 1 so small values aren't dropped
                     });
-                    if (incrCompute.isErr()) {
-                        logger.error(`Failed to increment function_compute_ms for account ${accountId}: ${incrCompute.error}`);
-                    }
+                    this.logIncrError('function_compute_gbms', accountId, incrCompute);
                     const incrLogs = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_logs',
                         delta: customLogs
                     });
-                    if (incrLogs.isErr()) {
-                        logger.error(`Failed to increment logs for account ${accountId}: ${incrLogs.error}`);
-                    }
+                    this.logIncrError('function_logs', accountId, incrLogs);
 
                     // Clickhouse
                     this.clickhouse.add([event]);
@@ -262,9 +267,7 @@ export class UsageProcessor {
                         metric: 'webhook_forwards',
                         delta: event.payload.value
                     });
-                    if (incrWebhook.isErr()) {
-                        logger.error(`Failed to increment webhook_forwards for account ${accountId}: ${incrWebhook.error}`);
-                    }
+                    this.logIncrError('webhook_forwards', accountId, incrWebhook);
                     // Clickhouse
                     this.clickhouse.add([event]);
                     // Billing
@@ -286,6 +289,12 @@ export class UsageProcessor {
                             }
                         }
                     ]);
+                    return Ok(undefined);
+                }
+                case 'usage.data_transfer': {
+                    const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
+                    metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
+                    metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
                     return Ok(undefined);
                 }
                 default:

@@ -4,7 +4,18 @@ import { useMemo } from 'react';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 
-import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from '@nangohq/types';
+import type {
+    ApiPlan,
+    BreakdownDimensions,
+    GetBillingUsage,
+    GetPlan,
+    GetPlans,
+    GetUsage,
+    PostPlanChange,
+    PostPlanExtendTrial,
+    PutBillingInvoicingDetails,
+    UsageMetric
+} from '@nangohq/types';
 
 export async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']> {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, { method: 'GET' });
@@ -88,16 +99,65 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, source?: 'clickhouse' | 'orb') {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: [...GetBillingUsageQueryKey, timeframe],
+        queryKey: [...GetBillingUsageQueryKey, timeframe, source],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
             }
+            if (source) {
+                params.append('source', source);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetBillingUsage['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+/**
+ * Fetches one metric's breakdown: the top-N values of `dimension` plus a 'rest'
+ * rollup, under `usage[metric].breakdown`. Always queries ClickHouse (breakdowns
+ * don't exist on the Orb path). The panel's headline total still comes from
+ * `useApiGetBillingUsage`.
+ */
+export function useApiGetBillingUsageBreakdown<M extends UsageMetric>(
+    env: string,
+    timeframe: { start: string; end: string } | undefined,
+    metric: M,
+    dimension: BreakdownDimensions[M] | null,
+    top: number,
+    options?: { enabled?: boolean }
+) {
+    return useQuery<GetBillingUsage['Success'], APIError>({
+        enabled: Boolean(env) && Boolean(timeframe) && Boolean(dimension) && (options?.enabled ?? true),
+        queryKey: [...GetBillingUsageQueryKey, 'breakdown', timeframe, metric, dimension, top],
+        queryFn: async (): Promise<GetBillingUsage['Success']> => {
+            const params = new URLSearchParams({ env });
+            if (timeframe) {
+                params.append('from', timeframe.start);
+                params.append('to', timeframe.end);
+            }
+            // Breakdowns only exist on the ClickHouse path; force the source so it
+            // resolves under the dev gate (FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE).
+            params.append('source', 'clickhouse');
+            params.append('metrics', metric);
+            if (dimension) {
+                params.append(`breakdown[${metric}]`, dimension);
+            }
+            params.append('top', String(top));
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
                 method: 'GET'

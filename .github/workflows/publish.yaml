@@ -30,13 +30,13 @@ jobs:
                   token: ${{ steps.create_github_app_token.outputs.token }}
                   fetch-depth: 0
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
               with:
-                  cache: 'npm'
                   node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
-            - name: Update npm to latest
+            # Trusted publishing requires npm CLI version 11.5.1 or later.
+            - name: Update npm to latest trusted-publishing version
               run: npm install -g npm@11.5.1
 
             - name: Install dependencies

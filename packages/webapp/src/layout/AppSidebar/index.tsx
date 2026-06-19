@@ -1,4 +1,4 @@
-import { AreaChart, Blocks, Logs, Plug, Settings2, Sparkle, X } from 'lucide-react';
+import { BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ import {
     SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem
-} from '@/components-v2/ui/Sidebar';
+} from '@/components/ui/Sidebar';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { apiPatchUser } from '@/hooks/useUser';
@@ -43,7 +43,7 @@ export const AppSidebar: React.FC = () => {
         const gettingStarted = {
             title: 'Getting started',
             url: `/${env}/getting-started`,
-            icon: Sparkle,
+            icon: Sprout,
             onClose: async () => {
                 await apiPatchUser({
                     gettingStartedClosed: true
@@ -56,36 +56,43 @@ export const AppSidebar: React.FC = () => {
             meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
-            { title: 'Logs', url: `/${env}/logs`, icon: Logs },
-            { title: 'Metrics', url: `/${env}`, icon: AreaChart },
-            { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Settings2 }
+            { title: 'Logs', url: `/${env}/logs`, icon: List },
+            { title: 'Metrics', url: `/${env}`, icon: BarChart3 },
+            { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Cog }
         ].filter((item) => item !== null);
     }, [env, meta, refetchMeta, showGettingStarted]);
 
-    const showUsageCard = useMemo(() => {
-        if (!plan) return false;
-        return ['free', 'starter-v2', 'growth-v2'].includes(plan?.name);
-    }, [plan]);
+    // Only free accounts see the usage/capping card. Paid accounts have no enforced caps, so the card
+    // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
+    const showUsageCard = plan?.name === 'free';
 
     return (
-        <Sidebar collapsible="none">
-            <SidebarHeader className="p-0 px-3 pt-2.5 mb-7">
+        <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
+            <SidebarHeader className="p-0">
                 <EnvironmentDropdown />
             </SidebarHeader>
-            <SidebarContent>
-                <SidebarGroup>
+            <SidebarContent className="pt-4">
+                <SidebarGroup className="p-0 px-2.5">
                     <SidebarGroupContent>
-                        <SidebarMenu>
+                        <SidebarMenu className="gap-0">
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild data-active={item.url === window.location.pathname}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        data-active={item.url === window.location.pathname}
+                                        className="type-text-regular-sm gap-2.5 text-text-secondary [&>svg]:size-4!"
+                                    >
                                         <Link to={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (
-                                        <SidebarMenuAction onClick={item.onClose}>
+                                        <SidebarMenuAction
+                                            onClick={item.onClose}
+                                            aria-label={`Close ${item.title}`}
+                                            className="text-icon-secondary hover:bg-transparent hover:text-icon-default"
+                                        >
                                             <X />
                                         </SidebarMenuAction>
                                     )}

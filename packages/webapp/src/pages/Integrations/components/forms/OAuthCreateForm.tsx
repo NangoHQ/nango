@@ -4,16 +4,17 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
 import { NangoProvidedInput } from '../NangoProvidedInput';
-import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components-v2/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Label } from '@/components-v2/ui/Label';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
+import { Label } from '@/components/ui/Label';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -104,9 +105,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         </div>
                     </div>
 
-                    <Button loading={loading} onClick={onCreatePreProvisioned}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button loading={loading} onClick={onCreatePreProvisioned}>
+                            Create
+                        </Button>
+                    </div>
                 </div>
             </NavigationContent>
             <NavigationContent value="custom">
@@ -171,9 +174,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                 />
                             </div>
 
-                            <Button type="submit" loading={loading}>
-                                Create
-                            </Button>
+                            <div>
+                                <Button type="submit" loading={loading}>
+                                    Create
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                 </div>

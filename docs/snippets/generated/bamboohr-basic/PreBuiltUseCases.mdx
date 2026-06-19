@@ -1,19 +1,24 @@
-### Employees
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `create-employee` | Action to create a new employee | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/actions/create-employee.ts) |
-| `update-employee` | Update an existing employee in the system | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/actions/update-employee.ts) |
-| `employees` | Fetches a list of current employees from bamboohr | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/employees.ts) |
-
 ### Unified HRIS API
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `unified-employees` | Fetches a list of current employees from bamboohr and maps them to the standard HRIS model | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/unified-employees.ts) |
+| `unified-employees` | Fetches employees from BambooHR and maps them to the standard HRIS employee model. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/unified-employees.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-fields` | Introspection to retrieve available fields | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/actions/fetch-fields.ts) |
+| `applicants` | Sync applicants from the BambooHR ATS. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/applicants.ts) |
+| `company-files` | Sync company files from BambooHR | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/company-files.ts) |
+| `departments` | Sync department list values from BambooHR | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/departments.ts) |
+| `employee-files` | Sync employee file metadata from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/employee-files.ts) |
+| `employee-table-rows` | Sync employee table rows from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/employee-table-rows.ts) |
+| `employees` | Sync employees from BambooHR using the v2 datasets API with incremental updates via lastChanged. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/employees.ts) |
+| `goals` | Sync employee performance goals from BambooHR | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/goals.ts) |
+| `job-openings` | Sync job openings from the BambooHR ATS. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/job-openings.ts) |
+| `locations` | Sync office location list values from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/locations.ts) |
+| `time-off-requests` | Sync time off requests from BambooHR | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/time-off-requests.ts) |
+| `time-off-types` | Sync time off types configured in BambooHR. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/time-off-types.ts) |
+| `time-tracking` | Sync time tracking entries from BambooHR | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/time-tracking.ts) |
+| `training-records` | Sync employee training records from BambooHR. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/training-records.ts) |
+| `users` | Sync BambooHR user accounts. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/bamboohr-basic/syncs/users.ts) |

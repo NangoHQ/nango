@@ -3,19 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
 import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
 import { useToast } from '../../../../../hooks/useToast.js';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
-import { Button } from '@/components-v2/ui/Button.js';
+import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { useEnvironment } from '@/hooks/useEnvironment.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 
 import type { ApiIntegration } from '@nangohq/types';
 
-export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration; className?: string }> = ({ env, integration, className = '' }) => {
+export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIntegration }> = ({ env, integration }) => {
     const { toast } = useToast();
     const navigate = useNavigate();
 
@@ -44,10 +44,9 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
             <PermissionGate condition={canDeleteIntegration} asChild>
                 {(allowed) => (
                     <Button
-                        variant="destructive"
-                        size="lg"
+                        variant="danger"
+                        size="xl"
                         loading={isPending}
-                        className={className}
                         disabled={!allowed}
                         onClick={() =>
                             confirm({
@@ -55,7 +54,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
                                 description:
                                     'You are about to permanently delete this integration, all of its associated connections and records. This operation is not reversible, are you sure you wish to continue?',
                                 confirmButtonText: 'Delete integration, connections and records',
-                                confirmVariant: 'destructive',
+                                confirmVariant: 'danger',
                                 onConfirm: onDelete
                             })
                         }

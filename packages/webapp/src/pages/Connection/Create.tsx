@@ -9,14 +9,14 @@ import { z } from 'zod';
 
 import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ButtonLink } from '../../components/ui/button/Button';
-import { Form } from '../../components-v2/ui/Form';
+import { Form } from '../../components/ui/Form';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useProvider } from '@/hooks/useProvider';
 
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -106,13 +106,12 @@ export const ConnectionCreate: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout title="Create test connection">
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
-                <div className="grid grid-cols-2 text-white">
+                <div className="grid grid-cols-2 text-text-strong">
                     <div className="pr-10 flex flex-col gap-10">
-                        <h1 className="text-2xl">Create test connection</h1>
                         <div className="flex flex-col gap-4">
                             <Skeleton className="w-full h-10" />
                             <Skeleton className="w-full" />
@@ -125,14 +124,13 @@ export const ConnectionCreate: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className={'max-w-[1250px]'}>
+        <DashboardLayout fullWidth title="Create test connection" className={'max-w-[1250px]'}>
             <Helmet>
                 <title>Create Test Connection - Nango</title>
             </Helmet>
-            <div className="grid grid-cols-[2fr_1fr] text-white">
+            <div className="grid grid-cols-[2fr_1fr] text-text-strong">
                 <div className="pr-5">
                     <div className="flex flex-col gap-8">
-                        <h1 className="text-2xl">Create a test connection</h1>
                         <CreateConnectionSelector
                             integration={integration}
                             setIntegration={setIntegration}
@@ -155,19 +153,19 @@ export const ConnectionCreate: React.FC = () => {
                             <ButtonLink
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
                                 size="md"
-                                variant={'link'}
-                                className={'text-breadcrumb-default'}
+                                variant={'ghost'}
+                                className={'text-text-muted'}
                             >
-                                Use deprecated flow <ExternalLink className="size-4.5 text-breadcrumb-default" />
+                                Use deprecated flow <ExternalLink className="size-4.5 text-text-muted" />
                             </ButtonLink>
                         </div>
                     </div>
                 </div>
-                <div className="border-l border-l-grayscale-800 pl-10">
+                <div className="border-l border-l-border-strong pl-10">
                     <div className="flex flex-col gap-10">
                         <h1 className="text-2xl">Embed in your app</h1>
                         <a
-                            className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
+                            className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong focus:border-border-strong focus:outline-0"
                             href="https://nango.dev/docs/guides/auth/auth-guide"
                             target="_blank"
                             rel="noreferrer"
@@ -176,12 +174,12 @@ export const ConnectionCreate: React.FC = () => {
                                 <div className="flex gap-3 items-start">
                                     <h2>Authorize users from your app</h2>
                                 </div>
-                                <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
+                                <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
                                     <IconBook stroke={1} size={18} />
                                 </div>
                             </header>
                             <main>
-                                <p className="text-sm text-grayscale-400">
+                                <p className="text-sm text-text-muted">
                                     Learn how to embed Nango in your app to let users authorize 3rd-party APIs seamlessly.
                                 </p>
                             </main>

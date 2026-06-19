@@ -2,15 +2,16 @@ import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
 import SettingsContent from './components/SettingsContent';
 import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
@@ -82,7 +83,7 @@ export const Functions: React.FC = () => {
             <div className="flex flex-col gap-2.5">
                 <div className="inline-flex items-center gap-2">
                     Environment variables
-                    <ButtonLink variant="ghost" size="icon" target="_blank" to="https://nango.dev/docs/reference/functions/functions-sdk#environment-variables">
+                    <ButtonLink variant="ghost" size="2xs" target="_blank" to="https://nango.dev/docs/reference/functions/functions-sdk#environment-variables">
                         <ExternalLink />
                     </ButtonLink>
                 </div>
@@ -99,7 +100,7 @@ export const Functions: React.FC = () => {
                         {errors.length > 0 && (
                             <div className="flex flex-col gap-1">
                                 {errors.map((err, i) => (
-                                    <div key={i} className="text-body-small-regular text-feedback-error-fg">
+                                    <div key={i} className="text-body-small-regular text-status-danger-text">
                                         Row {err.index + 1}, {err.key}: {err.error}
                                     </div>
                                 ))}
@@ -110,7 +111,7 @@ export const Functions: React.FC = () => {
                         {!edit && (
                             <PermissionGate asChild condition={canEditEnvironmentVars}>
                                 {(allowed) => (
-                                    <Button variant="secondary" onClick={() => setEdit(true)} disabled={!allowed}>
+                                    <Button variant="outline" onClick={() => setEdit(true)} disabled={!allowed}>
                                         Edit
                                     </Button>
                                 )}
@@ -118,7 +119,7 @@ export const Functions: React.FC = () => {
                         )}
                         {edit && (
                             <>
-                                <Button variant="tertiary" onClick={onCancel}>
+                                <Button variant="outline" onClick={onCancel}>
                                     Cancel
                                 </Button>
                                 <Button variant="primary" onClick={onSave} disabled={isPending}>

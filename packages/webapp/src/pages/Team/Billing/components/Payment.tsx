@@ -1,14 +1,15 @@
 import { CreditCard } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { Button } from '@nangohq/design-system';
+
 import { InvoicingDetailsForm } from './InvoicingDetailsForm';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
-import { Dot } from '../../../../components-v2/ui/Dot';
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
-import { Button } from '@/components-v2/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/Card';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { Dot } from '../../../../components/ui/Dot';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
@@ -26,9 +27,9 @@ export const Payment: React.FC = () => {
         <div className="flex-1 flex flex-col gap-8">
             <div className="flex flex-col gap-5">
                 <h3 className="text-body-small-regular text-text-secondary">PAYMENT</h3>
-                <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
-                    <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
-                        <CardTitle className="text-text-primary !text-heading-sm">Payment method</CardTitle>
+                <Card className="bg-surface-page rounded border border-border-muted py-0 gap-0">
+                    <CardHeader className="bg-surface-panel h-10 flex items-center px-6">
+                        <CardTitle className="text-text-strong !text-heading-sm">Payment method</CardTitle>
                     </CardHeader>
                     <CardContent className="px-6 py-9">
                         {isPaymentMethodsLoading ? (
@@ -39,20 +40,20 @@ export const Payment: React.FC = () => {
                             <div className="w-full inline-flex items-center justify-between">
                                 <div className="inline-flex gap-3 items-center">
                                     <div className="size-10 flex items-center justify-center border border-border-muted rounded">
-                                        <CreditCard className="size-4.5 text-icon-primary" />
+                                        <CreditCard className="size-4.5 text-icon-default" />
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="inline-flex gap-1.5 items-center">
-                                            <span className="text-text-primary text-sm leading-5 font-semibold">Credit Card</span>
+                                            <span className="text-text-strong text-sm leading-5 font-semibold">Credit Card</span>
                                             <Dot variant={paymentMethod ? 'brand' : 'error'} />
                                         </div>
-                                        <span className="text-text-tertiary text-s leading-5 font-medium">
+                                        <span className="text-text-muted text-s leading-5 font-medium">
                                             {paymentMethod ? `Card ending in ${paymentMethod?.last4}` : 'No card added'}
                                         </span>
                                     </div>
                                 </div>
                                 <PaymentMethodDialog replace={!!paymentMethod}>
-                                    <Button size={'sm'} className="min-w-27">
+                                    <Button size={'md'} className="min-w-27">
                                         {paymentMethod ? 'Update' : 'Add payment method'}
                                     </Button>
                                 </PaymentMethodDialog>

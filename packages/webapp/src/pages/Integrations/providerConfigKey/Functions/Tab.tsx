@@ -2,16 +2,16 @@ import { Cloud, ExternalLink, FolderGit2, Info } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { EmptyCard } from '../../../../components-v2/ui/EmptyCard.js';
+import { EmptyCard } from '../../../../components/ui/EmptyCard.js';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert.js';
-import { Badge } from '@/components-v2/ui/Badge';
-import { ButtonLink } from '@/components-v2/ui/Button';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
-import { Skeleton } from '@/components-v2/ui/Skeleton.js';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert.js';
+import { Badge } from '@/components/ui/Badge';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Skeleton.js';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
@@ -77,11 +77,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
                 {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
+                    <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                         How to use Actions <ExternalLink />
                     </ButtonLink>
                 ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
+                    <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                         How to use Syncs <ExternalLink />
                     </ButtonLink>
                 )}
@@ -126,13 +126,13 @@ const GroupedFunctionsTable: React.FC<{
                     </TableHeader>
                     <TableBody>
                         {functions.map((func, index) => (
-                            <TableRow key={index} className="cursor-pointer hover:bg-bg-subtle" onClick={() => onFunctionClick?.(func)}>
+                            <TableRow key={index} className="cursor-pointer hover:bg-surface-panel-inset" onClick={() => onFunctionClick?.(func)}>
                                 <TableCell>
                                     <div className="flex items-center gap-1.5">
                                         {func.name}
                                         <Tooltip>
                                             <TooltipTrigger>
-                                                <Info className="size-3.5 text-icon-tertiary cursor-pointer" />
+                                                <Info className="size-3.5 text-icon-muted cursor-pointer" />
                                             </TooltipTrigger>
                                             <TooltipContent>{func.description}</TooltipContent>
                                         </Tooltip>

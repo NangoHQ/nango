@@ -6,12 +6,13 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
 import { Password, passwordSchema } from './components/Password';
 import { useResetPasswordAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormField } from '@/components-v2/ui/Form';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Form, FormField } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
 
 const resetPasswordSchema = z.object({
@@ -59,7 +60,7 @@ export default function ResetPassword() {
             <Helmet>
                 <title>Reset Password - Nango</title>
             </Helmet>
-            <h2 className="text-title-group text-text-primary">Reset password</h2>
+            <h2 className="text-title-group text-text-strong">Reset password</h2>
 
             {serverErrorMessage && (
                 <Alert variant="error">
@@ -76,7 +77,7 @@ export default function ResetPassword() {
                         render={() => <Password placeholder="New password" autoFocus autoComplete="new-password" />}
                     />
 
-                    <Button type="submit" className="w-full" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
+                    <Button type="submit" size={'xl'} loading={isPending} disabled={!form.formState.isValid}>
                         Reset password
                     </Button>
                 </form>

@@ -198,14 +198,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncConfig,
             debug: task.debug || false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: getRunnerFlags(plan),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.custom
             },
             ...(plan?.sync_function_runtime === 'lambda'
                 ? {
@@ -315,6 +316,7 @@ export async function handleSyncSuccess({
         }
         team = accountContext.account;
         environment = accountContext.environment;
+        const plan = accountContext.plan;
 
         if (!nangoProps.syncJobId) {
             throw new Error('syncJobId is required to update sync status');
@@ -359,7 +361,8 @@ export async function handleSyncSuccess({
                     environmentId: nangoProps.environmentId,
                     connectionId: nangoProps.nangoConnectionId,
                     model,
-                    generation: nangoProps.syncJobId
+                    generation: nangoProps.syncJobId,
+                    plan
                 });
                 if (res.isErr()) {
                     throw res.error;

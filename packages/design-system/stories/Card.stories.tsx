@@ -1,10 +1,10 @@
-import { Button } from '@/components-v2/ui/Button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components-v2/ui/Card';
+import { Button } from '../src/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Card',
+    title: 'Components/UI/Card',
     parameters: { layout: 'padded' }
 };
 export default meta;
@@ -22,7 +22,7 @@ export const Default: Story = {
                     <p className="text-body-small-regular text-text-secondary">Connected · Last synced 2 min ago</p>
                 </CardContent>
                 <CardFooter>
-                    <Button variant="secondary" size="sm">
+                    <Button variant="secondary" size="md">
                         Manage
                     </Button>
                 </CardFooter>
@@ -36,7 +36,7 @@ export const Default: Story = {
                     <p className="text-body-small-regular text-text-secondary">Not connected</p>
                 </CardContent>
                 <CardFooter>
-                    <Button variant="primary" size="sm">
+                    <Button variant="primary" size="md">
                         Connect
                     </Button>
                 </CardFooter>

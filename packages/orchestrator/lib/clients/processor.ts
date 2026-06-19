@@ -8,6 +8,7 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
 import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 
 const logger = getLogger('orchestrator.clients.processor');
 
@@ -74,7 +75,7 @@ export class OrchestratorProcessor {
                     ...(active ? { childOf: active } : {}),
                     tags: { 'task.id': task.id }
                 });
-                void this.processTask(task)
+                void this.processTask(task, span)
                     .catch((err: unknown) => span.setTag('error', err))
                     .finally(() => span.finish());
             }
@@ -83,37 +84,29 @@ export class OrchestratorProcessor {
         return;
     }
 
-    private async processTask(task: OrchestratorTask): Promise<void> {
-        await this.queue.add(async () => {
-            const active = tracer.scope().active();
-            const span = tracer.startSpan('processor.process.task', {
-                ...(active ? { childOf: active } : {}),
-                tags: { 'task.id': task.id }
-            });
-            try {
-                const res = await this.handler(task);
-                if (res.isErr()) {
-                    const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error: res.error });
-                    if (setFailed.isErr()) {
-                        logger.error(`failed to set task ${task.id} as failed`, setFailed.error);
-                        span.setTag('error', setFailed);
-                    } else {
-                        span.setTag('error', res.error);
+    private async processTask(task: OrchestratorTask, parentSpan: Span): Promise<void> {
+        await this.queue.add(() =>
+            tracer.trace('processor.process.task', { childOf: parentSpan, tags: { 'task.id': task.id } }, async (span) => {
+                try {
+                    const res = await this.handler(task);
+                    if (res.isErr()) {
+                        await this.reportFailure(task, res.error, span);
                     }
+                } catch (err) {
+                    const error = err instanceof Error ? err : new Error(stringifyError(err));
+                    logger.error(`Failed to process task ${task.id}`, error);
+                    await this.reportFailure(task, error, span);
                 }
-            } catch (err) {
-                const error = err instanceof Error ? err : new Error(stringifyError(err));
-                logger.error(`Failed to process task ${task.id}`, error);
-                const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error });
-                if (setFailed.isErr()) {
-                    logger.error(`failed to set task ${task.id} as failed. Unknown error`, setFailed.error);
-                    span.setTag('error', setFailed);
-                } else {
-                    span.setTag('error', error);
-                }
-            } finally {
-                span.finish();
-            }
-        });
+            })
+        );
+    }
+
+    private async reportFailure(task: OrchestratorTask, error: Error, span?: Span): Promise<void> {
+        span?.setTag('error', error);
+        const setFailed = await this.orchestratorClient.failed({ taskId: task.id, error });
+        if (setFailed.isErr()) {
+            logger.error(`failed to set task ${task.id} as failed`, setFailed.error);
+            span?.setTag('task.failed_report_error', setFailed.error.name);
+        }
     }
 }

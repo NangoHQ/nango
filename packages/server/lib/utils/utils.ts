@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url';
 
 import { serializeError } from 'serialize-error';
 
-import { getFeatureFlagsClient } from '@nangohq/kvstore';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
@@ -25,8 +24,6 @@ const BINARY_CONTENT_TYPES = [
     'x-world/',
     'application/octet-stream'
 ];
-
-export const featureFlags = await getFeatureFlagsClient();
 
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
@@ -61,9 +58,11 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
 
     const parts = strWithoutConnectionConfig.split('||');
     if (parts[1]) {
+        const primary = parts[0]!.trim();
         const fallback = parts[1].trim();
+        const interpolatedPrimary = interpolateString(primary, replacers);
         const interpolatedFallback = interpolateString(fallback, replacers);
-        return /\${([^{}]*)}/g.test(interpolatedFallback);
+        return /\${([^{}]*)}/g.test(interpolatedPrimary) && /\${([^{}]*)}/g.test(interpolatedFallback);
     }
 
     const interpolatedStr = interpolateString(strWithoutConnectionConfig, replacers);

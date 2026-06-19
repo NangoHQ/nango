@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
 import { router } from './router';
-import { DevToolPanel, isDevToolsEnabled } from '@/features/DevToolPanel';
+import { PlainChat } from '@/components/PlainChat';
+import { DevToolPanel, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useTheme } from '@/lib/theme';
@@ -13,10 +13,9 @@ import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
 
-import 'react-toastify/dist/ReactToastify.css';
-
 const App = () => {
     const env = useStore((state) => state.env);
+    const isDevToolsEnabled = useIsDevToolsEnabled();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     // Sync persisted theme preference to the DOM
     useTheme();
@@ -45,9 +44,8 @@ const App = () => {
 
     return (
         <>
+            <PlainChat user={user} />
             <RouterProvider router={router} />
-            {/* TODO: Remove once remaining legacy toasts have been replaced */}
-            <ToastContainer />
             <Toaster />
             {isDevToolsEnabled && <DevToolPanel />}
         </>

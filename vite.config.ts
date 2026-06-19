@@ -2,11 +2,26 @@
 
 // Configure Vitest (https://vitest.dev/config/)
 
-import { defineConfig } from 'vitest/config';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { defaultExclude, defineConfig } from 'vitest/config';
+
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+    resolve: {
+        // Unit tests should exercise workspace source, not potentially stale dist/
+        // artifacts restored by CI incremental build caches.
+        alias: {
+            '@nangohq/nango-yaml': path.resolve(rootDir, 'packages/nango-yaml/lib/index.ts')
+        }
+    },
     test: {
         include: ['**/*.unit.{test,spec}.?(c|m)[jt]s?(x)'],
+        // Vitest 4 dropped dist/** from its defaultExclude, so compiled test files
+        // built into packages/*/dist get collected and run as duplicates. Re-add it.
+        exclude: [...defaultExclude, '**/dist/**'],
         setupFiles: './tests/setupFiles.ts',
         env: {
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',

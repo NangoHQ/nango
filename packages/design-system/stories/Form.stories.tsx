@@ -1,13 +1,13 @@
 import { useForm } from 'react-hook-form';
 
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
-import { Input } from '@/components-v2/ui/Input';
+import { Button } from '../src/components/ui/button';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
+import { Input } from '@/components/ui/Input';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Form',
+    title: 'Components/UI/Form',
     parameters: { layout: 'padded' }
 };
 export default meta;
@@ -33,7 +33,7 @@ export const Default: Story = {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" size="sm">
+                    <Button type="submit" size="md">
                         Save
                     </Button>
                 </form>

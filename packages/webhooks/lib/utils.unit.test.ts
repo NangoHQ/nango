@@ -1,7 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { stringifyStable } from '@nangohq/utils';
 
+import { mockWebhookDenylistAllowAll, restoreWebhookDenylistMock } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
 import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe } from './utils.js';
 
@@ -59,6 +60,10 @@ describe('deliver bytes metering', () => {
         await testServer.stop();
     });
 
+    beforeEach(() => {
+        mockWebhookDenylistAllowAll();
+    });
+
     it('should fire onBytes with non-zero sent on successful POST', async () => {
         const hops: { sent: number; received: number }[] = [];
         const result = await deliver({
@@ -89,5 +94,20 @@ describe('deliver bytes metering', () => {
         for (const h of hops) {
             expect(h.sent).toBeGreaterThan(0);
         }
+    });
+
+    it('should skip denylisted webhook URLs', async () => {
+        restoreWebhookDenylistMock();
+
+        const hops: { sent: number; received: number }[] = [];
+        const result = await deliver({
+            webhooks: [{ url: 'http://169.254.169.254/webhook', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            onBytes: (b) => hops.push(b)
+        });
+        expect(result.isOk()).toBe(true);
+        expect(hops.length).toBe(0);
     });
 });

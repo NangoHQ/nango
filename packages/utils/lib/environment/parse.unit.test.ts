@@ -24,6 +24,39 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
+    it('should parse E2B sandbox metric settings', () => {
+        const res = parseEnvs(ENVS, {
+            E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',
+            E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: '5000'
+        });
+        expect(res.E2B_SANDBOX_METRICS_POLL_INTERVAL_MS).toBe(120_000);
+        expect(res.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS).toBe(5_000);
+    });
+
+    it('should parse the sandbox provider', () => {
+        const res = parseEnvs(ENVS, { SANDBOX_PROVIDER: 'agentcore' });
+        expect(res.SANDBOX_PROVIDER).toBe('agentcore');
+    });
+
+    it('should parse AgentCore sandbox settings', () => {
+        const res = parseEnvs(ENVS, {
+            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
+            AGENTCORE_RUNTIME_QUALIFIER: 'dev',
+            AGENTCORE_REGION: 'us-east-1'
+        });
+        expect(res.AGENTCORE_RUNTIME_ARN).toBe('arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime');
+        expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('dev');
+        expect(res.AGENTCORE_REGION).toBe('us-east-1');
+    });
+
+    it('should default the AgentCore runtime qualifier', () => {
+        const res = parseEnvs(ENVS, {
+            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
+            AGENTCORE_REGION: 'us-east-1'
+        });
+        expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('DEFAULT');
+    });
+
     it('should coerce boolean and number', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });
@@ -129,16 +162,57 @@ describe('parse', () => {
         });
     });
 
-    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to empty array', () => {
+    it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+        expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
     });
 
-    it('should parse NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON array and trim entries', () => {
+    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(true);
+    });
+
+    it('should parse NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED false', () => {
+        const res = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: 'false' });
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(false);
+    });
+
+    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to secure defaults when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([
+            '169.254.169.254',
+            'metadata.google.internal',
+            'localhost',
+            '127.0.0.1',
+            '[::1]',
+            '[::ffff:127.0.0.1]',
+            '[::ffff:169.254.169.254]'
+        ]);
+    });
+
+    it('should allow explicit opt-out of NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', () => {
+        const resEmpty = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '[]' });
+        expect(resEmpty.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+        const resWhitespaceEmpty = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '[ ]' });
+        expect(resWhitespaceEmpty.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+        const resBlank = parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: '' });
+        expect(resBlank.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+    });
+
+    it('should merge custom NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST entries with defaults', () => {
         const res = parseEnvs(ENVS, {
-            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([' 169.254.169.254 ', 'localhost', ''])
+            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid', ''])
         });
-        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual(['169.254.169.254', 'localhost']);
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([
+            '169.254.169.254',
+            'metadata.google.internal',
+            'localhost',
+            '127.0.0.1',
+            '[::1]',
+            '[::ffff:127.0.0.1]',
+            '[::ffff:169.254.169.254]',
+            'denylisted-proxy-test.invalid'
+        ]);
     });
 
     it('should throw on invalid NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON', () => {
