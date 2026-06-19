@@ -20,6 +20,7 @@ export function usePreBuiltDeployFlow(env: string, integrationId: string) {
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'templates'] });
         }
     });
@@ -53,6 +54,7 @@ export function useFlowEnable(env: string, integrationId: string) {
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
         }
     });
 }
@@ -73,6 +75,7 @@ export function useFlowDisable(env: string, integrationId: string) {
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
         }
     });
 }
