@@ -315,13 +315,18 @@ jobs:
             - name: Install AWS CLI
               env:
                   AWS_CLI_VERSION: 2.34.44
+                  AWS_REGION: ${{ vars.AWS_REGION }}
                   AWS_PAGER: ''
               run: |
+                  if [[ -z "$AWS_REGION" ]]; then
+                      echo "AWS_REGION is required" >&2
+                      exit 1
+                  fi
                   curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWS_CLI_VERSION}.zip" -o awscliv2.zip
                   unzip -q awscliv2.zip
                   sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
                   aws --version
-                  aws bedrock-agentcore-control list-agent-runtimes --generate-cli-skeleton output >/dev/null
+                  aws bedrock-agentcore-control list-agent-runtimes --region "$AWS_REGION" --generate-cli-skeleton output >/dev/null
             - name: Configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
