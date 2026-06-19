@@ -290,8 +290,33 @@ export class UsageTracker implements IUsageTracker {
         const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
         if (lock.isErr()) {
             // another revalidation is in progress, skip
+            span?.setTag('lock_acquired', false);
+            span?.finish();
             return Ok(undefined);
         }
+        span?.setTag('lock_acquired', true);
+        try {
+            return await this._revalidate({ accountId, metric, source, parentSpan: span });
+        } finally {
+            span?.finish();
+        }
+    }
+
+    private async _revalidate({
+        accountId,
+        metric,
+        source,
+        parentSpan
+    }: {
+        accountId: number;
+        metric: UsageMetric;
+        source: string;
+        parentSpan: ReturnType<typeof tracer.startSpan> | undefined;
+    }): Promise<Result<void>> {
+        const span = tracer.startSpan('nango.usage.revalidate.work', {
+            tags: { accountId, metric, source },
+            ...(parentSpan ? { childOf: parentSpan } : {})
+        });
         try {
             const now = new Date();
             switch (metric) {
