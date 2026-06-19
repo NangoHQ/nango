@@ -1,0 +1,70 @@
+---
+title: NetSuite (Client Credentials) - How do I link my account?
+sidebarTitle: NetSuite (Client Credentials)
+---
+
+# Overview
+
+To authenticate with NetSuite using Client Credentials, you will need:
+1. **Account ID** - Your NetSuite account ID
+2. **Client ID** - From your NetSuite integration record
+3. **Certificate ID** - The ID of the certificate registered in your NetSuite integration
+4. **Private Key** - The RSA private key (PEM format) used to sign the JWT assertion
+
+This guide will walk you through finding each of these values.
+
+### Prerequisites:
+
+- You must have an **Administrator** role in NetSuite to create integrations and register certificates
+
+### Instructions:
+
+#### Step 1: Enable required features
+
+1. Log in to NetSuite and navigate to **Setup** → **Company** → **Enable Features**.
+2. Under the **SuiteTalk** tab, enable _REST WEB SERVICES_.
+3. Under the **Manage Authentication** tab, enable _OAUTH 2.0_.
+4. Save your changes.
+
+#### Step 2: Create an integration record and get your Client ID
+
+1. Navigate to **Setup** → **Integration** → **Manage Integrations** → **New**.
+2. Set a name (e.g., `Nango Client Credentials`).
+3. Under **Authentication**, enable _CLIENT CREDENTIALS (MACHINE TO MACHINE) GRANT_ and disable all other grant types.
+4. Save the integration.
+5. Copy the **Client ID** displayed after saving — you won't be able to retrieve it again.
+
+#### Step 3: Generate an RSA key pair
+
+Generate a 2048-bit (or larger) RSA key pair:
+
+```bash
+openssl genrsa -out private_key.pem 2048
+openssl rsa -in private_key.pem -pubout -out public_key.pem
+```
+
+Keep `private_key.pem` secure — you'll paste it into the **Private Key** field. The `public_key.pem` is uploaded to NetSuite in the next step.
+
+#### Step 4: Register the certificate and get your Certificate ID
+
+1. Navigate to **Setup** → **Integration** → **Manage Authentication** → **OAuth 2.0 Client Credentials (M2M) Setup**.
+2. Click **Create New**.
+3. In the popup, select the **entity** (the user this integration runs as), **role**, and **application** (the integration you created in step 2).
+4. Upload your `public_key.pem`.
+5. Click **Save** and copy the **Certificate ID** displayed.
+
+#### Step 5: Find your Account ID
+
+Your Account ID appears in your NetSuite URL — for example, if your URL is `https://1234567.app.netsuite.com`, your Account ID is `1234567`.
+
+You can also find it under **Setup** → **Company** → **Company Information** → **Account ID**.
+
+#### Step 6: Enter your credentials in the Connect UI
+
+1. Open the form where you need to authenticate with NetSuite.
+2. Enter your **Account ID**, **Client ID**, **Certificate ID**, and paste the full contents of `private_key.pem` (including the `-----BEGIN RSA PRIVATE KEY-----` header and footer) into the **Private Key** field.
+3. Submit the form.
+
+<img src="/api-integrations/netsuite-client-credentials/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to  NetSuite (Client Credentials).

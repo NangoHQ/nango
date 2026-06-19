@@ -1391,6 +1391,7 @@
               "api-integrations/nerdio",
               "integrations/all/netsuite",
               "api-integrations/netsuite-tba",
+              "api-integrations/netsuite-client-credentials",
               "integrations/all/next-cloud-ocs",
               "api-integrations/nexthink",
               "api-integrations/nocrm",

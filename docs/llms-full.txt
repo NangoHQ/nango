@@ -14329,6 +14329,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `nationbuilder` | NationBuilder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/nationbuilder.md) |  |  | crm |
 | `nerdio` | Nerdio | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nerdio.md) | [connect](https://nango.dev/docs/api-integrations/nerdio/connect.md) |  | other |
 | `netsuite` | NetSuite (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/netsuite.md) |  |  | accounting, erp |
+| `netsuite-client-credentials` | NetSuite (Client Credentials) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsuite-client-credentials.md) | [connect](https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect.md) |  | accounting, erp |
 | `netsuite-tba` | NetSuite (TBA) | TBA | [docs](https://nango.dev/docs/api-integrations/netsuite-tba.md) |  | [setup](https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango.md) | accounting, erp, popular |
 | `next-cloud-ocs` | Next Cloud OCS | BASIC | [docs](https://nango.dev/docs/integrations/all/next-cloud-ocs.md) | [connect](https://nango.dev/docs/integrations/all/next-cloud-ocs/connect.md) |  | storage, productivity |
 | `nexthink` | Nexthink | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nexthink.md) | [connect](https://nango.dev/docs/api-integrations/nexthink/connect.md) |  | analytics |
