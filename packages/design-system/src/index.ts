@@ -1,4 +1,4 @@
-export { Button, type ButtonProps, IconButton, type IconButtonProps, buttonVariants } from './components/ui/button';
+export { Button, type ButtonProps, IconButton, type IconButtonProps, buttonVariantClasses, buttonVariants } from './components/ui/button';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {

@@ -7,6 +7,71 @@ import { Spinner } from './spinner';
 
 import type { VariantProps } from 'class-variance-authority';
 
+/**
+ * Per-variant Tailwind class lists, exposed as data so tooling (e.g. the dev Token Editor's
+ * contrast checker) can derive the foreground/background token pairs each variant uses.
+ * Passed straight into `cva` below — this is the single source of truth for variant colours.
+ */
+export const buttonVariantClasses = {
+    // Figma token → CSS var → Tailwind class
+    // interactive/primary → --interactive-primary → bg-interactive-primary
+    primary: [
+        'bg-interactive-primary text-text-on-accent border-transparent',
+        'hover:bg-interactive-primary-hover',
+        'active:bg-interactive-primary-active',
+        'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
+        'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
+        'focus-visible:shadow-focus-outline-default'
+    ],
+    // surface/inverse → --surface-inverse → bg-surface-inverse
+    secondary: [
+        'bg-surface-inverse text-text-inverse border-transparent',
+        'hover:bg-surface-inverse-hover',
+        'active:bg-surface-inverse-pressed',
+        'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
+        'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
+        'focus-visible:shadow-focus-outline-default'
+    ],
+    // interactive/outline → --interactive-outline → bg-interactive-outline
+    // border/interactive → --border-interactive → border-border-interactive
+    outline: [
+        'bg-interactive-outline text-text-default border-border-interactive',
+        'hover:bg-interactive-outline-hover hover:border-border-interactive-hover',
+        'active:bg-interactive-outline-active',
+        'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
+        'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
+        'focus-visible:shadow-focus-outline-default'
+    ],
+    // interactive/ghost → --interactive-ghost → bg-interactive-ghost
+    // text/secondary → --text-secondary → text-text-secondary
+    ghost: [
+        'bg-interactive-ghost text-text-secondary border-transparent',
+        // hover/active give feedback via icon/text colour, not a background fill
+        'hover:text-text-strong active:text-text-strong',
+        'disabled:text-text-disabled',
+        'aria-disabled:text-text-disabled',
+        'focus-visible:shadow-focus-outline-default'
+    ],
+    // interactive/danger → --interactive-danger → bg-interactive-danger
+    danger: [
+        'bg-interactive-danger text-text-on-accent border-transparent',
+        'hover:bg-interactive-danger-hover',
+        'active:bg-interactive-danger-active',
+        'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
+        'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
+        'focus-visible:shadow-focus-outline-danger'
+    ],
+    // transparent bg, text/danger → --text-danger → text-text-danger
+    'link-danger': [
+        'bg-interactive-ghost text-text-danger border-transparent',
+        'hover:bg-interactive-ghost-hover',
+        'active:bg-interactive-ghost-active',
+        'disabled:text-text-disabled',
+        'aria-disabled:text-text-disabled',
+        'focus-visible:shadow-focus-outline-danger'
+    ]
+} as const;
+
 export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
@@ -23,65 +88,7 @@ export const buttonVariants = cva(
     ],
     {
         variants: {
-            variant: {
-                // Figma token → CSS var → Tailwind class
-                // interactive/primary → --interactive-primary → bg-interactive-primary
-                primary: [
-                    'bg-interactive-primary text-text-on-accent border-transparent',
-                    'hover:bg-interactive-primary-hover',
-                    'active:bg-interactive-primary-active',
-                    'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
-                    'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                // surface/inverse → --surface-inverse → bg-surface-inverse
-                secondary: [
-                    'bg-surface-inverse text-text-inverse border-transparent',
-                    'hover:bg-surface-inverse-hover',
-                    'active:bg-surface-inverse-pressed',
-                    'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
-                    'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                // interactive/outline → --interactive-outline → bg-interactive-outline
-                // border/interactive → --border-interactive → border-border-interactive
-                outline: [
-                    'bg-interactive-outline text-text-default border-border-interactive',
-                    'hover:bg-interactive-outline-hover hover:border-border-interactive-hover',
-                    'active:bg-interactive-outline-active',
-                    'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
-                    'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                // interactive/ghost → --interactive-ghost → bg-interactive-ghost
-                // text/secondary → --text-secondary → text-text-secondary
-                ghost: [
-                    'bg-interactive-ghost text-text-secondary border-transparent',
-                    // hover/active give feedback via icon/text colour, not a background fill
-                    'hover:text-text-strong active:text-text-strong',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
-                    'focus-visible:shadow-focus-outline-default'
-                ],
-                // interactive/danger → --interactive-danger → bg-interactive-danger
-                danger: [
-                    'bg-interactive-danger text-text-on-accent border-transparent',
-                    'hover:bg-interactive-danger-hover',
-                    'active:bg-interactive-danger-active',
-                    'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
-                    'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
-                    'focus-visible:shadow-focus-outline-danger'
-                ],
-                // transparent bg, text/danger → --text-danger → text-text-danger
-                'link-danger': [
-                    'bg-interactive-ghost text-text-danger border-transparent',
-                    'hover:bg-interactive-ghost-hover',
-                    'active:bg-interactive-ghost-active',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
-                    'focus-visible:shadow-focus-outline-danger'
-                ]
-            },
+            variant: buttonVariantClasses,
             size: {
                 // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
                 '2xs': 'size-5 p-1',
