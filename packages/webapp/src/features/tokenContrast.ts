@@ -153,13 +153,18 @@ export function contrastRatio(fgHex: string, bgHex: string): number | null {
 }
 
 export type Band = 'aaa' | 'aa' | 'aa-large' | 'fail';
-/** 'text' → 1.4.3 (4.5/7); 'border' and 'fill' → 1.4.11 UI-component contrast (3:1). */
-export type ContrastKind = 'text' | 'border' | 'fill';
+/**
+ * 'text' → 1.4.3/1.4.6 text contrast (4.5/7). Everything else is UI-component contrast at 3:1:
+ * 'border' (1.4.11), 'fill' (component vs surface, 1.4.11), 'focus' (focus ring, 2.4.11/1.4.11),
+ * 'icon' (graphical objects, 1.4.11).
+ */
+export type ContrastKind = 'text' | 'border' | 'fill' | 'focus' | 'icon';
 
 /** WCAG band for normal text. (Large text / UI surfaces are "aa-large" at ≥3.) */
 export function bandOf(ratio: number, kind: ContrastKind): Band {
-    // Borders and solid component fills are UI-component contrast — only need 3:1 (WCAG 1.4.11)
-    if (kind === 'border' || kind === 'fill') return ratio >= 3 ? 'aa' : 'fail';
+    // Only text uses the 4.5/7 thresholds; all non-text contrast (borders, fills, focus rings,
+    // graphical objects) is held to 3:1 (WCAG 1.4.11 / 2.4.11).
+    if (kind !== 'text') return ratio >= 3 ? 'aa' : 'fail';
     if (ratio >= 7) return 'aaa';
     if (ratio >= 4.5) return 'aa';
     if (ratio >= 3) return 'aa-large';
@@ -181,14 +186,16 @@ function isTransparent(hex: string): boolean {
 
 /**
  * Builds a map of foregroundCssVar → contrast scores. Transparent-background pairs are
- * expanded to score against each provided container surface.
+ * expanded to score against each provided container surface. `allVars` (all known semantic
+ * cssVars) is used to discover icon/graphical tokens by naming convention.
  */
 export function buildContrastIndex(opts: {
     resolve: (cssVar: string) => string;
     isKnownToken: (cssVar: string) => boolean;
     surfaces: string[];
+    allVars: string[];
 }): Map<string, ContrastScore[]> {
-    const { resolve, isKnownToken, surfaces } = opts;
+    const { resolve, isKnownToken, surfaces, allVars } = opts;
     const index = new Map<string, ContrastScore[]>();
     const push = (fgVar: string, score: ContrastScore) => {
         const list = index.get(fgVar) ?? [];
@@ -224,6 +231,44 @@ export function buildContrastIndex(opts: {
             if (ratio == null) continue;
             push(fillVar, { bgVar: surfaceVar, ratio, band: bandOf(ratio, 'fill'), kind: 'fill' });
         }
+    }
+
+    // Focus indicator (WCAG 2.4.11 / 1.4.11): the focus ring must contrast ≥3:1 with the surface
+    // it's drawn on. Derive the ring colour token from each variant's focus-visible shadow utility
+    // (shadow-focus-outline-X → --focus-ring-X) so it stays in sync with the components.
+    const focusRingVars = new Set<string>();
+    for (const source of CONTRAST_SOURCES) {
+        for (const classes of Object.values(source)) {
+            for (const entry of classes) {
+                for (const raw of entry.split(/\s+/)) {
+                    const m = /(?:^|:)shadow-focus-outline-([a-z]+)/.exec(raw);
+                    if (m && isKnownToken(`--focus-ring-${m[1]}`)) focusRingVars.add(`--focus-ring-${m[1]}`);
+                }
+            }
+        }
+    }
+    for (const ringVar of focusRingVars) {
+        const ring = parseHex(resolve(ringVar));
+        if (!ring || ring.a < 1) continue;
+        for (const surfaceVar of surfaces) {
+            const ratio = contrastRatio(resolve(ringVar), resolve(surfaceVar));
+            if (ratio == null) continue;
+            push(ringVar, { bgVar: surfaceVar, ratio, band: bandOf(ratio, 'focus'), kind: 'focus' });
+        }
+    }
+
+    // Graphical objects (WCAG 1.4.11): status badge icons must contrast ≥3:1 with the status surface
+    // they sit on (--status-X-icon → --status-X-bg). The general --icon-* family is intentionally not
+    // scored: most of those icons are paired with a text label, which makes them decorative and
+    // 1.4.11-exempt, and the tool can't tell a sole-indicator icon from a decorative one.
+    for (const iconVar of allVars) {
+        const m = /^--status-(.+)-icon$/.exec(iconVar);
+        if (!m) continue;
+        const bgVar = `--status-${m[1]}-bg`;
+        if (!isKnownToken(bgVar)) continue;
+        const ratio = contrastRatio(resolve(iconVar), resolve(bgVar));
+        if (ratio == null) continue;
+        push(iconVar, { bgVar, ratio, band: bandOf(ratio, 'icon'), kind: 'icon' });
     }
     return index;
 }

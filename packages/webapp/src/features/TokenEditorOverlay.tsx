@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
-import { buildContrastIndex, deriveContrastPairs } from './tokenContrast';
+import { buildContrastIndex } from './tokenContrast';
 import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { Input } from '@/components/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
@@ -182,21 +182,8 @@ const SURFACE_VARS = SEMANTIC_ENTRIES.filter(
     (e) => e.category === 'surface' && /^(canvas|page|panel|panelMuted|panelInset|raised|overlay|input|inputMuted)$/i.test(e.path[1] ?? '')
 ).map((e) => e.cssVar);
 
-/**
- * Tokens that participate in a contrast pair (structural — independent of resolved values/theme).
- * Used to hide irrelevant rows when contrast mode is on. Includes BOTH sides of each pair plus the
- * container surfaces transparent variants are scored against, so the backgrounds you'd tweak to fix
- * a pair (e.g. --interactive-primary behind --text-on-accent) stay editable, not just the scored
- * foregrounds.
- */
-const CONTRAST_RELEVANT_VARS = (() => {
-    const set = new Set<string>(SURFACE_VARS);
-    for (const pair of deriveContrastPairs((cssVar) => ENTRIES_BY_VAR.has(cssVar))) {
-        set.add(pair.fgVar);
-        set.add(pair.bgVar);
-    }
-    return set;
-})();
+/** All semantic token cssVars — passed to the contrast index so it can discover icon tokens. */
+const SEMANTIC_VARS = SEMANTIC_ENTRIES.map((e) => e.cssVar);
 /** True when a semantic entry matches a specific primitive ref filter (incl. alias chains). */
 function semanticMatchesRef(entry: TokenEntry, filterRef: string): boolean {
     if (!entry.primitiveRef) return false;
@@ -889,10 +876,19 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const contrastIndex = useMemo(() => {
         if (!contrastOn) return null;
         const resolve = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-        return buildContrastIndex({ resolve, isKnownToken: (v) => ENTRIES_BY_VAR.has(v), surfaces: SURFACE_VARS });
+        return buildContrastIndex({ resolve, isKnownToken: (v) => ENTRIES_BY_VAR.has(v), surfaces: SURFACE_VARS, allVars: SEMANTIC_VARS });
         // resolved values change with edits/theme; themeSeq fires after the DOM vars settle
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [contrastOn, themeSeq, overridesPerTheme, refOverridesPerTheme, darkMode]);
+
+    // Every token involved in a scored pair — the scored foregrounds plus the backgrounds/surfaces
+    // they're measured against. Used to hide irrelevant rows when contrast mode is on.
+    const contrastRelevantVars = useMemo(() => {
+        if (!contrastIndex) return null;
+        const set = new Set<string>(contrastIndex.keys());
+        for (const scores of contrastIndex.values()) for (const s of scores) set.add(s.bgVar);
+        return set;
+    }, [contrastIndex]);
 
     // Scroll to target token after mode switch re-renders the list
     useEffect(() => {
@@ -925,11 +921,11 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
         // When contrast mode is on, narrow to the tokens that participate in a pair (both the
         // scored foregrounds and the backgrounds/surfaces you'd tweak to fix them). Pairs are
         // semantic, so this only applies in semantic mode (primitives stay unfiltered).
-        if (contrastOn && mode === 'semantic') {
-            result = result.filter((e) => CONTRAST_RELEVANT_VARS.has(e.cssVar));
+        if (contrastOn && mode === 'semantic' && contrastRelevantVars) {
+            result = result.filter((e) => contrastRelevantVars.has(e.cssVar));
         }
         return result;
-    }, [entries, search, primitiveFilter, mode, contrastOn]);
+    }, [entries, search, primitiveFilter, mode, contrastOn, contrastRelevantVars]);
 
     const grouped = useMemo(() => {
         const g: Record<string, TokenEntry[]> = {};
