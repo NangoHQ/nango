@@ -1,0 +1,20 @@
+.github/workflows/deploy.yaml
+  s_6a617d6537e735::t_6bfec0402db5af 293,295
+  s_6a617d6537e735::t_cd58d2f5340554 331,337,339
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "63357266693de6c5ba964f59c743b62300ee7644",
+  "prompts": {},
+  "sessions": {
+    "s_6a617d6537e735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ecc22-98f1-7080-956e-06417680f04d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
