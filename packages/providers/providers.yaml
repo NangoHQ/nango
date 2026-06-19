@@ -22487,14 +22487,19 @@ workday-cc:
     display_name: Workday (Client Credentials)
     categories:
         - hr
-    auth_mode: OAUTH2_CC
+    auth_mode: TWO_STEP
     body_format: form
     token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
     token_params:
         grant_type: client_credentials
+        tenant_alias: ${connectionConfig.tenant}
     token_headers:
         content-type: application/x-www-form-urlencoded
-    scope_separator: ' '
+        authorization: ID ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
     proxy:
         base_url: https://${connectionConfig.tokenDomain}/ccx/api
     docs: https://nango.dev/docs/api-integrations/workday-cc
@@ -22516,6 +22521,18 @@ workday-cc:
             example: mytenant
             order: 2
             doc_section: '#step-3-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID.
+            doc_section: '#step-5-register-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret.
+            secret: true
+            doc_section: '#step-5-register-an-api-client'
 
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning

@@ -9,13 +9,13 @@ description: 'Integrate your application with the Workday API using machine-to-m
 Connect to Workday with Nango and see data flow in 2 minutes. The Client Credentials flow is machine-to-machine — no user redirect required.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Workday (Client Credentials)_.
     </Step>
-    <Step title="Connect your Workday account">
+    <Step id="connect-workday-account" title="Connect your Workday account">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Token Domain, Tenant, Client ID, and Client Secret, then save.
     </Step>
-    <Step title="Call the Workday API">
+    <Step id="call-workday-api" title="Call the Workday API">
     Make your first request. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -54,7 +54,7 @@ Connect to Workday with Nango and see data flow in 2 minutes. The Client Credent
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-in-app" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
 
         To obtain your own credentials, follow the setup guide linked below.
