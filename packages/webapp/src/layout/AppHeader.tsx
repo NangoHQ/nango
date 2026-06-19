@@ -1,4 +1,4 @@
-import { BookOpen, Box, MessageCircle, Moon, Sun } from 'lucide-react';
+import { BookOpen, Box, LifeBuoy as HelpIcon, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
@@ -40,7 +40,7 @@ export const AppHeader: React.FC = () => {
                     </a>
                 </IconButton>
                 <IconButton variant="outline" size="md" label="Help" onClick={() => window.Plain?.open()}>
-                    <MessageCircle />
+                    <HelpIcon />
                 </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>
                     {darkMode ? <Sun /> : <Moon />}
