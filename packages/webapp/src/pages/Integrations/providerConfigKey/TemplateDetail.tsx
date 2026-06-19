@@ -2,11 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, Upload } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
+import { Button } from '@nangohq/design-system';
+
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Badge } from '@/components/ui/Badge';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
@@ -18,6 +18,8 @@ import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
 import { buildPullCommand, functionRepoPath } from '@/utils/scripts';
+import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
+import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
 
 import type { NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';

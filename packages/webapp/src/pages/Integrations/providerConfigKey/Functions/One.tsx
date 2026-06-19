@@ -213,7 +213,7 @@ export const FunctionsOne: React.FC = () => {
                                 </Button>
                             </ConditionalTooltip>
                             {func.source !== 'repo' && isSyncOrAction(func) && (
-                                <Button
+                                <IconButton
                                     variant="ghost"
                                     size="2xs"
                                     label="Delete function"
@@ -232,7 +232,7 @@ export const FunctionsOne: React.FC = () => {
                                     }
                                 >
                                     <Trash2 />
-                                </Button>
+                                </IconButton>
                             )}
                             {isSyncOrAction(func) && <FunctionSwitch flow={func} integration={integrationData.integration} />}
                         </div>

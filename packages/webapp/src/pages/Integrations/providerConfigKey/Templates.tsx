@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { TemplateDetail } from './TemplateDetail';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { AlertButton } from '@/components/ui/Alert';
@@ -24,6 +23,7 @@ import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { cn } from '@/utils/utils';
+import { TemplateDetail } from './TemplateDetail';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { ApiError, NangoFunctionTemplate } from '@nangohq/types';

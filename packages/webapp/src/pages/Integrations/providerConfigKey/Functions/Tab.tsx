@@ -3,11 +3,12 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { FunctionSwitch } from '../../components/FunctionSwitch.js';
+import { Button } from '@nangohq/design-system';
+
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
@@ -21,6 +22,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useStore } from '@/store';
 import { isSyncOrAction } from '@/utils/scripts';
+import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { ApiIntegration, DeployedNangoFunction, FunctionType } from '@nangohq/types';

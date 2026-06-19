@@ -1,5 +1,5 @@
-import { CopyButton } from './CopyButton';
 import { cn } from '@/utils/utils';
+import { CopyButton } from './CopyButton';
 
 export const LineSnippet: React.FC<{ snippet: string; className?: string }> = ({ snippet, className }) => {
     return (
