@@ -3,19 +3,19 @@ import knex from 'knex';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { PostgresStore, incrCount } from './postgres.js';
-import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import { RECORD_COUNTS_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
-import { testConfig } from './tests/helpers.js';
 import { formatRecords } from '../../helpers/format.js';
 import { decryptRecordData, encryptRecords } from '../../utils/encryption.js';
-
-const db = knex(testConfig);
-const store = new PostgresStore(testConfig);
+import { incrCount, PostgresStore } from './postgres.js';
+import { testConfig } from './tests/helpers.js';
 
 import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
+
+const db = knex(testConfig);
+const store = new PostgresStore(testConfig);
 
 describe('PostgresStore', () => {
     beforeAll(async () => {

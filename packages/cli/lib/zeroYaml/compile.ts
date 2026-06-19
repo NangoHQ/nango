@@ -7,13 +7,13 @@ import { build } from 'esbuild';
 import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
-import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { parseIntegrationDefinitions } from './definitions.js';
-import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 import { generateNangoJson } from '../services/model.service.js';
+import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
+import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
 import type { Feature, Result } from '@nangohq/types';

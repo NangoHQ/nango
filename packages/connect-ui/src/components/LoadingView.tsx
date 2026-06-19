@@ -1,6 +1,6 @@
+import { useI18n } from '@/lib/i18n';
 import { HeaderButtons } from './HeaderButtons';
 import { Skeleton } from './ui/skeleton';
-import { useI18n } from '@/lib/i18n';
 
 export const LoadingView: React.FC = () => {
     const { t } = useI18n();

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { metaQueryKey } from './useMeta';
 import { APIError, apiFetch } from '../utils/api';
+import { metaQueryKey } from './useMeta';
 
 import type { GetEnvironment, PatchEnvironment, PatchWebhook, PostEnvironment, PostEnvironmentVariables } from '@nangohq/types';
 

@@ -4,7 +4,7 @@ import { buildTagsFromEndUser } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { bodySchema as originalBodySchema, generateSession } from '../../../connect/postSessions.js';
+import { generateSession, bodySchema as originalBodySchema } from '../../../connect/postSessions.js';
 
 import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
 

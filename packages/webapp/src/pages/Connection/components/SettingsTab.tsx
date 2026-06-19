@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
@@ -13,6 +12,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 
 export const SettingsTab = () => {
     const env = useStore((state) => state.env);

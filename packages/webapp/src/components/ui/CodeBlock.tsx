@@ -4,10 +4,10 @@ import { useCallback, useState } from 'react';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { Badge } from './Badge.js';
-import { CopyButton } from './CopyButton.js';
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
+import { Badge } from './Badge.js';
+import { CopyButton } from './CopyButton.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';

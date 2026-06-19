@@ -2,9 +2,9 @@ import { logContextGetter } from '@nangohq/logs';
 import { getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
 import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validation } from './validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { validation } from './validation.js';
 
 import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
 

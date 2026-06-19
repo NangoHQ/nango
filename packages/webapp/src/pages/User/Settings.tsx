@@ -4,14 +4,14 @@ import { Helmet } from 'react-helmet';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { useToast } from '../../hooks/useToast';
-import { apiPatchUser, useUser } from '../../hooks/useUser';
-import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
+import { useToast } from '../../hooks/useToast';
+import { apiPatchUser, useUser } from '../../hooks/useUser';
+import DashboardLayout from '../../layout/DashboardLayout';
 
 import type { Theme } from '@/lib/theme';
 

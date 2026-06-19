@@ -8,12 +8,12 @@ import z from 'zod';
 
 import { Button } from '@nangohq/design-system';
 
-import { Password, passwordSchema } from './components/Password';
-import { useResetPasswordAPI } from '../../hooks/useAuth';
-import DefaultLayout from '../../layout/DefaultLayout';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormField } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
+import { useResetPasswordAPI } from '../../hooks/useAuth';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { Password, passwordSchema } from './components/Password';
 
 const resetPasswordSchema = z.object({
     password: passwordSchema

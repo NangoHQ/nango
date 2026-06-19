@@ -3,10 +3,10 @@ import { fileURLToPath } from 'node:url';
 
 import tailwindcss from '@tailwindcss/vite';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 import type { StorybookConfig } from '@storybook/react-vite';
 import type { InlineConfig } from 'vite';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
     stories: ['../tokens/**/*.stories.@(ts|tsx)', '../src/**/*.stories.@(ts|tsx)', '../stories/**/*.stories.@(ts|tsx)', '../stories/**/*.mdx'],

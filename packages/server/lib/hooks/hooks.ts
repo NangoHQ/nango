@@ -2,19 +2,19 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import {
-    NangoError,
-    ProxyRequest,
     connectionService,
     customerKeyService,
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
     makeDataTransferEvent,
+    NangoError,
     productTracking,
+    ProxyRequest,
     pubsub,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
+import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { slackService } from '../services/slack.js';

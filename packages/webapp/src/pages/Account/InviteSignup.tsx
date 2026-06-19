@@ -4,14 +4,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
-import { SignupForm } from './components/SignupForm';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { ButtonLink } from '@/components/ui/ButtonLink';
-import { StyledLink } from '@/components/ui/StyledLink';
+import { SignupForm } from './components/SignupForm';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();

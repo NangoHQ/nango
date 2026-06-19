@@ -1,20 +1,20 @@
-import { v4 as uuidv4, validate as isUuid } from 'uuid';
+import { validate as isUuid, v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
-    ProxyRequest,
     awsSigV4Client,
     configService,
     connectionService,
     errorManager,
+    ErrorSourceEnum,
     getConnectionConfig,
     getProvider,
     getProxyConfiguration,
+    LogActionEnum,
+    NangoError,
+    ProxyRequest,
     syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';

@@ -9,8 +9,8 @@ import axios from 'axios';
 import chalk from 'chalk';
 import ejs from 'ejs';
 
-import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
+import { Spinner } from '../utils/spinner.js';
 import { compileAllFunctions } from '../zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 

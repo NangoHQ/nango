@@ -5,11 +5,6 @@ import { useLocation } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { PlaygroundInputs } from './PlaygroundInputs';
-import { PlaygroundResult } from './PlaygroundResult';
-import { PlaygroundSelectors } from './PlaygroundSelectors';
-import { getInputFields } from './types';
-import { usePlayground } from './usePlayground';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Sheet, SheetContent } from '@/components/ui/Sheet';
@@ -19,6 +14,11 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
+import { PlaygroundInputs } from './PlaygroundInputs';
+import { PlaygroundResult } from './PlaygroundResult';
+import { PlaygroundSelectors } from './PlaygroundSelectors';
+import { getInputFields } from './types';
+import { usePlayground } from './usePlayground';
 
 import type { NangoSyncConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';

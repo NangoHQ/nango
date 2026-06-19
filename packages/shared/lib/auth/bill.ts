@@ -1,6 +1,6 @@
 import ms from 'ms';
 
-import { Err, Ok, axiosInstance as axios } from '@nangohq/utils';
+import { axiosInstance as axios, Err, Ok } from '@nangohq/utils';
 
 import { AuthCredentialsError } from '../utils/error.js';
 

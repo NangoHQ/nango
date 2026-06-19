@@ -1,4 +1,4 @@
-import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { configService, connectionService, errorManager, getSyncConfigRaw, pubsub } from '@nangohq/shared';
 import { truncateJson } from '@nangohq/utils';
 

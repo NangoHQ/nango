@@ -1,12 +1,12 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
-import { ProxyError, ProxyRequest, enforceProxyOutboundUrlPolicy, getProxyConfiguration } from '@nangohq/shared';
+import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest } from '@nangohq/shared';
 import {
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
-    MAX_LOG_PAYLOAD,
     getCheckpointKey,
     isBaseUrlOverrideDenied,
     isTest,
+    MAX_LOG_PAYLOAD,
     metrics,
     normalizeDenylist,
     normalizeDenylistHost,
@@ -17,13 +17,13 @@ import {
     truncateJson
 } from '@nangohq/utils';
 
-import { Checkpointing } from './checkpointing.js';
 import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { Checkpointing } from './checkpointing.js';
 
-import type { Locks } from './locks.js';
 import type { TelemetryRecorder } from '../telemetry.js';
+import type { Locks } from './locks.js';
 import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type {
     ApiPublicConnectionFull,

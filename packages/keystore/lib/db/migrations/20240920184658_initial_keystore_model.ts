@@ -1,5 +1,6 @@
-import type { Knex } from 'knex';
 import { PRIVATE_KEYS_TABLE } from '../../models/privatekeys.js';
+
+import type { Knex } from 'knex';
 
 export const config = {
     transaction: false

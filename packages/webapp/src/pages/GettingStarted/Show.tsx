@@ -3,16 +3,16 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { FirstStep } from './FirstStep';
-import { SecondStep } from './SecondStep';
-import { ThirdStep } from './ThirdStep';
-import VerticalSteps from './components/VerticalSteps';
+import { SlackIcon } from '@/assets/SlackIcon';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { SlackIcon } from '@/assets/SlackIcon';
+import VerticalSteps from './components/VerticalSteps';
+import { FirstStep } from './FirstStep';
+import { SecondStep } from './SecondStep';
+import { ThirdStep } from './ThirdStep';
 
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();

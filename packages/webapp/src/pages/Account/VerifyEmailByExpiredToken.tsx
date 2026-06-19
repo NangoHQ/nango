@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from '../../hooks/useToast';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { apiFetch } from '../../utils/api';
-import { Spinner } from '@/components/ui/Spinner';
 
 import type { GetEmailByExpiredToken, ResendVerificationEmailByUuid } from '@nangohq/types';
 

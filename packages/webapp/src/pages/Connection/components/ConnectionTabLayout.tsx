@@ -1,5 +1,5 @@
-import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { cn } from '@/utils/utils';
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 
 import type { GetConnection } from '@nangohq/types';
 

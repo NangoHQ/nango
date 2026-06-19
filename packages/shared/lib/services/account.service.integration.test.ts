@@ -3,13 +3,13 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
+import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
 import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.js';
 import secretService from './secret.service.js';
-import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
 describe('Account service', () => {
     beforeAll(async () => {

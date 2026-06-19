@@ -1,5 +1,5 @@
-import { Button } from '../src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

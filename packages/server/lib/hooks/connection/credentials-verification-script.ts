@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { ProxyRequest, getProvider, getProxyConfiguration, makeDataTransferEvent, pubsub } from '@nangohq/shared';
+import { getProvider, getProxyConfiguration, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
 
 import * as verificationscriptHandlers from './index.js';
 

@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';

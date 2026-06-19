@@ -3,19 +3,19 @@ import { PassThrough } from 'node:stream';
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
 
-import { LogContextOrigin, OtlpSpan, logContextGetter } from '@nangohq/logs';
+import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    ProxyError,
-    ProxyRequest,
     configService,
     connectionService,
     enforceProxyOutboundUrlPolicy,
     errorManager,
+    ErrorSourceEnum,
     getProvider,
     getProxyConfiguration,
+    LogActionEnum,
     makeDataTransferEvent,
+    ProxyError,
+    ProxyRequest,
     pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';

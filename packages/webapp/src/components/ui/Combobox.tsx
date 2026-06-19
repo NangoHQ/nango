@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
+import { cn } from '@/utils/utils';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { cn } from '@/utils/utils';
 
 export interface ComboboxChildOption<TValue extends string = string> {
     value: TValue;

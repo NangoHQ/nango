@@ -7,12 +7,12 @@ import z from 'zod';
 
 import { Button } from '@nangohq/design-system';
 
-import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
-import DefaultLayout from '../../layout/DefaultLayout';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { useToast } from '@/hooks/useToast';
+import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
+import DefaultLayout from '../../layout/DefaultLayout';
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Please enter a valid email address')

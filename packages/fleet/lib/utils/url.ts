@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { Err, Ok, isCloud } from '@nangohq/utils';
+import { Err, isCloud, Ok } from '@nangohq/utils';
 
 import type { Result } from '@nangohq/utils';
 

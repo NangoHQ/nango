@@ -1,6 +1,6 @@
+import { useStore } from '@/store';
 import { useRefreshConnection } from './useConnections';
 import { useToast } from './useToast';
-import { useStore } from '@/store';
 
 import type { ApiConnectionFull } from '@nangohq/types';
 

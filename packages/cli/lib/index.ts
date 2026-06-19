@@ -3,7 +3,6 @@
 /*
  * Copyright (c) 2025 Nango, all rights reserved.
  */
-
 import fs from 'fs';
 import path from 'path';
 
@@ -24,8 +23,8 @@ import { inferIntegrationsFromConnectionId } from './services/interactive.servic
 import { pullFromCatalog, pullFunction } from './services/pull.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
-import { MissingArgumentError } from './utils/errors.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';

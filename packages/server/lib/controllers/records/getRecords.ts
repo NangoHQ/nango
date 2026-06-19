@@ -5,12 +5,12 @@ import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
 import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
 
-const envs = parseEnvs(ENVS);
-
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
+
+const envs = parseEnvs(ENVS);
 
 export const getLookbackCutoff = () => new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
 const withinLookback = z
