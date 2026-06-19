@@ -16,7 +16,7 @@ import {
     syncManager
 } from '@nangohq/shared';
 import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
-import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
+import { resolveWebhookSettings, sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -151,7 +151,8 @@ export const connectionCreated = async (
         await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
     }
 
-    const webhookSettings = await externalWebhookService.get(environment.id);
+    const baseWebhookSettings = await externalWebhookService.get(environment.id);
+    const webhookSettings = baseWebhookSettings ? resolveWebhookSettings(baseWebhookSettings, connection.connection_config) : null;
 
     if (webhookSettings) {
         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
@@ -312,7 +313,8 @@ export const connectionRefreshFailed = async ({
         report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 
-    const webhookSettings = await externalWebhookService.get(environment.id);
+    const baseWebhookSettings = await externalWebhookService.get(environment.id);
+    const webhookSettings = baseWebhookSettings ? resolveWebhookSettings(baseWebhookSettings, connection.connection_config) : null;
 
     if (webhookSettings) {
         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);

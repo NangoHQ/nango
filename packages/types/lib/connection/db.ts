@@ -13,6 +13,8 @@ export interface ConnectionConfig {
     oauth_scopes_override?: string[] | undefined;
     oauth_scopes?: string | undefined;
     authorization_params?: Record<string, string> | undefined;
+    webhook_url?: string | undefined;
+    webhook_url_secondary?: string | undefined;
 }
 
 export interface DBConnection extends TimestampsAndDeletedCorrect {

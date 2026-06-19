@@ -19,7 +19,7 @@ import { envs } from './envs.js';
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { LogContext } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
-import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
+import type { ConnectionConfig, DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
@@ -190,6 +190,28 @@ export const shouldSend = ({
 
     return true;
 };
+
+/**
+ * Overrides the environment webhook URLs with the connection's webhook URLs overrides if set.
+ * If only the primary URL is set on the connection, the environment secondary URL is NOT used as
+ * fallback to prevent leaking the connection's webhooks to the shared endpoint.
+ */
+export function resolveWebhookSettings(
+    webhookSettings: DBExternalWebhook,
+    connectionConfig: Pick<ConnectionConfig, 'webhook_url' | 'webhook_url_secondary'> | null | undefined
+): DBExternalWebhook {
+    const primary = connectionConfig?.webhook_url;
+    if (typeof primary !== 'string' || primary.trim() === '') {
+        return webhookSettings;
+    }
+
+    const secondary = connectionConfig?.webhook_url_secondary;
+    return {
+        ...webhookSettings,
+        primary_url: primary,
+        secondary_url: typeof secondary === 'string' && secondary.trim() !== '' ? secondary : null
+    };
+}
 
 export const deliver = async ({
     webhooks,

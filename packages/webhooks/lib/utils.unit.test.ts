@@ -4,9 +4,9 @@ import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { allowAllWebhookOutbound } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
-import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe } from './utils.js';
+import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe, resolveWebhookSettings } from './utils.js';
 
-import type { DBAPISecret } from '@nangohq/types';
+import type { DBAPISecret, DBExternalWebhook } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type { MockInstance } from 'vitest';
 
@@ -107,6 +107,61 @@ describe('deliver request shape', () => {
         expect(config.maxRedirects).toBe(allowAll.policy.maxRedirects);
         expect(config.httpAgent).toBe(allowAll.agents.httpAgent);
         expect(config.httpsAgent).toBe(allowAll.agents.httpsAgent);
+    });
+});
+
+describe('resolveWebhookSettings', () => {
+    const envSettings: DBExternalWebhook = {
+        id: 1,
+        environment_id: 1,
+        primary_url: 'https://env-primary.example.com/hook',
+        secondary_url: 'https://env-secondary.example.com/hook',
+        on_sync_completion_always: true,
+        on_auth_creation: true,
+        on_auth_refresh_error: true,
+        on_sync_error: true,
+        on_async_action_completion: true,
+        created_at: new Date(),
+        updated_at: new Date()
+    };
+
+    it('returns the environment settings unchanged when there is no override', () => {
+        expect(resolveWebhookSettings(envSettings, null)).toBe(envSettings);
+        expect(resolveWebhookSettings(envSettings, undefined)).toBe(envSettings);
+        expect(resolveWebhookSettings(envSettings, {})).toBe(envSettings);
+    });
+
+    it('replaces both URLs and keeps the environment event flags', () => {
+        const result = resolveWebhookSettings(envSettings, {
+            webhook_url: 'https://dev-tunnel.example.com/hook',
+            webhook_url_secondary: 'https://dev-tunnel-2.example.com/hook'
+        });
+        expect(result.primary_url).toBe('https://dev-tunnel.example.com/hook');
+        expect(result.secondary_url).toBe('https://dev-tunnel-2.example.com/hook');
+        expect(result.on_sync_completion_always).toBe(true);
+        expect(result.on_sync_error).toBe(true);
+        expect(result.on_auth_creation).toBe(true);
+    });
+
+    it('drops the secondary to null (does NOT fall back to env secondary) when only primary is overridden', () => {
+        const result = resolveWebhookSettings(envSettings, { webhook_url: 'https://dev-tunnel.example.com/hook' });
+        expect(result.primary_url).toBe('https://dev-tunnel.example.com/hook');
+        expect(result.secondary_url).toBeNull();
+    });
+
+    it('ignores a lone secondary override (no primary)', () => {
+        expect(resolveWebhookSettings(envSettings, { webhook_url_secondary: 'https://dev-tunnel-2.example.com/hook' })).toBe(envSettings);
+    });
+
+    it('treats blank/whitespace override URLs as no override', () => {
+        expect(resolveWebhookSettings(envSettings, { webhook_url: '' })).toBe(envSettings);
+        expect(resolveWebhookSettings(envSettings, { webhook_url: '   ' })).toBe(envSettings);
+    });
+
+    it('does not mutate the original environment settings', () => {
+        resolveWebhookSettings(envSettings, { webhook_url: 'https://dev-tunnel.example.com/hook' });
+        expect(envSettings.primary_url).toBe('https://env-primary.example.com/hook');
+        expect(envSettings.secondary_url).toBe('https://env-secondary.example.com/hook');
     });
 });
 
