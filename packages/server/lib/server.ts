@@ -10,6 +10,7 @@ import { WebSocketServer } from 'ws';
 
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
@@ -108,6 +109,8 @@ if (pubsubConnect.isErr()) {
     logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
 }
 
+await initializeFeatureFlags();
+
 const port = getServerPort();
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
@@ -133,6 +136,7 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        await destroyFeatureFlags();
         await billing.shutdown();
         await pubsub.disconnect();
 
