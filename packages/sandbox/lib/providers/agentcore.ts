@@ -39,7 +39,7 @@ export class AgentCoreSandboxProvider implements SandboxProvider {
     public readonly name = 'agentcore';
     private readonly client: BedrockAgentCoreClient;
 
-    constructor(client: BedrockAgentCoreClient = new BedrockAgentCoreClient(envs.AGENTCORE_REGION ? { region: envs.AGENTCORE_REGION } : {})) {
+    constructor(client: BedrockAgentCoreClient = new BedrockAgentCoreClient()) {
         this.client = client;
     }
 
