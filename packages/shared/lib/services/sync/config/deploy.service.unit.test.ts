@@ -3,8 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 
-import * as SyncConfigService from './config.service.js';
-import * as DeployConfigService from './deploy.service.js';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import { getTestTeam } from '../../../seeders/account.seeder.js';
 import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
@@ -13,6 +11,8 @@ import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import * as SyncService from '../sync.service.js';
+import * as SyncConfigService from './config.service.js';
+import * as DeployConfigService from './deploy.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
 import type { CleanedIncomingFlowConfig, DBSyncConfig, DBTeam } from '@nangohq/types';

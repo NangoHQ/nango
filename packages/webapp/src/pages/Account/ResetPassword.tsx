@@ -6,13 +6,14 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import z from 'zod';
 
-import { Password, passwordSchema } from './components/Password';
-import { useResetPasswordAPI } from '../../hooks/useAuth';
-import DefaultLayout from '../../layout/DefaultLayout';
+import { Button } from '@nangohq/design-system';
+
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormField } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
+import { useResetPasswordAPI } from '../../hooks/useAuth';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { Password, passwordSchema } from './components/Password';
 
 const resetPasswordSchema = z.object({
     password: passwordSchema
@@ -76,7 +77,7 @@ export default function ResetPassword() {
                         render={() => <Password placeholder="New password" autoFocus autoComplete="new-password" />}
                     />
 
-                    <Button type="submit" className="w-full" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
+                    <Button type="submit" size={'xl'} loading={isPending} disabled={!form.formState.isValid}>
                         Reset password
                     </Button>
                 </form>

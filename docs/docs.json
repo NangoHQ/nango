@@ -79,6 +79,10 @@
   },
   "redirects": [
     {
+      "source": "/integrations/all/snowflake",
+      "destination": "/api-integrations/snowflake"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1609,7 +1613,7 @@
               "integrations/all/smugmug",
               "integrations/all/snipe-it",
               "integrations/all/snapchat",
-              "integrations/all/snowflake",
+              "api-integrations/snowflake",
               "integrations/all/snowflake-jwt",
               "api-integrations/sophos-central",
               "integrations/all/splitwise",

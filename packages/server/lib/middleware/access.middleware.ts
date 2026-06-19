@@ -3,18 +3,18 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, isSandboxApiKey, userService } from '@nangohq/shared';
+import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
     Err,
-    Ok,
     flagHasPlan,
     getLogger,
     isBasicAuthEnabled,
     isCloud,
     isTest,
     metrics,
-    stringTimingSafeEqual,
+    Ok,
     stringifyError,
+    stringTimingSafeEqual,
     tagTraceUser
 } from '@nangohq/utils';
 
@@ -38,7 +38,8 @@ const ignoreEnvPaths = [
     '/api/v1/user/password',
     '/api/v1/signin',
     '/api/v1/invite/:id',
-    '/api/v1/account/onboarding/hear-about-us'
+    '/api/v1/account/onboarding/hear-about-us',
+    '/api/v1/plain'
 ];
 
 export class AccessMiddleware {

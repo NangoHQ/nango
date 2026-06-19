@@ -1,6 +1,6 @@
 import type { Endpoint } from '../api.js';
-import type { Provider, SimplifiedJSONSchema } from './provider.js';
 import type { AuthModeType } from '../auth/api.js';
+import type { Provider, SimplifiedJSONSchema } from './provider.js';
 
 export type GetPublicProviders = Endpoint<{
     Method: 'GET';

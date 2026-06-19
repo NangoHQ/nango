@@ -1,4 +1,4 @@
-import { OtlpSpan, logContextGetter } from '@nangohq/logs';
+import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 
 import { deliver, shouldSend } from './utils.js';

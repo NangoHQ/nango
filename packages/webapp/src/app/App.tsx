@@ -3,7 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
-import { router } from './router';
+import { PlainChat } from '@/components/PlainChat';
 import { DevToolPanel, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/theme';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
+import { router } from './router';
 
 const App = () => {
     const env = useStore((state) => state.env);
@@ -43,6 +44,7 @@ const App = () => {
 
     return (
         <>
+            <PlainChat user={user} />
             <RouterProvider router={router} />
             <Toaster />
             {isDevToolsEnabled && <DevToolPanel />}

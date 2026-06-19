@@ -2,11 +2,9 @@ import { Cloud, ExternalLink, FolderGit2, Info } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { EmptyCard } from '../../../../components/ui/EmptyCard.js';
-import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert.js';
 import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton.js';
@@ -15,6 +13,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
+import { EmptyCard } from '../../../../components/ui/EmptyCard.js';
+import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
 import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 
@@ -77,11 +77,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
                 {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
+                    <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                         How to use Actions <ExternalLink />
                     </ButtonLink>
                 ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
+                    <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                         How to use Syncs <ExternalLink />
                     </ButtonLink>
                 )}

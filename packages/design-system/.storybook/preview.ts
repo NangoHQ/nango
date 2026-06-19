@@ -2,6 +2,7 @@ import { withThemeByDataAttribute } from '@storybook/addon-themes';
 import { useEffect } from 'react';
 
 import type { Preview, StoryContext, StoryFn } from '@storybook/react';
+
 import './preview.css';
 
 // tokens.generated.css uses [data-theme="dark"]; webapp uses .dark class.

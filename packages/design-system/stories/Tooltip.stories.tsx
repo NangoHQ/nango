@@ -1,5 +1,5 @@
-import { Button } from '../src/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

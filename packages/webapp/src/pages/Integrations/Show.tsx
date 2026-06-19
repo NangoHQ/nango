@@ -7,12 +7,10 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -22,6 +20,8 @@ import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { AuthBadge } from './components/AuthBadge';
+import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
 
@@ -101,27 +101,25 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-8">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
-            <header className="flex justify-between items-center">
-                <h2 className="text-text-strong text-title-subsection">Integrations</h2>
+            <header className="flex items-center gap-3">
+                <InputGroup className="h-10 flex-1">
+                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
+                    <InputGroupAddon>
+                        <Search />
+                    </InputGroupAddon>
+                </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
-                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
                             Set up new integration
                         </ButtonLink>
                     )}
                 </PermissionGate>
             </header>
-
-            <InputGroup>
-                <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
-                <InputGroupAddon>
-                    <Search />
-                </InputGroupAddon>
-            </InputGroup>
 
             <AutoIdlingBanner />
 
@@ -140,7 +138,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
                                 Set up new integration
                             </ButtonLink>
                         )}
@@ -154,7 +152,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
                                 Set up new integration
                             </ButtonLink>
                         )}

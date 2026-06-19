@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import type { SophosWhoamiResponse } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { SophosWhoamiResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();

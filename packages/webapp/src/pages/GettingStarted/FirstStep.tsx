@@ -2,8 +2,11 @@ import { IconBrandGithub } from '@tabler/icons-react';
 import { useCallback, useRef } from 'react';
 import { useUnmount } from 'react-use';
 
+import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
+import { StyledLink } from '@/components/ui/StyledLink';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { apiConnectSessions } from '../../hooks/useConnect';
 import { useDeleteConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -12,9 +15,6 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
-import { Button } from '@/components/ui/Button';
-import { StyledLink } from '@/components/ui/StyledLink';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';
@@ -121,10 +121,12 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 <div className="flex flex-col gap-1.5">
                     <h3 className="text-text-brand text-sm font-semibold">Github connection authorized!</h3>
                 </div>
-                <Button variant="tertiary" size="lg" onClick={onClickDisconnect} loading={isDeletingConnection} className="w-fit">
-                    <IconBrandGithub className="size-5 mr-2" />
-                    Disconnect from Github
-                </Button>
+                <div className="w-fit">
+                    <Button variant="outline" size="xl" onClick={onClickDisconnect} loading={isDeletingConnection}>
+                        <IconBrandGithub className="size-5 mr-2" />
+                        Disconnect from Github
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -142,10 +144,12 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                     .
                 </p>
             </div>
-            <Button variant="primary" size="lg" onClick={onClickConnect} className="w-fit">
-                <IconBrandGithub className="size-5" />
-                Connect to Github
-            </Button>
+            <div className="w-fit">
+                <Button variant="primary" size="xl" onClick={onClickConnect}>
+                    <IconBrandGithub className="size-5" />
+                    Connect to Github
+                </Button>
+            </div>
         </div>
     );
 };

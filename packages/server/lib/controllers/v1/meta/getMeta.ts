@@ -1,6 +1,6 @@
 import { environmentService } from '@nangohq/shared';
 import { shouldUseClickhouseFor } from '@nangohq/usage';
-import { NANGO_VERSION, baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 

@@ -1,4 +1,4 @@
-import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
+import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';

@@ -1,24 +1,24 @@
 import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { AuthCredentials } from './AuthCredentials/AuthCredentials';
-import { ConnectionExtras } from './ConnectionExtras';
-import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
+import { AuthCredentials } from './AuthCredentials/AuthCredentials';
+import { ConnectionExtras } from './ConnectionExtras';
+import { ConnectionTabLayout } from './ConnectionTabLayout';
 
-import type { GetConnection } from '@nangohq/types';
-
-export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData: GetConnection['Success']['data']; providerConfigKey: string }) => {
+export const AuthTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, providerConfigKey } = useConnectionContext();
 
     const { connection, errorLog } = connectionData;
     const { credentials } = connection;
 
     return (
-        <div className="flex w-full gap-11 justify-between">
+        <ConnectionTabLayout connectionData={connectionData}>
             <div className="flex flex-col gap-8 w-full max-w-2xl">
                 {errorLog && (
                     <Alert variant="error">
@@ -44,7 +44,7 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                     <div className="flex flex-col gap-2">
                         <div className="inline-flex gap-1 items-center">
                             <span className="text-body-medium-medium text-text-strong">Tags</span>
-                            <Link to="https://nango.dev/docs/guides/auth/connection-tags" target="_blank">
+                            <Link to="https://nango.dev/docs/guides/auth/connection-tags" target="_blank" aria-label="Learn about connection tags">
                                 <ExternalLink className="size-3 text-icon-muted" />
                             </Link>
                         </div>
@@ -66,8 +66,6 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                     rawTokenResponse={'raw' in credentials ? credentials.raw : null}
                 />
             </div>
-
-            <ConnectionSideInfo connectionData={connectionData} />
-        </div>
+        </ConnectionTabLayout>
     );
 };

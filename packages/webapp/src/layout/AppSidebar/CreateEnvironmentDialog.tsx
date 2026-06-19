@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import { Button } from '@/components/ui/Button';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { Button } from '@nangohq/design-system';
+
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
 import { usePostEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
@@ -62,32 +62,35 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
-            <DialogContent>
+            <DialogContent className="gap-0 rounded border-border-default p-0 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.08)] sm:max-w-md">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-10">
-                        <DialogHeader>
-                            <DialogTitle>Environment Name</DialogTitle>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                        <DialogHeader className="gap-2 p-4 text-left">
+                            <DialogTitle className="type-heading-sm">Create environment</DialogTitle>
+                            <DialogDescription>Use it to switch between contexts like dev, staging, or production.</DialogDescription>
                         </DialogHeader>
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <Input type="text" placeholder="my-environment-name" {...field} />
-                                    </FormControl>
-                                    <FormDescription>*Must be lowercase letters, numbers, underscores and dashes.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
+                        <div className="px-4 pb-4">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Input type="text" placeholder="my-environment-name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <DialogFooter className="border-t border-border-muted bg-surface-panel p-4">
                             <DialogClose asChild>
-                                <Button variant="secondary">Cancel</Button>
+                                <Button variant="outline" size="sm">
+                                    Cancel
+                                </Button>
                             </DialogClose>
-                            <Button variant="primary" type="submit" disabled={isPending}>
-                                {isPending && <Loader className="animate-spin h-full w-full" />}
-                                Create Environment
+                            <Button variant="primary" size="sm" type="submit" loading={isPending}>
+                                Create environment
                             </Button>
                         </DialogFooter>
                     </form>

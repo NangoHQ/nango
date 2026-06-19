@@ -8,6 +8,8 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
 import { SecretTextArea } from '../../components/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -19,8 +21,6 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
-import { SecretInput } from '@/components/patterns/SecretInput';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 

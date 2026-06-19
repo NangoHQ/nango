@@ -3,9 +3,9 @@ import * as z from 'zod';
 
 import { getHeaders, metrics, redactHeaders, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { runAction } from './runAction.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { runAction } from './runAction.js';
 
 import type { PostPublicTriggerAction } from '@nangohq/types';
 

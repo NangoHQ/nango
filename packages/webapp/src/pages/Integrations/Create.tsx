@@ -2,18 +2,18 @@ import { BookOpen } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
-import { AuthCreateForm } from './components/forms/AuthCreateForm';
-import { getDisplayName } from './utils';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePostIntegration } from '@/hooks/useIntegration';
 import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
+import { AuthCreateForm } from './components/forms/AuthCreateForm';
+import { getDisplayName } from './utils';
 
 import type { PostIntegration } from '@nangohq/types';
 
@@ -96,7 +96,7 @@ export const CreateIntegration = () => {
                                 ))}
                             </div>
                         </div>
-                        <ButtonLink to={provider.docs} variant="secondary">
+                        <ButtonLink to={provider.docs} variant="outline">
                             <BookOpen />
                             Full setup guide
                         </ButtonLink>

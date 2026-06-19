@@ -1,9 +1,9 @@
 import { ChevronRight } from 'lucide-react';
 
+import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
 import { StatusTag } from './components/StatusTag';
-import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 
 import type { FilterOption } from '../../components/patterns/FilterMultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';

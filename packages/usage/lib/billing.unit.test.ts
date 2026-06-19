@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok, metrics } from '@nangohq/utils';
+import { metrics, Ok } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 

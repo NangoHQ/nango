@@ -3,14 +3,12 @@ import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { FunctionSwitch } from '../../components/FunctionSwitch';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
+import { Button, IconButton } from '@nangohq/design-system';
+
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
@@ -30,6 +28,10 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
+import { FunctionSwitch } from '../../components/FunctionSwitch';
+import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
+import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 
 import type { JSONSchema7 } from 'json-schema';
 
@@ -177,15 +179,15 @@ export const FunctionsOne: React.FC = () => {
                         </div>
                         <div className="inline-flex items-center gap-3">
                             {func.enabled && debugMode && (
-                                <Button onClick={downloadCode} variant="ghost" size="icon">
+                                <IconButton label="Download" onClick={downloadCode} variant="ghost" size="2xs">
                                     <Download />
-                                </Button>
+                                </IconButton>
                             )}
 
                             <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
                                 <Button
-                                    variant="secondary"
-                                    size="sm"
+                                    variant="outline"
+                                    size="md"
                                     disabled={!func.enabled}
                                     onClick={() => {
                                         openPlaygroundWithContext({
@@ -199,9 +201,10 @@ export const FunctionsOne: React.FC = () => {
                                 </Button>
                             </ConditionalTooltip>
                             {func.source !== 'repo' && (func.type === 'sync' || func.type === 'action') && (
-                                <Button
+                                <IconButton
                                     variant="ghost"
-                                    size="icon"
+                                    size="2xs"
+                                    label="Delete function"
                                     loading={isDeleting}
                                     onClick={() =>
                                         confirm({
@@ -211,13 +214,13 @@ export const FunctionsOne: React.FC = () => {
                                                     ? `You are about to permanently delete the sync "${func.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
                                                     : `You are about to permanently delete the action "${func.name}". This operation is not reversible, are you sure you wish to continue?`,
                                             confirmButtonText: 'Delete function',
-                                            confirmVariant: 'destructive',
+                                            confirmVariant: 'danger',
                                             onConfirm: onDelete
                                         })
                                     }
                                 >
                                     <Trash2 />
-                                </Button>
+                                </IconButton>
                             )}
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
@@ -261,7 +264,7 @@ export const FunctionsOne: React.FC = () => {
                             </div>
                             <div className="inline-flex gap-3">
                                 <LineSnippet snippet={`nango clone ${gitDir}`} />
-                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                                <ButtonLink to={gitUrl} target="_blank" variant="outline" size="xl">
                                     View code <ExternalLink />
                                 </ButtonLink>
                             </div>
@@ -277,11 +280,11 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
+                                <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
+                                <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { metrics, nanoid } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';

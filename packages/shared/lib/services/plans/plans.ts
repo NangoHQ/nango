@@ -1,9 +1,9 @@
 import ms from 'ms';
 
-import { Err, Ok, flagHasPlan } from '@nangohq/utils';
+import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
+import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

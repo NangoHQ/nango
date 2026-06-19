@@ -1,7 +1,7 @@
 import { Layers } from 'lucide-react';
 
-import { DIMENSION_LABELS } from '../usageBreakdown';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { DIMENSION_LABELS } from '../usageBreakdown';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 

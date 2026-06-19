@@ -4,12 +4,12 @@ import { multipleMigrations } from '@nangohq/database';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { Err, Ok, wait } from '@nangohq/utils';
 
-import { refreshOrTestCredentials } from './refresh.js';
 import { createConfigSeed, createConnectionSeed, seedAccountEnvAndUser } from '../../../seeders/index.js';
 import { getEncryptionManager } from '../../../utils/encryption.manager.js';
 import { NangoError } from '../../../utils/error.js';
 import connectionService from '../../connection.service.js';
 import { REFRESH_FAILURE_COOLDOWN_MS } from '../utils.js';
+import { refreshOrTestCredentials } from './refresh.js';
 
 const encryptionManager = getEncryptionManager();
 

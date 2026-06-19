@@ -2,11 +2,12 @@ import { Prism } from '@mantine/prism';
 import { Loader, Play } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from './Button.js';
+import { Button } from '@nangohq/design-system';
+
+import { cn } from '../../utils/utils.js';
 import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
 import { Tag } from './Tag.js';
-import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
@@ -75,7 +76,7 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                         <Tag variant="neutral">{snippets[0].language}</Tag>
                     )}
                     {onExecute && (
-                        <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>
+                        <Button variant="outline" onClick={onClickExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
                                     <Loader className="w-4 h-4 animate-spin text-text-secondary" />

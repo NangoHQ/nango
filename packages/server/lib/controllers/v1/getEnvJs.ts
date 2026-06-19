@@ -28,6 +28,7 @@ export const getEnvJs: RequestHandler = (_, res) => {
         publicPosthogHost: envs.PUBLIC_POSTHOG_HOST || '',
         publicLogoDevKey: envs.PUBLIC_LOGODEV_KEY || '',
         publicStripeKey: envs.PUBLIC_STRIPE_KEY || '',
+        publicPlainAppId: envs.PLAIN_APP_ID || '',
         isCloud,
         isHosted,
         isEnterprise,

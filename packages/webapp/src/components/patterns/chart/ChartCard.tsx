@@ -1,16 +1,16 @@
 import { Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { cn } from '@/utils/utils';
+import { InfoTooltip } from '../../ui/InfoTooltip';
+import { Skeleton } from '../../ui/Skeleton';
 import { BreakdownChart } from './BreakdownChart';
 import { ChartLegend } from './ChartLegend';
 import { useChartData } from './useChartData';
 import { useChartInteractions } from './useChartInteractions';
-import { InfoTooltip } from '../../ui/InfoTooltip';
-import { Skeleton } from '../../ui/Skeleton';
-import { cn } from '@/utils/utils';
 
-import type { ChartSeries } from './types';
 import type { ChartConfig } from '../../ui/Chart';
+import type { ChartSeries } from './types';
 import type { ApiBillingUsageMetric } from '@nangohq/types';
 
 // The headline shows the precise total (e.g. "2,172.43"); axis ticks use the shared

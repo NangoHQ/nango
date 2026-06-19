@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -77,7 +78,7 @@ export const HearAboutUs: React.FC = () => {
 
             <div className="flex w-full flex-col gap-4">
                 {HEAR_ABOUT_OPTIONS.map(({ label, value }) => (
-                    <Button variant="secondary" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
+                    <Button variant="outline" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
                         {label}
                     </Button>
                 ))}

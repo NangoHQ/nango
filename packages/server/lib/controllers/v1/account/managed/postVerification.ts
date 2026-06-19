@@ -2,15 +2,15 @@ import * as z from 'zod';
 
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { getWorkOSClient } from '../../../../clients/workos.client.js';
+import { envs } from '../../../../env.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import {
     finalizeManagedAuthentication,
     getManagedAuthEmailVerificationFromError,
     getManagedAuthRequestMetadata,
     setManagedAuthEmailVerification
 } from './auth.js';
-import { getWorkOSClient } from '../../../../clients/workos.client.js';
-import { envs } from '../../../../env.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PostManagedEmailVerification } from '@nangohq/types';
 

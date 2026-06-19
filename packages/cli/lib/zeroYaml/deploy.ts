@@ -5,12 +5,12 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
-import { parseIntegrationDefinitions } from './definitions.js';
-import { ReadableError } from './utils.js';
+import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
 import type {

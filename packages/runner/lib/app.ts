@@ -1,4 +1,5 @@
 import './tracer.js';
+
 import { monitorProviders } from '@nangohq/shared';
 import { stringifyError } from '@nangohq/utils';
 
