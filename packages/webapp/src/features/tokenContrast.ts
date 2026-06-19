@@ -6,8 +6,11 @@ import { buttonVariantClasses } from '@nangohq/design-system';
  * Foreground/background token pairs are DERIVED FROM design-system component variants
  * (currently the Button/IconButton `buttonVariantClasses`) rather than a hand-maintained
  * map — so they stay in sync as the design system grows. Each variant's Tailwind class
- * list encodes which text/border token sits on which background token, per interaction
- * state. We parse those, resolve the live CSS-variable values, and score against WCAG.
+ * list encodes which text/border token sits on which background token.
+ *
+ * Only the RESTING state is scored: hover/active are transient, and disabled controls are
+ * exempt from WCAG contrast (1.4.3). So any class carrying a state modifier (`hover:`,
+ * `active:`, `disabled:`, `focus-visible:`, …) is ignored — we only read unprefixed classes.
  *
  * Variants whose background is transparent (ghost/outline/link) have no intrinsic
  * background — the element sits on whatever surface contains it — so their foreground
@@ -17,36 +20,23 @@ import { buttonVariantClasses } from '@nangohq/design-system';
 /** Sources to derive pairs from. Add more component variant maps here as the DS grows. */
 const CONTRAST_SOURCES: Record<string, readonly string[]>[] = [buttonVariantClasses];
 
-// Tailwind state modifiers that change colour. focus-visible only sets a shadow → ignored.
-const STATE_PREFIXES = ['hover:', 'active:', 'disabled:', 'aria-disabled:'] as const;
-
 type Slot = 'bg' | 'text' | 'border';
 interface ParsedClass {
     slot: Slot;
     /** token name without the utility prefix, e.g. "interactive-primary", "text-on-accent" */
     token: string;
-    state: string;
 }
 
 function parseClass(raw: string): ParsedClass | null {
-    let cls = raw;
-    let state = 'base';
-    for (const p of STATE_PREFIXES) {
-        if (cls.startsWith(p)) {
-            state = p.slice(0, -1);
-            cls = cls.slice(p.length);
-            break;
-        }
-    }
-    // strip any leftover modifier we don't track (e.g. focus-visible:) — skip those classes
-    if (cls.includes(':')) {
+    // Resting state only — skip any class with a state/variant modifier (hover:, disabled:, …)
+    if (raw.includes(':')) {
         return null;
     }
-    const m = /^(bg|text|border)-(.+)$/.exec(cls);
+    const m = /^(bg|text|border)-(.+)$/.exec(raw);
     if (!m) {
         return null;
     }
-    return { slot: m[1] as Slot, token: m[2], state };
+    return { slot: m[1] as Slot, token: m[2] };
 }
 
 export interface ContrastPair {
@@ -59,41 +49,33 @@ export interface ContrastPair {
 }
 
 /**
- * Derive the unique foreground→background token pairs encoded across all registered
- * design-system component variants, resolving per-state overrides against the base state.
+ * Derive the unique foreground→background token pairs encoded in the resting state of all
+ * registered design-system component variants.
  */
 export function deriveContrastPairs(isKnownToken: (cssVar: string) => boolean): ContrastPair[] {
     const out = new Map<string, ContrastPair>();
 
     for (const source of CONTRAST_SOURCES) {
         for (const classes of Object.values(source)) {
-            // Collect tokens per state for this variant
-            const byState: Record<string, Partial<Record<Slot, string>>> = {};
+            // Collect the resting-state bg/text/border tokens for this variant
+            const slots: Partial<Record<Slot, string>> = {};
             for (const entry of classes) {
                 for (const raw of entry.split(/\s+/)) {
                     const parsed = parseClass(raw);
                     if (!parsed) continue;
                     const cssVar = `--${parsed.token}`;
                     if (!isKnownToken(cssVar)) continue; // skips transparent, font-size utils, etc.
-                    (byState[parsed.state] ??= {})[parsed.slot] = parsed.token;
+                    slots[parsed.slot] = parsed.token;
                 }
             }
-            const base = byState.base ?? {};
-            // Emit a pair for each state, inheriting unset slots from base
-            for (const state of ['base', 'hover', 'active', 'disabled']) {
-                const s = byState[state];
-                if (!s && state !== 'base') continue;
-                const bg = s?.bg ?? base.bg;
-                const fg = s?.text ?? base.text;
-                const border = s?.border ?? base.border;
-                if (bg && fg) {
-                    const p: ContrastPair = { fgVar: `--${fg}`, bgVar: `--${bg}`, kind: 'text' };
-                    out.set(`${p.fgVar}|${p.bgVar}|text`, p);
-                }
-                if (bg && border) {
-                    const p: ContrastPair = { fgVar: `--${border}`, bgVar: `--${bg}`, kind: 'border' };
-                    out.set(`${p.fgVar}|${p.bgVar}|border`, p);
-                }
+            const { bg, text: fg, border } = slots;
+            if (bg && fg) {
+                const p: ContrastPair = { fgVar: `--${fg}`, bgVar: `--${bg}`, kind: 'text' };
+                out.set(`${p.fgVar}|${p.bgVar}|text`, p);
+            }
+            if (bg && border) {
+                const p: ContrastPair = { fgVar: `--${border}`, bgVar: `--${bg}`, kind: 'border' };
+                out.set(`${p.fgVar}|${p.bgVar}|border`, p);
             }
         }
     }
