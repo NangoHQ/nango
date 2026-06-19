@@ -204,11 +204,14 @@ export class UsageTracker implements IUsageTracker {
         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.get(cacheKey);
         if (entry.isErr()) {
+            metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
             return Err(entry.error);
         }
-        if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+        const result = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+        if (result !== 'fresh') {
             void this.revalidate({ accountId, metric });
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result });
         return Ok({
             accountId,
             metric,
@@ -224,11 +227,14 @@ export class UsageTracker implements IUsageTracker {
                 const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
                 const entry = await this.cache.get(cacheKey);
                 if (entry.isErr()) {
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
                     return;
                 }
-                if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+                const cacheResult = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+                if (cacheResult !== 'fresh') {
                     void this.revalidate({ accountId, metric: metric as UsageMetric });
                 }
+                metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: cacheResult });
                 result[metric as UsageMetric] = {
                     accountId,
                     metric: metric as UsageMetric,
@@ -254,15 +260,18 @@ export class UsageTracker implements IUsageTracker {
         const { cacheKey, ttlMs } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.incr(cacheKey, { delta, ttlMs });
         if (entry.isErr()) {
+            metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'incr', metric, result: 'error' });
             return Err(entry.error);
         }
 
         // revalidate if:
         // - forced
         // - or the entry is stale
-        if (forceRevalidation || (entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime())) {
+        const stale = forceRevalidation || !!(entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime());
+        if (stale) {
             void this.revalidate({ accountId, metric });
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'incr', metric, result: stale ? 'stale' : 'fresh' });
 
         return Ok({
             accountId,
@@ -289,7 +298,8 @@ export class UsageTracker implements IUsageTracker {
                 case 'connections': {
                     const count = await connectionService.countByAccountId(accountId);
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, count);
+                    const res = await this.cache.overwrite(cacheKey, count);
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     return Ok(undefined);
                 }
                 case 'records': {
@@ -298,7 +308,8 @@ export class UsageTracker implements IUsageTracker {
                         throw count.error;
                     }
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, count.value);
+                    const res = await this.cache.overwrite(cacheKey, count.value);
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     span?.setTag('count', count.value);
                     return Ok(undefined);
                 }
@@ -317,7 +328,8 @@ export class UsageTracker implements IUsageTracker {
                     // update all billing-related metrics
                     for (const [metric, count] of Object.entries(billingUsage.value)) {
                         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
-                        await this.cache.overwrite(cacheKey, count);
+                        const res = await this.cache.overwrite(cacheKey, count);
+                        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     }
                     return Ok(undefined);
                 }
