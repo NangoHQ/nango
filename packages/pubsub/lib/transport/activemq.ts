@@ -3,11 +3,11 @@ import { setTimeout } from 'node:timers/promises';
 import { Client } from '@stomp/stompjs';
 import WebSocket from 'ws';
 
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { PublishFailure } from './transport.js';
 import { serde } from '../utils/serde.js';
+import { PublishFailure } from './transport.js';
 
 import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { Event } from '@nangohq/types';

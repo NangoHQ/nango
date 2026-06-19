@@ -2,7 +2,6 @@ import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRou
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { NavigationItem, navigationItemVariants } from './NavigationItem';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
 import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
@@ -12,6 +11,7 @@ import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
+import { NavigationItem, navigationItemVariants } from './NavigationItem';
 
 export const ProfileDropdown: React.FC = () => {
     const { data: metaData } = useMeta();

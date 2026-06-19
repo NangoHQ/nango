@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 
-import { GitHubNotFoundError, collectDependencies, fetchFileContent } from '../utils/githubTemplates.js';
+import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
+import { collectDependencies, fetchFileContent, GitHubNotFoundError } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
-import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 
 import type { ScriptTypeLiteral } from '@nangohq/types';
 

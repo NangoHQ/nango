@@ -3,13 +3,13 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     configService,
     connectionService,
     errorManager,
+    ErrorSourceEnum,
     getConnectionConfig,
     getProvider,
+    LogActionEnum,
     syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';

@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { roles } from '@nangohq/utils';
 
-import { acceptInvite } from './acceptInvite.js';
 import { envs } from '../../../env.js';
+import { acceptInvite } from './acceptInvite.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';

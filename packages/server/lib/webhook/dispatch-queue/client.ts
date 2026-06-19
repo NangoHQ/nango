@@ -1,7 +1,7 @@
 import { SQSClient } from '@aws-sdk/client-sqs';
 
-import { DispatchQueuePublisher } from './publisher.js';
 import { envs } from '../../env.js';
+import { DispatchQueuePublisher } from './publisher.js';
 
 function buildPublisher(): DispatchQueuePublisher | null {
     const url = envs.NANGO_TASK_DISPATCH_QUEUE_URL;

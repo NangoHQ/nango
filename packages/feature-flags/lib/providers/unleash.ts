@@ -4,7 +4,7 @@ import { initialize } from 'unleash-client';
 import { getLogger } from '@nangohq/utils';
 
 import type { EvaluationContext, JsonValue, Logger, Provider, ResolutionDetails } from '@openfeature/server-sdk';
-import type { Context as UnleashEvaluationContext, Unleash } from 'unleash-client';
+import type { Unleash, Context as UnleashEvaluationContext } from 'unleash-client';
 
 const logger = getLogger('FeatureFlags.Unleash');
 

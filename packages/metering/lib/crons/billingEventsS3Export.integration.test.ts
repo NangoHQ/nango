@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { Clickhouse, clickhouseClient, migrate } from '@nangohq/usage';
 
-import { METRICS, metricRowsSql } from './billingEventsS3Export.js';
+import { metricRowsSql, METRICS } from './billingEventsS3Export.js';
 
 import type { MetricSpec } from './billingEventsS3Export.js';
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';

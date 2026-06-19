@@ -4,9 +4,9 @@ import { useEffect, useMemo } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 // Parser for month in YYYY-MM format
 const parseMonth = parseAsString.withDefault('').withOptions({ history: 'replace' });

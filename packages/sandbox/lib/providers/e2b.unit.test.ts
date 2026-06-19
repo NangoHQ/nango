@@ -1,6 +1,10 @@
 import { Sandbox as E2B } from 'e2b';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { E2BSandboxProvider, getRunningE2BSandboxCount } from './e2b.js';
+
+import type { SandboxUnavailableError } from './errors.js';
+
 const mocks = vi.hoisted(() => {
     class CommandExitError extends Error {}
 
@@ -26,10 +30,6 @@ vi.mock('e2b', () => ({
 }));
 
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
-
-import { E2BSandboxProvider, getRunningE2BSandboxCount } from './e2b.js';
-
-import type { SandboxUnavailableError } from './errors.js';
 
 describe('E2B provider', () => {
     beforeEach(() => {

@@ -4,7 +4,7 @@ import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
-import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../utils.js';

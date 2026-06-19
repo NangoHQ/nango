@@ -1,11 +1,11 @@
 import db from '@nangohq/database';
 
-import { createAccount } from './account.seeder.js';
-import { createEnvironmentSeed } from './environment.seeder.js';
-import { seedUser } from './user.seeder.js';
 import customerKeyService from '../services/customerKey.service.js';
 import { createPlan } from '../services/plans/plans.js';
 import secretService from '../services/secret.service.js';
+import { createAccount } from './account.seeder.js';
+import { createEnvironmentSeed } from './environment.seeder.js';
+import { seedUser } from './user.seeder.js';
 
 import type { DBAPISecret, DBCustomerKey, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 

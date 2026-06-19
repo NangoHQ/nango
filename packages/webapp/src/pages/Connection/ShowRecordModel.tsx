@@ -1,12 +1,12 @@
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ConnectionRecordTable } from './components/RecordsTab';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useConnectionRecordModels } from '@/hooks/useRecords';
-import { useConnectionContext } from '@/pages/Connection/Show';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
+import { ConnectionRecordTable } from './components/RecordsTab';
 
 export const ShowRecordModel = () => {
     const env = useStore((state) => state.env);

@@ -1,12 +1,12 @@
 import { permissions } from '@nangohq/authz';
 
-import { usePutTeam, useTeam } from '../../../hooks/useTeam';
-import { useStore } from '../../../store';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
+import { usePutTeam, useTeam } from '../../../hooks/useTeam';
+import { useStore } from '../../../store';
 
 export const TeamSettings: React.FC = () => {
     const env = useStore((state) => state.env);

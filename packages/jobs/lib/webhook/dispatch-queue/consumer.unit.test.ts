@@ -3,18 +3,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
-vi.mock('../../env.js', () => ({
-    envs: {
-        AWS_REGION: undefined
-    }
-}));
-
 import { DispatchQueueConsumer } from './consumer.js';
 
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
 import type { Mock } from 'vitest';
+
+vi.mock('../../env.js', () => ({
+    envs: {
+        AWS_REGION: undefined
+    }
+}));
 
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {

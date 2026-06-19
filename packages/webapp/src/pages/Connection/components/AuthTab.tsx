@@ -1,14 +1,14 @@
 import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { AuthCredentials } from './AuthCredentials/AuthCredentials';
-import { ConnectionExtras } from './ConnectionExtras';
-import { ConnectionTabLayout } from './ConnectionTabLayout';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
+import { AuthCredentials } from './AuthCredentials/AuthCredentials';
+import { ConnectionExtras } from './ConnectionExtras';
+import { ConnectionTabLayout } from './ConnectionTabLayout';
 
 export const AuthTab = () => {
     const env = useStore((state) => state.env);

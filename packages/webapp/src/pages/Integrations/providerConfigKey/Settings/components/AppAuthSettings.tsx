@@ -1,4 +1,3 @@
-import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -9,6 +8,7 @@ import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud';
+import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 

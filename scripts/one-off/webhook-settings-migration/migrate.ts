@@ -1,4 +1,5 @@
 import './loadEnv.js';
+
 import { database } from '@nangohq/database';
 
 async function migrate() {

@@ -3,9 +3,9 @@ import { useCallback, useState } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '../ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from '../ui/InputGroup';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
 
 interface SecretTextAreaProps extends Omit<React.ComponentProps<'textarea'>, 'onChange'> {
     copy?: boolean;

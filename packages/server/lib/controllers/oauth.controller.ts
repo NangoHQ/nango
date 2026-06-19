@@ -8,13 +8,12 @@ import * as uuid from 'uuid';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     accountService,
     configService,
     connectionService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     extractValueByPath,
     genericMcpClient,
     getConnectionConfig,
@@ -23,6 +22,7 @@ import {
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
+    LogActionEnum,
     makeUrl,
     oauth2Client,
     providerClientManager,

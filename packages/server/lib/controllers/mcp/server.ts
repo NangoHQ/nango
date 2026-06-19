@@ -2,9 +2,9 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import tracer from 'dd-trace';
 
-import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
-import { Err, Ok, metrics, truncateJson } from '@nangohq/utils';
+import { Err, metrics, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';

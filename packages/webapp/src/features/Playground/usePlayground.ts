@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
-import { buildResultData, computeDurationMs, fetchOperation, findOperation, sleepWithAbort, validateAndParseInputs } from './playground.utils';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { apiFetch } from '@/utils/api';
+import { buildResultData, computeDurationMs, fetchOperation, findOperation, sleepWithAbort, validateAndParseInputs } from './playground.utils';
 
 import type { InputField } from './types';
 import type { SyncResponse } from '@/types';

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'react-use';
 
+import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
-import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;

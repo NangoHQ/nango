@@ -1,5 +1,5 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { Err, Ok, basePublicUrl, getLogger, metrics, stringToHash, truncateJson } from '@nangohq/utils';
+import { basePublicUrl, Err, getLogger, metrics, Ok, stringToHash, truncateJson } from '@nangohq/utils';
 
 import accountService from '../account.service.js';
 import configService from '../config.service.js';

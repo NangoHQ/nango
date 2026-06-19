@@ -1,7 +1,12 @@
 import db from '@nangohq/database';
-import { Err, FixedSizeMap, Ok, flagHasPlan, getLogger, isCloud, metrics, report } from '@nangohq/utils';
+import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report } from '@nangohq/utils';
 
+import { LogActionEnum } from '../models/Telemetry.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import environmentService from './environment.service.js';
+import { plansList } from './plans/definitions.js';
+import { createPlan } from './plans/plans.js';
 import {
     buildSandboxApiKeyScopes,
     decryptSandboxSigningSecret,
@@ -11,11 +16,6 @@ import {
 } from './sandbox-api-key.js';
 import secretService from './secret.service.js';
 import userService from './user.service.js';
-import { LogActionEnum } from '../models/Telemetry.js';
-import { getEncryptionManager } from '../utils/encryption.manager.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { plansList } from './plans/definitions.js';
-import { createPlan } from './plans/plans.js';
 
 import type { Knex } from '@nangohq/database';
 import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, Result } from '@nangohq/types';

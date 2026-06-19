@@ -1,13 +1,13 @@
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
-
-const logger = getLogger('webhooks.forward');
+import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import { deliver, shouldSend } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
+
+const logger = getLogger('webhooks.forward');
 
 export const forwardWebhook = async ({
     integration,

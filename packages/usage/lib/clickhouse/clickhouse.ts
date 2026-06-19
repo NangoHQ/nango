@@ -1,18 +1,18 @@
-import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
+import { ENVS, Err, metrics, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
+import { logger } from '../logger.js';
 import { Batcher } from './batcher.js';
 import {
     COUNTER_METRICS,
     FILTER_PARAM_TYPE_FOR_DIM,
-    TOP_N_BREAKDOWN_CAP,
-    TOP_N_BREAKDOWN_DEFAULT,
     isAllowedDimensionFor,
     quantityForMetric,
     rankingQuantityForMetric,
-    tableForMetric
+    tableForMetric,
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT
 } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
-import { logger } from '../logger.js';
 
 import type {
     GetDailyCounterDay,

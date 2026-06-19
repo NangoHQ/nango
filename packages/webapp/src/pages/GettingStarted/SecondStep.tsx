@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
+import { StyledLink } from '@/components/ui/StyledLink';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { MultiLanguageCodeBlock } from '../../components/ui/MultiLanguageCodeBlock';
 import { useApiKeys } from '../../hooks/useApiKeys';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -11,8 +13,6 @@ import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
 import { cn, truncateMiddle } from '../../utils/utils';
-import { StyledLink } from '@/components/ui/StyledLink';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 function getNodeClientCode(connectionId?: string, providerConfigKey?: string) {
     return `

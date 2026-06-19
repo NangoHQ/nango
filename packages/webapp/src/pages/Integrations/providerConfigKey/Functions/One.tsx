@@ -5,10 +5,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { FunctionSwitch } from '../../components/FunctionSwitch';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
@@ -32,6 +28,10 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
+import { FunctionSwitch } from '../../components/FunctionSwitch';
+import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
+import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 
 import type { JSONSchema7 } from 'json-schema';
 

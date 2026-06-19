@@ -2,10 +2,6 @@ import { ExternalLink } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent.js';
-import SettingsGroup from './components/SettingsGroup.js';
-import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
-import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
 import { EditableInput } from '@/components/patterns/EditableInput.js';
 import { SecretInput } from '@/components/patterns/SecretInput.js';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -14,6 +10,10 @@ import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
 import { useStore } from '@/store';
+import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
+import SettingsContent from './components/SettingsContent.js';
+import SettingsGroup from './components/SettingsGroup.js';
+import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
 
 import type { PatchWebhook } from '@nangohq/types';
 

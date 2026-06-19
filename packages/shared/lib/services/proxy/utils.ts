@@ -4,9 +4,8 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD, isBaseUrlOverrideDenied } from '@nangohq/utils';
+import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { signAwsSigV4Request } from './aws-sigv4.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -15,6 +14,7 @@ import {
     interpolateProxyUrlParts
 } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
+import { signAwsSigV4Request } from './aws-sigv4.js';
 
 import type {
     ApplicationConstructedProxyConfiguration,

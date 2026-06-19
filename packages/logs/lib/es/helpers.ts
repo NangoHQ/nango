@@ -1,15 +1,15 @@
 import { errors as esErrors } from '@elastic/elasticsearch';
 import { errors as osErrors } from '@opensearch-project/opensearch';
 
-import { Err, Ok, isTest } from '@nangohq/utils';
+import { Err, isTest, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { client, logsStorage } from '../storage/client.js';
-import { logger } from '../utils.js';
-import { getDailyIndexPipeline, indexMessages, indexOperations, policyMessages, policyOperations } from './schema.js';
 import { getFormattedMessage, getFormattedOperation } from '../models/helpers.js';
 import { createMessage } from '../models/messages.js';
 import { createOperation } from '../models/operations.js';
+import { client, logsStorage } from '../storage/client.js';
+import { logger } from '../utils.js';
+import { getDailyIndexPipeline, indexMessages, indexOperations, policyMessages, policyOperations } from './schema.js';
 
 import type { Result } from '@nangohq/utils';
 
