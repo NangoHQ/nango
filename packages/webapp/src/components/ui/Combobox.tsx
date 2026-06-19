@@ -403,6 +403,37 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     );
 }
 
+interface SingleSelectFilterProps<T extends string> {
+    value: T | null;
+    onChange: (value: T | null) => void;
+    options: ComboboxOption<T>[];
+    /** Trigger text when nothing is selected. */
+    placeholderLabel: string;
+    /** Trigger text when a value is selected. */
+    selectedLabel: string;
+    dropdownTitle?: string;
+}
+
+/**
+ * A single-value filter that reuses the multi-select trigger (pill + count badge + clear).
+ * Picking an option replaces the current value rather than accumulating.
+ */
+export function SingleSelectFilter<T extends string>({ value, onChange, options, placeholderLabel, selectedLabel, dropdownTitle }: SingleSelectFilterProps<T>) {
+    return (
+        <ComboboxSelect<T>
+            allowMultiple
+            label={value ? selectedLabel : placeholderLabel}
+            dropdownTitle={dropdownTitle}
+            options={options}
+            selected={value ? [value] : []}
+            onSelectedChange={(next) => onChange(next.find((v) => v !== value) ?? null)}
+            onClearAll={() => onChange(null)}
+            reorderOnSelect={false}
+            showSearch={false}
+        />
+    );
+}
+
 const Combobox = ComboboxPrimitive.Root;
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {

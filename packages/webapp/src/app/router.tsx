@@ -27,6 +27,7 @@ import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
 import { FunctionsOne } from '@/pages/Integrations/providerConfigKey/Functions/One';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
+import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
@@ -217,6 +218,11 @@ export const router = sentryCreateBrowserRouter([
                                         handle: {
                                             breadcrumb: (params) => params.functionName || 'Function'
                                         } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: 'templates',
+                                        element: <Templates />,
+                                        handle: { breadcrumb: 'Templates' } as BreadcrumbHandle
                                     },
                                     {
                                         path: '*',
