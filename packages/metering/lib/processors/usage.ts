@@ -308,6 +308,7 @@ export class UsageProcessor {
                     const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
                     metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
                     metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
+                    this.clickhouse.add([event]);
                     return Ok(undefined);
                 }
                 default:
