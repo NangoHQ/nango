@@ -1,3 +1,5 @@
+import tracer from 'dd-trace';
+
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
@@ -49,6 +51,17 @@ export class UsageProcessor {
     }
 
     public async process(event: UsageEvent): Promise<Result<void>> {
+        return tracer.trace<Promise<Result<void>>>('nango.metering.usage.process', async (span) => {
+            span.setTag('event_type', event.type);
+            const result = await this._process(event);
+            if (result.isErr()) {
+                span.setTag('error', result.error);
+            }
+            return result;
+        });
+    }
+
+    private async _process(event: UsageEvent): Promise<Result<void>> {
         try {
             switch (event.type) {
                 case 'usage.monthly_active_records': {

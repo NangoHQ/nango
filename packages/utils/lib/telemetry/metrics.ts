@@ -150,6 +150,7 @@ export enum Types {
     BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED = 'nango.billing.usage.capping.shadow.one_sided',
     BILLING_USAGE_CAPPING_SHADOW_DURATION_MS = 'nango.billing.usage.capping.shadow.duration_ms',
     BILLING_USAGE_CAPPING_CH_CACHE = 'nango.billing.usage.capping.ch.cache',
+    BILLING_USAGE_TRACKER_CALLS = 'nango.billing.usage.tracker.calls',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
