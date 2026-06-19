@@ -296,7 +296,12 @@ jobs:
             - name: Resolve Nango package version
               id: nango-version
               run: |
-                  echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+                  version=$(node -p "require('./package.json').version")
+                  if ! npm view "nango@${version}" version --silent >/dev/null 2>&1; then
+                      echo "nango@${version} has not been published yet" >&2
+                      exit 1
+                  fi
+                  echo "version=${version}" >> "$GITHUB_OUTPUT"
             - name: Resolve AgentCore image URI
               id: agentcore-image
               env:
@@ -307,6 +312,16 @@ jobs:
                       exit 1
                   fi
                   echo "uri=${AGENTCORE_RUNTIME_IMAGE_REPOSITORY_URL}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            - name: Install AWS CLI
+              env:
+                  AWS_CLI_VERSION: 2.34.44
+                  AWS_PAGER: ''
+              run: |
+                  curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-aarch64-${AWS_CLI_VERSION}.zip" -o awscliv2.zip
+                  unzip -q awscliv2.zip
+                  sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+                  aws --version
+                  aws bedrock-agentcore-control list-agent-runtimes --generate-cli-skeleton output >/dev/null
             - name: Configure aws credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
