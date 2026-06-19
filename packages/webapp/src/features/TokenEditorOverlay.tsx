@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
-import { buildContrastIndex } from './tokenContrast';
+import { buildContrastIndex, deriveContrastPairs } from './tokenContrast';
 import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { Input } from '@/components/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
@@ -181,6 +181,13 @@ const DARK_ENTRIES_BY_VAR = new Map([...DARK_SEMANTIC_ENTRIES, ...PRIMITIVE_ENTR
 const SURFACE_VARS = SEMANTIC_ENTRIES.filter(
     (e) => e.category === 'surface' && /^(canvas|page|panel|panelMuted|panelInset|raised|overlay|input|inputMuted)$/i.test(e.path[1] ?? '')
 ).map((e) => e.cssVar);
+
+/**
+ * Foreground tokens that participate in a contrast pair (structural — independent of resolved
+ * values/theme). Used to hide irrelevant rows when contrast mode is on, so the list shows only
+ * the tokens the checker actually scores.
+ */
+const CONTRAST_FG_VARS = new Set(deriveContrastPairs((cssVar) => ENTRIES_BY_VAR.has(cssVar)).map((p) => p.fgVar));
 /** True when a semantic entry matches a specific primitive ref filter (incl. alias chains). */
 function semanticMatchesRef(entry: TokenEntry, filterRef: string): boolean {
     if (!entry.primitiveRef) return false;
@@ -906,8 +913,13 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 primitiveFilter.startsWith('{') ? semanticMatchesRef(e, primitiveFilter) : semanticMatchesCategory(e, primitiveFilter)
             );
         }
+        // When contrast mode is on, narrow to just the foreground tokens the checker scores.
+        // Pairs are semantic, so this only applies in semantic mode (primitives stay unfiltered).
+        if (contrastOn && mode === 'semantic') {
+            result = result.filter((e) => CONTRAST_FG_VARS.has(e.cssVar));
+        }
         return result;
-    }, [entries, search, primitiveFilter, mode]);
+    }, [entries, search, primitiveFilter, mode, contrastOn]);
 
     const grouped = useMemo(() => {
         const g: Record<string, TokenEntry[]> = {};
