@@ -42,7 +42,7 @@ export async function abortTaskWithId({ taskId, teamId, environmentId }: { taskI
     try {
         const abortFlag = await setAbortFlag({ taskId, environmentId });
         if (abortFlag.isErr()) {
-            return abortFlag;
+            logger.error('Error setting abort flag for task, continuing to broadcast to runners', { err: abortFlag.error, taskId });
         }
         // Broadcast abort to all runners as a task might still be running on a different active runner during/after rollouts (e.g. deploying a new runner version).
         const runners = await getRunners(teamId);

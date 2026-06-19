@@ -22,7 +22,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRunnerLo
 
     const result = await coordination.tryAcquireLock({ owner, key, ttlMs });
     if (result.isErr()) {
-        res.status(400).json({ error: { code: 'try_acquire_lock_failed', message: result.error.message } });
+        res.status(500).json({ error: { code: 'try_acquire_lock_failed', message: result.error.message } });
         return;
     }
 

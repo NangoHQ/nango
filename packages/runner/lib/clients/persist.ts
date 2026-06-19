@@ -449,7 +449,7 @@ export class PersistClient {
             data: { scriptType, syncId, refresh }
         });
         if (res.isErr()) {
-            if (res.error.message.includes('sync_conflict')) {
+            if (isPersistErrorCode(res.error.message, 'sync_conflict')) {
                 return Err(new Error('Conflicting sync detected'));
             }
             return Err(new Error(`Failed to acquire sync conflict lock: ${res.error.message}`));
@@ -533,5 +533,14 @@ export class PersistClient {
             return Err(new Error(`Failed to check lock: ${res.error.message}`));
         }
         return Ok(res.value.hasLock);
+    }
+}
+
+function isPersistErrorCode(message: string, code: string): boolean {
+    try {
+        const parsed = JSON.parse(message) as { error?: { code?: string } };
+        return parsed.error?.code === code;
+    } catch {
+        return false;
     }
 }

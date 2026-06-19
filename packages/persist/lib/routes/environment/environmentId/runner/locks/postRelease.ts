@@ -1,6 +1,7 @@
 import { validateRequest } from '@nangohq/utils';
 
 import * as coordination from '../../../../../coordination/index.js';
+import { logger } from '../../../../../logger.js';
 import { environmentIdParamsSchema, lockOwnerKeyBodySchema } from '../validate.js';
 
 import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
@@ -22,6 +23,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRunnerLo
 
     const result = await coordination.releaseLock({ owner, key });
     if (result.isErr()) {
+        logger.error('Failed to release lock', { owner, key, error: result.error });
         res.status(500).json({ error: { code: 'release_lock_failed', message: result.error.message } });
         return;
     }
