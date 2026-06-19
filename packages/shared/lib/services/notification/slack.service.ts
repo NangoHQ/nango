@@ -1,11 +1,13 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
 import { basePublicUrl, Err, getLogger, metrics, Ok, stringToHash, truncateJson } from '@nangohq/utils';
 
+import { pubsub } from '../../utils/pubsub.js';
 import accountService from '../account.service.js';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
 import environmentService from '../environment.service.js';
+import { makeDataTransferEvent } from '../proxy/data-transfer-event.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
 
@@ -639,7 +641,9 @@ export class SlackService {
         const res = await this.proxySlackMessage({
             slackConnection: refreshedConnection.value,
             payload,
-            integration
+            integration,
+            accountId: account.id,
+            environmentId: environment.id
         });
 
         if (res.isErr()) {
@@ -663,11 +667,15 @@ export class SlackService {
     private async proxySlackMessage({
         slackConnection,
         payload,
-        integration
+        integration,
+        accountId,
+        environmentId
     }: {
         slackConnection: DBConnectionDecrypted;
         payload: NotificationPayload;
         integration: Config;
+        accountId: number;
+        environmentId: number;
     }): Promise<Result<PostSlackMessageResponse>> {
         const color = payload.status === 'open' ? '#e01e5a' : '#36a64f';
 
@@ -701,7 +709,20 @@ export class SlackService {
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
-                })
+                }),
+                onBytes: (meteredBytes) => {
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'shared',
+                            callsite: 'slack_notification',
+                            accountId,
+                            connectionId: slackConnection.connection_id,
+                            integrationId: slackConnection.provider_config_key,
+                            environmentId,
+                            meteredBytes
+                        })
+                    );
+                }
             });
             const join = await proxy.request();
             if (join.isErr()) {
@@ -774,7 +795,20 @@ export class SlackService {
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
-                })
+                }),
+                onBytes: (meteredBytes) => {
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'shared',
+                            callsite: 'slack_notification',
+                            accountId,
+                            connectionId: slackConnection.connection_id,
+                            integrationId: slackConnection.provider_config_key,
+                            environmentId,
+                            meteredBytes
+                        })
+                    );
+                }
             });
             const slackMessage = await proxy.request();
 
