@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
-import { getOtlpRoutes } from '@nangohq/shared';
+import { getOtlpRoutes, pubsub } from '@nangohq/shared';
 import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
@@ -14,7 +14,6 @@ import { Processor } from './processor/processor.js';
 import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
-import { pubsub } from './utils/pubsub.js';
 import { DispatchQueueConsumer } from './webhook/dispatch-queue/consumer.js';
 
 const logger = getLogger('Jobs');

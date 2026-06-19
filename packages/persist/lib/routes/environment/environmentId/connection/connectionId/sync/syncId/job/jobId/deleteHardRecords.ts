@@ -1,11 +1,10 @@
 import z from 'zod';
 
 import { records } from '@nangohq/records';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, pubsub } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
 
 import { envs } from '../../../../../../../../../env.js';
-import { pubsub } from '../../../../../../../../../pubsub.js';
 
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
 import type { ApiError, DeleteHardAllRecordsSuccess, Endpoint } from '@nangohq/types';

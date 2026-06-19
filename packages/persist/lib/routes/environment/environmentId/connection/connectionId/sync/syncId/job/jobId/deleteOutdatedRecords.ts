@@ -2,10 +2,8 @@ import z from 'zod';
 
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { connectionService, updateSyncJobResult } from '@nangohq/shared';
+import { connectionService, pubsub, updateSyncJobResult } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
-
-import { pubsub } from '../../../../../../../../../pubsub.js';
 
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
 import type { ApiError, DeleteOutdatedRecordsSuccess, Endpoint } from '@nangohq/types';
