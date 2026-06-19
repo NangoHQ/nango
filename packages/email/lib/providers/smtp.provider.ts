@@ -9,11 +9,7 @@ export class SmtpEmailProvider implements EmailProvider<void> {
     private transporter: Transporter;
 
     constructor() {
-        this.transporter = nodemailer.createTransport(envs.SMTP_URL, {
-            tls: {
-                rejectUnauthorized: envs.SMTP_TLS_REJECT_UNAUTHORIZED
-            }
-        });
+        this.transporter = nodemailer.createTransport(envs.SMTP_URL);
     }
 
     async send(email: string, subject: string, html: string): Promise<void> {
