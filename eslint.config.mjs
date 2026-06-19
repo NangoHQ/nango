@@ -147,41 +147,6 @@ export default tseslint.config(
             'import/newline-after-import': 'error',
             'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
             'import/namespace': 'off',
-            'import/order': [
-                'error',
-                {
-                    'newlines-between': 'always',
-                    named: true,
-
-                    alphabetize: {
-                        order: 'asc'
-                    },
-                    distinctGroup: false,
-
-                    warnOnUnassignedImports: false,
-                    // sortTypesGroup: true, not avail yet
-
-                    pathGroupsExcludedImportTypes: [
-                        // allows us to split npm package from our @nango
-                        'builtin',
-                        // allow us to have our own types at the end anyway
-                        'type'
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: '@nangohq/**',
-                            group: 'internal',
-                            position: 'after'
-                        },
-                        {
-                            pattern: '@/**',
-                            group: 'parent',
-                            position: 'after'
-                        }
-                    ],
-                    groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], 'type', 'object']
-                }
-            ],
 
             'unicorn/catch-error-name': [
                 'error',
@@ -223,12 +188,6 @@ export default tseslint.config(
             'no-constant-condition': 'off',
             '@typescript-eslint/no-dynamic-delete': 'off',
             '@typescript-eslint/no-redundant-type-constituents': 'off'
-        }
-    },
-    {
-        files: ['packages/**/*/migrations/**'],
-        rules: {
-            'import/order': 'off'
         }
     },
     {
