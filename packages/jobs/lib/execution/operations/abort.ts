@@ -31,11 +31,12 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
         if (setFailed.isErr()) {
             logger.error(`failed to set cancel task ${task.id} as failed`, setFailed.error);
         }
+        return Err(error);
     }
 
     await setTaskSuccess({ taskId: task.id, output: {} });
 
-    return abortedScript;
+    return Ok(undefined);
 }
 
 export async function abortTaskWithId({ taskId, teamId, environmentId }: { taskId: string; teamId: number; environmentId: number }): Promise<Result<void>> {
