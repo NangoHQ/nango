@@ -927,6 +927,7 @@
               "api-integrations/agiloft-cc",
               "integrations/all/aimfox",
               "integrations/all/aimfox-oauth",
+              "integrations/all/agentline",
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "api-integrations/airtable",
