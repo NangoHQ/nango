@@ -1,0 +1,38 @@
+---
+title: Splunk - How do I link my account?
+sidebarTitle: Splunk
+---
+
+# Overview
+
+To authenticate with Splunk, you need:
+1. **Splunk host** - Your Splunk management host including the port (e.g. `my-splunk.example.com:8089`).
+2. **Authentication token** - A Splunk authentication token sent as a bearer token.
+
+This guide walks you through creating an authentication token in Splunk.
+
+### Prerequisites
+
+- A Splunk Enterprise (7.3+) or Splunk Cloud deployment with REST API access on the management port (default `8089`).
+- A Splunk user with the `edit_tokens_own` (or `edit_tokens_all`) capability.
+- Token authentication enabled by a Splunk admin (Settings > Tokens > Enable Token Authentication).
+
+<Tip>On Splunk Cloud, REST API access on port 8089 is not open by default — open a Splunk Support case to enable it and allowlist your IPs.</Tip>
+
+### Instructions
+
+#### Step 1: Create an authentication token
+
+1. Log in to Splunk Web as a user with token permissions.
+2. Go to **Settings** > **Tokens**.
+3. Click **New Token**.
+4. Set the **User** the token acts as, an optional **Audience**, and an **Expiration**.
+5. Click **Create**, then copy the generated token. It is shown only once.
+
+#### Step 2: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Splunk.
+2. Enter your **Splunk host** (including the port, e.g. `my-splunk.example.com:8089`) and your **authentication token**.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Splunk.
