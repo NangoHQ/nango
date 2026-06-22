@@ -73,9 +73,15 @@ export class ConnectUI {
     }
 
     /**
-     * Open UI in an iframe and listen to events
+     * Open UI in an iframe and listen to events.
+     * No-op if the iframe is already mounted, so duplicate open() calls
+     * don't leave orphan iframes that close() can't clean up.
      */
     open() {
+        if (this.iframe) {
+            return;
+        }
+
         this.iframe = this.createIframe();
         document.body.append(this.iframe);
 
