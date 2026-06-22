@@ -574,11 +574,12 @@ export class UsageTracker implements IUsageTracker {
     /**
      * Fan-out over in-scope metrics: counters via `getDailyCounter`, AVG via
      * `getDailySumAndBatches`. When `breakdown` is set for a metric, ONLY the
-     * breakdown call runs — the returned BillingUsageMetric for that metric
-     * carries `usage: []` / `total: 0` at the top level and only `breakdown`
-     * populated. The caller opted into the per-dim view; the global can be
-     * derived by summing across breakdown series (top-N + 'rest' partition
-     * every row) but we don't pre-compute it.
+     * breakdown call runs — the returned BillingUsageMetric carries `usage: []`
+     * at the top level (the per-day points live under `breakdown`), `total` set
+     * to the global (the sum across the top-N + 'rest' series, which partition
+     * every row, so it equals the no-dim global), and `breakdown` populated. A
+     * per-metric `filter` rides along on the breakdown call (different dim), so
+     * `total` is then the filtered global and the headline matches the series.
      */
     private async getBillingUsageFromClickhouse(
         accountId: number,
@@ -766,21 +767,21 @@ export class UsageTracker implements IUsageTracker {
             result[metric] = toRunningAvgUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
         }
 
-        // Breakdown-requested metrics: emit a BillingUsageMetric with empty
-        // top-level `usage` and only the `breakdown` populated. `total` stays 0
-        // for an unfiltered breakdown (the caller opted into the per-dim view; we
-        // don't synthesize a global). When a filter is ALSO applied the panel is
-        // drilled into a single slice, so we surface the filtered global total —
-        // the sum across the top-N + 'rest' series — so the dashboard headline
-        // matches the stacked series. Counters: sum of per-series totals. AVG:
-        // the per-dim last-day running averages are additive to the global
-        // (shared denominator), so their sum is the filtered global monthly avg.
+        // Breakdown-requested metrics: emit a BillingUsageMetric whose top-level
+        // `usage` is empty (the per-day points live under `breakdown`) and whose
+        // `total` is the global for the response's scope — the sum across the
+        // top-N + 'rest' series, which partition every row, so it equals the
+        // no-dim global (and the filtered global when a filter is also applied).
+        // The dashboard headline therefore matches the stacked series. Counters:
+        // sum of per-series totals. AVG: per-dim last-day running averages are
+        // additive to the global (shared denominator), so their sum is the global
+        // monthly average.
         for (const [metric, br] of counterBreakdowns) {
             if (br.isErr()) return Err(br.error);
             const series = toCounterBillingMetricSeries(metric, br.value);
             result[metric] = {
                 externalId: metric,
-                total: filterFor(metric) ? series.reduce((sum, s) => sum + s.total, 0) : 0,
+                total: series.reduce((sum, s) => sum + s.total, 0),
                 usage: [],
                 view_mode: 'periodic',
                 breakdown: series
@@ -791,7 +792,7 @@ export class UsageTracker implements IUsageTracker {
             const series = toRunningAvgUsage(br.value);
             result[metric] = {
                 externalId: metric,
-                total: filterFor(metric) ? series.reduce((sum, s) => sum + s.total, 0) : 0,
+                total: series.reduce((sum, s) => sum + s.total, 0),
                 usage: [],
                 view_mode: 'cumulative',
                 breakdown: series

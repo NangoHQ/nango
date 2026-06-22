@@ -306,10 +306,15 @@ describe(`GET ${route}`, () => {
             });
             isSuccess(res.json);
             const records = res.json.data.usage.records;
-            // Breakdown-only response contract: when breakdown is requested,
-            // the top-level series is empty and only `breakdown` carries data.
+            // Breakdown response contract: top-level `usage` is empty (per-day points
+            // live under `breakdown`) and `total` is the global — the sum across the
+            // top-N + 'rest' series, equal to the no-dim global.
             expect(records.usage).toEqual([]);
-            expect(records.total).toBe(0);
+            // records is AVG: per-integration last-day running averages sum to the global
+            // running average (1100 = (1500+700)/(1+1) over the fixture).
+            const recordsSeriesSum = records.breakdown!.reduce((s, b) => s + b.total, 0);
+            expect(records.total).toBeCloseTo(recordsSeriesSum, 5);
+            expect(records.total).toBeCloseTo(1100, 5);
             expect(records.breakdown).toBeDefined();
             expect(records.breakdown!.length).toBeGreaterThanOrEqual(2);
             const groups = records.breakdown!.map((b) => b.group!.value).sort();
@@ -377,7 +382,11 @@ describe(`GET ${route}`, () => {
             isSuccess(res.json);
             const proxy = res.json.data.usage.proxy;
             expect(proxy.usage).toEqual([]);
-            expect(proxy.total).toBe(0);
+            // proxy is a counter: total is the global = sum of the per-success series
+            // (true: 10 day0 + 8 day1 = 18, false: 5 → 23 over the fixture).
+            const proxySeriesSum = proxy.breakdown!.reduce((s, b) => s + b.total, 0);
+            expect(proxy.total).toBe(proxySeriesSum);
+            expect(proxy.total).toBe(23);
             expect(proxy.breakdown).toBeDefined();
             const groups = proxy.breakdown!.map((b) => b.group!.value).sort();
             expect(groups).toEqual(['false', 'true']);
@@ -553,6 +562,37 @@ describe(`GET ${route}`, () => {
             // Filtered headline ≈ the unfiltered global running-average (1100), and the
             // per-dim last-day running averages sum to it (shared filtered denominator).
             expect(records.total).toBeCloseTo(1100, 5);
+            const seriesSum = records.breakdown!.reduce((s, b) => s + b.total, 0);
+            expect(seriesSum).toBeCloseTo(records.total, 5);
+        });
+
+        it('filter + breakdown on DIFFERENT dims (AVG) — a narrowing filter lowers the running average', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    // Unlike the env:1 (keeps-all) case above, this filter actually
+                    // drops rows: hubspot records are 1000 (day0) + 700 (day1), both
+                    // model=Contact; salesforce's 500 (day0) is excluded. Filtered
+                    // running avg = 1000/1 → (1000+700)/2 = 850, strictly below the
+                    // unfiltered global of 1100 — proving the filter is threaded into
+                    // the AVG breakdown numerator, not just composed structurally.
+                    filter: { records: 'integration_id:hubspot' },
+                    breakdown: { records: 'model' }
+                } as any
+            });
+            isSuccess(res.json);
+            const records = res.json.data.usage.records;
+            expect(records.view_mode).toBe('cumulative');
+            expect(records.breakdown).toBeDefined();
+            const groups = records.breakdown!.map((b) => b.group!.value).sort();
+            expect(groups).toEqual(['Contact']);
+            expect(records.total).toBeCloseTo(850, 5);
             const seriesSum = records.breakdown!.reduce((s, b) => s + b.total, 0);
             expect(seriesSum).toBeCloseTo(records.total, 5);
         });
