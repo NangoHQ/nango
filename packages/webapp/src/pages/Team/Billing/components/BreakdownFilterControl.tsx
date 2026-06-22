@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useApiGetBillingUsageTopDimensionValues, useApiPrefetchBillingUsageTopDimensionValues } from '@/hooks/usePlan';
@@ -95,17 +96,20 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     // Warm every filterable dimension's values when the popover opens, so picking one is instant.
     const prefetchValues = useApiPrefetchBillingUsageTopDimensionValues(env, metric, timeframe, DEFAULT_TOP_N);
     const values = topQuery.data?.data.values ?? [];
-    // Active-filter chip label. `top-dimension-values` is the id→label source
-    // (e.g. environment_id 105 → "dev"); only environment_id needs it — slug dims
-    // have id === label. Falls back to the raw value if it's outside the top-N.
+    // Active-filter chip label. `top-dimension-values` is the id→label source for
+    // environment_id (e.g. 105 → "dev"); slug dims have id === label. `null` means the
+    // env name hasn't resolved yet — we render a skeleton rather than flash the raw id,
+    // then show the name (or the id, if it's outside the fetched top-N).
     const filterNeedsLabel = filter?.dimension === 'environment_id';
     const filterLabelQuery = useApiGetBillingUsageTopDimensionValues(env, metric, filterNeedsLabel ? 'environment_id' : null, timeframe, DEFAULT_TOP_N, {
         enabled: filterNeedsLabel
     });
-    const filterLabel = !filter
+    const filterLabel: string | null = !filter
         ? ''
         : filterNeedsLabel
-          ? (filterLabelQuery.data?.data.values.find((v) => v.id === filter.value)?.label ?? filter.value)
+          ? filterLabelQuery.data
+              ? (filterLabelQuery.data.data.values.find((v) => v.id === filter.value)?.label ?? filter.value)
+              : null
           : filter.value;
     const trimmed = search.trim();
     const q = trimmed.toLowerCase();
@@ -192,7 +196,11 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                         {filter ? (
                             <>
                                 <span className="text-text-muted">{DIMENSION_LABELS[filter.dimension]}:</span>
-                                <span className="max-w-[160px] truncate text-text-strong">{formatDimensionValue(filter.dimension, filterLabel)}</span>
+                                {filterLabel === null ? (
+                                    <Skeleton className="h-3.5 w-12 rounded" />
+                                ) : (
+                                    <span className="max-w-[160px] truncate text-text-strong">{formatDimensionValue(filter.dimension, filterLabel)}</span>
+                                )}
                                 <ClearButton onClear={onClearFilter} label="Clear filter" />
                             </>
                         ) : (
