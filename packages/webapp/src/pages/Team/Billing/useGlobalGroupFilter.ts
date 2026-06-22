@@ -16,11 +16,12 @@ export interface GroupFilterSelection {
 }
 
 /**
- * Owns the "Apply to all" group + filter state. `applyToAll` copies a panel's group
- * and/or filter to every metric that supports the respective dimension, in one URL
- * update — only the set slots are propagated (a null slot is left untouched on other
- * panels, never cleared). `isDivergingFromGlobal` reports whether applying would change
- * at least one other applicable panel — the signal for showing the button.
+ * Owns the "Apply to all" group + filter state. `applyToAll` makes every applicable
+ * panel match this panel's group AND filter in one URL update: a set slot is copied to
+ * every metric that supports its dimension; a cleared (null) slot is cleared on every
+ * metric — so removing a filter and re-applying propagates the removal too.
+ * `isDivergingFromGlobal` reports whether applying would change at least one other
+ * applicable panel — the signal for showing the button.
  */
 export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
     const params = useMemo(() => {
@@ -33,37 +34,57 @@ export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
     }, [metrics]);
     const [values, setValues] = useQueryStates(params);
 
+    // Metrics this hook manages (i.e. on screen) that support `dim`. Intersecting with
+    // `metrics` stops metrics that aren't displayed — and so never appear in the URL —
+    // from reading as a permanent divergence.
+    const supporting = useCallback(
+        (dim: AnyBreakdownDimension): UsageMetric[] => {
+            const supp = metricsSupportingDimension(dim);
+            return metrics.filter((m) => supp.includes(m));
+        },
+        [metrics]
+    );
+
     const applyToAll = useCallback(
         (sel: GroupFilterSelection) => {
             const updates: Record<string, string | null> = {};
+            // Group: copy to supporting metrics when set; clear on every metric when null.
             if (sel.group !== null) {
-                for (const m of metricsSupportingDimension(sel.group)) updates[`${m}.breakdown`] = sel.group;
+                for (const m of supporting(sel.group)) updates[`${m}.breakdown`] = sel.group;
+            } else {
+                for (const m of metrics) updates[`${m}.breakdown`] = null;
             }
+            // Filter: copy to supporting metrics when set; clear on every metric when null.
             if (sel.filter !== null) {
                 const value = `${sel.filter.dimension}:${sel.filter.value}`;
-                for (const m of metricsSupportingDimension(sel.filter.dimension)) updates[`${m}.filter`] = value;
+                for (const m of supporting(sel.filter.dimension)) updates[`${m}.filter`] = value;
+            } else {
+                for (const m of metrics) updates[`${m}.filter`] = null;
             }
             if (Object.keys(updates).length > 0) void setValues(updates);
         },
-        [setValues]
+        [setValues, supporting, metrics]
     );
 
     const isDivergingFromGlobal = useCallback(
         (metric: UsageMetric, sel: GroupFilterSelection): boolean => {
-            const groupDiverges =
-                sel.group !== null &&
-                metricsSupportingDimension(sel.group)
-                    .filter((m) => m !== metric)
-                    .some((m) => (values[`${m}.breakdown`] ?? 'none') !== sel.group);
-            const filterValue = sel.filter ? `${sel.filter.dimension}:${sel.filter.value}` : '';
-            const filterDiverges =
-                sel.filter !== null &&
-                metricsSupportingDimension(sel.filter.dimension)
-                    .filter((m) => m !== metric)
-                    .some((m) => (values[`${m}.filter`] ?? '') !== filterValue);
+            // Nothing to propagate from a panel with neither slot set — don't offer
+            // "Apply to all" on an unconfigured panel (it would read as "clear everyone").
+            if (sel.group === null && sel.filter === null) return false;
+            const others = (ms: readonly UsageMetric[]) => ms.filter((m) => m !== metric);
+            // A set slot targets the metrics supporting its dimension; a cleared slot
+            // targets every metric (the 'none'/'' default). Diverges if any other
+            // applicable panel doesn't already match the target — including a panel that
+            // still carries a filter this panel has cleared.
+            const groupTargets = sel.group !== null ? supporting(sel.group) : metrics;
+            const groupTarget = sel.group ?? 'none';
+            const groupDiverges = others(groupTargets).some((m) => (values[`${m}.breakdown`] ?? 'none') !== groupTarget);
+            const filterTargets = sel.filter !== null ? supporting(sel.filter.dimension) : metrics;
+            const filterTarget = sel.filter ? `${sel.filter.dimension}:${sel.filter.value}` : '';
+            const filterDiverges = others(filterTargets).some((m) => (values[`${m}.filter`] ?? '') !== filterTarget);
             return groupDiverges || filterDiverges;
         },
-        [values]
+        [values, supporting, metrics]
     );
 
     return { isDivergingFromGlobal, applyToAll };
