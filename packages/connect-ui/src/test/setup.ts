@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom/vitest';
 import { afterEach } from 'vitest';
 
 // Real app stylesheet so Tailwind utilities + theme CSS variables resolve in the browser.

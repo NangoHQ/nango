@@ -1,5 +1,5 @@
-import { screen } from '@testing-library/dom';
 import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { LoadingView } from '@/components/LoadingView';
@@ -19,7 +19,7 @@ describe('LoadingView', () => {
     it('exposes a status region so screen readers announce loading', async () => {
         await renderLoadingView();
 
-        expect(screen.getByRole('status')).toBeInTheDocument();
+        await expect.element(page.getByRole('status')).toBeInTheDocument();
     });
 
     it('has no other accessibility violations in light or dark mode', async () => {

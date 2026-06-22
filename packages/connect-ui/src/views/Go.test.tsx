@@ -1,6 +1,5 @@
-import { screen, waitFor } from '@testing-library/dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import { AuthError } from '@nangohq/frontend';
 
@@ -21,11 +20,10 @@ const clear = vi.fn();
 const seedStore = { provider: apiKeyProvider, integration: integrationFixture };
 
 /** Fill the single API key field and submit, driving Go into its success or error state. */
-async function submitCredentials(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-    await screen.findByRole('heading', { name: 'Link GitHub Account' });
-    const apiKeyInput = screen.getByLabelText('API Key', { exact: false });
-    await user.type(apiKeyInput, 'secret-key');
-    await user.click(screen.getByRole('button', { name: 'Connect' }));
+async function submitCredentials(): Promise<void> {
+    await expect.element(page.getByRole('heading', { name: 'Link GitHub Account' })).toBeInTheDocument();
+    await userEvent.type(page.getByPlaceholder('Your API Key'), 'secret-key');
+    await userEvent.click(page.getByRole('button', { name: 'Connect' }));
 }
 
 describe('Go', () => {
@@ -43,90 +41,83 @@ describe('Go', () => {
     describe('credentials form', () => {
         it('has no accessibility violations in light or dark mode', async () => {
             const { container } = await renderApp({ route: '/go', seedStore });
-            await screen.findByRole('heading', { name: 'Link GitHub Account' });
+            await expect.element(page.getByRole('heading', { name: 'Link GitHub Account' })).toBeInTheDocument();
 
             await expectAccessibleInBothThemes(container);
         });
 
         it('is operable by keyboard (type credentials + submit with Enter)', async () => {
-            const user = userEvent.setup();
             await renderApp({ route: '/go', seedStore });
-            await screen.findByRole('heading', { name: 'Link GitHub Account' });
+            await expect.element(page.getByRole('heading', { name: 'Link GitHub Account' })).toBeInTheDocument();
 
-            const apiKeyInput = screen.getByLabelText('API Key', { exact: false });
-            apiKeyInput.focus();
-            expect(apiKeyInput).toHaveFocus();
-            await user.keyboard('secret-key{Enter}');
+            const apiKey = page.getByPlaceholder('Your API Key');
+            apiKey.element().focus();
+            await expect.element(apiKey).toHaveFocus();
+            await userEvent.keyboard('secret-key{Enter}');
 
-            await waitFor(() => {
+            await vi.waitFor(() => {
                 expect(auth).toHaveBeenCalled();
             });
         });
     });
 
     describe('success screen', () => {
-        async function renderSuccess(): Promise<{ user: ReturnType<typeof userEvent.setup>; container: HTMLElement }> {
-            const user = userEvent.setup();
+        async function renderSuccess(): Promise<HTMLElement> {
             const { container } = await renderApp({ route: '/go', seedStore });
-            await submitCredentials(user);
-            await screen.findByRole('heading', { name: 'Success!' });
-            return { user, container };
+            await submitCredentials();
+            await expect.element(page.getByRole('heading', { name: 'Success!' })).toBeInTheDocument();
+            return container;
         }
 
         // Skipped pending NAN-6055: the primary button (.bg-primary) fails WCAG AA contrast
         // (white #ffffff on brand #00b2e3 ≈ 2.5:1, needs 4.5:1). It's a design-system token fix;
         // re-enable once https://linear.app/nango/issue/NAN-6055 lands.
         it.skip('has no accessibility violations in light or dark mode', async () => {
-            const { container } = await renderSuccess();
-
-            await expectAccessibleInBothThemes(container);
+            await expectAccessibleInBothThemes(await renderSuccess());
         });
 
         it('Finish button is keyboard operable', async () => {
-            const { user } = await renderSuccess();
+            await renderSuccess();
 
-            const finish = screen.getByRole('button', { name: 'Finish' });
-            finish.focus();
-            expect(finish).toHaveFocus();
+            const finish = page.getByRole('button', { name: 'Finish' });
+            finish.element().focus();
+            await expect.element(finish).toHaveFocus();
             // Native button → Enter activates it (triggerClose posts to the parent window; no-op here).
-            await user.keyboard('{Enter}');
+            await userEvent.keyboard('{Enter}');
         });
     });
 
     describe('error screen', () => {
-        async function renderError(): Promise<{ user: ReturnType<typeof userEvent.setup>; container: HTMLElement }> {
+        async function renderError(): Promise<HTMLElement> {
             auth.mockRejectedValue(new AuthError('Invalid credentials', 'connection_test_failed'));
-            const user = userEvent.setup();
             const { container } = await renderApp({ route: '/go', seedStore });
-            await submitCredentials(user);
-            await screen.findByRole('heading', { name: 'Connection failed' });
-            return { user, container };
+            await submitCredentials();
+            await expect.element(page.getByRole('heading', { name: 'Connection failed' })).toBeInTheDocument();
+            return container;
         }
 
         // Skipped pending NAN-6055: the primary button (.bg-primary) fails WCAG AA contrast
         // (white #ffffff on brand #00b2e3 ≈ 2.5:1, needs 4.5:1). It's a design-system token fix;
         // re-enable once https://linear.app/nango/issue/NAN-6055 lands.
         it.skip('has no accessibility violations in light or dark mode', async () => {
-            const { container } = await renderError();
-
-            await expectAccessibleInBothThemes(container);
+            await expectAccessibleInBothThemes(await renderError());
         });
 
         it('error-details toggle and Back button are keyboard operable', async () => {
-            const { user } = await renderError();
+            await renderError();
 
-            const toggle = screen.getByRole('button', { name: 'Show error details' });
-            toggle.focus();
-            await user.keyboard('{Enter}');
-            await screen.findByRole('button', { name: 'Hide error details' });
+            const toggle = page.getByRole('button', { name: 'Show error details' });
+            toggle.element().focus();
+            await userEvent.keyboard('{Enter}');
+            await expect.element(page.getByRole('button', { name: 'Hide error details' })).toBeInTheDocument();
 
-            const back = screen.getByRole('button', { name: 'Back' });
-            back.focus();
-            expect(back).toHaveFocus();
-            await user.keyboard('{Enter}');
+            const back = page.getByRole('button', { name: 'Back' });
+            back.element().focus();
+            await expect.element(back).toHaveFocus();
+            await userEvent.keyboard('{Enter}');
 
             // Back returns to the credentials form.
-            await screen.findByRole('heading', { name: 'Link GitHub Account' });
+            await expect.element(page.getByRole('heading', { name: 'Link GitHub Account' })).toBeInTheDocument();
         });
     });
 });
