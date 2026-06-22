@@ -18,7 +18,7 @@ import { functionDeploymentBodySchema } from '../validation.js';
 import { createDeploySandboxApiKey, requireCustomerKeyId, toFunctionDeploymentError } from './helpers.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
-import type { DBSyncConfig, FunctionDeploymentCodeBody, FunctionDeploymentTemplateBody, PostFunctionDeployment, RunnableFunctionType } from '@nangohq/types';
+import type { DBSyncConfig, FunctionDeploymentCodeBody, FunctionDeploymentTemplateBody, PostFunctionDeployment } from '@nangohq/types';
 import type { Response } from 'express';
 
 type DeploymentResponse = Response<PostFunctionDeployment['Reply'], Required<RequestLocals>>;
@@ -81,6 +81,12 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
     }
 
     const { result, type } = outcome;
+    if (type !== 'sync' && type !== 'action') {
+        report(new Error(`Template '${body.template}' resolved to non-runnable type '${type}'`));
+        res.status(500).send({ error: { code: 'server_error', message: 'Template was deployed but resolved to an unexpected type' } });
+        return;
+    }
+
     const version = result.version ?? '';
     const deployment = await createSucceededFunctionDeployment({
         environmentId: environment.id,
@@ -89,14 +95,14 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
             integration_id: body.integration_id,
             template: body.template,
             function_name: result.name,
-            function_type: type as RunnableFunctionType
+            function_type: type
         },
         output: `Successfully deployed the functions:\n- ${result.name}@${version}`,
         deployedFunctions: [{ name: result.name, version }]
     });
     if (deployment.isErr()) {
         report(deployment.error);
-        res.status(500).send({ error: { code: 'deployment_error', message: 'Failed to deploy the template' } });
+        res.status(500).send({ error: { code: 'server_error', message: 'Template was deployed but its deployment record could not be created' } });
         return;
     }
 

@@ -2,16 +2,15 @@ import * as z from 'zod';
 
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { deployIntegrationTemplate } from './helpers.js';
-import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
+import { deployIntegrationTemplate } from './helpers.js';
 
 import type { PostPreBuiltDeploy } from '@nangohq/types';
 
 const validation = z
     .object({
-        provider: providerSchema,
         providerConfigKey: providerConfigKeySchema,
         scriptName: scriptNameSchema,
         type: flowConfig.shape.type
