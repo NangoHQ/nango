@@ -4,10 +4,16 @@ import { expect } from 'vitest';
 // WCAG 2.2 AA scope (the standard NAN-5901/5906 target), including the 2.1/2.2 additions.
 const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-/** Runs axe over `element` and asserts zero violations, with a concise rule summary on failure. */
+/** Runs axe over `element` and asserts zero violations. */
 async function expectNoAxeViolations(element: HTMLElement, label: string): Promise<void> {
     const results = await axe.run(element, { runOnly: { type: 'tag', values: WCAG_AA_TAGS } });
-    const summary = results.violations.map((v) => `[${v.id}] ${v.help} — ${v.nodes.map((n) => n.target.map(String).join(' ')).join(' | ')}`);
+    // One entry per failing node so the assertion diff is actionable: rule id, the element selector,
+    // and axe's fix summary — which for color-contrast includes the foreground/background colors and
+    // the measured vs. required ratio (e.g. "...contrast of 2.19 (foreground #ffffff, background
+    // #00b2e3...). Expected contrast ratio of 4.5:1").
+    const summary = results.violations.flatMap((v) =>
+        v.nodes.map((n) => `[${v.id}] ${n.target.map(String).join(' ')} — ${(n.failureSummary ?? v.help).replace(/\s*\n\s*/g, ' ')}`)
+    );
     expect(summary, `axe violations (${label})`).toEqual([]);
 }
 
