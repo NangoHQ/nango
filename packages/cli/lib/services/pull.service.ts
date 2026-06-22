@@ -68,7 +68,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
         if (type) {
             url.searchParams.set('type', type);
         }
-        printDebug(`Fetching deployed function from ${url}`, debug);
+        printDebug(`Fetching deployed function from ${url.href}`, debug);
 
         const res = await fetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
         const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
