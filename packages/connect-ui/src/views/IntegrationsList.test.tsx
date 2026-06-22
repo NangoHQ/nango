@@ -51,12 +51,13 @@ describe('IntegrationsList', () => {
         await renderApp({ route: '/integrations' });
         await expect.element(page.getByRole('heading', { name: 'Select Integration' })).toBeInTheDocument();
 
-        // Real browser Tab (Playwright) so a focus-trap handler is actually honored.
-        // Tab more times than there are focusable controls — a trapped dialog keeps focus inside,
-        // so it must never escape to <body>/<html>.
+        // Real browser Tab (Playwright) so a focus-trap handler is actually honored. Tab more
+        // times than there are focusable controls — a trapped dialog keeps focus on an element
+        // inside the dialog at every step (not just off <body>).
+        const dialog = document.querySelector('[role="dialog"]');
         for (let i = 0; i < 8; i++) {
             await userEvent.tab();
-            expect([document.body, document.documentElement]).not.toContain(document.activeElement);
+            expect(dialog?.contains(document.activeElement)).toBe(true);
         }
     });
 });

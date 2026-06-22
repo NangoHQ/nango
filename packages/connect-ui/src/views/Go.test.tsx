@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { AuthError } from '@nangohq/frontend';
 
+import { triggerClose } from '@/lib/events';
 import { useNango } from '@/lib/nango';
 import { expectAccessibleInBothThemes } from '@/test/a11y';
 import { apiKeyProvider, authResultFixture, integrationFixture } from '@/test/fixtures';
@@ -11,6 +12,13 @@ import { renderApp } from '@/test/render';
 import type Nango from '@nangohq/frontend';
 
 vi.mock('@/lib/nango', () => ({ useNango: vi.fn() }));
+
+// Spy `triggerClose` so the Finish test can assert activation directly (it posts to the parent
+// frame, which isn't observable from inside Vitest's test iframe). Other exports stay real.
+vi.mock('@/lib/events', async (importActual) => {
+    const actual = await importActual<typeof import('@/lib/events')>();
+    return { ...actual, triggerClose: vi.fn() };
+});
 
 const auth = vi.fn();
 const create = vi.fn();
@@ -82,8 +90,10 @@ describe('Go', () => {
             const finish = page.getByRole('button', { name: 'Finish' });
             finish.element().focus();
             await expect.element(finish).toHaveFocus();
-            // Native button → Enter activates it (triggerClose posts to the parent window; no-op here).
             await userEvent.keyboard('{Enter}');
+
+            // Enter must actually activate Finish, which closes the dialog.
+            await vi.waitFor(() => expect(triggerClose).toHaveBeenCalledWith('click:finish'));
         });
     });
 

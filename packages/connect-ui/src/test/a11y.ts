@@ -22,9 +22,14 @@ async function expectNoAxeViolations(element: HTMLElement, label: string): Promi
  * both). Real CSS is required for color-contrast checks, which is why these run in Browser Mode.
  */
 export async function expectAccessibleInBothThemes(element: HTMLElement): Promise<void> {
-    for (const theme of ['light', 'dark'] as const) {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        await expectNoAxeViolations(element, `${theme} theme`);
+    try {
+        for (const theme of ['light', 'dark'] as const) {
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            await expectNoAxeViolations(element, `${theme} theme`);
+        }
+    } finally {
+        // Always reset the theme class, even if a theme's assertion throws, so the failure
+        // can't leak the `dark` class into later tests in the shared browser page.
+        document.documentElement.classList.remove('dark');
     }
-    document.documentElement.classList.remove('dark');
 }

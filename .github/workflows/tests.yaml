@@ -143,6 +143,8 @@ jobs:
         # Accessibility regression suite — only runs when connect-ui files change (or merge queue / master push).
         if: needs.should-run.outputs.run_connect_ui == 'true'
         runs-on: blacksmith-4vcpu-ubuntu-2404
+        permissions:
+            contents: read
         steps:
             - name: Checkout
               uses: actions/checkout@v4
