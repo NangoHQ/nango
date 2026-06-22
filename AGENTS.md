@@ -1,9 +1,11 @@
 Use `npm` as the project package manager.
 After running the initial `npm install` or `npm ci`, run `npm run prepare` to install Husky git hooks.
 
-## TypeScript Build
+## Linting & formatting
 
-Run `npm run ts-build` before autofixing lint errors using npm run lint:fix. Fresh worktrees don't have `dist/` (gitignored), so workspace packages like `@nangohq/types` can't resolve, causing false ESLint errors and broken type-checking.
+Linting uses **oxlint** — `npm run lint` (and `npm run lint:fix`), configured in `.oxlintrc.json`. Type-aware rules run via `oxlint-tsgolint`, which resolves types from source, so no `ts-build`/`dist` is needed first. Formatting is **Prettier** — `npm run format` (CI checks it via `npm run format:check`).
+
+For inline editor diagnostics, install the oxlint extension: VS Code / Cursor → `oxc.oxc-vscode`; JetBrains → the `oxc` plugin; Neovim/Emacs/Helix/Sublime → any LSP client via `oxlint --lsp`. The ESLint extension will no longer show diagnostics.
 
 ## Running Nango locally
 
