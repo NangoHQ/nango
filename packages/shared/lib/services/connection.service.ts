@@ -1369,9 +1369,13 @@ class ConnectionService {
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
         if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
-            const error = new NangoError('client_credentials_fetch_error');
+            const payload = fetchRes.isErr()
+            ? { message: fetchRes.error.message }
+            : { status: fetchRes.value.res.status, body: fetchRes.value.body };
+
+            const error = new NangoError('client_credentials_fetch_error', payload);
             return { success: false, error, response: null };
-        }
+        } 
 
         const parsedCreds = this.parseRawCredentials(fetchRes.value.body, 'OAUTH2_CC', provider) as OAuth2ClientCredentials;
 
