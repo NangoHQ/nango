@@ -21,7 +21,7 @@ import type {
     CreateFunctionResponse,
     CreateOnEventResponse,
     CreateSyncResponse,
-    DebounceConfig,
+    DebounceOptions,
     FunctionTrigger
 } from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
@@ -278,40 +278,52 @@ export function parseFunction({
         return Err(new Error(`Function "${basename}" must declare at least one trigger (${filePath})`));
     }
 
-    // Validate schedule trigger intervals
+    // Validate schedule intervals and normalize per-http-trigger debounce while building the triggers.
+    const parsedTriggers: ParsedFunctionTrigger[] = [];
     for (const trigger of params.triggers) {
-        if (trigger.type === 'schedule') {
+        if (trigger.kind === 'schedule') {
             const interval = getInterval(trigger.schedule, new Date());
             if (interval instanceof Error) {
                 return Err(new InvalidIntervalDefinitionError(filePath, ['createFunction', 'triggers', 'schedule']));
             }
         }
+
+        const parsedTrigger = toParsedTrigger(trigger);
+
+        if (trigger.kind === 'http' && trigger.debounce !== undefined) {
+            const debounce = normalizeDebounce(trigger.debounce, { filePath, basename });
+            if (debounce instanceof Error) {
+                return Err(debounce);
+            }
+            if (debounce !== undefined) {
+                parsedTrigger.debounce = debounce;
+            }
+        }
+
+        parsedTriggers.push(parsedTrigger);
     }
 
-    const allZodModels: Record<string, z.ZodType> = { ...(params.models ?? {}) };
+    const models = params.data?.models;
+    const metadata = params.data?.metadata;
+    const allZodModels: Record<string, z.ZodType> = { ...models };
 
     const inputName = params.input ? `FunctionInput_${integrationIdClean}_${basenameClean}` : null;
     if (params.input && inputName) {
         allZodModels[inputName] = params.input;
     }
 
-    const metadataModelName = params.metadata ? `FunctionMetadata_${integrationIdClean}_${basenameClean}` : null;
-    if (params.metadata && metadataModelName) {
-        allZodModels[metadataModelName] = params.metadata;
+    const metadataModelName = metadata ? `FunctionMetadata_${integrationIdClean}_${basenameClean}` : null;
+    if (metadata && metadataModelName) {
+        allZodModels[metadataModelName] = metadata;
     }
 
-    for (const modelName of Object.keys(params.models ?? {})) {
+    for (const modelName of Object.keys(models ?? {})) {
         if (!regexModelName.test(modelName)) {
-            return Err(new InvalidModelDefinitionError(modelName, filePath, ['createFunction', 'models']));
+            return Err(new InvalidModelDefinitionError(modelName, filePath, ['createFunction', 'data', 'models']));
         }
     }
 
-    const debounce = normalizeDebounce(params.debounce, { filePath, basename });
-    if (debounce instanceof Error) {
-        return Err(debounce);
-    }
-
-    const outputNames = Object.keys(params.models ?? {});
+    const outputNames = Object.keys(models ?? {});
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
     const features = detectFeatures({ entryPoint: filePath });
 
@@ -319,8 +331,7 @@ export function parseFunction({
         type: 'function',
         name: params.name || basename,
         description: params.description || '',
-        triggers: params.triggers.map(toParsedTrigger),
-        ...(debounce !== undefined ? { debounce } : {}),
+        triggers: parsedTriggers,
         input: inputName,
         output: outputNames.length > 0 ? outputNames : null,
         scopes: params.scopes || [],
@@ -334,21 +345,20 @@ export function parseFunction({
 }
 
 function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
-    const parsed: ParsedFunctionTrigger = { type: trigger.type };
-    if (trigger.type === 'http') {
+    const parsed: ParsedFunctionTrigger = { kind: trigger.kind };
+    if (trigger.kind === 'http') {
         if (trigger.name !== undefined) {
             parsed.name = trigger.name;
         }
-        if (trigger.scope !== undefined) {
-            parsed.scope = trigger.scope;
+        if (trigger.ingress !== undefined) {
+            parsed.ingress = trigger.ingress;
         }
-        parsed.hasIngressHooks = Array.isArray(trigger.ingressHooks) && trigger.ingressHooks.length > 0;
-    } else if (trigger.type === 'schedule') {
+    } else if (trigger.kind === 'schedule') {
         if (trigger.name !== undefined) {
             parsed.name = trigger.name;
         }
         parsed.schedule = trigger.schedule;
-    } else if (trigger.type === 'event') {
+    } else if (trigger.kind === 'event') {
         if (trigger.name !== undefined) {
             parsed.name = trigger.name;
         }
@@ -360,12 +370,12 @@ function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
 const MAX_DEBOUNCE_KEY_SOURCES = 10;
 
 /**
- * Normalizes the function-level debounce config: dedups composite key sources ad caps them
+ * Normalizes an http trigger's debounce config: dedups composite key sources and caps them.
  */
 function normalizeDebounce(
-    debounce: DebounceConfig | undefined,
+    debounce: DebounceOptions | undefined,
     { filePath, basename }: { filePath: string; basename: string }
-): ParsedNangoFunction['debounce'] | Error {
+): ParsedFunctionTrigger['debounce'] | Error {
     if (debounce === undefined || debounce.key === undefined || !Array.isArray(debounce.key)) {
         return debounce;
     }

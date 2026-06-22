@@ -131,25 +131,34 @@ export interface ParsedNangoSync {
 
 /** Serializable view of a function trigger (the executable hooks live in the deployed file body). */
 export interface ParsedFunctionTrigger {
-    type: 'http' | 'schedule' | 'event';
-    /** http trigger: URL path segment. schedule/event triggers: disambiguates multiple of the same type. */
+    kind: 'http' | 'schedule' | 'event';
+    /** http trigger: URL path segment. schedule/event triggers: disambiguates multiple of the same kind. */
     name?: string;
-    /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
-    scope?: 'integration' | 'connection';
     /** schedule trigger. */
     schedule?: string;
     /** event trigger. */
     event?: string;
-    /** Whether the trigger ships one or more `ingressHooks` (executed at ingress). */
-    hasIngressHooks?: boolean;
-}
-
-export interface ParsedNangoFunction {
-    name: string;
-    type: 'function';
-    description: string;
-    triggers: ParsedFunctionTrigger[];
-    /** Function-level ingress coalescing config (the window/key). Applies to concurrent triggers (today: http). */
+    /**
+     * http trigger: declarative ingress validation/challenge. Nango injects and runs the
+     * implementation at ingress (no author code runs inline). Discriminated on `type`.
+     */
+    ingress?: {
+        validation?: {
+            type: 'hmac';
+            algorithm: 'sha1' | 'sha256' | 'sha512';
+            header: string;
+            encoding: 'base64' | 'hex';
+            prefix?: string;
+            secret: { source: 'integrationConfig'; key: string };
+        };
+        challenge?: {
+            type: 'echo';
+            token: { in: 'query' | 'body' | 'header'; key: string };
+            verify?: { in: 'query' | 'body' | 'header'; key: string; secret: { source: 'integrationConfig'; key: string } };
+            respond?: { status?: number; contentType?: 'text/plain' | 'application/json' };
+        };
+    };
+    /** http trigger: ingress coalescing config (the window/key). */
     debounce?: {
         /** One source, or an array combined into a composite key. */
         key?: { body: string } | { header: string } | ({ body: string } | { header: string })[];
@@ -158,6 +167,13 @@ export interface ParsedNangoFunction {
         maxEntities?: number;
         payloadMode?: 'latest' | 'all';
     };
+}
+
+export interface ParsedNangoFunction {
+    name: string;
+    type: 'function';
+    description: string;
+    triggers: ParsedFunctionTrigger[];
     input: string | null;
     output: string[] | null;
     scopes: string[];

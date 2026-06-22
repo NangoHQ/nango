@@ -463,7 +463,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         createAction: { type: 'action', varName: 'action' },
         createSync: { type: 'sync', varName: 'sync' },
         createOnEvent: { type: 'onEvent', varName: 'onEvent' },
-        createFunction: { type: 'function', varName: 'fn' },
+        // `createFunction` is intentionally omitted: it is not a public authoring primitive yet
         createWebhook: { type: 'function', varName: 'webhook' }
     } as const satisfies Record<string, { type: string; varName: string }>;
 
@@ -505,7 +505,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         plugin: ({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> => {
             // Properties that `createWebhook()` lifts into its implicit `http` trigger at runtime.
             // Keep in sync with `createWebhook()` in runner-sdk/lib/scripts.ts.
-            const webhookTriggerFields = new Set(['name', 'scope', 'ingressHooks']);
+            const webhookTriggerFields = new Set(['name', 'ingress', 'debounce']);
 
             /**
              * `createWebhook()` is sugar for a function with a single implicit `http` trigger.
@@ -514,7 +514,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
              * and the compiled function ends up with no triggers at all.
              */
             function buildWebhookObject(arg: babel.types.ObjectExpression): babel.types.ObjectExpression {
-                const triggerProps: babel.types.ObjectExpression['properties'] = [t.objectProperty(t.identifier('type'), t.stringLiteral('http'))];
+                const triggerProps: babel.types.ObjectExpression['properties'] = [t.objectProperty(t.identifier('kind'), t.stringLiteral('http'))];
                 const topProps: babel.types.ObjectExpression['properties'] = [];
                 for (const prop of arg.properties) {
                     if (t.isObjectProperty(prop) && !prop.computed && t.isIdentifier(prop.key) && webhookTriggerFields.has(prop.key.name)) {
