@@ -9,6 +9,7 @@ import { expectAccessibleInBothThemes } from '@/test/a11y';
 import { apiKeyProvider, authResultFixture, integrationFixture } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 
+import type * as EventsModule from '@/lib/events';
 import type Nango from '@nangohq/frontend';
 
 vi.mock('@/lib/nango', () => ({ useNango: vi.fn() }));
@@ -16,7 +17,7 @@ vi.mock('@/lib/nango', () => ({ useNango: vi.fn() }));
 // Spy `triggerClose` so the Finish test can assert activation directly (it posts to the parent
 // frame, which isn't observable from inside Vitest's test iframe). Other exports stay real.
 vi.mock('@/lib/events', async (importActual) => {
-    const actual = await importActual<typeof import('@/lib/events')>();
+    const actual = await importActual<typeof EventsModule>();
     return { ...actual, triggerClose: vi.fn() };
 });
 

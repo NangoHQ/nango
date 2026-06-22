@@ -6,10 +6,12 @@ import { expectAccessibleInBothThemes } from '@/test/a11y';
 import { integrationsListResponse, providerResponse } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 
+import type * as ApiModule from '@/lib/api';
+
 // `getIntegrations` feeds the suspense query; `getProvider` is hit when a card is activated.
 // Keep `APIError` real so the component's error handling keeps working.
 vi.mock('@/lib/api', async (importActual) => {
-    const actual = await importActual<typeof import('@/lib/api')>();
+    const actual = await importActual<typeof ApiModule>();
     return { ...actual, getIntegrations: vi.fn(), getProvider: vi.fn() };
 });
 
