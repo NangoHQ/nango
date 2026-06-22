@@ -2,13 +2,11 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
-import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
-import { Dot } from '../../../../components/ui/Dot.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dialog } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components/ui/StyledLink.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/Table';
@@ -19,6 +17,9 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
+import { Dot } from '../../../../components/ui/Dot.js';
+import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 
 import type { PlanDefinitionList } from '../types.js';
 import type { StripeError } from '@/utils/stripe.js';
@@ -137,14 +138,14 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     const ButtonComponent = useMemo(() => {
         if (active) {
             return (
-                <Button disabled variant="secondary" className="w-27">
+                <Button disabled variant="outline" className="w-27">
                     Current plan
                 </Button>
             );
         }
         if (isFuture) {
             return (
-                <Button disabled variant="secondary" className="w-27">
+                <Button disabled variant="outline" className="w-27">
                     Scheduled
                 </Button>
             );
@@ -180,7 +181,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
                         {(allowed) => (
-                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="destructive" className="w-27" disabled={!allowed}>
+                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="danger" className="w-27" disabled={!allowed}>
                                 Downgrade
                             </Button>
                         )}
@@ -196,7 +197,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         }
 
         return (
-            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/demo" target="_blank">
+            <ButtonLink variant="outline" className="w-27" to="https://nango.dev/demo" target="_blank">
                 Contact us
             </ButtonLink>
         );
@@ -408,7 +409,7 @@ const PlanChangeDialog: React.FC<{
                 )}
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button variant="primary" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
                         {loading && <Loader className="size-4 animate-spin" />}

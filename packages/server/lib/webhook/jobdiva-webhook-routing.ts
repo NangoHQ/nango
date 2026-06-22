@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
 
 import { NangoError } from '@nangohq/shared';
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
-import type { WebhookHandler, jobdivaWebhookResponse } from './types.js';
+import type { jobdivaWebhookResponse, WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.JobDiva');
 

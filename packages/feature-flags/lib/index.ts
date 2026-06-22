@@ -1,48 +1,48 @@
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import { buildFeatureFlagsClient } from './client.js';
 import { envs } from './env.js';
+import { buildFlags } from './flags.js';
 import { NoopProvider } from './providers/noop.js';
 import { UnleashProvider } from './providers/unleash.js';
 
 import type { FeatureFlagsClient } from './client.js';
+import type { Flags } from './flags.js';
 import type { Provider } from '@openfeature/server-sdk';
 
 export type { FeatureFlagsClient } from './client.js';
 export type { FlagContext } from './types.js';
-export { FLAGS, type FlagKey } from './registry.js';
+export type { Flags } from './flags.js';
 
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
 let destroyPromise: Promise<void> | undefined;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+let flagsInstance: Flags | undefined;
 
 const logger = getLogger('FeatureFlags');
+const noopClient = buildFeatureFlagsClient(new NoopProvider());
 
-function cancelReconnect(): void {
-    if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = undefined;
+/**
+ * Initialize the typed flag facade for this process. Call once during service
+ * startup. Fail-open: uses flag defaults when the client cannot be created.
+ */
+export async function initialize(): Promise<void> {
+    let client: FeatureFlagsClient;
+    try {
+        client = await getFeatureFlagsClient();
+    } catch {
+        metrics.increment(metrics.Types.FEATURE_FLAGS_CLIENT_UNAVAILABLE, 1);
+        client = noopClient;
     }
+    flagsInstance = buildFlags(client);
 }
 
-function scheduleReconnect(): void {
-    if (reconnectTimer) return;
-    if (envs.NANGO_FLAG_PROVIDER !== 'unleash' || !envs.NANGO_UNLEASH_URL) return;
-
-    reconnectTimer = setTimeout(() => {
-        reconnectTimer = undefined;
-        if (clientPromise || destroyPromise) return;
-        void getFeatureFlagsClient()
-            .then(() => {
-                logger.info('Feature flags client reconnected to Unleash');
-            })
-            .catch(() => {
-                scheduleReconnect();
-            });
-    }, envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS);
-    if (typeof reconnectTimer.unref === 'function') {
-        reconnectTimer.unref();
+/** Typed flag facade. Requires {@link initialize} to have completed. */
+export function getFlags(): Flags {
+    if (!flagsInstance) {
+        throw new Error('Feature flags not initialized. Call initialize() first.');
     }
+    return flagsInstance;
 }
 
 export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
@@ -60,25 +60,6 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
             throw err;
         });
     return clientPromise;
-}
-
-export async function destroy(): Promise<void> {
-    cancelReconnect();
-    if (destroyPromise) return destroyPromise;
-    const promise = clientPromise;
-    if (!promise) return;
-    destroyPromise = (async () => {
-        try {
-            logger.info('Destroying feature flags client');
-            const client = await promise;
-            await client.destroy();
-        } finally {
-            clientPromise = undefined;
-            destroyPromise = undefined;
-            cancelReconnect();
-        }
-    })();
-    return destroyPromise;
 }
 
 async function createClient(): Promise<FeatureFlagsClient> {
@@ -109,4 +90,60 @@ async function buildProvider(): Promise<Provider> {
     }
     logger.info('Using noop feature-flags provider');
     return new NoopProvider();
+}
+
+function cancelReconnect(): void {
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = undefined;
+    }
+}
+
+function scheduleReconnect(): void {
+    if (reconnectTimer) return;
+    if (envs.NANGO_FLAG_PROVIDER !== 'unleash' || !envs.NANGO_UNLEASH_URL) return;
+
+    reconnectTimer = setTimeout(() => {
+        reconnectTimer = undefined;
+        if (clientPromise || destroyPromise) return;
+        void getFeatureFlagsClient()
+            .then((client) => {
+                setActiveClient(client);
+                logger.info('Feature flags client reconnected to Unleash');
+                metrics.increment(metrics.Types.FEATURE_FLAGS_CLIENT_RECONNECTED, 1);
+            })
+            .catch(() => {
+                scheduleReconnect();
+            });
+    }, envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS);
+    if (typeof reconnectTimer.unref === 'function') {
+        reconnectTimer.unref();
+    }
+}
+
+function setActiveClient(client: FeatureFlagsClient): void {
+    if (!flagsInstance) {
+        return;
+    }
+    flagsInstance = buildFlags(client);
+}
+
+export async function destroy(): Promise<void> {
+    cancelReconnect();
+    flagsInstance = undefined;
+    if (destroyPromise) return destroyPromise;
+    const promise = clientPromise;
+    if (!promise) return;
+    destroyPromise = (async () => {
+        try {
+            logger.info('Destroying feature flags client');
+            const client = await promise;
+            await client.destroy();
+        } finally {
+            clientPromise = undefined;
+            destroyPromise = undefined;
+            cancelReconnect();
+        }
+    })();
+    return destroyPromise;
 }

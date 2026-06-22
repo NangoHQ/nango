@@ -1,6 +1,6 @@
 import {
-    FunctionError,
     createFunctionDeployment,
+    FunctionError,
     markFunctionDeploymentFailed,
     markFunctionDeploymentRunning,
     prepareAsyncDeploy,

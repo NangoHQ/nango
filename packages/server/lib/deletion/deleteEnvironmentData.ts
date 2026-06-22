@@ -10,7 +10,7 @@ import type { DBEndUser, DBEnvironment, DBEnvironmentVariable, DBExternalWebhook
 
 export async function deleteEnvironmentData(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
-    logger.info('Deleting environment...', environment.id, environment.name);
+    logger.info('Deleting environment...', { environmentId: environment.id, environmentName: environment.name });
 
     await batchDelete({
         ...opts,
@@ -36,7 +36,7 @@ export async function deleteEnvironmentData(environment: DBEnvironment, opts: Ba
 
 async function deleteEndUserData(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
-    logger.info('Deleting all end users in environment...', environment.id, environment.name);
+    logger.info('Deleting all end users in environment...', { environmentId: environment.id, environmentName: environment.name });
 
     await batchDelete({
         ...opts,
@@ -56,7 +56,7 @@ async function deleteEndUserData(environment: DBEnvironment, opts: BatchDeleteSh
 
 async function deleteExternalWebhooksByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
-    logger.info('Deleting all webhooks in environment...', environment.id, environment.name);
+    logger.info('Deleting all webhooks in environment...', { environmentId: environment.id, environmentName: environment.name });
 
     await batchDelete({
         ...opts,
@@ -74,7 +74,7 @@ async function deleteExternalWebhooksByEnvironmentId(environment: DBEnvironment,
 
 async function deleteSlackNotificationsByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
-    logger.info('Deleting all slack notifications in environment...', environment.id, environment.name);
+    logger.info('Deleting all slack notifications in environment...', { environmentId: environment.id, environmentName: environment.name });
 
     await batchDelete({
         ...opts,
@@ -94,7 +94,7 @@ async function deleteSlackNotificationsByEnvironmentId(environment: DBEnvironmen
 
 async function deleteEnvironmentVariablesByEnvironmentId(environment: DBEnvironment, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
-    logger.info('Deleting all environment variables in environment...', environment.id, environment.name);
+    logger.info('Deleting all environment variables in environment...', { environmentId: environment.id, environmentName: environment.name });
 
     await batchDelete({
         ...opts,

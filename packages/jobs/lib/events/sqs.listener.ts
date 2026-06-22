@@ -1,6 +1,6 @@
 import { DeleteMessageCommand, GetQueueUrlCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import type { EventListener, QueueMessage } from './listener.js';
 import type { Result } from '@nangohq/utils';

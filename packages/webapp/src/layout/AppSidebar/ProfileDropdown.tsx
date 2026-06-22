@@ -2,7 +2,7 @@ import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRou
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
 import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
@@ -11,6 +11,7 @@ import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
+import { NavigationItem, navigationItemVariants } from './NavigationItem';
 
 export const ProfileDropdown: React.FC = () => {
     const { data: metaData } = useMeta();
@@ -65,48 +66,37 @@ export const ProfileDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="group/profile cursor-pointer h-fit w-full p-3 inline-flex items-center justify-between bg-surface-overlay hover:bg-state-hover data-[state=open]:bg-surface-overlay border-t-[0.5px] border-border-muted">
-                        <div className="inline-flex gap-2 items-center">
-                            <div className="size-10 flex items-center justify-center rounded bg-surface-canvas border border-border-muted text-text-strong leading-5">
+                    <DropdownMenuTrigger className="group/profile flex h-14 w-full cursor-pointer items-center justify-between border-t-[0.5px] border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
+                        <div className="flex min-w-0 items-center gap-3">
+                            <div className="type-text-regular-xs flex size-8 shrink-0 items-center justify-center rounded-full border-[0.5px] border-border-default bg-surface-overlay text-text-default">
                                 {initials}
                             </div>
-                            <div className="flex flex-col gap-1 items-start">
-                                <span className="text-body-medium-semi leading-4 text-text-strong truncate max-w-28 ">{user?.name}</span>
-                                <span className="text-body-small-regular leading-3 text-text-secondary pb-px truncate max-w-28">{user?.email}</span>
+                            <div className="flex min-w-0 flex-col items-start">
+                                <span className="type-text-medium-sm max-w-28 truncate text-text-default">{user?.name}</span>
+                                <span className="type-text-regular-xs max-w-28 truncate text-text-muted">{user?.email}</span>
                             </div>
                         </div>
-                        <ChevronsUpDown className="size-4.5 text-text-muted group-hover/profile:text-text-secondary group-active/profile:text-text-strong" />
+                        <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary group-hover/profile:text-icon-default" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" alignOffset={0} side="right" sideOffset={0} className="w-50 p-2">
+                    <DropdownMenuContent
+                        align="end"
+                        alignOffset={0}
+                        side="right"
+                        sideOffset={0}
+                        className="w-50 rounded-none border-[0.5px] border-border-default p-1"
+                    >
                         {items.map((item, index) => (
-                            <DropdownMenuItem
-                                key={index}
-                                onSelect={() => navigate(item.href)}
-                                className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-state-hover hover:text-text-strong"
-                            >
-                                <item.icon className="size-4 text-text-secondary group-hover:text-text-strong" />
-                                <span>{item.label}</span>
+                            <DropdownMenuItem key={index} onSelect={() => navigate(item.href)} className={navigationItemVariants()}>
+                                <NavigationItem icon={<item.icon />}>{item.label}</NavigationItem>
                             </DropdownMenuItem>
                         ))}
                         {isDevToolsEnabled && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onSelect={toggleDevPanel}
-                                    className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-state-hover hover:text-text-strong"
-                                >
-                                    <SlidersHorizontal className="size-4 text-text-secondary group-hover:text-text-strong" />
-                                    <span>Dev Tools</span>
-                                </DropdownMenuItem>
-                            </>
+                            <DropdownMenuItem onSelect={toggleDevPanel} className={navigationItemVariants()}>
+                                <NavigationItem icon={<SlidersHorizontal />}>Dev Tools</NavigationItem>
+                            </DropdownMenuItem>
                         )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onSelect={() => signout()}
-                            className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-state-hover hover:text-text-strong"
-                        >
-                            <LogOut className="size-4 text-text-secondary group-hover:text-text-strong" />
-                            <span>Log Out</span>
+                        <DropdownMenuItem onSelect={() => signout()} className={navigationItemVariants()}>
+                            <NavigationItem icon={<LogOut />}>Log out</NavigationItem>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

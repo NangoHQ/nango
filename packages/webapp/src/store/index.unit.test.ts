@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { useStore } from './index';
+import { defaultPlaygroundState, usePlaygroundStore } from './playground';
+
 const storageState = vi.hoisted(() => {
     const localStore: Record<string, string> = {};
     const sessionStore: Record<string, string> = {};
@@ -36,9 +39,6 @@ const storageState = vi.hoisted(() => {
 
     return { localStore, sessionStore };
 });
-
-import { useStore } from './index';
-import { defaultPlaygroundState, usePlaygroundStore } from './playground';
 
 describe('useStore', () => {
     afterEach(() => {

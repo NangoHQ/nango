@@ -26,6 +26,7 @@ import { getConnectSession } from './controllers/connect/getSession.js';
 import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
 import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
+import connectionController from './controllers/connection.controller.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
@@ -33,7 +34,6 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
-import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
@@ -139,7 +139,10 @@ publicAPI.use(
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
-const upload = multer({ storage: multer.memoryStorage() });
+type ExtendedMulterLimits = multer.Options['limits'] & {
+    fieldNestingDepth?: number;
+};
+const upload = multer({ storage: multer.memoryStorage(), limits: { fieldNestingDepth: 50 } as ExtendedMulterLimits });
 
 const publicAPICorsHandler = cors({
     maxAge: 600,

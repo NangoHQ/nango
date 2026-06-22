@@ -60,6 +60,11 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
             label: getMetricLabel('webhook_forwards'),
             usage: usage.value.webhook_forwards.current,
             limit: plan.webhook_forwards_max
+        },
+        data_transfer: {
+            label: getMetricLabel('data_transfer'),
+            usage: usage.value.data_transfer.current,
+            limit: null
         }
     };
 

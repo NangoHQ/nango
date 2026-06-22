@@ -3,13 +3,14 @@ import { TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Label } from '@/components/ui/Label';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
 import { Input } from '../../../components/ui/Input';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { Label } from '@/components/ui/Label';
 
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),
@@ -81,9 +82,11 @@ export const ImpersonateForm: React.FC = () => {
                             <span>Impersonating an account will allow you to login as that account and perform actions on their behalf.</span>
                         </AlertDescription>
                     </Alert>
-                    <Button variant="destructive" className="self-end">
-                        Impersonate
-                    </Button>
+                    <div className="self-end">
+                        <Button type="submit" variant="danger">
+                            Impersonate
+                        </Button>
+                    </div>
                     {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
                 </form>
             </Form>

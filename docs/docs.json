@@ -79,6 +79,10 @@
   },
   "redirects": [
     {
+      "source": "/integrations/all/snowflake",
+      "destination": "/api-integrations/snowflake"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1000,6 +1004,7 @@
               "api-integrations/bird",
               "api-integrations/buffer",
               "integrations/all/boldsign",
+              "api-integrations/boondmanager",
               "integrations/all/booking-com",
               "api-integrations/box",
               "integrations/all/braintree",
@@ -1390,6 +1395,7 @@
               "integrations/all/namely-pat",
               "api-integrations/nerdio",
               "integrations/all/netsuite",
+              "api-integrations/netsuite-client-credentials",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
               "api-integrations/nexthink",
@@ -1608,7 +1614,7 @@
               "integrations/all/smugmug",
               "integrations/all/snipe-it",
               "integrations/all/snapchat",
-              "integrations/all/snowflake",
+              "api-integrations/snowflake",
               "integrations/all/snowflake-jwt",
               "api-integrations/sophos-central",
               "integrations/all/splitwise",

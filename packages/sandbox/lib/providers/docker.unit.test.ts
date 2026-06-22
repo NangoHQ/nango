@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DockerSandboxProvider } from './docker.js';
+
 const mocks = vi.hoisted(() => ({
     execDockerFileAsync: vi.fn(),
     isExecTimeoutError: vi.fn(),
@@ -15,8 +17,6 @@ vi.mock('./docker-utils.js', () => ({
     rewriteDockerHostForLocalhost: mocks.rewriteDockerHostForLocalhost,
     writeContainerFile: mocks.writeContainerFile
 }));
-
-import { DockerSandboxProvider } from './docker.js';
 
 describe('DockerSandboxProvider', () => {
     beforeEach(() => {

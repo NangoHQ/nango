@@ -3,13 +3,13 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { usePermissions } from '@/hooks/usePermissions';
 
 export const AutoIdlingBanner: React.FC = () => {
     const { toast } = useToast();

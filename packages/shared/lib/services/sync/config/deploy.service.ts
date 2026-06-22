@@ -2,8 +2,6 @@ import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
-import { getSyncAndActionConfigByParams, increment } from './config.service.js';
-import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
 import { resolveLocalFileName } from '../../../utils/utils.js';
 import configService from '../../config.service.js';
@@ -11,13 +9,15 @@ import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import remoteFileService from '../../file/remote.service.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
+import { getSyncAndActionConfigByParams, increment } from './config.service.js';
+import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
-    CLIDeployFlowConfig,
     CleanedIncomingFlowConfig,
+    CLIDeployFlowConfig,
     DBEnvironment,
     DBSyncConfig,
     DBSyncConfigInsert,

@@ -2,10 +2,10 @@ import { report } from '@nangohq/utils';
 
 import { LogContext, LogContextOrigin, LogContextStateless } from '../client.js';
 import { envs } from '../env.js';
+import { BufferTransport } from '../transport.js';
 import { logger } from '../utils.js';
 import { getFormattedOperation } from './helpers.js';
 import { createOperation } from './operations.js';
-import { BufferTransport } from '../transport.js';
 
 import type { AdditionalOperationData } from './helpers.js';
 import type { OperationRow, OperationRowInsert } from '@nangohq/types';

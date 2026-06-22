@@ -2,7 +2,8 @@ import { AddressElement, Elements, PaymentElement, useElements, useStripe } from
 import { Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
@@ -170,11 +171,11 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
             </div>
             <DialogFooter>
                 <DialogClose asChild>
-                    <Button variant="secondary" size="lg">
+                    <Button variant="outline" size="xl">
                         Cancel
                     </Button>
                 </DialogClose>
-                <Button type="submit" disabled={loading} variant={'primary'} size="lg">
+                <Button type="submit" disabled={loading} variant={'primary'} size="xl">
                     {loading && <Loader className="animate-spin" />}
                     Save payment method
                 </Button>

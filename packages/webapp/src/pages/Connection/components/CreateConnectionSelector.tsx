@@ -6,10 +6,14 @@ import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
-import { IntegrationDropdown } from './IntegrationDropdown';
-import { Button } from '../../../components/ui/Button';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { usePermissions } from '@/hooks/usePermissions';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
@@ -21,11 +25,7 @@ import { useStore } from '../../../store';
 import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { usePermissions } from '@/hooks/usePermissions';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { IntegrationDropdown } from './IntegrationDropdown';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -306,7 +306,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         {(allowed) => (
                                             <Button
                                                 onClick={onClickConnectUI}
-                                                size="lg"
+                                                size="xl"
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                             >
                                                 Authorize
@@ -326,8 +326,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         {(allowed) => (
                                             <Button
                                                 onClick={onClickShareConnectionLink}
-                                                size="lg"
-                                                variant="secondary"
+                                                size="xl"
+                                                variant="ghost"
                                                 loading={isShareLinkLoading}
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                             >

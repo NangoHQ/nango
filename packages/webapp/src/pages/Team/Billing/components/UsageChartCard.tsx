@@ -1,12 +1,12 @@
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
-import { BreakdownControls } from './BreakdownControls';
+import { ChartCard } from '@/components/patterns/chart';
+import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, metricsSupportingDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { ChartCard } from '@/components/patterns/chart';
-import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
+import { BreakdownControls } from './BreakdownControls';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { GlobalBreakdownSelection } from '../useGlobalBreakdown';

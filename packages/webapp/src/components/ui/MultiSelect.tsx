@@ -2,10 +2,11 @@ import debounce from 'lodash/debounce';
 import { Check, Search } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from './Button';
+import { Button } from '@nangohq/design-system';
+
+import { cn } from '@/utils/utils';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { cn } from '@/utils/utils';
 
 import type { ComboboxOption } from './Combobox';
 
@@ -133,7 +134,7 @@ export function MultiSelect<T extends string = string>({
                     loading={loading}
                     disabled={options.length === 0}
                     variant="ghost"
-                    size="lg"
+                    size="xl"
                     className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover')}
                 >
                     {label}{' '}

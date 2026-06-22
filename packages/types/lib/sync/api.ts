@@ -1,5 +1,5 @@
-import type { ReportedSyncJobStatus } from './index.js';
 import type { ApiError, Endpoint } from '../api.js';
+import type { ReportedSyncJobStatus } from './index.js';
 
 export type PostPublicTrigger = Endpoint<{
     Method: 'POST';

@@ -6,19 +6,19 @@ import { addMinutes } from 'date-fns';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
-import { LogRow } from './LogRow';
-import { useStore } from '../../../../store';
-import { apiFetch } from '../../../../utils/api';
-import { calculateTableSizing } from '../../../../utils/table';
-import { formatQuantity } from '../../../../utils/utils';
-import { ShowMessage } from '../Message/Show';
-import { columns, defaultLimit } from '../constants';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
+import { useStore } from '../../../../store';
+import { apiFetch } from '../../../../utils/api';
+import { calculateTableSizing } from '../../../../utils/table';
+import { formatQuantity } from '../../../../utils/utils';
+import { columns, defaultLimit } from '../constants';
+import { ShowMessage } from '../Message/Show';
+import { LogRow } from './LogRow';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
@@ -217,6 +217,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     {search && (
                         <InputGroupAddon align="inline-end">
                             <InputGroupButton
+                                label="Clear search"
                                 variant={'ghost'}
                                 size={'icon-xs'}
                                 onClick={() => {

@@ -1,13 +1,13 @@
 import { useCallback } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 
-import { REST_SERIES_KEY } from './usageChartColors';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
 import { formatQuantity } from '@/utils/utils';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
+import { REST_SERIES_KEY } from './usageChartColors';
 
+import type { ChartConfig } from '../../ui/Chart';
 import type { ChartSeries } from './types';
 import type { ChartInteractions } from './useChartInteractions';
-import type { ChartConfig } from '../../ui/Chart';
 import type { TooltipProps } from 'recharts';
 
 /** Day-of-month (UTC) for an axis tick: "2026-06-05" → 5. */

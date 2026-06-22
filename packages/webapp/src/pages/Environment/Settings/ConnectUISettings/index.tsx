@@ -3,11 +3,10 @@ import { Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
-import { ConnectUIPreview } from './components/ConnectUIPreview';
-import SettingsContent from '../components/SettingsContent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -21,6 +20,8 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
+import SettingsContent from '../components/SettingsContent';
+import { ConnectUIPreview } from './components/ConnectUIPreview';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { Theme } from '@nangohq/types';
@@ -201,16 +202,17 @@ export const ConnectUISettings = () => {
                             {([canSubmit, isDirty]) => (
                                 <PermissionGate asChild condition={canManageConnectUI}>
                                     {(allowed) => (
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            size="sm"
-                                            className="self-start"
-                                            disabled={!canSubmit || !isDirty || !allowed}
-                                            loading={isUpdatingConnectUISettings}
-                                        >
-                                            Save
-                                        </Button>
+                                        <div className="self-start">
+                                            <Button
+                                                type="submit"
+                                                variant="primary"
+                                                size="md"
+                                                disabled={!canSubmit || !isDirty || !allowed}
+                                                loading={isUpdatingConnectUISettings}
+                                            >
+                                                Save
+                                            </Button>
+                                        </div>
                                     )}
                                 </PermissionGate>
                             )}
@@ -234,7 +236,7 @@ export const ConnectUISettings = () => {
                                 {!canCustomizeTheme && <ThemeColorPickers disabled={true} form={form} />}
                                 {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
 
-                                <ButtonLink to={`/team/billing#plans`} variant="secondary" target="_blank">
+                                <ButtonLink to={`/team/billing#plans`} variant="outline" target="_blank">
                                     Upgrade to &apos;Growth&apos; plan
                                 </ButtonLink>
                             </div>

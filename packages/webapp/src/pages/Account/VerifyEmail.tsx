@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { useToast } from '@/hooks/useToast';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { APIError } from '../../utils/api';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { StyledLink } from '@/components/ui/StyledLink';
-import { useToast } from '@/hooks/useToast';
 
 export function VerifyEmail() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -73,9 +74,11 @@ export function VerifyEmail() {
                 </span>
             </div>
 
-            <Button onClick={handleResendEmail} size="lg" className="w-full" loading={isResendingVerificationEmailByUuid}>
-                Resend email
-            </Button>
+            <div className="grid w-full">
+                <Button onClick={handleResendEmail} size="xl" loading={isResendingVerificationEmailByUuid}>
+                    Resend email
+                </Button>
+            </div>
         </DefaultLayout>
     );
 }

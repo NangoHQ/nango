@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Ok } from '@nangohq/utils';
+
+import { getRunners } from '../../runner/runner.js';
+import { abortTaskWithId } from './abort.js';
+
 vi.mock('@nangohq/kvstore', () => ({
     getKVStore: vi.fn(() => Promise.resolve({ set: vi.fn() }))
 }));
@@ -19,11 +24,6 @@ vi.mock('../../logger.js', () => ({
         error: vi.fn()
     }
 }));
-
-import { Ok } from '@nangohq/utils';
-
-import { abortTaskWithId } from './abort.js';
-import { getRunners } from '../../runner/runner.js';
 
 describe('abortTaskWithId', () => {
     beforeEach(() => {
