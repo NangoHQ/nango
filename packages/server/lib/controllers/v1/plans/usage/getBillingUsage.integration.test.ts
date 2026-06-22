@@ -478,7 +478,7 @@ describe(`GET ${route}`, () => {
             expect(records.externalId).toBe('records');
         });
 
-        it('rejects filter + breakdown on the same metric (mutually exclusive)', async () => {
+        it('rejects filter + breakdown on the SAME dim (degenerate single-value split)', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
@@ -495,6 +495,87 @@ describe(`GET ${route}`, () => {
             isError(res.json);
             expect(res.res.status).toBe(400);
             expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('filter + breakdown on DIFFERENT dims (counter) — series sum to the filtered total', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['proxy'],
+                    filter: { proxy: 'integration_id:hubspot' },
+                    breakdown: { proxy: 'success' }
+                } as any
+            });
+            isSuccess(res.json);
+            const proxy = res.json.data.usage.proxy;
+            // Fixture hubspot proxy: 10 success + 5 failure (day0); salesforce's 8
+            // success (day1) is excluded by the filter. So the filtered total is 15,
+            // split by success into true=10 / false=5.
+            expect(proxy.total).toBe(15);
+            expect(proxy.breakdown).toBeDefined();
+            const byValue = Object.fromEntries(proxy.breakdown!.map((b) => [b.group!.value, b.total]));
+            expect(byValue['true']).toBe(10);
+            expect(byValue['false']).toBe(5);
+            // Headline must equal the sum of the stacked series.
+            const seriesSum = proxy.breakdown!.reduce((s, b) => s + b.total, 0);
+            expect(seriesSum).toBe(proxy.total);
+        });
+
+        it('filter + breakdown on DIFFERENT dims (AVG) — per-dim running averages stay additive to the filtered total', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    // environment_id:1 keeps every fixture row (all are env 1), so the
+                    // filtered global equals the unfiltered global (1100) — what we want
+                    // to assert is that re-breaking-down by integration_id within the
+                    // filter still decomposes that global additively across two groups.
+                    filter: { records: 'environment_id:1' },
+                    breakdown: { records: 'integration_id' }
+                } as any
+            });
+            isSuccess(res.json);
+            const records = res.json.data.usage.records;
+            expect(records.view_mode).toBe('cumulative');
+            expect(records.breakdown).toBeDefined();
+            const groups = records.breakdown!.map((b) => b.group!.value).sort();
+            expect(groups).toEqual(expect.arrayContaining(['hubspot', 'salesforce']));
+            // Filtered headline ≈ the unfiltered global running-average (1100), and the
+            // per-dim last-day running averages sum to it (shared filtered denominator).
+            expect(records.total).toBeCloseTo(1100, 5);
+            const seriesSum = records.breakdown!.reduce((s, b) => s + b.total, 0);
+            expect(seriesSum).toBeCloseTo(records.total, 5);
+        });
+
+        it('filter matches zero rows + breakdown — 200, empty breakdown; AVG metric still reports view_mode cumulative', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    filter: { records: 'integration_id:does-not-exist' },
+                    breakdown: { records: 'model' }
+                } as any
+            });
+            isSuccess(res.json);
+            const records = res.json.data.usage.records;
+            expect(records.breakdown).toEqual([]);
+            expect(records.total).toBe(0);
+            expect(records.view_mode).toBe('cumulative');
         });
 
         it('rejects an unknown filter dimension', async () => {

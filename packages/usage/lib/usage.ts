@@ -590,9 +590,10 @@ export class UsageTracker implements IUsageTracker {
             // Override CH `max_execution_time` for every fan-out query. The
             // shadow path uses this so an abandoned race doesn't keep CH busy.
             maxExecutionSeconds?: number;
-            // Per-metric row-level filter. Mutually exclusive with `breakdown`
-            // on the same metric — the controller rejects the combination
-            // before reaching this method.
+            // Per-metric row-level filter. May combine with `breakdown` on the
+            // same metric when the dimensions differ (drill-in: filter to one
+            // value, then re-break-down by another dim); the controller rejects
+            // only the degenerate same-dim combination.
             filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
         }
     ): Promise<Result<BillingUsageMetrics>> {
@@ -613,33 +614,40 @@ export class UsageTracker implements IUsageTracker {
         // the controller's discriminated zod schema before we get here.
         const filterFor = <M extends UsageMetric>(m: M): { dimension: BreakdownDimensions[M]; value: string } | undefined =>
             filter?.[m] as { dimension: BreakdownDimensions[M]; value: string } | undefined;
+        // Spread helper so a filter can ride along with a breakdown call when
+        // both are set for a metric (different dims) — the drill-in "filtered +
+        // re-broken-down" view. The SQL applies the filter WHERE-clause inside
+        // the breakdown branch, so the two compose; the controller rejects only
+        // the degenerate same-dim combination.
+        const filterOpt = <M extends UsageMetric>(m: M): { filter: { dimension: BreakdownDimensions[M]; value: string } } | Record<string, never> => {
+            const f = filterFor(m);
+            return f ? { filter: f } : {};
+        };
 
         // Base calls — `dimension: 'none'` is valid for every variant.
         // Filter forces a cast to the discriminated union because TS can't
         // narrow `BreakdownDimensions[M]` while iterating a union-typed `m`;
         // safe because controller-side zod validates the (metric, dim) pair.
         const counterBaseP = Promise.all(
-            counterNoDim.map((m) => {
-                const f = filterFor(m);
-                return ch
-                    .getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...(f ? { filter: f } : {}), ...maxExecOpt } as GetDailyCounterQuery)
-                    .then((r) => [m, r] as const);
-            })
+            counterNoDim.map((m) =>
+                ch
+                    .getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...filterOpt(m), ...maxExecOpt } as GetDailyCounterQuery)
+                    .then((r) => [m, r] as const)
+            )
         );
         const avgBaseP = Promise.all(
-            avgNoDim.map((m) => {
-                const f = filterFor(m);
-                return ch
+            avgNoDim.map((m) =>
+                ch
                     .getDailySumAndBatches({
                         accountId,
                         metric: m,
                         dimension: 'none',
                         timeframe,
-                        ...(f ? { filter: f } : {}),
+                        ...filterOpt(m),
                         ...maxExecOpt
                     } as GetDailySumAndBatchesQuery)
-                    .then((r) => [m, r] as const);
-            })
+                    .then((r) => [m, r] as const)
+            )
         );
 
         // Breakdown calls — unrolled per-metric so `metric: '<literal>'` picks
@@ -649,7 +657,7 @@ export class UsageTracker implements IUsageTracker {
         const counterBreakdownCalls = [
             inScope('proxy') && breakdown?.proxy
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt, ...maxExecOpt })
+                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt, ...maxExecOpt, ...filterOpt('proxy') })
                       .then((r) => ['proxy' as const, r] as const)
                 : null,
             inScope('function_executions') && breakdown?.function_executions
@@ -660,13 +668,22 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.function_executions,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt
+                          ...maxExecOpt,
+                          ...filterOpt('function_executions')
                       })
                       .then((r) => ['function_executions' as const, r] as const)
                 : null,
             inScope('function_logs') && breakdown?.function_logs
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'function_logs', dimension: breakdown.function_logs, timeframe, ...topOpt, ...maxExecOpt })
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'function_logs',
+                          dimension: breakdown.function_logs,
+                          timeframe,
+                          ...topOpt,
+                          ...maxExecOpt,
+                          ...filterOpt('function_logs')
+                      })
                       .then((r) => ['function_logs' as const, r] as const)
                 : null,
             inScope('function_compute_gbms') && breakdown?.function_compute_gbms
@@ -677,13 +694,22 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.function_compute_gbms,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt
+                          ...maxExecOpt,
+                          ...filterOpt('function_compute_gbms')
                       })
                       .then((r) => ['function_compute_gbms' as const, r] as const)
                 : null,
             inScope('webhook_forwards') && breakdown?.webhook_forwards
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'webhook_forwards', dimension: breakdown.webhook_forwards, timeframe, ...topOpt, ...maxExecOpt })
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'webhook_forwards',
+                          dimension: breakdown.webhook_forwards,
+                          timeframe,
+                          ...topOpt,
+                          ...maxExecOpt,
+                          ...filterOpt('webhook_forwards')
+                      })
                       .then((r) => ['webhook_forwards' as const, r] as const)
                 : null
         ].filter((p): p is NonNullable<typeof p> => p !== null);
@@ -692,12 +718,28 @@ export class UsageTracker implements IUsageTracker {
         const avgBreakdownCalls = [
             inScope('records') && breakdown?.records
                 ? ch
-                      .getDailySumAndBatches({ accountId, metric: 'records', dimension: breakdown.records, timeframe, ...topOpt, ...maxExecOpt })
+                      .getDailySumAndBatches({
+                          accountId,
+                          metric: 'records',
+                          dimension: breakdown.records,
+                          timeframe,
+                          ...topOpt,
+                          ...maxExecOpt,
+                          ...filterOpt('records')
+                      })
                       .then((r) => ['records' as const, r] as const)
                 : null,
             inScope('connections') && breakdown?.connections
                 ? ch
-                      .getDailySumAndBatches({ accountId, metric: 'connections', dimension: breakdown.connections, timeframe, ...topOpt, ...maxExecOpt })
+                      .getDailySumAndBatches({
+                          accountId,
+                          metric: 'connections',
+                          dimension: breakdown.connections,
+                          timeframe,
+                          ...topOpt,
+                          ...maxExecOpt,
+                          ...filterOpt('connections')
+                      })
                       .then((r) => ['connections' as const, r] as const)
                 : null
         ].filter((p): p is NonNullable<typeof p> => p !== null);
@@ -725,26 +767,34 @@ export class UsageTracker implements IUsageTracker {
         }
 
         // Breakdown-requested metrics: emit a BillingUsageMetric with empty
-        // top-level `usage` / `total: 0` and only the `breakdown` populated.
-        // The caller opted into the per-dim view; we don't synthesize a global.
+        // top-level `usage` and only the `breakdown` populated. `total` stays 0
+        // for an unfiltered breakdown (the caller opted into the per-dim view; we
+        // don't synthesize a global). When a filter is ALSO applied the panel is
+        // drilled into a single slice, so we surface the filtered global total —
+        // the sum across the top-N + 'rest' series — so the dashboard headline
+        // matches the stacked series. Counters: sum of per-series totals. AVG:
+        // the per-dim last-day running averages are additive to the global
+        // (shared denominator), so their sum is the filtered global monthly avg.
         for (const [metric, br] of counterBreakdowns) {
             if (br.isErr()) return Err(br.error);
+            const series = toCounterBillingMetricSeries(metric, br.value);
             result[metric] = {
                 externalId: metric,
-                total: 0,
+                total: filterFor(metric) ? series.reduce((sum, s) => sum + s.total, 0) : 0,
                 usage: [],
                 view_mode: 'periodic',
-                breakdown: toCounterBillingMetricSeries(metric, br.value)
+                breakdown: series
             };
         }
         for (const [metric, br] of avgBreakdowns) {
             if (br.isErr()) return Err(br.error);
+            const series = toRunningAvgUsage(br.value);
             result[metric] = {
                 externalId: metric,
-                total: 0,
+                total: filterFor(metric) ? series.reduce((sum, s) => sum + s.total, 0) : 0,
                 usage: [],
                 view_mode: 'cumulative',
-                breakdown: toRunningAvgUsage(br.value)
+                breakdown: series
             };
         }
         await resolveEnvironmentNamesInBreakdown(result, breakdown);
