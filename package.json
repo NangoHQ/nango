@@ -96,6 +96,9 @@
         "js-cookie": "3.0.8",
         "tmp": "0.2.7",
         "protobufjs": "7.6.4",
-        "esbuild": "0.28.1"
+        "esbuild": "0.28.1",
+        "@elastic/transport": {
+            "undici": "6.27.0"
+        }
     }
 }
