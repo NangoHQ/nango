@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
@@ -19,6 +17,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
+import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
+import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);

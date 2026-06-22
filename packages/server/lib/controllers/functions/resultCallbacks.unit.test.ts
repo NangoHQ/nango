@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { postFunctionDeploymentResult } from './deploy/postDeployResult.js';
+import { postFunctionDryrunResult } from './dryrun/postDryrunResult.js';
+
+import type { NextFunction, Request, Response } from 'express';
+
 const mocks = vi.hoisted(() => {
     class FunctionError extends Error {
         public readonly code: string;
@@ -45,11 +50,6 @@ vi.mock('@nangohq/sandbox', () => ({
         createSandboxApiKey: vi.fn()
     }
 }));
-
-import { postFunctionDeploymentResult } from './deploy/postDeployResult.js';
-import { postFunctionDryrunResult } from './dryrun/postDryrunResult.js';
-
-import type { NextFunction, Request, Response } from 'express';
 
 describe('function result callbacks', () => {
     beforeEach(() => {

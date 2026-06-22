@@ -6,7 +6,6 @@ import z from 'zod';
 
 import { Button } from '@nangohq/design-system';
 
-import { NangoProvidedInput } from '../NangoProvidedInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
@@ -15,6 +14,7 @@ import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { Label } from '@/components/ui/Label';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { NangoProvidedInput } from '../NangoProvidedInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 

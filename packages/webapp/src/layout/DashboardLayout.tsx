@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { AppSidebar } from './AppSidebar';
-import { SectionHeader } from './SectionHeader';
 import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
 import { Playground } from '@/features/Playground';
 import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
+import { AppSidebar } from './AppSidebar';
+import { SectionHeader } from './SectionHeader';
 
 interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     fullWidth?: boolean;

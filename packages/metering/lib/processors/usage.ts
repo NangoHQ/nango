@@ -1,8 +1,10 @@
+import tracer from 'dd-trace';
+
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
-import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
@@ -49,6 +51,17 @@ export class UsageProcessor {
     }
 
     public async process(event: UsageEvent): Promise<Result<void>> {
+        return tracer.trace<Promise<Result<void>>>('nango.metering.usage.process', async (span) => {
+            span.setTag('event_type', event.type);
+            const result = await this._process(event);
+            if (result.isErr()) {
+                span.setTag('error', result.error);
+            }
+            return result;
+        });
+    }
+
+    private async _process(event: UsageEvent): Promise<Result<void>> {
         try {
             switch (event.type) {
                 case 'usage.monthly_active_records': {
@@ -289,6 +302,13 @@ export class UsageProcessor {
                             }
                         }
                     ]);
+                    return Ok(undefined);
+                }
+                case 'usage.data_transfer': {
+                    const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
+                    metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
+                    metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
+                    this.clickhouse.add([event]);
                     return Ok(undefined);
                 }
                 default:

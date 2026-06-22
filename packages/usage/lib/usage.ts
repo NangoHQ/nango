@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
@@ -204,11 +204,14 @@ export class UsageTracker implements IUsageTracker {
         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.get(cacheKey);
         if (entry.isErr()) {
+            metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
             return Err(entry.error);
         }
-        if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+        const result = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+        if (result !== 'fresh') {
             void this.revalidate({ accountId, metric });
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result });
         return Ok({
             accountId,
             metric,
@@ -218,25 +221,28 @@ export class UsageTracker implements IUsageTracker {
 
     public async getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>> {
         const now = new Date();
-        const result: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
+        const results: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
         await Promise.all(
             Object.keys(usageMetrics).map(async (metric) => {
                 const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
                 const entry = await this.cache.get(cacheKey);
                 if (entry.isErr()) {
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
                     return;
                 }
-                if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+                const result = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+                if (result !== 'fresh') {
                     void this.revalidate({ accountId, metric: metric as UsageMetric });
                 }
-                result[metric as UsageMetric] = {
+                metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result });
+                results[metric as UsageMetric] = {
                     accountId,
                     metric: metric as UsageMetric,
                     current: entry.value?.count || 0
                 };
             })
         );
-        return Ok(result);
+        return Ok(results);
     }
 
     public async incr({
@@ -254,15 +260,18 @@ export class UsageTracker implements IUsageTracker {
         const { cacheKey, ttlMs } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.incr(cacheKey, { delta, ttlMs });
         if (entry.isErr()) {
+            metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'incr', metric, result: 'error' });
             return Err(entry.error);
         }
 
         // revalidate if:
         // - forced
         // - or the entry is stale
-        if (forceRevalidation || (entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime())) {
+        const stale = forceRevalidation || !!(entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime());
+        if (stale) {
             void this.revalidate({ accountId, metric });
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'incr', metric, result: stale ? 'stale' : 'fresh' });
 
         return Ok({
             accountId,
@@ -281,15 +290,41 @@ export class UsageTracker implements IUsageTracker {
         const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
         if (lock.isErr()) {
             // another revalidation is in progress, skip
+            span?.setTag('lock_acquired', false);
+            span?.finish();
             return Ok(undefined);
         }
+        span?.setTag('lock_acquired', true);
+        try {
+            return await this._revalidate({ accountId, metric, source, parentSpan: span });
+        } finally {
+            span?.finish();
+        }
+    }
+
+    private async _revalidate({
+        accountId,
+        metric,
+        source,
+        parentSpan
+    }: {
+        accountId: number;
+        metric: UsageMetric;
+        source: string;
+        parentSpan: ReturnType<typeof tracer.startSpan> | undefined;
+    }): Promise<Result<void>> {
+        const span = tracer.startSpan('nango.usage.revalidate.work', {
+            tags: { accountId, metric, source },
+            ...(parentSpan ? { childOf: parentSpan } : {})
+        });
         try {
             const now = new Date();
             switch (metric) {
                 case 'connections': {
                     const count = await connectionService.countByAccountId(accountId);
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, count);
+                    const res = await this.cache.overwrite(cacheKey, count);
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     return Ok(undefined);
                 }
                 case 'records': {
@@ -298,8 +333,15 @@ export class UsageTracker implements IUsageTracker {
                         throw count.error;
                     }
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, count.value);
+                    const res = await this.cache.overwrite(cacheKey, count.value);
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     span?.setTag('count', count.value);
+                    return Ok(undefined);
+                }
+                case 'data_transfer': {
+                    // Not yet tracked via Orb; write 0 so the cache entry exists and avoids a revalidate loop
+                    const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
+                    await this.cache.overwrite(cacheKey, 0);
                     return Ok(undefined);
                 }
                 case 'proxy':
@@ -317,7 +359,8 @@ export class UsageTracker implements IUsageTracker {
                     // update all billing-related metrics
                     for (const [metric, count] of Object.entries(billingUsage.value)) {
                         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
-                        await this.cache.overwrite(cacheKey, count);
+                        const res = await this.cache.overwrite(cacheKey, count);
+                        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     }
                     return Ok(undefined);
                 }
@@ -788,7 +831,8 @@ const sources: Record<UsageMetric, string> = {
     function_executions: 'billing:subscription:usage',
     function_compute_gbms: 'billing:subscription:usage',
     webhook_forwards: 'billing:subscription:usage',
-    function_logs: 'billing:subscription:usage'
+    function_logs: 'billing:subscription:usage',
+    data_transfer: 'billing:subscription:usage'
 };
 
 function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {

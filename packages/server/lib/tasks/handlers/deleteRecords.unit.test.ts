@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
+import { DeletionBudgetExceeded } from '../../deletion/batchDelete.js';
 
 // The task is a thin wrapper around deleteSyncRecords (mocked here).
 const deleteSyncRecords = vi.fn();
-vi.mock('../../crons/delete/deleteSyncRecords.js', () => ({
+vi.mock('../../deletion/deleteSyncRecords.js', () => ({
     deleteSyncRecords: (...args: unknown[]) => deleteSyncRecords(...args)
 }));
 

@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { defineTask } from '@nangohq/tasks';
 import { Err, Ok } from '@nangohq/utils';
 
-import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
-import { deleteSyncRecords } from '../../crons/delete/deleteSyncRecords.js';
+import { DeletionBudgetExceeded } from '../../deletion/batchDelete.js';
+import { deleteSyncRecords } from '../../deletion/deleteSyncRecords.js';
 import { tasks } from '../index.js';
 
 import type { Result } from '@nangohq/utils';

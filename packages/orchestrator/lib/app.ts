@@ -1,6 +1,6 @@
 import './tracer.js';
 
-import { DatabaseClient, Scheduler, defaultDatabaseClientOptions } from '@nangohq/scheduler';
+import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
 import { initSentry, once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';

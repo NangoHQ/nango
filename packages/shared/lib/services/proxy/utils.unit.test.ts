@@ -3,8 +3,8 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 import {
-    ProxyError,
     absoluteUrlFromRedirectRequestOptions,
     buildCanonicalParams,
     buildProxyBody,
@@ -14,10 +14,10 @@ import {
     enforceProxyOutboundUrlPolicy,
     getAxiosConfiguration,
     getProxyConfiguration,
+    ProxyError,
     proxyUsesConfigurableBaseUrlOverride
 } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
-import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 import type { InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 

@@ -7,8 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -22,6 +20,8 @@ import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { AuthBadge } from './components/AuthBadge';
+import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
 

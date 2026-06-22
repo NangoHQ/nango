@@ -3,10 +3,10 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import {
-    EndUserMapper,
     buildTagsFromEndUser,
     configService,
     connectionService,
+    EndUserMapper,
     getEncryptionManager,
     getProvider,
     githubAppClient,

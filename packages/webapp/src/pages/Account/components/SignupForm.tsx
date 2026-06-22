@@ -176,7 +176,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                         <FormField control={form.control} name="password" render={() => <Password autoComplete="new-password" />} />
 
-                        <Button type="submit" size="xl" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
                             {isPending ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </form>

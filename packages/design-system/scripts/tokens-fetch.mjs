@@ -14,7 +14,6 @@
  *   packages/design-system/tokens/tokens.json          raw Tokens Studio export
  *   packages/design-system/tokens/tokens.generated.css  CSS custom properties
  */
-
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';

@@ -2,6 +2,10 @@
 
 This package contains the Nango design system: design tokens, React components, and Storybook.
 
+## Adding a variant for a new look
+
+Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See `stories/StylingAndCustomization.mdx` for the full guide.
+
 ## Adding a new component
 
 Components are added on-demand when first needed in a real screen — don't add components speculatively.
@@ -170,11 +174,11 @@ Key rules:
 
 ### Step 4: Add a Storybook story
 
-Create `src/components/ui/<component-name>.stories.tsx` co-located with the component. Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
+Add the story to the top-level `stories/` dir as `stories/<ComponentName>.stories.tsx` (not co-located with the component). Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
-import { MyComponent } from './my-component';
+import { MyComponent } from '../src/components/ui/my-component';
 
 const meta: Meta<typeof MyComponent> = {
     title: 'Design System/Components/MyComponent',
@@ -215,6 +219,7 @@ src/
     cn.ts                  cn() helper: twMerge + clsx
   index.ts                 barrel — all public exports
   index.css                CSS entry (imports tokens.generated.css)
+stories/                   Storybook stories (*.stories.tsx) and MDX guides
 tokens/
   tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
   tokens.json              Tokens Studio export

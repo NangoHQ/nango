@@ -5,8 +5,6 @@ import React, { useRef } from 'react';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { ConnectUIPreview } from './components/ConnectUIPreview';
-import SettingsContent from '../components/SettingsContent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
@@ -22,6 +20,8 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
+import SettingsContent from '../components/SettingsContent';
+import { ConnectUIPreview } from './components/ConnectUIPreview';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { Theme } from '@nangohq/types';
@@ -202,16 +202,17 @@ export const ConnectUISettings = () => {
                             {([canSubmit, isDirty]) => (
                                 <PermissionGate asChild condition={canManageConnectUI}>
                                     {(allowed) => (
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            size="md"
-                                            className="self-start"
-                                            disabled={!canSubmit || !isDirty || !allowed}
-                                            loading={isUpdatingConnectUISettings}
-                                        >
-                                            Save
-                                        </Button>
+                                        <div className="self-start">
+                                            <Button
+                                                type="submit"
+                                                variant="primary"
+                                                size="md"
+                                                disabled={!canSubmit || !isDirty || !allowed}
+                                                loading={isUpdatingConnectUISettings}
+                                            >
+                                                Save
+                                            </Button>
+                                        </div>
                                     )}
                                 </PermissionGate>
                             )}

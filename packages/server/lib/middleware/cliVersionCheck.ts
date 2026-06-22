@@ -1,6 +1,6 @@
 import semver from 'semver';
 
-import { NANGO_VERSION, getLogger, report } from '@nangohq/utils';
+import { getLogger, NANGO_VERSION, report } from '@nangohq/utils';
 
 import type { ApiError } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';

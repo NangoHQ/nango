@@ -1,4 +1,4 @@
-import { Batcher, Err, Ok, flagHasUsage } from '@nangohq/utils';
+import { Batcher, Err, flagHasUsage, Ok } from '@nangohq/utils';
 
 import { envs } from './envs.js';
 import { BillingEventGrouping } from './grouping.js';

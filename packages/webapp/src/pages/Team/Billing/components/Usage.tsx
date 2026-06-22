@@ -1,15 +1,15 @@
 import { Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { UsageChartCard } from './UsageChartCard';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { useGlobalBreakdown } from '../useGlobalBreakdown';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
+import { useBreakdownEnabled } from '../useBreakdownEnabled';
+import { useGlobalBreakdown } from '../useGlobalBreakdown';
+import { UsageChartCard } from './UsageChartCard';
 
 import type { UsageMetric } from '@nangohq/types';
 

@@ -3,9 +3,9 @@ import { logContextGetter } from '@nangohq/logs';
 import { configService, enableScriptConfig, getSyncConfigById, productTracking, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationBody, validationParams } from './patchDisable.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+import { validationBody, validationParams } from './patchDisable.js';
 
 import type { PatchFlowEnable } from '@nangohq/types';
 

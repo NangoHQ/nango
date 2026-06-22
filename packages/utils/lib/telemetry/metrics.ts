@@ -39,8 +39,7 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    PROXY_REQUEST_SIZE_IN_BYTES = 'nango.server.proxy.request.sizeInBytes',
-    PROXY_RESPONSE_SIZE_IN_BYTES = 'nango.server.proxy.response.sizeInBytes',
+    DATA_TRANSFER = 'nango.dataTransfer',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
@@ -56,11 +55,6 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
-    RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES = 'nango.runner.uncontrolledFetch.request.sizeBytes',
-    RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES = 'nango.runner.uncontrolledFetch.response.sizeBytes',
-    RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.records.sent.sizeInBytes',
-    RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES = 'nango.runner.persist.records.received.sizeInBytes',
-    RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.logs.sent.sizeInBytes',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
@@ -156,12 +150,17 @@ export enum Types {
     BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED = 'nango.billing.usage.capping.shadow.one_sided',
     BILLING_USAGE_CAPPING_SHADOW_DURATION_MS = 'nango.billing.usage.capping.shadow.duration_ms',
     BILLING_USAGE_CAPPING_CH_CACHE = 'nango.billing.usage.capping.ch.cache',
+    BILLING_USAGE_TRACKER_CALLS = 'nango.billing.usage.tracker.calls',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
-    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie'
+    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
+
+    FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
+    FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',
+    FEATURE_FLAGS_EVALUATED = 'nango.feature_flags.evaluated'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

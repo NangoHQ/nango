@@ -2,11 +2,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import { deleteCheckpoint, getCheckpoint, hardDeleteCheckpoints, upsertCheckpoint } from './checkpoints.js';
 import { createAccount } from '../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../seeders/config.seeder.js';
 import { createConnectionSeed } from '../../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../../seeders/environment.seeder.js';
+import { deleteCheckpoint, getCheckpoint, hardDeleteCheckpoints, upsertCheckpoint } from './checkpoints.js';
 
 describe('Checkpoint service', () => {
     let environmentId: number;

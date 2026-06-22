@@ -1,10 +1,10 @@
 import { configService, getSyncConfigById, getSyncsBySyncConfigId, updateFrequency } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationBody as validationBodyBase, validationParams } from './patchDisable.js';
 import { frequencySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+import { validationBody as validationBodyBase, validationParams } from './patchDisable.js';
 
 import type { PatchFlowFrequency } from '@nangohq/types';
 

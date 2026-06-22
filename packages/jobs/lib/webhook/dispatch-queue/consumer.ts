@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
-import { Err, Ok, getLogger, metrics, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 

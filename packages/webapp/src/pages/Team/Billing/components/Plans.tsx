@@ -4,9 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
-import { Dot } from '../../../../components/ui/Dot.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -20,6 +17,9 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
+import { Dot } from '../../../../components/ui/Dot.js';
+import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 
 import type { PlanDefinitionList } from '../types.js';
 import type { StripeError } from '@/utils/stripe.js';

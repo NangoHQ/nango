@@ -4,9 +4,6 @@ import { useMemo, useState } from 'react';
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { RoleSelect } from './RoleSelect';
-import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
-import { useStore } from '../../../store';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -23,6 +20,9 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
+import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
+import { useStore } from '../../../store';
+import { RoleSelect } from './RoleSelect';
 
 import type { ApiInvitation, ApiUser, Role } from '@nangohq/types';
 

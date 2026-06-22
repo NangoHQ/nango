@@ -88,7 +88,7 @@ export const ManagedEmailVerification: React.FC = () => {
                     />
                 </InputGroup>
 
-                <Button type="submit" size="xl" className="w-full" loading={isPending} disabled={code.trim().length < 6}>
+                <Button type="submit" size="xl" loading={isPending} disabled={code.trim().length < 6}>
                     Verify and continue
                 </Button>
             </form>

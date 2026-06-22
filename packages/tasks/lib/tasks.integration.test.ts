@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { DatabaseClient, defaultSchedulerConfig } from '@nangohq/scheduler';
-import { Ok, nanoid } from '@nangohq/utils';
+import { nanoid, Ok } from '@nangohq/utils';
 
 import { Tasks } from './tasks.js';
 import { defineTask } from './types.js';

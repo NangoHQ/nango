@@ -5,8 +5,8 @@ import { promisify } from 'node:util';
 
 import chalk from 'chalk';
 
-import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
+import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
 import { compileAllFunctions } from './compile.js';
 import { exampleFolder } from './constants.js';
