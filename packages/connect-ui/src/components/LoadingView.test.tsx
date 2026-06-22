@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 
 import { LoadingView } from '@/components/LoadingView';
 import { I18nProvider } from '@/lib/i18n';
