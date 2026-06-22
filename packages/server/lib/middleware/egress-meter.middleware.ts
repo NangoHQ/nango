@@ -11,13 +11,11 @@ export const egressMeterMiddleware = (req: Request, res: Response<any, RequestLo
 
     const baseline = req.socket?.bytesWritten ?? 0;
 
-    const withConnectionId = req.params['connectionId'] !== undefined;
-
     let recorded = false;
     const meterEgressedBytes = () => {
         if (recorded) return;
         const bytes = (req.socket?.bytesWritten ?? 0) - baseline;
-        metrics.increment(metrics.Types.EGRESS_BYTES, bytes, { withConnectionId: withConnectionId.toString() });
+        metrics.increment(metrics.Types.EGRESS_BYTES, bytes);
         recorded = true;
     };
 
