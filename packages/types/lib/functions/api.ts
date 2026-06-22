@@ -5,12 +5,14 @@ export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
 
 export type FunctionErrorCode =
     | 'invalid_request'
+    | 'server_error'
     | 'integration_not_found'
     | 'compilation_error'
     | 'dryrun_error'
     | 'deployment_error'
     | 'connection_not_found'
     | 'dryrun_not_found'
+    | 'deployment_not_found'
     | 'function_disabled'
     | 'execution_environment_unavailable'
     | 'timeout'
@@ -50,7 +52,9 @@ export interface FunctionDryrunBody {
     last_sync_date?: string | undefined;
 }
 
-export type FunctionDryrunStatus = 'waiting' | 'running' | 'success' | 'failed';
+export type FunctionAsyncJobStatus = 'waiting' | 'running' | 'success' | 'failed';
+export type FunctionDryrunStatus = FunctionAsyncJobStatus;
+export type FunctionDeploymentStatus = FunctionAsyncJobStatus;
 
 export interface FunctionDryrunCreateSuccess {
     id: string;
@@ -100,14 +104,45 @@ export interface FunctionDeploymentBody {
     allow_destructive?: boolean | undefined;
 }
 
-export interface FunctionDeploySuccess {
+export interface FunctionDeploymentCreateSuccess {
+    id: string;
+    status: Extract<FunctionDeploymentStatus, 'waiting' | 'running'>;
+    created_at: string;
+}
+
+export interface FunctionDeploymentResultSuccess {
+    id: string;
+    status: FunctionDeploymentStatus;
     integration_id: string;
     function_name: string;
     function_type: RunnableFunctionType;
-    deployed: boolean;
-    deployed_functions: { name: string; version: string }[];
-    output: string;
+    created_at: string;
+    updated_at: string;
+    started_at?: string | undefined;
+    completed_at?: string | undefined;
+    duration_ms?: number | undefined;
+    deployed?: boolean | undefined;
+    deployed_functions?: { name: string; version: string }[] | undefined;
+    output?: string | undefined;
+    error?: ApiError<FunctionErrorCode>['error'] | undefined;
 }
+
+export type FunctionDeploymentResultBody =
+    | {
+          status: 'success';
+          output: string;
+          duration_ms?: number | undefined;
+      }
+    | {
+          status: 'failed';
+          output?: string | undefined;
+          duration_ms?: number | undefined;
+          error: {
+              code?: string | undefined;
+              message: string;
+              payload?: unknown;
+          };
+      };
 
 export type PostFunctionCompile = Endpoint<{
     Method: 'POST';
@@ -147,81 +182,58 @@ export type PostFunctionDeployment = Endpoint<{
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;
     Error: ApiError<FunctionErrorCode>;
-    Success: FunctionDeploySuccess;
+    Success: FunctionDeploymentCreateSuccess;
 }>;
 
-export interface RemoteFunctionCompileBody {
-    integration_id: string;
-    function_name: string;
-    function_type: RunnableFunctionType;
-    code: string;
-}
-
-export interface RemoteFunctionCompileSuccess extends FunctionCompileSuccess {
-    integration_id: string;
-    function_name: string;
-    function_type: RunnableFunctionType;
-}
-
-export interface RemoteFunctionDryrunBody extends RemoteFunctionCompileBody {
-    connection_id: string;
-    input?: unknown;
-    metadata?: Record<string, unknown> | undefined;
-    checkpoint?: Record<string, unknown> | undefined;
-    last_sync_date?: string | undefined;
-}
-
-export interface RemoteFunctionDryrunSuccess {
-    integration_id: string;
-    function_name: string;
-    function_type: RunnableFunctionType;
-    duration_ms: number;
-    result?: unknown;
-}
-
-export interface RemoteFunctionDeployBody extends RemoteFunctionCompileBody {
-    allow_destructive?: boolean | undefined;
-}
-
-export type PostRemoteFunctionCompile = Endpoint<{
-    Method: 'POST';
-    Path: '/remote-function/compile';
-    Body: RemoteFunctionCompileBody;
+export type GetFunctionDeployment = Endpoint<{
+    Method: 'GET';
+    Path: '/functions/deployments/:id';
+    Params: { id: string };
     Error: ApiError<FunctionErrorCode>;
-    Success: RemoteFunctionCompileSuccess;
+    Success: FunctionDeploymentResultSuccess;
 }>;
 
-export type PostRemoteFunctionDryrun = Endpoint<{
+export type PostFunctionDeploymentResult = Endpoint<{
     Method: 'POST';
-    Path: '/remote-function/dryrun';
-    Body: RemoteFunctionDryrunBody;
+    Path: '/functions/deployments/:id/result';
+    Params: { id: string };
+    Body: FunctionDeploymentResultBody;
     Error: ApiError<FunctionErrorCode>;
-    Success: RemoteFunctionDryrunSuccess;
+    Success: { ok: true };
 }>;
 
-export type PostRemoteFunctionDeploy = Endpoint<{
-    Method: 'POST';
-    Path: '/remote-function/deploy';
-    Body: RemoteFunctionDeployBody;
-    Error: ApiError<FunctionErrorCode>;
-    Success: FunctionDeploySuccess;
-}>;
+// Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
+// path, param names, and the `env` querystring (private) — the payloads and filters below are identical.
+export interface FunctionListFilters {
+    type?: FunctionType;
+    search?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface FunctionListSuccess {
+    data: DeployedNangoFunction[];
+    pagination: { total: number; page: number; limit: number };
+}
+
+export interface DeployedFunctionSuccess {
+    data: DeployedNangoFunction;
+}
+
+export interface FunctionDeletionSuccess {
+    data: { success: boolean };
+}
+
+export interface ProviderTemplatesSuccess {
+    data: (NangoSyncFunction | NangoActionFunction)[];
+}
 
 export type GetIntegrationFunctions = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions';
-    Querystring: {
-        env: string;
-        type?: FunctionType;
-        search?: string;
-        page?: number;
-        limit?: number;
-    };
+    Querystring: { env: string } & FunctionListFilters;
     Params: { providerConfigKey: string };
-    Success: {
-        data: DeployedNangoFunction[];
-        pagination: { total: number; page: number; limit: number };
-    };
+    Success: FunctionListSuccess;
 }>;
 
 export type GetIntegrationFunction = Endpoint<{
@@ -229,7 +241,17 @@ export type GetIntegrationFunction = Endpoint<{
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     Querystring: { env: string; type?: FunctionType };
     Params: { providerConfigKey: string; functionName: string };
-    Success: { data: DeployedNangoFunction };
+    Success: DeployedFunctionSuccess;
+}>;
+
+export type DeleteIntegrationFunction = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
+    /** TODO: support deleting on-event functions */
+    Querystring: { env: string; type: RunnableFunctionType };
+    Params: { providerConfigKey: string; functionName: string };
+    Error: ApiError<'function_managed_by_deploy'>;
+    Success: FunctionDeletionSuccess;
 }>;
 
 export type GetProviderTemplates = Endpoint<{
@@ -237,7 +259,40 @@ export type GetProviderTemplates = Endpoint<{
     Path: '/api/v1/providers/:providerConfigKey/templates';
     Querystring: { env: string };
     Params: { providerConfigKey: string };
-    Success: { data: (NangoSyncFunction | NangoActionFunction)[] };
+    Success: ProviderTemplatesSuccess;
+}>;
+
+export type GetPublicIntegrationFunctions = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/functions';
+    Querystring: FunctionListFilters;
+    Params: { uniqueKey: string };
+    Success: FunctionListSuccess;
+}>;
+
+export type GetPublicIntegrationFunction = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/functions/:name';
+    Querystring: { type?: FunctionType };
+    Params: { uniqueKey: string; name: string };
+    Success: DeployedFunctionSuccess;
+}>;
+
+export type DeletePublicIntegrationFunction = Endpoint<{
+    Method: 'DELETE';
+    Path: '/integrations/:uniqueKey/functions/:name';
+    /** TODO: support deleting on-event functions */
+    Querystring: { type: RunnableFunctionType };
+    Params: { uniqueKey: string; name: string };
+    Error: ApiError<'function_managed_by_deploy'>;
+    Success: FunctionDeletionSuccess;
+}>;
+
+export type GetPublicProviderTemplates = Endpoint<{
+    Method: 'GET';
+    Path: '/providers/:provider/templates';
+    Params: { provider: string };
+    Success: ProviderTemplatesSuccess;
 }>;
 
 export type GetIntegrationTemplates = Endpoint<{

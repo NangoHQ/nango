@@ -1,9 +1,9 @@
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationParams } from './getIntegration.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
+import { validationParams } from './getIntegration.js';
 
 import type { DeleteIntegration } from '@nangohq/types';
 

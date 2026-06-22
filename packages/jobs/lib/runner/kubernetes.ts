@@ -2,7 +2,7 @@ import * as k8s from '@kubernetes/client-node';
 
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { notifyOnIdle } from './runner.js';
@@ -416,6 +416,7 @@ class Kubernetes {
             { name: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` },
             { name: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
             { name: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
+            { name: 'NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', value: String(envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) },
             ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
                 ? [{ name: 'NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', value: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }]
                 : []),

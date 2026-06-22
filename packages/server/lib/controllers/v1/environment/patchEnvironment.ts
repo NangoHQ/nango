@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { permissions } from '@nangohq/authz';
-import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
+import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolve } from '../../../authz/resolve.js';

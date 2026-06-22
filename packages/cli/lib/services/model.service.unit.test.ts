@@ -2,9 +2,9 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { parse } from './config.service.js';
-import { buildModelsTS, fieldToTypescript, fieldsToTypescript } from './model.service.js';
 import { removeVersion } from '../tests/helpers.js';
+import { parse } from './config.service.js';
+import { buildModelsTS, fieldsToTypescript, fieldToTypescript } from './model.service.js';
 
 import type { NangoModel } from '@nangohq/types';
 

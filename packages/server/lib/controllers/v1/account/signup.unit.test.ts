@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { roles } from '@nangohq/utils';
 
-import { signup } from './signup.js';
 import { envs } from '../../../env.js';
+import { signup } from './signup.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';

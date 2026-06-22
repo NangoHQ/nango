@@ -6,15 +6,15 @@ import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     accountService,
     configService,
     connectionService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     extractValueByPath,
     genericMcpClient,
     getConnectionConfig,
@@ -23,6 +23,7 @@ import {
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
+    LogActionEnum,
     makeUrl,
     oauth2Client,
     providerClientManager,
@@ -32,7 +33,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { validateConnection } from '../hooks/connection/on/validate-connection.js';
+import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -74,6 +75,21 @@ import type {
     ProviderOAuth2
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
+
+// Sec-Fetch-* are forbidden headers for browsers (they set them, JS can't), but a non-browser caller can
+// send arbitrary values. Validate against the spec-defined sets before tagging so untrusted input can't blow
+// up metric cardinality, while still preserving the values we actually discriminate on (navigate/cors/...).
+const SEC_FETCH_MODE_VALUES = new Set(['navigate', 'cors', 'no-cors', 'same-origin', 'websocket']);
+const SEC_FETCH_DEST_VALUES = new Set(['document', 'empty', 'iframe', 'frame', 'nested-document']);
+const SEC_FETCH_SITE_VALUES = new Set(['cross-site', 'same-origin', 'same-site', 'none']);
+
+function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): string {
+    if (!value) {
+        return 'absent';
+    }
+    const normalized = value.toLowerCase();
+    return allowed.has(normalized) ? normalized : 'other';
+}
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
@@ -522,15 +538,19 @@ class OAuthController {
 
             if (customValidationResponse.isErr()) {
                 void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                const message = await handleValidateConnectionFailure({
+                    operation: updatedConnection.operation,
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    environment,
+                    provider,
+                    error: customValidationResponse.error,
+                    logCtx
+                });
+
                 await logCtx.failed();
-
-                if (updatedConnection.operation === 'creation') {
-                    // since this is a new invalid connection, delete it with no trace of it
-                    await connectionService.hardDelete(updatedConnection.connection.id);
-                }
-
-                const payload = customValidationResponse.error?.payload;
-                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                 if (res) {
                     res.status(400).send({
@@ -921,19 +941,45 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
 
+            const reservedOAuthKeys = new Set(['response_type', 'code_challenge', 'code_challenge_method', 'state', 'redirect_uri', 'scope', 'client_id']);
+            const providerAuthParams = Object.fromEntries(
+                Object.entries(interpolateObjectValues(provider.authorization_params || {}, connectionConfig)).filter(([key]) => !reservedOAuthKeys.has(key))
+            );
             const authParams = {
+                ...providerAuthParams,
                 response_type: 'code',
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256'
             };
 
-            const authorizationUri = simpleOAuthClient.authorizeURL({
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(scopeSeparator) : '';
+            const encodedScopes = config.oauth_scopes
+                ? config.oauth_scopes
+                      .split(',')
+                      .map((s) => encodeURIComponent(s.trim()))
+                      .join(scopeSeparator)
+                : '';
+
+            let authorizationUri = simpleOAuthClient.authorizeURL({
                 client_id: config.oauth_client_id,
                 redirect_uri: callbackUrl,
-                scope: config.oauth_scopes || '',
+                scope: scopes,
                 state: session.id,
                 ...authParams
             });
+
+            if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                const url = new URL(authorizationUri);
+                const queryParams = new URLSearchParams(url.search);
+                queryParams.delete('scope');
+                let newQuery = queryParams.toString();
+                if (encodedScopes) {
+                    newQuery = newQuery ? `${newQuery}&scope=${encodedScopes}` : `scope=${encodedScopes}`;
+                }
+                url.search = newQuery;
+                authorizationUri = url.toString();
+            }
 
             void logCtx.info('Redirecting', {
                 authorizationUri,
@@ -942,7 +988,7 @@ class OAuthController {
                 allAuthParams: authParams,
                 connectionConfig,
                 grantType: provider.token_params?.['grant_type'] as string,
-                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+                scopes
             });
 
             res.cookie(`oauth2-${session.id}`, '1', {
@@ -1195,17 +1241,48 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (
-                (session.authMode === 'OAUTH2' ||
-                    session.authMode === 'CUSTOM' ||
-                    session.authMode === 'MCP_OAUTH2' ||
-                    session.authMode === 'MCP_OAUTH2_GENERIC') &&
-                req.cookies[`oauth2-${session.id}`] !== '1'
-            ) {
-                metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
-                    account_id: account.id,
-                    auth_mode: session.authMode
-                });
+            const usesStateCookie =
+                session.authMode === 'OAUTH2' ||
+                session.authMode === 'CUSTOM' ||
+                session.authMode === 'MCP_OAUTH2' ||
+                session.authMode === 'MCP_OAUTH2_GENERIC';
+            if (usesStateCookie) {
+                const cookiePresent = req.cookies[`oauth2-${session.id}`] === '1';
+                if (cookiePresent) {
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'true'
+                    });
+                } else {
+                    // Flag off (default) => keep current behaviour (measure only); on => reject below.
+                    const enforced = await getFlags().isOAuthStateCookieEnforced(account.uuid);
+                    // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
+                    // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
+                    // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
+                    const userAgent = req.get('user-agent') ?? '';
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'false',
+                        enforced: String(enforced),
+                        auth_mode: session.authMode,
+                        provider: config.provider,
+                        sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
+                        sec_fetch_dest: normalizeHeaderTag(req.get('sec-fetch-dest'), SEC_FETCH_DEST_VALUES),
+                        sec_fetch_site: normalizeHeaderTag(req.get('sec-fetch-site'), SEC_FETCH_SITE_VALUES),
+                        is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
+                        has_referer: String(Boolean(req.get('referer'))),
+                        has_any_cookie: String(Boolean(req.get('cookie'))),
+                        req_secure: String(req.secure)
+                    });
+
+                    if (enforced) {
+                        const error = WSErrBuilder.MissingStateCookie();
+                        void logCtx.error('Rejecting OAuth callback: state cookie missing', { providerConfigKey, connectionId });
+                        await logCtx.failed();
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                        return;
+                    }
+                }
             }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
@@ -1625,7 +1702,8 @@ class OAuthController {
                     authorizationCode,
                     session.callbackUrl,
                     session.codeVerifier!,
-                    connectionConfig
+                    connectionConfig,
+                    session.id
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
@@ -1805,15 +1883,19 @@ class OAuthController {
 
             if (customValidationResponse.isErr()) {
                 void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                const message = await handleValidateConnectionFailure({
+                    operation: updatedConnection.operation,
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    environment,
+                    provider,
+                    error: customValidationResponse.error,
+                    logCtx
+                });
+
                 await logCtx.failed();
-
-                if (updatedConnection.operation === 'creation') {
-                    // since this is a new invalid connection, delete it with no trace of it
-                    await connectionService.hardDelete(updatedConnection.connection.id);
-                }
-
-                const payload = customValidationResponse.error?.payload;
-                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                 if (res) {
                     await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
@@ -2025,14 +2107,19 @@ class OAuthController {
 
         if (customValidationResponse.isErr()) {
             void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+            const message = await handleValidateConnectionFailure({
+                operation: updatedConnection.operation,
+                connection: updatedConnection.connection,
+                config,
+                account,
+                environment,
+                provider,
+                error: customValidationResponse.error,
+                logCtx
+            });
+
             await logCtx.failed();
-
-            if (updatedConnection.operation === 'creation') {
-                await connectionService.hardDelete(updatedConnection.connection.id);
-            }
-
-            const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
             return;
@@ -2195,15 +2282,19 @@ class OAuthController {
 
                 if (customValidationResponse.isErr()) {
                     void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                    const message = await handleValidateConnectionFailure({
+                        operation: updatedConnection.operation,
+                        connection: updatedConnection.connection,
+                        config,
+                        account,
+                        environment,
+                        provider,
+                        error: customValidationResponse.error,
+                        logCtx
+                    });
+
                     await logCtx.failed();
-
-                    if (updatedConnection.operation === 'creation') {
-                        // since this is a new invalid connection, delete it with no trace of it
-                        await connectionService.hardDelete(updatedConnection.connection.id);
-                    }
-
-                    const payload = customValidationResponse.error?.payload;
-                    const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                     if (res) {
                         await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));

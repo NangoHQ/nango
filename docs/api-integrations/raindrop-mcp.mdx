@@ -1,0 +1,84 @@
+---
+title: 'Raindrop (MCP)'
+sidebarTitle: 'Raindrop (MCP)'
+description: 'Connect your application to the Raindrop MCP server'
+---
+
+## 🚀 Quickstart
+
+Connect to the Raindrop MCP server with Nango and start calling tools in minutes. Raindrop MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+
+<Steps>
+    <Step title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _Raindrop (MCP)_.
+    </Step>
+    <Step title="Authorize Raindrop">
+        Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Authorize_, then log in to your Raindrop account. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Raindrop MCP API">
+        Let's make your first request to the Raindrop MCP server. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/mcp" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"nango","version":"1.0.0"}},"id":1}'
+                ```
+
+            </Tab>
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+                const res = await nango.post({
+                    endpoint: '/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    data: {
+                        jsonrpc: '2.0',
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2024-11-05',
+                            capabilities: {},
+                            clientInfo: { name: 'nango', version: '1.0.0' }
+                        },
+                        id: 1
+                    }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+        </Tabs>
+
+        ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Raindrop (MCP) guides
+
+Nango uses **dynamic client registration** via OAuth metadata discovery with Raindrop's MCP server. You do not need to register an MCP application — just create the integration in Nango and authorize with your Raindrop account.
+
+Official resources: [Raindrop MCP](https://www.raindrop.ai/docs/mcp/overview)
+
+## 🧩 Pre-built syncs & actions for Raindrop (MCP)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/raindrop-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

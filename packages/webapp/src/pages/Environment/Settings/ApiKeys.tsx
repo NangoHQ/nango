@@ -1,35 +1,36 @@
-import { IconEdit, IconExternalLink, IconEye, IconEyeOff, IconKey, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconEye, IconEyeOff, IconKey } from '@tabler/icons-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button, IconButton } from '@nangohq/design-system';
 
-import SettingsContent from './components/SettingsContent';
-import {
-    SCOPE_GROUPS,
-    allGroupScopes,
-    groupWildcard,
-    isScopeSelected,
-    toggleCredential as toggleCredentialFn,
-    toggleGroup as toggleGroupFn,
-    toggleScope as toggleScopeFn
-} from './scope-logic';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
+import { Input } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { usePermissions } from '@/hooks/usePermissions';
+import { APIError } from '@/utils/api';
 import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button } from '@/components-v2/ui/Button';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/Dialog';
-import { Input } from '@/components-v2/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
-import { usePermissions } from '@/hooks/usePermissions';
-import { APIError } from '@/utils/api';
+import SettingsContent from './components/SettingsContent';
+import {
+    allGroupScopes,
+    groupWildcard,
+    isScopeSelected,
+    SCOPE_GROUPS,
+    toggleCredential as toggleCredentialFn,
+    toggleGroup as toggleGroupFn,
+    toggleScope as toggleScopeFn
+} from './scope-logic';
 
-import type { ScopeGroup } from './scope-logic';
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
+import type { ScopeGroup } from './scope-logic';
 
 function formatRelativeTime(dateStr: string | null): string {
     if (!dateStr) return 'Never';
@@ -116,12 +117,12 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
             <div className="flex flex-col gap-1.5">
                 {!hideLabel && (
                     <div className="flex items-center gap-1.5">
-                        <label className="text-body-medium-semi text-text-primary">Permission</label>
+                        <label className="text-body-medium-semi text-text-strong">Permission</label>
                         <a
                             href="https://nango.dev/docs/reference/backend/http-api/api-keys#scopes"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-text-tertiary hover:text-text-primary"
+                            className="text-text-muted hover:text-text-strong"
                         >
                             <IconExternalLink stroke={1} size={14} />
                         </a>
@@ -149,8 +150,8 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
             </div>
             {permissionMode === 'custom' && (
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-body-medium-semi text-text-primary">
-                        Selected scopes<span className="text-feedback-error-fg">*</span>
+                    <label className="text-body-medium-semi text-text-strong">
+                        Selected scopes<span className="text-status-danger-text">*</span>
                     </label>
                     <div className="max-h-[320px] overflow-y-auto flex flex-col px-1">
                         {SCOPE_GROUPS.map((group) => {
@@ -171,9 +172,9 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                 onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
                                                 className="accent-brand shrink-0"
                                             />
-                                            <span className="text-body-small-semi text-text-primary">{group.group}</span>
+                                            <span className="text-body-small-semi text-text-strong">{group.group}</span>
                                         </label>
-                                        <span className="text-body-small-regular text-text-tertiary">
+                                        <span className="text-body-small-regular text-text-muted">
                                             {countGroupSelected(group)}/{countGroupTotal(group)}
                                         </span>
                                     </div>
@@ -191,9 +192,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                         onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
                                                         className="accent-brand shrink-0"
                                                     />
-                                                    <span
-                                                        className={`text-body-small-regular ${wildcardSelected ? 'text-text-tertiary' : 'text-text-primary'}`}
-                                                    >
+                                                    <span className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}>
                                                         {item.label}
                                                     </span>
                                                 </label>
@@ -207,7 +206,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                             className="accent-brand shrink-0"
                                                         />
                                                         <span
-                                                            className={`text-body-small-regular ${wildcardSelected ? 'text-text-tertiary' : 'text-text-primary'}`}
+                                                            className={`text-body-small-regular ${wildcardSelected ? 'text-text-muted' : 'text-text-strong'}`}
                                                         >
                                                             {item.label}:with_credentials
                                                         </span>
@@ -220,7 +219,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                             );
                         })}
                     </div>
-                    {selectedScopes.length === 0 && <p className="text-body-small-regular text-feedback-error-fg">Select at least one scope to continue</p>}
+                    {selectedScopes.length === 0 && <p className="text-body-small-regular text-status-danger-text">Select at least one scope to continue</p>}
                 </div>
             )}
         </div>
@@ -286,15 +285,15 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
-                        <label htmlFor="api-key-name" className="text-body-medium-semi text-text-primary">
-                            Display name<span className="text-feedback-error-fg">*</span>
+                        <label htmlFor="api-key-name" className="text-body-medium-semi text-text-strong">
+                            Display name<span className="text-status-danger-text">*</span>
                         </label>
                         <Input id="api-key-name" placeholder="e.g. Production backend" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                     </div>
                     <ScopeSelector selectedScopes={selectedScopes} onChange={setSelectedScopes} />
                 </div>
                 <DialogFooter>
-                    <Button variant="tertiary" onClick={() => setOpen(false)}>
+                    <Button variant="outline" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>
                     <Button onClick={handleCreate} loading={isPending} disabled={hasNoScopes}>
@@ -362,7 +361,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                     {canManageKeys ? (
                         <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} />
                     ) : (
-                        <span className="text-body-medium-regular text-text-primary">{apiKey.display_name}</span>
+                        <span className="text-body-medium-regular text-text-strong">{apiKey.display_name}</span>
                     )}
 
                     <label className="text-body-medium-semi text-text-secondary">Secret</label>
@@ -370,18 +369,19 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                         <Input
                             value={secretRevealed && canReadSecret ? apiKey.secret : masked}
                             disabled
-                            className="font-mono bg-bg-surface text-text-tertiary pr-20"
+                            className="font-mono bg-surface-canvas text-text-muted pr-20"
                         />
                         {canReadSecret && (
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                <Button
+                                <IconButton
+                                    label="Toggle visibility"
                                     variant="ghost"
-                                    size="icon"
+                                    size="2xs"
                                     onClick={() => setSecretRevealed((r) => !r)}
-                                    className="text-text-tertiary hover:text-text-primary h-7 w-7"
+                                    className="text-text-muted hover:text-text-strong h-7 w-7"
                                 >
                                     {secretRevealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
-                                </Button>
+                                </IconButton>
                                 <CopyButton text={apiKey.secret} />
                             </div>
                         )}
@@ -392,7 +392,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
 
                 {canManageKeys && (
                     <div className="flex gap-2 pt-2">
-                        <Button variant="tertiary" onClick={onBack}>
+                        <Button variant="outline" onClick={onBack}>
                             Cancel
                         </Button>
                         <Button onClick={handleSave} loading={isPending} disabled={!hasChanges || hasNoScopes}>
@@ -418,9 +418,9 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
             trigger={
-                <Button variant="ghost" size="icon" className="text-text-tertiary hover:text-feedback-error-fg">
-                    <IconTrash stroke={1} size={16} />
-                </Button>
+                <IconButton label="Delete API key" variant="ghost" size="2xs" className="text-text-muted hover:text-status-danger-text">
+                    <Trash2 className="size-3.5" />
+                </IconButton>
             }
             onConfirm={onDelete}
             open={open}
@@ -439,21 +439,22 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
         <SettingsContent title="API Keys">
             <div className="flex flex-col gap-4 py-4">
                 <div className="text-body-small-regular text-text-secondary">
-                    This key is managed via the <code className="text-text-primary">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable.
+                    This key is managed via the <code className="text-text-strong">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable.
                 </div>
                 <div>
-                    <label className="text-body-small-semi text-text-primary block mb-1.5">Secret Key</label>
+                    <label className="text-body-small-semi text-text-strong block mb-1.5">Secret Key</label>
                     <div className="relative">
-                        <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-bg-surface text-text-tertiary pr-20" />
+                        <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-surface-canvas text-text-muted pr-20" />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                            <Button
+                            <IconButton
+                                label="Toggle visibility"
                                 variant="ghost"
-                                size="icon"
+                                size="2xs"
                                 onClick={() => setRevealed((r) => !r)}
-                                className="text-text-tertiary hover:text-text-primary h-7 w-7"
+                                className="text-text-muted hover:text-text-strong h-7 w-7"
                             >
                                 {revealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
-                            </Button>
+                            </IconButton>
                             <CopyButton text={secretKey} />
                         </div>
                     </div>
@@ -515,65 +516,62 @@ export const ApiKeys: React.FC = () => {
             }
         >
             {isLoading ? (
-                <div className="text-body-small-regular text-text-tertiary py-4">Loading API keys...</div>
+                <div className="text-body-small-regular text-text-muted py-4">Loading API keys...</div>
             ) : apiKeys.length === 0 ? (
-                <div className="text-body-small-regular text-text-tertiary py-4">No API keys yet. Create one to get started.</div>
+                <div className="text-body-small-regular text-text-muted py-4">No API keys yet. Create one to get started.</div>
             ) : (
-                <div className="[&_[data-slot=table-container]]:border-0 [&_[data-slot=table-container]]:rounded-none">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Scopes</TableHead>
-                                <TableHead>Created</TableHead>
-                                <TableHead>Last used</TableHead>
-                                {canMakeActions && <TableHead>Action</TableHead>}
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Scopes</TableHead>
+                            <TableHead>Created</TableHead>
+                            <TableHead>Last used</TableHead>
+                            {canMakeActions && <TableHead>Action</TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {apiKeys.map((key) => (
+                            <TableRow key={key.id}>
+                                <TableCell>
+                                    <span className="text-body-small-semi text-text-strong">{key.display_name}</span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
+                                        {formatRelativeTime(key.created_at)}
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="text-text-secondary cursor-default" title={formatFullDate(key.last_used_at)}>
+                                        {formatRelativeTime(key.last_used_at)}
+                                    </span>
+                                </TableCell>
+                                {canMakeActions && (
+                                    <TableCell>
+                                        <div className="flex items-center gap-1">
+                                            {canReadSecret && <CopyButton text={key.secret} />}
+                                            {canManageKeys && (
+                                                <IconButton
+                                                    label="Edit"
+                                                    variant="ghost"
+                                                    size="2xs"
+                                                    onClick={() => setSelectedKeyId(key.id)}
+                                                    className="text-text-muted hover:text-text-strong"
+                                                >
+                                                    <Pencil className="size-3.5" />
+                                                </IconButton>
+                                            )}
+                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
+                                        </div>
+                                    </TableCell>
+                                )}
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {apiKeys.map((key) => (
-                                <TableRow key={key.id}>
-                                    <TableCell>
-                                        <span className="text-body-small-semi text-text-primary">{key.display_name}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
-                                            {formatRelativeTime(key.created_at)}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-text-secondary cursor-default" title={formatFullDate(key.last_used_at)}>
-                                            {formatRelativeTime(key.last_used_at)}
-                                        </span>
-                                    </TableCell>
-                                    {canMakeActions && (
-                                        <TableCell>
-                                            <div className="flex items-center gap-1">
-                                                {canReadSecret && <CopyButton text={key.secret} />}
-                                                {canManageKeys && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => setSelectedKeyId(key.id)}
-                                                        className="text-text-tertiary hover:text-text-primary"
-                                                    >
-                                                        <IconEdit stroke={1} size={16} />
-                                                    </Button>
-                                                )}
-                                                {canManageKeys && (
-                                                    <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                        ))}
+                    </TableBody>
+                </Table>
             )}
         </SettingsContent>
     );

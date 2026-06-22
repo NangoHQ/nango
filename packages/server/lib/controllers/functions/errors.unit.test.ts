@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { RemoteFunctionError } from '@nangohq/sandbox';
+import { FunctionError } from '@nangohq/sandbox';
 
 import { sendStepError } from './errors.js';
 
@@ -15,12 +15,12 @@ function mockResponse() {
 }
 
 describe('function controller errors', () => {
-    it('sends structured remote function errors with their status and code', () => {
+    it('sends structured sandboxed function errors with their status and code', () => {
         const { res, status, send } = mockResponse();
 
         sendStepError({
             res,
-            error: new RemoteFunctionError({ code: 'deployment_error', message: 'Deploy failed', status: 400 })
+            error: new FunctionError({ code: 'deployment_error', message: 'Deploy failed', status: 400 })
         });
 
         expect(status).toHaveBeenCalledWith(400);
@@ -32,7 +32,7 @@ describe('function controller errors', () => {
 
         sendStepError({
             res,
-            error: new RemoteFunctionError({
+            error: new FunctionError({
                 code: 'execution_environment_unavailable',
                 message: 'The function execution environment is temporarily unavailable. Please try again shortly.',
                 status: 503
@@ -71,7 +71,7 @@ describe('function controller errors', () => {
         expect(send).toHaveBeenCalledWith({ error: { code: 'server_error', message: 'Fetch failed /sync/deploy?env=dev' } });
     });
 
-    it('keeps sandbox project paths relative and redacts other absolute paths', () => {
+    it('redacts absolute paths', () => {
         const { res, send } = mockResponse();
 
         sendStepError({
@@ -80,7 +80,7 @@ describe('function controller errors', () => {
         });
 
         expect(send).toHaveBeenCalledWith({
-            error: { code: 'server_error', message: 'Failed at github/syncs/foo.ts:12:3 while reading <path>' }
+            error: { code: 'server_error', message: 'Failed at <path> while reading <path>' }
         });
     });
 
@@ -106,7 +106,7 @@ describe('function controller errors', () => {
 
         sendStepError({
             res,
-            error: new RemoteFunctionError({ code: 'compilation_error', message, status: 400 })
+            error: new FunctionError({ code: 'compilation_error', message, status: 400 })
         });
 
         expect(status).toHaveBeenCalledWith(400);

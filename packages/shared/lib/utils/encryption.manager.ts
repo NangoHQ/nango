@@ -4,6 +4,7 @@ import utils from 'node:util';
 import db from '@nangohq/database';
 import { Encryption, getLogger } from '@nangohq/utils';
 
+import { dek } from '../env.js';
 import { isConnectionJsonRow } from '../services/connections/utils.js';
 import secretService from '../services/secret.service.js';
 
@@ -13,7 +14,6 @@ import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConn
 const logger = getLogger('Encryption.Manager');
 
 export const pbkdf2 = utils.promisify(crypto.pbkdf2);
-export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'] || '';
 
 export class EncryptionManager extends Encryption {
     private keySalt = 'X89FHEGqR3yNK0+v7rPWxQ==';
@@ -332,4 +332,11 @@ export class EncryptionManager extends Encryption {
     }
 }
 
-export default new EncryptionManager(ENCRYPTION_KEY);
+let instance: EncryptionManager | null = null;
+
+export function getEncryptionManager(): EncryptionManager {
+    if (!instance) {
+        instance = new EncryptionManager(dek.get());
+    }
+    return instance;
+}

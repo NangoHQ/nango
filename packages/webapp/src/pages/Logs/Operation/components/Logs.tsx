@@ -6,25 +6,23 @@ import { addMinutes } from 'date-fns';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
-import { LogRow } from './LogRow';
-import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
-import { PeriodSelector } from '../../../../components/ui/PeriodSelector';
-import { SimpleTooltip } from '../../../../components/ui/SimpleTooltip';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 import { useStore } from '../../../../store';
 import { apiFetch } from '../../../../utils/api';
 import { calculateTableSizing } from '../../../../utils/table';
 import { formatQuantity } from '../../../../utils/utils';
-import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Spinner } from '@/components-v2/ui/Spinner';
+import { ShowMessage } from '../Message/Show';
+import { LogRow } from './LogRow';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
-
-const drawerWidth = '834px';
 
 const fullPeriod: PeriodPreset = {
     name: 'full',
@@ -189,14 +187,15 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner />}</h4>
-                <div className="flex gap-2 text-white text-xs">
+                <div className="flex gap-2 text-text-strong text-xs">
                     <div>
                         {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
                     </div>
                     {operation.operation.type === 'sync' && operation.operation.action === 'run' && (
                         <div>
-                            <SimpleTooltip
-                                tooltipContent={
+                            <ConditionalTooltip
+                                condition={true}
+                                content={
                                     <>
                                         Successfull HTTP logs are sampled to 10% to reduce noise.
                                         <br /> Other logs are not sampled
@@ -204,13 +203,13 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                 }
                             >
                                 (sampling is on)
-                            </SimpleTooltip>
+                            </ConditionalTooltip>
                         </div>
                     )}
                 </div>
             </div>
             <header className="flex gap-2 items-center">
-                <InputGroup className="grow border-border-gray-400">
+                <InputGroup className="grow border-border-muted">
                     <InputGroupAddon>
                         <IconZoom stroke={1} size={18} />
                     </InputGroupAddon>
@@ -218,6 +217,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     {search && (
                         <InputGroupAddon align="inline-end">
                             <InputGroupButton
+                                label="Clear search"
                                 variant={'ghost'}
                                 size={'icon-xs'}
                                 onClick={() => {
@@ -242,19 +242,19 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </div>
             </header>
             <div
-                style={{ height: '100%', overflow: 'auto', position: 'relative' }}
+                style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-primary">
-                    <thead className="grid sticky top-0 z-10 bg-grayscale-900">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-strong">
+                    <thead className="grid sticky top-0 z-10 bg-surface-page">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id} className="flex w-full">
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <th
                                             key={header.id}
-                                            className="flex bg-grayscale-900 px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
+                                            className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                             style={{
                                                 width: header.getSize() ? header.getSize() : 'auto'
                                             }}
@@ -287,7 +287,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                         <tbody className="h-10">
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
-                                    <div className="text-grayscale-400">No results.</div>
+                                    <div className="text-text-muted">No results.</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -295,29 +295,26 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </table>
             </div>
 
-            <Drawer
-                direction="right"
-                snapPoints={[drawerWidth]}
-                handleOnly={true}
-                noBodyStyles={true}
-                nested
-                open={Boolean(message)}
-                onOpenChange={() => setMessage(undefined)}
-            >
-                <DrawerContent>
-                    <div className={`w-[834px] relative h-screen select-text`}>
+            <Sheet open={Boolean(message)} onOpenChange={() => setMessage(undefined)}>
+                <SheetContent
+                    side="right"
+                    hideCloseButton
+                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
+                >
+                    <SheetTitle className="sr-only">Message Details</SheetTitle>
+                    <div className="relative h-full select-text">
                         <div className="absolute top-[26px] left-4">
-                            <DrawerClose
+                            <SheetClose
                                 title="Close"
-                                className="w-10 h-10 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white"
+                                className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-text-strong focus:text-text-strong"
                             >
                                 <IconArrowLeft stroke={1} size={24} />
-                            </DrawerClose>
+                            </SheetClose>
                         </div>
                         {message && <ShowMessage message={message} />}
                     </div>
-                </DrawerContent>
-            </Drawer>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 };

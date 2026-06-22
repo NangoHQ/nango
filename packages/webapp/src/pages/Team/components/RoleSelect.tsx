@@ -1,6 +1,6 @@
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { StyledLink } from '@/components/ui/StyledLink';
 
 import type { Role } from '@nangohq/types';
 
@@ -45,7 +45,7 @@ export const RoleSelect: React.FC<{
                             <span className="block">
                                 <SelectItem value={v} className="h-fit p-2" disabled={locked}>
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-text-primary text-body-medium-regular">{label}</span>
+                                        <span className="text-text-strong text-body-medium-regular">{label}</span>
                                         <p className="text-text-secondary text-body-small-regular">{description}</p>
                                     </div>
                                 </SelectItem>

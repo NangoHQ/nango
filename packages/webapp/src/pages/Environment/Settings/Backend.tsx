@@ -5,16 +5,16 @@ import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { StyledLink } from '@/components/ui/StyledLink';
+import { usePermissions } from '@/hooks/usePermissions';
+import { APIError } from '@/utils/api';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
-import { usePermissions } from '@/hooks/usePermissions';
-import { APIError } from '@/utils/api';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();

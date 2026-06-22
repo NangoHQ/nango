@@ -1,13 +1,13 @@
 import { ChevronRight } from 'lucide-react';
 
-import { Button } from '@/components-v2/ui/Button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components-v2/ui/Collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Collapsible> = {
     component: Collapsible,
-    title: 'Components v2/UI/Collapsible',
+    title: 'Components/UI/Collapsible',
     parameters: { layout: 'centered' }
 };
 export default meta;

@@ -4,23 +4,23 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { DeleteButton } from './components/DeleteButton';
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
-import { useMeta } from '../../../hooks/useMeta';
-import { useStore } from '../../../store';
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { ButtonLink } from '@/components-v2/ui/Button';
-import { Switch } from '@/components-v2/ui/Switch';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';
 import { PROD_ENVIRONMENT_NAME } from '@/utils/environments';
+import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useMeta } from '../../../hooks/useMeta';
+import { useStore } from '../../../store';
+import { DeleteButton } from './components/DeleteButton';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const General: React.FC = () => {
     const navigate = useNavigate();
@@ -107,12 +107,7 @@ export const General: React.FC = () => {
                 label={
                     <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <ButtonLink
-                            to="https://nango.dev/docs/guides/platform/environments#production-environments"
-                            size="icon"
-                            variant="ghost"
-                            target="_blank"
-                        >
+                        <ButtonLink to="https://nango.dev/docs/guides/platform/environments#production-environments" size="2xs" variant="ghost" target="_blank">
                             <ExternalLink />
                         </ButtonLink>
                     </div>
@@ -140,7 +135,7 @@ export const General: React.FC = () => {
                                             });
                                         },
                                         confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
-                                        confirmVariant: 'destructive',
+                                        confirmVariant: 'danger',
                                         docs: {
                                             title: 'Learn more',
                                             url: 'https://nango.dev/docs/guides/platform/environments#production-environments'

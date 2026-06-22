@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { OrchestratorProcessor } from '@nangohq/nango-orchestrator';
+
+import { Processor } from './processor.js';
+
 // Mock the handler
 vi.mock('./handler.js', () => ({
     handler: vi.fn()
@@ -32,10 +36,6 @@ vi.mock('../env.js', () => ({
         ]
     }
 }));
-
-import { OrchestratorProcessor } from '@nangohq/nango-orchestrator';
-
-import { Processor } from './processor.js';
 
 describe('Processor', () => {
     beforeEach(() => {

@@ -1,4 +1,4 @@
-import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 
 import { OrchestratorClient } from './clients/client.js';
 import { TaskEventsHandler } from './events.js';

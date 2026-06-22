@@ -147,41 +147,6 @@ export default tseslint.config(
             'import/newline-after-import': 'error',
             'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
             'import/namespace': 'off',
-            'import/order': [
-                'error',
-                {
-                    'newlines-between': 'always',
-                    named: true,
-
-                    alphabetize: {
-                        order: 'asc'
-                    },
-                    distinctGroup: false,
-
-                    warnOnUnassignedImports: false,
-                    // sortTypesGroup: true, not avail yet
-
-                    pathGroupsExcludedImportTypes: [
-                        // allows us to split npm package from our @nango
-                        'builtin',
-                        // allow us to have our own types at the end anyway
-                        'type'
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: '@nangohq/**',
-                            group: 'internal',
-                            position: 'after'
-                        },
-                        {
-                            pattern: '@/**',
-                            group: 'parent',
-                            position: 'after'
-                        }
-                    ],
-                    groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], 'type', 'object']
-                }
-            ],
 
             'unicorn/catch-error-name': [
                 'error',
@@ -223,12 +188,6 @@ export default tseslint.config(
             'no-constant-condition': 'off',
             '@typescript-eslint/no-dynamic-delete': 'off',
             '@typescript-eslint/no-redundant-type-constituents': 'off'
-        }
-    },
-    {
-        files: ['packages/**/*/migrations/**'],
-        rules: {
-            'import/order': 'off'
         }
     },
     {
@@ -333,6 +292,27 @@ export default tseslint.config(
                         arguments: false,
                         attributes: false
                     }
+                }
+            ],
+
+            // Design-system components own their styling — don't override it with className/style.
+            'react/forbid-component-props': [
+                'warn',
+                {
+                    forbid: [
+                        {
+                            propName: 'className',
+                            disallowedFor: ['Button', 'IconButton'],
+                            message:
+                                "Don't override design-system styles via className — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
+                        },
+                        {
+                            propName: 'style',
+                            disallowedFor: ['Button', 'IconButton'],
+                            message:
+                                "Don't override design-system styles via the style prop — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
+                        }
+                    ]
                 }
             ],
 

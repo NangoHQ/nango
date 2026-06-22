@@ -2,8 +2,6 @@ import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
-import { getSyncAndActionConfigByParams, increment } from './config.service.js';
-import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
 import { resolveLocalFileName } from '../../../utils/utils.js';
 import configService from '../../config.service.js';
@@ -11,13 +9,15 @@ import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import remoteFileService from '../../file/remote.service.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
+import { getSyncAndActionConfigByParams, increment } from './config.service.js';
+import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
-    CLIDeployFlowConfig,
     CleanedIncomingFlowConfig,
+    CLIDeployFlowConfig,
     DBEnvironment,
     DBSyncConfig,
     DBSyncConfigInsert,
@@ -246,7 +246,7 @@ async function compileDeployInfo({
         fileBody,
         models,
         runs,
-        version: optionalVersion,
+        version: userSpecifiedVersion, // From CLI param or specified in function.ts file
         type = 'sync',
         track_deletes,
         auto_start,
@@ -266,7 +266,7 @@ async function compileDeployInfo({
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
-        if (!optionalVersion) {
+        if (!userSpecifiedVersion) {
             bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
         }
 
@@ -298,7 +298,7 @@ async function compileDeployInfo({
         }
     }
 
-    const version = optionalVersion || bumpedVersion || '1';
+    const targetVersion = userSpecifiedVersion || bumpedVersion || '1';
 
     // intentionally not filtered by source so a disabled sync stays disabled when switching sources (e.g. catalog → repo).
     // select all active rows, not just .first(), so any duplicates left by prior races are also cleaned up.
@@ -332,11 +332,18 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`;
+    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${targetVersion}.js`;
     const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
     const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
-    let file_location: string | null | undefined = previousJsFileLocation;
+    // If no previous file location, we consider the file changed no matter what the content is.
+    // This ensures if upload succeeds, but db transaction fails, we re-upload and get a valid file_location.
+    const jsChanged = previousJsFileLocation ? await remoteFileService.checkIfChanged({ content: jsFile, objectKey: previousJsFileLocation }) : true;
+    // User can specify a new version via CLI param without changing the file content, so we need to upload if the version is different.
+    const userChangedVersion = userSpecifiedVersion && userSpecifiedVersion !== previousSyncAndActionConfig?.version;
     const uploads = [];
+
+    let file_location: string | null | undefined = previousJsFileLocation;
+    let persistedVersion = previousSyncAndActionConfig?.version || '1';
 
     if (typeof fileBody === 'object' && fileBody.ts) {
         const tsFile = fileBody.ts;
@@ -344,7 +351,7 @@ async function compileDeployInfo({
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
-        if (tsChanged) {
+        if (tsChanged || jsChanged || userChangedVersion) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
@@ -361,8 +368,7 @@ async function compileDeployInfo({
     }
     // Legacy Path - Only JS is provided
     else {
-        const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
-        if (jsChanged) {
+        if (jsChanged || userChangedVersion) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
@@ -374,17 +380,16 @@ async function compileDeployInfo({
     }
 
     if (uploads.length > 0) {
-        void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${version}.js` });
+        void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${targetVersion}.js` });
         [file_location] = await Promise.all(uploads);
+        persistedVersion = targetVersion;
     } else {
-        void logCtx.info('Function unchanged. Skipping upload', { fileName: `${syncName}-v${version}.js` });
+        void logCtx.info('Function unchanged. Skipping upload', { fileName: `${syncName}-v${targetVersion}.js` });
     }
 
     if (!file_location) {
-        void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
-
-        // this is a platform error so throw this
-        throw new NangoError('file_upload_error');
+        void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${targetVersion}.js` });
+        return { success: false, error: new NangoError('file_upload_error'), response: null };
     }
 
     let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
@@ -410,7 +415,7 @@ async function compileDeployInfo({
                 sync_name: syncName,
                 type,
                 models,
-                version,
+                version: persistedVersion,
                 track_deletes: track_deletes || false,
                 auto_start: auto_start === false ? false : true,
                 attributes,

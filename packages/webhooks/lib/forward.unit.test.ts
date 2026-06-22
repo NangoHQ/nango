@@ -4,6 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { axiosInstance } from '@nangohq/utils';
 
 import { forwardWebhook } from './forward.js';
+import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
 
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
@@ -55,6 +56,7 @@ describe('Webhooks: forward notification tests', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+        mockWebhookDenylistAllowAll();
     });
 
     it('Should not send a forward webhook if the webhook url is not present', async () => {
@@ -214,8 +216,8 @@ describe('Webhooks: forward notification tests', () => {
         expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
     });
 
-    it('Should report zero bytes via onBytes when forwarding is skipped', async () => {
-        let reportedBytes: { sent: number; received: number } | undefined;
+    it('Should not invoke onBytes when forwarding is skipped', async () => {
+        let called = false;
         const result = await forwardWebhook({
             connectionIds: [],
             account,
@@ -226,18 +228,18 @@ describe('Webhooks: forward notification tests', () => {
             integration,
             payload: { some: 'data' },
             webhookOriginalHeaders: {},
-            onBytes: (b) => {
-                reportedBytes = b;
+            onBytes: () => {
+                called = true;
             }
         });
         expect(result.isOk()).toBe(true);
-        expect(reportedBytes).toEqual({ sent: 0, received: 0 });
+        expect(called).toBe(false);
     });
 
-    it('Should sum bytes across connections in fan-out via onBytes', async () => {
+    it('Should invoke onBytes once per connection with that connection id', async () => {
         const connectionIds = ['conn1', 'conn2'];
         const payload = { x: 1 };
-        let reportedBytes: { sent: number; received: number } | undefined;
+        const calls: { connectionId: string; sent: number }[] = [];
         const result = await forwardWebhook({
             connectionIds,
             account,
@@ -248,15 +250,18 @@ describe('Webhooks: forward notification tests', () => {
             integration,
             payload,
             webhookOriginalHeaders: {},
-            onBytes: (b) => {
-                reportedBytes = b;
+            onBytes: (b, connectionId) => {
+                calls.push({ connectionId, sent: b.sent });
             }
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value.forwarded).toBe(2);
+            expect(result.value.results.filter((r) => r.success).length).toBe(2);
         }
-        const minBytes = Buffer.byteLength(JSON.stringify(payload)) * connectionIds.length;
-        expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
+        expect(calls.map((c) => c.connectionId)).toEqual(['conn1', 'conn2']);
+        const minBytesPerConnection = Buffer.byteLength(JSON.stringify(payload));
+        for (const call of calls) {
+            expect(call.sent).toBeGreaterThanOrEqual(minBytesPerConnection);
+        }
     });
 });

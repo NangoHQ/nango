@@ -1,10 +1,9 @@
-import { remoteFunctionProjectPath } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
 
-const maxRemoteFunctionErrorMessageLength = 20_000;
+const maxFunctionErrorMessageLength = 20_000;
 
 /**
  * Runtime allow-list for error codes exposed by the function API.
@@ -13,12 +12,14 @@ const maxRemoteFunctionErrorMessageLength = 20_000;
  */
 const functionErrorCodes = new Set<string>([
     'invalid_request',
+    'server_error',
     'integration_not_found',
     'compilation_error',
     'dryrun_error',
     'deployment_error',
     'connection_not_found',
     'dryrun_not_found',
+    'deployment_not_found',
     'function_disabled',
     'execution_environment_unavailable',
     'timeout',
@@ -69,14 +70,16 @@ function sanitizeMessage(message: string): string {
     const messageWithUrlPlaceholders = message.replace(/https?:\/\/[^\s"']+/g, (match) => {
         const replacementKey = urlReplacements.length;
         urlReplacements.push(removeUrlOrigin(match));
-        return `__REMOTE_FUNCTION_URL_${replacementKey}__`;
+        return `__URL_PLACEHOLDER_${replacementKey}__`;
     });
 
+    // Sandbox providers strip their known workspace paths to relative paths first.
+    // Anything absolute still reaching this fallback is redacted to avoid leaking host or provider directory layout.
     return messageWithUrlPlaceholders
-        .replace(/(^|[\s"'(])(\/[^\s"')]+)/g, (_, prefix: string, absolutePath: string) => `${prefix}${redactAbsolutePath(absolutePath)}`)
-        .replace(/__REMOTE_FUNCTION_URL_(\d+)__/g, (_, index: string) => urlReplacements[Number(index)] ?? '<url>')
+        .replace(/(^|[\s"'(])(\/[^\s"')]+)/g, (_, prefix: string) => `${prefix}<path>`)
+        .replace(/__URL_PLACEHOLDER_(\d+)__/g, (_, index: string) => urlReplacements[Number(index)] ?? '<url>')
         .replace(/\b[A-Z][A-Z0-9_]{4,}\b/g, (match) => (process.env[match] !== undefined ? '<env>' : match))
-        .slice(0, maxRemoteFunctionErrorMessageLength);
+        .slice(0, maxFunctionErrorMessageLength);
 }
 
 function removeUrlOrigin(value: string): string {
@@ -86,15 +89,4 @@ function removeUrlOrigin(value: string): string {
     } catch {
         return '<url>';
     }
-}
-
-function redactAbsolutePath(value: string): string {
-    if (value === remoteFunctionProjectPath) {
-        return '.';
-    }
-    if (value.startsWith(`${remoteFunctionProjectPath}/`)) {
-        return value.slice(remoteFunctionProjectPath.length + 1);
-    }
-
-    return '<path>';
 }

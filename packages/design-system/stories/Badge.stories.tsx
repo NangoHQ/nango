@@ -1,9 +1,9 @@
-import { Badge } from '@/components-v2/ui/Badge';
+import { Badge } from '@/components/ui/Badge';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Badge',
+    title: 'Components/UI/Badge',
     parameters: { layout: 'padded' }
 };
 export default meta;

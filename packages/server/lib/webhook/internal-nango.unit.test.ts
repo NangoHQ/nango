@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { InternalNango } from './internal-nango.js';
+
 const mocks = vi.hoisted(() => {
     return {
         envs: {
@@ -65,8 +67,6 @@ vi.mock('@nangohq/shared', () => {
         getSyncConfigsByConfigIdForWebhook: mocks.getSyncConfigsByConfigIdForWebhook
     };
 });
-
-import { InternalNango } from './internal-nango.js';
 
 function createLogCtx(id: string) {
     return {

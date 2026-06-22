@@ -7,21 +7,21 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { ButtonLink } from '@/components-v2/ui/Button';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { AuthBadge } from './components/AuthBadge';
+import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
 
@@ -101,27 +101,25 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-8">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
-            <header className="flex justify-between items-center">
-                <h2 className="text-text-primary text-title-subsection">Integrations</h2>
+            <header className="flex items-center gap-3">
+                <InputGroup className="h-10 flex-1">
+                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
+                    <InputGroupAddon>
+                        <Search />
+                    </InputGroupAddon>
+                </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
-                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
                             Set up new integration
                         </ButtonLink>
                     )}
                 </PermissionGate>
             </header>
-
-            <InputGroup className="bg-bg-subtle">
-                <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
-                <InputGroupAddon>
-                    <Search />
-                </InputGroupAddon>
-            </InputGroup>
 
             <AutoIdlingBanner />
 
@@ -135,12 +133,12 @@ export const IntegrationsList = () => {
             )}
 
             {data?.data && data.data.length === 0 && (
-                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                    <h3 className="text-title-body text-text-primary">No available integrations</h3>
+                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
+                    <h3 className="text-title-body text-text-strong">No available integrations</h3>
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
                                 Set up new integration
                             </ButtonLink>
                         )}
@@ -149,12 +147,12 @@ export const IntegrationsList = () => {
             )}
 
             {data?.data && data.data.length > 0 && integrations && integrations.length === 0 && (
-                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                    <h3 className="text-title-body text-text-primary">No integrations found</h3>
+                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
+                    <h3 className="text-title-body text-text-strong">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
                                 Set up new integration
                             </ButtonLink>
                         )}
@@ -181,7 +179,7 @@ export const IntegrationsList = () => {
                                     navigate(`/${env}/integrations/${integration.unique_key}`);
                                 }}
                             >
-                                <TableCell className="text-text-primary text-body-small-semi">
+                                <TableCell className="text-text-strong text-body-small-semi">
                                     <div className="flex gap-1.5 items-center">
                                         <IntegrationLogo provider={integration.provider} />
                                         {integration.display_name || integration.meta.displayName}
@@ -193,7 +191,7 @@ export const IntegrationsList = () => {
                                         <CopyButton text={integration.unique_key} />
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-text-primary text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>
+                                <TableCell className="text-text-strong text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>
                                 <TableCell>
                                     <AuthBadge authMode={integration.meta.authMode} />
                                 </TableCell>

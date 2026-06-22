@@ -1,4 +1,4 @@
-import { NangoError, deserializeNangoError } from '@nangohq/shared';
+import { deserializeNangoError, NangoError } from '@nangohq/shared';
 import { stringifyError } from '@nangohq/utils';
 
 export function toNangoError({ err, defaultErrorType, scriptName }: { err: unknown; defaultErrorType: string; scriptName: string }): NangoError {

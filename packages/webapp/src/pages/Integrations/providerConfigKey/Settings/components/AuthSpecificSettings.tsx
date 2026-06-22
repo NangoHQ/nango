@@ -1,5 +1,6 @@
 import { AppAuthSettings } from './AppAuthSettings';
 import { CustomAuthSettings } from './CustomAuthSettings';
+import { CustomIntegrationSettings } from './CustomIntegrationSettings';
 import { InstallPluginSettings } from './InstallPluginSettings';
 import { McpGenericSettings } from './McpGenericSettings';
 import { McpOAuthSettings } from './McpOAuthSettings';
@@ -10,6 +11,10 @@ import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
 export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
     const authMode = data.template.auth_mode;
+
+    if (data.template.integration_config && Object.keys(data.template.integration_config).length > 0) {
+        return <CustomIntegrationSettings data={data} environment={environment} />;
+    }
 
     switch (authMode) {
         case 'OAUTH1':

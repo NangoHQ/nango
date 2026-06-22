@@ -47,6 +47,9 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     {
         group: 'Functions',
         items: [
+            { value: 'environment:functions:list', label: 'list' },
+            { value: 'environment:functions:read', label: 'read' },
+            { value: 'environment:functions:delete', label: 'delete' },
             { value: 'environment:functions:compile', label: 'compile' },
             { value: 'environment:functions:dryrun', label: 'dryrun' }
         ]

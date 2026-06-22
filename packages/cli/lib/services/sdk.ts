@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import chalk from 'chalk';
 
 import { Nango } from '@nangohq/node';
-import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
+import { BASE_VARIANT, executeUncontrolledFetch, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
