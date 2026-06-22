@@ -24,9 +24,9 @@ docker rm -f elasticsearch 2>/dev/null
 docker run -d --name elasticsearch --network dev_nango -p 9500:9200 -e "discovery.type=single-node" -e "xpack.security.enabled=false" elasticsearch:8.13.0
 ```
 
-### ESLint memory
+### Linting
 
-Running `npm run lint` on the full repo requires `NODE_OPTIONS="--max-old-space-size=8192"` due to the monorepo size. Linting individual packages works without extra memory.
+Linting uses oxlint (`npm run lint`) — fast on the full repo and needs no extra heap, unlike the previous ESLint setup. See `AGENTS.md` for the full lint/format workflow.
 
 ### Running tests
 

@@ -8,7 +8,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 Each component's appearance is defined once, in the design system, and wired to design tokens. Overriding it with `className` or `style` breaks that: colors and spacing drift from the tokens, dark mode stops working, and the same component ends up looking different on every page.
 
-> A lint rule (`react/forbid-component-props`) enforces this by flagging `className` and `style` on design-system components.
+> This is a convention — it was previously enforced by ESLint's `react/forbid-component-props`, which oxlint doesn't support, so watch for `className` and `style` on design-system components in review.
 
 ## What to do instead
 
@@ -75,14 +75,12 @@ Margin, positioning, width, and grid/flex placement are **layout**, not componen
 </span>
 ```
 
-### 5. Genuine one-off? Disable the rule with a reason
+### 5. Genuine one-off? Leave a comment with the reason
 
-There are real exceptions. When you hit one, disable the rule on that line **with a comment explaining why** so the next reader knows it was deliberate.
+There are real exceptions. When you hit one, **add a comment explaining why** so the next reader knows it was deliberate.
 
 ```tsx
-{
-    /* eslint-disable-next-line react/forbid-component-props -- third-party drag handle needs an inline transform */
-}
+{/* one-off: third-party drag handle needs an inline transform */}
 <IconButton label="Drag" style={dragProvided.draggableProps.style} />;
 ```
 
