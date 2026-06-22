@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Cell, Rectangle, XAxis, YAxis } from 'recharts';
 
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { usePostInsights } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { getLogsUrl } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { ChartConfig } from '@/components/ui/Chart';
 import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
@@ -123,8 +123,8 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
 
     if (loading) {
         return (
-            <div className="border border-border-gray rounded-xl p-6">
-                <h3 className="text-md text-white">{title}</h3>
+            <div className="border border-border-muted rounded-xl p-6">
+                <h3 className="text-md text-text-strong">{title}</h3>
                 <div className="h-[190px] w-full  flex items-center justify-center">
                     <Skeleton style={{ width: '50%' }} />
                 </div>
@@ -134,32 +134,32 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
 
     if (total === '0') {
         return (
-            <div className="border border-border-gray rounded-xl p-6">
-                <h3 className="text-md text-white">{title}</h3>
-                <div className="h-[190px] w-full text-text-light-gray text-sm flex items-center justify-center">{help}</div>
+            <div className="border border-border-muted rounded-xl p-6">
+                <h3 className="text-md text-text-strong">{title}</h3>
+                <div className="h-[190px] w-full text-text-muted text-sm flex items-center justify-center">{help}</div>
             </div>
         );
     }
 
     return (
         <div
-            className="border border-border-gray rounded-xl p-6 transition-colors hover:bg-active-gray"
+            className="border border-border-muted rounded-xl p-6 transition-colors hover:bg-surface-page"
             onClick={() => {
                 navigate(getLogsUrl({ env, types: type }));
             }}
         >
             <div className="flex justify-between items-start">
-                <h3 className="text-md text-white">{title}</h3>
+                <h3 className="text-md text-text-strong">{title}</h3>
                 <div className="flex flex-col items-end">
-                    <div className="text-white text-md">{total}</div>
+                    <div className="text-text-strong text-md">{total}</div>
 
-                    <p className="text-text-light-gray text-sm">{desc}</p>
+                    <p className="text-text-muted text-sm">{desc}</p>
                 </div>
             </div>
             <div className="mt-7">
                 <ChartContainer config={chartConfig} className="h-[190px] w-full">
                     <BarChart data={histogram} syncId={'anyId'}>
-                        <CartesianGrid vertical={false} stroke="#323439" />
+                        <CartesianGrid vertical={false} stroke="var(--border-default)" />
                         <XAxis
                             dataKey="date"
                             type="category"

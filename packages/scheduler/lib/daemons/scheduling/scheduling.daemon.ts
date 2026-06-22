@@ -4,11 +4,11 @@ import tracer from 'dd-trace';
 
 import { stringifyError } from '@nangohq/utils';
 
-import { dueSchedules } from './scheduling.js';
 import * as schedules from '../../models/schedules.js';
 import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
 import { SchedulerDaemon } from '../daemon.js';
+import { dueSchedules } from './scheduling.js';
 
 import type { SchedulerEvent } from '../../config.js';
 import type { Task } from '../../types.js';

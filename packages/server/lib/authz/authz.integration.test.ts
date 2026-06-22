@@ -105,6 +105,35 @@ describe('authz integration', () => {
 
             expect(res.res.status).not.toBe(403);
         });
+
+        it('should allow GET prod Slack admin-auth helper', async () => {
+            const { user } = await seedAccountWithProdEnv();
+            const session = await authenticateUser(api, user);
+
+            // @ts-expect-error authz test — route not in endpoint types
+            const res = await api.fetch('/api/v1/environment/admin-auth', {
+                method: 'GET',
+                query: { env: 'prod', connection_id: 'account-x-1' },
+                session
+            });
+
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should allow DELETE prod Slack admin connection helper', async () => {
+            const { user } = await seedAccountWithProdEnv();
+            const session = await authenticateUser(api, user);
+
+            // @ts-expect-error authz test — route not in endpoint types
+            const res = await api.fetch('/api/v1/connections/admin/:connectionId', {
+                method: 'DELETE',
+                query: { env: 'prod' },
+                params: { connectionId: 'account-x-1' },
+                session
+            });
+
+            expect(res.res.status).not.toBe(403);
+        });
     });
 
     // ── production_support — denied writes on prod ──────────
@@ -226,6 +255,37 @@ describe('authz integration', () => {
                 query: { env: 'dev' },
                 params: { id: 9999 },
                 body: { role: 'production_support' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny GET prod Slack admin-auth helper', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            // @ts-expect-error authz test — route not in endpoint types
+            const res = await api.fetch('/api/v1/environment/admin-auth', {
+                method: 'GET',
+                query: { env: 'prod', connection_id: 'account-x-1' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny DELETE prod Slack admin connection helper', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            // @ts-expect-error authz test — route not in endpoint types
+            const res = await api.fetch('/api/v1/connections/admin/:connectionId', {
+                method: 'DELETE',
+                query: { env: 'prod' },
+                params: { connectionId: 'account-x-1' },
                 session
             });
 
@@ -432,6 +492,37 @@ describe('authz integration', () => {
             const res = await api.fetch('/api/v1/sync', {
                 method: 'GET',
                 query: { env: 'prod' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny GET prod integration flows', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/integrations/:providerConfigKey/flows', {
+                method: 'GET',
+                query: { env: 'prod' },
+                params: { providerConfigKey: 'some-key' },
+                session
+            });
+
+            expect(res.res.status).toBe(403);
+        });
+
+        it('should deny GET prod flow by name', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            // @ts-expect-error authz test — /flow/:flowName not in endpoint types
+            const res = await api.fetch('/api/v1/flow/:flowName', {
+                method: 'GET',
+                query: { env: 'prod', provider_config_key: 'some-key' },
+                params: { flowName: 'some-flow' },
                 session
             });
 

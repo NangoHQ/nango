@@ -1,9 +1,11 @@
 Use `npm` as the project package manager.
 After running the initial `npm install` or `npm ci`, run `npm run prepare` to install Husky git hooks.
 
-## TypeScript Build
+## Linting & formatting
 
-Run `npm run ts-build` before autofixing lint errors using npm run lint:fix. Fresh worktrees don't have `dist/` (gitignored), so workspace packages like `@nangohq/types` can't resolve, causing false ESLint errors and broken type-checking.
+Linting uses **oxlint** — `npm run lint` (and `npm run lint:fix`), configured in `.oxlintrc.json`. Type-aware rules run via `oxlint-tsgolint`, which resolves types from source, so no `ts-build`/`dist` is needed first. Formatting is **Prettier** — `npm run format` (CI checks it via `npm run format:check`).
+
+For inline editor diagnostics, install the oxlint extension: VS Code / Cursor → `oxc.oxc-vscode`; JetBrains → the `oxc` plugin; Neovim/Emacs/Helix/Sublime → any LSP client via `oxlint --lsp`. The ESLint extension will no longer show diagnostics.
 
 ## Running Nango locally
 
@@ -13,7 +15,7 @@ For full local dev setup (Docker, service URLs, auth flows, troubleshooting), us
 
 ### Multiple worktrees (local backend)
 
-Run `npm run dev -w packages/webapp` from each worktree. Vite picks the next free port (3000 → 3001 → 3002 …) and rewrites `apiUrl` in `env.js` to match, routing all API traffic through Vite's proxy to the local backend at `localhost:3003`.
+Run `npm run dev -w packages/webapp` from each worktree. Vite picks the next free port (3000 → 3001 → 3002 …) and each dashboard calls the local backend at `localhost:3003` directly — the API's dev CORS trusts any `localhost` port, so no proxy or `apiUrl` rewrite is needed. Only `/env.js` is proxied so `window._env` loads same-origin.
 
 ### Remote API
 
@@ -24,3 +26,13 @@ REMOTE_API=dev npm run dev -w packages/webapp       # https://api-development.na
 REMOTE_API=staging npm run dev -w packages/webapp   # https://api-staging.nango.dev
 REMOTE_API=prod npm run dev -w packages/webapp      # https://api.nango.dev
 ```
+
+## Design system
+
+`@nangohq/design-system` components (`Button`, `IconButton`, …) own their styling. In any package that consumes the design system (webapp, …), **don't override it with `className` or `style`** — a lint rule (`react/forbid-component-props`) flags these props where the design system is used. Instead:
+
+- Use the component's `variant`/`size` and other props.
+- Put layout (margin, positioning, width) on a **wrapper element**, not the component.
+- Need a look no prop covers? Add a variant to the design system — see `packages/design-system/AGENTS.md`.
+
+Full guidance: `packages/design-system/stories/StylingAndCustomization.mdx`

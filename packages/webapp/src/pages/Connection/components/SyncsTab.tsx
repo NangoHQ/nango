@@ -2,9 +2,11 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { Button, IconButton } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
@@ -16,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
@@ -23,16 +26,11 @@ import { getLogsUrl } from '@/utils/logs';
 import { formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand, SyncResponse } from '@/types';
-import type { ApiConnectionFull, GetConnection, GetIntegration } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 
-export const SyncsTab = ({
-    connectionData,
-    integrationData
-}: {
-    connectionData: GetConnection['Success']['data'];
-    integrationData: GetIntegration['Success']['data'];
-}) => {
+export const SyncsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, integrationData } = useConnectionContext();
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
     const { data: syncs, isLoading, error } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
@@ -49,7 +47,7 @@ export const SyncsTab = ({
         const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
         return (
             <EmptyCard>
-                <span className="text-text-primary text-title-body">No models are syncing for {integrationName}.</span>
+                <span className="text-text-strong text-title-body">No models are syncing for {integrationName}.</span>
                 <span className="text-text-secondary text-body-medium-regular">Start syncing models for {integrationName} on the Function settings tab.</span>
                 <ButtonLink variant="primary" to={`/${env}/integrations/${providerConfigKey}/functions#syncs`}>
                     <Wrench />
@@ -150,7 +148,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 {/* Name & Variant */}
                 <TableCell>
                     <div className="flex gap-2 items-center">
-                        <span className="text-code-body-small-medium text-text-secondary">{sync.name}</span>
+                        <span className="text-body-small-semi text-text-strong">{sync.name}</span>
                         {sync.variant !== 'base' && (
                             <Tooltip>
                                 <TooltipTrigger>
@@ -169,7 +167,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell className="max-w-38">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-body-small-semi text-text-primary truncate block">{models}</span>
+                            <span className="text-body-small-semi text-text-strong truncate block">{models}</span>
                         </TooltipTrigger>
                         <TooltipContent className="p-2">{models}</TooltipContent>
                     </Tooltip>
@@ -229,9 +227,9 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell>
                     <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <IconButton variant="ghost" size="2xs" label="Sync actions">
                                 <Ellipsis />
-                            </Button>
+                            </IconButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {/* Pause/Resume Schedule */}
@@ -284,23 +282,23 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                     <DialogHeader>
                         <DialogTitle>Trigger sync execution</DialogTitle>
                         <DialogDescription>
-                            Trigger a sync execution for function <span className="font-mono text-text-primary">{sync.name}</span> in the current connection.
+                            Trigger a sync execution for function <span className="font-mono text-text-strong">{sync.name}</span> in the current connection.
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-8">
                         <div className="inline-flex gap-2 items-center">
                             <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
-                            <span className="text-text-primary text-body-medium-medium">Resync entire dataset</span>
+                            <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
                             <InfoTooltip icon={<Info />} side="bottom">
-                                The current checkpoint (and the deprecated <span className="font-mono text-text-primary">nango.lastSyncDate</span>) will be set
-                                to <span className="font-mono text-text-primary">null</span>. The whole dataset will be resynced.
+                                The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be set
+                                to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
                             </InfoTooltip>
                         </div>
 
                         <div className="inline-flex gap-2 items-center">
                             <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
-                            <span className="text-text-primary text-body-medium-medium">Empty cache</span>
+                            <span className="text-text-strong text-body-medium-medium">Empty cache</span>
                             <InfoTooltip icon={<Info />} side="bottom">
                                 All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
                             </InfoTooltip>
@@ -309,7 +307,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="outline">Cancel</Button>
                         </DialogClose>
                         <Button variant="primary" onClick={onTrigger} loading={isRunningSyncCommand}>
                             Trigger

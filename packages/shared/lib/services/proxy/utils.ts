@@ -4,9 +4,8 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { signAwsSigV4Request } from './aws-sigv4.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -15,6 +14,7 @@ import {
     interpolateProxyUrlParts
 } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
+import { signAwsSigV4Request } from './aws-sigv4.js';
 
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -39,7 +39,9 @@ type ProxyErrorCode =
     | 'unknown_error'
     | 'failed_to_get_connection'
     | 'invalid_certificate_or_key_format'
-    | 'proxy_redirect_to_denied_host';
+    | 'proxy_redirect_to_denied_host'
+    | 'base_url_override_disabled'
+    | 'base_url_override_not_allowed';
 
 export interface RetryReason {
     retry: boolean;
@@ -94,6 +96,21 @@ export function getAxiosConfiguration({
     }
 
     const url = buildProxyURL({ config: proxyConfig, connection });
+    if (proxyConfig.validateProxyRequestUrl) {
+        proxyConfig.validateProxyRequestUrl({
+            absoluteUrl: url,
+            proxyConfig,
+            connection,
+            ...(integrationConfig !== undefined ? { integrationConfig } : {})
+        });
+    }
+    // Merge proxy.body into proxyConfig.data before building headers so that any
+    // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
+    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
+    if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
+        proxyConfig = { ...proxyConfig, data: mergeInjectedBody(proxyConfig.data, injectedBody) };
+    }
+
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
@@ -186,6 +203,7 @@ export function getProxyConfiguration({
         baseUrlOverride,
         retryOn,
         forwardHeadersOnRedirect,
+        validateProxyRequestUrl,
         validateProxyRedirectUrl
     } = externalConfig;
     const { providerName } = internalConfig;
@@ -256,6 +274,7 @@ export function getProxyConfiguration({
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
         ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
+        ...(validateProxyRequestUrl !== undefined ? { validateProxyRequestUrl } : {}),
         ...(validateProxyRedirectUrl !== undefined ? { validateProxyRedirectUrl } : {})
     };
 
@@ -310,6 +329,68 @@ export function deriveIntegrationConfigProxy({
         ...proxyConfig,
         provider: { ...provider, proxy }
     };
+}
+
+/**
+ * Whether the outbound proxy URL is steered by a configurable override (SDK/header override,
+ * integration custom base URL, or AWS SigV4 per-connection base_url) rather than only the provider default.
+ */
+export function proxyUsesConfigurableBaseUrlOverride({
+    proxyConfig,
+    connection,
+    integrationConfig
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy;
+}): boolean {
+    if (proxyConfig.baseUrlOverride) {
+        return true;
+    }
+
+    if (connection.credentials.type === 'AWS_SIGV4') {
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            return true;
+        }
+    }
+
+    if (proxyConfig.provider.integration_config && integrationConfig?.custom?.['baseUrl']) {
+        return true;
+    }
+
+    return false;
+}
+
+export function enforceProxyOutboundUrlPolicy({
+    absoluteUrl,
+    proxyConfig,
+    connection,
+    integrationConfig,
+    overrideEnabled,
+    denylist
+}: {
+    absoluteUrl: string;
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy;
+    overrideEnabled: boolean;
+    denylist: Set<string>;
+}): void {
+    if (
+        !overrideEnabled &&
+        proxyUsesConfigurableBaseUrlOverride({
+            proxyConfig,
+            connection,
+            ...(integrationConfig !== undefined ? { integrationConfig } : {})
+        })
+    ) {
+        throw new ProxyError('base_url_override_disabled', 'Base URL override is disabled by server configuration.');
+    }
+
+    if (denylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, denylist)) {
+        throw new ProxyError('base_url_override_not_allowed', 'This base URL override is not allowed by server configuration.');
+    }
 }
 
 /**
@@ -377,24 +458,86 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     if (config.provider?.proxy?.query) {
+        const creds = connection.credentials;
+        let accessToken = '';
+        if (creds.type === 'OAUTH2') {
+            accessToken = creds.access_token || '';
+        } else if ('token' in creds && typeof creds.token === 'string') {
+            accessToken = creds.token;
+        }
+        const replacers = {
+            accessToken,
+            connectionConfig: connection.connection_config,
+            credentials: creds,
+            ...(creds as unknown as Record<string, string>)
+        };
         for (const [key, value] of Object.entries(config.provider.proxy.query)) {
             if (typeof value !== 'string') {
                 continue;
             }
-            if (connection.credentials.type === 'API_KEY' && value.includes('${apiKey}')) {
-                url.searchParams.set(key, interpolateIfNeeded(value, { ...(connection.credentials as unknown as Record<string, string>) }));
-            } else if (value.includes('connectionConfig.')) {
-                const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
-
-                if (interpolatedValue && !interpolatedValue.includes('${')) {
-                    url.searchParams.set(key, interpolatedValue);
-                }
-            } else if (!value.includes('$')) {
-                url.searchParams.set(key, value);
+            const interpolated = interpolateIfNeeded(value, replacers);
+            if (!interpolated.includes('${')) {
+                url.searchParams.set(key, interpolated);
             }
         }
     }
     return url.toString();
+}
+
+export function buildProxyBody({
+    config,
+    connection
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+}): Record<string, string> | null {
+    if (!config.provider?.proxy?.body) {
+        return null;
+    }
+
+    const body: Record<string, string> = {};
+    const replacers = {
+        connectionConfig: connection.connection_config,
+        credentials: connection.credentials,
+        ...(connection.credentials as unknown as Record<string, string>)
+    };
+
+    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+        if (typeof value !== 'string') {
+            continue;
+        }
+        const interpolated = interpolateIfNeeded(value, replacers);
+        if (!interpolated.includes('${')) {
+            body[key] = interpolated;
+        }
+    }
+
+    return Object.keys(body).length > 0 ? body : null;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        !Buffer.isBuffer(value) &&
+        !(value instanceof FormData) &&
+        !(value instanceof URLSearchParams)
+    );
+}
+
+function mergeInjectedBody(existing: unknown, injected: Record<string, string>): unknown {
+    if (!existing) return injected;
+    if (isPlainObject(existing)) return { ...existing, ...injected };
+    if (existing instanceof FormData) {
+        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        return existing;
+    }
+    if (existing instanceof URLSearchParams) {
+        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        return existing;
+    }
+    return existing;
 }
 
 function getRawBody(method: string, data: unknown): string {

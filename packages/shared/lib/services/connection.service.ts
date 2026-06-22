@@ -6,9 +6,8 @@ import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
 import * as awsSigV4Client from '../auth/aws-sigv4.js';
@@ -19,15 +18,7 @@ import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import {
-    DEFAULT_INFINITE_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    REFRESH_MARGIN_MS,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
-import syncManager from './sync/manager.service.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
@@ -44,6 +35,15 @@ import {
     stripCredential,
     stripStepResponse
 } from '../utils/utils.js';
+import configService from './config.service.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    getExpiresAtFromCredentials,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS
+} from './connections/utils.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -124,7 +124,7 @@ class ConnectionService {
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
 
         if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
+            const encryptedConnection = getEncryptionManager().encryptConnection({
                 ...storedConnection,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -150,7 +150,7 @@ class ConnectionService {
             return [{ connection: connection[0]!, operation: 'override' }];
         }
 
-        const { id, ...data } = encryptionManager.encryptConnection({
+        const { id, ...data } = getEncryptionManager().encryptConnection({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             config_id: config_id as number,
@@ -206,7 +206,7 @@ class ConnectionService {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
 
-            const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
+            const { id, ...encryptedConnection } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 config_id: config.id as number,
@@ -436,7 +436,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const connection = encryptionManager.decryptConnection(rawConnection);
+        const connection = getEncryptionManager().decryptConnection(rawConnection);
 
         // Parse the token expiration date.
         const credentials = connection.credentials;
@@ -471,7 +471,7 @@ class ConnectionService {
             return Err('failed_to_fetch_connection');
         }
 
-        return Ok({ connection: encryptionManager.decryptConnection(result.connection), end_user: result.end_user });
+        return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
     public async updateConnection(connection: DBConnectionDecrypted) {
@@ -483,9 +483,20 @@ class ConnectionService {
                 environment_id: connection.environment_id,
                 deleted: false
             })
-            .update(encryptionManager.encryptConnection(connection))
+            .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return encryptionManager.decryptConnection(res[0]!);
+        return getEncryptionManager().decryptConnection(res[0]!);
+    }
+
+    public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
+        const now = new Date();
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id }).update({
+            updated_at: now,
+            last_refresh_failure: now,
+            last_refresh_success: null,
+            refresh_attempts: MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+            refresh_exhausted: true
+        });
     }
 
     public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
@@ -678,7 +689,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection: DBConnection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -709,7 +720,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
@@ -725,7 +736,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     /**

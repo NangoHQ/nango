@@ -1,12 +1,12 @@
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { nanoid } from '@nangohq/utils';
 
+import { TaskEventsHandler } from '../events.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
-import { TaskEventsHandler } from '../events.js';
 
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { Task } from '@nangohq/scheduler';

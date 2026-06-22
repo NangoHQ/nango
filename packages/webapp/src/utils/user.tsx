@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useSWRConfig } from 'swr';
 
-import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
 import { useLogoutAPI } from '../hooks/useAuth';
+import { resetPlayground } from '../store/playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
 
 import type { ApiUser } from '@nangohq/types';
 
@@ -27,7 +28,8 @@ export function useSignout() {
     const { mutateAsync: logoutAPI } = useLogoutAPI();
 
     return async () => {
-        storage.clear();
+        storage.clearSession();
+        resetPlayground(); // playground selections belong to the session's account/env
         analyticsReset();
         await logoutAPI(); // Destroy server session.
 

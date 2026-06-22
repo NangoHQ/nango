@@ -1,5 +1,5 @@
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { Button } from '@/components/ui/Button';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 export const Visible: Story = {
     render: () => (
         <ConditionalTooltip condition={true} content="You don't have permission to edit this." asChild>
-            <Button variant="secondary" size="sm" disabled>
+            <Button variant="secondary" size="md" disabled>
                 Edit
             </Button>
         </ConditionalTooltip>
@@ -24,7 +24,7 @@ export const Visible: Story = {
 export const Hidden: Story = {
     render: () => (
         <ConditionalTooltip condition={false} content="This tooltip is hidden.">
-            <Button variant="secondary" size="sm">
+            <Button variant="secondary" size="md">
                 Edit
             </Button>
         </ConditionalTooltip>

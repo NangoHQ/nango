@@ -85,15 +85,13 @@ async function makeActionInstance() {
 describe('uncontrolledFetch', () => {
     beforeEach(() => {
         vi.resetModules();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        delete process.env['AWS_LAMBDA_RUNTIME_API'];
+        vi.unstubAllEnvs();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
-        delete process.env['AWS_LAMBDA_RUNTIME_API'];
+        vi.unstubAllEnvs();
     });
 
     it('rejects redirects to non-HTTP(S) schemes', async () => {
@@ -108,8 +106,37 @@ describe('uncontrolledFetch', () => {
         });
     });
 
+    it('honors NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false by ignoring custom denylist env', async () => {
+        const customOnlyHost = 'https://custom-deny-only.invalid/path';
+
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'true');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['custom-deny-only.invalid']));
+        const fetchMockEnabled = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMockEnabled as any);
+
+        const { action: actionEnabled } = await makeActionInstance();
+
+        await expect(actionEnabled.uncontrolledFetch({ url: new URL(customOnlyHost) })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMockEnabled).not.toHaveBeenCalled();
+
+        vi.resetModules();
+        vi.unstubAllEnvs();
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'false');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['custom-deny-only.invalid']));
+        const fetchMockDisabled = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMockDisabled as any);
+
+        const { action: actionDisabled } = await makeActionInstance();
+
+        await expect(actionDisabled.uncontrolledFetch({ url: new URL(customOnlyHost) })).resolves.toBeDefined();
+        expect(fetchMockDisabled).toHaveBeenCalled();
+    });
+
     it('blocks a redirect hop to a denylisted host', async () => {
-        process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = JSON.stringify(['metadata.google.internal']);
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['metadata.google.internal']));
         const fetchMock = vi
             .fn()
             .mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'https://metadata.google.internal/latest/meta-data/' } }));
@@ -376,12 +403,13 @@ describe('uncontrolledFetch byte metering helpers', () => {
 describe('uncontrolledFetch transfer metering', () => {
     beforeEach(() => {
         vi.resetModules();
-        delete process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'];
+        vi.unstubAllEnvs();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+        vi.unstubAllEnvs();
     });
 
     it('records request and response transfer bytes for a simple GET', async () => {

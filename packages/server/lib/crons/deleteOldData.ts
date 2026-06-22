@@ -16,17 +16,17 @@ import {
 } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
+import { batchDelete } from '../deletion/batchDelete.js';
+import { deleteConnectionData } from '../deletion/deleteConnectionData.js';
+import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
+import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.js';
+import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
+import { deleteSyncs } from '../deletion/deleteSyncs.js';
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
-import { batchDelete } from './delete/batchDelete.js';
-import { deleteConnectionData } from './delete/deleteConnectionData.js';
-import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
-import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
-import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
-import { deleteSyncData } from './delete/deleteSyncData.js';
 
-import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
+import type { BatchDeleteSharedOptions } from '../deletion/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.deleteOldData');
@@ -145,9 +145,16 @@ export async function exec(): Promise<void> {
                 if (syncs.isErr()) {
                     throw syncs.error;
                 }
-                for (const { sync, syncConfig } of syncs.value) {
-                    await deleteSyncData(sync, syncConfig, opts);
-                }
+                // null environmentId when the config is already gone → unschedule and records are skipped.
+                await deleteSyncs(
+                    syncs.value.map(({ sync, syncConfig }) => ({
+                        id: sync.id,
+                        nangoConnectionId: sync.nango_connection_id,
+                        environmentId: syncConfig?.environment_id ?? null,
+                        models: syncConfig?.models ?? []
+                    })),
+                    opts
+                );
 
                 return syncs.value.length;
             }
@@ -175,7 +182,7 @@ export async function exec(): Promise<void> {
                 const syncsConfigs = await getSoftDeletedSyncConfig({ limit, olderThan: deleteSyncConfigsOlderThan });
 
                 for (const syncConfig of syncsConfigs) {
-                    await deleteSyncConfigData(syncConfig, opts);
+                    await deleteSyncConfigData({ syncConfigId: syncConfig.id, environmentId: syncConfig.environment_id, models: syncConfig.models }, opts);
                 }
 
                 return syncsConfigs.length;
@@ -212,7 +219,11 @@ export async function exec(): Promise<void> {
         });
     } finally {
         if (lock) {
-            locking.release(lock);
+            try {
+                await locking.release(lock);
+            } catch (err) {
+                logger.error('Error releasing lock', { lock: lock.key, error: err });
+            }
         }
     }
 }

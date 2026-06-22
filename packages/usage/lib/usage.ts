@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
@@ -49,6 +49,15 @@ export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is Get
     return opts.timeframe.start >= SHADOW_MIN_TIMEFRAME_START;
 }
 
+// Per-call random sample (not account-based) so we can ramp + killswitch CH
+// load without an account cohort being permanently in or out.
+export function shouldShadowCapping(opts: GetBillingUsageOpts | undefined): boolean {
+    if (opts?.timeframe) return false;
+    const pct = envs.FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE;
+    if (pct <= 0) return false;
+    return Math.random() * 100 < pct;
+}
+
 let cachedAllowlistCsv: string | undefined;
 let cachedAllowlist = new Set<number>();
 function getRolloutAllowlist(): Set<number> {
@@ -76,6 +85,10 @@ export function shouldUseClickhouseFor(accountId: number): boolean {
 export function resolveBillingUsageSource(accountId: number, requestedSource: 'clickhouse' | 'orb' | undefined): 'clickhouse' | 'orb' {
     const respected = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE ? requestedSource : undefined;
     return respected ?? (shouldUseClickhouseFor(accountId) ? 'clickhouse' : 'orb');
+}
+
+export function resolveCappingSource(accountId: number): 'clickhouse' | 'orb' {
+    return accountId % 100 < envs.FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE ? 'clickhouse' : 'orb';
 }
 
 async function resolveEnvironmentNamesInBreakdown(
@@ -165,6 +178,7 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
+    private redis: Awaited<ReturnType<typeof getRedis>>;
     public billingClient: UsageBillingClient;
     // Read-only client for the dashboard CH path (gated by
     // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
@@ -174,6 +188,7 @@ export class UsageTracker implements IUsageTracker {
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
+        this.redis = redis;
         this.billingClient = new UsageBillingClient(redis);
     }
 
@@ -189,11 +204,14 @@ export class UsageTracker implements IUsageTracker {
         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.get(cacheKey);
         if (entry.isErr()) {
+            metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
             return Err(entry.error);
         }
-        if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+        const result = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+        if (result !== 'fresh') {
             void this.revalidate({ accountId, metric });
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result });
         return Ok({
             accountId,
             metric,
@@ -203,25 +221,28 @@ export class UsageTracker implements IUsageTracker {
 
     public async getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>> {
         const now = new Date();
-        const result: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
+        const results: Record<UsageMetric, UsageStatus> = {} as Record<UsageMetric, UsageStatus>;
         await Promise.all(
             Object.keys(usageMetrics).map(async (metric) => {
                 const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
                 const entry = await this.cache.get(cacheKey);
                 if (entry.isErr()) {
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result: 'error' });
                     return;
                 }
-                if (entry.value === null || entry.value.revalidateAfter < now.getTime()) {
+                const result = entry.value === null ? 'null' : entry.value.revalidateAfter < now.getTime() ? 'stale' : 'fresh';
+                if (result !== 'fresh') {
                     void this.revalidate({ accountId, metric: metric as UsageMetric });
                 }
-                result[metric as UsageMetric] = {
+                metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'get', metric, result });
+                results[metric as UsageMetric] = {
                     accountId,
                     metric: metric as UsageMetric,
                     current: entry.value?.count || 0
                 };
             })
         );
-        return Ok(result);
+        return Ok(results);
     }
 
     public async incr({
@@ -239,15 +260,18 @@ export class UsageTracker implements IUsageTracker {
         const { cacheKey, ttlMs } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
         const entry = await this.cache.incr(cacheKey, { delta, ttlMs });
         if (entry.isErr()) {
+            metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'incr', metric, result: 'error' });
             return Err(entry.error);
         }
 
         // revalidate if:
         // - forced
         // - or the entry is stale
-        if (forceRevalidation || (entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime())) {
+        const stale = forceRevalidation || !!(entry.value.revalidateAfter && entry.value.revalidateAfter < now.getTime());
+        if (stale) {
             void this.revalidate({ accountId, metric });
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'incr', metric, result: stale ? 'stale' : 'fresh' });
 
         return Ok({
             accountId,
@@ -266,15 +290,41 @@ export class UsageTracker implements IUsageTracker {
         const lock = await this.cache.tryAcquireLock(lockKey, { ttlMs: 60_000 });
         if (lock.isErr()) {
             // another revalidation is in progress, skip
+            span?.setTag('lock_acquired', false);
+            span?.finish();
             return Ok(undefined);
         }
+        span?.setTag('lock_acquired', true);
+        try {
+            return await this._revalidate({ accountId, metric, source, parentSpan: span });
+        } finally {
+            span?.finish();
+        }
+    }
+
+    private async _revalidate({
+        accountId,
+        metric,
+        source,
+        parentSpan
+    }: {
+        accountId: number;
+        metric: UsageMetric;
+        source: string;
+        parentSpan: ReturnType<typeof tracer.startSpan> | undefined;
+    }): Promise<Result<void>> {
+        const span = tracer.startSpan('nango.usage.revalidate.work', {
+            tags: { accountId, metric, source },
+            ...(parentSpan ? { childOf: parentSpan } : {})
+        });
         try {
             const now = new Date();
             switch (metric) {
                 case 'connections': {
                     const count = await connectionService.countByAccountId(accountId);
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, count);
+                    const res = await this.cache.overwrite(cacheKey, count);
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     return Ok(undefined);
                 }
                 case 'records': {
@@ -283,8 +333,15 @@ export class UsageTracker implements IUsageTracker {
                         throw count.error;
                     }
                     const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, count.value);
+                    const res = await this.cache.overwrite(cacheKey, count.value);
+                    metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     span?.setTag('count', count.value);
+                    return Ok(undefined);
+                }
+                case 'data_transfer': {
+                    // Not yet tracked via Orb; write 0 so the cache entry exists and avoids a revalidate loop
+                    const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
+                    await this.cache.overwrite(cacheKey, 0);
                     return Ok(undefined);
                 }
                 case 'proxy':
@@ -302,7 +359,8 @@ export class UsageTracker implements IUsageTracker {
                     // update all billing-related metrics
                     for (const [metric, count] of Object.entries(billingUsage.value)) {
                         const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric: metric as UsageMetric, now });
-                        await this.cache.overwrite(cacheKey, count);
+                        const res = await this.cache.overwrite(cacheKey, count);
+                        metrics.increment(metrics.Types.BILLING_USAGE_TRACKER_CALLS, 1, { op: 'overwrite', metric, result: res.isErr() ? 'error' : 'written' });
                     }
                     return Ok(undefined);
                 }
@@ -343,6 +401,10 @@ export class UsageTracker implements IUsageTracker {
             });
         }
 
+        if (!opts?.timeframe && resolveCappingSource(accountId) === 'clickhouse') {
+            return this.getCappingUsageFromClickhouse(accountId);
+        }
+
         // Orb path: strip CH-only fields so they don't pollute the billing
         // client's Redis cache key. Orb itself ignores them, but the cache key
         // hashes the full opts and would miss on otherwise-identical queries.
@@ -371,6 +433,12 @@ export class UsageTracker implements IUsageTracker {
             // sides are floats, true apples-to-apples.
             void this.shadowAgainstClickhouse({ accountId, timeframe: opts.timeframe, orbResult: orbValue }).catch((err: unknown) => {
                 logger.error(`billing-usage shadow failed: ${stringifyError(err)}`);
+            });
+        }
+
+        if (!billingUsageMetrics.value.fromCache && shouldShadowCapping(opts)) {
+            void this.shadowCappingAgainstClickhouse({ accountId, orbResult: orbValue }).catch((err: unknown) => {
+                logger.error(`billing-usage capping shadow failed: ${stringifyError(err)}`);
             });
         }
 
@@ -430,6 +498,76 @@ export class UsageTracker implements IUsageTracker {
             const divergence = Math.abs(orbTotal - chTotal) / denom;
             const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
             metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
+        }
+    }
+
+    private async getCappingUsageFromClickhouse(accountId: number): Promise<Result<BillingUsageMetrics>> {
+        const cacheKey = `billing:usage:ch:${accountId}`;
+        try {
+            const cached = await this.redis.get(cacheKey);
+            if (cached) {
+                const value = JSON.parse(cached) as BillingUsageMetrics;
+                metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'true' });
+                return Ok(value);
+            }
+        } catch (err) {
+            logger.warning(`capping CH cache read failed for account=${accountId}: ${stringifyError(err)}`);
+        }
+        metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'false' });
+
+        const chResult = await this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
+        if (chResult.isErr()) return Err(chResult.error);
+
+        await this.writeCappingCache(accountId, chResult.value);
+        return Ok(chResult.value);
+    }
+
+    private async writeCappingCache(accountId: number, value: BillingUsageMetrics): Promise<void> {
+        try {
+            await this.redis.set(`billing:usage:ch:${accountId}`, JSON.stringify(value), { EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS });
+        } catch (err) {
+            logger.warning(`capping CH cache write failed for account=${accountId}: ${stringifyError(err)}`);
+        }
+    }
+
+    private async shadowCappingAgainstClickhouse({ accountId, orbResult }: { accountId: number; orbResult: BillingUsageMetrics }): Promise<void> {
+        const start = process.hrtime.bigint();
+        const timeoutErr = new Error('shadow_timeout');
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
+            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
+            new Promise((resolve) => {
+                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
+            })
+        ]);
+        clearTimeout(timeoutId);
+
+        const outcome = chResult.isOk() ? 'ok' : chResult.error === timeoutErr ? 'timeout' : 'ch_error';
+        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+        metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DURATION_MS, elapsedMs, { outcome });
+        if (chResult.isErr()) return;
+
+        // Populate the CH cache key so the eventual source flip from Orb to
+        // CH doesn't cold-start every account against CH on cutover.
+        await this.writeCappingCache(accountId, chResult.value);
+
+        // Capping path covers only COUNTER metrics — connections/records read
+        // from Postgres on the capping path and aren't returned by either Orb
+        // (no-timeframe scopes to billing period totals, AVG metrics are
+        // formatter-only) or the CH primitive here.
+        for (const metric of COUNTER_METRICS) {
+            const orbTotal = orbResult[metric]?.total ?? 0;
+            const chTotal = chResult.value[metric]?.total ?? 0;
+            if (orbTotal === 0 && chTotal === 0) continue;
+            if (orbTotal === 0 || chTotal === 0) {
+                const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
+                metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED, 1, { accountId, metric, zeroSide });
+                continue;
+            }
+            const denom = Math.max(orbTotal, chTotal);
+            const divergence = Math.abs(orbTotal - chTotal) / denom;
+            const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
+            metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
         }
     }
 
@@ -635,8 +773,6 @@ export class UsageTracker implements IUsageTracker {
         if (!plan.value.orb_subscription_id) {
             return Err(new Error('orb_subscription_id_missing'));
         }
-        // No timeframe / no granularity → CH path is bypassed inside
-        // getBillingUsage, capping continues to read from Orb.
         const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id, accountId);
         if (billingUsage.isErr()) {
             // Note: errors (including rate limit errors) are not being retried
@@ -695,7 +831,8 @@ const sources: Record<UsageMetric, string> = {
     function_executions: 'billing:subscription:usage',
     function_compute_gbms: 'billing:subscription:usage',
     webhook_forwards: 'billing:subscription:usage',
-    function_logs: 'billing:subscription:usage'
+    function_logs: 'billing:subscription:usage',
+    data_transfer: 'billing:subscription:usage'
 };
 
 function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {

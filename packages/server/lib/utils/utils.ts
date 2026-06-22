@@ -3,9 +3,8 @@ import { fileURLToPath } from 'node:url';
 
 import { serializeError } from 'serialize-error';
 
-import { getFeatureFlagsClient } from '@nangohq/kvstore';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
-import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
+import { getOrchestratorUrl, interpolateString, NangoError, Orchestrator, userService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { DBUser, Provider, ProviderJwt, ProviderTwoStep } from '@nangohq/types';
@@ -25,8 +24,6 @@ const BINARY_CONTENT_TYPES = [
     'x-world/',
     'application/octet-stream'
 ];
-
-export const featureFlags = await getFeatureFlagsClient();
 
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {

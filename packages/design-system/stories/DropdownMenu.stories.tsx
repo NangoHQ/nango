@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/Button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -15,7 +15,7 @@ export const Default: Story = {
     render: () => (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="sm">
+                <Button variant="secondary" size="md">
                     Actions
                 </Button>
             </DropdownMenuTrigger>

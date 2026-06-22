@@ -1,8 +1,10 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { IconButton } from '@nangohq/design-system';
+
+import { cn } from '@/utils/utils';
 import { Badge } from '../ui/Badge.js';
-import { Button } from '../ui/Button.js';
 import {
     Combobox,
     ComboboxChip,
@@ -16,7 +18,6 @@ import {
 } from '../ui/Combobox.js';
 import { CopyButton } from '../ui/CopyButton.js';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip.js';
-import { cn } from '@/utils/utils';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;
@@ -118,11 +119,11 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     if (isSharedCredentials || readOnly) {
         return (
-            <div className="flex flex-wrap items-center gap-1.5 min-h-9 rounded border border-border-muted bg-bg-surface px-2 py-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 min-h-9 rounded border border-border-muted bg-surface-canvas px-2 py-1.5">
                 {scopes.map((scope) => (
                     <span
                         key={scope}
-                        className="inline-flex h-[21px] items-center gap-1 rounded bg-bg-subtle border border-border-default px-2 text-xs font-medium text-text-primary"
+                        className="inline-flex h-[21px] items-center gap-1 rounded bg-surface-panel-inset border border-border-default px-2 text-xs font-medium text-text-strong"
                     >
                         {scope}
                     </span>
@@ -158,9 +159,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button type="button" size="icon" variant="ghost" onClick={() => void deleteAllScopes()}>
+                            <IconButton type="button" size="2xs" variant="ghost" label="Delete all scopes" onClick={() => void deleteAllScopes()}>
                                 <Trash2 />
-                            </Button>
+                            </IconButton>
                         </TooltipTrigger>
                         <TooltipContent side="top">Delete all</TooltipContent>
                     </Tooltip>
@@ -195,9 +196,16 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button type="button" size="icon" variant="ghost" loading={loading} onClick={() => void addScopesFromText(inputValue)}>
+                                <IconButton
+                                    type="button"
+                                    size="2xs"
+                                    variant="ghost"
+                                    label="Add scope"
+                                    loading={loading}
+                                    onClick={() => void addScopesFromText(inputValue)}
+                                >
                                     <CornerDownLeft />
-                                </Button>
+                                </IconButton>
                             </TooltipTrigger>
                             <TooltipContent side="top">Add scope</TooltipContent>
                         </Tooltip>
@@ -208,25 +216,25 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         anchor={chipsRef}
                         sideOffset={0}
                         collisionAvoidance={{ side: 'none' }}
-                        className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-bg-subtle flex flex-col"
+                        className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-surface-panel-inset flex flex-col"
                     >
                         <ComboboxList className="p-0 flex-1 min-h-0 max-h-none">
                             {inputValue.trim() && (
                                 <button
                                     type="button"
                                     onClick={() => void addScopesFromText(inputValue)}
-                                    className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary shrink-0"
+                                    className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-state-hover hover:text-text-strong shrink-0"
                                 >
-                                    <span className="inline-flex h-6 items-center gap-1 rounded-md bg-bg-elevated px-2 text-xs font-medium text-text-primary shrink-0">
+                                    <span className="inline-flex h-6 items-center gap-1 rounded-md bg-surface-page px-2 text-xs font-medium text-text-strong shrink-0">
                                         <Plus className="size-3.5" />
                                         Add
                                     </span>
                                     <span>
-                                        <span className="font-medium text-text-primary">&quot;{inputValue.trim()}&quot;</span> as a new scope
+                                        <span className="font-medium text-text-strong">&quot;{inputValue.trim()}&quot;</span> as a new scope
                                     </span>
                                 </button>
                             )}
-                            {filteredSuggestions.length > 0 && <p className="px-2 py-1.5 text-sm text-text-tertiary">Suggested scopes</p>}
+                            {filteredSuggestions.length > 0 && <p className="px-2 py-1.5 text-sm text-text-muted">Suggested scopes</p>}
                             <ComboboxCollection>
                                 {(scope) => (
                                     <ComboboxItem key={scope as string} value={scope} className="rounded-none px-2">

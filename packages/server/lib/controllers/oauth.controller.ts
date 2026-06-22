@@ -6,15 +6,15 @@ import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     accountService,
     configService,
     connectionService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     extractValueByPath,
     genericMcpClient,
     getConnectionConfig,
@@ -23,6 +23,7 @@ import {
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
+    LogActionEnum,
     makeUrl,
     oauth2Client,
     providerClientManager,
@@ -32,7 +33,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { validateConnection } from '../hooks/connection/on/validate-connection.js';
+import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -537,15 +538,19 @@ class OAuthController {
 
             if (customValidationResponse.isErr()) {
                 void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                const message = await handleValidateConnectionFailure({
+                    operation: updatedConnection.operation,
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    environment,
+                    provider,
+                    error: customValidationResponse.error,
+                    logCtx
+                });
+
                 await logCtx.failed();
-
-                if (updatedConnection.operation === 'creation') {
-                    // since this is a new invalid connection, delete it with no trace of it
-                    await connectionService.hardDelete(updatedConnection.connection.id);
-                }
-
-                const payload = customValidationResponse.error?.payload;
-                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                 if (res) {
                     res.status(400).send({
@@ -936,19 +941,45 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
 
+            const reservedOAuthKeys = new Set(['response_type', 'code_challenge', 'code_challenge_method', 'state', 'redirect_uri', 'scope', 'client_id']);
+            const providerAuthParams = Object.fromEntries(
+                Object.entries(interpolateObjectValues(provider.authorization_params || {}, connectionConfig)).filter(([key]) => !reservedOAuthKeys.has(key))
+            );
             const authParams = {
+                ...providerAuthParams,
                 response_type: 'code',
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256'
             };
 
-            const authorizationUri = simpleOAuthClient.authorizeURL({
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(scopeSeparator) : '';
+            const encodedScopes = config.oauth_scopes
+                ? config.oauth_scopes
+                      .split(',')
+                      .map((s) => encodeURIComponent(s.trim()))
+                      .join(scopeSeparator)
+                : '';
+
+            let authorizationUri = simpleOAuthClient.authorizeURL({
                 client_id: config.oauth_client_id,
                 redirect_uri: callbackUrl,
-                scope: config.oauth_scopes || '',
+                scope: scopes,
                 state: session.id,
                 ...authParams
             });
+
+            if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                const url = new URL(authorizationUri);
+                const queryParams = new URLSearchParams(url.search);
+                queryParams.delete('scope');
+                let newQuery = queryParams.toString();
+                if (encodedScopes) {
+                    newQuery = newQuery ? `${newQuery}&scope=${encodedScopes}` : `scope=${encodedScopes}`;
+                }
+                url.search = newQuery;
+                authorizationUri = url.toString();
+            }
 
             void logCtx.info('Redirecting', {
                 authorizationUri,
@@ -957,7 +988,7 @@ class OAuthController {
                 allAuthParams: authParams,
                 connectionConfig,
                 grantType: provider.token_params?.['grant_type'] as string,
-                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+                scopes
             });
 
             res.cookie(`oauth2-${session.id}`, '1', {
@@ -1223,6 +1254,8 @@ class OAuthController {
                         present: 'true'
                     });
                 } else {
+                    // Flag off (default) => keep current behaviour (measure only); on => reject below.
+                    const enforced = await getFlags().isOAuthStateCookieEnforced(account.uuid);
                     // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
                     // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
                     // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
@@ -1230,6 +1263,7 @@ class OAuthController {
                     metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
                         account_id: account.id,
                         present: 'false',
+                        enforced: String(enforced),
                         auth_mode: session.authMode,
                         provider: config.provider,
                         sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
@@ -1240,6 +1274,14 @@ class OAuthController {
                         has_any_cookie: String(Boolean(req.get('cookie'))),
                         req_secure: String(req.secure)
                     });
+
+                    if (enforced) {
+                        const error = WSErrBuilder.MissingStateCookie();
+                        void logCtx.error('Rejecting OAuth callback: state cookie missing', { providerConfigKey, connectionId });
+                        await logCtx.failed();
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                        return;
+                    }
                 }
             }
 
@@ -1841,15 +1883,19 @@ class OAuthController {
 
             if (customValidationResponse.isErr()) {
                 void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                const message = await handleValidateConnectionFailure({
+                    operation: updatedConnection.operation,
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    environment,
+                    provider,
+                    error: customValidationResponse.error,
+                    logCtx
+                });
+
                 await logCtx.failed();
-
-                if (updatedConnection.operation === 'creation') {
-                    // since this is a new invalid connection, delete it with no trace of it
-                    await connectionService.hardDelete(updatedConnection.connection.id);
-                }
-
-                const payload = customValidationResponse.error?.payload;
-                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                 if (res) {
                     await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
@@ -2061,14 +2107,19 @@ class OAuthController {
 
         if (customValidationResponse.isErr()) {
             void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+            const message = await handleValidateConnectionFailure({
+                operation: updatedConnection.operation,
+                connection: updatedConnection.connection,
+                config,
+                account,
+                environment,
+                provider,
+                error: customValidationResponse.error,
+                logCtx
+            });
+
             await logCtx.failed();
-
-            if (updatedConnection.operation === 'creation') {
-                await connectionService.hardDelete(updatedConnection.connection.id);
-            }
-
-            const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
             return;
@@ -2231,15 +2282,19 @@ class OAuthController {
 
                 if (customValidationResponse.isErr()) {
                     void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                    const message = await handleValidateConnectionFailure({
+                        operation: updatedConnection.operation,
+                        connection: updatedConnection.connection,
+                        config,
+                        account,
+                        environment,
+                        provider,
+                        error: customValidationResponse.error,
+                        logCtx
+                    });
+
                     await logCtx.failed();
-
-                    if (updatedConnection.operation === 'creation') {
-                        // since this is a new invalid connection, delete it with no trace of it
-                        await connectionService.hardDelete(updatedConnection.connection.id);
-                    }
-
-                    const payload = customValidationResponse.error?.payload;
-                    const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                     if (res) {
                         await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));

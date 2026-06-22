@@ -78,7 +78,12 @@ export interface AdminAxiosProps {
 
 export class Nango {
     serverUrl: string;
-    secretKey: string;
+    apiKey: string;
+    /**
+     * @deprecated Use `apiKey` instead.
+     */
+    secretKey?: string | undefined;
+    webhookSigningKey?: string | undefined;
     connectionId?: string;
     providerConfigKey?: string;
     isSync = false;
@@ -96,8 +101,13 @@ export class Nango {
             this.serverUrl = this.serverUrl.slice(0, -1);
         }
 
-        if (!config.secretKey) {
-            throw new Error('You must specify a secret key (cf. documentation).');
+        if (config.apiKey && config.secretKey) {
+            throw new Error('You must specify only one of apiKey or secretKey, not both (cf. documentation).');
+        }
+
+        const apiKey = config.apiKey ?? config.secretKey;
+        if (!apiKey) {
+            throw new Error('You must specify an API key (cf. documentation).');
         }
 
         try {
@@ -106,7 +116,9 @@ export class Nango {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
+        this.apiKey = apiKey;
         this.secretKey = config.secretKey;
+        this.webhookSigningKey = config.webhookSigningKey;
         this.connectionId = config.connectionId || '';
         this.providerConfigKey = config.providerConfigKey || '';
 
@@ -1265,10 +1277,14 @@ export class Nango {
     }
 
     private _verifyWebhookSignatureImpl(signatureInHeader: string, jsonPayload: unknown): boolean {
+        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        if (!signingKey) {
+            return false;
+        }
         return (
             crypto
                 .createHash('sha256')
-                .update(`${this.secretKey}${JSON.stringify(jsonPayload)}`)
+                .update(`${signingKey}${JSON.stringify(jsonPayload)}`)
                 .digest('hex') === signatureInHeader
         );
     }
@@ -1276,6 +1292,11 @@ export class Nango {
     /**
      *
      * Verify incoming webhooks request
+     *
+     * Uses `webhookSigningKey` when provided, otherwise falls back to the deprecated `secretKey`.
+     * The API key is never used to sign webhooks, so a client constructed with `apiKey` must also
+     * set `webhookSigningKey`; otherwise this returns false. On environments created after 2026-04-20
+     * (or any environment that later rotated its API key), the signing key differs from the API key.
      *
      * @param body - The raw HTTP body as a string
      * @param headers - The HTTP headers including X-Nango-Hmac-Sha256
@@ -1287,7 +1308,12 @@ export class Nango {
             return false;
         }
 
-        const expectedSignature = crypto.createHmac('sha256', this.secretKey).update(body).digest('hex');
+        const signingKey = this.webhookSigningKey ?? this.secretKey;
+        if (!signingKey) {
+            return false;
+        }
+
+        const expectedSignature = crypto.createHmac('sha256', signingKey).update(body).digest('hex');
         const actualSignature = headers[signatureInHeader];
 
         if (typeof actualSignature !== 'string') {
@@ -1384,7 +1410,7 @@ export class Nango {
      * @returns The enriched headers
      */
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
-        headers['Authorization'] = 'Bearer ' + this.secretKey;
+        headers['Authorization'] = 'Bearer ' + this.apiKey;
         headers['Nango-Is-Sync'] = this.isSync;
         headers['Nango-Is-Script'] = this.isScript;
         headers['Nango-Is-Dry-Run'] = this.dryRun;

@@ -12,9 +12,9 @@ export const IntegrationLogo = ({ provider, className }: IntegrationLogoProps) =
     const [imgError, setImgError] = useState(false);
 
     return (
-        <div className={cn(`p-1 size-8 rounded-sm flex items-center justify-center bg-white border-[0.5px] border-border-muted`, className)}>
+        <div className={cn(`p-1 size-8 rounded-sm flex items-center justify-center bg-surface-raised border-[0.5px] border-border-muted`, className)}>
             {provider === 'unauthenticated' ? (
-                <LockOpen className={`size-full text-black stroke-2`} />
+                <LockOpen className={`size-full text-text-strong stroke-2`} />
             ) : !imgError ? (
                 <img
                     src={`/images/template-logos/${provider}.svg`}

@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { invokeCompiler } from './compiler-client.js';
+import { executionEnvironmentUnavailableMessage, sandboxInitializationFailedMessage } from './sandbox.js';
+
+import type { FunctionError } from './helpers.js';
+
 const mocks = vi.hoisted(() => {
     class CommandExitError extends Error {}
 
@@ -31,12 +36,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 });
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
-import { invokeCompiler } from './compiler-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
-
-import type { FunctionError } from './helpers.js';
-
-describe('remote function compiler client E2B errors', () => {
+describe('sandboxed function compiler client E2B errors', () => {
     beforeEach(() => {
         mocks.envs.E2B_API_KEY = 'e2b-key';
     });
@@ -52,6 +52,16 @@ describe('remote function compiler client E2B errors', () => {
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
+        } satisfies Partial<FunctionError>);
+    });
+
+    it('returns a generic server_error when the sandbox provider is misconfigured', async () => {
+        mocks.envs.E2B_API_KEY = undefined;
+
+        await expect(invokeCompiler({ code: 'export default {}' })).rejects.toMatchObject({
+            code: 'server_error',
+            message: sandboxInitializationFailedMessage,
+            status: 500
         } satisfies Partial<FunctionError>);
     });
 });

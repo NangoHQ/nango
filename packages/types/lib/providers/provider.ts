@@ -53,6 +53,7 @@ export interface BaseProvider {
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;
+        body?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         forward_headers_on_redirect?: boolean;
@@ -151,6 +152,7 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
     client_registration: McpOAuth2ClientRegistration;
+    registration_params?: Record<string, string | string[]>;
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {

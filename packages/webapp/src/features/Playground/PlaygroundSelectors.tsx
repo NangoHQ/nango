@@ -3,9 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { Button } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
@@ -134,7 +135,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
 
     return (
         <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-6">
-            <label className="text-text-primary text-label-large">Integration</label>
+            <label className="text-text-strong text-label-large">Integration</label>
             <ComboboxSelect
                 value={playgroundIntegration || ''}
                 onValueChange={handleIntegrationChange}
@@ -146,12 +147,11 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 emptyText="No integrations found"
                 footer={
                     <div className="flex items-center justify-between gap-3">
-                        <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">Need a new integration?</span>
+                        <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new integration?</span>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
-                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/integrations/create`);
@@ -163,7 +163,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 }
             />
 
-            <label className="text-text-primary text-label-large">Connection</label>
+            <label className="text-text-strong text-label-large">Connection</label>
             <ComboboxSelect
                 value={playgroundConnection || ''}
                 onValueChange={handleConnectionChange}
@@ -177,12 +177,11 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 emptyText="No connections found"
                 footer={
                     <div className="flex items-center justify-between gap-3">
-                        <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">Need a new connection?</span>
+                        <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new connection?</span>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
-                            className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/connections/create${playgroundIntegration ? `?integration_id=${playgroundIntegration}` : ''}`);
@@ -194,7 +193,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 }
             />
 
-            <label className="text-text-primary text-label-large">Function</label>
+            <label className="text-text-strong text-label-large">Function</label>
             <ComboboxSelect
                 value={playgroundFunction || ''}
                 onValueChange={handleFunctionChange}
@@ -207,12 +206,11 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 footer={
                     playgroundIntegration ? (
                         <div className="flex items-center justify-between gap-3">
-                            <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">Activate more functions</span>
+                            <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Activate more functions</span>
                             <Button
                                 type="button"
-                                variant="secondary"
+                                variant="outline"
                                 size="sm"
-                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
                                 onClick={() => {
                                     setPlaygroundOpen(false);
                                     navigate(`/${env}/integrations/${playgroundIntegration}`);

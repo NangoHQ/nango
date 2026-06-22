@@ -1,4 +1,4 @@
-import { OtlpSpan, defaultOperationExpiration } from '@nangohq/logs';
+import { defaultOperationExpiration, OtlpSpan } from '@nangohq/logs';
 import { onEventScriptService } from '@nangohq/shared';
 
 import { envs } from '../../../env.js';

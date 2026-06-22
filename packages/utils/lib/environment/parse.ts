@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
 export const ENVS = z.object({
@@ -32,30 +33,34 @@ export const ENVS = z.object({
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: z.stringbool().optional().default(true),
     NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: z
         .string()
+        .optional()
         .transform((s, ctx) => {
-            if (s.trim() === '') {
+            if (s === undefined) {
+                return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+            }
+            const trimmed = s.trim();
+            if (trimmed === '') {
                 return [];
             }
             try {
-                const parsed = JSON.parse(s);
+                const parsed = JSON.parse(trimmed);
                 if (!Array.isArray(parsed) || !parsed.every((item: unknown) => typeof item === 'string')) {
                     ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a JSON array of strings`);
                     return z.NEVER;
                 }
-                return parsed;
+                if (parsed.length === 0) {
+                    return [];
+                }
+                const customEntries = parsed.map((e: string) => e.trim()).filter((e: string) => e.length > 0);
+                return mergeProxyBaseUrlOverrideDenylist(customEntries);
             } catch {
                 ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a valid JSON array of strings`);
                 return z.NEVER;
             }
-        })
-        .pipe(
-            z.array(z.string()).transform((arr) => {
-                return arr.map((e) => e.trim()).filter((e) => e.length > 0);
-            })
-        )
-        .default([]),
+        }),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -67,7 +72,7 @@ export const ENVS = z.object({
     CRON_TIMEOUT_LOGS_MINUTES: z.coerce.number().optional().default(10),
     CRON_DELETE_OLD_JOBS_LIMIT: z.coerce.number().optional().default(1000),
     CRON_DELETE_OLD_DATA_EVERY_MIN: z.coerce.number().optional().default(10),
-    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(3),
+    CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
@@ -86,6 +91,9 @@ export const ENVS = z.object({
     // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
     // snapshot it.
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
+
+    // Metering
+    METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -230,8 +238,8 @@ export const ENVS = z.object({
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
     RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
-    RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().max(1000).default(10),
-    RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(2000),
+    RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().max(1000).default(500),
+    RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(10_000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
@@ -329,8 +337,10 @@ export const ENVS = z.object({
     // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
     // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
     FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
+    FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
     FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
     FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
+    FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
@@ -402,6 +412,9 @@ export const ENVS = z.object({
             error: 'To learn more about NANGO_ENCRYPTION_KEY, reach out to support.'
         })
         .optional(),
+    // KMS-wrapped alternative to NANGO_ENCRYPTION_KEY (mutually exclusive, enforced at DEK load).
+    NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
+    NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
@@ -442,12 +455,18 @@ export const ENVS = z.object({
     NANGO_REDIS_HOST: z.string().optional(),
     NANGO_REDIS_PORT: z.coerce.number().optional().default(6379),
     NANGO_REDIS_AUTH: z.string().optional(),
+    // Optional AUTH username (e.g. IAM principal). Defaults to 'default' when a token is provided without a username.
+    NANGO_REDIS_USERNAME: z.string().optional(),
+    // Path to a file holding a short-lived auth token (e.g. IAM). Re-read on every (re)connect so rotated tokens work.
+    NANGO_REDIS_AUTH_TOKEN_FILE: z.string().optional(),
 
     // Redis (customer boundary)
     NANGO_CUSTOMER_REDIS_URL: z.url().optional(),
     NANGO_CUSTOMER_REDIS_HOST: z.string().optional(),
     NANGO_CUSTOMER_REDIS_PORT: z.coerce.number().optional().default(6379),
     NANGO_CUSTOMER_REDIS_AUTH: z.string().optional(),
+    NANGO_CUSTOMER_REDIS_USERNAME: z.string().optional(),
+    NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE: z.string().optional(),
 
     // Render
     RENDER_API_KEY: z.string().optional(),
@@ -468,6 +487,10 @@ export const ENVS = z.object({
     PUBLIC_STRIPE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOKS_SECRET: z.string().optional(),
+
+    // Plain (in-app support chat)
+    PLAIN_APP_ID: z.string().optional(),
+    PLAIN_HMAC_SECRET: z.string().optional(),
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
@@ -627,11 +650,22 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
 
-    // E2B sandboxes
+    // Sandboxes
+    SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
+    AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
+    AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
     E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+
+    // Feature Flags
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_UNLEASH_URL: z.url().optional(),
+    NANGO_UNLEASH_API_TOKEN: z.string().optional(),
+    NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
+    NANGO_UNLEASH_REFRESH_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+    NANGO_UNLEASH_INIT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

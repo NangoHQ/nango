@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
+import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
 import { sendSync } from './sync.js';
 
@@ -107,6 +108,7 @@ describe('Webhooks: sync notification tests', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+        mockWebhookDenylistAllowAll();
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {

@@ -33,13 +33,15 @@ import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
-import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
-import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
+import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
+import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
 import { createApiKey } from './controllers/v1/environment/createApiKey.js';
 import { deleteApiKey } from './controllers/v1/environment/deleteApiKey.js';
 import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
@@ -63,6 +65,7 @@ import { getIntegrations } from './controllers/v1/integrations/getIntegrations.j
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
+import { deleteIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/deleteFunction.js';
 import { getIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/getFunction.js';
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
@@ -80,6 +83,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
@@ -221,7 +225,11 @@ web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update',
 web.route('/environment/api-keys/:keyId').delete(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), deleteApiKey);
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+web.route('/environment/admin-auth').get(
+    webAuth,
+    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    environmentController.getAdminAuthInfo.bind(environmentController)
+);
 
 // Connect
 web.route('/connect/sessions').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), postInternalConnectSessions);
@@ -236,13 +244,11 @@ web.route('/integrations').post(webAuth, can({ action: 'update', resource: 'inte
 web.route('/integrations/:providerConfigKey').get(webAuth, can({ action: 'read', resource: 'integration', scopedBy: envScope }), getIntegration);
 web.route('/integrations/:providerConfigKey').patch(webAuth, can({ action: 'update', resource: 'integration', scopedBy: envScope }), patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, can({ action: 'delete', resource: 'integration', scopedBy: envScope }), deleteIntegration);
-web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
+web.route('/integrations/:providerConfigKey/flows').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFlows);
 web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunctions);
-web.route('/integrations/:providerConfigKey/functions/:functionName').get(
-    webAuth,
-    can({ action: 'read', resource: 'flow', scopedBy: envScope }),
-    getIntegrationFunction
-);
+web.route('/integrations/:providerConfigKey/functions/:functionName')
+    .get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunction)
+    .delete(webAuth, can({ action: 'delete', resource: 'flow', scopedBy: envScope }), deleteIntegrationFunction);
 web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
@@ -254,14 +260,27 @@ web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTem
 web.route('/connections').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnections);
 web.route('/connections/count').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionsCount);
 web.route('/connections/:connectionId').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionWeb);
+web.route('/connections/:connectionId/records/models').get(
+    webAuth,
+    can({ action: 'read', resource: 'connection', scopedBy: envScope }),
+    getConnectionRecordModels
+);
+web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
 web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
-web.route('/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+web.route('/connections/admin/:connectionId').delete(
+    webAuth,
+    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    connectionController.deleteAdminConnection.bind(connectionController)
+);
 
 // User
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, patchUser);
 web.route('/user/password').put(webAuth, putUserPassword);
+
+// Plain (in-app support chat)
+web.route('/plain').get(webAuth, getPlainHmac);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
@@ -276,7 +295,7 @@ web.route('/flows/:id/disable').patch(webAuth, can({ action: 'update', resource:
 web.route('/flows/:id/enable').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowEnable);
 web.route('/flows/:id/frequency').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowFrequency);
 web.route('/flows/:id/download').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowDownload);
-web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
+web.route('/flow/:flowName').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), flowController.getFlow.bind(syncController));
 
 web.route('/trigger/function').post(webAuth, can({ action: 'update', resource: 'sync_command', scopedBy: envScope }), postTriggerFunction);
 

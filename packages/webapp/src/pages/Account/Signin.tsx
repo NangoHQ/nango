@@ -6,9 +6,10 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
 import GoogleButton from '@/components/patterns/GoogleButton';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -117,13 +118,13 @@ export const Signin: React.FC = () => {
 
             <div className="flex flex-col items-center gap-5 w-full">
                 <div className="flex flex-col gap-3 items-center">
-                    <h2 className="text-title-group text-text-primary">Log in to Nango</h2>
+                    <h2 className="text-title-group text-text-strong">Log in to Nango</h2>
                     {hasLocalAuth ? (
-                        <span className="text-body-medium-regular text-text-tertiary">
+                        <span className="text-body-medium-regular text-text-muted">
                             Don&apos;t have an account? <StyledLink to="/signup">Sign up.</StyledLink>
                         </span>
                     ) : (
-                        <span className="text-body-medium-regular text-text-tertiary">Continue with Google to access your Nango workspace.</span>
+                        <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
                     )}
                 </div>
 
@@ -191,12 +192,12 @@ export const Signin: React.FC = () => {
                                 </div>
 
                                 {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
-                                <StyledLink to="/forgot-password" className="text-body-small-light text-text-tertiary self-end order-2">
+                                <StyledLink to="/forgot-password" className="text-body-small-light text-text-muted self-end order-2">
                                     Forgot your password?
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>
@@ -219,7 +220,7 @@ export const Signin: React.FC = () => {
                     </div>
                 )}
 
-                <span className="text-center w-full text-body-medium-regular text-text-tertiary">
+                <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing in, you agree to our <br />{' '}
                     <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
                         Terms of Service

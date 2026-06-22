@@ -2,8 +2,8 @@ import { getUserAgent } from '@nangohq/node';
 import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
-import { httpFetch } from './http.js';
 import { logger } from '../logger.js';
+import { httpFetch } from './http.js';
 
 import type {
     Checkpoint,

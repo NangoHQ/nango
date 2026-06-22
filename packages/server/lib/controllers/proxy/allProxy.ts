@@ -3,29 +3,29 @@ import { PassThrough } from 'node:stream';
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
 
-import { LogContextOrigin, OtlpSpan, logContextGetter } from '@nangohq/logs';
+import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    ProxyError,
-    ProxyRequest,
     configService,
     connectionService,
+    enforceProxyOutboundUrlPolicy,
     errorManager,
+    ErrorSourceEnum,
     getProvider,
     getProxyConfiguration,
+    LogActionEnum,
+    makeDataTransferEvent,
+    ProxyError,
+    ProxyRequest,
     pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
-import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, getLogger, isBaseUrlOverrideDenied, metrics, normalizeDenylist, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
-import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDenylist.js';
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { capping } from '../../utils/usage.js';
-import { featureFlags } from '../../utils/utils.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
@@ -76,15 +76,6 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const { environment, account, plan } = res.locals;
 
     const baseUrlOverride = parsedHeaders['base-url-override'];
-    if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
-        res.status(400).send({
-            error: {
-                code: 'base_url_override_not_allowed',
-                message: 'This base URL override is not allowed by server configuration.'
-            }
-        });
-        return;
-    }
 
     let logCtx: LogContext | undefined;
 
@@ -111,6 +102,32 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
         }
 
+        if (baseUrlOverride && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+            void logCtx.error('Base URL override is disabled by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: {
+                    code: 'base_url_override_disabled',
+                    message: 'Base URL override is disabled by server configuration.'
+                }
+            });
+            return;
+        }
+        if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
+            metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
+            void logCtx.error('Base URL override is not allowed by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: {
+                    code: 'base_url_override_not_allowed',
+                    message: 'This base URL override is not allowed by server configuration.'
+                }
+            });
+            return;
+        }
+
         // capping
         const cappingStatus = await capping.getStatus(plan, 'proxy');
         if (cappingStatus.isCapped) {
@@ -124,12 +141,10 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         const method = req.method.toUpperCase() as HTTP_METHOD;
 
         // contains the path and querystring
-        const endpoint = req.originalUrl.replace(/^\/proxy\//, '/');
+        const endpoint = req.originalUrl.replace(/^\/proxy\/?/, '/');
 
         const headers = parseHeaders(req);
 
-        const rawBodyFlag = await featureFlags.isSet('proxy:rawbody');
-        const data: unknown = rawBodyFlag ? req.rawBody : req.body;
         let files: ProxyFile[] = [];
         if (Array.isArray(req.files)) {
             files = req.files as ProxyFile[];
@@ -153,6 +168,15 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         // denylist-check custom.baseUrl when no override is supplied — otherwise a safe override would be wrongly rejected.
         const provider = getProvider(integration.provider);
         const customBaseUrl = !baseUrlOverride && provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
+        if (customBaseUrl && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
+            void logCtx.error('Integration base URL override is disabled by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: { code: 'base_url_override_disabled', message: 'Base URL override is disabled by server configuration.' }
+            });
+            return;
+        }
         if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
             void logCtx.error('Integration base URL is not allowed by server configuration');
             await logCtx.failed();
@@ -218,7 +242,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     endpoint,
                     providerConfigKey,
                     retries,
-                    data,
+                    data: req.body,
                     files,
                     headers,
                     baseUrlOverride,
@@ -227,8 +251,18 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     retryOn,
                     responseType: 'stream',
                     ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
-                    ...(baseUrlOverrideDenylist.size > 0
+                    ...(!envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED || baseUrlOverrideDenylist.size > 0
                         ? {
+                              validateProxyRequestUrl: ({ absoluteUrl, proxyConfig, connection, integrationConfig }) => {
+                                  enforceProxyOutboundUrlPolicy({
+                                      absoluteUrl,
+                                      proxyConfig,
+                                      connection,
+                                      ...(integrationConfig !== undefined ? { integrationConfig } : {}),
+                                      overrideEnabled: envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED,
+                                      denylist: baseUrlOverrideDenylist
+                                  });
+                              },
                               validateProxyRedirectUrl: (absoluteUrl: string) => {
                                   if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
                                       metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
@@ -283,9 +317,19 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 oauth_client_secret: integration.oauth_client_secret,
                 custom: integration.custom
             }),
-            onBytes: ({ sent, received }) => {
-                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });
-                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server' });
+            onBytes: (meteredBytes) => {
+                void pubsub.publisher.publish(
+                    makeDataTransferEvent({
+                        pkg: 'server',
+                        callsite: 'proxy',
+                        accountId: account.id,
+                        connectionId: connection.connection_id,
+                        integrationId: providerConfigKey,
+                        environmentId: environment.id,
+                        meteredBytes,
+                        environmentName: environment.name
+                    })
+                );
             }
         });
 

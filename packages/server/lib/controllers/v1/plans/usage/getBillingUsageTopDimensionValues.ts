@@ -21,7 +21,8 @@ const metricBranches = {
     function_compute_gbms: z.object({ metric: z.literal('function_compute_gbms'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms) }),
     webhook_forwards: z.object({ metric: z.literal('webhook_forwards'), dimension: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards) }),
     records: z.object({ metric: z.literal('records'), dimension: z.enum(BREAKDOWN_DIMENSIONS.records) }),
-    connections: z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) })
+    connections: z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) }),
+    data_transfer: z.object({ metric: z.literal('data_transfer'), dimension: z.enum(BREAKDOWN_DIMENSIONS.data_transfer) })
 } satisfies Record<UsageMetric, z.ZodObject>;
 
 // `Object.values` widens to a plain array; the cast restores the non-empty

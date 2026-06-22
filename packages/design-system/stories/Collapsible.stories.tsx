@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 
-import { Button } from '@/components/ui/Button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

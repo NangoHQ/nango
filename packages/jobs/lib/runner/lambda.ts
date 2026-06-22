@@ -18,7 +18,7 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, Ok, getLogger, stringifyError } from '@nangohq/utils';
+import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
@@ -268,6 +268,7 @@ class Lambda {
                 DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
                 DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
                 DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || '',
+                NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: String(envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED),
                 ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
                     ? { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }
                     : {}),

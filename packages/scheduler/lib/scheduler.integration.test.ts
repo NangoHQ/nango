@@ -245,6 +245,35 @@ describe('Scheduler', () => {
         expect(deleted.lastScheduledTaskId).toBe(task?.id);
         expect(deleted.lastScheduledTaskState).toBe('CANCELLED');
     });
+    it('should set the state of many schedules in one call', async () => {
+        const a = await recurring({ scheduler, state: 'STARTED' });
+        const b = await recurring({ scheduler, state: 'PAUSED' });
+
+        const res = await scheduler.setScheduleStates({ scheduleNames: [a.name, b.name], state: 'DELETED' });
+        expect(res.isOk()).toBe(true);
+
+        const found = (await scheduler.searchSchedules({ names: [a.name, b.name], limit: 2 })).unwrap();
+        expect(found.map((s) => s.state).sort()).toEqual(['DELETED', 'DELETED']);
+    });
+    it('should treat a missing schedule as success when setting states in bulk', async () => {
+        const a = await recurring({ scheduler, state: 'STARTED' });
+
+        const res = await scheduler.setScheduleStates({ scheduleNames: [a.name, 'does-not-exist'], state: 'DELETED' });
+
+        expect(res.isOk()).toBe(true);
+        const [deleted] = (await scheduler.searchSchedules({ names: [a.name], limit: 1 })).unwrap();
+        expect(deleted?.state).toBe('DELETED');
+    });
+    it('should cancel running tasks when bulk-deleting schedules', async () => {
+        const schedule = await recurring({ scheduler });
+        await immediate(scheduler, { schedule });
+
+        const res = await scheduler.setScheduleStates({ scheduleNames: [schedule.name], state: 'DELETED' });
+        expect(res.isOk()).toBe(true);
+
+        const [task] = (await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap();
+        expect(task?.state).toBe('CANCELLED');
+    });
     it('should update schedule frequency', async () => {
         const schedule = await recurring({ scheduler });
         const newFrequency = 1_800_000;

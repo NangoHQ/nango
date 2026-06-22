@@ -1,7 +1,6 @@
 import {
-    FunctionError,
     createFunctionDeployment,
-    getRemoteFunctionNangoHost,
+    FunctionError,
     markFunctionDeploymentFailed,
     markFunctionDeploymentRunning,
     prepareAsyncDeploy,
@@ -12,6 +11,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
+import { getFunctionCallbackBaseUrl } from '../helpers.js';
 import { functionDeploymentBodySchema } from '../validation.js';
 import { createDeploySandboxApiKey, requireCustomerKeyId, toFunctionDeploymentError } from './helpers.js';
 
@@ -89,7 +89,7 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
     const deployment = deploymentResult.value;
     let prepared: Awaited<ReturnType<typeof prepareAsyncDeploy>> | null = null;
     try {
-        const nangoHost = getRemoteFunctionNangoHost();
+        const nangoHost = getFunctionCallbackBaseUrl();
         const sandboxApiKey = await createDeploySandboxApiKey(parentCustomerKeyId, environment.id, deployment.id);
         if (sandboxApiKey.isErr()) {
             throw sandboxApiKey.error;

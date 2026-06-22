@@ -1,37 +1,49 @@
-import { Cloud, ExternalLink, FolderGit2, Info } from 'lucide-react';
-import { Fragment, useCallback, useMemo } from 'react';
+import { Cloud, Code, FolderGit2, Info, LibraryBig, Plus, Search } from 'lucide-react';
+import { parseAsString, useQueryState } from 'nuqs';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { EmptyCard } from '../../../../components/ui/EmptyCard.js';
-import { FunctionSwitch } from '../../components/FunctionSwitch.js';
-import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert.js';
+import { Button } from '@nangohq/design-system';
+
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
-import { Skeleton } from '@/components/ui/Skeleton.js';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
-import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useStore } from '@/store';
+import { isSyncOrAction } from '@/utils/scripts';
+import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
-import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
+import type { ComboboxOption } from '@/components/ui/Combobox';
+import type { ApiIntegration, DeployedNangoFunction, FunctionType } from '@nangohq/types';
 
-function groupByGroup(flows: NangoSyncConfig[]): Record<string, NangoSyncConfig[]> {
-    const groups = new Map<string, NangoSyncConfig[]>();
-    for (const flow of flows) {
-        const groupName = flow.endpoints?.[0]?.group || 'others';
+const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;
+type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
-        const existingGroup = groups.get(groupName);
-        if (!existingGroup) {
-            groups.set(groupName, [flow]);
-            continue;
-        }
+const TYPE_OPTIONS: ComboboxOption<TypeFilterValue>[] = [
+    { value: 'sync', label: 'Sync' },
+    { value: 'action', label: 'Action' },
+    { value: 'on-event', label: 'On-event' }
+];
 
-        existingGroup.push(flow);
-    }
-    return Object.fromEntries(groups);
+const TYPE_BADGE_LABEL: Record<FunctionType, string> = {
+    sync: 'sync',
+    action: 'action',
+    'on-event': 'on event'
+};
+
+function isTypeFilterValue(value: string): value is TypeFilterValue {
+    return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
 }
 
 interface FunctionsTabProps {
@@ -41,126 +53,208 @@ interface FunctionsTabProps {
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
-    const { data, isLoading, error: flowsError } = useGetIntegrationFlows(env, integration.unique_key);
-    const flowsData = data?.data;
 
-    const [activeTab, setActiveTab] = useHashNavigation('actions');
+    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
+    const debouncedSearch = useDebouncedValue(search);
 
-    const { actions, actionsByGroup, syncs, syncsByGroup } = useMemo(() => {
-        const actions = flowsData?.flows.filter((flow) => flow.type === 'action') ?? [];
-        const syncs = flowsData?.flows.filter((flow) => flow.type === 'sync') ?? [];
-        const actionsByGroup = groupByGroup(actions);
-        const syncsByGroup = groupByGroup(syncs);
-        return { actions, actionsByGroup, syncs, syncsByGroup };
-    }, [flowsData?.flows]);
+    const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
+    const typeFilter: TypeFilterValue | undefined = rawType && isTypeFilterValue(rawType) ? rawType : undefined;
+
+    const {
+        data,
+        isLoading,
+        error,
+        fetchNextPage,
+        hasNextPage = false,
+        isFetchingNextPage
+    } = useGetIntegrationFunctions({
+        env,
+        providerConfigKey: integration.unique_key,
+        search: debouncedSearch || undefined,
+        type: typeFilter
+    });
+
+    const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
+
+    // Prefetch templates so the count is ready and the catalog page opens warm (the Templates page shares this query key).
+    const { data: templatesResponse } = useGetIntegrationTemplates({ env, providerConfigKey: integration.unique_key });
+    const templatesCount = templatesResponse?.data.length;
+
+    const onBrowseTemplates = useCallback(() => {
+        navigate(`/${env}/integrations/${integration.unique_key}/templates`);
+    }, [env, integration.unique_key, navigate]);
 
     const onFunctionClick = useCallback(
-        (func: NangoSyncConfig) => {
-            navigate(`/${env}/integrations/${integration.unique_key}/functions/${func.name}`);
+        (fn: DeployedNangoFunction) => {
+            navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
         },
         [env, integration.unique_key, navigate]
     );
 
-    if (flowsError) {
-        return <CriticalErrorAlert message="Something went wrong while loading the flows" />;
+    const functions: DeployedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
+    const total = data?.pages[0]?.pagination.total ?? 0;
+
+    if (error) {
+        return <CriticalErrorAlert message="Something went wrong while loading the functions" />;
     }
 
-    if (isLoading) {
-        return <Skeleton className="w-full max-w-2xl h-50" />;
-    }
+    const hasFilters = Boolean(debouncedSearch) || Boolean(typeFilter);
+    const showEmptyNoFilters = !isLoading && total === 0 && !hasFilters;
+    const showEmptyWithFilters = !isLoading && functions.length === 0 && hasFilters;
 
     return (
-        <Navigation value={activeTab} onValueChange={setActiveTab} orientation="horizontal" className="max-w-2xl">
-            <div className="w-full inline-flex items-center gap-2 justify-between">
-                <NavigationList>
-                    <NavigationTrigger value="actions">Actions</NavigationTrigger>
-                    <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
-                </NavigationList>
-                {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
-                        How to use Actions <ExternalLink />
-                    </ButtonLink>
-                ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
-                        How to use Syncs <ExternalLink />
-                    </ButtonLink>
-                )}
-            </div>
-            <NavigationContent value="actions">
-                {actions.length > 0 ? (
-                    <GroupedFunctionsTable groupedFunctions={actionsByGroup} onFunctionClick={onFunctionClick} integration={integration} />
-                ) : (
-                    <EmptyCard>
-                        <span className="text-text-secondary text-body-medium-regular">You don&apos;t have any actions setup yet.</span>
-                    </EmptyCard>
-                )}
-            </NavigationContent>
-            <NavigationContent value="syncs">
-                {syncs.length > 0 ? (
-                    <GroupedFunctionsTable groupedFunctions={syncsByGroup} onFunctionClick={onFunctionClick} integration={integration} />
-                ) : (
-                    <EmptyCard>
-                        <span className="text-text-secondary text-body-medium-regular">You don&apos;t have any syncs setup yet.</span>
-                    </EmptyCard>
-                )}
-            </NavigationContent>
-        </Navigation>
-    );
-};
+        <div className="flex flex-col gap-3 w-full">
+            {isLoading ? (
+                <Skeleton className="w-full h-50" />
+            ) : showEmptyNoFilters ? (
+                <EmptyCard>
+                    <h3 className="text-title-body text-text-strong">No functions deployed in this integration yet</h3>
+                    <p className="text-text-secondary text-body-medium-regular text-center">Browse the template catalog or build your own custom functions.</p>
+                    <div className="flex items-center gap-2">
+                        <ConditionalTooltip condition={templatesCount === 0} content="There are no templates available for this provider yet.">
+                            <Button type="button" onClick={onBrowseTemplates} disabled={templatesCount === 0}>
+                                <LibraryBig /> Browse {templatesCount ? `${templatesCount} ` : ''}templates
+                            </Button>
+                        </ConditionalTooltip>
+                        <ButtonLink to="https://nango.dev/docs/guides/functions/functions-guide" target="_blank" variant="secondary">
+                            <Code /> Build custom
+                        </ButtonLink>
+                    </div>
+                </EmptyCard>
+            ) : (
+                <>
+                    <div className="flex items-center gap-1.5">
+                        <InputGroup className="h-10">
+                            <InputGroupInput
+                                type="text"
+                                placeholder="Search functions"
+                                value={search || ''}
+                                onChange={(e) => setSearch(e.target.value || null)}
+                            />
+                            <InputGroupAddon>
+                                <Search />
+                            </InputGroupAddon>
+                        </InputGroup>
+                        <SingleSelectFilter<TypeFilterValue>
+                            value={typeFilter ?? null}
+                            onChange={(value) => void setType(value)}
+                            options={TYPE_OPTIONS}
+                            placeholderLabel="All types"
+                            selectedLabel="Type"
+                            dropdownTitle="Filter by type"
+                        />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button type="button" size="xl">
+                                    <Plus /> Add
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-64">
+                                <ConditionalTooltip
+                                    condition={templatesCount === 0}
+                                    content="There are no templates available for this provider yet."
+                                    side="left"
+                                >
+                                    <DropdownMenuItem onSelect={onBrowseTemplates} disabled={templatesCount === 0}>
+                                        <div className="flex items-center gap-4">
+                                            <LibraryBig />
+                                            <div>
+                                                <span className="text-text-strong text-body-medium-medium">
+                                                    Browse {templatesCount ? `${templatesCount} ` : ''}templates
+                                                </span>
+                                                <p className="text-text-secondary text-body-small-regular">
+                                                    Browse a list of pre-built functions that may fit your use case.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </DropdownMenuItem>
+                                </ConditionalTooltip>
+                                <DropdownMenuItem asChild>
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/functions-guide#guide"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center gap-4"
+                                    >
+                                        <Code />
+                                        <div>
+                                            <span className="text-text-strong text-body-medium-medium">Build custom</span>
+                                            <p className="text-text-secondary text-body-small-regular">
+                                                Bring your own code or leverage AI agents to build for your use case.
+                                            </p>
+                                        </div>
+                                    </a>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
 
-const GroupedFunctionsTable: React.FC<{
-    groupedFunctions: Record<string, NangoSyncConfig[]>;
-    onFunctionClick?: (func: NangoSyncConfig) => void;
-    integration: ApiIntegration;
-}> = ({ groupedFunctions, onFunctionClick, integration }) => {
-    return (
-        <Table>
-            {Object.entries(groupedFunctions).map(([groupName, functions], index) => (
-                <Fragment key={groupName}>
-                    <TableHeader className="h-8">
-                        <TableRow className="h-8">
-                            <TableHead className="h-8">{groupName}</TableHead>
-                            <TableHead className="h-8">{index === 0 && 'Source code'}</TableHead>
-                            <TableHead className="h-8 text-center">{index === 0 && 'Enabled'}</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {functions.map((func, index) => (
-                            <TableRow key={index} className="cursor-pointer hover:bg-bg-subtle" onClick={() => onFunctionClick?.(func)}>
-                                <TableCell>
-                                    <div className="flex items-center gap-1.5">
-                                        {func.name}
-                                        <Tooltip>
-                                            <TooltipTrigger>
-                                                <Info className="size-3.5 text-icon-tertiary cursor-pointer" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{func.description}</TooltipContent>
-                                        </Tooltip>
-                                        <CopyButton text={func.name} />
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    {func.source === 'repo' ? (
-                                        <Badge variant="gray" className="uppercase">
-                                            <FolderGit2 /> Your repo
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="gray" className="uppercase">
-                                            <Cloud />
-                                            Nango
-                                        </Badge>
-                                    )}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex justify-center items-center">
-                                        <FunctionSwitch flow={func} integration={integration} />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Fragment>
-            ))}
-        </Table>
+                    {showEmptyWithFilters ? (
+                        <EmptyCard>
+                            <p className="text-text-secondary text-body-medium-regular">No functions match your filters.</p>
+                        </EmptyCard>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Source code</TableHead>
+                                    <TableHead className="text-center">Enabled</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {functions.map((fn) => (
+                                    <TableRow
+                                        key={`${fn.type}:${fn.id}`}
+                                        className="cursor-pointer hover:bg-surface-panel-inset"
+                                        onClick={() => onFunctionClick(fn)}
+                                    >
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5">
+                                                {fn.name}
+                                                {fn.description && (
+                                                    <Tooltip>
+                                                        <TooltipTrigger>
+                                                            <Info className="size-3.5 text-icon-muted cursor-pointer" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>{fn.description}</TooltipContent>
+                                                    </Tooltip>
+                                                )}
+                                                <CopyButton text={fn.name} />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="gray" className="uppercase">
+                                                {TYPE_BADGE_LABEL[fn.type]}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {fn.source === 'repo' ? (
+                                                <Badge variant="gray" className="uppercase">
+                                                    <FolderGit2 /> Your repo
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="gray" className="uppercase">
+                                                    <Cloud /> Nango
+                                                </Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex justify-center items-center">
+                                                {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} />}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+
+                    <div ref={sentinelRef} aria-hidden />
+                    {isFetchingNextPage && <Skeleton className="w-full h-12" />}
+                </>
+            )}
+        </div>
     );
 };

@@ -1,15 +1,14 @@
-import { Check, ChevronsUpDown, Lock } from 'lucide-react';
+import { ChevronsUpDown, Lock } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
-import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Badge } from '@/components/ui/Badge.js';
-import { Button } from '@/components/ui/Button.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { StyledLink } from '@/components/ui/StyledLink.js';
@@ -18,6 +17,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
+import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
+import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -72,18 +73,25 @@ export const EnvironmentDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="h-fit w-full rounded p-2.5 flex flex-row items-center justify-between cursor-pointer bg-dropdown-bg-default border-[0.5px] border-border-muted hover:bg-dropdown-bg-press hover:border-0 hover:border-l-[0.5px] hover:border-r-[0.5px] hover:border-r-transparent data-[state=closed]:hover:my-[0.5px] data-[state=open]:bg-dropdown-bg-press data-[state=open]:border-[0.5px] data-[state=open]:border-border-muted">
-                        <div className="flex gap-2 items-center">
-                            <LogoInverted className="h-6 w-6 text-text-primary" />
-                            <div className="flex flex-col items-start">
-                                <span className="text-body-small-regular leading-3 text-text-secondary">Environment</span>
-                                <span className="text-body-medium-semi leading-4 text-text-primary font-semibold truncate max-w-28">{env}</span>
+                    <DropdownMenuTrigger className="flex h-14 w-full cursor-pointer flex-row items-center justify-between border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
+                        <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-[2px] border-[0.5px] border-border-default bg-surface-overlay">
+                                <LogoInverted className="size-5 text-text-strong" />
+                            </div>
+                            <div className="flex min-w-0 flex-col items-start">
+                                <span className="type-text-regular-xs text-text-muted">Environment</span>
+                                <span className="type-text-medium-sm max-w-28 truncate text-text-default">{env}</span>
                             </div>
                         </div>
-                        <ChevronsUpDown className="w-4.5 h-4.5 text-text-primary" />
+                        <ChevronsUpDown className="size-4 shrink-0 text-icon-secondary" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
-                        <div className="flex flex-col">
+                    <DropdownMenuContent
+                        align="start"
+                        side="bottom"
+                        sideOffset={0}
+                        className="flex max-h-96 w-(--radix-dropdown-menu-trigger-width) flex-col rounded-none border-0 border-b-[0.5px] border-border-default p-0"
+                    >
+                        <div className="flex flex-col px-1 pt-1">
                             {meta?.environments.map((environment) => (
                                 <PermissionGate
                                     key={environment.name}
@@ -95,57 +103,60 @@ export const EnvironmentDropdown: React.FC = () => {
                                         <DropdownMenuItem
                                             disabled={!allowed}
                                             onSelect={() => onSelect(environment.name)}
-                                            data-active={env === environment.name}
-                                            className="flex flex-row items-center justify-between gap-2 cursor-pointer data-[active=true]:text-text-primary"
+                                            className={navigationItemVariants({ selected: env === environment.name })}
                                         >
-                                            <div className="flex flex-row items-center gap-2 ">
-                                                <Check
-                                                    className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
-                                                    data-active={env === environment.name}
-                                                />
-                                                <span>{environment.name}</span>
-                                            </div>
-                                            {environment.is_production && <Badge>Prod</Badge>}
+                                            <NavigationItem
+                                                trailing={
+                                                    environment.is_production && (
+                                                        <Badge variant="brand" size="custom" className="type-code-regular-xs rounded-[2px] px-1 py-0">
+                                                            Prod
+                                                        </Badge>
+                                                    )
+                                                }
+                                            >
+                                                {environment.name}
+                                            </NavigationItem>
                                         </DropdownMenuItem>
                                     )}
                                 </PermissionGate>
                             ))}
                         </div>
-                        <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
-                            {(allowed) => (
-                                <ConditionalTooltip
-                                    condition={!!isMaxEnvironmentsReached}
-                                    content={
-                                        <>
-                                            Max number of environments reached.{' '}
-                                            {environment?.plan?.name.includes('legacy') ? (
-                                                <>Contact Nango to add more</>
-                                            ) : (
-                                                <>
-                                                    <StyledLink to={`/team/billing`} className="text-s">
-                                                        Upgrade
-                                                    </StyledLink>{' '}
-                                                    to add more
-                                                </>
-                                            )}
-                                        </>
-                                    }
-                                >
-                                    <Button
-                                        disabled={!!isMaxEnvironmentsReached || !allowed}
-                                        variant="primary"
-                                        onClick={() => {
-                                            // Managed control because Dialogs within DropdownMenus behave weirdly
-                                            setEnvironmentDialogOpen(true);
-                                        }}
-                                        className="w-full"
+                        <div className="border-t-[0.5px] border-border-muted p-2 [&_button]:w-full">
+                            <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
+                                {(allowed) => (
+                                    <ConditionalTooltip
+                                        condition={!!isMaxEnvironmentsReached}
+                                        content={
+                                            <>
+                                                Max number of environments reached.{' '}
+                                                {environment?.plan?.name.includes('legacy') ? (
+                                                    <>Contact Nango to add more</>
+                                                ) : (
+                                                    <>
+                                                        <StyledLink to={`/team/billing`} className="text-s">
+                                                            Upgrade
+                                                        </StyledLink>{' '}
+                                                        to add more
+                                                    </>
+                                                )}
+                                            </>
+                                        }
                                     >
-                                        {!!isMaxEnvironmentsReached && <Lock />}
-                                        Create Environment
-                                    </Button>
-                                </ConditionalTooltip>
-                            )}
-                        </PermissionGate>
+                                        <Button
+                                            disabled={!!isMaxEnvironmentsReached || !allowed}
+                                            variant="primary"
+                                            onClick={() => {
+                                                // Managed control because Dialogs within DropdownMenus behave weirdly
+                                                setEnvironmentDialogOpen(true);
+                                            }}
+                                        >
+                                            {!!isMaxEnvironmentsReached && <Lock />}
+                                            Create environment
+                                        </Button>
+                                    </ConditionalTooltip>
+                                )}
+                            </PermissionGate>
+                        </div>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />

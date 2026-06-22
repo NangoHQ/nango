@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -16,7 +16,7 @@ export const Default: Story = {
             {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
                 <Tooltip key={side}>
                     <TooltipTrigger asChild>
-                        <Button variant="secondary" size="sm">
+                        <Button variant="secondary" size="md">
                             {side}
                         </Button>
                     </TooltipTrigger>

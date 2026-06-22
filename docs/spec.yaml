@@ -65,6 +65,37 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '404':
                     $ref: '#/components/responses/NotFound'
+    /providers/{provider}/templates:
+        get:
+            summary: List provider templates
+            description: Returns the template functions available in the catalog for a provider. Requires an API key with the `environment:functions:list` scope.
+            parameters:
+                - name: provider
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The provider name.
+            responses:
+                '200':
+                    description: Successfully returned the provider's template functions
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/ProviderTemplateFunction'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
     /integrations:
         get:
             summary: List integrations
@@ -281,6 +312,190 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+    /integrations/{uniqueKey}/functions:
+        get:
+            summary: List functions
+            description: Returns the functions deployed to an integration. Requires an API key with the `environment:functions:list` scope.
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+                - name: type
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [sync, action, on-event]
+                  description: Filter by function type.
+                - name: search
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                  description: Case-insensitive filter on the function name.
+                - name: page
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 0
+                      default: 0
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 20
+            responses:
+                '200':
+                    description: Successfully returned the integration's functions
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                    - pagination
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/DeployedNangoFunction'
+                                    pagination:
+                                        type: object
+                                        required:
+                                            - total
+                                            - page
+                                            - limit
+                                        properties:
+                                            total:
+                                                type: integer
+                                            page:
+                                                type: integer
+                                            limit:
+                                                type: integer
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+    /integrations/{uniqueKey}/functions/{name}:
+        get:
+            summary: Get a function
+            description: Returns a single deployed function. Requires an API key with the `environment:functions:read` scope.
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the function.
+                - name: type
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [sync, action, on-event]
+                  description: Disambiguates when multiple functions share the same name.
+            responses:
+                '200':
+                    description: Successfully returned the function
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/DeployedNangoFunction'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+        delete:
+            summary: Delete a function
+            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the function.
+                - name: type
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                      enum: [sync, action]
+                  description: Required to disambiguate a sync and an action that share a name. On-event functions are not yet supported.
+            responses:
+                '200':
+                    description: Successfully enqueued the function deletion
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - success
+                                        properties:
+                                            success:
+                                                type: boolean
+                '400':
+                    description: Invalid request, or the function is managed by `nango deploy`.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [function_managed_by_deploy]
+                                            message:
+                                                type: string
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
 
@@ -2941,6 +3156,134 @@ components:
         RunnableFunctionType:
             type: string
             enum: [action, sync]
+
+        DeployedMeta:
+            type: object
+            description: Deployment metadata attached to a deployed function.
+            required:
+                - id
+                - enabled
+                - last_deployed
+                - source
+            properties:
+                id:
+                    type: number
+                enabled:
+                    type: boolean
+                last_deployed:
+                    type: string
+                    format: date-time
+                    description: ISO-8601 timestamp.
+                source:
+                    type: string
+                    enum: [catalog, standalone, repo]
+
+        NangoSyncFunction:
+            type: object
+            required:
+                - name
+                - type
+                - returns
+                - json_schema
+                - runs
+                - auto_start
+                - track_deletes
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                type:
+                    type: string
+                    enum: [sync]
+                input:
+                    type: string
+                returns:
+                    type: array
+                    items:
+                        type: string
+                json_schema:
+                    type: [object, 'null']
+                runs:
+                    type: [string, 'null']
+                    description: Schedule expression, e.g. `every day`.
+                auto_start:
+                    type: boolean
+                track_deletes:
+                    type: boolean
+
+        NangoActionFunction:
+            type: object
+            required:
+                - name
+                - type
+                - returns
+                - json_schema
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                type:
+                    type: string
+                    enum: [action]
+                input:
+                    type: string
+                returns:
+                    type: array
+                    items:
+                        type: string
+                json_schema:
+                    type: [object, 'null']
+
+        NangoOnEventFunction:
+            type: object
+            required:
+                - name
+                - type
+                - event
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                type:
+                    type: string
+                    enum: [on-event]
+                event:
+                    type: string
+                    enum: [post-connection-creation, pre-connection-deletion, validate-connection]
+
+        ProviderTemplateFunction:
+            description: A sync or action template function from the provider catalog (no deployment metadata).
+            oneOf:
+                - $ref: '#/components/schemas/NangoSyncFunction'
+                - $ref: '#/components/schemas/NangoActionFunction'
+
+        DeployedNangoFunction:
+            description: A deployed function (sync, action, or on-event) merged with its deployment metadata.
+            oneOf:
+                - allOf:
+                      - $ref: '#/components/schemas/NangoSyncFunction'
+                      - $ref: '#/components/schemas/DeployedMeta'
+                - allOf:
+                      - $ref: '#/components/schemas/NangoActionFunction'
+                      - $ref: '#/components/schemas/DeployedMeta'
+                - allOf:
+                      - $ref: '#/components/schemas/NangoOnEventFunction'
+                      - $ref: '#/components/schemas/DeployedMeta'
 
         FunctionCompileRequest:
             type: object

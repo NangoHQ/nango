@@ -6,9 +6,17 @@ import utc from 'dayjs/plugin/utc.js';
 import tracer from 'dd-trace';
 import knex from 'knex';
 
-import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
+import { cancellableDaemon, Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_ROUTING_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import {
+    DEFAULT_RECORDS_LIMIT,
+    RECORD_COUNTS_TABLE,
+    RECORDS_DATA_TABLE,
+    RECORDS_ROUTING_TABLE,
+    RECORDS_SEEN_MAX_IDS_PER_ROW,
+    RECORDS_SEEN_TABLE,
+    RECORDS_TABLE
+} from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { deepMergeRecordData } from '../../helpers/merge.js';
@@ -202,7 +210,9 @@ export class PostgresStore implements RecordsStore {
         limit,
         filter,
         cursor,
-        externalIds
+        externalIds,
+        metadataOnly,
+        sort
     }: {
         connectionId: number;
         model: string;
@@ -211,6 +221,8 @@ export class PostgresStore implements RecordsStore {
         filter?: CombinedFilterAction | LastAction | undefined;
         cursor?: string | undefined;
         externalIds?: string[] | undefined;
+        metadataOnly?: boolean | undefined;
+        sort?: 'asc' | 'desc' | undefined;
     }): Promise<Result<GetRecordsResponse>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.getRecords', {
@@ -224,13 +236,16 @@ export class PostgresStore implements RecordsStore {
                 return Err(error);
             }
 
+            const sortOrder = sort ?? 'asc';
+            const isDesc = sortOrder === 'desc';
+
             let query = this.dbRead
                 .from<FormattedRecord>(RECORDS_TABLE)
                 .timeout(60000) // timeout after 1 minute
                 .where({ connection_id: connectionId, model })
                 .orderBy([
-                    { column: 'updated_at', order: 'asc' },
-                    { column: 'id', order: 'asc' }
+                    { column: 'updated_at', order: sortOrder },
+                    { column: 'id', order: sortOrder }
                 ]);
 
             if (cursor) {
@@ -240,8 +255,8 @@ export class PostgresStore implements RecordsStore {
                     return Err(error);
                 }
 
-                // Tuple comparison for efficient index usage
-                query = query.whereRaw(`(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
+                // Tuple comparison for efficient index usage (ASC/DESC reuse same index)
+                query = query.whereRaw(isDesc ? `(updated_at, id) < (?, ?)` : `(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
             }
 
             if (externalIds) {
@@ -316,7 +331,7 @@ export class PostgresStore implements RecordsStore {
                     tableoid::regclass as partition,
                     id,
                     external_id,
-                    json,
+                    ${metadataOnly ? '' : 'json,'}
                     to_json(created_at) as first_seen_at,
                     to_json(updated_at) as last_modified_at,
                     to_json(deleted_at) as deleted_at,
@@ -341,7 +356,7 @@ export class PostgresStore implements RecordsStore {
                 recordsMetadata.pop();
             }
             let budgetTotalBytes = 0;
-            if (budgetEnabled) {
+            if (budgetEnabled && !metadataOnly) {
                 let acc = 0;
                 let truncateAt: number | null = null;
                 for (let i = 0; i < recordsMetadata.length; i++) {
@@ -370,60 +385,76 @@ export class PostgresStore implements RecordsStore {
                 }
             }
 
-            const recordIds = recordsMetadata.map((r) => r.id);
-            const dataById = new Map<string, FormattedRecord['json']>();
-            {
-                // Drain the result rows into the Map and let the array go out of scope.
-                // Keeping both the array and the Map doubles the reference count on each
-                // encrypted blob, which prevents `dataById.delete()` below from making
-                // them eligible for GC during the loop.
-                const rows = await this.dbRead
-                    .from(RECORDS_DATA_TABLE)
-                    .where({ connection_id: connectionId, model })
-                    .whereIn('id', recordIds)
-                    .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-                while (rows.length > 0) {
-                    const r = rows.pop()!;
-                    dataById.set(r.id, r.data);
+            if (metadataOnly) {
+                for (const item of recordsMetadata) {
+                    results.push({
+                        id: item.external_id,
+                        _nango_metadata: {
+                            first_seen_at: item.first_seen_at,
+                            last_modified_at: item.last_modified_at,
+                            last_action: item.last_action,
+                            deleted_at: item.deleted_at,
+                            pruned_at: item.pruned_at,
+                            cursor: Cursor.new(item)
+                        }
+                    });
                 }
-            }
+            } else {
+                const recordIds = recordsMetadata.map((r) => r.id);
+                const dataById = new Map<string, FormattedRecord['json']>();
+                {
+                    // Drain the result rows into the Map and let the array go out of scope.
+                    // Keeping both the array and the Map doubles the reference count on each
+                    // encrypted blob, which prevents `dataById.delete()` below from making
+                    // them eligible for GC during the loop.
+                    const rows = await this.dbRead
+                        .from(RECORDS_DATA_TABLE)
+                        .where({ connection_id: connectionId, model })
+                        .whereIn('id', recordIds)
+                        .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+                    while (rows.length > 0) {
+                        const r = rows.pop()!;
+                        dataById.set(r.id, r.data);
+                    }
+                }
 
-            const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
-            try {
-                // decryptRecordData offloads to the libuv threadpool, so awaiting one record at a
-                // time leaves the other threads idle. We process in bounded chunks instead: each
-                // chunk decrypts concurrently (saturating the threadpool) while never holding more
-                // than RECORDS_DECRYPT_CONCURRENCY encrypted blobs / decrypted results live at once,
-                // preserving the per-record GC drop. Results stay in recordsMetadata order, which
-                // the cursor below depends on.
-                const concurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
-                for (let start = 0; start < recordsMetadata.length; start += concurrency) {
-                    const chunk = recordsMetadata.slice(start, start + concurrency);
-                    const decryptedChunk = await Promise.all(
-                        chunk.map(async (item) => {
-                            const data = dataById.get(item.id) ?? item.json ?? {};
-                            // Drop the only remaining reference to the encrypted blob so V8 can
-                            // reclaim it when GC fires under heap pressure.
-                            dataById.delete(item.id);
-                            const decryptedData = await decryptRecordData({ ...item, json: data });
-                            return {
-                                ...decryptedData,
-                                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
-                                _nango_metadata: {
-                                    first_seen_at: item.first_seen_at,
-                                    last_modified_at: item.last_modified_at,
-                                    last_action: item.last_action,
-                                    deleted_at: item.deleted_at,
-                                    pruned_at: item.pruned_at,
-                                    cursor: Cursor.new(item)
-                                }
-                            };
-                        })
-                    );
-                    results.push(...decryptedChunk);
+                const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
+                try {
+                    // decryptRecordData offloads to the libuv threadpool, so awaiting one record at a
+                    // time leaves the other threads idle. We process in bounded chunks instead: each
+                    // chunk decrypts concurrently (saturating the threadpool) while never holding more
+                    // than RECORDS_DECRYPT_CONCURRENCY encrypted blobs / decrypted results live at once,
+                    // preserving the per-record GC drop. Results stay in recordsMetadata order, which
+                    // the cursor below depends on.
+                    const concurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+                    for (let start = 0; start < recordsMetadata.length; start += concurrency) {
+                        const chunk = recordsMetadata.slice(start, start + concurrency);
+                        const decryptedChunk = await Promise.all(
+                            chunk.map(async (item) => {
+                                const data = dataById.get(item.id) ?? item.json ?? {};
+                                // Drop the only remaining reference to the encrypted blob so V8 can
+                                // reclaim it when GC fires under heap pressure.
+                                dataById.delete(item.id);
+                                const decryptedData = await decryptRecordData({ ...item, json: data });
+                                return {
+                                    ...decryptedData,
+                                    id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                                    _nango_metadata: {
+                                        first_seen_at: item.first_seen_at,
+                                        last_modified_at: item.last_modified_at,
+                                        last_action: item.last_action,
+                                        deleted_at: item.deleted_at,
+                                        pruned_at: item.pruned_at,
+                                        cursor: Cursor.new(item)
+                                    }
+                                };
+                            })
+                        );
+                        results.push(...decryptedChunk);
+                    }
+                } finally {
+                    decryptSpan.finish();
                 }
-            } finally {
-                decryptSpan.finish();
             }
 
             // all records for the same connection/model are in the same partition
@@ -1759,12 +1790,19 @@ export class PostgresStore implements RecordsStore {
         if (ensureRes.isErr()) {
             throw new Error('Failed to ensure seen partition', { cause: ensureRes.error });
         }
-        await trx(RECORDS_SEEN_TABLE).insert({
-            connection_id: connectionId,
-            model,
-            generation: syncJobId,
-            record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
-        });
+        // Split the ids across multiple rows so no single record_ids array
+        // grows past PostgreSQL's TOAST tuple threshold (~2KB)
+        const rows: { connection_id: number; model: string; generation: number; record_ids: Knex.Raw }[] = [];
+        for (let i = 0; i < recordIds.length; i += RECORDS_SEEN_MAX_IDS_PER_ROW) {
+            const chunk = recordIds.slice(i, i + RECORDS_SEEN_MAX_IDS_PER_ROW);
+            rows.push({
+                connection_id: connectionId,
+                model,
+                generation: syncJobId,
+                record_ids: trx.raw(`ARRAY[${chunk.map(() => '?::uuid').join(',')}]`, chunk)
+            });
+        }
+        await trx(RECORDS_SEEN_TABLE).insert(rows);
     }
 }
 

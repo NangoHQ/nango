@@ -3,15 +3,10 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { Button, IconButton } from '@nangohq/design-system';
 
-import { PlaygroundInputs } from './PlaygroundInputs';
-import { PlaygroundResult } from './PlaygroundResult';
-import { PlaygroundSelectors } from './PlaygroundSelectors';
-import { getInputFields } from './types';
-import { usePlayground } from './usePlayground';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import { Sheet, SheetContent } from '@/components/ui/Sheet';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
@@ -19,6 +14,11 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
+import { PlaygroundInputs } from './PlaygroundInputs';
+import { PlaygroundResult } from './PlaygroundResult';
+import { PlaygroundSelectors } from './PlaygroundSelectors';
+import { getInputFields } from './types';
+import { usePlayground } from './usePlayground';
 
 import type { NangoSyncConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -108,7 +108,7 @@ export const Playground: React.FC = () => {
                     onPointerDownOutside={(e) => e.preventDefault()}
                     onFocusOutside={(e) => e.preventDefault()}
                     className={cn(
-                        'text-text-primary rounded-lg border border-border-muted shadow-lg p-6',
+                        'text-text-strong rounded-lg border border-border-muted shadow-lg p-6',
                         'flex flex-col items-start gap-2.5',
                         'w-[537px] max-w-none sm:max-w-none',
                         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
@@ -120,12 +120,12 @@ export const Playground: React.FC = () => {
                             {/* Header */}
                             <div className="flex w-full items-start justify-between">
                                 <div className="min-w-0 flex flex-col gap-2">
-                                    <h2 className="text-text-primary text-heading-medium">Playground</h2>
+                                    <h2 className="text-text-strong text-heading-medium">Playground</h2>
                                     <p className="text-body-medium-regular text-text-secondary">Quickly run any function.</p>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => setPlaygroundOpen(false)} aria-label="Close playground">
+                                <IconButton variant="ghost" size="2xs" label="Close playground" onClick={() => setPlaygroundOpen(false)}>
                                     <X />
-                                </Button>
+                                </IconButton>
                             </div>
 
                             {/* Content */}
@@ -147,11 +147,11 @@ export const Playground: React.FC = () => {
                                 <div className="flex gap-2">
                                     {running ? (
                                         <>
-                                            <Button variant="primary" disabled loading={true} size="sm">
+                                            <Button variant="primary" disabled loading={true} size="md">
                                                 Running
                                             </Button>
                                             {isSync && (
-                                                <Button variant="destructive" size="sm" onClick={handleCancel}>
+                                                <Button variant="danger" size="md" onClick={handleCancel}>
                                                     <X />
                                                     Cancel run
                                                 </Button>
@@ -161,7 +161,7 @@ export const Playground: React.FC = () => {
                                         <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
                                             <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
                                                 {(allowed) => (
-                                                    <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
+                                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
                                                         <RotateCcw />
                                                         Run again
                                                     </Button>
@@ -172,7 +172,7 @@ export const Playground: React.FC = () => {
                                         <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
                                             <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
                                                 {(allowed) => (
-                                                    <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
+                                                    <Button variant="primary" size="md" onClick={handleRun} disabled={!canRun || !allowed}>
                                                         <Play />
                                                         Run
                                                     </Button>

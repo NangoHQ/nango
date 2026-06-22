@@ -592,6 +592,43 @@ adyen:
             suffix: -(live|test).adyen.com
             prefix: https://
 
+adyntel:
+    display_name: Adyntel
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.adyntel.com
+        body:
+            api_key: ${apiKey}
+            email: ${connectionConfig.email}
+        verification:
+            method: POST
+            endpoints:
+                - /domain-keywords
+            headers:
+                content-type: application/json
+            data:
+                company_domain: example.com
+    docs: https://nango.dev/docs/api-integrations/adyntel
+    docs_connect: https://nango.dev/docs/api-integrations/adyntel/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Adyntel dashboard.
+            example: hd-f66446a8**************-6
+            pattern: '^hd-[a-f0-9]+-[a-z0-9]+$'
+            doc_section: '#step-1-obtain-your-api-key'
+    connection_config:
+        email:
+            type: string
+            title: Email
+            description: The login email address for your Adyntel account.
+            format: email
+            example: you@company.com
+            doc_section: '#step-2-find-your-email-address'
+
 affinity:
     display_name: Affinity (v1)
     categories:
@@ -654,6 +691,67 @@ affinity-v2:
             pattern: '^[A-Za-z0-9_-]+$'
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
+
+agiloft:
+    display_name: Agiloft
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/ewws/oauth
+    token_url: https://${connectionConfig.hostname}/ewws/otoken
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/agiloft
+    docs_connect: https://nango.dev/docs/api-integrations/agiloft/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Agiloft instance.
+            format: hostname
+            prefix: https://
+            example: example.agiloft.com
+            order: 1
+            doc_section: '#step-1-find-your-hostname'
+
+agiloft-cc:
+    display_name: Agiloft (Client Credentials)
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/ewws/otoken
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/agiloft-cc
+    docs_connect: https://nango.dev/docs/api-integrations/agiloft-cc/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Agiloft instance.
+            format: hostname
+            prefix: https://
+            example: example.agiloft.com
+            order: 1
+            doc_section: '#step-2-find-your-hostname'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID from your Agiloft API application settings.
+            doc_section: '#step-1-create-an-api-application-and-get-your-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret from your Agiloft API application settings.
+            secret: true
+            doc_section: '#step-1-create-an-api-application-and-get-your-credentials'
 
 aimfox:
     display_name: Aimfox
@@ -1099,6 +1197,26 @@ amazon-selling-partner-beta:
                 - fe
             doc_section: '#step-3-finding-your-proxy-baseurl-region'
             order: 3
+
+a-leads:
+    display_name: A-Leads
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.a-leads.co/gateway
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/a-leads
+    docs_connect: https://nango.dev/docs/integrations/all/a-leads/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your A-Leads API key
+            doc_section: '#step-1-obtain-your-api-key'
+            example: a3f8b2e1********************d9c4
+            pattern: '^[a-f0-9]{32}$'
 
 anrok:
     display_name: Anrok
@@ -1829,6 +1947,38 @@ attio:
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/attio
     setup_guide_url: https://nango.dev/docs/api-integrations/attio/how-to-register-your-own-attio-api-oauth-app
+
+attio-mcp:
+    display_name: Attio (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.attio.com/oidc/authorize
+    token_url: https://app.attio.com/oidc/token
+    registration_url: https://app.attio.com/oauth/register
+    scope_separator: '+'
+    authorization_url_skip_encode:
+        - scopes
+    authorization_params:
+        response_type: code
+        resource: https://mcp.attio.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.attio.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/attio-mcp
 
 auth0:
     display_name: Auth0
@@ -3078,6 +3228,18 @@ boldsign:
     proxy:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
+
+boondmanager:
+    display_name: BoondManager
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://ui.boondmanager.com/api/oauth2/authorize
+    token_url: https://ui.boondmanager.com/api/oauth2/token
+    proxy:
+        base_url: https://ui.boondmanager.com/api
+    docs: https://nango.dev/docs/api-integrations/boondmanager
+    setup_guide_url: https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app
 
 box:
     display_name: Box
@@ -4486,6 +4648,27 @@ cloudflare:
             example: lGlHlGZN3iPR9z7CupZlMB3nzMpTCdfxeUPNj_pf
             pattern: '^[a-zA-Z0-9_-]+$'
 
+cloudflare-mcp:
+    display_name: Cloudflare (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    proxy:
+        base_url: ${connectionConfig.mcp_server_url}
+        headers:
+            accept: application/json,text/event-stream
+    connection_config:
+        mcp_server_url:
+            type: string
+            title: Worker URL
+            description: The full URL of your Cloudflare Worker MCP server.
+            example: https://my-mcp.myusername.workers.dev
+            pattern: '^https://[a-zA-Z0-9.-]+(?:\:[0-9]+)?(?:/.*)?$'
+            doc_section: '#step-1-finding-your-worker-url'
+    docs: https://nango.dev/docs/api-integrations/cloudflare-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/cloudflare-mcp/connect
+
 clover:
     display_name: Clover
     categories:
@@ -5693,6 +5876,30 @@ dialpad-sandbox:
         base_url: https://sandbox.dialpad.com
     docs: https://nango.dev/docs/integrations/all/dialpad-sandbox
 
+diffbot:
+    display_name: Diffbot
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.diffbot.com
+        query:
+            token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v4/account
+    docs: https://nango.dev/docs/api-integrations/diffbot
+    docs_connect: https://nango.dev/docs/api-integrations/diffbot/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Diffbot API token.
+            example: c4f82a1b********************e7d3
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-obtain-your-api-token'
+
 digitalocean:
     display_name: DigitalOcean
     categories:
@@ -5748,6 +5955,30 @@ digits-mcp:
     proxy:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
+
+discolike:
+    display_name: DiscoLike
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.discolike.com
+        headers:
+            x-discolike-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/count
+    docs: https://nango.dev/docs/api-integrations/discolike
+    docs_connect: https://nango.dev/docs/api-integrations/discolike/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your DiscoLike API key.
+            doc_section: '#step-1-obtain-your-api-key'
+            example: 123e4567-e89b-12d3-a456-426614174000
+            format: uuid
 
 discord:
     display_name: Discord
@@ -10412,6 +10643,7 @@ jobadder:
         - hr
         - ats
     auth_mode: OAUTH2
+    disable_pkce: true
     authorization_url: https://id.jobadder.com/connect/authorize
     token_url: https://id.jobadder.com/connect/token
     default_scopes:
@@ -10420,12 +10652,6 @@ jobadder:
         response_type: code
     proxy:
         base_url: https://api.jobadder.com
-        verification:
-            method: GET
-            headers:
-                content-type: application/json
-            endpoints:
-                - /v2/users/current
     docs: https://nango.dev/docs/integrations/all/jobadder
 
 jobdiva:
@@ -11024,6 +11250,31 @@ leadmagic:
             example: 1e30029c105a89d36b76b879f01208d8
             pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-your-api-key'
+
+leadfeeder:
+    display_name: Leadfeeder
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.leadfeeder.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/accounts
+    docs: https://nango.dev/docs/api-integrations/leadfeeder
+    docs_connect: https://nango.dev/docs/api-integrations/leadfeeder/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Leadfeeder account.
+            example: a3f8c2b1****************************8805
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-obtain-your-api-key'
 
 lessonly:
     display_name: Lessonly
@@ -11808,6 +12059,43 @@ marketo:
             suffix: /identity/oauth/token
             order: 2
             doc_section: '#step-3-find-your-domain-and-identity-url'
+
+mattermost:
+    display_name: Mattermost
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /v4/users/me
+    docs: https://nango.dev/docs/api-integrations/mattermost
+    docs_connect: https://nango.dev/docs/api-integrations/mattermost/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Server URL
+            description: The hostname of your Mattermost server.
+            example: mattermost.example.com
+            pattern: '^[a-zA-Z0-9.-]+(?::[0-9]+)?$'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-mattermost-server-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your Mattermost personal access token.
+            example: 'hx3mq8n0vy6***************'
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-2-generate-a-personal-access-token'
 
 malwarebytes:
     display_name: Malwarebytes
@@ -13003,6 +13291,67 @@ netsuite-tba:
         - popular
     docs: https://nango.dev/docs/api-integrations/netsuite-tba
     setup_guide_url: https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango
+
+netsuite-client-credentials:
+    alias: netsuite
+    display_name: NetSuite (Client Credentials)
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: RS256
+            kid: ${credentials.certificateId}
+        payload:
+            iss: ${credentials.clientId}
+            aud: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/api-integrations/netsuite-client-credentials
+    docs_connect: https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your NetSuite integration record.
+            example: 1c343a716c1d****************************976dde7d8e3e2
+        certificateId:
+            type: string
+            title: Certificate ID
+            description: The ID of the certificate registered in your NetSuite integration.
+            example: HRril7Vwkk********************eWT2Fgks
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your NetSuite Account ID (e.g. 1234567 or 1234567_SB1 for sandbox).
+            example: '1234567'
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) used to sign the JWT assertion.
+            example: "-----BEGIN RSA PRIVATE KEY-----\nMIIEow...\n-----END RSA PRIVATE KEY-----"
 
 next-cloud-ocs:
     display_name: Next Cloud OCS
@@ -15966,6 +16315,27 @@ razorpay:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-key-id-and-secret'
 
+read-ai:
+    display_name: Read.ai
+    categories:
+        - productivity
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://authn.read.ai/oauth2/auth
+    token_url: https://authn.read.ai/oauth2/token
+    token_request_auth_method: basic
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.read.ai
+    docs: https://nango.dev/docs/api-integrations/read-ai
+    setup_guide_url: https://nango.dev/docs/api-integrations/read-ai/how-to-register-your-own-read-ai-oauth-app
+
 readwise:
     display_name: Readwise
     categories:
@@ -16201,6 +16571,29 @@ render-mcp:
             example: rnd_****************************
             pattern: '^rnd_[A-Za-z0-9]+$'
 
+raindrop-mcp:
+    display_name: Raindrop (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://auth.raindrop.ai/oauth/2.1/authorize
+    token_url: https://auth.raindrop.ai/oauth/2.1/token
+    registration_url: https://auth.raindrop.ai/oauth/2.1/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.raindrop.ai/mcp
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.raindrop.ai
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/raindrop-mcp
+
 reddit:
     display_name: Reddit
     categories:
@@ -16309,7 +16702,7 @@ reply-io:
         verification:
             method: GET
             endpoints:
-                - /v1/campaigns
+                - /v3/whoami
     docs: https://nango.dev/docs/api-integrations/reply-io
     docs_connect: https://nango.dev/docs/api-integrations/reply-io/connect
     credentials:
@@ -16572,6 +16965,29 @@ roam-scim:
             example: rmk-uu9zt58h-EYHyLJ3ay4Mc-wuWQTOk-Y2yY-gZlW7Ys8AdVXBRZks_SGrCyZ09_IDvX9ikahdxushGYKcT77Fjw
             pattern: '^rmk-[A-Za-z0-9_-]{86}$'
             doc_section: '#step-1-generating-your-scim-api-token'
+
+robinhood-mcp:
+    display_name: Robinhood (MCP)
+    categories:
+        - payment
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://robinhood.com/oauth
+    token_url: https://api.robinhood.com/oauth2/token/
+    registration_url: https://agent.robinhood.com/oauth/trading/register
+    authorization_params:
+        response_type: code
+        resource: https://agent.robinhood.com/mcp/trading
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://agent.robinhood.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/robinhood-mcp
 
 rock-gym-pro:
     display_name: Rock Gym Pro
@@ -17469,7 +17885,7 @@ sap-success-factors:
             title: Company ID
             description: The company ID of your SAP SuccessFactors account
             example: SFSALES012345
-            pattern: '^[A-Z0-9]+$'
+            pattern: '^[A-Za-z0-9]+$'
             doc_section: '#step-2-finding-your-company-id'
             order: 2
     credentials:
@@ -18446,6 +18862,41 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopvox:
+    display_name: ShopVox
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.shopvox.com/v1/login
+    token_params:
+        user: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: authToken
+    proxy:
+        base_url: https://api.shopvox.com/
+        query:
+            authToken: ${accessToken}
+            account_id: ${credentials.raw.accountID}
+    docs: https://nango.dev/docs/api-integrations/shopvox
+    docs_connect: https://nango.dev/docs/api-integrations/shopvox/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            format: email
+            description: Your ShopVox login email.
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your ShopVox login password.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+
 shopware:
     display_name: Shopware (Admin API)
     categories:
@@ -18824,13 +19275,15 @@ snowflake:
     proxy:
         base_url: https://${connectionConfig.snowflake_account_url}
     post_connection_script: snowflakePostConnection
-    docs: https://nango.dev/docs/integrations/all/snowflake
+    docs: https://nango.dev/docs/api-integrations/snowflake
+    docs_connect: https://nango.dev/docs/api-integrations/snowflake/connect
     connection_config:
         snowflake_account_url:
             type: string
             title: Domain
-            description: The domain of your Snowflake account
+            description: The domain of your Snowflake account.
             format: hostname
+            example: myorg-myaccount.snowflakecomputing.com
             prefix: https://
 
 snowflake-jwt:
@@ -19855,6 +20308,48 @@ telegram:
             pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
             doc_section: '#step-1-creating-your-telegram-bot'
 
+tempo:
+    display_name: Tempo
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.tempo.io/oauth/authorize/redirect
+    token_url: https://api.tempo.io/oauth/token/
+    disable_pkce: true
+    authorization_params:
+        jira_url: https://${connectionConfig.jiraSubdomain}.atlassian.net
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.tempo.io
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/tempo
+    setup_guide_url: https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/tempo/connect
+    connection_config:
+        jiraSubdomain:
+            type: string
+            title: Jira Cloud Subdomain
+            description: The subdomain of your Jira Cloud instance.
+            example: acme
+            pattern: '^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$'
+            doc_section: '#step-1-find-your-jira-cloud-subdomain'
+            order: 2
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The subdomain of the Tempo API.
+            enum:
+                - api
+                - api.eu
+                - api.us
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
+
 the-swarm:
     display_name: The Swarm
     categories:
@@ -20185,6 +20680,18 @@ trafft:
             prefix: https://
             suffix: .admin.trafft.com
             doc_section: '#step-1-access-api-settings'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Trafft OAuth2 Client ID.
+            doc_section: '#step-2-get-your-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Trafft OAuth2 Client Secret.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
 
 tremendous:
     display_name: Tremendous
@@ -20662,7 +21169,7 @@ twitter-v2:
         - marketing
         - social
     auth_mode: OAUTH2
-    authorization_url: https://twitter.com/i/oauth2/authorize
+    authorization_url: https://x.com/i/oauth2/authorize
     token_url: https://api.twitter.com/2/oauth2/token
     token_request_auth_method: basic
     authorization_params:
@@ -22100,6 +22607,57 @@ workday-refresh-token:
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
 
+workday-cc:
+    display_name: Workday (Client Credentials)
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: client_credentials
+        tenant_alias: ${connectionConfig.tenant}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        authorization: ID ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://nango.dev/docs/api-integrations/workday-cc
+    docs_connect: https://nango.dev/docs/api-integrations/workday-cc/connect
+    connection_config:
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The hostname of your Workday tenant.
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name of your Workday account.
+            example: mytenant
+            order: 2
+            doc_section: '#step-3-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID.
+            doc_section: '#step-5-register-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret.
+            secret: true
+            doc_section: '#step-5-register-an-api-client'
+
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning
     categories:
@@ -22366,6 +22924,36 @@ yotpo:
             example: tHrwXaIBaWETHLRwxWaNktfYeEteyTcSjiNJY4IH
             doc_section: '#step-2-generating-your-secret-key'
             pattern: '^[A-Za-z0-9]{40}$'
+
+youcanbook-me:
+    display_name: YouCanBookMe
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.youcanbook.me
+        verification:
+            method: GET
+            endpoints:
+                - /v1/profiles
+    docs: https://nango.dev/docs/api-integrations/youcanbook-me
+    docs_connect: https://nango.dev/docs/api-integrations/youcanbook-me/connect
+    credentials:
+        username:
+            type: string
+            title: Account ID
+            description: Your YouCanBookMe Account ID.
+            format: uuid
+            example: 78c3430e-21f5-483b-8e26-84cd6dabf7a6
+            doc_section: '#step-1-finding-your-account-id'
+        password:
+            type: string
+            title: API Key
+            description: Your YouCanBookMe API key.
+            pattern: '^ak_[A-Za-z0-9_-]+$'
+            example: ak_xxxxxxxxxxxxxxxxxxxxx
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
 
 yandex:
     display_name: Yandex

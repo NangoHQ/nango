@@ -2,7 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { DeleteIntegration, GetIntegration, GetIntegrationFlows, GetIntegrations, PatchIntegration, PostIntegration } from '@nangohq/types';
+import type {
+    DeleteIntegration,
+    DeleteIntegrationFunction,
+    GetIntegration,
+    GetIntegrationFlows,
+    GetIntegrations,
+    PatchIntegration,
+    PostIntegration
+} from '@nangohq/types';
 
 export function useListIntegrations(env: string) {
     return useQuery<GetIntegrations['Success'], APIError>({
@@ -92,6 +100,29 @@ export function useDeleteIntegration(env: string, integrationId: string) {
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId] });
             void queryClient.invalidateQueries({ queryKey: ['integrations', env] });
+        }
+    });
+}
+
+export function useDeleteIntegrationFunction(env: string, integrationId: string, functionName: string, type: 'sync' | 'action') {
+    const queryClient = useQueryClient();
+    return useMutation<DeleteIntegrationFunction['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(
+                `/api/v1/integrations/${encodeURIComponent(integrationId)}/functions/${encodeURIComponent(functionName)}?env=${encodeURIComponent(env)}&type=${type}`,
+                {
+                    method: 'DELETE'
+                }
+            );
+            const json = (await res.json()) as DeleteIntegrationFunction['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
         }
     });
 }

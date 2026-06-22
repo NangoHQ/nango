@@ -1,8 +1,9 @@
 import { RefreshCwIcon } from 'lucide-react';
 
+import { Button } from '@nangohq/design-system';
+
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/Label';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 
@@ -25,7 +26,7 @@ export const OAuth2CredentialsComponent: React.FC<{
                     {credentials.refresh_token && (
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
-                                <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
+                                <Button variant="outline" size="lg" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
                                     <RefreshCwIcon />
                                     Refresh
                                 </Button>

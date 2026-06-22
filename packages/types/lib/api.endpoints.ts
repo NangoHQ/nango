@@ -35,7 +35,6 @@ import type {
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
-import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -48,6 +47,7 @@ import type {
     PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
 import type {
     CreateApiKey,
@@ -64,12 +64,17 @@ import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
+    DeleteIntegrationFunction,
+    DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
     GetProviderTemplates,
+    GetPublicIntegrationFunction,
+    GetPublicIntegrationFunctions,
+    GetPublicProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentResult,
@@ -94,10 +99,11 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
+import type { GetPlainHmac } from './plain/api.js';
 import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
-import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
+import type { GetConnectionRecordModels, GetConnectionRecords, GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
 import type {
     GetSharedCredentialsProvider,
@@ -107,7 +113,7 @@ import type {
 } from './sharedCredentials/api.js';
 import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PatchTeamUser, PutTeam } from './team/api.js';
-import type { GetUser, PatchUser } from './user/api.js';
+import type { GetUser, PatchUser, PutUserPassword } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
 
 export type PublicApiEndpoints =
@@ -165,6 +171,10 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | GetPublicFunctionCode
+    | GetPublicIntegrationFunctions
+    | GetPublicIntegrationFunction
+    | DeletePublicIntegrationFunction
+    | GetPublicProviderTemplates
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -180,6 +190,7 @@ export type PrivateApiEndpoints =
     | GetBillingUsageTopDimensionValues
     | GetUser
     | PatchUser
+    | PutUserPassword
     | PostInvite
     | DeleteInvite
     | DeleteTeamUser
@@ -195,6 +206,7 @@ export type PrivateApiEndpoints =
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions
+    | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates
     | DeleteIntegration
@@ -204,6 +216,8 @@ export type PrivateApiEndpoints =
     | GetConnections
     | GetConnectionsCount
     | GetConnection
+    | GetConnectionRecordModels
+    | GetConnectionRecords
     | GetInvite
     | GetMeta
     | GetEmailByExpiredToken
@@ -240,7 +254,8 @@ export type PrivateApiEndpoints =
     | PutConnectUISettings
     | GetProviders
     | GetProvider
-    | PostInternalTriggerFunction;
+    | PostInternalTriggerFunction
+    | GetPlainHmac;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

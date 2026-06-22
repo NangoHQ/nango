@@ -2,8 +2,9 @@ import Fuse from 'fuse.js';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
+import { buttonVariants } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { buttonVariants } from '@/components/ui/Button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/utils';
@@ -52,7 +53,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'bg-bg-surface justify-between grow w-full h-13')}
+                className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'bg-surface-canvas justify-between grow w-full h-13')}
                 disabled={disabled}
             >
                 {selectedIntegration ? (
@@ -66,7 +67,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 <ChevronsUpDown className="size-4.5 text-text-secondary" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[var(--radix-dropdown-menu-trigger-width)] p-2 bg-bg-subtle border-none"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] p-2 bg-surface-panel-inset border-none"
                 side="bottom"
                 align="start"
                 onInteractOutside={(e) => {
@@ -77,7 +78,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 }}
             >
                 <div
-                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-bg-muted rounded-md border border-grayscale-600"
+                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-surface-panel-muted rounded-md border border-border-default"
                     onKeyDown={(e) => {
                         e.stopPropagation();
                     }}
@@ -106,7 +107,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                                         onSelect(isSelected ? undefined : item);
                                         setSearch('');
                                     }}
-                                    className={cn('flex items-center justify-between cursor-pointer py-3 px-3 rounded-md', isSelected && 'bg-pure-black')}
+                                    className={cn('flex items-center justify-between cursor-pointer py-3 px-3 rounded-md', isSelected && 'bg-state-selected')}
                                 >
                                     <div className="flex gap-3 items-center text-[15px]">
                                         <IntegrationLogo provider={item.provider} className="size-8" />

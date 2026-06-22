@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
 
-import { NangoError, environmentService, getGlobalWebhookReceiveUrl } from '@nangohq/shared';
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
-import { getGoogleJWKS } from './cache.js';
 import { hashEmailAddress } from '../utils/pii.js';
+import { getGoogleJWKS } from './cache.js';
 
 import type { WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';

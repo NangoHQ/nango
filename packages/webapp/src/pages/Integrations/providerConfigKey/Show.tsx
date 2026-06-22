@@ -4,14 +4,10 @@ import { Link, useParams } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { FunctionsTab } from './Functions/Tab';
-import { SettingsTab } from './Settings/Tab';
-import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -21,6 +17,10 @@ import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
+import { IntegrationSideInfo } from './components/IntegrationSideInfo';
+import { FunctionsTab } from './Functions/Tab';
+import { SettingsTab } from './Settings/Tab';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -75,13 +75,13 @@ export const ShowIntegration: React.FC = () => {
                 <div className="inline-flex justify-between">
                     <div className="inline-flex items-center gap-2">
                         <IntegrationLogo provider={integration.integration.provider} className="size-15" />
-                        <span className="text-text-primary text-body-large-semi">
+                        <span className="text-text-strong text-body-large-semi">
                             {integration.integration.display_name ?? integration.template.display_name}
                         </span>
                     </div>
                     <PermissionGate condition={canCreateTestConnection} asChild>
                         {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg" disabled={!allowed}>
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="xl" disabled={!allowed}>
                                 Add test connection
                             </ButtonLink>
                         )}

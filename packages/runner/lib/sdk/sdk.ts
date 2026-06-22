@@ -1,11 +1,15 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
-import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest } from '@nangohq/shared';
 import {
-    MAX_LOG_PAYLOAD,
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     getCheckpointKey,
+    isBaseUrlOverrideDenied,
     isTest,
+    MAX_LOG_PAYLOAD,
     metrics,
+    normalizeDenylist,
+    normalizeDenylistHost,
     redactHeaders,
     redactURL,
     stringifyAndTruncateValue,
@@ -13,13 +17,13 @@ import {
     truncateJson
 } from '@nangohq/utils';
 
-import { Checkpointing } from './checkpointing.js';
 import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { Checkpointing } from './checkpointing.js';
 
-import type { Locks } from './locks.js';
 import type { TelemetryRecorder } from '../telemetry.js';
+import type { Locks } from './locks.js';
 import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type {
     ApiPublicConnectionFull,
@@ -50,6 +54,31 @@ export const oldLevelToNewLevel = {
 
 const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
+
+/**
+ * Snapshot proxy override policy at runner module load (before any user script runs).
+ * Do not read process.env during request handling — sandboxed scripts share the runner process.
+ */
+function buildRunnerProxyDenylistFromEnvs(): Set<string> {
+    const entries =
+        !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED || envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length === 0
+            ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+            : envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
+
+    const denylist = normalizeDenylist(entries);
+    const lambdaRuntimeApi = process.env['AWS_LAMBDA_RUNTIME_API'];
+    if (lambdaRuntimeApi) {
+        const normalized = normalizeDenylistHost(lambdaRuntimeApi);
+        if (normalized) {
+            denylist.add(normalized);
+        }
+    }
+
+    return denylist;
+}
+
+const runnerProxyDenylist = buildRunnerProxyDenylistFromEnvs();
+const runnerProxyOverrideEnabled = envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED;
 
 /**
  * Action SDK
@@ -111,7 +140,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 integrationId: this.providerConfigKey,
                 syncId: this.syncId,
                 bytesSent,
-                bytesReceived
+                bytesReceived,
+                count: 1
             });
         });
     }
@@ -120,12 +150,35 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
+        const baseUrlOverrideDenylist = runnerProxyDenylist;
+        const overrideEnabled = runnerProxyOverrideEnabled;
 
         let canRetryOn401 = true;
         let prevConnection: ApiPublicConnectionFull | undefined;
         const proxy = new ProxyRequest({
             proxyConfig: getProxyConfiguration({
-                externalConfig: this.getProxyConfig(config),
+                externalConfig: {
+                    ...this.getProxyConfig(config),
+                    ...(!overrideEnabled || baseUrlOverrideDenylist.size > 0
+                        ? {
+                              validateProxyRequestUrl: ({ absoluteUrl, proxyConfig, connection, integrationConfig }) => {
+                                  enforceProxyOutboundUrlPolicy({
+                                      absoluteUrl,
+                                      proxyConfig,
+                                      connection,
+                                      ...(integrationConfig !== undefined ? { integrationConfig } : {}),
+                                      overrideEnabled,
+                                      denylist: baseUrlOverrideDenylist
+                                  });
+                              },
+                              validateProxyRedirectUrl: (absoluteUrl: string) => {
+                                  if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                                      throw new ProxyError('proxy_redirect_to_denied_host', 'This redirect target is not allowed by server configuration.');
+                                  }
+                              }
+                          }
+                        : {})
+                },
                 internalConfig: {
                     providerName: this.provider!
                 }
@@ -178,7 +231,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     bytesReceived: received,
                     integrationId: providerConfigKey ?? this.providerConfigKey,
                     connectionId: connectionId ?? this.connectionId,
-                    syncId: this.syncId
+                    syncId: this.syncId,
+                    count: 1
                 });
             }
         });
@@ -293,7 +347,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             bytesReceived: 0,
             integrationId: this.providerConfigKey,
             connectionId: this.connectionId,
-            syncId: this.syncId
+            syncId: this.syncId,
+            count: 1
         });
         const res = await this.persistClient.postLog({
             environmentId: this.environmentId,
@@ -320,7 +375,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 acc.push(...Object.values(conn.connection.credentials));
                 return acc;
             }, []),
-            this.nango.secretKey
+            this.nango.apiKey
         ];
 
         const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase
@@ -540,7 +595,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 bytesReceived: 0,
                 integrationId: this.providerConfigKey,
                 connectionId: this.connectionId,
-                syncId: this.syncId
+                syncId: this.syncId,
+                count: 1
             });
             this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
@@ -580,7 +636,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 bytesReceived: 0,
                 integrationId: this.providerConfigKey,
                 connectionId: this.connectionId,
-                syncId: this.syncId
+                syncId: this.syncId,
+                count: 1
             });
             this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
@@ -621,7 +678,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 bytesReceived: 0,
                 integrationId: this.providerConfigKey,
                 connectionId: this.connectionId,
-                syncId: this.syncId
+                syncId: this.syncId,
+                count: 1
             });
             this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
@@ -751,7 +809,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             bytesReceived: Buffer.byteLength(JSON.stringify(res.value), 'utf8'),
             integrationId: this.providerConfigKey,
             connectionId: this.connectionId,
-            syncId: this.syncId
+            syncId: this.syncId,
+            count: 1
         });
 
         return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };

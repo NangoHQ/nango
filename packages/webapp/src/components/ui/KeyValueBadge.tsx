@@ -7,8 +7,8 @@ import type { VariantProps } from 'class-variance-authority';
 const keyValueBadgeVariants = cva('px-2 py-0.5 rounded-xs !text-body-small-medium', {
     variants: {
         variant: {
-            darker: 'bg-bg-surface text-text-primary',
-            lighter: 'bg-bg-subtle text-text-secondary'
+            darker: 'bg-surface-canvas text-text-strong',
+            lighter: 'bg-surface-panel-inset text-text-secondary'
         }
     },
     defaultVariants: {
@@ -25,7 +25,7 @@ interface KeyValueBadgeProps extends VariantProps<typeof keyValueBadgeVariants> 
 export const KeyValueBadge: React.FC<KeyValueBadgeProps> = ({ label, children, className, variant }) => {
     return (
         <div className={cn(keyValueBadgeVariants({ variant }), className)}>
-            <span className="text-text-tertiary">{label}:</span> {children}
+            <span className="text-text-muted">{label}:</span> {children}
         </div>
     );
 };

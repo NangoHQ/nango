@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { signAwsSigV4Request } from '../services/proxy/aws-sigv4.js';
 import { NangoError } from '../utils/error.js';

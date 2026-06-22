@@ -2,14 +2,16 @@ import { LogOut } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { SignupForm } from './components/SignupForm';
+import { Button } from '@nangohq/design-system';
+
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { Button, ButtonLink } from '@/components/ui/Button';
-import { StyledLink } from '@/components/ui/StyledLink';
+import { SignupForm } from './components/SignupForm';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();
@@ -48,7 +50,7 @@ export const InviteSignup: React.FC = () => {
                     <title>Invitation Error - Nango</title>
                 </Helmet>
 
-                <h2 className="text-title-group text-text-primary">Invitation error</h2>
+                <h2 className="text-title-group text-text-strong">Invitation error</h2>
 
                 <p className="text-text-secondary text-body-medium-regular">
                     An error occurred, refresh your page or reach out to the support.
@@ -74,12 +76,12 @@ export const InviteSignup: React.FC = () => {
                 </Helmet>
 
                 <div className="flex flex-col gap-5 items-center">
-                    <h2 className="text-title-group text-text-primary">Invitation error</h2>
+                    <h2 className="text-title-group text-text-strong">Invitation error</h2>
 
                     <p className="text-text-secondary text-body-medium-regular">This invitation no longer exists or is expired.</p>
                 </div>
 
-                <ButtonLink to={'/signup'} variant="secondary" className="w-full" size="lg">
+                <ButtonLink to={'/signup'} variant="outline" className="w-full" size="xl">
                     Back to signup
                 </ButtonLink>
             </DefaultLayout>
@@ -96,7 +98,7 @@ export const InviteSignup: React.FC = () => {
                 </Helmet>
 
                 <div className="flex flex-col gap-5 items-center">
-                    <h2 className="text-title-group text-text-primary">Invitation error</h2>
+                    <h2 className="text-title-group text-text-strong">Invitation error</h2>
 
                     <p className="text-text-secondary text-body-medium-regular text-center">
                         This invitation was sent to a different email. Please logout and use the correct account.
@@ -104,10 +106,10 @@ export const InviteSignup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 items-center justify-center">
-                    <ButtonLink to={'/'} variant="secondary" size="lg">
+                    <ButtonLink to={'/'} variant="outline" size="xl">
                         Back to home
                     </ButtonLink>
-                    <Button onClick={signout} variant="primary" size="lg">
+                    <Button onClick={signout} variant="primary" size="xl">
                         <LogOut />
                         Log out
                     </Button>
@@ -123,13 +125,13 @@ export const InviteSignup: React.FC = () => {
             </Helmet>
 
             <div className="flex flex-col gap-5 items-center">
-                <h2 className="text-title-group text-text-primary">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
+                <h2 className="text-title-group text-text-strong">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
 
                 <div className="flex flex-col gap-2 text-text-secondary text-body-medium-regular text-center">
                     <span>
                         {inviteData.invitedBy.name} has invited you to join their team:
                         <br />
-                        <strong className="text-text-primary">{inviteData.newTeam.name}</strong> ({inviteData.newTeamUsers}
+                        <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({inviteData.newTeamUsers}
                         {inviteData.newTeamUsers > 1 ? ' members' : ' member'})
                     </span>
 
@@ -139,17 +141,17 @@ export const InviteSignup: React.FC = () => {
 
             {isLogged ? (
                 <div className="flex gap-2 items-center justify-center">
-                    <Button variant="secondary" size="lg" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
+                    <Button variant="outline" size="xl" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
                         Decline
                     </Button>
-                    <Button variant="destructive" size="lg" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
+                    <Button variant="danger" size="xl" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
                         Join a different team
                     </Button>
                 </div>
             ) : (
                 <div className="flex flex-col gap-4 items-center w-full">
                     <SignupForm invitation={inviteData.invitation} token={token} />
-                    <span className="text-body-medium-regular text-text-tertiary">
+                    <span className="text-body-medium-regular text-text-muted">
                         Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
                     </span>
                 </div>

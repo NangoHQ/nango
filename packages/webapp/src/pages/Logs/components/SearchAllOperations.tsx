@@ -6,20 +6,20 @@ import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parse
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
-import { SearchableMultiSelect } from './SearchableMultiSelect';
+import { Button } from '@nangohq/design-system';
+
+import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
-import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
-import { OperationRow } from './OperationRow';
 import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
-import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
-import { PeriodSelector } from '@/components/patterns/PeriodSelector';
-import { Button } from '@/components/ui/Button';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Spinner } from '@/components/ui/Spinner';
+import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
+import { OperationRow } from './OperationRow';
+import { SearchableMultiSelect } from './SearchableMultiSelect';
 
 import type { Period } from '../../../utils/dates';
 import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
@@ -252,22 +252,21 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     return (
         <>
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-white mb-2 flex gap-4 items-center">Logs {(isLoading || isFetching) && <Spinner />}</h2>
-                <div className="text-white text-xs">
+            <div className="flex justify-end items-center mb-2">
+                <div className="text-text-strong text-xs">
                     {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
             <div className="flex gap-2 justify-between mb-4">
                 <div className="flex-1 min-w-0">
-                    <InputGroup className="border-border-gray-400">
+                    <InputGroup className="border-border-muted">
                         <InputGroupAddon>
                             <IconSearch stroke={1} size={16} />
                         </InputGroupAddon>
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
-                                <InputGroupButton variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
+                                <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
                                     <IconX stroke={1} size={18} />
                                 </InputGroupButton>
                             </InputGroupAddon>
@@ -291,12 +290,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 </div>
             </div>
             <div
-                style={{ height: '100%', overflow: 'auto', position: 'relative' }}
+                className="flex-1 min-h-0"
+                style={{ overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-primary">
-                    <thead className="grid sticky top-0 z-10 bg-grayscale-900">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-strong">
+                    <thead className="grid sticky top-0 z-10 bg-surface-page">
                         {table.getHeaderGroups().map((headerGroup) => {
                             return (
                                 <tr key={headerGroup.id} className="flex w-full">
@@ -304,7 +304,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                                         return (
                                             <th
                                                 key={header.id}
-                                                className="flex bg-grayscale-900 px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
+                                                className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                                 style={{
                                                     width: header.getSize() ? header.getSize() : 'auto'
                                                 }}
@@ -321,11 +321,11 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectOperation={onSelectOperation} />}
 
                     {flatData.length > 0 && hasNextPage && (
-                        <Button onClick={onClickLoadMore} variant={'tertiary'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
+                        <Button onClick={onClickLoadMore} variant={'outline'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
                             Load more...
                         </Button>
                     )}
-                    {flatData.length > 0 && !hasNextPage && <div className="text-xs text-grayscale-500 p-4 mt-2">Nothing more to load...</div>}
+                    {flatData.length > 0 && !hasNextPage && <div className="text-xs text-text-secondary p-4 mt-2">Nothing more to load...</div>}
 
                     {isLoading && (
                         <tbody>
@@ -345,9 +345,9 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         <tbody>
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
-                                    <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                                    <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
                                         <div className="text-center">No logs found</div>
-                                        <div className="text-gray-400">Note that logs older than 15 days are automatically cleared.</div>
+                                        <div className="text-text-muted">Note that logs older than 15 days are automatically cleared.</div>
                                     </div>
                                 </td>
                             </tr>

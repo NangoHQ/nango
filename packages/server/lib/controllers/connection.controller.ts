@@ -1,14 +1,14 @@
 import db from '@nangohq/database';
 import { envs, logContextGetter } from '@nangohq/logs';
 import {
-    NangoError,
     accountService,
     configService,
     connectionService,
     errorManager,
     generateSlackConnectionId,
     getProvider,
-    githubAppClient
+    githubAppClient,
+    NangoError
 } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 

@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
+import { Button } from '@nangohq/design-system';
+
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { Button } from '@/components/ui/Button';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -54,15 +55,15 @@ export const HearAboutUs: React.FC = () => {
                     <title>How did you hear about Nango? - Nango</title>
                 </Helmet>
 
-                <Skeleton className="h-6 w-80 bg-bg-subtle" />
+                <Skeleton className="h-6 w-80 bg-surface-panel-inset" />
 
                 <div className="flex w-full flex-col gap-4">
                     {Array.from({ length: HEAR_ABOUT_OPTIONS.length }).map((_, index) => (
-                        <Skeleton key={index} className="h-12 w-full bg-bg-subtle" />
+                        <Skeleton key={index} className="h-12 w-full bg-surface-panel-inset" />
                     ))}
                 </div>
 
-                <Skeleton className="h-5 w-32 bg-bg-subtle" />
+                <Skeleton className="h-5 w-32 bg-surface-panel-inset" />
             </DefaultLayout>
         );
     }
@@ -73,25 +74,19 @@ export const HearAboutUs: React.FC = () => {
                 <title>How did you hear about Nango? - Nango</title>
             </Helmet>
 
-            <h2 className="text-center text-title-group text-text-primary">How did you hear about Nango?</h2>
+            <h2 className="text-center text-title-group text-text-strong">How did you hear about Nango?</h2>
 
             <div className="flex w-full flex-col gap-4">
                 {HEAR_ABOUT_OPTIONS.map(({ label, value }) => (
-                    <Button
-                        variant="secondary"
-                        key={value}
-                        loading={isPending}
-                        onClick={() => submit(value)}
-                        className="w-full bg-bg-subtle p-3 h-auto justify-start"
-                    >
+                    <Button variant="outline" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
                         {label}
                     </Button>
                 ))}
             </div>
 
-            <span className="text-body-medium-regular text-text-tertiary">
+            <span className="text-body-medium-regular text-text-muted">
                 Not sure?{' '}
-                <span className="text-text-primary underline hover:text-text-secondary cursor-pointer" onClick={() => submit('skipped')}>
+                <span className="text-text-strong underline hover:text-text-secondary cursor-pointer" onClick={() => submit('skipped')}>
                     Skip for now
                 </span>
             </span>

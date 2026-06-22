@@ -295,6 +295,12 @@
                         "base_url": {
                             "type": "string"
                         },
+                        "body": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        },
                         "connection_config": {
                             "type": "object",
                             "additionalProperties": true
@@ -483,6 +489,12 @@
                 },
                 "registration_url": {
                     "type": "string"
+                },
+                "registration_params": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                    }
                 },
                 "client_registration": {
                     "type": "string",
