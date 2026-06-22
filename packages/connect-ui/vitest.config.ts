@@ -3,9 +3,6 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config';
 
-// Browser Mode (real Chromium via Playwright) is required so Tailwind CSS and theme
-// tokens actually apply — that's what lets axe-core evaluate color contrast, and what
-// makes real focus/keyboard events fire. jsdom can't do either.
 export default mergeConfig(
     viteConfig,
     defineConfig({

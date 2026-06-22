@@ -1,15 +1,15 @@
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, waitFor } from '@testing-library/dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { userEvent as browserUserEvent } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 
 import { getIntegrations, getProvider } from '@/lib/api';
-import { expectAccessibleInBothThemes, integrationsListResponse, providerResponse, renderApp } from '@/test/harness';
+import { expectAccessibleInBothThemes } from '@/test/a11y';
+import { integrationsListResponse, providerResponse } from '@/test/fixtures';
+import { renderApp } from '@/test/render';
 
 // `getIntegrations` feeds the suspense query; `getProvider` is hit when a card is activated.
 // Keep `APIError` real so the component's error handling keeps working.
 vi.mock('@/lib/api', async (importActual) => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- vitest's partial-mock pattern needs the inline module type
     const actual = await importActual<typeof import('@/lib/api')>();
     return { ...actual, getIntegrations: vi.fn(), getProvider: vi.fn() };
 });
@@ -25,15 +25,14 @@ describe('IntegrationsList', () => {
     });
 
     it('has no accessibility violations in light or dark mode', async () => {
-        const { container } = renderApp({ route: '/integrations' });
+        const { container } = await renderApp({ route: '/integrations' });
         await screen.findByRole('heading', { name: 'Select Integration' });
 
         await expectAccessibleInBothThemes(container);
     });
 
     it('integration cards are operable by keyboard (Enter activates)', async () => {
-        const user = userEvent.setup();
-        renderApp({ route: '/integrations' });
+        await renderApp({ route: '/integrations' });
         await screen.findByRole('heading', { name: 'Select Integration' });
 
         // A role="button" derives its name from content, so match the GitHub card by its label text.
@@ -41,7 +40,7 @@ describe('IntegrationsList', () => {
         card.focus();
         expect(card).toHaveFocus();
 
-        await user.keyboard('{Enter}');
+        await userEvent.keyboard('{Enter}');
 
         // Activating the card must fetch the provider and move toward the auth flow.
         await waitFor(() => {
@@ -50,15 +49,14 @@ describe('IntegrationsList', () => {
     });
 
     it('traps keyboard focus within the dialog (cannot Tab out to the page)', async () => {
-        renderApp({ route: '/integrations' });
+        await renderApp({ route: '/integrations' });
         await screen.findByRole('heading', { name: 'Select Integration' });
 
-        // Use the real browser Tab key (Playwright) so a focus-trap handler is actually honored;
-        // @testing-library's tab() moves focus in JS and would bypass it.
+        // Real browser Tab (Playwright) so a focus-trap handler is actually honored.
         // Tab more times than there are focusable controls — a trapped dialog keeps focus inside,
         // so it must never escape to <body>/<html>.
         for (let i = 0; i < 8; i++) {
-            await browserUserEvent.tab();
+            await userEvent.tab();
             expect([document.body, document.documentElement]).not.toContain(document.activeElement);
         }
     });

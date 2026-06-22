@@ -1,11 +1,13 @@
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, waitFor } from '@testing-library/dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import { AuthError } from '@nangohq/frontend';
 
 import { useNango } from '@/lib/nango';
-import { apiKeyProvider, authResultFixture, expectAccessibleInBothThemes, integrationFixture, renderApp } from '@/test/harness';
+import { expectAccessibleInBothThemes } from '@/test/a11y';
+import { apiKeyProvider, authResultFixture, integrationFixture } from '@/test/fixtures';
+import { renderApp } from '@/test/render';
 
 import type Nango from '@nangohq/frontend';
 
@@ -40,7 +42,7 @@ describe('Go', () => {
 
     describe('credentials form', () => {
         it('has no accessibility violations in light or dark mode', async () => {
-            const { container } = renderApp({ route: '/go', seedStore });
+            const { container } = await renderApp({ route: '/go', seedStore });
             await screen.findByRole('heading', { name: 'Link GitHub Account' });
 
             await expectAccessibleInBothThemes(container);
@@ -48,7 +50,7 @@ describe('Go', () => {
 
         it('is operable by keyboard (type credentials + submit with Enter)', async () => {
             const user = userEvent.setup();
-            renderApp({ route: '/go', seedStore });
+            await renderApp({ route: '/go', seedStore });
             await screen.findByRole('heading', { name: 'Link GitHub Account' });
 
             const apiKeyInput = screen.getByLabelText('API Key', { exact: false });
@@ -65,7 +67,7 @@ describe('Go', () => {
     describe('success screen', () => {
         async function renderSuccess(): Promise<{ user: ReturnType<typeof userEvent.setup>; container: HTMLElement }> {
             const user = userEvent.setup();
-            const { container } = renderApp({ route: '/go', seedStore });
+            const { container } = await renderApp({ route: '/go', seedStore });
             await submitCredentials(user);
             await screen.findByRole('heading', { name: 'Success!' });
             return { user, container };
@@ -92,7 +94,7 @@ describe('Go', () => {
         async function renderError(): Promise<{ user: ReturnType<typeof userEvent.setup>; container: HTMLElement }> {
             auth.mockRejectedValue(new AuthError('Invalid credentials', 'connection_test_failed'));
             const user = userEvent.setup();
-            const { container } = renderApp({ route: '/go', seedStore });
+            const { container } = await renderApp({ route: '/go', seedStore });
             await submitCredentials(user);
             await screen.findByRole('heading', { name: 'Connection failed' });
             return { user, container };
