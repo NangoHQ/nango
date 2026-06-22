@@ -4,7 +4,7 @@ import { configService, deployTemplate, flowService, productTracking, startTrial
 
 import { getOrchestrator } from '../../../../utils/utils.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, DBUser, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, DBUser, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -14,10 +14,11 @@ export type DeployIntegrationTemplateReason =
     | 'template_not_found'
     | 'ambiguous_template'
     | 'template_already_deployed'
+    | 'non_runnable_type'
     | 'failed_to_deploy';
 
 export type DeployIntegrationTemplateOutcome =
-    | { ok: true; result: SyncDeploymentResult; type: ScriptTypeLiteral }
+    | { ok: true; result: SyncDeploymentResult; type: RunnableFunctionType }
     | { ok: false; reason: DeployIntegrationTemplateReason; cause?: Error };
 
 /**
@@ -72,6 +73,9 @@ export async function deployIntegrationTemplate({
         return { ok: false, reason: 'ambiguous_template' };
     }
     const { type: resolvedType, template } = match;
+    if (resolvedType !== 'sync' && resolvedType !== 'action') {
+        return { ok: false, reason: 'non_runnable_type' };
+    }
 
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
     const resDeploy = await deployTemplate({

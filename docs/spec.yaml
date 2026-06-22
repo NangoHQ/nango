@@ -1756,9 +1756,8 @@ paths:
             responses:
                 '202':
                     description: |
-                        Deployment record. For `type=function` the deploy is asynchronous, so `status` is `waiting`/`running`
-                        and the deployment is polled via `GET /functions/deployments/{id}`. For `type=template` the deploy is
-                        synchronous, so `status` is already terminal (`success`/`failed`).
+                        Deployment record. `status` may be any of `waiting`, `running`, `success`, or `failed`. If it is not
+                        `success`, poll `GET /functions/deployments/{id}` for the final status and details.
                     content:
                         application/json:
                             schema:

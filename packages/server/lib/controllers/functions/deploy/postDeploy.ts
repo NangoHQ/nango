@@ -71,6 +71,10 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
             case 'template_already_deployed':
                 res.status(409).send({ error: { code: 'template_already_deployed', message: `'${body.template}' is already deployed on this integration` } });
                 return;
+            case 'non_runnable_type':
+                report(new Error(`Template '${body.template}' resolved to a non-runnable type and cannot be deployed as a function`));
+                res.status(500).send({ error: { code: 'server_error', message: `Template '${body.template}' cannot be deployed as a function` } });
+                return;
             default:
                 if (outcome.cause) {
                     report(outcome.cause);
@@ -81,12 +85,6 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
     }
 
     const { result, type } = outcome;
-    if (type !== 'sync' && type !== 'action') {
-        report(new Error(`Template '${body.template}' resolved to non-runnable type '${type}'`));
-        res.status(500).send({ error: { code: 'server_error', message: 'Template was deployed but resolved to an unexpected type' } });
-        return;
-    }
-
     const version = result.version ?? '';
     const deployment = await createSucceededFunctionDeployment({
         environmentId: environment.id,
