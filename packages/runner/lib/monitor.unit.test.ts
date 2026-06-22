@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { RunnerMonitor } from './monitor.js';
 
@@ -99,6 +99,17 @@ describe('RunnerMonitor conflict tracking', () => {
 
                 expect(putSyncConflict).not.toHaveBeenCalled();
             });
+
+            it('removes tracked entry when sync conflict acquisition fails', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-conflict', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-1', { persistClient });
+                putSyncConflict.mockResolvedValueOnce(Err(new Error('Conflicting sync detected')));
+
+                await expect(monitor.track(nangoProps, 'task-2', { persistClient })).rejects.toThrow('Conflicting sync detected');
+
+                expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.size).toBe(1);
+                expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.has('task-2')).toBe(false);
+            });
         });
 
         describe('untrack', () => {
@@ -138,6 +149,8 @@ describe('RunnerMonitor conflict tracking', () => {
             await monitor.track(nangoProps, 'task-local');
 
             await expect(monitor.track(nangoProps, 'task-local-2')).rejects.toThrow('Conflicting sync detected');
+            expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.size).toBe(1);
+            expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.has('task-local-2')).toBe(false);
         });
 
         it('releases local sync conflict on untrack', async () => {

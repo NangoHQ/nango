@@ -117,7 +117,12 @@ export class RunnerMonitor {
             nangoProps,
             ...(opts?.persistClient ? { persistClient: opts.persistClient } : {})
         });
-        await this.trackForConflicts(taskId);
+        try {
+            await this.trackForConflicts(taskId);
+        } catch (err) {
+            this.tracked.delete(taskId);
+            throw err;
+        }
         this.lastIdleTrackingDate = Date.now();
     }
 
