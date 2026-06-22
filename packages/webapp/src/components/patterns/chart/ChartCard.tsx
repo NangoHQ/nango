@@ -6,7 +6,7 @@ import { InfoTooltip } from '../../ui/InfoTooltip';
 import { Skeleton } from '../../ui/Skeleton';
 import { BreakdownChart } from './BreakdownChart';
 import { ChartLegend } from './ChartLegend';
-import { useChartData } from './useChartData';
+import { useChartData, visibleBreakdownTotal } from './useChartData';
 import { useChartInteractions } from './useChartInteractions';
 
 import type { ChartConfig } from '../../ui/Chart';
@@ -27,8 +27,13 @@ interface ChartCardProps {
     headerActions?: React.ReactNode;
     /** When provided, the chart renders these stacked series instead of the single total. */
     breakdownSeries?: ChartSeries[];
-    breakdownLoading?: boolean;
-    breakdownError?: boolean;
+    /** Loading/error of the per-panel detail fetch (breakdown or filtered slice), shown in the chart body. */
+    detailLoading?: boolean;
+    detailError?: boolean;
+    /** Overrides the headline number (e.g. a filtered slice's total when re-broken-down). */
+    totalOverride?: number;
+    /** The panel is scoped to a filtered slice — keeps the controls visible when empty and adjusts the AVG tooltip copy. */
+    filtered?: boolean;
 }
 
 /**
@@ -37,7 +42,17 @@ interface ChartCardProps {
  * state. The breakdown rendering and its interactions live in BreakdownChart /
  * ChartLegend; this component just decides what to show.
  */
-export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe, headerActions, breakdownSeries, breakdownLoading, breakdownError }) => {
+export const ChartCard: React.FC<ChartCardProps> = ({
+    isLoading,
+    data,
+    timeframe,
+    headerActions,
+    breakdownSeries,
+    detailLoading,
+    detailError,
+    totalOverride,
+    filtered
+}) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
 
@@ -53,19 +68,30 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         return { total: { label: 'Total', color: 'var(--ds-color-brand-500)' } };
     }, [isBreakdown, breakdownSeries]);
 
-    // What occupies the chart body: a breakdown spinner/error, the empty state, or the chart.
-    const showBreakdownSpinner = isBreakdown && breakdownLoading;
-    const showBreakdownError = isBreakdown && !breakdownLoading && breakdownError;
+    // What occupies the chart body: a per-panel detail spinner/error (covers both a
+    // breakdown fetch and a filtered-slice fetch), the empty state, or the chart.
+    const showDetailSpinner = Boolean(detailLoading);
+    const showDetailError = !detailLoading && Boolean(detailError);
     const hasBreakdownSeries =
         isBreakdown && (breakdownSeries?.length ?? 0) > 0 && (breakdownSeries?.some((s) => s.usage.some((u) => u.quantity > 0)) ?? false);
-    const effectiveEmpty = isEmpty && !hasBreakdownSeries;
-    const headlineTotal = isEmpty ? undefined : data?.total;
+    // In breakdown mode the chart shows only the (possibly filtered) breakdown series, so
+    // emptiness is about those; otherwise it's the base/filtered single series.
+    const effectiveEmpty = isBreakdown ? !hasBreakdownSeries : isEmpty;
+    // In breakdown mode the headline tracks the visible series, so isolating/hiding a slice
+    // updates the number directly (no backend round-trip). With nothing hidden, keep the exact
+    // backend total — a filtered slice's `totalOverride`, else the metric total.
+    const visibleKeys = (breakdownSeries ?? []).filter((s) => !interactions.isSeriesHidden(s.key)).map((s) => s.key);
+    const allSeriesVisible = visibleKeys.length === (breakdownSeries?.length ?? 0);
+    const headlineTotal =
+        isBreakdown && !allSeriesVisible
+            ? visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey)
+            : (totalOverride ?? (isEmpty ? undefined : data?.total));
     // Wait for the base metric to load before drawing — otherwise the chart briefly renders
     // with the wrong type (bars before `view_mode` is known) next to the spinner.
-    const showChart = !isLoading && !effectiveEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || hasBreakdownSeries);
+    const showChart = !isLoading && !effectiveEmpty && !showDetailSpinner && !showDetailError && (!isBreakdown || hasBreakdownSeries);
     // Resolved (post-load) empty state: collapse the card and drop the breakdown control —
     // with no data, slicing by a dimension can't change anything.
-    const showEmpty = effectiveEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError;
+    const showEmpty = effectiveEmpty && !isLoading && !showDetailSpinner && !showDetailError;
 
     return (
         <div className={cn('bg-surface-panel rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
@@ -81,6 +107,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                                     <InfoTooltip>
                                         This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
                                         than a cumulative total.
+                                        {filtered && " For a filtered slice this is the slice's contribution to the monthly average, not a standalone average."}
                                     </InfoTooltip>
                                 )}
                             </div>
@@ -93,7 +120,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                         </>
                     )}
                 </div>
-                {headerActions && !showEmpty && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
+                {headerActions && (!showEmpty || filtered) && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
             </header>
 
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden flex flex-col">
@@ -112,7 +139,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                     </>
                 )}
 
-                {(isLoading || showBreakdownSpinner) && (
+                {(isLoading || showDetailSpinner) && (
                     <div className="flex flex-col items-center justify-center flex-1">
                         <span className="text-text-secondary text-body-medium-regular">
                             <Loader2 className="animate-spin" />
@@ -120,9 +147,9 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                     </div>
                 )}
 
-                {showBreakdownError && (
+                {showDetailError && (
                     <div className="flex flex-col items-center justify-center flex-1">
-                        <span className="text-text-secondary text-body-medium-regular">Failed to load breakdown</span>
+                        <span className="text-text-secondary text-body-medium-regular">Failed to load data</span>
                     </div>
                 )}
 

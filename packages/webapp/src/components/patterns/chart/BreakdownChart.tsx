@@ -36,6 +36,9 @@ interface BreakdownChartProps {
  */
 export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, config, isCumulative, isBreakdown, series, todayDateKey, interactions }) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
+    // Clicking a band isolates that series (shows only it; click again shows all) — a
+    // client-only view change, never a query change. Filtering lives on the Filter control.
+    const bandClick = (s: ChartSeries) => () => toggleIsolate(s.key);
     const ChartComponent = isCumulative ? AreaChart : BarChart;
 
     // Stacking follows declaration order (first series = bottom), so pin the neutral
@@ -61,12 +64,13 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                             dot={false}
                             // The active dot sits on top of the band; mirror the band's handlers so
                             // hovering it doesn't drop the highlight / single-series tooltip.
-                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: () => toggleIsolate(s.key) }}
+                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: bandClick(s) }}
                             hide={isSeriesHidden(s.key)}
                             isAnimationActive={false}
                             onMouseEnter={() => hoverSeries(s.key)}
                             onMouseLeave={() => unhoverSeries()}
-                            onClick={() => toggleIsolate(s.key)}
+                            onClick={bandClick(s)}
+                            className="cursor-pointer"
                         />
                     );
                 }
@@ -81,7 +85,8 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                         isAnimationActive={false}
                         onMouseEnter={() => hoverSeries(s.key)}
                         onMouseLeave={() => unhoverSeries()}
-                        onClick={() => toggleIsolate(s.key)}
+                        onClick={bandClick(s)}
+                        className="cursor-pointer"
                     />
                 );
             });
