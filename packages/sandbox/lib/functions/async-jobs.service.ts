@@ -8,6 +8,7 @@ import type {
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
     FunctionDeploymentResultSuccess,
+    FunctionDeploymentTemplateStoredRequest,
     FunctionDryrunBody,
     FunctionDryrunCreateSuccess,
     FunctionDryrunResultSuccess,
@@ -27,7 +28,7 @@ export interface FunctionDryrunStoredRequest extends FunctionDryrunBody {
     function_name: string;
 }
 
-export type FunctionDeploymentStoredRequest = FunctionDeploymentCodeBody;
+export type FunctionDeploymentStoredRequest = FunctionDeploymentCodeBody | FunctionDeploymentTemplateStoredRequest;
 
 export type FunctionAsyncJobStoredRequest = FunctionDryrunStoredRequest | FunctionDeploymentStoredRequest;
 
@@ -93,6 +94,50 @@ export async function createFunctionDeployment({
     }
 
     return Ok(toFunctionDeploymentCreate(job.value as DBFunctionDeployment));
+}
+
+/**
+ * Insert a deployment job already in a terminal 'success' state
+ */
+export async function createSucceededFunctionDeployment({
+    environmentId,
+    request,
+    output,
+    deployedFunctions,
+    durationMs,
+    trx = db.knex
+}: {
+    environmentId: number;
+    request: FunctionDeploymentStoredRequest;
+    output: string;
+    deployedFunctions: { name: string; version: string }[];
+    durationMs?: number | undefined;
+    trx?: Knex;
+}): Promise<Result<FunctionDeploymentCreateSuccess>> {
+    try {
+        const [row] = await trx<DBFunctionAsyncJob>(functionAsyncJobsTable)
+            .insert({
+                environment_id: environmentId,
+                job_type: 'deployment',
+                request: jsonb(trx, request),
+                status: 'success',
+                output,
+                result: jsonb(trx, { deployed: true, deployed_functions: deployedFunctions }),
+                has_result: true,
+                duration_ms: durationMs ?? null,
+                started_at: trx.fn.now(),
+                completed_at: trx.fn.now()
+            })
+            .returning('*');
+
+        if (!row) {
+            return Err(new Error('Failed to create function deployment job'));
+        }
+
+        return Ok(toFunctionDeploymentCreate(row as DBFunctionDeployment));
+    } catch (err) {
+        return Err(err);
+    }
 }
 
 async function createFunctionAsyncJob<Request extends FunctionAsyncJobStoredRequest>({
@@ -528,10 +573,9 @@ export function toFunctionDeploymentCreate(row: DBFunctionDeployment): FunctionD
     if (row.job_type !== 'deployment') {
         throw new Error(`Cannot create function deployment response for '${row.job_type}' job`);
     }
-    if (row.status !== 'waiting' && row.status !== 'running') {
-        throw new Error(`Cannot create function deployment response for '${row.status}' deployment`);
-    }
 
+    // Async code deploys are created at waiting/running; synchronous template deploys are created at a terminal
+    // success/failed. Both are valid create responses, so any deployment status is accepted here.
     return {
         id: row.id,
         status: row.status,

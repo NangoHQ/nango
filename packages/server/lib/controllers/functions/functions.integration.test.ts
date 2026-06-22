@@ -357,12 +357,29 @@ describe('functions public API', () => {
             body: { type: 'template', integration_id: 'airtable', template: 'tables' }
         });
 
-        expect(res.res.status).toBe(200);
+        expect(res.res.status).toBe(202);
         isSuccess(res.json);
         // Same shape as the async `function` variant ({ id, status, created_at }), but a terminal status.
         expect(res.json.status).toBe('success');
         expect(res.json.id).toEqual(expect.any(String));
         expect(res.json.created_at).toEqual(expect.any(String));
+
+        // The deployment is recorded as an async job, so it reads back like a code deploy.
+        const getRes = await api.fetch('/functions/deployments/:id', {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { id: res.json.id }
+        });
+
+        expect(getRes.res.status).toBe(200);
+        expect(getRes.json).toMatchObject({
+            id: res.json.id,
+            status: 'success',
+            integration_id: 'airtable',
+            function_name: 'tables',
+            function_type: 'sync',
+            deployed: true
+        });
     });
 
     it('returns 409 ambiguous_function when a sync and an action share the template name', async () => {
@@ -388,7 +405,7 @@ describe('functions public API', () => {
 
         const body = { type: 'template', integration_id: 'airtable', template: 'tables' } as const;
         const first = await api.fetch('/functions/deployments', { method: 'POST', token: apiKey.secret, body });
-        expect(first.res.status).toBe(200);
+        expect(first.res.status).toBe(202);
 
         const second = await api.fetch('/functions/deployments', { method: 'POST', token: apiKey.secret, body });
         isError(second.json);

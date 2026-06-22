@@ -1,6 +1,7 @@
 import {
     FunctionError,
     createFunctionDeployment,
+    createSucceededFunctionDeployment,
     markFunctionDeploymentFailed,
     markFunctionDeploymentRunning,
     prepareAsyncDeploy,
@@ -17,7 +18,7 @@ import { functionDeploymentBodySchema } from '../validation.js';
 import { createDeploySandboxApiKey, requireCustomerKeyId, toFunctionDeploymentError } from './helpers.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
-import type { DBSyncConfig, FunctionDeploymentCodeBody, FunctionDeploymentTemplateBody, PostFunctionDeployment } from '@nangohq/types';
+import type { DBSyncConfig, FunctionDeploymentCodeBody, FunctionDeploymentTemplateBody, PostFunctionDeployment, RunnableFunctionType } from '@nangohq/types';
 import type { Response } from 'express';
 
 type DeploymentResponse = Response<PostFunctionDeployment['Reply'], Required<RequestLocals>>;
@@ -31,8 +32,9 @@ function shouldAllowDestructiveDeploy(existingSyncConfig: Pick<DBSyncConfig, 'so
 }
 
 /**
- * Deploy a catalog template onto an integration. Runs synchronously, the response carries a terminal
- * status
+ * Deploy a catalog template onto an integration. Runs synchronously but records a deployment async job in a
+ * terminal 'success' state, so the 202 response and `GET /functions/deployments/:id` mirrors the asynchronous
+ * code-deploy path.
  */
 async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeploymentTemplateBody): Promise<void> {
     const { environment, account, plan, user } = res.locals;
@@ -78,13 +80,27 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
         }
     }
 
-    const deployedId = outcome.result.id;
-    if (deployedId === undefined) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Template deployed but no function id was returned' } });
+    const { result, type } = outcome;
+    const version = result.version ?? '';
+    const deployment = await createSucceededFunctionDeployment({
+        environmentId: environment.id,
+        request: {
+            type: 'template',
+            integration_id: body.integration_id,
+            template: body.template,
+            function_name: result.name,
+            function_type: type as RunnableFunctionType
+        },
+        output: `Successfully deployed the functions:\n- ${result.name}@${version}`,
+        deployedFunctions: [{ name: result.name, version }]
+    });
+    if (deployment.isErr()) {
+        report(deployment.error);
+        res.status(500).send({ error: { code: 'deployment_error', message: 'Failed to deploy the template' } });
         return;
     }
 
-    res.status(200).send({ id: String(deployedId), status: 'success', created_at: new Date().toISOString() });
+    res.status(202).send(deployment.value);
 }
 
 /**

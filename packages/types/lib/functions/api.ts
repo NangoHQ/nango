@@ -112,6 +112,14 @@ export interface FunctionDeploymentTemplateBody {
     function_type?: RunnableFunctionType | undefined;
 }
 
+export interface FunctionDeploymentTemplateStoredRequest {
+    type: 'template';
+    integration_id: string;
+    template: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+}
+
 export type FunctionDeploymentBody = FunctionDeploymentCodeBody | FunctionDeploymentTemplateBody;
 
 export interface FunctionDeploymentCreateSuccess {

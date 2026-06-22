@@ -1754,7 +1754,7 @@ paths:
                         schema:
                             $ref: '#/components/schemas/FunctionDeploymentRequest'
             responses:
-                '200':
+                '202':
                     description: |
                         Deployment record. For `type=function` the deploy is asynchronous, so `status` is `waiting`/`running`
                         and the deployment is polled via `GET /functions/deployments/{id}`. For `type=template` the deploy is
