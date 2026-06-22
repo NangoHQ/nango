@@ -161,12 +161,11 @@ export interface BillingUsageMetric {
      * dimension-value series (carrying its own `group: {key, value}`), with
      * one 'rest' entry aggregating the long tail.
      *
-     * Paired with the top-level `usage`/`total`: for an unfiltered breakdown
-     * the top-level is empty (`usage: []`, `total: 0`) and only `breakdown`
-     * carries data — callers opt into the per-dim view. When a `filter` is
-     * ALSO applied (drill-in), `total` is the filtered global (the sum across
-     * the series) so the headline matches the stacked series. When breakdown
-     * is NOT requested, the top-level is the no-dim global and this is absent.
+     * Paired with the top-level `usage`/`total`: when a breakdown is requested
+     * the top-level `usage` is empty (the per-day points live under `breakdown`)
+     * and `total` is the sum across the top-N + 'rest' series, which partition
+     * every row — so it equals the (filtered) global. When breakdown is NOT
+     * requested, the top-level is the no-dim global and this is absent.
      */
     breakdown?: BillingUsageMetric[];
 }
