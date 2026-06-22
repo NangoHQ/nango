@@ -21,7 +21,7 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
+            body: { providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
         shouldBeProtected(res);
@@ -34,7 +34,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
+            body: { providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
         isError(res.json);
@@ -51,7 +51,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'airtable', providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
+            body: { providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
         });
 
         isSuccess(res.json);
@@ -116,7 +116,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'airtable', providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
+            body: { providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
         });
 
         isSuccess(res.json);

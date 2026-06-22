@@ -25,7 +25,6 @@ export type PostPreBuiltDeploy = Endpoint<{
     Path: '/api/v1/flows/pre-built/deploy';
     Querystring: { env: string };
     Body: {
-        provider: string;
         providerConfigKey: string;
         scriptName: string;
         type: ScriptTypeLiteral;
