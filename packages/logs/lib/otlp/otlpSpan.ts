@@ -1,7 +1,7 @@
 import { SpanStatusCode } from '@opentelemetry/api';
 
-import { otlp, otlpRoutingAttributeKey } from './otlp.js';
 import { envs } from '../env.js';
+import { otlp, otlpRoutingAttributeKey } from './otlp.js';
 
 import type { OperationRow, OperationState } from '@nangohq/types';
 import type { Span } from '@opentelemetry/api';

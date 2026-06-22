@@ -1,7 +1,7 @@
-import type { DBGettingStartedMeta, DBGettingStartedProgress } from './db.js';
 import type { DBConnection } from '../connection/db.js';
 import type { DBEnvironment } from '../environment/db.js';
 import type { IntegrationConfig } from '../integration/db.js';
+import type { DBGettingStartedMeta, DBGettingStartedProgress } from './db.js';
 
 export interface GettingStartedOutput {
     meta: {

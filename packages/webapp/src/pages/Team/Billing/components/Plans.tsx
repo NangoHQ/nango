@@ -2,16 +2,14 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
-import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components-v2/ui/Dialog.jsx';
-import { Dot } from '../../../../components-v2/ui/Dot.js';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert.js';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { Dialog } from '@/components-v2/ui/Dialog.js';
-import { StyledLink } from '@/components-v2/ui/StyledLink.js';
-import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/Table';
+import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { Alert, AlertDescription } from '@/components/ui/Alert.js';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Dialog } from '@/components/ui/Dialog.js';
+import { StyledLink } from '@/components/ui/StyledLink.js';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/Table';
 import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
@@ -19,6 +17,9 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
+import { Dot } from '../../../../components/ui/Dot.js';
+import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 
 import type { PlanDefinitionList } from '../types.js';
 import type { StripeError } from '@/utils/stripe.js';
@@ -137,14 +138,14 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     const ButtonComponent = useMemo(() => {
         if (active) {
             return (
-                <Button disabled variant="secondary" className="w-27">
+                <Button disabled variant="outline" className="w-27">
                     Current plan
                 </Button>
             );
         }
         if (isFuture) {
             return (
-                <Button disabled variant="secondary" className="w-27">
+                <Button disabled variant="outline" className="w-27">
                     Scheduled
                 </Button>
             );
@@ -180,7 +181,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
                         {(allowed) => (
-                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="destructive" className="w-27" disabled={!allowed}>
+                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="danger" className="w-27" disabled={!allowed}>
                                 Downgrade
                             </Button>
                         )}
@@ -196,7 +197,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         }
 
         return (
-            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/demo" target="_blank">
+            <ButtonLink variant="outline" className="w-27" to="https://nango.dev/demo" target="_blank">
                 Contact us
             </ButtonLink>
         );
@@ -205,7 +206,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
     return (
         <TableRow>
             <TableCell className="w-1/3 font-medium">
-                <div className="inline-flex items-center gap-1 py-3 text-text-primary text-body-medium-medium">
+                <div className="inline-flex items-center gap-1 py-3 text-text-strong text-body-medium-medium">
                     {plan.title} {active && <Dot />}
                 </div>
             </TableCell>
@@ -399,9 +400,7 @@ const PlanChangeDialog: React.FC<{
                 </DialogHeader>
                 <div className="flex flex-col gap-1">
                     <p>{description}</p>
-                    {longWait && (
-                        <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
-                    )}
+                    {longWait && <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>}
                 </div>
                 {error && (
                     <Alert variant="error">
@@ -410,7 +409,7 @@ const PlanChangeDialog: React.FC<{
                 )}
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button variant="primary" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
                         {loading && <Loader className="size-4 animate-spin" />}

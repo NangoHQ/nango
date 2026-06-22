@@ -6,8 +6,6 @@ import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
     connectionService,
@@ -16,13 +14,15 @@ import {
     createSyncJob,
     environmentService,
     getProvider,
-    secretService
+    secretService,
+    SyncJobsType,
+    SyncStatus
 } from '@nangohq/shared';
 
 import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
-import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';
@@ -296,7 +296,8 @@ describe('Persist API', () => {
             const allRecords = (
                 await records.getRecords({
                     connectionId: seed.connection.id,
-                    model
+                    model,
+                    plan: null
                 })
             ).unwrap();
             const firstRecord = allRecords.records[0];
@@ -326,7 +327,8 @@ describe('Persist API', () => {
             const allRecords = (
                 await records.getRecords({
                     connectionId: seed.connection.id,
-                    model
+                    model,
+                    plan: null
                 })
             ).unwrap();
             const lastRecord = allRecords.records[allRecords.records.length - 1];
@@ -773,6 +775,7 @@ const insertRecords = async (seed: testSeed, model: string, toInsert: Unencrypte
         connectionId: seed.connection.id,
         environmentId: seed.env.id,
         model,
-        records: formatted
+        records: formatted,
+        plan: null
     });
 };

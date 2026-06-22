@@ -145,15 +145,20 @@ export async function finalizeManagedAuthentication({
     if (!user) {
         isNewUser = true;
         let account: DBTeam;
+        const sanitize = (s: string | null | undefined) => (s && s !== 'null' ? s : '');
         let name =
             authorizedUser.firstName || authorizedUser.lastName
-                ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
+                ? `${sanitize(authorizedUser.firstName)} ${sanitize(authorizedUser.lastName)}`.trim()
                 : authorizedUser.email.split('@')[0];
         if (!name) {
             name = nanoid();
         }
 
-        if (organizationId) {
+        if (invitation) {
+            // Invitation takes priority over org membership — user joins the invited team
+            isNewTeam = false;
+            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
+        } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
             const resAccount = await accountService.getOrCreateAccount(organization.name);
@@ -163,13 +168,7 @@ export async function finalizeManagedAuthentication({
             }
 
             account = resAccount;
-
-            if (!invitation) {
-                await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
-            }
-        } else if (invitation) {
-            isNewTeam = false;
-            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
+            await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
                 res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
@@ -220,17 +219,13 @@ export async function finalizeManagedAuthentication({
     }
 
     try {
-        if (invitation) {
+        if (invitation && isNewUser) {
+            // New user: created directly in the invited team, auto-accept and proceed
             await acceptInvitation(invitation.token);
-            const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
-            if (!updated) {
-                res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
-                return;
-            }
-
-            // @ts-expect-error you got to love passport
-            req.session.passport.user.account_id = invitation.account_id;
             respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
+        } else if (invitation) {
+            // Existing user: log them in and let them explicitly accept or decline on the invite page
+            respondWithSuccess(res, `${basePublicUrl}/signup/${invitation.token}`, responseMode);
         } else if (isNewUser) {
             respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
         } else {

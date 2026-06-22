@@ -124,3 +124,14 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
         }
     )
 );
+
+/**
+ * Aborts any in-flight run and clears Playground selection state (also wiped
+ * from sessionStorage via the persist middleware). Call this whenever the active
+ * context goes away — switching environments or logging out — since the stored
+ * integration/connection/function belong to that context.
+ */
+export function resetPlayground() {
+    usePlaygroundStore.getState().abortActiveRun?.();
+    usePlaygroundStore.getState().reset();
+}

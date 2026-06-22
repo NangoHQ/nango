@@ -1,0 +1,104 @@
+---
+title: 'Cloudflare (MCP)'
+sidebarTitle: 'Cloudflare (MCP)'
+description: 'Integrate your application with a Cloudflare Worker MCP server'
+---
+
+## Quickstart
+
+Connect to a Cloudflare Worker MCP server with Nango and start calling tools in minutes. Cloudflare MCP uses OAuth 2.0 with dynamic client registration — no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Cloudflare (MCP)_.
+
+    </Step>
+    <Step id="authorize" title="Authorize the worker">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Cloudflare. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-tool" title="Call a Cloudflare MCP tool">
+    Make your first MCP request to initialize a session. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "my-app",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/proxy/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: { name: 'my-app', version: '1.0.0' }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## Cloudflare (MCP) integration guides
+
+Nango uses **dynamic client registration** with your worker's OAuth server. You do not need to register an application — just provide the worker hostname when creating the integration.
+
+- [How do I link my account?](/api-integrations/cloudflare-mcp/connect) Connect your Cloudflare Worker MCP server using the Connect UI
+
+Official docs: [MCP on Cloudflare](https://developers.cloudflare.com/agents/model-context-protocol/guides/remote-mcp-server/)
+
+## Pre-built syncs & actions for Cloudflare (MCP)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cloudflare-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

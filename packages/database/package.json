@@ -23,7 +23,7 @@
     },
     "devDependencies": {
         "typescript": "5.8.3",
-        "vitest": "4.1.8"
+        "vitest": "4.1.9"
     },
     "files": [
         "dist/**/*"

@@ -2,16 +2,16 @@ import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { KeyValueInput } from '../../../components-v2/patterns/KeyValueInput';
-import { ScopesInput } from '../../../components-v2/patterns/ScopesInput';
-import { BinaryToggle } from '../../../components-v2/ui/BinaryToggle';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components-v2/ui/Form';
-import { InfoTooltip } from '../../../components-v2/ui/InfoTooltip';
-import { Input } from '../../../components-v2/ui/Input';
-import { Separator } from '../../../components-v2/ui/Separator';
-import { StyledLink } from '../../../components-v2/ui/StyledLink';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/Card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components-v2/ui/Collapsible';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
+import { KeyValueInput } from '../../../components/patterns/KeyValueInput';
+import { ScopesInput } from '../../../components/patterns/ScopesInput';
+import { BinaryToggle } from '../../../components/ui/BinaryToggle';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/Form';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
+import { Input } from '../../../components/ui/Input';
+import { Separator } from '../../../components/ui/Separator';
+import { StyledLink } from '../../../components/ui/StyledLink';
 
 import type { ConnectionFormData } from '../Create';
 
@@ -27,7 +27,7 @@ const FormLabelWithTooltip: React.FC<{
     return (
         <FormLabel className="flex gap-2 items-center">
             {children}
-            {required && <span className="text-alert-400">*</span>}
+            {required && <span className="text-text-danger">*</span>}
             {tooltip && <InfoTooltip side="right">{tooltip}</InfoTooltip>}
         </FormLabel>
     );
@@ -41,13 +41,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
     const showDocsOverrideField = false;
 
     return (
-        <Card className="bg-bg-elevated rounded border-none gap-2.5">
+        <Card className="bg-surface-page rounded border-none gap-2.5">
             <Collapsible>
                 <CollapsibleTrigger className="" asChild>
                     <CardHeader className={'flex flex-row items-center justify-between p-6 [&[data-state=open]_svg]:rotate-90 cursor-pointer'}>
                         <div className="flex flex-col gap-1.5">
-                            <CardTitle className={'text-text-primary'}>Advanced configuration</CardTitle>
-                            <CardDescription className={'text-text-tertiary'}>Configure advanced settings for your connection</CardDescription>
+                            <CardTitle className={'text-text-strong'}>Advanced configuration</CardTitle>
+                            <CardDescription className={'text-text-muted'}>Configure advanced settings for your connection</CardDescription>
                         </div>
                         <ChevronRight className="size-4.5 transition-transform duration-200" />
                     </CardHeader>

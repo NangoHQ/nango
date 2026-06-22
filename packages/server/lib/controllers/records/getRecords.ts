@@ -5,12 +5,12 @@ import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
 import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
 
-const envs = parseEnvs(ENVS);
-
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
+
+const envs = parseEnvs(ENVS);
 
 export const getLookbackCutoff = () => new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
 const withinLookback = z
@@ -63,7 +63,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment, account, plan } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
 
@@ -84,7 +84,8 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
             limit: query.limit,
             filter: query.filter,
             cursor: query.cursor,
-            externalIds: query.ids
+            externalIds: query.ids,
+            plan
         });
 
         if (result.isErr()) {

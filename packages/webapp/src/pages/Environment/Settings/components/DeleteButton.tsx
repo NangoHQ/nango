@@ -1,11 +1,11 @@
 import { IconTrash } from '@tabler/icons-react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button } from '@/components-v2/ui/Button';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -28,7 +28,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
         <ConditionalTooltip condition={typeof disabled === 'string'} content={disabled}>
             <PermissionGate condition={canDeleteEnvironment}>
                 {(allowed) => (
-                    <Button variant="destructive" disabled={!!disabled || !allowed}>
+                    <Button variant="danger" disabled={!!disabled || !allowed}>
                         <IconTrash stroke={1} size={18} />
                         <span>Delete environment</span>
                     </Button>

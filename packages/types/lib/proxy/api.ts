@@ -30,6 +30,16 @@ export interface BaseProxyConfiguration {
     retryOn?: number[] | null;
     forwardHeadersOnRedirect?: boolean;
     /**
+     * If set, called with the resolved outbound URL before the proxy request is sent.
+     * Implementations may throw (e.g. shared `ProxyError`) to abort the request.
+     */
+    validateProxyRequestUrl?: (args: {
+        absoluteUrl: string;
+        proxyConfig: ApplicationConstructedProxyConfiguration;
+        connection: ConnectionForProxy;
+        integrationConfig?: IntegrationConfigForProxy;
+    }) => void;
+    /**
      * If set, called with the absolute URL of each HTTP redirect before Axios follows it.
      * Implementations may throw (e.g. shared `ProxyError`) to abort the redirect.
      */
@@ -43,7 +53,7 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 }
 
 export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
-export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret'>;
+export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress: boolean;

@@ -1,8 +1,8 @@
 import type { ApiError, Endpoint } from '../api.js';
-import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
-import type { SyncDeploymentResult } from './index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
+import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
+import type { SyncDeploymentResult } from './index.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type PostDeployConfirmation = Endpoint<{

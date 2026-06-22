@@ -1,0 +1,76 @@
+---
+title: 'Snowflake'
+sidebarTitle: 'Snowflake'
+description: 'Integrate your application with the Snowflake API'
+---
+
+## 🚀 Quickstart
+
+Connect to Snowflake with Nango and see data flow in minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _Snowflake_.
+    </Step>
+    <Step id="authorize-snowflake" title="Authorize Snowflake">
+        Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Authorize_, then log in to your Snowflake account. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-snowflake-api" title="Call the Snowflake API">
+        Make your first request to the Snowflake API. Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/api/v2/databases" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.get({
+                    endpoint: '/api/v2/databases',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>'
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+        </Tabs>
+        ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Snowflake integration guides
+
+- [How to register your own Snowflake OAuth app](/api-integrations/snowflake/how-to-register-your-own-snowflake-api-oauth-app)  
+  Register an OAuth integration with Snowflake and obtain credentials to connect it to Nango
+- [How to link your Snowflake account](/api-integrations/snowflake/connect)  
+  Find your Snowflake account domain and enter it in the Connect UI
+
+Official docs: [Snowflake REST API reference](https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/reference)
+
+## 🧩 Pre-built syncs & actions for Snowflake
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/snowflake/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,4 +1,4 @@
-import { InMemoryKVStore, getKVStore } from '@nangohq/kvstore';
+import { getKVStore, InMemoryKVStore } from '@nangohq/kvstore';
 
 import { envs } from './env.js';
 import { RunnerMonitor } from './monitor.js';

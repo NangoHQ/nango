@@ -1,7 +1,8 @@
 import tracer from 'dd-trace';
 
+import db from '@nangohq/database';
 import { Cursor, records } from '@nangohq/records';
-import { isSyncStale } from '@nangohq/shared';
+import { getPlanSafe, isSyncStale } from '@nangohq/shared';
 import { cancellableDaemon } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -49,11 +50,14 @@ export function autoDeletingDaemon(): Awaited<ReturnType<typeof cancellableDaemo
                         return;
                     }
 
+                    const plan = await getPlanSafe(db.knex, { environmentId: candidate.value.environmentId });
+
                     const res = await records.deleteRecords({
                         environmentId: candidate.value.environmentId,
                         connectionId: candidate.value.connectionId,
                         model: candidate.value.model,
-                        mode: 'hard'
+                        mode: 'hard',
+                        plan
                     });
                     if (res.isErr()) {
                         span?.addTags({ error: res.error.message });

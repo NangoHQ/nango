@@ -1,9 +1,9 @@
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/IntegrationLogo',
+    title: 'Components/Patterns/IntegrationLogo',
     parameters: { layout: 'padded' }
 };
 export default meta;

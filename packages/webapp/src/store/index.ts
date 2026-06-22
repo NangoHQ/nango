@@ -1,9 +1,9 @@
 import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
-import { usePlaygroundStore } from './playground';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { resetPlayground } from './playground';
 
 interface Env {
     name: string;
@@ -33,8 +33,7 @@ export const useStore = create<State>()((set, get) => ({
 
     setEnv: (value) => {
         if (get().env !== value) {
-            usePlaygroundStore.getState().abortActiveRun?.();
-            usePlaygroundStore.getState().reset();
+            resetPlayground();
         }
         set({ env: value });
     },

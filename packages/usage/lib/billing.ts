@@ -4,9 +4,10 @@ import { RateLimiterQueue, RateLimiterRedis, RateLimiterRes } from 'rate-limiter
 import { stringify as stableStringify } from 'safe-stable-stringify';
 
 import { billing } from '@nangohq/billing';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { logger } from './logger.js';
 
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetrics, GetBillingUsageOpts } from '@nangohq/types';
@@ -21,6 +22,7 @@ export class UsageBillingClient {
         this.redis = redis;
         const limiter = new RateLimiterRedis({
             storeClient: redis,
+            useRedisPackage: true,
             keyPrefix: 'billing',
             points: envs.USAGE_BILLING_API_MAX_RPS,
             duration: 1
@@ -37,7 +39,13 @@ export class UsageBillingClient {
     // once the shadow path is removed.
     public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
-        const cached = await this.redis.get(cacheKey);
+        let cached: string | null = null;
+        try {
+            cached = await this.redis.get(cacheKey);
+        } catch (err) {
+            metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'error' });
+            return Err(new Error('billing_usage_cache_error', { cause: err }));
+        }
         if (cached) {
             try {
                 const parsed: BillingUsageMetrics = JSON.parse(cached);
@@ -62,8 +70,8 @@ export class UsageBillingClient {
                     await this.redis.set(cacheKey, JSON.stringify(res.value), {
                         EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS
                     });
-                } catch {
-                    // ignore cache set errors
+                } catch (err) {
+                    logger.warning(`billing usage Orb cache write failed for subscription=${subscriptionId}: ${stringifyError(err)}`);
                 }
                 return Ok({ value: res.value, fromCache: false });
             }
@@ -85,12 +93,12 @@ export class UsageBillingClient {
     private async throttle<T>(key: string, fn: () => Promise<T>): Promise<T> {
         try {
             await this.throttler.removeTokens(1, key);
-            return await fn();
         } catch (err) {
             if (err instanceof RateLimiterRes) {
                 throw new Error('rate_limit_exceeded', { cause: err });
             }
-            throw err;
+            throw new Error('billing_usage_throttle_error', { cause: err });
         }
+        return await fn();
     }
 }

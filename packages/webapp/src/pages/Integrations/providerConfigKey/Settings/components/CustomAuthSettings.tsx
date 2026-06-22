@@ -1,19 +1,19 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { AppPrivateKeyInput } from './AppPrivateKeyInput';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Label } from '@/components-v2/ui/Label';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Label } from '@/components/ui/Label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud.js';
+import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -58,7 +58,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
             description:
                 'Updating the Client ID will invalidate token refreshes for all existing connections for this integration. Are you sure you want to continue?',
             confirmButtonText: 'Update Client ID',
-            confirmVariant: 'destructive',
+            confirmVariant: 'danger',
             onConfirm: async () => {
                 await onSave({ clientId: value });
             }

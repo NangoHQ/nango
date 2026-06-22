@@ -1,9 +1,9 @@
-import { Spinner } from '@/components-v2/ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Spinner',
+    title: 'Components/UI/Spinner',
     parameters: { layout: 'padded' }
 };
 export default meta;

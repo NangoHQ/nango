@@ -1,7 +1,13 @@
 import db from '@nangohq/database';
 import { getCheckpointKey, getLogger, stringifyError } from '@nangohq/utils';
 
+import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
+import { NangoError } from '../../utils/error.js';
+import accountService from '../account.service.js';
+import { getCheckpoint } from '../checkpoints/checkpoints.js';
+import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
 import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import { getLatestSyncJob } from './job.service.js';
 import {
@@ -13,12 +19,6 @@ import {
     softDeleteSync,
     undeleteSync
 } from './sync.service.js';
-import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
-import { NangoError } from '../../utils/error.js';
-import accountService from '../account.service.js';
-import { getCheckpoint } from '../checkpoints/checkpoints.js';
-import configService from '../config.service.js';
-import { errorNotificationService } from '../notification/error.service.js';
 
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -104,7 +104,9 @@ export class SyncManagerService {
             // Resume soft-deleted syncs if needed
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
             if (existing.isOk()) {
-                await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                if (syncData.auto_start !== false) {
+                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                }
                 continue;
             }
             // If the sync doesn't exist, create it and schedule it
@@ -159,7 +161,9 @@ export class SyncManagerService {
                 // Resume soft-deleted syncs if needed
                 const existing = await undeleteSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
                 if (existing.isOk()) {
-                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    if (flowConfig.auto_start !== false) {
+                        await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    }
                     continue;
                 }
                 // If the sync doesn't exist, create it and schedule it
@@ -231,9 +235,16 @@ export class SyncManagerService {
     }
 
     public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
+        // Unschedule first so no new run can start against a sync we're about to soft-delete.
         await orchestrator.deleteSync({ syncId, environmentId });
-        await softDeleteSync(syncId);
-        await errorNotificationService.sync.clearBySyncId({ sync_id: syncId });
+
+        await db.knex.transaction(async (trx) => {
+            const deleted = await softDeleteSync(syncId, trx);
+            if (deleted.isErr()) {
+                throw deleted.error;
+            }
+            await errorNotificationService.sync.clearBySyncId({ sync_id: syncId, trx });
+        });
     }
 
     public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {

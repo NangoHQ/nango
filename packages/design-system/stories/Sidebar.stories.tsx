@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarProvider
-} from '@/components-v2/ui/Sidebar';
+} from '@/components/ui/Sidebar';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -22,7 +22,7 @@ const navItems = [
 ];
 
 const meta: Meta = {
-    title: 'Components v2/UI/Sidebar',
+    title: 'Components/UI/Sidebar',
     parameters: { layout: 'fullscreen' }
 };
 export default meta;

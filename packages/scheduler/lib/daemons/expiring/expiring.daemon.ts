@@ -20,7 +20,8 @@ export class ExpiringDaemon extends SchedulerDaemon {
         tickIntervalMs,
         batchSize,
         onExpiring,
-        onError
+        onError,
+        continueOnError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
@@ -28,13 +29,15 @@ export class ExpiringDaemon extends SchedulerDaemon {
         batchSize: number;
         onExpiring: (task: Task) => void;
         onError: (err: Error) => void;
+        continueOnError?: boolean;
     }) {
         super({
             name: 'Monitor',
             db,
             tickIntervalMs,
             abortSignal,
-            onError
+            onError,
+            continueOnError
         });
         this.onExpiring = onExpiring;
         this.batchSize = batchSize;

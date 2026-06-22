@@ -1,6 +1,6 @@
 import { Ok } from '@nangohq/utils';
 
-import type { WebhookHandler, affinityWebhookResponse } from './types.js';
+import type { affinityWebhookResponse, WebhookHandler } from './types.js';
 
 const route: WebhookHandler<affinityWebhookResponse> = async (nango, _headers, body, _rawBody) => {
     const response = await nango.executeScriptForWebhooks({

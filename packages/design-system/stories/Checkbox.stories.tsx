@@ -1,10 +1,10 @@
-import { Checkbox } from '@/components-v2/ui/Checkbox';
-import { Label } from '@/components-v2/ui/Label';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Label } from '@/components/ui/Label';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Checkbox',
+    title: 'Components/UI/Checkbox',
     parameters: { layout: 'padded' }
 };
 export default meta;

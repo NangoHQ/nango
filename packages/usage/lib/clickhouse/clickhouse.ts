@@ -1,17 +1,18 @@
-import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
+import { ENVS, Err, metrics, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
+import { logger } from '../logger.js';
 import { Batcher } from './batcher.js';
 import {
+    COUNTER_METRICS,
     FILTER_PARAM_TYPE_FOR_DIM,
-    TOP_N_BREAKDOWN_CAP,
-    TOP_N_BREAKDOWN_DEFAULT,
     isAllowedDimensionFor,
     quantityForMetric,
     rankingQuantityForMetric,
-    tableForMetric
+    tableForMetric,
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT
 } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
-import { logger } from '../logger.js';
 
 import type {
     GetDailyCounterDay,
@@ -25,7 +26,15 @@ import type {
     GetTopDimensionValuesQuery,
     GetTopDimensionValuesResult
 } from './clickhouse.query.js';
-import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageRecordsEvent } from '@nangohq/types';
+import type {
+    BillingUsageMetrics,
+    UsageActionsEvent,
+    UsageConnectionsEvent,
+    UsageDataTransferEvent,
+    UsageEvent,
+    UsageFunctionExecutionsEvent,
+    UsageRecordsEvent
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const envs = parseEnvs(ENVS);
@@ -46,7 +55,8 @@ type ClickhouseRawUsageEventAttrs =
     | UsageAttrs<UsageConnectionsEvent, 'connectionId'>
     | UsageAttrs<UsageActionsEvent>
     | UsageAttrs<UsageEvent>
-    | UsageAttrs<UsageRecordsEvent, 'syncId'>;
+    | UsageAttrs<UsageRecordsEvent, 'syncId'>
+    | UsageAttrs<UsageDataTransferEvent>;
 
 export interface ClickhouseRawUsageEvent {
     ts: number; // Unix timestamp in milliseconds, matches DateTime64(3)
@@ -518,6 +528,43 @@ export class Clickhouse {
         }
     }
 
+    // CH-backed equivalent of `UsageBillingClient.getUsage(subscriptionId)` (no
+    // timeframe) — month-to-date COUNTER totals scoped to the calendar month
+    // containing `now`. Returned shape mirrors what Orb returns so the two are
+    // swappable at the caller. `records` / `connections` are not included;
+    // capping reads those from Postgres.
+    //
+    // Returns all five COUNTER billing metrics in one call (matches Orb's
+    // shape). One revalidate amortises the cache refresh across every billing
+    // metric — keep this fanned-out even though the trigger is per-metric.
+    async getCurrentMonthBillingMetrics(accountId: number, now: Date, opts?: { maxExecutionSeconds?: number }): Promise<Result<BillingUsageMetrics>> {
+        const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+        const timeframe = { start: monthStart, end: nextMonth };
+        const maxExecOpt = opts?.maxExecutionSeconds !== undefined ? { maxExecutionSeconds: opts.maxExecutionSeconds } : {};
+
+        const results = await Promise.all(
+            COUNTER_METRICS.map((metric) =>
+                this.getDailyCounter({ accountId, metric, dimension: 'none', timeframe, ...maxExecOpt } as GetDailyCounterQuery).then(
+                    (r) => [metric, r] as const
+                )
+            )
+        );
+
+        const usage: BillingUsageMetrics = {};
+        for (const [metric, res] of results) {
+            if (res.isErr()) return Err(res.error);
+            // Empty series → account has no events for this metric in the
+            // window (new account, paused, or partially active). Emit total: 0
+            // — capping needs an explicit zero, and skipping the entry would
+            // leave a stale cache value untouched.
+            const days = res.value.series[0]?.days ?? [];
+            const total = days.reduce((acc, d) => acc + d.value, 0);
+            usage[metric] = { externalId: metric, total, usage: [], view_mode: 'periodic' };
+        }
+        return Ok(usage);
+    }
+
     async shutdown(opts?: { timeoutMs: number }): Promise<Result<void>> {
         const res = this.batcher ? await this.batcher.shutdown(opts) : Ok(undefined);
 
@@ -554,7 +601,8 @@ function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
         case 'usage.actions':
         case 'usage.function_executions':
         case 'usage.proxy':
-        case 'usage.webhook_forward': {
+        case 'usage.webhook_forward':
+        case 'usage.data_transfer': {
             const { accountId, ...properties } = event.payload.properties;
             return {
                 ts: event.createdAt.getTime(),

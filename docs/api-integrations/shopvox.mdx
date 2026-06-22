@@ -1,0 +1,82 @@
+---
+title: 'ShopVox'
+sidebarTitle: 'ShopVox'
+description: 'Integrate your application with the ShopVox API'
+---
+
+## 🚀 Quickstart
+
+Connect to ShopVox with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ShopVox_.
+    </Step>
+    <Step title="Authorize ShopVox">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ShopVox email and password. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the ShopVox API">
+    Let's make your first request to the ShopVox API (fetches a list of customers). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/customers?name=acme" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/customers',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { name: 'acme' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the link below.
+    </Step>
+</Steps>
+
+## 📚 ShopVox integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my ShopVox account?](/api-integrations/shopvox/connect)
+Learn how to authenticate with ShopVox and link your account
+
+Official docs: [ShopVox API docs](https://shopvoxapi.docs.apiary.io/#reference)
+
+## 🧩 Pre-built syncs & actions for ShopVox
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/shopvox/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

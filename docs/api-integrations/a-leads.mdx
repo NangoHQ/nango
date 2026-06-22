@@ -1,0 +1,87 @@
+---
+title: 'A-Leads'
+sidebarTitle: 'A-Leads'
+description: 'Integrate your application with the A-Leads API for lead enrichment and email discovery'
+---
+
+## 🚀 Quickstart
+
+Connect to A-Leads with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _A-Leads_.
+    </Step>
+    <Step id="authorize-a-leads" title="Authorize A-Leads">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your A-Leads API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-a-leads-api" title="Call the A-Leads API">
+    Let's find a personal email from a LinkedIn username. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/search/find-email/personal" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"data": {"linkedin_username": "john-doe"}}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/search/find-email/personal',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                data: { linkedin_username: 'john-doe' }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 A-Leads integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my A-Leads account?](/api-integrations/a-leads/connect)  
+Learn how to obtain your A-Leads API key and link your account
+
+
+Official docs: [A-Leads API docs](https://docs.a-leads.co/reference)
+
+## 🧩 Pre-built syncs & actions for A-Leads
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/a-leads/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
