@@ -1,5 +1,6 @@
 const en = {
     common: {
+        dialogLabel: 'Connect an integration',
         close: 'Close',
         loading: 'Loading',
         back: 'Back',

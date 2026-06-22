@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { useClickAway, useKeyPressEvent } from 'react-use';
 
 import { triggerClose } from '@/lib/events';
+import { useI18n } from '@/lib/i18n';
 import { useGlobal } from '@/lib/store';
 import NangoLogoSVG from '@/svg/logo.svg?react';
 
@@ -13,13 +14,16 @@ const focusTrapOptions = {
     escapeDeactivates: false,
     allowOutsideClick: true,
     initialFocus: false,
-    fallbackFocus: '#connect-ui-dialog'
+    // Must resolve to an element INSIDE the trap container (the wrapper below), otherwise on a
+    // zero-tabbable screen focus-trap focuses an ancestor and its containment check thrashes.
+    fallbackFocus: '#connect-ui-dialog-content'
 } as const;
 
 export const Layout: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
 
     const { isEmbedded, showWatermark, isAuthLink } = useGlobal();
+    const { t } = useI18n();
     const isDarkTheme = document.documentElement.classList.contains('dark');
 
     useClickAway(ref, (event: MouseEvent | TouchEvent) => {
@@ -48,6 +52,7 @@ export const Layout: React.FC = () => {
         return (
             <div
                 ref={ref}
+                aria-label={t('common.dialogLabel')}
                 aria-labelledby="connect-ui-title"
                 aria-modal="true"
                 className="h-screen w-screen flex flex-col max-w-[500px] max-h-[700px] rounded-md bg-elevated p-px overflow-hidden"
@@ -56,7 +61,7 @@ export const Layout: React.FC = () => {
                 tabIndex={-1}
             >
                 <FocusTrap focusTrapOptions={focusTrapOptions}>
-                    <div className="contents">
+                    <div className="contents" id="connect-ui-dialog-content" tabIndex={-1}>
                         <div className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto">
                             <div className="min-h-full p-10 flex flex-col">
                                 <Outlet />
@@ -87,6 +92,7 @@ export const Layout: React.FC = () => {
         >
             <div
                 ref={ref}
+                aria-label={t('common.dialogLabel')}
                 aria-labelledby="connect-ui-title"
                 aria-modal="true"
                 className="flex flex-col w-full h-full sm:w-[500px] sm:h-[700px] sm:rounded-md bg-elevated p-px overflow-hidden"
@@ -95,7 +101,7 @@ export const Layout: React.FC = () => {
                 tabIndex={-1}
             >
                 <FocusTrap focusTrapOptions={focusTrapOptions}>
-                    <div className="contents">
+                    <div className="contents" id="connect-ui-dialog-content" tabIndex={-1}>
                         <div className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto">
                             <div className="min-h-full p-5 sm:p-10 flex flex-col">
                                 <Outlet />

@@ -2,6 +2,7 @@ import type { Translation } from './en';
 
 const es: Translation = {
     common: {
+        dialogLabel: 'Conectar una integración',
         close: 'Cerrar',
         loading: 'Cargando',
         back: 'Atrás',
