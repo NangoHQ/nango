@@ -1,5 +1,6 @@
+import { Button } from '@nangohq/design-system';
+
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -26,17 +27,19 @@ export const DefaultCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                     <AlertDescription>{infoMessage}</AlertDescription>
                 </Alert>
             )}
-            <Button
-                variant="primary"
-                onClick={() =>
-                    onSubmit?.({
-                        provider: provider.name,
-                        useSharedCredentials: false
-                    })
-                }
-            >
-                Create
-            </Button>
+            <div>
+                <Button
+                    variant="primary"
+                    onClick={() =>
+                        onSubmit?.({
+                            provider: provider.name,
+                            useSharedCredentials: false
+                        })
+                    }
+                >
+                    Create
+                </Button>
+            </div>
         </div>
     );
 };

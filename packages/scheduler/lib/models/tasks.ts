@@ -1,6 +1,6 @@
 import { uuidv4, uuidv7 } from 'uuidv7';
 
-import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
+import { Err, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 
 import { defaultSchedulerConfig } from '../config.js';
 import { DuplicateTaskNameError } from '../errors.js';

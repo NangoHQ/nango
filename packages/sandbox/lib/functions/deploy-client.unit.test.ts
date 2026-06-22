@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { buildAsyncDeployScript, prepareAsyncDeploy } from './deploy-client.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+
+import type { FunctionError } from './helpers.js';
+
 const mocks = vi.hoisted(() => {
     class CommandExitError extends Error {
         stdout: string | undefined;
@@ -50,11 +55,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
-
-import { buildAsyncDeployScript, prepareAsyncDeploy } from './deploy-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
-
-import type { FunctionError } from './helpers.js';
 
 const request = {
     integration_id: 'github',

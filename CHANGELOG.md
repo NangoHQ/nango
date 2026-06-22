@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.8] - 2026-06-19
+
+### Added
+
+- *(telemetry)* Wire data transfer through pubsub (#6530) by @ErickRDev
+- *(integrations)* Add support for shopvox (#6532) by @hassan254-prog
+- *(usage)* Flip capping source from Orb to ClickHouse via percentage rollout (#6509) by @pfreixes
+- *(support)* In app chat support (#6455) by @hassan254-prog
+- *(webapp)* Redesign app shell (#6543) by @macko911
+- *(metering)* Add usage-events subscribe env var (#6572) by @ErickRDev
+- *(webapp)* Records list page (#5862) by @agusayerza
+- *(webhooks)* Add createFunction/createWebhook authoring primitive (NAN-5885) 1/n (#6447) by @agusayerza
+- Prevent overriding design-system component styles (#6504) by @macko911
+- *(observability)* Instrument usage-tracker call decisions and metering consumer (#6580) by @pfreixes
+- *(sandbox)* Add AgentCore deployment step in GH Actions (#6534) by @marcindobry
+
+### Changed
+
+- Remove metrics section from self-hosted (#6550) by @rossmcewan
+- *(runner)* Increase telemetry batching thresholds (#6551) by @ErickRDev
+- *(runner)* Further increase telemetry batching thresholds (#6554) by @ErickRDev
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/947ce1196c9a663e7c7cf33bc3c663c0d80fe4f5 by Victor Lang'at by @github-actions[bot]
+- *(webapp)* Migrate to design-system Button (#6503) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/044202db3f9d7b3a65bfa6799c00b154446a45a1 by Marcin Dobrowolski by @github-actions[bot]
+- *(tests)* Shard integration tests across 4 runners (#6568) by @macko911
+- *(server)* Move deletion logic out of cron folder (#6560) by @kaposke
+- Reintroduce DT telemetry wiring over pubsub (#6557) by @ErickRDev
+
+### Fixed
+
+- Revert wire data transfer through pubsub (#6535) by @ErickRDev
+- *(metering)* Fix incr errors due to float (#6523) by @pfreixes
+- Vulns and upgrades (#6529) by @rossmcewan
+- *(providers)* Fix sap-success-factors company id pattern (#6553) by @hassan254-prog
+- *(read-ai)* Use correct OAuth2 authorization endpoint (#6541) by @raj-delightree
+- *(sync)* Respect auto_start when reauthenticating a connection (#6544) by @hassan254-prog
+- *(logger)* Fix the logger formatting (#6522) by @rossmcewan
+- Disclosure of account existence in password reset (#6559) by @kaposke
+- *(providers)* Fix attio-mcp scope separator (#6570) by @hassan254-prog
+- *(providers)* Fix verification endpoint for reply.io (#6512) by @hassan254-prog
+- *(webapp)* Replace virtualized records table with plain table (#6579) by @agusayerza
+- *(vulns)* Resolve 2 highs (#6581) by @rossmcewan
+
 ## [v0.70.7] - 2026-06-16
 
 ### Added
@@ -7081,6 +7124,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.8]: https://github.com/NangoHQ/nango/compare/v0.70.7..v0.70.8
 [v0.70.7]: https://github.com/NangoHQ/nango/compare/v0.70.6..v0.70.7
 [v0.70.6]: https://github.com/NangoHQ/nango/compare/v0.70.5..v0.70.6
 [v0.70.5]: https://github.com/NangoHQ/nango/compare/v0.70.4..v0.70.5

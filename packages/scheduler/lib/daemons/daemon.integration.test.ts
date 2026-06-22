@@ -2,8 +2,8 @@ import { setTimeout } from 'node:timers/promises';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { SchedulerDaemon } from './daemon.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import { SchedulerDaemon } from './daemon.js';
 
 import type knex from 'knex';
 

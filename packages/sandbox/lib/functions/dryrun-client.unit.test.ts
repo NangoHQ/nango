@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+
+import type { FunctionError } from './helpers.js';
+
 const mocks = vi.hoisted(() => {
     class RateLimitError extends Error {}
 
@@ -33,11 +38,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
-
-import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
-
-import type { FunctionError } from './helpers.js';
 
 const request = {
     integration_id: 'github',

@@ -6,9 +6,10 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
+import { Button } from '@nangohq/design-system';
+
 import GoogleButton from '@/components/patterns/GoogleButton';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -196,7 +197,7 @@ export const Signin: React.FC = () => {
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>

@@ -5,7 +5,8 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/Button';
+import { IconButton } from '@nangohq/design-system';
+
 import { Input } from '@/components/ui/Input';
 import { Separator } from '@/components/ui/Separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
@@ -14,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/utils/utils';
 
+import type { Button } from '@nangohq/design-system';
 import type { VariantProps } from 'class-variance-authority';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
@@ -227,11 +229,12 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
     const { toggleSidebar } = useSidebar();
 
     return (
-        <Button
+        <IconButton
             data-sidebar="trigger"
             data-slot="sidebar-trigger"
             variant="ghost"
-            size="icon"
+            size="2xs"
+            label="Toggle sidebar"
             className={cn('size-7', className)}
             onClick={(event) => {
                 onClick?.(event);
@@ -241,7 +244,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
         >
             <PanelLeftIcon />
             <span className="sr-only">Toggle Sidebar</span>
-        </Button>
+        </IconButton>
     );
 }
 

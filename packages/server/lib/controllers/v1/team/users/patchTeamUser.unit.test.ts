@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { roles } from '@nangohq/utils';
 
-import { patchTeamUser } from './patchTeamUser.js';
 import { envs } from '../../../../env.js';
+import { patchTeamUser } from './patchTeamUser.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';

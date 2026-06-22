@@ -6,9 +6,9 @@ import { SignedXml } from 'xml-crypto';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { signJWT } from './jwt.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { formatPem, interpolateObject, interpolateString } from '../utils/utils.js';
+import { signJWT } from './jwt.js';
 
 import type { ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

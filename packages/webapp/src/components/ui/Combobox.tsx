@@ -2,10 +2,11 @@ import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { Check, CheckIcon, ChevronsUpDown, Minus, Search, X, XIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from './Button';
+import { Button, IconButton } from '@nangohq/design-system';
+
+import { cn } from '@/utils/utils';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { cn } from '@/utils/utils';
 
 export interface ComboboxChildOption<TValue extends string = string> {
     value: TValue;
@@ -228,7 +229,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             loading={props.loading}
             disabled={disabled || options.length === 0}
             variant="ghost"
-            size="lg"
+            size="xl"
             className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
         >
             {props.label}{' '}
@@ -402,6 +403,37 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     );
 }
 
+interface SingleSelectFilterProps<T extends string> {
+    value: T | null;
+    onChange: (value: T | null) => void;
+    options: ComboboxOption<T>[];
+    /** Trigger text when nothing is selected. */
+    placeholderLabel: string;
+    /** Trigger text when a value is selected. */
+    selectedLabel: string;
+    dropdownTitle?: string;
+}
+
+/**
+ * A single-value filter that reuses the multi-select trigger (pill + count badge + clear).
+ * Picking an option replaces the current value rather than accumulating.
+ */
+export function SingleSelectFilter<T extends string>({ value, onChange, options, placeholderLabel, selectedLabel, dropdownTitle }: SingleSelectFilterProps<T>) {
+    return (
+        <ComboboxSelect<T>
+            allowMultiple
+            label={value ? selectedLabel : placeholderLabel}
+            dropdownTitle={dropdownTitle}
+            options={options}
+            selected={value ? [value] : []}
+            onSelectedChange={(next) => onChange(next.find((v) => v !== value) ?? null)}
+            onClearAll={() => onChange(null)}
+            reorderOnSelect={false}
+            showSearch={false}
+        />
+    );
+}
+
 const Combobox = ComboboxPrimitive.Root;
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
@@ -527,7 +559,7 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             {children}
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
-                    render={<Button variant="ghost" size="icon" />}
+                    render={<IconButton variant="ghost" size="2xs" label="Remove" />}
                     className="size-4 opacity-50 hover:opacity-100 p-0 flex items-center justify-center"
                     data-slot="combobox-chip-remove"
                 >

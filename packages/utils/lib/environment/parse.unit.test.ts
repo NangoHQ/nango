@@ -41,18 +41,15 @@ describe('parse', () => {
     it('should parse AgentCore sandbox settings', () => {
         const res = parseEnvs(ENVS, {
             AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
-            AGENTCORE_RUNTIME_QUALIFIER: 'dev',
-            AGENTCORE_REGION: 'us-east-1'
+            AGENTCORE_RUNTIME_QUALIFIER: 'dev'
         });
         expect(res.AGENTCORE_RUNTIME_ARN).toBe('arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime');
         expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('dev');
-        expect(res.AGENTCORE_REGION).toBe('us-east-1');
     });
 
     it('should default the AgentCore runtime qualifier', () => {
         const res = parseEnvs(ENVS, {
-            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
-            AGENTCORE_REGION: 'us-east-1'
+            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime'
         });
         expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('DEFAULT');
     });

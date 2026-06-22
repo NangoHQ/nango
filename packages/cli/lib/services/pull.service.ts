@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 
-import { GitHubNotFoundError, collectDependencies, fetchFileContent } from '../utils/githubTemplates.js';
+import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
+import { collectDependencies, fetchFileContent, GitHubNotFoundError } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
-import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 
 import type { ScriptTypeLiteral } from '@nangohq/types';
 
@@ -68,7 +68,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
         if (type) {
             url.searchParams.set('type', type);
         }
-        printDebug(`Fetching deployed function from ${url}`, debug);
+        printDebug(`Fetching deployed function from ${url.href}`, debug);
 
         const res = await fetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
         const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;

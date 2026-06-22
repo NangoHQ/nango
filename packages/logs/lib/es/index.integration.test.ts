@@ -3,11 +3,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { nanoid } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { deleteIndex, migrateMapping } from './helpers.js';
-import { indexOperations, policyOperations } from './schema.js';
 import { getFormattedOperation } from '../models/helpers.js';
 import { createOperation, getOperation, updateOperation } from '../models/operations.js';
 import { client } from '../storage/client.js';
+import { deleteIndex, migrateMapping } from './helpers.js';
+import { indexOperations, policyOperations } from './schema.js';
 
 // This file is sequential
 describe('mapping', () => {

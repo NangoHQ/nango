@@ -7,8 +7,8 @@ import {
     StopRuntimeSessionCommand
 } from '@aws-sdk/client-bedrock-agentcore';
 
-import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 import { envs } from '../env.js';
+import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 
 import type { CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
 import type { InvokeAgentRuntimeCommandStreamOutput } from '@aws-sdk/client-bedrock-agentcore';
@@ -39,7 +39,7 @@ export class AgentCoreSandboxProvider implements SandboxProvider {
     public readonly name = 'agentcore';
     private readonly client: BedrockAgentCoreClient;
 
-    constructor(client: BedrockAgentCoreClient = new BedrockAgentCoreClient(envs.AGENTCORE_REGION ? { region: envs.AGENTCORE_REGION } : {})) {
+    constructor(client: BedrockAgentCoreClient = new BedrockAgentCoreClient()) {
         this.client = client;
     }
 

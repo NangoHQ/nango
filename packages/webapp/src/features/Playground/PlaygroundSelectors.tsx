@@ -3,9 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { Button } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
@@ -149,9 +150,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                         <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new integration?</span>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
-                            className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/integrations/create`);
@@ -180,9 +180,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                         <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Need a new connection?</span>
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
-                            className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                             onClick={() => {
                                 setPlaygroundOpen(false);
                                 navigate(`/${env}/connections/create${playgroundIntegration ? `?integration_id=${playgroundIntegration}` : ''}`);
@@ -210,9 +209,8 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                             <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">Activate more functions</span>
                             <Button
                                 type="button"
-                                variant="secondary"
+                                variant="outline"
                                 size="sm"
-                                className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                                 onClick={() => {
                                     setPlaygroundOpen(false);
                                     navigate(`/${env}/integrations/${playgroundIntegration}`);

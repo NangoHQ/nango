@@ -4,8 +4,8 @@ import { getSyncConfigById } from '@nangohq/shared';
 import { defineTask } from '@nangohq/tasks';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
-import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
-import { deleteSyncConfigData } from '../../crons/delete/deleteSyncConfigData.js';
+import { DeletionBudgetExceeded } from '../../deletion/batchDelete.js';
+import { deleteSyncConfigData } from '../../deletion/deleteSyncConfigData.js';
 import { tasks } from '../index.js';
 
 import type { Result } from '@nangohq/utils';

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTestDbClient } from '@nangohq/scheduler';
 
 import { envs } from './env.js';
-import { TaskEventsHandler, taskEvents } from './events.js';
+import { taskEvents, TaskEventsHandler } from './events.js';
 
 import type { Task } from '@nangohq/scheduler';
 

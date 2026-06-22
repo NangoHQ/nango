@@ -1,8 +1,8 @@
-import { Ok, flagHasPlan } from '@nangohq/utils';
+import { flagHasPlan, Ok } from '@nangohq/utils';
 
+import { logger } from '../utils/logger.js';
 import { defaultStore } from './default.js';
 import { records2Store } from './records2.js';
-import { logger } from '../utils/logger.js';
 
 import type { RecordsStore } from '../store.js';
 import type { RecordCount } from '../types.js';
@@ -138,7 +138,11 @@ const routing = new Routing(async (ctx: RoutingContext) => {
         routingCache.set(cacheKey, res.value);
         return res.value;
     }
-    logger.error('Routing error for connection', ctx.connectionId, 'model', ctx.model, ':', res.isErr() ? res.error : `invalid store ${res.value}`);
+    logger.error('Routing error for connection', {
+        connectionId: ctx.connectionId,
+        model: ctx.model,
+        error: res.isErr() ? res.error : `invalid store ${res.value}`
+    });
     return 'default';
 });
 

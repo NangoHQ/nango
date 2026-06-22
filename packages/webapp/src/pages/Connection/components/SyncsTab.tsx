@@ -2,9 +2,11 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { Button, IconButton } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Badge } from '@/components/ui/Badge';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
@@ -16,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
@@ -23,16 +26,11 @@ import { getLogsUrl } from '@/utils/logs';
 import { formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand, SyncResponse } from '@/types';
-import type { ApiConnectionFull, GetConnection, GetIntegration } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 
-export const SyncsTab = ({
-    connectionData,
-    integrationData
-}: {
-    connectionData: GetConnection['Success']['data'];
-    integrationData: GetIntegration['Success']['data'];
-}) => {
+export const SyncsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, integrationData } = useConnectionContext();
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
     const { data: syncs, isLoading, error } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
@@ -229,9 +227,9 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell>
                     <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <IconButton variant="ghost" size="2xs" label="Sync actions">
                                 <Ellipsis />
-                            </Button>
+                            </IconButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {/* Pause/Resume Schedule */}
@@ -309,7 +307,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="outline">Cancel</Button>
                         </DialogClose>
                         <Button variant="primary" onClick={onTrigger} loading={isRunningSyncCommand}>
                             Trigger
