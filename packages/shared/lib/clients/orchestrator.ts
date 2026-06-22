@@ -3,20 +3,20 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
-import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
-import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
-import { NangoError, deserializeNangoError } from '../utils/error.js';
+import { deserializeNangoError, NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, Sync } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
     ExecuteActionProps,
@@ -62,6 +62,7 @@ export interface OrchestratorClientInterface {
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
@@ -596,6 +597,24 @@ export class Orchestrator {
                 operation: LogActionEnum.SYNC,
                 environmentId,
                 metadata: { syncId, environmentId }
+            });
+        }
+        return res;
+    }
+
+    /**
+     * Unschedule many syncs of one environment in a single call — used to stop a deleted function's syncs
+     * in batches instead of one orchestrator round-trip per sync.
+     */
+    async deleteSyncs({ syncIds, environmentId }: { syncIds: string[]; environmentId: number }): Promise<Result<void>> {
+        const scheduleNames = syncIds.map((syncId) => ScheduleName.get({ environmentId, syncId }));
+        const res = await this.client.deleteSyncs({ scheduleNames });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { environmentId, syncCount: syncIds.length }
             });
         }
         return res;

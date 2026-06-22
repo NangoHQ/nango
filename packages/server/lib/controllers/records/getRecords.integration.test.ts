@@ -3,8 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { format, records } from '@nangohq/records';
 import { seeders } from '@nangohq/shared';
 
-import { getLookbackCutoff } from './getRecords.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+import { getLookbackCutoff } from './getRecords.js';
 
 const route = '/records';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -117,7 +117,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // Fetch first page
@@ -206,7 +207,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // Added
@@ -231,7 +233,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // Updated
@@ -338,7 +341,8 @@ describe(`GET ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         // One ID

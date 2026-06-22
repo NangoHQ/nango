@@ -2,11 +2,11 @@ import { getKVStore } from '@nangohq/kvstore';
 import { accountService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { setTaskSuccess } from './state.js';
 import { orchestratorClient } from '../../clients.js';
 import { envs } from '../../env.js';
 import { logger } from '../../logger.js';
 import { getRunners } from '../../runner/runner.js';
+import { setTaskSuccess } from './state.js';
 
 import type { TaskAbort } from '@nangohq/nango-orchestrator';
 import type { Result } from '@nangohq/utils';

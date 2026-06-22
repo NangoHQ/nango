@@ -54,6 +54,10 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
                     received: sock ? Math.max(0, sock.bytesRead - startRead) : 0
                 };
 
+                if (bytes.sent === 0 && bytes.received === 0) {
+                    return;
+                }
+
                 try {
                     onHopBytes(bytes);
                 } catch {

@@ -10988,6 +10988,11 @@ teamwork:
     - projects
     - spaces
 
+# source: https://apidocs.tempo.io/ (OAuth 2.0 scopes)
+tempo:
+    - read
+    - write
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 thrivecart-oauth: []
 

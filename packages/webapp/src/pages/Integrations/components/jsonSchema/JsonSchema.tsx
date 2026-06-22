@@ -2,10 +2,10 @@ import * as Collapsible from '@radix-ui/react-collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
-import { CatalogBadge } from '../CatalogBadge';
-import { KeyValueBadge } from '@/components-v2/ui/KeyValueBadge';
+import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { cn } from '@/utils/utils';
+import { CatalogBadge } from '../CatalogBadge';
+import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
@@ -14,7 +14,7 @@ export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ sc
         return (
             <div className="flex flex-col gap-1.5">
                 <CatalogBadge variant="light">{schema.type}</CatalogBadge>
-                {schema.description && <p className="text-text-tertiary text-body-small-medium">{schema.description}</p>}
+                {schema.description && <p className="text-text-muted text-body-small-medium">{schema.description}</p>}
             </div>
         );
     }
@@ -72,16 +72,16 @@ const JsonSchemaGenericInfo: React.FC<{
     const defaultString =
         typeof defaultValue === 'string' || typeof defaultValue === 'number' || typeof defaultValue === 'boolean' ? String(defaultValue) : null;
     return (
-        <div className="w-full flex flex-row items-center justify-between gap-1.5">
-            <div className="flex flex-col gap-1.5">
-                <span className="text-text-primary text-body-small-semi">{name}</span>{' '}
-                {description && <p className="text-text-tertiary text-body-small-medium">{description}</p>}
-                {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
+        <div className="w-full flex flex-col gap-1.5">
+            <div className="flex flex-row items-start justify-between">
+                <span className="text-text-strong text-body-small-semi">{name}</span>{' '}
+                <div className="flex gap-1.5">
+                    <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
+                    {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
+                </div>
             </div>
-            <div className="flex gap-1 5">
-                <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
-                {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
-            </div>
+            {description && <p className="text-text-muted text-body-small-medium">{description}</p>}
+            {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
         </div>
     );
 };
@@ -147,22 +147,22 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                 <div
                     className={cn(
                         'group w-full p-4 flex flex-row items-center justify-between rounded focus-default cursor-pointer transition-all',
-                        depth % 2 === 0 ? 'bg-bg-elevated' : 'bg-bg-surface'
+                        depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel'
                     )}
                 >
                     <div className="inline-flex gap-1 items-center">
-                        <span className="text-text-primary text-body-small-semi grow">{open ? 'Hide child attributes' : 'Show child attributes'}</span>
-                        <ChevronDown className="size-4 text-icon-primary group-data-[state=open]:rotate-180" />
+                        <span className="text-text-strong text-body-small-semi grow">{open ? 'Hide child attributes' : 'Show child attributes'}</span>
+                        <ChevronDown className="size-4 text-icon-default group-data-[state=open]:rotate-180" />
                     </div>
-                    <span className="text-text-primary text-body-small-medium">{propertyCount}</span>
+                    <span className="text-text-strong text-body-small-medium">{propertyCount}</span>
                 </div>
             </Collapsible.Trigger>
             <Collapsible.Content asChild>
-                <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-bg-elevated' : 'bg-bg-surface')}>
+                <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel')}>
                     {Object.entries(properties || {}).map(([name, property]) => (
                         <div
                             key={name}
-                            className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-extra-strong' : 'border-border-default')}
+                            className={cn('px-4 py-2 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}
                         >
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>
@@ -180,5 +180,5 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
 };
 
 const TopLevelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <div className="p-4 bg-bg-elevated rounded flex flex-col gap-3">{children}</div>;
+    return <div className="p-2 bg-surface-page rounded flex flex-col gap-2">{children}</div>;
 };

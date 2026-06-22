@@ -6,33 +6,6 @@ const integrationIdSchema = providerConfigKeySchema.refine((value) => value !== 
     message: 'Integration id cannot be "." or ".."'
 });
 
-const remoteFunctionBaseBodySchema = z
-    .object({
-        integration_id: integrationIdSchema,
-        function_name: syncNameSchema,
-        function_type: z.enum(['action', 'sync']),
-        code: z.string().min(1)
-    })
-    .strict();
-
-export const remoteFunctionCompileBodySchema = remoteFunctionBaseBodySchema;
-
-export const remoteFunctionDeployBodySchema = remoteFunctionBaseBodySchema
-    .extend({
-        allow_destructive: z.boolean().default(false)
-    })
-    .strict();
-
-export const remoteFunctionDryrunBodySchema = remoteFunctionBaseBodySchema
-    .extend({
-        connection_id: connectionIdSchema,
-        input: z.unknown().optional(),
-        metadata: z.record(z.string(), z.unknown()).optional(),
-        checkpoint: z.record(z.string(), z.unknown()).optional(),
-        last_sync_date: z.string().datetime().optional()
-    })
-    .strict();
-
 export const functionCompileBodySchema = z
     .object({
         code: z.string().min(1)
@@ -52,13 +25,13 @@ export const functionDryrunBodySchema = z
     })
     .strict();
 
-export const functionDryrunParamsSchema = z
+const functionAsyncJobParamsSchema = z
     .object({
         id: z.string().uuid()
     })
     .strict();
 
-export const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
+const functionAsyncJobResultBodySchema = z.discriminatedUnion('status', [
     z
         .object({
             status: z.literal('success'),
@@ -82,6 +55,9 @@ export const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
         .strict()
 ]);
 
+export const functionDryrunParamsSchema = functionAsyncJobParamsSchema;
+export const functionDryrunResultBodySchema = functionAsyncJobResultBodySchema;
+
 export const functionDeploymentBodySchema = z
     .object({
         type: z.literal('function'),
@@ -93,3 +69,6 @@ export const functionDeploymentBodySchema = z
         allow_destructive: z.boolean().default(false)
     })
     .strict();
+
+export const functionDeploymentParamsSchema = functionAsyncJobParamsSchema;
+export const functionDeploymentResultBodySchema = functionAsyncJobResultBodySchema;

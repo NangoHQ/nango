@@ -1,9 +1,9 @@
-import { Tag } from '@/components-v2/ui/Tag';
+import { Tag } from '@/components/ui/Tag';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Tag',
+    title: 'Components/UI/Tag',
     parameters: { layout: 'padded' }
 };
 export default meta;

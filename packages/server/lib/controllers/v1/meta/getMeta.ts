@@ -1,5 +1,6 @@
 import { environmentService } from '@nangohq/shared';
-import { NANGO_VERSION, baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { shouldUseClickhouseFor } from '@nangohq/usage';
+import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -23,7 +24,8 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
-            gettingStartedClosed: sessionUser.getting_started_closed
+            gettingStartedClosed: sessionUser.getting_started_closed,
+            billingUsageSource: shouldUseClickhouseFor(sessionUser.account_id) ? 'clickhouse' : 'orb'
         }
     });
 });

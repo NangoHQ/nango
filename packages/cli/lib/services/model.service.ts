@@ -8,8 +8,8 @@ import { shouldQuote } from '@nangohq/nango-yaml';
 
 import { TYPES_FILE_NAME } from '../constants.js';
 import { printDebug } from '../utils.js';
-import { parse } from './config.service.js';
 import { NANGO_VERSION } from '../version.js';
+import { parse } from './config.service.js';
 
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
 

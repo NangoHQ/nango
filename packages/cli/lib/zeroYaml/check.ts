@@ -3,12 +3,12 @@ import path from 'path';
 
 import chalk from 'chalk';
 
-import { exampleFolder } from './constants.js';
 import { runPackageManagerInstall } from '../migrations/toZeroYaml.js';
+import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
+import { exampleFolder } from './constants.js';
 
 import type { Result } from '@nangohq/types';
 import type { PackageJson } from 'type-fest';

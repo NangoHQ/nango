@@ -1,0 +1,88 @@
+---
+title: 'Tempo'
+sidebarTitle: 'Tempo'
+description: 'Integrate your application with the Tempo API'
+---
+
+## 🚀 Quickstart
+
+Connect to Tempo with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Tempo_.
+    </Step>
+    <Step id="authorize-tempo" title="Authorize Tempo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Jira Cloud subdomain** (e.g. `yourcompany` for `yourcompany.atlassian.net`) and select your **API subdomain** (`api` for global, `api.eu` for Europe, `api.us` for Americas). You'll then be redirected to log in to Jira and authorize Tempo access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-tempo-api" title="Call the Tempo API">
+    Let's make your first request to the Tempo API (fetch recent worklogs). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/worklogs?from=2024-01-01&to=2024-01-31" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/worklogs',
+            params: {
+                from: '2024-01-01',
+                to: '2024-01-31'
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Tempo integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to link your Tempo account](/api-integrations/tempo/connect)  
+Enter your Jira Cloud subdomain and API region to authorize Tempo access
+
+- [How to register your own Tempo OAuth app](/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app)  
+Register an OAuth 2.0 app in Tempo and obtain credentials to connect it to Nango
+
+Official docs: [Tempo REST API documentation](https://apidocs.tempo.io/)
+
+## 🧩 Pre-built syncs & actions for Tempo
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/tempo/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,7 +1,7 @@
 import { validateRequest } from '@nangohq/utils';
 
-import { recordsRequestParser } from './validate.js';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+import { recordsRequestParser } from './validate.js';
 
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
 import type { ApiError, DeleteRecordsSuccess, Endpoint, MergingStrategy } from '@nangohq/types';
@@ -36,7 +36,7 @@ const validate = validateRequest<DeleteRecords>(recordsRequestParser);
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId }: DeleteRecords['Params'] = res.locals.parsedParams;
     const { model, records, providerConfigKey, activityLogId, merging }: DeleteRecords['Body'] = res.locals.parsedBody;
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const result = await persistRecords({
         persistType: 'delete',
         environment,
@@ -48,7 +48,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteRecord
         model,
         records,
         activityLogId,
-        merging
+        merging,
+        plan
     });
     if (result.isOk()) {
         res.status(200).send({ nextMerging: result.value });

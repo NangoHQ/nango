@@ -3,7 +3,7 @@ import * as cron from 'node-cron';
 
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { connectionService, encryptionManager, refreshOrTestCredentials } from '@nangohq/shared';
+import { connectionService, getEncryptionManager, refreshOrTestCredentials } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -74,13 +74,13 @@ export async function exec(): Promise<void> {
 
                     const { connection, account, environment, integration } = staleConnection;
 
-                    const decryptedConnection = encryptionManager.decryptConnection(connection);
+                    const decryptedConnection = getEncryptionManager().decryptConnection(connection);
                     if (!decryptedConnection) {
                         logger.error(`Failed to decrypt stale connection '${connection.id}'`);
                         continue;
                     }
 
-                    const decryptedIntegration = encryptionManager.decryptProviderConfig(integration);
+                    const decryptedIntegration = getEncryptionManager().decryptProviderConfig(integration);
                     if (!decryptedIntegration) {
                         logger.error(`Failed to decrypt integration '${integration.id} for stale connection '${connection.id}'`);
                         continue;
@@ -118,7 +118,11 @@ export async function exec(): Promise<void> {
             span.setTag('error', err);
         } finally {
             if (lock) {
-                locking.release(lock);
+                try {
+                    await locking.release(lock);
+                } catch (err) {
+                    logger.error('Error releasing lock', { lock: lock.key, error: err });
+                }
             }
         }
     });

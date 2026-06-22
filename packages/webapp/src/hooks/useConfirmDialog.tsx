@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 
-import { ConfirmDialog } from '@/components-v2/patterns/ConfirmDialog';
+import { ConfirmDialog } from '@/components/patterns/ConfirmDialog';
 
-import type { ConfirmDialogOptions } from '@/components-v2/patterns/ConfirmDialog';
+import type { ConfirmDialogOptions } from '@/components/patterns/ConfirmDialog';
 
 export const useConfirmDialog = () => {
     const [isOpen, setIsOpen] = useState(false);

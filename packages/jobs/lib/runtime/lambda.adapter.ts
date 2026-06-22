@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib';
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { setAbortFlag } from '../execution/operations/abort.js';

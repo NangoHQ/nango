@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
-import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
+import { Err, integrationFilesAreRemote, isCloud, Ok, stringifyError } from '@nangohq/utils';
 
 import { getRuntimeAdapter } from '../../runtime/runtimes.js';
 

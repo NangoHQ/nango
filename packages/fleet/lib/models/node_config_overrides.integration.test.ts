@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import * as node_config_overrides from './node_config_overrides.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import * as node_config_overrides from './node_config_overrides.js';
 
 describe('NodeConfgOverrides', () => {
     const dbClient = getTestDbClient('nodes');

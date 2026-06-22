@@ -1,0 +1,46 @@
+---
+title: Agiloft (Client Credentials) - How do I link my account?
+sidebarTitle: Agiloft (Client Credentials)
+---
+
+# Overview
+
+To connect with Agiloft (Client Credentials), you need:
+
+1. **Hostname** – The domain of your Agiloft instance.
+2. **Client ID** – The Client ID from your Agiloft API application settings.
+3. **Client Secret** – The Client Secret from your Agiloft API application settings.
+
+This guide walks you through obtaining these values.
+
+### Prerequisites
+
+- An Agiloft account with administrative access to create API applications.
+
+### Instructions
+
+#### Step 1: Create an API application and get your credentials
+
+1. Create a dedicated native Agiloft user account to act as a service user. The account needs an **Admin** or **Standard** license. Add the appropriate groups to grant access to the records you plan to interact with.
+2. Log in to your Agiloft instance and go to **Setup > Integration > OAuth2 Client Setup**.
+3. Click **Deploy**, **Upgrade**, or **Configure** depending on what is shown to access the API Application screen.
+4. Click **New** to open the OAuth2 Application Settings wizard.
+5. Set **Authorization Grant Type** to **Client Credentials**, fill in a **Name** and **Display Name**, and set **Full Name** to the service user account from step 1.
+6. Click **Apply Changes**, then click **Enable** to activate the application.
+7. Copy the generated **Client ID** and **Client Secret** — you will need them in the next step.
+
+#### Step 2: Find your hostname
+
+Your hostname is the domain you use to access your Agiloft instance. For example, if you log in at `https://example.agiloft.com`, your hostname is `example.agiloft.com`.
+
+You can find it in the browser address bar when logged in to Agiloft.
+
+#### Step 3: Enter credentials in Nango
+
+1. Open the Nango Connect form.
+2. Enter your **Hostname**, **Client ID**, and **Client Secret** in the fields provided.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/agiloft-cc/form.png" alt="Nango connect form for Agiloft client credentials" style={{maxWidth: "450px" }}/>
+
+You are now connected to Agiloft using Client Credentials.

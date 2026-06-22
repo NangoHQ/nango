@@ -3,7 +3,6 @@
 /*
  * Copyright (c) 2025 Nango, all rights reserved.
  */
-
 import fs from 'fs';
 import path from 'path';
 
@@ -24,8 +23,8 @@ import { inferIntegrationsFromConnectionId } from './services/interactive.servic
 import { pullFromCatalog, pullFunction } from './services/pull.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
-import { MissingArgumentError } from './utils/errors.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
+import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
 import { compileAllFunctions } from './zeroYaml/compile.js';
 import { parseIntegrationDefinitions } from './zeroYaml/definitions.js';
@@ -182,10 +181,12 @@ program
     .option('--sync', 'Create a new sync scaffold')
     .option('--action', 'Create a new action scaffold')
     .option('--on-event', 'Create a new on event scaffold')
+    // TODO: add once released (NAN-5943)
+    //.option('--webhook', 'Create a new webhook function scaffold')
     .argument('[integration]', 'Integration name, e.g. "google-calendar"')
     .argument('[name]', 'Name of the sync/action, e.g. "calendar-events"')
     .action(async function (this: Command) {
-        const { debug, sync, action, onEvent, interactive } = this.opts();
+        const { debug, sync, action, onEvent, webhook, interactive } = this.opts();
         let [integration, name] = this.args;
         const absolutePath = process.cwd();
 
@@ -194,7 +195,7 @@ program
 
         try {
             const ensure = new Ensure(interactive);
-            const functionType = await ensure.functionType(sync, action, onEvent);
+            const functionType = await ensure.functionType({ sync, action, onEvent, webhook });
 
             let integrations: string[] = [];
 

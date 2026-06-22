@@ -66,7 +66,7 @@ describe(`GET ${route}`, () => {
         expect(scriptCreateOrUpdateFile).toMatchObject({
             description: expect.any(String),
             enabled: false,
-            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }],
+            endpoints: [],
             input: 'ActionInput_github_createorupdatefile',
             source: 'catalog',
             json_schema: expect.any(Object),

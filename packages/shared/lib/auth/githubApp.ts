@@ -1,8 +1,8 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import * as jwtClient from './jwt.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { interpolateStringFromObject } from '../utils/utils.js';
+import * as jwtClient from './jwt.js';
 
 import type { AppCredentials, ConnectionConfig, DBConnectionDecrypted, IntegrationConfig, ProviderCustom, ProviderGithubApp } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

@@ -10,24 +10,26 @@ import { WebSocketServer } from 'ws';
 
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
-import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
+import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { NANGO_VERSION, flags, getLogger, initSentry, once, report } from '@nangohq/utils';
+import { flags, getLogger, initSentry, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
-import { timeoutFunctionDryrunsCron } from './crons/timeoutFunctionDryruns.js';
+import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
+import { tasks } from './tasks/index.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
@@ -84,6 +86,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateLogs();
     await records.migrate();
     await migrateFleets();
+    await tasks.migrate();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
@@ -94,16 +97,19 @@ getProviders();
 
 refreshConnectionsCron();
 timeoutLogsOperations();
-timeoutFunctionDryrunsCron();
+timeoutFunctionAsyncJobsCron();
 deleteOldData();
 trialCron();
 lambdaKeepWarmCron();
+tasks.start();
 void otlp.register(getOtlpRoutes);
 
 const pubsubConnect = await pubsub.connect();
 if (pubsubConnect.isErr()) {
     logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
 }
+
+await initializeFeatureFlags();
 
 const port = getServerPort();
 server.listen(port, () => {
@@ -124,11 +130,13 @@ const close = once(() => {
     server.close(async () => {
         wss.close();
         await stopFleets();
+        await tasks.stop();
         await db.destroy();
         await records.close();
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        await destroyFeatureFlags();
         await billing.shutdown();
         await pubsub.disconnect();
 
