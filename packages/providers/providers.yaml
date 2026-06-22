@@ -13292,6 +13292,67 @@ netsuite-tba:
     docs: https://nango.dev/docs/api-integrations/netsuite-tba
     setup_guide_url: https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango
 
+netsuite-client-credentials:
+    alias: netsuite
+    display_name: NetSuite (Client Credentials)
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: RS256
+            kid: ${credentials.certificateId}
+        payload:
+            iss: ${credentials.clientId}
+            aud: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/api-integrations/netsuite-client-credentials
+    docs_connect: https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your NetSuite integration record.
+            example: 1c343a716c1d****************************976dde7d8e3e2
+        certificateId:
+            type: string
+            title: Certificate ID
+            description: The ID of the certificate registered in your NetSuite integration.
+            example: HRril7Vwkk********************eWT2Fgks
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your NetSuite Account ID (e.g. 1234567 or 1234567_SB1 for sandbox).
+            example: '1234567'
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) used to sign the JWT assertion.
+            example: "-----BEGIN RSA PRIVATE KEY-----\nMIIEow...\n-----END RSA PRIVATE KEY-----"
+
 next-cloud-ocs:
     display_name: Next Cloud OCS
     categories:
