@@ -3,10 +3,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { InvoicingAddressFields } from './InvoicingAddressFields';
-import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
-import { countryCodes, taxIdTypes } from '../invoicingConstants';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
@@ -14,6 +12,9 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { usePutBillingInvoicingDetails } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { countryCodes, taxIdTypes } from '../invoicingConstants';
+import { InvoicingAddressFields } from './InvoicingAddressFields';
+import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 
 import type { BillingCustomer } from '@nangohq/types';
 
@@ -137,7 +138,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                 <InvoicingTaxIdFields />
 
                 <div className="flex justify-start">
-                    <Button type="submit" variant="primary" size="lg" loading={isPending}>
+                    <Button type="submit" variant="primary" size="xl" loading={isPending}>
                         Save changes
                     </Button>
                 </div>

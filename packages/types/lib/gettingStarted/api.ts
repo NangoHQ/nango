@@ -1,5 +1,5 @@
-import type { GettingStartedOutput as GettingStartedProgressOutput, PatchGettingStartedInput as PatchGettingStartedProgressInput } from './dto.js';
 import type { ApiError, Endpoint } from '../api.js';
+import type { GettingStartedOutput as GettingStartedProgressOutput, PatchGettingStartedInput as PatchGettingStartedProgressInput } from './dto.js';
 
 export type GetGettingStarted = Endpoint<{
     Method: 'GET';

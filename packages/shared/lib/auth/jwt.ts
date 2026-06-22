@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import { Err, Ok, axiosInstance as axios } from '@nangohq/utils';
+import { axiosInstance as axios, Err, Ok } from '@nangohq/utils';
 
 import { AuthCredentialsError } from '../utils/error.js';
 import { formatPem, interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';

@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
+import { errorManager, SyncCommand, syncManager } from '@nangohq/shared';
 import { getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';

@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import { useFormField } from './ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { cn } from '@/lib/utils';
 
 export interface SelectProps {
     options: string[];

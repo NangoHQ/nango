@@ -30,6 +30,7 @@
     },
     "devDependencies": {
         "@storybook/addon-a11y": "10.4.6",
+        "@storybook/addon-docs": "10.4.6",
         "@storybook/addon-mcp": "0.6.0",
         "@storybook/addon-themes": "10.4.6",
         "@storybook/react": "10.4.6",

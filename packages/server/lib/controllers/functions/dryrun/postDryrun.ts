@@ -1,6 +1,6 @@
 import {
-    FunctionError,
     createFunctionDryrun,
+    FunctionError,
     markFunctionDryrunFailed,
     markFunctionDryrunRunning,
     prepareAsyncDryrun,

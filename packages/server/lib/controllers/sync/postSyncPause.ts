@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { SyncCommand, errorManager, normalizedSyncParams, syncManager } from '@nangohq/shared';
+import { errorManager, normalizedSyncParams, SyncCommand, syncManager } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';

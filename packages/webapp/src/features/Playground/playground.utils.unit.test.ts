@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/utils/api', () => ({ apiFetch: vi.fn() }));
-
 import { buildResultData, computeDurationMs, sleepWithAbort, validateAndParseInputs } from './playground.utils';
 
 import type { InputField } from './types';
+
+vi.mock('@/utils/api', () => ({ apiFetch: vi.fn() }));
 
 function field(overrides: Partial<InputField> & { name: string }): InputField {
     return { type: 'string', required: false, ...overrides };

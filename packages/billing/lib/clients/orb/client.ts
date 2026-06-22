@@ -1,9 +1,9 @@
 import Orb from 'orb-billing';
 
-import { Err, Ok, metrics, retry } from '@nangohq/utils';
+import { Err, metrics, Ok, retry } from '@nangohq/utils';
 
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 import { envs } from '../../envs.js';
+import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type {
     BillingClient,

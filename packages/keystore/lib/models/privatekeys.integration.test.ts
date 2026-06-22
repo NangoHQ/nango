@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { createPrivateKey, decryptPrivateKey, deletePrivateKey, getPrivateKey } from './privatekeys.js';
 import { testDb } from '../db/helpers.test.js';
+import { createPrivateKey, decryptPrivateKey, deletePrivateKey, getPrivateKey } from './privatekeys.js';
 
 describe('PrivateKey', async () => {
     const db = await testDb.init();

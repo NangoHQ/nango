@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { Clickhouse, clickhouseClient, migrate } from '@nangohq/usage';
 
-import { METRICS, metricRowsSql } from './billingEventsS3Export.js';
+import { metricRowsSql, METRICS } from './billingEventsS3Export.js';
 
 import type { MetricSpec } from './billingEventsS3Export.js';
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
@@ -83,6 +83,8 @@ function gen({
                 return { type, attrs: { ...baseAttributes, model: 'test', syncId: 'test', ...attributes } };
             case 'usage.connections':
                 return { type, attrs: { ...baseAttributes, ...attributes } };
+            case 'usage.data_transfer':
+                return { type, attrs: { ...baseAttributes, direction: 'egress', package: 'runner', callsite: 'test', ...attributes } };
             default:
                 throw new Error(`unsupported event type ${type satisfies never}`);
         }

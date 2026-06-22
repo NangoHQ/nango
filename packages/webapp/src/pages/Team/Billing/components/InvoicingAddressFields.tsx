@@ -1,13 +1,14 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { countryCodes } from '../invoicingConstants';
-import { OptionalTag } from './InvoicingDetailsForm';
-import { Button } from '@/components/ui/Button';
+import { IconButton } from '@nangohq/design-system';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { countryCodes } from '../invoicingConstants';
+import { OptionalTag } from './InvoicingDetailsForm';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 
@@ -32,13 +33,13 @@ export const InvoicingAddressFields: React.FC = () => {
                     <OptionalTag />
                 </CardTitle>
                 {address ? (
-                    <Button type="button" variant="ghost" size="icon" onClick={handleRemove}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove line">
                         <Trash2 />
-                    </Button>
+                    </IconButton>
                 ) : (
-                    <Button type="button" variant="ghost" size="icon" onClick={handleAdd}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add line">
                         <Plus />
-                    </Button>
+                    </IconButton>
                 )}
             </CardHeader>
             {address && (

@@ -1,12 +1,12 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { JSON_DISPLAY_LIMIT } from './types';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Input } from '@/components/ui/Input';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
+import { JSON_DISPLAY_LIMIT } from './types';
 
 import type { InputField } from './types';
 
@@ -45,7 +45,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
                                 <AlertButtonLink
-                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}#auth`}
+                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}
                                     variant="info-secondary"
                                     onClick={() => setPlaygroundOpen(false)}
                                 >

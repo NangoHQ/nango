@@ -3,9 +3,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import environmentService from './environment.service.js';
 import { createAccount } from '../seeders/account.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import environmentService from './environment.service.js';
 
 describe('Environment service', () => {
     beforeAll(async () => {

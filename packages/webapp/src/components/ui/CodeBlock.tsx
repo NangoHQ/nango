@@ -2,11 +2,12 @@ import { Prism } from '@mantine/prism';
 import { Eye, EyeOff, Loader, Play } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { Badge } from './Badge.js';
-import { Button } from './Button.js';
-import { CopyButton } from './CopyButton.js';
+import { Button, IconButton } from '@nangohq/design-system';
+
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
+import { Badge } from './Badge.js';
+import { CopyButton } from './CopyButton.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
@@ -16,7 +17,9 @@ export type CodeBlockProps = {
     title?: string;
     language: PrismProps['language'];
     code: string;
+    copyable?: boolean;
     icon?: React.ReactNode;
+    headerElement?: React.ReactNode;
     displayLanguage?: string;
     highlightedLines?: number[];
     secret?: boolean;
@@ -33,7 +36,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     title,
     code,
     language,
+    copyable = true,
     icon,
+    headerElement,
     displayLanguage,
     highlightedLines,
     secret,
@@ -66,6 +71,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
+                    {headerElement}
                     {displayLanguage && (
                         <Badge variant="gray" className="uppercase">
                             {icon && icon}
@@ -73,7 +79,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         </Badge>
                     )}
                     {onExecute && (
-                        <Button variant="secondary" onClick={onClickExecute} disabled={isExecuting}>
+                        <Button variant="outline" onClick={onClickExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
                                     <Loader className="size-4 animate-spin text-text-secondary" />
@@ -88,11 +94,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                         </Button>
                     )}
                     {secret && (
-                        <Button variant="ghost" size="icon" onClick={toggleSecretVisibility}>
+                        <IconButton variant="ghost" size="2xs" label="Toggle visibility" onClick={toggleSecretVisibility}>
                             {isSecretVisible ? <EyeOff /> : <Eye />}
-                        </Button>
+                        </IconButton>
                     )}
-                    <CopyButton text={code} />
+                    {copyable && <CopyButton text={code} />}
                 </div>
             </header>
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>

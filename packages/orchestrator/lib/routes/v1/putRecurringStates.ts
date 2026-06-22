@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
-import type { ScheduleState, Scheduler } from '@nangohq/scheduler';
+import type { Scheduler, ScheduleState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 

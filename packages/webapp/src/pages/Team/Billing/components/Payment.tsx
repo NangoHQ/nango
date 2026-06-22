@@ -1,17 +1,18 @@
 import { CreditCard } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { InvoicingDetailsForm } from './InvoicingDetailsForm';
-import { PaymentMethodDialog } from './PaymentMethodDialog';
-import { Dot } from '../../../../components/ui/Dot';
+import { Button } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
+import { Dot } from '../../../../components/ui/Dot';
+import { InvoicingDetailsForm } from './InvoicingDetailsForm';
+import { PaymentMethodDialog } from './PaymentMethodDialog';
 
 export const Payment: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -52,7 +53,7 @@ export const Payment: React.FC = () => {
                                     </div>
                                 </div>
                                 <PaymentMethodDialog replace={!!paymentMethod}>
-                                    <Button size={'sm'} className="min-w-27">
+                                    <Button size={'md'} className="min-w-27">
                                         {paymentMethod ? 'Update' : 'Add payment method'}
                                     </Button>
                                 </PaymentMethodDialog>

@@ -24,7 +24,8 @@ const breakdownFields = {
     function_compute_gbms: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
     webhook_forwards: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
     records: z.enum(BREAKDOWN_DIMENSIONS.records).optional(),
-    connections: z.enum(BREAKDOWN_DIMENSIONS.connections).optional()
+    connections: z.enum(BREAKDOWN_DIMENSIONS.connections).optional(),
+    data_transfer: z.enum(BREAKDOWN_DIMENSIONS.data_transfer).optional()
 } satisfies Record<UsageMetric, z.ZodTypeAny>;
 
 const breakdownSchema = z.object(breakdownFields).strict().optional();
@@ -73,7 +74,8 @@ const filterFields = {
     function_compute_gbms: parseFilter(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
     webhook_forwards: parseFilter(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
     records: parseFilter(BREAKDOWN_DIMENSIONS.records).optional(),
-    connections: parseFilter(BREAKDOWN_DIMENSIONS.connections).optional()
+    connections: parseFilter(BREAKDOWN_DIMENSIONS.connections).optional(),
+    data_transfer: parseFilter(BREAKDOWN_DIMENSIONS.data_transfer).optional()
 } satisfies Record<UsageMetric, z.ZodTypeAny>;
 
 const filterSchema = z.object(filterFields).strict().optional();
