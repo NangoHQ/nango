@@ -1,29 +1,29 @@
 import db from '@nangohq/database';
-import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
+import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
     accountService,
     configService,
     customerKeyService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw,
+    LogActionEnum,
+    NangoError,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
@@ -150,13 +150,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             syncConfig: syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(plan),
+            runnerFlags: getRunnerFlags(plan),
             startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.custom
             }
         };
 

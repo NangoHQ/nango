@@ -15,20 +15,23 @@ export class CleaningDaemon extends SchedulerDaemon {
         abortSignal,
         tickIntervalMs,
         olderThanDays,
-        onError
+        onError,
+        continueOnError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
         tickIntervalMs: number;
         olderThanDays: number;
         onError: (err: Error) => void;
+        continueOnError?: boolean;
     }) {
         super({
             name: 'Cleanup',
             db,
             tickIntervalMs,
             abortSignal,
-            onError
+            onError,
+            continueOnError
         });
         if (!Number.isInteger(olderThanDays) || olderThanDays < 0) {
             throw new Error(`CleaningDaemon: olderThanDays must be a non-negative integer, got ${String(olderThanDays)}`);

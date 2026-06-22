@@ -14,9 +14,7 @@ describe('buildSchedulerConfig', () => {
             ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: 111,
             ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: 222,
             ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: 333,
-            ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS: 444,
             ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: 7,
-            ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: 9,
             ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: 8888,
             ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: 555,
             SYNC_ENVIRONMENT_MAX_CONCURRENCY: 77
@@ -27,9 +25,7 @@ describe('buildSchedulerConfig', () => {
                 schedulingTickIntervalMs: 111,
                 expiringTickIntervalMs: 222,
                 cleaningTickIntervalMs: 333,
-                monitoringTickIntervalMs: 444,
-                cleaningOlderThanDays: 7,
-                monitoringTopN: 9
+                cleaningOlderThanDays: 7
             },
             limits: {
                 groupTaskCap: 8888,
@@ -56,15 +52,6 @@ describe('handleSchedulerEvent', () => {
         handleSchedulerEvent({ type: 'task_dropped', groupKey: '', count: 1, reason: 'task_cap' });
 
         expect(spy).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_DROPPED, 1, { primitive: 'unknown', reason: 'task_cap' });
-        spy.mockRestore();
-    });
-
-    it('translates queue_backpressure to ORCH_QUEUE_BACKPRESSURE gauge with primitive + groupKey tags', () => {
-        const spy = vi.spyOn(metrics, 'gauge').mockImplementation(() => {});
-
-        handleSchedulerEvent({ type: 'queue_backpressure', groupKey: 'sync:environment:42', queued: 17 });
-
-        expect(spy).toHaveBeenCalledWith(metrics.Types.ORCH_QUEUE_BACKPRESSURE, 17, { groupKey: 'sync:environment:42', primitive: 'sync' });
         spy.mockRestore();
     });
 });

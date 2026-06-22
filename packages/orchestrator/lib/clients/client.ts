@@ -1,11 +1,11 @@
-import { Err, Ok, getLogger, retry, routeFetch } from '@nangohq/utils';
+import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
 
-import { validateSchedule, validateTask } from './validate.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
+import { route as putRecurringStatesRoute } from '../routes/v1/putRecurringStates.js';
 import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
 import { route as postScheduleRunRoute } from '../routes/v1/schedules/postRun.js';
 import { route as postSchedulesSearchRoute } from '../routes/v1/schedules/postSearch.js';
@@ -13,7 +13,9 @@ import { route as postTasksSearchRoute } from '../routes/v1/tasks/postSearch.js'
 import { route as putTaskRoute } from '../routes/v1/tasks/putTaskId.js';
 import { route as getOutputRoute } from '../routes/v1/tasks/taskId/getOutput.js';
 import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeartbeat.js';
+import { validateSchedule, validateTask } from './validate.js';
 
+import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type {
     ClientError,
     ExecuteActionProps,
@@ -29,7 +31,6 @@ import type {
     SchedulesReturn,
     VoidReturn
 } from './types.js';
-import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { Endpoint } from '@nangohq/types';
 import type { Result, RetryConfig, Route } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -120,6 +121,25 @@ export class OrchestratorClient {
 
     public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
         return this.setSyncState({ scheduleName, state: 'DELETED' });
+    }
+
+    public async deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn> {
+        return this.setSyncStates({ scheduleNames, state: 'DELETED' });
+    }
+
+    private async setSyncStates({ scheduleNames, state }: { scheduleNames: string[]; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
+        const res = await this.routeFetch(putRecurringStatesRoute)({
+            body: { names: scheduleNames, state }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error setting schedule states`,
+                payload: { scheduleNames, state, response: res.error.payload as any }
+            });
+        } else {
+            return Ok(undefined);
+        }
     }
 
     private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {

@@ -3,13 +3,13 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
+import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
 import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.js';
 import secretService from './secret.service.js';
-import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
 describe('Account service', () => {
     beforeAll(async () => {
@@ -165,11 +165,13 @@ describe('Account service', () => {
         const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
         const apiKey = apiKeys[0]!;
         const signingSecret = decryptSandboxSigningSecret(apiKey)!;
+        const dryrunId = '00000000-0000-4000-8000-000000000001';
 
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: apiKey.id,
             signingSecret,
             purpose: 'dryrun',
+            dryrunId,
             expiresAt: new Date(Date.now() + 60 * 1000)
         });
 
@@ -201,7 +203,8 @@ describe('Account service', () => {
                 source: 'sandbox_token',
                 scopes: ['environment:*', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
                 apiKeyId: apiKey.id,
-                purpose: 'dryrun'
+                purpose: 'dryrun',
+                dryrunId
             }
         });
     });
@@ -217,6 +220,7 @@ describe('Account service', () => {
             parentApiKeyId: apiKeys[0]!.id,
             signingSecret,
             purpose: 'dryrun',
+            dryrunId: '00000000-0000-4000-8000-000000000001',
             expiresAt: new Date(now - 60 * 1000),
             issuedAt: now - 120 * 1000
         });
@@ -238,6 +242,7 @@ describe('Account service', () => {
             parentApiKeyId: apiKey.id,
             signingSecret,
             purpose: 'dryrun',
+            dryrunId: '00000000-0000-4000-8000-000000000001',
             expiresAt: new Date(Date.now() + 60 * 1000)
         });
 
@@ -262,11 +267,13 @@ describe('Account service', () => {
             })
         ).unwrap();
         const signingSecret = decryptSandboxSigningSecret(parentKey)!;
+        const dryrunId = '00000000-0000-4000-8000-000000000001';
 
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: parentKey.id,
             signingSecret,
             purpose: 'dryrun',
+            dryrunId,
             expiresAt: new Date(Date.now() + 60 * 1000)
         });
 
@@ -278,7 +285,8 @@ describe('Account service', () => {
             source: 'sandbox_token',
             scopes: ['environment:records:read', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
             apiKeyId: parentKey.id,
-            purpose: 'dryrun'
+            purpose: 'dryrun',
+            dryrunId
         });
     });
 

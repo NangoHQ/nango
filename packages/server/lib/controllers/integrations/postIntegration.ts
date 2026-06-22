@@ -12,6 +12,7 @@ import {
     providerSchema
 } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { resolveIntegrationConfig } from '../v1/integrations/integrationConfig.js';
 
 import type { DBCreateIntegration, PostPublicIntegration, PostPublicQuickstartIntegration } from '@nangohq/types';
 
@@ -25,7 +26,8 @@ const baseValidationBody = z
     .strict();
 
 const validationBody = baseValidationBody.extend({
-    credentials: integrationCredentialsSchema.optional()
+    credentials: integrationCredentialsSchema.optional(),
+    integration_config: z.record(z.string(), z.string().max(8192)).optional()
 });
 
 const quickstartAuthModes = new Set(['OAUTH1', 'OAUTH2']);
@@ -118,6 +120,15 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
                 throw new Error('Unsupported auth type');
             }
         }
+    }
+
+    if (body.integration_config && Object.keys(body.integration_config).length > 0) {
+        const cfg = resolveIntegrationConfig(provider, body.integration_config);
+        if (cfg.isErr()) {
+            res.status(400).send({ error: { code: 'invalid_body', message: cfg.error.message } });
+            return;
+        }
+        newIntegration.custom = { ...newIntegration.custom, ...cfg.value };
     }
 
     const result = await configService.createProviderConfig(newIntegration, provider);

@@ -1,10 +1,11 @@
 import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { buildIntegrationConfig } from './buildIntegrationConfig.js';
-import { postIntegrationBodySchema } from './validation.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { buildIntegrationConfig } from './buildIntegrationConfig.js';
+import { resolveIntegrationConfig } from './integrationConfig.js';
+import { postIntegrationBodySchema } from './validation.js';
 
 import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
@@ -45,6 +46,19 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
     if ('auth' in body && body.auth && 'authType' in body.auth && body.auth.authType !== provider.auth_mode) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
         return;
+    }
+
+    if (provider.integration_config || body.integrationConfig) {
+        if (body.useSharedCredentials) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'integrationConfig is not supported with shared credentials' } });
+            return;
+        }
+        const result = resolveIntegrationConfig(provider, body.integrationConfig ?? {});
+        if (result.isErr()) {
+            res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
+            return;
+        }
+        body.integrationConfig = result.value;
     }
 
     let integration: IntegrationConfig;

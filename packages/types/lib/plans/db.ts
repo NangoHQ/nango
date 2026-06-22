@@ -158,12 +158,6 @@ export interface DBPlan extends Timestamps {
     can_disable_connect_ui_watermark: boolean;
 
     /**
-     * Enable or disable remote function compile, dry-run, and deploy endpoints
-     * @default false
-     */
-    remote_functions: boolean;
-
-    /**
      * Sync Function Runtime
      * @default "runner"
      */
@@ -198,6 +192,12 @@ export interface DBPlan extends Timestamps {
      * @default true
      */
     has_records_autopruning: boolean;
+
+    /**
+     * Records store key for this account
+     * @default 'default'
+     */
+    records_store: 'default' | 'records2';
 
     /**
      * Limit the number of variants per sync

@@ -14,7 +14,6 @@
  *   packages/design-system/tokens/tokens.json          raw Tokens Studio export
  *   packages/design-system/tokens/tokens.generated.css  CSS custom properties
  */
-
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
@@ -414,7 +413,10 @@ async function main() {
 
     mkdirSync(TOKENS_DIR, { recursive: true });
     if (!BUILD_ONLY) {
-        writeFileSync(path.join(TOKENS_DIR, 'tokens.json'), JSON.stringify(tokensData, null, 2) + '\n');
+        const tokensPath = path.join(TOKENS_DIR, 'tokens.json');
+        const prettierConfig = await prettier.resolveConfig(tokensPath);
+        const formattedJson = await prettier.format(JSON.stringify(tokensData), { ...prettierConfig, filepath: tokensPath });
+        writeFileSync(tokensPath, formattedJson);
         console.log('✓ tokens.json updated');
     }
     writeFileSync(path.join(TOKENS_DIR, 'tokens.generated.css'), css);

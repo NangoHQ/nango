@@ -1,9 +1,9 @@
-import { Textarea } from '@/components-v2/ui/Textarea';
+import { Textarea } from '@/components/ui/Textarea';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Textarea',
+    title: 'Components/UI/Textarea',
     parameters: { layout: 'padded' }
 };
 export default meta;

@@ -148,12 +148,12 @@ function seedFixture(accountId: number): ClickhouseRawUsageEvent[] {
     ];
 }
 
-async function seedAccount(): Promise<{ apiKey: { secret: string }; accountId: number }> {
-    const { plan, apiKey, account } = await seeders.seedAccountEnvAndUser();
+async function seedAccount(): Promise<{ apiKey: { secret: string }; accountId: number; envId: number; envName: string }> {
+    const { plan, apiKey, account, env } = await seeders.seedAccountEnvAndUser();
     await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123', orb_subscription_id: 'orb_sub_123' });
     clickhouse.addRaw(seedFixture(account.id));
     await clickhouse.flush();
-    return { apiKey, accountId: account.id };
+    return { apiKey, accountId: account.id, envId: env.id, envName: env.name };
 }
 
 describe(`GET ${route}`, () => {
@@ -317,6 +317,47 @@ describe(`GET ${route}`, () => {
             expect(groups).toEqual(expect.arrayContaining(['hubspot', 'salesforce']));
             for (const series of records.breakdown!) {
                 expect(series.group!.key).toBe('integration_id');
+            }
+        });
+
+        it('proxy by environment_id — group.value resolved to env name, not raw id', async () => {
+            const { apiKey, accountId, envId, envName } = await seedAccount();
+            // The default fixture is seeded with `environmentId: 1` (a phantom);
+            // add events that carry the seeded account's REAL env id so the
+            // postgres lookup resolves to a real env name.
+            clickhouse.addRaw([
+                {
+                    ts: day0.getTime(),
+                    type: 'usage.proxy',
+                    idempotency_key: randomUUID(),
+                    account_id: accountId,
+                    value: 3,
+                    attributes: { environmentId: envId, success: true, integrationId: 'hubspot', connectionId: 'c-h' }
+                }
+            ]);
+            await clickhouse.flush();
+
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['proxy'],
+                    breakdown: { proxy: 'environment_id' }
+                } as any
+            });
+            isSuccess(res.json);
+            const proxy = res.json.data.usage.proxy;
+            expect(proxy.breakdown).toBeDefined();
+            const groupValues = proxy.breakdown!.map((b) => b.group!.value);
+            // Seeded env's id replaced by its name; phantom id `1` has no env in
+            // postgres so it falls back to the raw value.
+            expect(groupValues).toContain(envName);
+            expect(groupValues).not.toContain(String(envId));
+            for (const series of proxy.breakdown!) {
+                expect(series.group!.key).toBe('environment_id');
             }
         });
 

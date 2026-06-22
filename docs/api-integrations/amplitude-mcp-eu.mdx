@@ -21,7 +21,7 @@ Connect to the Amplitude EU MCP server with Nango and call MCP tools in minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/v2/mcp" \
+            curl "https://api.nango.dev/proxy/mcp" \
               -X POST \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
@@ -54,7 +54,7 @@ Connect to the Amplitude EU MCP server with Nango and call MCP tools in minutes.
         const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/v2/mcp',
+            endpoint: '/mcp',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
             body: {

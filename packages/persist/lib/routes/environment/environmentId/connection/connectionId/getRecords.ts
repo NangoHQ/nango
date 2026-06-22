@@ -2,14 +2,14 @@ import { logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { ENVS, metrics, parseEnvs, validateRequest } from '@nangohq/utils';
 
-const envs = parseEnvs(ENVS);
-
 import { getRecordsRequestParser } from './validate.js';
 
 import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
 import type { LogContextStateless } from '@nangohq/logs';
 import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+
+const envs = parseEnvs(ENVS);
 
 type GetRecords = Endpoint<{
     Method: typeof method;
@@ -42,7 +42,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
     } = res.locals;
 
     let logCtx: LogContextStateless | undefined = undefined;
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     if (activityLogId) {
         logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     }
@@ -52,7 +52,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
         model,
         cursor,
         externalIds,
-        limit
+        limit,
+        plan
     });
 
     if (result.isOk()) {

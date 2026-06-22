@@ -3,16 +3,16 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { FirstStep } from './FirstStep';
-import { SecondStep } from './SecondStep';
-import { ThirdStep } from './ThirdStep';
-import VerticalSteps from './components/VerticalSteps';
+import { SlackIcon } from '@/assets/SlackIcon';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { SlackIcon } from '@/assets/SlackIcon';
+import VerticalSteps from './components/VerticalSteps';
+import { FirstStep } from './FirstStep';
+import { SecondStep } from './SecondStep';
+import { ThirdStep } from './ThirdStep';
 
 export const GettingStarted: React.FC = () => {
     const analyticsTrack = useAnalyticsTrack();
@@ -51,12 +51,11 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout className="flex flex-col gap-10">
+        <DashboardLayout title="Getting started" className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>
             <header className="flex flex-col gap-3.5">
-                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting started</h2>
                 <p className="text-text-secondary text-sm">Try connecting Nango with Github to see how integrations work.</p>
             </header>
             <div className="flex flex-row gap-10 min-w-0">
@@ -174,13 +173,13 @@ export const GettingStarted: React.FC = () => {
 const DocCard = ({ to, icon, title, description }: { to: string; icon: React.ElementType; title: string; description: string }) => {
     const IconComponent = icon;
     return (
-        <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-bg-elevated transition-all">
-            <IconComponent className="shrink-0 size-4.5 text-icon-primary" />
+        <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-surface-page transition-all">
+            <IconComponent className="shrink-0 size-4.5 text-icon-default" />
             <div className="flex flex-col gap-1">
-                <h5 className="text-sm font-medium leading-5 text-text-primary">{title}</h5>
-                <p className="text-sm leading-5 text-text-tertiary group-hover:text-text-secondary transition-all">{description}</p>
+                <h5 className="text-sm font-medium leading-5 text-text-strong">{title}</h5>
+                <p className="text-sm leading-5 text-text-muted group-hover:text-text-secondary transition-all">{description}</p>
             </div>
-            <ExternalLink className="shrink-0 size-3.5 text-icon-tertiary ml-auto group-hover:text-icon-primary transition-all" />
+            <ExternalLink className="shrink-0 size-3.5 text-icon-muted ml-auto group-hover:text-icon-default transition-all" />
         </Link>
     );
 };

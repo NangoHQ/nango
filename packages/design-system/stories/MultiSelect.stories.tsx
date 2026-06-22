@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { MultiSelect } from '@/components-v2/ui/MultiSelect';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -13,7 +13,7 @@ const options = [
 ];
 
 const meta: Meta = {
-    title: 'Components v2/UI/MultiSelect',
+    title: 'Components/UI/MultiSelect',
     parameters: { layout: 'centered' }
 };
 export default meta;

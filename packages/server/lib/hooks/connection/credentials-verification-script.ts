@@ -1,7 +1,6 @@
 import tracer from 'dd-trace';
 
-import { ProxyRequest, getProvider, getProxyConfiguration } from '@nangohq/shared';
-import { metrics } from '@nangohq/utils';
+import { getProvider, getProxyConfiguration, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
 
 import * as verificationscriptHandlers from './index.js';
 
@@ -37,7 +36,7 @@ async function execute(
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
     connectionId: string,
     connectionConfig: ConnectionConfig,
-    _accountId: number
+    accountId: number
 ) {
     const { provider: providerName, unique_key: providerConfigKey } = config;
 
@@ -116,9 +115,18 @@ async function execute(
                         oauth_client_id: null,
                         oauth_client_secret: null
                     }),
-                    onBytes: ({ sent, received }) => {
-                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_credential_verification_hook' });
-                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_credential_verification_hook' });
+                    onBytes: (meteredBytes) => {
+                        void pubsub.publisher.publish(
+                            makeDataTransferEvent({
+                                pkg: 'server',
+                                callsite: 'credential_verification_hook',
+                                accountId,
+                                connectionId,
+                                integrationId: config.unique_key,
+                                environmentId: config.environment_id,
+                                meteredBytes
+                            })
+                        );
                     }
                 });
                 return (await proxy.request()).unwrap();

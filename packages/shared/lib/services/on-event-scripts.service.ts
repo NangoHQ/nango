@@ -1,10 +1,10 @@
 import db from '@nangohq/database';
 import { env } from '@nangohq/utils';
 
+import { resolveLocalFileName } from '../utils/utils.js';
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
 import { eventTypeMapper } from './functions/mappers.js';
-import { resolveLocalFileName } from '../utils/utils.js';
 import { increment } from './sync/config/config.service.js';
 
 import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';

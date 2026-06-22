@@ -4,13 +4,14 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl, flagEnforceCLIVersion, flagHasPlan } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
+import { postPublicAwsSigV4Authorization } from './controllers/auth/postAwsSigV4.js';
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
 import { postPublicJwtAuthorization } from './controllers/auth/postJwt.js';
@@ -25,6 +26,7 @@ import { getConnectSession } from './controllers/connect/getSession.js';
 import { postConnectSessionsReconnect } from './controllers/connect/postReconnect.js';
 import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
+import connectionController from './controllers/connection.controller.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
@@ -32,24 +34,28 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
-import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
-import { postFunctionCompile, postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
-import { postFunctionDeployment, postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
+import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionDeploymentResult } from './controllers/functions/deploy/postDeployResult.js';
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
-import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postRemoteDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
+import { deletePublicIntegrationFunction } from './controllers/integrations/uniqueKey/functions/deleteFunction.js';
 import { getFunctionCode } from './controllers/integrations/uniqueKey/functions/getCode.js';
+import { getPublicIntegrationFunction } from './controllers/integrations/uniqueKey/functions/getFunction.js';
+import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
+import { getPublicProviderTemplates } from './controllers/providers/provider/templates/getTemplates.js';
 import { allPublicProxy } from './controllers/proxy/allProxy.js';
 import { getPublicRecords } from './controllers/records/getRecords.js';
 import { patchPublicPruneRecords } from './controllers/records/patchPruneRecords.js';
@@ -71,34 +77,29 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { connectionCapping } from './middleware/connection-capping.middleware.js';
+import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withAnyScope, withScope } from './middleware/scope.middleware.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
-import type { DBPlan } from '@nangohq/types';
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-
-const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const remoteFunctionAuth: RequestHandler[] = [
-    ...apiAuth,
-    (_req, res, next) => {
-        const plan = res.locals['plan'] as DBPlan | null | undefined;
-
-        if (flagHasPlan && !plan?.remote_functions) {
-            res.status(403).send({ error: { code: 'forbidden', message: 'Remote functions are not enabled for this account' } });
-            return;
-        }
-
-        next();
-    }
+const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionOrApiAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
 ];
+const connectSessionOrPublicAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
+];
+
 const functionCompileAuth: RequestHandler[] = [...apiAuth, withScope('environment:functions:compile')];
 const functionDryrunAuth: RequestHandler[] = [...apiAuth, withScope('environment:functions:dryrun')];
 const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
@@ -111,6 +112,7 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 };
 const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
+const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
 
 export const publicAPI = express.Router();
 
@@ -137,7 +139,10 @@ publicAPI.use(
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
 publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
-const upload = multer({ storage: multer.memoryStorage() });
+type ExtendedMulterLimits = multer.Options['limits'] & {
+    fieldNestingDepth?: number;
+};
+const upload = multer({ storage: multer.memoryStorage(), limits: { fieldNestingDepth: 50 } as ExtendedMulterLimits });
 
 const publicAPICorsHandler = cors({
     maxAge: 600,
@@ -177,6 +182,7 @@ publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth,
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
 publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
 publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
+publicAPI.route('/auth/aws-sigv4/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAwsSigV4Authorization);
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
@@ -185,6 +191,7 @@ publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngr
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
+publicAPI.route('/providers/:provider/templates').get(apiAuth, withScope('environment:functions:list'), getPublicProviderTemplates);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -211,6 +218,11 @@ publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environme
 publicAPI
     .route('/integrations/:uniqueKey/functions/:name/code')
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
+publicAPI.route('/integrations/:uniqueKey/functions').get(apiAuth, withScope('environment:functions:list'), getPublicIntegrationFunctions);
+publicAPI
+    .route('/integrations/:uniqueKey/functions/:name')
+    .get(apiAuth, withScope('environment:functions:read'), getPublicIntegrationFunction)
+    .delete(apiAuth, withScope('environment:functions:delete'), deletePublicIntegrationFunction);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
@@ -292,6 +304,8 @@ publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryru
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
 publicAPI.route('/functions/deployments').post(functionDeployAuth, postFunctionDeployment);
+publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
+publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
@@ -306,14 +320,9 @@ publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
-publicAPI.use('/remote-function', jsonContentTypeMiddleware);
-publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
-publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, withScope('environment:functions:dryrun'), postRemoteFunctionDryrun);
-publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, withScope('environment:deploy'), postRemoteFunctionDeploy);
-
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
 
 // Proxy
-publicAPI.route('/proxy/*splat').all(apiAuth, withScope('environment:proxy'), upload.any(), allPublicProxy);
+publicAPI.route('/proxy{/*splat}').all(apiAuth, withScope('environment:proxy'), upload.any(), allPublicProxy);

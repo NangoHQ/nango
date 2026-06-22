@@ -1,8 +1,8 @@
 import { useMount } from 'react-use';
 
-import { HeaderButtons } from './HeaderButtons';
 import { APIError } from '@/lib/api';
 import { telemetry } from '@/lib/telemetry';
+import { HeaderButtons } from './HeaderButtons';
 
 const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
     if (error instanceof APIError) {

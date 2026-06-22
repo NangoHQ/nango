@@ -14,7 +14,7 @@ import { report } from '@nangohq/utils';
 import { hasScope } from '../middleware/scope.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { Integration as ProviderIntegration, IntegrationWithCreds } from '@nangohq/shared';
+import type { IntegrationWithCreds, Integration as ProviderIntegration } from '@nangohq/shared';
 import type { NextFunction, Request, Response } from 'express';
 
 class ConfigController {

@@ -6,11 +6,11 @@ import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
+import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
@@ -18,15 +18,7 @@ import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import {
-    DEFAULT_INFINITE_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    REFRESH_MARGIN_MS,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
-import syncManager from './sync/manager.service.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
@@ -43,6 +35,15 @@ import {
     stripCredential,
     stripStepResponse
 } from '../utils/utils.js';
+import configService from './config.service.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    getExpiresAtFromCredentials,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS
+} from './connections/utils.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -57,6 +58,7 @@ import type {
     AppCredentials,
     AppStoreCredentials,
     AuthModeType,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
@@ -122,7 +124,7 @@ class ConnectionService {
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
 
         if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
+            const encryptedConnection = getEncryptionManager().encryptConnection({
                 ...storedConnection,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -148,7 +150,7 @@ class ConnectionService {
             return [{ connection: connection[0]!, operation: 'override' }];
         }
 
-        const { id, ...data } = encryptionManager.encryptConnection({
+        const { id, ...data } = getEncryptionManager().encryptConnection({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             config_id: config_id as number,
@@ -186,7 +188,15 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
+        credentials:
+            | TwoStepCredentials
+            | TbaCredentials
+            | JwtCredentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | BillCredentials
+            | SignatureCredentials
+            | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
         config: ProviderConfig;
         metadata?: Metadata | null;
@@ -196,7 +206,7 @@ class ConnectionService {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
 
-            const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
+            const { id, ...encryptedConnection } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 config_id: config.id as number,
@@ -426,7 +436,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const connection = encryptionManager.decryptConnection(rawConnection);
+        const connection = getEncryptionManager().decryptConnection(rawConnection);
 
         // Parse the token expiration date.
         const credentials = connection.credentials;
@@ -461,7 +471,7 @@ class ConnectionService {
             return Err('failed_to_fetch_connection');
         }
 
-        return Ok({ connection: encryptionManager.decryptConnection(result.connection), end_user: result.end_user });
+        return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
     public async updateConnection(connection: DBConnectionDecrypted) {
@@ -473,9 +483,20 @@ class ConnectionService {
                 environment_id: connection.environment_id,
                 deleted: false
             })
-            .update(encryptionManager.encryptConnection(connection))
+            .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return encryptionManager.decryptConnection(res[0]!);
+        return getEncryptionManager().decryptConnection(res[0]!);
+    }
+
+    public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
+        const now = new Date();
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id }).update({
+            updated_at: now,
+            last_refresh_failure: now,
+            last_refresh_success: null,
+            refresh_attempts: MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+            refresh_exhausted: true
+        });
     }
 
     public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
@@ -668,7 +689,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection: DBConnection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -699,7 +720,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
@@ -715,7 +736,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     /**
@@ -1217,8 +1238,11 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : null;
+        if (!tokenUrl?.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+        const url = makeUrl(tokenUrl, connectionConfig);
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
@@ -1649,6 +1673,7 @@ class ConnectionService {
             | TwoStepCredentials
             | SignatureCredentials
             | CombinedOauth2AppCredentials
+            | AwsSigV4Credentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1773,6 +1798,58 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if (provider.auth_mode === 'AWS_SIGV4') {
+            const settingsResult = awsSigV4Client.getAwsSigV4Settings(providerConfig);
+            if (settingsResult.isErr()) {
+                return { success: false, error: settingsResult.error, response: null };
+            }
+            const settings = settingsResult.value;
+
+            const roleArn = (connection.connection_config['role_arn'] as string) || (connection.credentials as AwsSigV4Credentials).role_arn;
+            const externalId = (connection.connection_config['external_id'] as string) || (connection.credentials as AwsSigV4Credentials).external_id || null;
+            const region =
+                (connection.connection_config['region'] as string) || (connection.credentials as AwsSigV4Credentials).region || settings.defaultRegion;
+
+            if (!roleArn) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_role_arn'), response: null };
+            }
+            if (!externalId) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_external_id'), response: null };
+            }
+            if (!region) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_region'), response: null };
+            }
+
+            const credsResult = await awsSigV4Client.fetchAwsTemporaryCredentials({
+                settings,
+                input: { roleArn, externalId, region }
+            });
+
+            if (credsResult.isErr()) {
+                return { success: false, error: credsResult.error, response: null };
+            }
+
+            const creds = credsResult.value;
+
+            const refreshed: AwsSigV4Credentials = {
+                type: 'AWS_SIGV4',
+                raw: {
+                    access_key_id: creds.accessKeyId,
+                    secret_access_key: creds.secretAccessKey,
+                    session_token: creds.sessionToken,
+                    expires_at: creds.expiresAt
+                },
+                role_arn: roleArn,
+                region,
+                service: settings.service,
+                access_key_id: creds.accessKeyId,
+                secret_access_key: creds.secretAccessKey,
+                session_token: creds.sessionToken,
+                expires_at: creds.expiresAt,
+                external_id: externalId
+            };
+
+            return { success: true, error: null, response: refreshed };
         } else if ((provider as any).auth_mode === 'MCP_OAUTH2_GENERIC') {
             const { success, error, response: creds } = await refreshMcpGenericCredentials({ connection, logCtx });
 

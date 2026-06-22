@@ -1,0 +1,90 @@
+---
+title: 'Agiloft'
+sidebarTitle: 'Agiloft'
+description: 'Integrate your application with the Agiloft REST API'
+---
+
+## 🚀 Quickstart
+
+Connect to Agiloft with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Agiloft_.
+    </Step>
+    <Step id="authorize-agiloft" title="Authorize Agiloft">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Agiloft. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-agiloft-api" title="Call the Agiloft API">
+    Let's make your first request to the Agiloft REST API (fetch records from a table). Replace the placeholders below with your Nango API key, integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/ewws/REST/<KB-NAME>/<TABLE-NAME>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/ewws/REST/<KB-NAME>/<TABLE-NAME>',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    <Note>
+      - **`<KB-NAME>`** — the name of your Agiloft knowledge base (e.g. `Demo`). Find it in your Agiloft instance URL or under **Setup > Knowledge Base**.
+      - **`<TABLE-NAME>`** — the name of the table you want to query (e.g. `Company`, `Contract`). Table names are visible in **Setup > Tables**.
+    </Note>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Agiloft integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/agiloft/connect)  
+  Learn how to find your Agiloft hostname and use it to connect your account.
+
+- [How to register your own Agiloft OAuth app](/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app)  
+Register an OAuth app with Agiloft and obtain credentials to connect it to Nango
+
+Official docs: [Agiloft REST API documentation](https://wiki.agiloft.com/display/HELP/REST+API+Documentation)
+
+## 🧩 Pre-built syncs & actions for Agiloft
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/agiloft/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

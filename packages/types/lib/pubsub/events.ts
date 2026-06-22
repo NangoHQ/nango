@@ -152,7 +152,38 @@ export type UsageWebhookForwardEvent = UsageEventBase<
     }
 >;
 
+export type DataTransferCallsite =
+    | 'credential_test_hook'
+    | 'credential_verification_hook'
+    | 'connection_hook'
+    | 'webhook_forward'
+    | 'proxy'
+    | 'uncontrolled_fetch'
+    | 'persist_logs'
+    | 'persist_records';
+
+export type UsageDataTransferEvent = UsageEventBase<
+    'usage.data_transfer',
+    {
+        value: number;
+        properties: {
+            package: 'server' | 'runner' | 'shared';
+            callsite: DataTransferCallsite;
+            ingressedBytes: number;
+            egressedBytes: number;
+            syncId?: string;
+        };
+    }
+>;
+
 type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
 export type UsageEvent = EnforceUsageEventBase<
-    UsageMarEvent | UsageRecordsEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
+    | UsageMarEvent
+    | UsageRecordsEvent
+    | UsageActionsEvent
+    | UsageConnectionsEvent
+    | UsageFunctionExecutionsEvent
+    | UsageProxyEvent
+    | UsageWebhookForwardEvent
+    | UsageDataTransferEvent
 >;

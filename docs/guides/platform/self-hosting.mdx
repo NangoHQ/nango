@@ -129,10 +129,6 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 - **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
 - **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
 
-## Exporting billing metrics
-
-For usage-based billing, certain anonymous metrics must be exported to Nango. This can be done automatically or manually, depending on your preference. We’ll coordinate with your team during setup.
-
 ## Exporting metrics & logs
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
@@ -253,7 +249,62 @@ Special characters in `RECORDS_DATABASE_URL` must be URL encoded. If it is not s
 Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
 </Tip>
 
+### External Redis
+
+The bundled Redis is fine for local use but not for production. Connect Nango to an external Redis (or Valkey) with either a full URL or discrete variables:
+
+```sh
+NANGO_REDIS_URL=rediss://:<password>@<host>:<port>
+# or
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH=<password>
+```
+
+Use the `rediss://` scheme (or discrete variables, which default to TLS) to enable in-transit encryption.
+
+#### IAM / short-lived token authentication
+
+Managed Redis with IAM authentication (for example GCP Memorystore for Valkey) uses a short-lived token as the password and requires the token to be refreshed before it expires. Instead of a static `NANGO_REDIS_AUTH`, point Nango at a file that an external process (such as a sidecar) keeps up to date:
+
+```sh
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH_TOKEN_FILE=/path/to/token   # re-read on every (re)connect
+NANGO_REDIS_USERNAME=<username>              # optional; defaults to "default"
+```
+
+Nango reads the token file on every connection and reconnection, so a rotated token is always picked up without a restart. This is cloud-agnostic: anything that writes the current token to the file works. The writer must update the file atomically — write a temporary file and `rename()` it into place — so a reconnect never reads a half-written token and fails authentication. When `NANGO_REDIS_AUTH_TOKEN_FILE` is set, do not embed credentials in `NANGO_REDIS_URL`.
+
+The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_REDIS_` (for example `NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE`); it falls back to the system Redis when unset.
+
 ### Securing your instance
+
+#### Proxy base URL override hardening
+
+The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
+
+Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync and action scripts), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+
+By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the **server** and **runners** after changes:
+
+```sh
+NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=true
+NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.internal","localhost","127.0.0.1","[::1]"]'
+```
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` | `true` | Set to `false` to reject all base URL overrides |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
+
+**Operator guidance:**
+
+- **Production:** keep the default denylist. Add environment-specific hosts if your deployment exposes additional internal endpoints.
+- **Legitimate localhost overrides (dev only):** set `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` to restore fail-open behavior.
+- **No overrides at all:** set `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false`.
+
+Denylist matching is hostname-based and applies to redirect hops as well as the initial override target.
 
 #### Securing the dashboard
 

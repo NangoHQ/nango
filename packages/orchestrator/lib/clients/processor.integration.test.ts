@@ -3,13 +3,13 @@ import { setTimeout } from 'timers/promises';
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, it, vi } from 'vitest';
 
-import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
-import { Err, Ok, nanoid } from '@nangohq/utils';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
+import { Err, nanoid, Ok } from '@nangohq/utils';
 
+import { TaskEventsHandler } from '../events.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
-import { TaskEventsHandler } from '../events.js';
 
 import type { OrchestratorTask } from './types.js';
 import type { Task } from '@nangohq/scheduler';

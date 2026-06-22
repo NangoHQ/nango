@@ -33,7 +33,8 @@ export async function registerClientId({
         const body = {
             redirect_uris: [environment.callback_url || getGlobalOAuthCallbackUrl()],
             token_endpoint_auth_method: 'none',
-            client_name: `${team.name} - ${environment.name} - ${provider.display_name}`
+            client_name: `${team.name} - ${environment.name} - ${provider.display_name}`,
+            ...Object.fromEntries(Object.entries(provider.registration_params ?? {}).filter(([key]) => key === 'response_types' || key === 'grant_types'))
         };
         const { data } = await axios.post<McpRegisterResponse>(registrationUrl, body);
 

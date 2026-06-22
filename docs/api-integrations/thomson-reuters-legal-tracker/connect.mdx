@@ -1,0 +1,49 @@
+---
+title: Thomson Reuters Legal Tracker - How do I link my account?
+sidebarTitle: Thomson Reuters Legal Tracker
+---
+
+# Overview
+
+To authenticate with Thomson Reuters Legal Tracker, you need:
+1. **Hostname** — The regional API endpoint where your company's data is hosted.
+2. **Client ID** — The client ID created when your application was registered.
+3. **Client Secret** — The client secret created when your application was registered.
+
+This guide walks you through obtaining these credentials from the Thomson Reuters Legal Tracker developer portal.
+
+### Prerequisites
+
+
+- An active Thomson Reuters Legal Tracker account with API access enabled for your firm.
+- Your IT administrator must contact Legal Tracker support to request access to the Thomson Reuters Developer Portal.
+
+### Step 1: Obtain your client credentials
+
+1. Navigate to the **App Management** tab in your environment's API section.
+2. Select **New Application**.
+3. Enter an application name and save the record.
+4. The system will generate your **Client ID** and **Client Secret**.
+
+### Step 2: Find your hostname
+
+Thomson Reuters Legal Tracker is hosted across four regional endpoints. Your company's data lives in exactly one region — using the wrong hostname returns a `401 Unauthorized` error.
+
+| Region | Hostname |
+|--------|----------|
+| United States | `api.thomsonreuters.com` |
+| United Kingdom | `api.thomsonreuters.co.uk` |
+| Canada | `api.thomsonreuters.ca` |
+| Australia | `api.thomsonreuters.au` |
+
+Contact your IT administrator or Legal Tracker support if you are unsure which region your firm uses.
+
+### Step 3: Enter credentials in the Connect UI
+
+Once you have your credentials:
+1. Open the form where you need to authenticate with Thomson Reuters Legal Tracker.
+2. Select your **Hostname** — choose the endpoint that matches where your company's data is hosted (US, UK, Canada, or Australia).
+3. Enter your **Client ID** and **Client Secret** in the designated fields.
+4. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Thomson Reuters Legal Tracker.

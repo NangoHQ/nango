@@ -1,9 +1,9 @@
 import ms from 'ms';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
+import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -52,6 +52,19 @@ export async function getPlan(
     } catch (err) {
         return Err(new Error('failed_to_get_plan', { cause: err }));
     }
+}
+
+export async function getPlanSafe(
+    db: Knex,
+    opts: Partial<{
+        accountId: DBPlan['account_id'];
+        environmentId: DBEnvironment['id'];
+        stripeCustomerId: DBPlan['stripe_customer_id'];
+    }>
+): Promise<DBPlan | null> {
+    if (!flagHasPlan) return null;
+    const plan = await getPlan(db, opts);
+    return plan.isOk() ? plan.value : null;
 }
 
 export async function createPlan(
@@ -233,6 +246,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'trial_end_notified_at':
             case 'trial_expired':
             case 'fleet_node_routing_override':
+            case 'records_store':
             case 'created_at':
             case 'updated_at':
                 break;
@@ -250,7 +264,6 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
             case 'can_customize_connect_ui_theme':
-            case 'remote_functions':
             case 'export_runner_telemetry': {
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
                 break;

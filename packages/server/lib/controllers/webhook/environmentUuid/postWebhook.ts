@@ -8,7 +8,6 @@ import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { featureFlags } from '../../../utils/utils.js';
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
 
 import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
@@ -32,12 +31,6 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
         const headers = req.headers;
 
         try {
-            const isGloballyDisabled = await featureFlags.isSet('disable-external-webhooks');
-            if (isGloballyDisabled) {
-                res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature globally disabled' } });
-                return;
-            }
-
             const resEnv = await accountService.getAccountContext({ environmentUuid });
             if (!resEnv) {
                 res.status(404).send({ error: { code: 'unknown_environment' } });
@@ -50,12 +43,6 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
             metrics.duration(metrics.Types.WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
-
-            const isDisabledForThisAccount = await featureFlags.isSet('disable-external-webhooks', { distinctId: account.uuid });
-            if (isDisabledForThisAccount) {
-                res.status(404).send({ error: { code: 'feature_disabled', message: 'Feature disabled for this account' } });
-                return;
-            }
 
             let plan: DBPlan | undefined;
             if (flagHasPlan) {

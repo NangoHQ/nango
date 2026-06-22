@@ -1,98 +1,209 @@
-import { CrossCircledIcon } from '@radix-ui/react-icons';
-import { useMemo, useState } from 'react';
+import debounce from 'lodash/debounce';
+import { Check, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from './Command';
+import { Button } from '@nangohq/design-system';
+
+import { cn } from '@/utils/utils';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { cn } from '../../utils/utils';
-import { Button } from '@/components-v2/ui/Button';
 
-export interface MultiSelectArgs<T> {
+import type { ComboboxOption } from './Combobox';
+
+interface MultiSelectProps<T extends string = string> {
     label: string;
-    options: { name: string; value: T }[];
+    options: ComboboxOption<T>[];
     selected: T[];
-    defaultSelect: T[];
-    all?: boolean;
-    onChange: (selected: T[]) => void;
+    defaultSelect?: T[];
+    loading?: boolean;
+    searchPlaceholder?: string;
+    onValueChange: (selected: T[]) => void;
+    renderOption?: (option: ComboboxOption<T>, selected: boolean) => React.ReactNode;
+    renderOptionRight?: (option: ComboboxOption<T>, selected: boolean) => React.ReactNode;
+    emptyText?: string;
+    footer?: React.ReactNode;
 }
 
-export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, selected, defaultSelect, all, onChange }) => {
+export function MultiSelect<T extends string = string>({
+    label,
+    options,
+    selected,
+    defaultSelect = [],
+    onValueChange,
+    loading = false,
+    searchPlaceholder = 'Search',
+    renderOption,
+    renderOptionRight,
+    emptyText = 'No results found.',
+    footer
+}: MultiSelectProps<T>) {
     const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [filteredOptions, setFilteredOptions] = useState<typeof options>([]);
 
-    const select = (val: string, checked: boolean) => {
-        if (all && val === 'all') {
-            onChange(['all']);
-            return;
+    const initialOptions = useMemo(() => {
+        return options ?? [];
+    }, [options]);
+
+    const sortOptionsWithSelectedFirst = useCallback((opts: typeof options, selectedValues: typeof selected) => {
+        const selectedItems: typeof options = [];
+        const unselectedItems: typeof options = [];
+
+        opts.forEach((option) => {
+            if (selectedValues.some((sel) => sel === option.value)) {
+                selectedItems.push(option);
+            } else {
+                unselectedItems.push(option);
+            }
+        });
+
+        return [...selectedItems, ...unselectedItems];
+    }, []);
+
+    const prevOpenRef = useRef(false);
+    const prevInitialOptionsRef = useRef(initialOptions);
+
+    useEffect(() => {
+        if (initialOptions) {
+            setFilteredOptions(initialOptions);
         }
+    }, [initialOptions]);
 
-        let tmp = checked ? [...selected, val] : selected.filter((sel) => sel !== val);
-        if (all && tmp.length > 1) {
-            tmp = tmp.filter((sel) => sel !== 'all');
+    const filterOptions = useCallback(
+        (value: string) => {
+            if (!value.trim()) {
+                setFilteredOptions(initialOptions);
+                return;
+            }
+
+            const filtered = initialOptions.filter((option) => option.label.toLowerCase().includes(value.toLowerCase()));
+            setFilteredOptions(filtered);
+        },
+        [initialOptions]
+    );
+
+    const debouncedFilterOptions = useMemo(() => debounce(filterOptions, 250), [filterOptions]);
+
+    useEffect(() => {
+        return () => {
+            debouncedFilterOptions.cancel();
+        };
+    }, [debouncedFilterOptions]);
+
+    useEffect(() => {
+        if (!open) {
+            setSearch('');
         }
-        onChange(tmp.length <= 0 ? [...defaultSelect] : tmp);
-    };
+    }, [open]);
 
-    const reset = (e: any) => {
-        e.preventDefault();
-        if (all) {
-            onChange(['all']);
+    useEffect(() => {
+        prevOpenRef.current = open;
+        prevInitialOptionsRef.current = initialOptions;
+    }, [open, initialOptions, sortOptionsWithSelectedFirst]);
+
+    const handleInputChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            setSearch(event.target.value);
+            debouncedFilterOptions(event.target.value);
+        },
+        [debouncedFilterOptions]
+    );
+
+    const select = (val: T) => {
+        const isSelected = selected.some((sel) => sel === val);
+        let newSelected: T[];
+
+        if (isSelected) {
+            newSelected = selected.filter((sel) => sel !== val);
         } else {
-            onChange([...defaultSelect]);
+            newSelected = [...selected, val];
         }
+
+        onValueChange(newSelected.length <= 0 ? [...defaultSelect] : newSelected);
     };
 
     const isDirty = useMemo(() => {
-        if (!all) {
-            return selected.length !== options.length;
-        }
-
-        return !(selected.length === 1 && selected[0] === 'all');
-    }, [selected, all, options]);
+        if (selected.length !== defaultSelect.length) return true;
+        return selected.some((sel, index) => sel !== defaultSelect[index]);
+    }, [selected, defaultSelect]);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size={'sm'} className={cn('h-9 text-text-light-gray', isDirty && 'text-white')}>
-                    {label}
-                    {isDirty && (
-                        <button
-                            className="bg-pure-black text-text-light-gray flex gap-1 items-center px-1.5 rounded-xl"
-                            onPointerDown={reset}
-                            onKeyDown={(e) => {
-                                if (['Enter', ' '].includes(e.key)) {
-                                    reset(e);
-                                }
-                            }}
-                        >
-                            <CrossCircledIcon />
+                <Button
+                    loading={loading}
+                    disabled={options.length === 0}
+                    variant="ghost"
+                    size="xl"
+                    className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover')}
+                >
+                    {label}{' '}
+                    {selected.length > 0 && (
+                        <span className="text-text-strong text-body-small-semi bg-surface-panel-inset rounded-full h-5 min-w-5 flex items-center justify-center px-2">
                             {selected.length}
-                        </button>
+                        </span>
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-0 text-white bg-active-gray" align="end">
-                <Command>
-                    <CommandList>
-                        <CommandEmpty>No framework found.</CommandEmpty>
-                        <CommandGroup>
-                            {options.map((option) => {
-                                const checked = selected.some((sel) => option.value === sel);
-                                return (
-                                    <CommandItem
-                                        key={option.value}
-                                        value={option.value}
-                                        onSelect={() => {
-                                            select(option.value, !checked);
-                                        }}
-                                    >
-                                        <CommandCheck checked={checked} />
-                                        {option.name}
-                                    </CommandItem>
-                                );
-                            })}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
+            <PopoverContent
+                align="end"
+                className="flex w-[var(--radix-popover-trigger-width)] min-w-[312px] flex-col items-start overflow-hidden rounded-[4px] border border-border-muted bg-surface-overlay shadow-lg p-1 pb-0"
+            >
+                <div className="border-b border-border-muted w-full">
+                    <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
+                        <InputGroupAddon className="p-0 pr-2">
+                            <Search className="size-4 text-text-muted" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                            type="text"
+                            placeholder={searchPlaceholder}
+                            value={search}
+                            onChange={handleInputChange}
+                            className="h-auto p-0 text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                        />
+                    </InputGroup>
+                </div>
+                <div className="max-h-72 w-full overflow-y-auto">
+                    {filteredOptions.length > 0 ? (
+                        filteredOptions.map((opt) => {
+                            const isSelected = selected.indexOf(opt.value) !== -1;
+                            const rightOptionContent = renderOptionRight ? renderOptionRight(opt, isSelected) : null;
+                            return (
+                                <div
+                                    key={opt.value}
+                                    onClick={() => select(opt.value)}
+                                    className={cn(
+                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-state-hover text-text-secondary hover:text-text-strong',
+                                        isSelected &&
+                                            'border-[0.5px] border-surface-page bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
+                                    )}
+                                >
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span
+                                            className={cn(
+                                                'flex size-5 shrink-0 items-center justify-center rounded-sm border',
+                                                isSelected ? 'border-transparent bg-surface-panel text-text-strong' : 'border-border-strong bg-transparent'
+                                            )}
+                                        >
+                                            {isSelected ? <Check className="size-3.5" /> : null}
+                                        </span>
+                                        <div className="flex min-w-0 items-center gap-1 overflow-hidden text-body-medium-regular leading-[160%] tracking-normal">
+                                            {renderOption ? renderOption(opt, isSelected) : <span className="truncate">{opt.label}</span>}
+                                        </div>
+                                    </div>
+                                    {rightOptionContent ? <div className="shrink-0">{rightOptionContent}</div> : null}
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="px-2 py-3 text-center">
+                            <p className="text-text-muted text-body-small-regular">{emptyText}</p>
+                        </div>
+                    )}
+                </div>
+
+                {footer ? <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div> : null}
             </PopoverContent>
         </Popover>
     );
-};
+}

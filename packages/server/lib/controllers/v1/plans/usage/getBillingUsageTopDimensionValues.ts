@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { environmentService } from '@nangohq/shared';
 import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -20,7 +21,8 @@ const metricBranches = {
     function_compute_gbms: z.object({ metric: z.literal('function_compute_gbms'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms) }),
     webhook_forwards: z.object({ metric: z.literal('webhook_forwards'), dimension: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards) }),
     records: z.object({ metric: z.literal('records'), dimension: z.enum(BREAKDOWN_DIMENSIONS.records) }),
-    connections: z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) })
+    connections: z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) }),
+    data_transfer: z.object({ metric: z.literal('data_transfer'), dimension: z.enum(BREAKDOWN_DIMENSIONS.data_transfer) })
 } satisfies Record<UsageMetric, z.ZodObject>;
 
 // `Object.values` widens to a plain array; the cast restores the non-empty
@@ -62,5 +64,13 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
         return;
     }
 
-    res.status(200).send({ data: { values: result.value.values } });
+    let values: { id: string; label: string }[];
+    if (query.dimension === 'environment_id') {
+        const names = await environmentService.getEnvironmentNamesByIds(result.value.values.map(Number));
+        values = result.value.values.map((id) => ({ id, label: names.get(Number(id)) ?? id }));
+    } else {
+        values = result.value.values.map((id) => ({ id, label: id }));
+    }
+
+    res.status(200).send({ data: { values } });
 });

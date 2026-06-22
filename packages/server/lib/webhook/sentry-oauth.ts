@@ -2,8 +2,8 @@ import crypto from 'crypto';
 
 import get from 'lodash-es/get.js';
 
-import { NangoError, connectionService, getProvider } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { connectionService, getProvider, NangoError } from '@nangohq/shared';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import oauthController from '../controllers/oauth.controller.js';
 

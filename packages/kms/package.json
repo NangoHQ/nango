@@ -1,0 +1,20 @@
+{
+    "name": "@nangohq/kms",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "private": true,
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/kms"
+    },
+    "dependencies": {
+        "@aws-crypto/client-node": "5.0.0",
+        "@nangohq/utils": "file:../utils"
+    },
+    "devDependencies": {
+        "vitest": "4.1.9"
+    }
+}

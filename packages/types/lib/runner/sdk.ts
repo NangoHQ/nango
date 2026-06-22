@@ -1,8 +1,8 @@
-import type { RunnerFlags } from './index.js';
 import type { LogLevel } from '../logs/messages.js';
 import type { IntegrationConfigForProxy } from '../proxy/api.js';
 import type { DBSyncConfig } from '../syncConfigs/db.js';
 import type { DBTeam } from '../team/db.js';
+import type { RunnerFlags } from './index.js';
 import type { AxiosError, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export interface SdkLogger {

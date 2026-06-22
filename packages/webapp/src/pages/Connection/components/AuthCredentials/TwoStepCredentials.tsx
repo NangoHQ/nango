@@ -1,9 +1,10 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
-import { Button } from '@/components-v2/ui/Button';
-import { Label } from '@/components-v2/ui/Label';
+import { Button } from '@nangohq/design-system';
+
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Label } from '@/components/ui/Label';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 import { formatKeyToLabel } from '@/utils/utils';
 
@@ -26,7 +27,7 @@ export const TwoStepCredentialsComponent: React.FC<{
                         <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
-                                <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
+                                <Button variant="outline" size="lg" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
                                     <RefreshCwIcon />
                                     Refresh
                                 </Button>

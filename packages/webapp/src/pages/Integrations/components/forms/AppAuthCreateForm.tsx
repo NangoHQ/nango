@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
-import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
-import { InputGroup, InputGroupInput, InputGroupTextarea } from '@/components-v2/ui/InputGroup';
+import { Button } from '@nangohq/design-system';
+
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { InputGroup, InputGroupInput, InputGroupTextarea } from '@/components/ui/InputGroup';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -113,9 +114,11 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                         />
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>
