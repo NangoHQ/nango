@@ -72,7 +72,9 @@ async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeplo
                 res.status(409).send({ error: { code: 'template_already_deployed', message: `'${body.template}' is already deployed on this integration` } });
                 return;
             case 'non_runnable_type':
-                report(new Error(`Template '${body.template}' resolved to a non-runnable type and cannot be deployed as a function`));
+                if (outcome.cause) {
+                    report(outcome.cause);
+                }
                 res.status(500).send({ error: { code: 'server_error', message: `Template '${body.template}' cannot be deployed as a function` } });
                 return;
             default:

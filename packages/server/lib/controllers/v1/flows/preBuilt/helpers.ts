@@ -74,7 +74,7 @@ export async function deployIntegrationTemplate({
     }
     const { type: resolvedType, template } = match;
     if (resolvedType !== 'sync' && resolvedType !== 'action') {
-        return { ok: false, reason: 'non_runnable_type' };
+        return { ok: false, reason: 'non_runnable_type', cause: new Error(`Template '${name}' resolved to non-runnable type '${resolvedType}'`) };
     }
 
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'prebuilt' } }, { account, environment });
