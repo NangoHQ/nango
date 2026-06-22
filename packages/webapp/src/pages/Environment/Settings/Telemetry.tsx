@@ -2,19 +2,20 @@ import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Label } from '@/components/ui/Label';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { Label } from '@/components-v2/ui/Label';
-import { usePermissions } from '@/hooks/usePermissions';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -85,7 +86,7 @@ export const Telemetry: React.FC = () => {
                 label={
                     <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="icon">
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="2xs">
                             <ExternalLink />
                         </ButtonLink>
                     </div>
@@ -126,7 +127,7 @@ export const Telemetry: React.FC = () => {
                             {errors.length > 0 && (
                                 <div className="flex flex-col gap-1">
                                     {errors.map((err, i) => (
-                                        <div key={i} className="text-body-small-regular text-feedback-error-fg">
+                                        <div key={i} className="text-body-small-regular text-status-danger-text">
                                             Row {err.index + 1}, {err.key}: {err.error}
                                         </div>
                                     ))}
@@ -137,7 +138,7 @@ export const Telemetry: React.FC = () => {
                             {!editHeaders && (
                                 <PermissionGate asChild condition={canEditEnvironment}>
                                     {(allowed) => (
-                                        <Button variant={'secondary'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
+                                        <Button variant={'outline'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
                                             Edit
                                         </Button>
                                     )}
@@ -145,7 +146,7 @@ export const Telemetry: React.FC = () => {
                             )}
                             {editHeaders && (
                                 <>
-                                    <Button variant="tertiary" onClick={onCancelHeaders}>
+                                    <Button variant="outline" onClick={onCancelHeaders}>
                                         Cancel
                                     </Button>
                                     <Button variant="primary" onClick={onSaveHeaders} loading={loading}>

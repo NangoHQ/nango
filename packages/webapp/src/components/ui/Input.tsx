@@ -1,0 +1,26 @@
+import * as React from 'react';
+
+import { cn } from '@/utils/utils';
+
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(({ className, type, autoComplete, ...props }, ref) => {
+    const blockPasswordManager = !autoComplete || autoComplete === 'off';
+    return (
+        <input
+            ref={ref}
+            type={type}
+            data-slot="input"
+            className={cn(
+                'bg-surface-input border border-border-input text-text-strong !text-body-medium-regular placeholder:text-text-muted hover:border-border-input-hover focus:border-border-input-hover',
+                'file:text-text-strong flex h-9 w-full min-w-0 rounded px-3 py-1 transition-colors outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-body-medium-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+                'aria-invalid:border-text-danger',
+                className
+            )}
+            autoComplete={autoComplete ?? 'off'}
+            {...(blockPasswordManager ? { 'data-1p-ignore': true, 'data-lpignore': 'true', 'data-protonpass-ignore': 'true' } : {})}
+            {...props}
+        />
+    );
+});
+Input.displayName = 'Input';
+
+export { Input };

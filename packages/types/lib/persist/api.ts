@@ -23,9 +23,10 @@ type WithTags<T> = T & { integrationId: string; connectionId: string; syncId?: s
 
 export type RunnerDataTransferTelemetry = WithTags<{
     type: 'data_transfer';
-    callsite: 'proxy' | 'uncontrolled_fetch';
+    callsite: 'proxy' | 'uncontrolled_fetch' | 'persist_records' | 'persist_logs';
     bytesSent: number;
     bytesReceived: number;
+    count: number;
 }>;
 
 // NOTE: discriminated union on `type`; add more telemetry types as needed.

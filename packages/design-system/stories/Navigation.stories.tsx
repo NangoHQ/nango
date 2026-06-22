@@ -1,10 +1,10 @@
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Navigation> = {
     component: Navigation,
-    title: 'Components v2/UI/Navigation',
+    title: 'Components/UI/Navigation',
     parameters: { layout: 'padded' }
 };
 export default meta;

@@ -1,18 +1,18 @@
 import type { Nango } from '@nangohq/node';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import type {
     ApiEndUser,
+    Checkpoint,
     DBSyncConfig,
     DBTeam,
     GetPublicConnection,
     GetPublicIntegration,
     HTTP_METHOD,
-    RunnerFlags,
-    PostPublicTrigger,
     NangoRecord,
-    Checkpoint
+    PostPublicTrigger,
+    RunnerFlags
 } from '@nangohq/types';
-import type { ZodSchema, SafeParseSuccess } from 'zod';
+import type { AxiosError, AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { SafeParseSuccess, ZodSchema } from 'zod';
 
 export declare const oldLevelToNewLevel: {
     readonly debug: 'debug';
@@ -81,6 +81,7 @@ export interface AuthModes {
     TwoStep: 'TWO_STEP';
     Signature: 'SIGNATURE';
     InstallPlugin: 'INSTALL_PLUGIN';
+    AwsSigV4: 'AWS_SIGV4';
 }
 export type AuthModeType = AuthModes[keyof AuthModes];
 interface OAuth1Token {

@@ -90,5 +90,13 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
         }
     }
 
+    // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+    if (body.integrationConfig) {
+        config.custom = {
+            ...config.custom,
+            ...body.integrationConfig
+        };
+    }
+
     return config;
 }

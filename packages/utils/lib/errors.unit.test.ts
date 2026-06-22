@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { stringifyError } from './errors.js';
 
@@ -270,5 +270,46 @@ describe('stringifyError', () => {
                 }
             });
         });
+    });
+});
+
+const { mockLoggerError } = vi.hoisted(() => ({
+    mockLoggerError: vi.fn()
+}));
+
+vi.mock('./logger.js', () => ({
+    getLogger: () => ({
+        error: mockLoggerError,
+        info: vi.fn(),
+        warning: vi.fn(),
+        debug: vi.fn(),
+        close: vi.fn()
+    })
+}));
+
+describe('report', () => {
+    beforeEach(() => {
+        mockLoggerError.mockClear();
+    });
+
+    it('uses Error.message as the log message', async () => {
+        const { report } = await import('./errors.js');
+        report(new Error('boom'));
+        expect(mockLoggerError).toHaveBeenCalledWith('boom', { err: expect.any(Error) });
+    });
+
+    it('uses string errors as the log message', async () => {
+        const { report } = await import('./errors.js');
+        report('Failed to update plan', { customer: 'c1' });
+        expect(mockLoggerError).toHaveBeenCalledWith('Failed to update plan', {
+            err: 'Failed to update plan',
+            customer: 'c1'
+        });
+    });
+
+    it('uses primitive errors as the log message', async () => {
+        const { report } = await import('./errors.js');
+        report(404);
+        expect(mockLoggerError).toHaveBeenCalledWith('404', { err: 404 });
     });
 });

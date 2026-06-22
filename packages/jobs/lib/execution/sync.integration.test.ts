@@ -6,12 +6,12 @@ import { clearDb as clearRecordsDb } from '@nangohq/records/lib/stores/postgres/
 import { getLatestSyncJob, isSyncJobRunning, seeders, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 
-import { handleSyncSuccess, startSync } from './sync.js';
 import { envs } from '../env.js';
+import { handleSyncSuccess, startSync } from './sync.js';
 
 import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { ReturnedRecord, UnencryptedRecordData } from '@nangohq/records';
-import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { ConnectionJobs, DBSyncConfig, SyncResult } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
@@ -239,7 +239,8 @@ const runJob = async (
         connectionId: connection.id,
         environmentId: connection.environment_id,
         model,
-        softDelete
+        softDelete,
+        plan: null
     });
     if (upserting.isErr()) {
         throw new Error(`failed to upsert records: ${upserting.error.message}`);
@@ -296,7 +297,7 @@ const verifySyncRun = async (
 };
 
 const getRecords = async (connection: ConnectionJobs, model: string) => {
-    const res = await recordsService.getRecords({ connectionId: connection.id, model });
+    const res = await recordsService.getRecords({ connectionId: connection.id, model, plan: null });
     if (res.isOk()) {
         return res.value.records;
     }
@@ -324,7 +325,8 @@ async function populateRecords(
             records: records.slice(i, i + chunkSize),
             connectionId: connection.id,
             environmentId: connection.environment_id,
-            model
+            model,
+            plan: null
         });
         if (res.isErr()) {
             throw new Error(`Failed to upsert records: ${res.error.message}`);

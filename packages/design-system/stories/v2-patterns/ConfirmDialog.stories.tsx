@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { ConfirmDialog } from '@/components-v2/patterns/ConfirmDialog';
-import { Button } from '@/components-v2/ui/Button';
+import { ConfirmDialog } from '@/components/patterns/ConfirmDialog';
+import { Button } from '../../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/ConfirmDialog',
+    title: 'Components/Patterns/ConfirmDialog',
     parameters: { layout: 'padded' }
 };
 export default meta;
@@ -17,7 +17,7 @@ export const Default: Story = {
         const [open, setOpen] = useState(false);
         return (
             <>
-                <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+                <Button variant="secondary" size="md" onClick={() => setOpen(true)}>
                     Open dialog
                 </Button>
                 <ConfirmDialog

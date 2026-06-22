@@ -173,6 +173,51 @@ export class NangoError extends NangoInternalError {
                 this.message = `Invalid HMAC signature.`;
                 break;
 
+            case 'missing_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is missing.`;
+                break;
+
+            case 'invalid_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is invalid.`;
+                break;
+
+            case 'missing_aws_sigv4_service':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the target AWS service.`;
+                break;
+
+            case 'missing_aws_sigv4_sts_endpoint':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the STS endpoint configuration.`;
+                break;
+
+            case 'missing_aws_sigv4_builtin_credentials':
+                this.status = 400;
+                this.message = `AWS SigV4 built-in mode requires AWS Access Key ID and Secret Access Key.`;
+                break;
+
+            case 'missing_aws_sigv4_region':
+                this.status = 400;
+                this.message = `AWS SigV4 requests require a region.`;
+                break;
+
+            case 'missing_aws_sigv4_role_arn':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the IAM role ARN.`;
+                break;
+
+            case 'missing_aws_sigv4_external_id':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the external ID.`;
+                break;
+
+            case 'aws_sigv4_sts_request_failed':
+                this.status = 502;
+                this.message = `Failed to retrieve AWS credentials from the configured STS endpoint.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
@@ -236,6 +281,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'app_secret'.`;
                 break;
 
+            case 'missing_walmart_seller_id':
+                this.status = 400;
+                this.message = `Missing connection config param 'sellerId' required for Walmart OAuth.`;
+                break;
+
             case 'missing_connection':
                 this.status = 400;
                 this.message = `Missing param 'connection_id'.`;
@@ -271,6 +321,22 @@ export class NangoError extends NangoInternalError {
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
+            case 'attio_mcp_token_request_error':
+                this.status = 400;
+                this.message = `The Attio MCP API returned an error when trying to request an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'attio_mcp_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Attio MCP API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }
                 break;
 
@@ -593,6 +659,16 @@ export class NangoError extends NangoInternalError {
             case 'execution_timeout':
                 this.status = 500;
                 this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
+                break;
+
+            case 'followupboss_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token request failed.';
+                break;
+
+            case 'followupboss_refresh_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token refresh failed.';
                 break;
 
             default:

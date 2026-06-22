@@ -1,10 +1,10 @@
-import { Toast } from '@/components-v2/ui/Toast';
+import { Toast } from '@/components/ui/Toast';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Toast> = {
     component: Toast,
-    title: 'Components v2/UI/Toast',
+    title: 'Components/UI/Toast',
     parameters: { layout: 'padded' }
 };
 export default meta;

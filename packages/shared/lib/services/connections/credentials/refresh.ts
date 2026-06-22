@@ -2,14 +2,14 @@ import tracer from 'dd-trace';
 
 import { getLocking } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
-import { Err, FixedSizeMap, Ok, getLogger, metrics } from '@nangohq/utils';
+import { Err, FixedSizeMap, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
 import { NangoError } from '../../../utils/error.js';
 import { isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
-import { REFRESH_FAILURE_COOLDOWN_MS, REFRESH_MARGIN_MS, getExpiresAtFromCredentials } from '../utils.js';
+import { getExpiresAtFromCredentials, REFRESH_FAILURE_COOLDOWN_MS, REFRESH_MARGIN_MS } from '../utils.js';
 
 import type { Config, Config as ProviderConfig } from '../../../models/index.js';
 import type { NangoInternalError } from '../../../utils/error.js';
@@ -110,7 +110,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             case 'JWT':
             case 'BILL':
             case 'TWO_STEP':
-            case 'SIGNATURE': {
+            case 'SIGNATURE':
+            case 'AWS_SIGV4': {
                 res = await refreshCredentials(props, provider as RefreshableProvider);
                 break;
             }
@@ -433,7 +434,7 @@ export async function refreshCredentialsIfNeeded({
                     return Ok({ connection, refreshed: false, credentials: freshCredentials });
                 }
 
-                logger.info('Refreshing', connection.id, 'because', shouldRefresh.reason);
+                logger.info('Refreshing connection', { connectionId: connection.id, reason: shouldRefresh.reason });
                 connectionToRefresh = connection;
             } catch (err) {
                 // lock acquisition might have timed out
@@ -524,7 +525,11 @@ export async function refreshCredentialsIfNeeded({
             return Err(error);
         } finally {
             if (lock) {
-                await locking.release(lock);
+                try {
+                    await locking.release(lock);
+                } catch (err) {
+                    logger.error('Error releasing lock', { lock: lock.key, error: err });
+                }
             }
         }
     }

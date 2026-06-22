@@ -84,7 +84,43 @@ describe('Clickhouse', () => {
                 genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
                 genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } }),
                 genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
-                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } })
+                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } }),
+                // data_transfer
+                // day 0: 3 events × 1000 bytes via runner = 3000 bytes
+                ...genEventsN({
+                    n: 3,
+                    date: dayFromNow(),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    attributes: { egressedBytes: 1000, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
+                    value: 1000
+                }),
+                // day 1: 2 events × 500 bytes via server = 1000 bytes
+                ...genEventsN({
+                    n: 2,
+                    date: dayFromNow(1),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    attributes: { egressedBytes: 0, ingressedBytes: 500, package: 'server', callsite: 'proxy' },
+                    value: 500
+                }),
+                // different account (must be excluded)
+                ...genEventsN({
+                    n: 5,
+                    date: dayFromNow(),
+                    type: 'usage.data_transfer',
+                    accountId: 999,
+                    attributes: { egressedBytes: 100, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
+                    value: 100
+                }),
+                // out of timeframe (must be excluded)
+                genEvent({
+                    date: dayFromNow(-1),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    value: 999,
+                    attributes: { egressedBytes: 999, ingressedBytes: 0, package: 'server', callsite: 'proxy' }
+                })
             ]);
             await clickhouse.flush(); // force flush to make sure all events are ingested before we query
         });
@@ -237,6 +273,42 @@ describe('Clickhouse', () => {
                                 { day: dayFromNow(), value: 6 },
                                 { day: dayFromNow(1), value: 3 }
                             ]
+                        }
+                    ]
+                });
+            });
+
+            it('data_transfer, no dimension', async () => {
+                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'none', timeframe: { start, end } });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'data_transfer',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), value: 3000 },
+                                { day: dayFromNow(1), value: 1000 }
+                            ]
+                        }
+                    ]
+                });
+            });
+
+            it('data_transfer broken down by package', async () => {
+                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'package', timeframe: { start, end } });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'data_transfer',
+                    series: [
+                        {
+                            dimension: 'package',
+                            dimensionValue: 'runner',
+                            days: [{ day: dayFromNow(), value: 3000 }]
+                        },
+                        {
+                            dimension: 'package',
+                            dimensionValue: 'server',
+                            days: [{ day: dayFromNow(1), value: 1000 }]
                         }
                     ]
                 });
@@ -798,6 +870,83 @@ describe('Clickhouse', () => {
             await client.close();
         });
     });
+
+    describe('getCurrentMonthBillingMetrics', () => {
+        const accountId = 4242;
+        const now = new Date();
+        const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        const inMonth = new Date(monthStart.getTime() + 12 * 60 * 60 * 1000); // first day at noon UTC
+        const prevMonth = new Date(monthStart.getTime() - 24 * 60 * 60 * 1000); // 24h before month start
+
+        beforeAll(async () => {
+            await cleanup();
+            clickhouse.addRaw([
+                // proxy: 100 in current month, 999 in prev month (must be excluded), 50 on another account
+                ...genEventsN({ n: 100, date: inMonth, type: 'usage.proxy', accountId, attributes: { success: true } }),
+                ...genEventsN({ n: 999, date: prevMonth, type: 'usage.proxy', accountId, attributes: { success: true } }),
+                ...genEventsN({ n: 50, date: inMonth, type: 'usage.proxy', accountId: 9999, attributes: { success: true } }),
+                // function_executions: 3 events this month
+                ...genEventsN({
+                    n: 3,
+                    date: inMonth,
+                    type: 'usage.function_executions',
+                    accountId,
+                    attributes: { type: 'sync', telemetryBag: { durationMs: 100, customLogs: 5, proxyCalls: 0, memoryGb: 2 } }
+                }),
+                // webhook_forwards: 5 this month
+                ...genEventsN({ n: 5, date: inMonth, type: 'usage.webhook_forward', accountId, attributes: { success: true } })
+            ]);
+            await clickhouse.flush();
+        });
+
+        it('returns calendar-month-to-date totals for every COUNTER metric, scoped to the account', async () => {
+            const res = await clickhouse.getCurrentMonthBillingMetrics(accountId, now);
+            const usage = res.unwrap();
+
+            // proxy: SUM(value) over 100 events with value=1 → 100.
+            expect(usage.proxy?.total).toBe(100);
+            // function_executions / _logs / _compute_gbms all derived from the 3 seeded function events.
+            // value=1, customLogs=5, durationMs=100 each.
+            expect(usage.function_executions?.total).toBe(3);
+            expect(usage.function_logs?.total).toBe(15); // SUM(custom_logs) = 3 * 5
+            expect(usage.function_compute_gbms?.total).toBe(300); // SUM(duration_ms) = 3 * 100
+            expect(usage.webhook_forwards?.total).toBe(5);
+
+            // AVG metrics aren't in the response — capping reads connections/records from Postgres.
+            expect(usage.records).toBeUndefined();
+            expect(usage.connections).toBeUndefined();
+        });
+
+        it('excludes events from the previous calendar month', async () => {
+            const res = await clickhouse.getCurrentMonthBillingMetrics(accountId, now);
+            // 100 (this month) + 999 (prev month, excluded) → 100 if window is right
+            expect(res.unwrap().proxy?.total).toBe(100);
+        });
+
+        it('returns zeros for an account with no events', async () => {
+            const res = await clickhouse.getCurrentMonthBillingMetrics(8888, now);
+            const usage = res.unwrap();
+            expect(usage.proxy?.total).toBe(0);
+            expect(usage.function_executions?.total).toBe(0);
+            expect(usage.webhook_forwards?.total).toBe(0);
+            expect(usage.function_logs?.total).toBe(0);
+            expect(usage.function_compute_gbms?.total).toBe(0);
+        });
+
+        it('returns zeros for unused metrics on a partially active account', async () => {
+            const partialAccount = 7777;
+            // Only seed `proxy` for this account — every other metric must come back as total=0.
+            clickhouse.addRaw([...genEventsN({ n: 7, date: inMonth, type: 'usage.proxy', accountId: partialAccount, attributes: { success: true } })]);
+            await clickhouse.flush();
+
+            const usage = (await clickhouse.getCurrentMonthBillingMetrics(partialAccount, now)).unwrap();
+            expect(usage.proxy?.total).toBe(7);
+            expect(usage.function_executions?.total).toBe(0);
+            expect(usage.function_logs?.total).toBe(0);
+            expect(usage.function_compute_gbms?.total).toBe(0);
+            expect(usage.webhook_forwards?.total).toBe(0);
+        });
+    });
 });
 
 function dayFromNow(dayOffset = 0): Date {
@@ -822,15 +971,17 @@ function genEventsN({
     date,
     type,
     accountId,
+    value,
     attributes = {}
 }: {
     n: number;
     date: Date;
     type: ClickhouseRawUsageEvent['type'];
     accountId: ClickhouseRawUsageEvent['account_id'];
+    value?: number;
     attributes?: Partial<ClickhouseRawUsageEvent['attributes']>;
 }): ClickhouseRawUsageEvent[] {
-    return Array.from({ length: n }).map((_) => genEvent({ date, type, accountId, attributes }));
+    return Array.from({ length: n }).map((_) => genEvent({ date, type, accountId, ...(value !== undefined ? { value } : {}), attributes }));
 }
 
 function genEvent({
@@ -930,6 +1081,23 @@ function genEvent({
                 attributes: {
                     ...baseAttributes,
                     batchId: rnd.uuid(),
+                    ...attributes
+                }
+            };
+
+        case 'usage.data_transfer':
+            return {
+                ts: date.getTime(),
+                type,
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+                value,
+                attributes: {
+                    ...baseAttributes,
+                    egressedBytes: 0,
+                    ingressedBytes: 0,
+                    package: 'runner',
+                    callsite: 'proxy',
                     ...attributes
                 }
             };

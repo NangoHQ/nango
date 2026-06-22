@@ -2,12 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import connectionService from './connection.service.js';
 import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import { errorNotificationService } from './notification/error.service.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+import connectionService from './connection.service.js';
+import { errorNotificationService } from './notification/error.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Metadata } from '@nangohq/types';
@@ -412,6 +412,21 @@ describe('Connection service integration tests', () => {
             }
 
             expect(paginatedConnections).toEqual(connectionIds);
+        });
+    });
+
+    describe('markConnectionAuthFailed', () => {
+        it('should set refresh_exhausted and clear last_refresh_success', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createConfigSeed(env, 'test-auth-failed', 'google');
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
+
+            await connectionService.markConnectionAuthFailed({ id: connection.id });
+
+            const updated = await connectionService.getConnectionById(connection.id);
+            expect(updated?.refresh_exhausted).toBe(true);
+            expect(updated?.last_refresh_success).toBeNull();
+            expect(updated?.last_refresh_failure).not.toBeNull();
         });
     });
 });

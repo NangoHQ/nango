@@ -97,7 +97,8 @@ export const integrationBaseBodySchema = z
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.union([z.string().min(0).max(255), publicKeySchema]).optional(),
         displayName: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        integrationConfig: z.record(z.string(), z.string().max(8192)).optional()
     })
     .strict();
 

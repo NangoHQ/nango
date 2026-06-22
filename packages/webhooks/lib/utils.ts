@@ -4,9 +4,19 @@ import { isAxiosError } from 'axios';
 
 import { getRedis } from '@nangohq/kvstore';
 import { createMeteringTransport } from '@nangohq/shared';
-import { Err, Ok, axiosInstance as axios, getLogger, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
-
-const logger = getLogger('webhooks.utils');
+import {
+    axiosInstance as axios,
+    Err,
+    getLogger,
+    isBaseUrlOverrideDenied,
+    networkError,
+    normalizeDenylist,
+    Ok,
+    redactHeaders,
+    retryFlexible,
+    stringifyStable,
+    userAgent
+} from '@nangohq/utils';
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';
@@ -17,7 +27,11 @@ import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, W
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
+const logger = getLogger('webhooks.utils');
+
 export const RETRY_ATTEMPTS = envs.NANGO_WEBHOOK_RETRY_ATTEMPTS;
+
+const webhookUrlDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
 
 export const NON_FORWARDABLE_HEADERS = [
     'host',
@@ -169,6 +183,11 @@ export const deliver = async ({
 
     for (const webhook of webhooks) {
         const { url, type } = webhook;
+
+        if (isBaseUrlOverrideDenied(url, webhookUrlDenylist)) {
+            void logCtx?.warn(`Skipping webhook delivery to denied URL (${type})`);
+            continue;
+        }
 
         const filteredHeaders = filterHeaders(incomingHeaders || {});
 

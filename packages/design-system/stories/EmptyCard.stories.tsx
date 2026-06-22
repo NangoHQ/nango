@@ -1,10 +1,10 @@
-import { EmptyCard } from '@/components-v2/ui/EmptyCard';
+import { EmptyCard } from '@/components/ui/EmptyCard';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof EmptyCard> = {
     component: EmptyCard,
-    title: 'Components v2/UI/EmptyCard',
+    title: 'Components/UI/EmptyCard',
     parameters: { layout: 'padded' }
 };
 export default meta;

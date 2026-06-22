@@ -1,6 +1,6 @@
 import type { Endpoint } from '../api.js';
-import type { Provider } from './provider.js';
 import type { AuthModeType } from '../auth/api.js';
+import type { Provider, SimplifiedJSONSchema } from './provider.js';
 
 export type GetPublicProviders = Endpoint<{
     Method: 'GET';
@@ -34,6 +34,7 @@ export interface ApiProviderListItem {
     preConfigured: boolean;
     preConfiguredScopes: string[];
     clientRegistration?: 'dynamic' | 'static' | 'metadata';
+    integration_config?: Record<string, SimplifiedJSONSchema> | undefined;
 }
 
 export type GetProviders = Endpoint<{

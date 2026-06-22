@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { shouldRefreshCredentials } from './refresh.js';
 import { getTestConnection } from '../../../seeders/connection.seeder.js';
 import { REFRESH_MARGIN_MS } from '../utils.js';
+import { shouldRefreshCredentials } from './refresh.js';
 
 import type { Config } from '../../../models/index.js';
 import type { ProviderOAuth2 } from '@nangohq/types';

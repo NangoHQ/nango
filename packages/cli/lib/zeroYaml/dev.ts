@@ -7,8 +7,8 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import ts from 'typescript';
 
-import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
+import { Spinner } from '../utils/spinner.js';
 import { compileFunction, tsToJsPath } from './compile.js';
 import { tsconfig } from './constants.js';
 import { CompileError, fileErrorToText, syncTsConfig, tsDiagnosticToText } from './utils.js';

@@ -2,14 +2,14 @@ import tracer from 'dd-trace';
 
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
-import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import { connectionService, errorManager, ErrorSourceEnum, getSyncConfigByJobId, LogActionEnum, updateSyncJobResult } from '@nangohq/shared';
+import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { logger } from './logger.js';
 import { pubsub } from './pubsub.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
-import type { DBEnvironment, MergingStrategy } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, MergingStrategy } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -27,7 +27,8 @@ export async function persistRecords({
     model,
     records,
     activityLogId,
-    merging = { strategy: 'override' }
+    merging = { strategy: 'override' },
+    plan
 }: {
     persistType: PersistType;
     accountId: number;
@@ -40,6 +41,7 @@ export async function persistRecords({
     records: Record<string, any>[];
     activityLogId: string;
     merging?: MergingStrategy;
+    plan: DBPlan | null;
 }): Promise<Result<MergingStrategy>> {
     const active = tracer.scope().active();
     const span = tracer.startSpan('persistRecords', {
@@ -71,17 +73,17 @@ export async function persistRecords({
         case 'save':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId, environmentId: environment.id, model, softDelete, merging });
+                recordsService.upsert({ records, connectionId, environmentId: environment.id, model, softDelete, merging, plan });
             break;
         case 'delete':
             softDelete = true;
             persistFunction = async (records: FormattedRecord[]) =>
-                recordsService.upsert({ records, connectionId, environmentId: environment.id, model, softDelete, merging });
+                recordsService.upsert({ records, connectionId, environmentId: environment.id, model, softDelete, merging, plan });
             break;
         case 'update':
             softDelete = false;
             persistFunction = async (records: FormattedRecord[]) => {
-                return recordsService.update({ records, environmentId: environment.id, connectionId, model, merging });
+                return recordsService.update({ records, environmentId: environment.id, connectionId, model, merging, plan });
             };
             break;
     }

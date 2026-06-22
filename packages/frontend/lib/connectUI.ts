@@ -112,6 +112,7 @@ export class ConnectUI {
         iframe.style.width = '100vw';
         iframe.style.height = '100vh';
         iframe.style.backgroundColor = 'transparent';
+        iframe.allow = 'clipboard-write';
 
         return iframe;
     }

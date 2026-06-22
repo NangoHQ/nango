@@ -181,6 +181,30 @@ export type PostPublicSignatureAuthorization = Endpoint<{
     Success: ConnectionResponseSuccess;
 }>;
 
+type AwsSigV4AuthErrors =
+    | AuthErrors
+    | ApiError<'invalid_aws_sigv4_config'>
+    | ApiError<'missing_aws_sigv4_service'>
+    | ApiError<'missing_aws_sigv4_sts_endpoint'>
+    | ApiError<'missing_aws_sigv4_builtin_credentials'>
+    | ApiError<'missing_aws_sigv4_region'>
+    | ApiError<'aws_sigv4_sts_request_failed'>;
+
+export type PostPublicAwsSigV4Authorization = Endpoint<{
+    Method: 'POST';
+    Body: {
+        role_arn: string;
+        region?: string | undefined;
+    };
+    Querystring: ConnectionQueryString;
+    Params: {
+        providerConfigKey: string;
+    };
+    Path: '/auth/aws-sigv4/:providerConfigKey';
+    Error: AwsSigV4AuthErrors;
+    Success: ConnectionResponseSuccess;
+}>;
+
 export type PostPublicOauthOutboundAuthorization = Endpoint<{
     Method: 'POST';
     Body: {

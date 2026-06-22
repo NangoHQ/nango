@@ -1,12 +1,12 @@
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import {
-    NangoError,
     configService,
     connectionService,
     errorManager,
     getSyncConfigRaw,
     getSyncs,
+    NangoError,
     syncCommandToOperation,
     verifyOwnership
 } from '@nangohq/shared';

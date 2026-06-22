@@ -1,10 +1,10 @@
-import { SimpleCodeBlock } from '@/components-v2/ui/SimpleCodeBlock';
+import { SimpleCodeBlock } from '@/components/ui/SimpleCodeBlock';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof SimpleCodeBlock> = {
     component: SimpleCodeBlock,
-    title: 'Components v2/UI/SimpleCodeBlock',
+    title: 'Components/UI/SimpleCodeBlock',
     parameters: { layout: 'padded' }
 };
 export default meta;

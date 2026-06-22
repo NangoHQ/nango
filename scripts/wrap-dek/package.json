@@ -1,0 +1,13 @@
+{
+    "name": "wrap-dek",
+    "version": "1.0.0",
+    "description": "Wrap/unwrap the Nango global DEK with an AWS KMS master key (AWS Encryption SDK envelope)",
+    "type": "module",
+    "private": true,
+    "dependencies": {
+        "@aws-crypto/client-node": "^5.0.0"
+    },
+    "devDependencies": {
+        "tsx": "^4.19.0"
+    }
+}

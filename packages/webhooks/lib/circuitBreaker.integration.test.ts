@@ -6,10 +6,10 @@ import { Err, Ok } from '@nangohq/utils';
 import { CircuitBreakerRedis } from './circuitBreaker.js';
 
 import type { CircuitBreaker } from './circuitBreaker.js';
-import type { RedisClientType } from 'redis';
+import type { NangoRedisClient } from '@nangohq/kvstore';
 
 describe('Circuit breaker', () => {
-    let redis: RedisClientType;
+    let redis: NangoRedisClient;
     let circuitBreaker: CircuitBreaker;
 
     const failureThreshold = 3;

@@ -1,14 +1,9 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
+import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
     createSyncJob,
@@ -16,30 +11,35 @@ import {
     environmentService,
     errorManager,
     errorNotificationService,
+    ErrorSourceEnum,
     externalWebhookService,
     getApiUrl,
-    getById as getSyncById,
     getEndUserByConnectionId,
     getLastSyncDate,
+    getById as getSyncById,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    LogActionEnum,
+    NangoError,
     secretService,
     setLastSyncDate,
+    SyncJobsType,
+    SyncStatus,
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
+import { Err, getFrequencyMs, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
+import { getRunnerFlags } from '../utils/flags.js';
+import { pubsub } from '../utils/pubsub.js';
 import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
-import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
-import { pubsub } from '../utils/pubsub.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
@@ -198,14 +198,15 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncConfig,
             debug: task.debug || false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(plan),
+            runnerFlags: getRunnerFlags(plan),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.custom
             },
             ...(plan?.sync_function_runtime === 'lambda'
                 ? {
@@ -315,6 +316,7 @@ export async function handleSyncSuccess({
         }
         team = accountContext.account;
         environment = accountContext.environment;
+        const plan = accountContext.plan;
 
         if (!nangoProps.syncJobId) {
             throw new Error('syncJobId is required to update sync status');
@@ -359,7 +361,8 @@ export async function handleSyncSuccess({
                     environmentId: nangoProps.environmentId,
                     connectionId: nangoProps.nangoConnectionId,
                     model,
-                    generation: nangoProps.syncJobId
+                    generation: nangoProps.syncJobId,
+                    plan
                 });
                 if (res.isErr()) {
                     throw res.error;

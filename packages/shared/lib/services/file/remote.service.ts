@@ -7,9 +7,9 @@ import archiver from 'archiver';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { isCloud, isEnterprise, isLocal, isTest, report, useS3 } from '@nangohq/utils';
 
-import localFileService from './local.service.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
+import localFileService from './local.service.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3';

@@ -1,12 +1,19 @@
 /**
- * Hostname form used for denylist matching: lowercase, no bracketed IPv6 wrapper, no trailing FQDN dot.
+ * Denylist helpers for runner-sdk sandbox code.
  *
- * Note: WHATWG URL already normalizes IPv4 hostnames to dotted decimal (`127.0.0.1`) for octal,
- * hexadecimal, and 32-bit integer spellings. That applies to `new URL(url).hostname` in
- * {@link isBaseUrlOverrideDenied}. Bare denylist entries are passed through `new URL('http://…')`
- * in {@link normalizeDenylistHost} so they use the same IPv4 rules. IPv6 literals must be bracketed
- * when using bare form (`[::1]`), matching URL parsing.
+ * Keep aligned with `packages/utils/lib/proxy/baseUrlOverrideDenylist.ts` (canonical for services).
+ * runner-sdk cannot depend on other `@nangohq/*` packages, so this module is duplicated in-package.
  */
+export const DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST = [
+    '169.254.169.254',
+    'metadata.google.internal',
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    '[::ffff:127.0.0.1]',
+    '[::ffff:169.254.169.254]'
+] as const;
+
 export function canonicalizeHostnameForDenylist(host: string): string {
     let h = host.trim().toLowerCase();
     if (h.startsWith('[') && h.endsWith(']')) {
@@ -18,11 +25,6 @@ export function canonicalizeHostnameForDenylist(host: string): string {
     return h;
 }
 
-/**
- * Normalize a denylist entry to a lowercase hostname for comparison.
- * Accepts full URLs (`://` present), or bare hostnames / `host:port` / IPv4 literals — bare forms are
- * parsed with `new URL('http://…')` so IPv4 uses the same normalization as {@link isBaseUrlOverrideDenied}.
- */
 export function normalizeDenylistHost(entry: string): string {
     const trimmed = entry.trim();
     if (!trimmed) {
@@ -63,39 +65,62 @@ export function isBaseUrlOverrideDenied(overrideUrl: string, denylist: Set<strin
     try {
         hostname = canonicalizeHostnameForDenylist(new URL(overrideUrl).hostname);
     } catch {
-        // Fail closed when a denylist is configured but the URL cannot be parsed.
         return true;
     }
 
     return denylist.has(hostname);
 }
 
-let memoizedBaseUrlOverrideDenylist: Set<string> | null = null;
+export function mergeProxyBaseUrlOverrideDenylist(customEntries: string[]): string[] {
+    const merged = [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, ...customEntries];
+    return [...new Set(merged)];
+}
 
-function parseDenylistEnvValue(raw: string | undefined): string[] {
-    if (!raw) {
-        return [];
+function isBaseUrlOverrideEnabledFromEnv(): boolean {
+    const raw = typeof process !== 'undefined' ? process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'] : undefined;
+    if (raw === undefined) {
+        return true;
+    }
+    const normalized = raw.trim().toLowerCase();
+    return normalized !== 'false' && normalized !== '0';
+}
+
+/**
+ * Runner-side denylist resolution. Unlike server env parsing, runners always apply secure defaults
+ * when the env is unset or empty (`[]` / `''`) so a server-level opt-out is not inherited.
+ */
+export function resolveProxyBaseUrlOverrideDenylist(raw: string | undefined): string[] {
+    if (raw === undefined) {
+        return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
     }
 
     const trimmed = raw.trim();
-    if (!trimmed) {
-        return [];
+    if (trimmed === '') {
+        return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
     }
 
-    // Matches server behavior: env is a JSON array of strings.
     try {
         const parsed = JSON.parse(trimmed);
         if (!Array.isArray(parsed)) {
-            return [];
+            return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
         }
-        return parsed
+        if (parsed.length === 0) {
+            return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+        }
+        const customEntries = parsed
             .filter((v): v is string => typeof v === 'string')
             .map((v) => v.trim())
             .filter(Boolean);
+        return mergeProxyBaseUrlOverrideDenylist(customEntries);
     } catch {
-        // If the env is misconfigured, fail open (denylist disabled) rather than breaking user scripts.
-        return [];
+        return [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
     }
+}
+
+let memoizedBaseUrlOverrideDenylist: Set<string> | null = null;
+
+export function isBaseUrlOverridePolicyEnabledFromEnv(): boolean {
+    return isBaseUrlOverrideEnabledFromEnv();
 }
 
 export function getBaseUrlOverrideDenylistFromEnv(): Set<string> {
@@ -104,10 +129,9 @@ export function getBaseUrlOverrideDenylistFromEnv(): Set<string> {
     }
 
     const raw = typeof process !== 'undefined' ? process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] : undefined;
-    const denylist = normalizeDenylist(parseDenylistEnvValue(raw));
+    const entries = isBaseUrlOverrideEnabledFromEnv() ? resolveProxyBaseUrlOverrideDenylist(raw) : [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+    const denylist = normalizeDenylist(entries);
 
-    // In AWS Lambda, this env points to the internal runtime API (commonly `127.0.0.1:9001`).
-    // We always deny it to prevent accidental SSRF access from user-provided overrides.
     const lambdaRuntimeApi = typeof process !== 'undefined' ? process.env['AWS_LAMBDA_RUNTIME_API'] : undefined;
     if (lambdaRuntimeApi) {
         const normalized = normalizeDenylistHost(lambdaRuntimeApi);

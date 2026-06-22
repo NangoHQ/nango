@@ -2,18 +2,18 @@ import { ExternalLink } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent.js';
-import SettingsGroup from './components/SettingsGroup.js';
-import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
-import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
-import { EditableInput } from '@/components-v2/patterns/EditableInput.js';
-import { SecretInput } from '@/components-v2/patterns/SecretInput.js';
-import { ButtonLink } from '@/components-v2/ui/Button.js';
-import { Label } from '@/components-v2/ui/Label.js';
+import { EditableInput } from '@/components/patterns/EditableInput.js';
+import { SecretInput } from '@/components/patterns/SecretInput.js';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Label } from '@/components/ui/Label.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
 import { useStore } from '@/store';
+import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
+import SettingsContent from './components/SettingsContent.js';
+import SettingsGroup from './components/SettingsGroup.js';
+import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
 
 import type { PatchWebhook } from '@nangohq/types';
 
@@ -49,7 +49,7 @@ export const Webhooks: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         Webhook URLs
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/webhooks-from-nango" variant="ghost" size="icon">
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/webhooks-from-nango" variant="ghost" size="2xs">
                             <ExternalLink />
                         </ButtonLink>
                     </div>

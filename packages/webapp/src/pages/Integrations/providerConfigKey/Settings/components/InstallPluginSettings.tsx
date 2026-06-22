@@ -1,5 +1,5 @@
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { Label } from '@/components-v2/ui/Label';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { Label } from '@/components/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';

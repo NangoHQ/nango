@@ -1,0 +1,40 @@
+---
+title: 'How to register your own BoondManager OAuth app'
+sidebarTitle: 'BoondManager Setup'
+description: 'Register an OAuth app with BoondManager and connect it to Nango'
+---
+
+This guide shows you how to register your own app with BoondManager to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their BoondManager account.
+
+<Steps>
+  <Step title="Go to the Developer space">
+    Go to [BoondManager Developer Apps](https://ui.boondmanager.com/administrator/developer/apps).
+  </Step>
+
+  <Step title="Create an app">
+    1. Click the button to create a new app.
+    2. Fill in the required fields: **Name**, **Title**, and **App code**.
+    3. Click **Save**.
+  </Step>
+
+  <Step title="Enable OAuth2">
+    1. Open the app you just created and go to the **Security** tab.
+    2. Enable **OAuth2** in the dedicated section.
+    3. Add `https://api.nango.dev/oauth/callback` as a redirect URL.
+    4. Click **Save**.
+    5. Note down the **Client ID** and **Client Secret** — you will need these when configuring the integration in Nango.
+  </Step>
+
+  <Step title="Configure scopes and access">
+    1. In the **General security** section, select the API endpoints and models your integration requires.
+    2. Click the install button, then configure app visibility by clicking the group icon and selecting the appropriate access level for your use case.
+  </Step>
+
+  <Step title="Start building your integration">
+    Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.
+  </Step>
+</Steps>
+
+For more details, see [BoondManager's OAuth2 documentation](https://help.boondmanager.com/en/articles/602691-oauth2-connection).
+
+---

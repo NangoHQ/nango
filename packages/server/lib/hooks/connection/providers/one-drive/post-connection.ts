@@ -4,8 +4,8 @@ import * as z from 'zod';
 
 import { getLogger } from '@nangohq/utils';
 
-import type { SharePointTokenResponse } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { SharePointTokenResponse } from './types.js';
 import type { OAuth2Credentials } from '@nangohq/types';
 
 const logger = getLogger('post-connection:one-drive');

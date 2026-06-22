@@ -15,6 +15,8 @@ export type * from './admin/http.api.js';
 export type * from './account/api.js';
 export type * from './user/api.js';
 export type * from './user/db.js';
+export type * from './plain/api.js';
+
 export type * from './connection/api/metadata.js';
 export type * from './connection/db.js';
 export type * from './connectUISettings/dto.js';

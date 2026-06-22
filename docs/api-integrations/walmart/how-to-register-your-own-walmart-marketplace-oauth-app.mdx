@@ -1,0 +1,57 @@
+---
+title: 'How to register your own Walmart Marketplace OAuth app'
+sidebarTitle: 'Walmart Marketplace setup'
+description: 'Register an app in the Walmart Solution Provider Center and obtain your Client ID and Client Secret'
+---
+
+This guide shows you how to register an application in the Walmart Solution Provider Center to obtain the OAuth credentials (Client ID and Client Secret) needed to connect it to Nango.
+
+<Note>
+  Your Client ID and Client Secret are issued after completing the Technical and Marketing details (Step 3 below) — you do not need to publish to the Walmart App Store to initiate the OAuth flow from your own app via Nango.
+</Note>
+
+<Steps>
+  <Step title="Register your application">
+    1. Go to the Solution Provider Center and start a new app.
+    2. Select **Solution Provider (API access)** as the listing type.
+    3. Select the **App Category** that matches your integration (for example, Shipping or Inventory).
+  </Step>
+  <Step title="Complete app registration details">
+    **3a — App general information**
+    - **App name and description**: visible to sellers on the Seller Center App Store.
+    - **App contact email**: Walmart uses this to contact you about progress, issues, or updates.
+
+    **3b — Technical details**
+
+    After saving technical details, you can view the app credentials of the draft app.
+
+    - **App Callback / Redirect URL**: set this to `https://api.nango.dev/oauth/callback`
+    - **App Login URL**: the authorization page shown after a seller clicks Connect.
+    - **Client URL**: your app's website, not the OAuth redirect URL.
+    - **API Scopes**: the selected scopes are shown in the data privacy notice on the seller authorization page.
+
+    **3c — Marketing details**
+
+    **App credentials (Client ID and Client Secret) are available after completing the technical details step above (3b), not after this step.**
+
+    - **Visual assets**: one square logo (SVG or PNG, 1 MB max) and at least one 1920×400px banner image (PNG, JPG, or MP4, 5 MB max per image).
+    - **App information**: detailed description (200 char limit) and up to 5 core service bullet points.
+    - **Pricing**: pricing information and any trial or promotion details.
+    - **Contact**: phone, email, and website for seller support.
+  </Step>
+  <Step title="Get your credentials">
+    After completing the technical and marketing details:
+
+    1. Return to your app in the Solution Provider Center.
+    2. Copy your **Client ID** and **Client Secret** — you will need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+<Note>
+  Publishing to the Walmart App Store (submitting for review, demo calls, and App Store listing) is only required if you want Walmart sellers to discover and connect your app through Seller Center.
+</Note>
+
+For more details, see [Walmart's app registration documentation](https://developer.walmart.com/us-marketplace/docs/app-registration-and-approval-process-for-publishing-to-app-store).
