@@ -12395,6 +12395,86 @@ microsoft-oauth2-cc:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-oauth2-cc-cert:
+    display_name: Microsoft (Client Credentials - Certificate)
+    auth_mode: TWO_STEP
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    body_format: form
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        scope: ${connectionConfig.oauth_scopes}
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: RS256
+            x5t: ${assertionOption.certificateThumbprint}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://graph.microsoft.com
+    docs: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        oauth_scopes:
+            type: string
+            title: Scope
+            description: The resource scope to request access for.
+            example: https://graph.microsoft.com/.default
+            doc_section: '#step-5-granting-api-permissions'
+            order: 2
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The application (client) ID assigned to your app in Azure.
+            format: uuid
+            example: 11112222-bbbb-3333-cccc-4444dddd5555
+            doc_section: '#step-2-registering-your-application-and-finding-your-client-id'
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) matching the certificate uploaded to your Azure app registration.
+            example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----"
+            doc_section: '#step-3-generating-a-certificate-and-uploading-it-to-azure'
+        certificateThumbprint:
+            type: string
+            title: Certificate Thumbprint (x5t)
+            description: The base64url-encoded SHA-1 thumbprint of your certificate.
+            example: rCnkMH5GKJI03tRpdjBh8OG2U8I
+            doc_section: '#step-4-computing-the-certificate-thumbprint-x5t'
+
 microsoft-intune:
     display_name: Microsoft Intune
     categories:

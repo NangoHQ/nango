@@ -1369,6 +1369,7 @@
               "api-integrations/maxio",
               "integrations/all/microsoft-tenant-specific",
               "api-integrations/microsoft-oauth2-cc",
+              "api-integrations/microsoft-oauth2-cc-cert",
               "integrations/all/microsoft-admin",
               "integrations/all/mimecast",
               "integrations/all/mindbody",
