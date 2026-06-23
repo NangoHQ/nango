@@ -11,7 +11,7 @@ To connect Microsoft (Client Credentials - Certificate) in Nango, you need to pr
 2. **Scope** — The resource you want to access, suffixed with `.default` (e.g. `https://graph.microsoft.com/.default`).
 3. **Client ID** — The unique identifier Azure assigns to your registered application.
 4. **Private Key** — The RSA private key (PEM format) matching the certificate you uploaded to your app registration.
-5. **Certificate Thumbprint (x5t)** — The base64url-encoded SHA-1 thumbprint of your certificate, used to identify it in the JWT assertion.
+5. **Certificate Thumbprint (x5t#S256)** — The base64url-encoded SHA-256 thumbprint of your certificate, used to identify it in the JWT assertion.
 
 This guide walks you through generating and finding these credentials in Azure.
 
@@ -55,10 +55,10 @@ This produces `private_key.pem` (your private key) and `certificate.pem` (your c
 
 ### Step 4: Computing the Certificate Thumbprint (x5t)
 
-The `x5t` value is the base64url-encoded SHA-1 thumbprint of your certificate. Run this command against your local `certificate.pem` to compute it:
+The `x5t#S256` value is the base64url-encoded SHA-256 thumbprint of your certificate. Run this command against your local `certificate.pem` to compute it:
 
 ```bash
-openssl x509 -in certificate.pem -fingerprint -sha1 -noout \
+openssl x509 -in certificate.pem -fingerprint -sha256 -noout \
   | sed 's/.*Fingerprint=//;s/://g' \
   | xxd -r -p \
   | base64 \
@@ -66,7 +66,7 @@ openssl x509 -in certificate.pem -fingerprint -sha1 -noout \
   | tr -d '='
 ```
 
-The output is your **Certificate Thumbprint (x5t)** value.
+The output is your **Certificate Thumbprint (x5t#S256)** value.
 
 ### Step 5: Granting API permissions
 
@@ -81,7 +81,7 @@ The output is your **Certificate Thumbprint (x5t)** value.
 Once you have all credentials:
 
 1. Open the connection form in Nango.
-2. Enter the **Tenant ID**, **Scope**, **Client ID**, the contents of `private_key.pem` as **Private Key**, and the computed value as **Certificate Thumbprint (x5t)**.
+2. Enter the **Tenant ID**, **Scope**, **Client ID**, the contents of `private_key.pem` as **Private Key**, and the computed value as **Certificate Thumbprint (x5t#S256)**.
 3. Submit the form to authenticate.
 
 <img src="/api-integrations/microsoft-oauth2-cc-cert/form.png" style={{maxWidth: "450px" }}/>
