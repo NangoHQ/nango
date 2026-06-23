@@ -30,8 +30,6 @@ interface ChartCardProps {
     /** Loading/error of the per-panel detail fetch (breakdown or filtered slice), shown in the chart body. */
     detailLoading?: boolean;
     detailError?: boolean;
-    /** Overrides the headline number (e.g. a filtered slice's total when re-broken-down). */
-    totalOverride?: number;
     /** The panel is scoped to a filtered slice — keeps the controls visible when empty and adjusts the AVG tooltip copy. */
     filtered?: boolean;
 }
@@ -42,17 +40,7 @@ interface ChartCardProps {
  * state. The breakdown rendering and its interactions live in BreakdownChart /
  * ChartLegend; this component just decides what to show.
  */
-export const ChartCard: React.FC<ChartCardProps> = ({
-    isLoading,
-    data,
-    timeframe,
-    headerActions,
-    breakdownSeries,
-    detailLoading,
-    detailError,
-    totalOverride,
-    filtered
-}) => {
+export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe, headerActions, breakdownSeries, detailLoading, detailError, filtered }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
 
@@ -77,15 +65,19 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // In breakdown mode the chart shows only the (possibly filtered) breakdown series, so
     // emptiness is about those; otherwise it's the base/filtered single series.
     const effectiveEmpty = isBreakdown ? !hasBreakdownSeries : isEmpty;
-    // In breakdown mode the headline tracks the visible series, so isolating/hiding a slice
-    // updates the number directly (no backend round-trip). With nothing hidden, keep the exact
-    // backend total — a filtered slice's `totalOverride`, else the metric total.
+    // The headline tracks the data actually drawn. In breakdown mode that's the sum of the
+    // visible series, so isolating/hiding a slice updates it live (no backend round-trip) and
+    // it doesn't depend on the response's top-level total. Otherwise it's the single series'
+    // total. `effectiveEmpty` (not `isEmpty`) so a breakdown with empty top-level `usage`
+    // still shows a number.
     const visibleKeys = (breakdownSeries ?? []).filter((s) => !interactions.isSeriesHidden(s.key)).map((s) => s.key);
-    const allSeriesVisible = visibleKeys.length === (breakdownSeries?.length ?? 0);
-    const headlineTotal =
-        isBreakdown && !allSeriesVisible
-            ? visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey)
-            : (totalOverride ?? (isEmpty ? undefined : data?.total));
+    const headlineTotal = isBreakdown
+        ? effectiveEmpty
+            ? undefined
+            : visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey)
+        : effectiveEmpty
+          ? undefined
+          : data?.total;
     // Wait for the base metric to load before drawing — otherwise the chart briefly renders
     // with the wrong type (bars before `view_mode` is known) next to the spinner.
     const showChart = !isLoading && !effectiveEmpty && !showDetailSpinner && !showDetailError && (!isBreakdown || hasBreakdownSeries);

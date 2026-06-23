@@ -98,11 +98,11 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const selection = { group: dimension, filter };
     const canApplyToAll = isDivergingFromGlobal(metric, selection);
 
-    // Headline + chart source per state:
-    // - filtered-only → swap in the filtered metric (single series + filtered total straight from the response).
-    // - filter+breakdown → keep the base metric for label/view_mode but override the headline with the filtered total.
-    const chartData: ApiBillingUsageMetric | undefined = inFilterMode && !inBreakdownMode ? (detailMetric ?? data) : data;
-    const totalOverride = inBreakdownMode && inFilterMode ? detailMetric?.total : undefined;
+    // The chart + headline always reflect the "live" metric being shown: the detail response
+    // (filtered and/or broken down) when there is one, else the base metric. The detail metric
+    // is a full ApiBillingUsageMetric (label, view_mode, and — for a breakdown — a `total`
+    // that's the sum across the series), so there's no per-state headline override.
+    const live = detailMetric ?? data;
 
     // No data at all for this metric (ignoring filters) → nothing to slice, so hide the controls.
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
@@ -126,14 +126,13 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
 
     return (
         <ChartCard
-            data={chartData}
+            data={live}
             isLoading={isLoading}
             timeframe={timeframe}
             headerActions={headerActions}
             breakdownSeries={breakdownSeries}
             detailLoading={isDetail ? detailQuery.isLoading : false}
             detailError={isDetail ? detailQuery.isError : false}
-            totalOverride={totalOverride}
             filtered={inFilterMode}
         />
     );
