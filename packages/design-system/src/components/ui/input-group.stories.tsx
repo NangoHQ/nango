@@ -11,69 +11,8 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Hover and focus are interaction states — inspect them live in the canvas; they can't be forced statically.
-export const States: Story = {
-    render: () => (
-        <div className="flex flex-col gap-4 w-72">
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Default</span>
-                <InputGroup>
-                    <InputGroupInput placeholder="Enter API key…" />
-                </InputGroup>
-            </div>
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Filled</span>
-                <InputGroup>
-                    <InputGroupInput defaultValue="nango_sk_live_abc123" />
-                </InputGroup>
-            </div>
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Disabled</span>
-                <InputGroup>
-                    <InputGroupInput placeholder="Disabled" disabled />
-                </InputGroup>
-            </div>
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Invalid</span>
-                <InputGroup>
-                    <InputGroupInput defaultValue="bad value" aria-invalid />
-                </InputGroup>
-            </div>
-        </div>
-    )
-};
-
-export const Textarea: Story = {
-    render: () => (
-        <div className="flex flex-col gap-4 w-80">
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Default</span>
-                <InputGroup>
-                    <InputGroupTextarea placeholder="Enter a description…" rows={3} />
-                </InputGroup>
-            </div>
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Filled</span>
-                <InputGroup>
-                    <InputGroupTextarea defaultValue="This sync fetches all contacts from HubSpot." rows={3} />
-                </InputGroup>
-            </div>
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Disabled</span>
-                <InputGroup>
-                    <InputGroupTextarea placeholder="Disabled" disabled rows={3} />
-                </InputGroup>
-            </div>
-            <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Invalid</span>
-                <InputGroup>
-                    <InputGroupTextarea defaultValue="bad value" aria-invalid rows={3} />
-                </InputGroup>
-            </div>
-        </div>
-    )
-};
-
+// InputGroup's distinguishing feature is its addons — plain field states (default/filled/disabled/invalid)
+// are covered by the Input and Textarea stories, so they're not duplicated here.
 export const Addons: Story = {
     render: () => (
         <div className="flex flex-col gap-4 w-72">
@@ -128,7 +67,7 @@ export const Addons: Story = {
                 </InputGroup>
             </div>
             <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Block end</span>
+                <span className="story-section-heading">Block end — textarea</span>
                 <InputGroup>
                     <InputGroupTextarea placeholder="Write a message…" rows={3} />
                     <InputGroupAddon align="block-end">
