@@ -7152,18 +7152,27 @@ Payload received following a successful sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED — use checkpoints.from instead
     "success": true,
     "modifiedAfter": "<timestamp>",
     "responseResults": {
         "added": number,
         "updated": number,
         "deleted": number
+    },
+    "checkpoints": {
+        "from": "<previous-checkpoint> | null",
+        "to": "<latest-checkpoint> | null"
     }
 }
 ```
 
 `modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/functions/syncs/records-cache#cursors-and-sync-progress).
+
+**Distinguishing full vs incremental syncs:** use `checkpoints.from` instead of the deprecated `syncType` field.
+
+- `checkpoints.from === null` — the run started with no prior state. This happens on the first run, after a manual reset, or when the sync explicitly cleared its checkpoint. Treat this as a full sync and overwrite your data.
+- `checkpoints.from !== null` — the run continued from a previously saved checkpoint. This is an incremental sync; merge the new records into your existing data.
 
 <Warning>
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and sync functions not executed for 60 days will have all records deleted.
@@ -7187,14 +7196,18 @@ Payload received following a failed sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
-    "success": true,
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED — use checkpoints.from instead
+    "success": false,
     "error": {
         "type": "<string>",
         "description": "<string>"
     },
     "startedAt": "<timestamp>",
-    "failedAt": "<timestamp>"
+    "failedAt": "<timestamp>",
+    "checkpoints": {
+        "from": "<previous-checkpoint> | null",
+        "to": "<latest-checkpoint> | null"
+    }
 }
 ```
 
