@@ -10,12 +10,12 @@ export default mergeConfig(
             include: ['src/**/*.test.tsx'],
             setupFiles: ['./src/test/setup.ts'],
             browser: {
+                // Required: browser mode is off by default and the `test` script runs `vitest run`
+                // without the --browser flag, so the suite would otherwise run in Node.
                 enabled: true,
                 headless: true,
                 provider: playwright(),
-                instances: [{ browser: 'chromium' }],
-                // Don't dump PNGs into the source tree on failure; the assertion + DOM snapshot are enough.
-                screenshotFailures: false
+                instances: [{ browser: 'chromium' }]
             }
         }
     })
