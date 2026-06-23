@@ -58,17 +58,28 @@ const functionAsyncJobResultBodySchema = z.discriminatedUnion('status', [
 export const functionDryrunParamsSchema = functionAsyncJobParamsSchema;
 export const functionDryrunResultBodySchema = functionAsyncJobResultBodySchema;
 
-export const functionDeploymentBodySchema = z
-    .object({
-        type: z.literal('function'),
-        integration_id: integrationIdSchema,
-        function_name: syncNameSchema,
-        function_type: z.enum(['action', 'sync']),
-        code: z.string().min(1),
-        version: z.string().optional(),
-        allow_destructive: z.boolean().default(false)
-    })
-    .strict();
+export const functionDeploymentBodySchema = z.discriminatedUnion('type', [
+    z
+        .object({
+            type: z.literal('function'),
+            integration_id: integrationIdSchema,
+            function_name: syncNameSchema,
+            function_type: z.enum(['action', 'sync']),
+            code: z.string().min(1),
+            version: z.string().optional(),
+            allow_destructive: z.boolean().default(false)
+        })
+        .strict(),
+    z
+        .object({
+            type: z.literal('template'),
+            integration_id: integrationIdSchema,
+            template: syncNameSchema,
+            // Optional: inferred from the template name unless a sync and an action share it.
+            function_type: z.enum(['action', 'sync']).optional()
+        })
+        .strict()
+]);
 
 export const functionDeploymentParamsSchema = functionAsyncJobParamsSchema;
 export const functionDeploymentResultBodySchema = functionAsyncJobResultBodySchema;

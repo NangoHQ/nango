@@ -422,7 +422,7 @@ describe('refreshOrTestCredentials', () => {
             throw new Error('Failed to decrypt connection');
         }
 
-        vi.useFakeTimers();
+        vi.useFakeTimers({ shouldAdvanceTime: true });
         const start = new Date('2025-01-01T00:00:00Z');
         vi.setSystemTime(start);
 

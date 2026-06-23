@@ -10328,6 +10328,39 @@ ironclad:
                 - eu1
             doc_section: '#step-1-finding-your-subdomain'
 
+ironclad-cc:
+    display_name: Ironclad (Client Credentials)
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ironcladapp.com
+        headers:
+            x-as-user-email: ${connectionConfig.userEmail}
+    docs: https://nango.dev/docs/api-integrations/ironclad-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ironclad-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Ironclad environment subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The email of the Ironclad user on whose behalf API requests are made.
+            example: user@yourcompany.com
+            format: email
+            order: 2
+
 jamf:
     display_name: Jamf Pro (Client Credentials)
     categories:
@@ -13291,6 +13324,67 @@ netsuite-tba:
         - popular
     docs: https://nango.dev/docs/api-integrations/netsuite-tba
     setup_guide_url: https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango
+
+netsuite-client-credentials:
+    alias: netsuite
+    display_name: NetSuite (Client Credentials)
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: RS256
+            kid: ${credentials.certificateId}
+        payload:
+            iss: ${credentials.clientId}
+            aud: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/api-integrations/netsuite-client-credentials
+    docs_connect: https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your NetSuite integration record.
+            example: 1c343a716c1d****************************976dde7d8e3e2
+        certificateId:
+            type: string
+            title: Certificate ID
+            description: The ID of the certificate registered in your NetSuite integration.
+            example: HRril7Vwkk********************eWT2Fgks
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your NetSuite Account ID (e.g. 1234567 or 1234567_SB1 for sandbox).
+            example: '1234567'
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) used to sign the JWT assertion.
+            example: "-----BEGIN RSA PRIVATE KEY-----\nMIIEow...\n-----END RSA PRIVATE KEY-----"
 
 next-cloud-ocs:
     display_name: Next Cloud OCS
@@ -22530,6 +22624,57 @@ workday-refresh-token:
             description: Your Workday refresh token for the Integration System User
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
+
+workday-cc:
+    display_name: Workday (Client Credentials)
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: client_credentials
+        tenant_alias: ${connectionConfig.tenant}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        authorization: ID ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://nango.dev/docs/api-integrations/workday-cc
+    docs_connect: https://nango.dev/docs/api-integrations/workday-cc/connect
+    connection_config:
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The hostname of your Workday tenant.
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name of your Workday account.
+            example: mytenant
+            order: 2
+            doc_section: '#step-3-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID.
+            doc_section: '#step-5-register-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret.
+            secret: true
+            doc_section: '#step-5-register-an-api-client'
 
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning
