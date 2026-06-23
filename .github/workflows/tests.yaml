@@ -17,7 +17,6 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
-            run_connect_ui: ${{ steps.check.outputs.run_connect_ui }}
         steps:
             - uses: actions/checkout@v4
             - uses: dorny/paths-filter@v4
@@ -30,13 +29,6 @@ jobs:
                       non_docs:
                           - '**'
                           - '!docs/**'
-            # Separate step: default ('some') quantifier so this is true when ANY changed file is under connect-ui.
-            - uses: dorny/paths-filter@v4
-              id: filter_connect_ui
-              with:
-                  filters: |
-                      connect_ui:
-                          - 'packages/connect-ui/**'
             - name: Determine if should skip
               id: check
               run: |
@@ -47,7 +39,6 @@ jobs:
                   IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
                   IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
                   IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only == 'true' && steps.filter.outputs.non_docs != 'true' }}"
-                  CONNECT_UI_CHANGED="${{ steps.filter_connect_ui.outputs.connect_ui == 'true' }}"
 
                   SHOULD_SKIP="true"
                   # Always run on merge queue and direct push to master
@@ -58,16 +49,7 @@ jobs:
                       SHOULD_SKIP="false"
                   fi
 
-                  # Connect UI tests run only when its files change (and always on merge queue / direct push to master)
-                  RUN_CONNECT_UI="false"
-                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
-                      RUN_CONNECT_UI="true"
-                  elif [[ "$IS_PR" == "true" && "$CONNECT_UI_CHANGED" == "true" ]]; then
-                      RUN_CONNECT_UI="true"
-                  fi
-
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
-                  echo "run_connect_ui=$RUN_CONNECT_UI" >> $GITHUB_OUTPUT
     tests-unit:
         needs: should-run
         runs-on: blacksmith-4vcpu-ubuntu-2404
@@ -140,8 +122,9 @@ jobs:
 
     tests-connect-ui:
         needs: should-run
-        # Accessibility regression suite — only runs when connect-ui files change (or merge queue / master push).
-        if: needs.should-run.outputs.run_connect_ui == 'true'
+        # Accessibility regression suite. connect-ui renders design-system components, so a
+        # design-system change can regress contrast/focus too — run on any non-docs change.
+        if: needs.should-run.outputs.should_skip != 'true'
         runs-on: blacksmith-4vcpu-ubuntu-2404
         permissions:
             contents: read
