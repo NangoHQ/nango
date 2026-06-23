@@ -32,9 +32,6 @@ async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolic
     if (cached !== undefined && cached.expiresAt > Date.now()) {
         return cached.addresses;
     }
-    if (cached) {
-        pinnedAddresses.delete(cacheKey);
-    }
 
     const url = `http://${formatHostForUrlAuthority(hostname)}/`;
     const syncResult = validateOutboundUrlSync(url, policy);
