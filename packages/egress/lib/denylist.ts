@@ -1,6 +1,8 @@
 /**
  * Hostname form used for denylist matching: lowercase, no bracketed IPv6 wrapper, no trailing FQDN dot.
  */
+import net from 'node:net';
+
 export const DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST = [
     '169.254.169.254',
     'metadata.google.internal',
@@ -22,6 +24,15 @@ export function canonicalizeHostnameForDenylist(host: string): string {
     return h;
 }
 
+/** RFC 3986 host authority segment for URL construction (brackets IPv6 literals). */
+export function formatHostForUrlAuthority(host: string): string {
+    const canonical = canonicalizeHostnameForDenylist(host);
+    if (net.isIP(canonical) === 6) {
+        return `[${canonical}]`;
+    }
+    return canonical;
+}
+
 export function normalizeDenylistHost(entry: string): string {
     const trimmed = entry.trim();
     if (!trimmed) {
@@ -36,7 +47,7 @@ export function normalizeDenylistHost(entry: string): string {
         }
     } else {
         try {
-            host = new URL(`http://${trimmed}`).hostname;
+            host = new URL(`http://${formatHostForUrlAuthority(trimmed)}/`).hostname;
         } catch {
             host = trimmed;
         }

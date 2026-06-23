@@ -3,6 +3,7 @@ import http from 'node:http';
 import https from 'node:https';
 import net from 'node:net';
 
+import { formatHostForUrlAuthority } from './denylist.js';
 import { resolveValidatedHostAddresses, validateOutboundUrlSync } from './validate.js';
 
 import type { OutboundUrlPolicy } from './policy.js';
@@ -31,7 +32,7 @@ async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolic
         return cached.addresses;
     }
 
-    const url = `http://${hostname}/`;
+    const url = `http://${formatHostForUrlAuthority(hostname)}/`;
     const syncResult = validateOutboundUrlSync(url, policy);
     if (!syncResult.ok) {
         throw syncResult.error;

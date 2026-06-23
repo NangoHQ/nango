@@ -6,6 +6,7 @@ import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.j
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+    formatHostForUrlAuthority,
     isBaseUrlOverrideDenied,
     normalizeDenylist,
     resolveProxyBaseUrlOverrideDenylist,
@@ -21,6 +22,14 @@ describe('egress denylist', () => {
     it('canonicalizes hostnames', () => {
         expect(canonicalizeHostnameForDenylist('localhost.')).toBe('localhost');
         expect(canonicalizeHostnameForDenylist('[::1]')).toBe('::1');
+    });
+
+    it('formats IPv6 literals with brackets for URLs', () => {
+        expect(formatHostForUrlAuthority('::1')).toBe('[::1]');
+        expect(formatHostForUrlAuthority('[::1]')).toBe('[::1]');
+        expect(formatHostForUrlAuthority('api.example.com')).toBe('api.example.com');
+        expect(formatHostForUrlAuthority('127.0.0.1')).toBe('127.0.0.1');
+        expect(() => new URL(`http://${formatHostForUrlAuthority('::1')}/`)).not.toThrow();
     });
 
     it('blocks denylisted hosts', () => {
@@ -244,5 +253,18 @@ describe('egress safe lookup pinning', () => {
                 });
             })
         ).rejects.toThrow(OutboundUrlError);
+    });
+
+    it('blocks IPv6 literal hostnames during lookup validation', async () => {
+        const permissive = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [] });
+        const lookupFn = createSafeHttpAgents(permissive).httpsAgent.options.lookup!;
+        await expect(
+            new Promise<string>((resolve, reject) => {
+                lookupFn('::1', {}, (err, address) => {
+                    if (err) reject(err);
+                    else resolve(address as string);
+                });
+            })
+        ).rejects.toMatchObject({ code: 'denied_ip' });
     });
 });
