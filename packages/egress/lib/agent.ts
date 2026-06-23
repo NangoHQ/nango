@@ -13,6 +13,28 @@ type LookupCallback = (err: NodeJS.ErrnoException | null, address: string | Look
 
 const pinnedAddresses = new Map<string, { addresses: string[]; expiresAt: number }>();
 const PIN_TTL_MS = 30_000;
+const MAX_PINNED_ADDRESSES = 1_000;
+
+function prunePinnedAddressCache(now = Date.now()): void {
+    for (const [key, entry] of pinnedAddresses) {
+        if (entry.expiresAt <= now) {
+            pinnedAddresses.delete(key);
+        }
+    }
+}
+
+function storePinnedAddress(cacheKey: string, addresses: string[], expiresAt: number): void {
+    prunePinnedAddressCache(expiresAt);
+    pinnedAddresses.delete(cacheKey);
+    pinnedAddresses.set(cacheKey, { addresses, expiresAt });
+    while (pinnedAddresses.size > MAX_PINNED_ADDRESSES) {
+        const oldestKey = pinnedAddresses.keys().next().value;
+        if (oldestKey === undefined) {
+            break;
+        }
+        pinnedAddresses.delete(oldestKey);
+    }
+}
 
 function policyPinCacheKey(policy: OutboundUrlPolicy): string {
     const denylist = [...policy.denylist].sort().join(',');
@@ -28,8 +50,11 @@ function policyPinCacheKey(policy: OutboundUrlPolicy): string {
 async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolicy, policyCacheKey: string): Promise<string[]> {
     const cacheKey = `${hostname}:${policyCacheKey}`;
     const cached = pinnedAddresses.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-        return cached.addresses;
+    if (cached) {
+        if (cached.expiresAt > Date.now()) {
+            return cached.addresses;
+        }
+        pinnedAddresses.delete(cacheKey);
     }
 
     const url = `http://${formatHostForUrlAuthority(hostname)}/`;
@@ -39,12 +64,16 @@ async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolic
     }
 
     const addresses = await resolveValidatedHostAddresses(syncResult.hostname, policy, url);
-    pinnedAddresses.set(cacheKey, { addresses, expiresAt: Date.now() + PIN_TTL_MS });
+    storePinnedAddress(cacheKey, addresses, Date.now() + PIN_TTL_MS);
     return addresses;
 }
 
 export function clearPinnedAddressCacheForTests(): void {
     pinnedAddresses.clear();
+}
+
+export function getPinnedAddressCacheSizeForTests(): number {
+    return pinnedAddresses.size;
 }
 
 export function createSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {

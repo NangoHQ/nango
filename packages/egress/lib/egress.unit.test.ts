@@ -2,7 +2,7 @@ import dns from 'node:dns/promises';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.js';
+import { clearPinnedAddressCacheForTests, createSafeHttpAgents, getPinnedAddressCacheSizeForTests } from './agent.js';
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -266,5 +266,41 @@ describe('egress safe lookup pinning', () => {
                 });
             })
         ).rejects.toMatchObject({ code: 'denied_ip' });
+    });
+
+    it('prunes expired pinned addresses', async () => {
+        vi.useFakeTimers();
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+        const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
+        const lookup = (host: string) =>
+            new Promise<string>((resolve, reject) => {
+                lookupFn(host, {}, (err, address) => {
+                    if (err) reject(err);
+                    else resolve(address as string);
+                });
+            });
+
+        await lookup('host-a.example');
+        expect(getPinnedAddressCacheSizeForTests()).toBe(1);
+
+        vi.advanceTimersByTime(30_001);
+        await lookup('host-b.example');
+
+        expect(getPinnedAddressCacheSizeForTests()).toBe(1);
+        vi.useRealTimers();
+    });
+
+    it('bounds pinned address cache size', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+        const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
+        for (let i = 0; i < 1_001; i++) {
+            await new Promise<string>((resolve, reject) => {
+                lookupFn(`host-${i}.example`, {}, (err, address) => {
+                    if (err) reject(err);
+                    else resolve(address as string);
+                });
+            });
+        }
+        expect(getPinnedAddressCacheSizeForTests()).toBeLessThanOrEqual(1_000);
     });
 });
