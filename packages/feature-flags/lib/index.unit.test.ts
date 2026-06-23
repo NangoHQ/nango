@@ -255,10 +255,11 @@ describe('getFeatureFlagsClient', () => {
         await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
     });
 
-    it('throws when getFlags is called before initialize', async () => {
+    it('returns flag defaults when getFlags is called before initialize', async () => {
         vi.resetModules();
         const { getFlags } = await import('./index.js');
-        expect(() => getFlags()).toThrow('Feature flags not initialized');
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
+        await expect(getFlags().shouldKeepActionTrace(16693)).resolves.toBe(false);
     });
 
     it('reconnects to unleash in the background after a failed initialization', async () => {

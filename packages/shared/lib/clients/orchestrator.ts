@@ -1,4 +1,5 @@
 import tracer from 'dd-trace';
+import ddtags from 'dd-trace/ext/tags.js';
 import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
@@ -140,10 +141,10 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
-        if (await getFlags().shouldKeepActionTrace(connection.environment_id)) {
-            span.setTag('manual.keep', true);
-        }
         try {
+            if (await getFlags().shouldKeepActionTrace(connection.environment_id)) {
+                span.setTag(ddtags.MANUAL_KEEP, true);
+            }
             let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
