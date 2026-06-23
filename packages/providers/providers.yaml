@@ -629,6 +629,24 @@ adyntel:
             example: you@company.com
             doc_section: '#step-2-find-your-email-address'
 
+ahrefs:
+    display_name: Ahrefs
+    categories:
+        - marketing
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://app.ahrefs.com/web/oauth/authorize
+    token_url: https://ahrefs.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    body_format: form
+    proxy:
+        base_url: https://api.ahrefs.com
+    docs: https://nango.dev/docs/api-integrations/ahrefs
+    setup_guide_url: https://nango.dev/docs/api-integrations/ahrefs/how-to-register-your-own-ahrefs-api-oauth-app
+
 affinity:
     display_name: Affinity (v1)
     categories:
