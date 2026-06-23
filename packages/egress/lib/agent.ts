@@ -25,8 +25,8 @@ function policyPinCacheKey(policy: OutboundUrlPolicy): string {
     return `${policy.mode}|${denylist}|${allowlist}|${policy.blockPrivateIps}|${policy.blockLinkLocal}|${schemes}`;
 }
 
-async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolicy): Promise<string[]> {
-    const cacheKey = `${hostname}:${policyPinCacheKey(policy)}`;
+async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolicy, policyCacheKey: string): Promise<string[]> {
+    const cacheKey = `${hostname}:${policyCacheKey}`;
     const cached = pinnedAddresses.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
         return cached.addresses;
@@ -48,6 +48,7 @@ export function clearPinnedAddressCacheForTests(): void {
 }
 
 export function createSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {
+    const policyCacheKey = policyPinCacheKey(policy);
     const safeLookup = function safeLookup(hostname: string, options: LookupOptions | LookupCallback, callback?: LookupCallback): void {
         let opts: LookupOptions;
         let cb: LookupCallback;
@@ -62,7 +63,7 @@ export function createSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {
 
         void (async () => {
             try {
-                const addresses = await resolvePinnedAddresses(hostname, policy);
+                const addresses = await resolvePinnedAddresses(hostname, policy, policyCacheKey);
                 if (addresses.length === 0) {
                     cb(new Error('No addresses resolved'), '', 0);
                     return;
