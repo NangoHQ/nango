@@ -94,6 +94,28 @@ describe('cloneTemplate', () => {
         expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.ts');
     });
 
+    it('writes the companion .md of a symlinked function, fetching it from the target folder', async () => {
+        mockGitHub(
+            {
+                'quickbooks/syncs/customers.ts': 'export default async function () {}',
+                'quickbooks/syncs/customers.md': '# Customers'
+            },
+            {},
+            { 'quickbooks-sandbox': 'quickbooks' }
+        );
+        const writeSpy = mockFsForWriting();
+        const axiosSpy = vi.spyOn(axios, 'get');
+
+        const success = await cloneTemplate({ ...baseOptions, templatePath: 'quickbooks-sandbox/syncs/customers' });
+
+        expect(success).toBe(true);
+        // The .md is not cached during dependency collection, so it must be fetched from the target folder...
+        expect(axiosSpy.mock.calls.map((call) => call[0])).toContain(`${RAW_BASE}/quickbooks/syncs/customers.md`);
+        // ...and written under the requested name.
+        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
+        expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.md');
+    });
+
     it('clones a whole symlinked integration directory under the requested name', async () => {
         mockGitHub(
             { 'quickbooks/syncs/customers.ts': 'export default async function () {}' },

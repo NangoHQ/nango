@@ -110,7 +110,7 @@ export async function resolveIntegrationFolder(integration: string, debug: boole
 }
 
 /**
- * Rewrite the leading integration segment of a remote templates-repo path to the local folder name.
+ * Rewrite the leading integration folder of a remote templates-repo path to the local folder name.
  * Used to write symlinked-integration files under the name the user requested while fetching their
  * content from the resolved target folder. No-op when remote and local folders are the same.
  */
@@ -118,11 +118,14 @@ export function localizeIntegrationPath(remotePath: string, remoteFolder: string
     if (remoteFolder === localFolder) {
         return remotePath;
     }
-    const segments = remotePath.split('/');
-    if (segments[0] === remoteFolder) {
-        segments[0] = localFolder;
+    if (remotePath === remoteFolder) {
+        return localFolder;
     }
-    return segments.join('/');
+    const prefix = `${remoteFolder}/`;
+    if (remotePath.startsWith(prefix)) {
+        return `${localFolder}/${remotePath.slice(prefix.length)}`;
+    }
+    return remotePath;
 }
 
 /**

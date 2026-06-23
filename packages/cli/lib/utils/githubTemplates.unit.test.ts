@@ -53,4 +53,10 @@ describe('localizeIntegrationPath', () => {
     it('leaves paths outside the remote folder untouched', () => {
         expect(localizeIntegrationPath('other/syncs/x.ts', 'quickbooks', 'quickbooks-sandbox')).toBe('other/syncs/x.ts');
     });
+
+    it('matches the full folder, not just the first segment, when the remote folder is nested', () => {
+        expect(localizeIntegrationPath('nested/target/syncs/x.ts', 'nested/target', 'sandbox')).toBe('sandbox/syncs/x.ts');
+        // A path that only shares the first segment must not be rewritten.
+        expect(localizeIntegrationPath('nested/other/syncs/x.ts', 'nested/target', 'sandbox')).toBe('nested/other/syncs/x.ts');
+    });
 });

@@ -143,16 +143,14 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
         printDebug(`Resolved template path: ${JSON.stringify(resolved)}`, debug);
         spinner.text = `Fetching file list for: ${templatePath}`;
 
-        const { files: remoteFiles, contentCache: remoteCache } = await getFilesToClone(resolved, debug);
+        const { files: remoteFiles, contentCache } = await getFilesToClone(resolved, debug);
 
-        // Files are fetched from the resolved (target) folder but written under the requested name.
+        // Keep the remote path for fetching (and cache lookups); write under the requested name.
         const files = remoteFiles.map((file) => ({
             ...file,
+            remotePath: file.relativePath,
             relativePath: localizeIntegrationPath(file.relativePath, resolved.integration, resolved.sourceIntegration)
         }));
-        const contentCache = new Map(
-            [...remoteCache].map(([key, value]) => [localizeIntegrationPath(key, resolved.integration, resolved.sourceIntegration), value])
-        );
 
         if (files.length === 0) {
             spinner.fail(`No files found for template: ${templatePath}`);
@@ -182,10 +180,10 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
 
             try {
                 let content: string;
-                if (contentCache.has(file.relativePath)) {
-                    content = contentCache.get(file.relativePath)!;
+                if (contentCache.has(file.remotePath)) {
+                    content = contentCache.get(file.remotePath)!;
                 } else {
-                    content = await fetchFileContent(file.relativePath, debug);
+                    content = await fetchFileContent(file.remotePath, debug);
                 }
                 const localPath = path.join(fullPath, file.relativePath);
 
