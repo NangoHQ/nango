@@ -2,7 +2,7 @@ import dns from 'node:dns/promises';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { clearPinnedAddressCacheForTests, createSafeHttpAgents, getPinnedAddressCacheSizeForTests } from './agent.js';
+import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.js';
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -197,6 +197,14 @@ describe('egress safe lookup pinning', () => {
         proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
     });
 
+    const lookupVia = (lookupFn: NonNullable<ReturnType<typeof createSafeHttpAgents>['httpsAgent']['options']['lookup']>, host: string) =>
+        new Promise<string>((resolve, reject) => {
+            lookupFn(host, {}, (err, address) => {
+                if (err) reject(err);
+                else resolve(address as string);
+            });
+        });
+
     afterEach(() => {
         clearPinnedAddressCacheForTests();
         vi.restoreAllMocks();
@@ -205,27 +213,25 @@ describe('egress safe lookup pinning', () => {
     it('rejects lookup when DNS returns a blocked address', async () => {
         vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
         const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
-        await expect(
-            new Promise<string>((resolve, reject) => {
-                lookupFn('rebind.example', {}, (err, address) => {
-                    if (err) reject(err);
-                    else resolve(address as string);
-                });
-            })
-        ).rejects.toThrow(OutboundUrlError);
+        await expect(lookupVia(lookupFn, 'rebind.example')).rejects.toThrow(OutboundUrlError);
     });
 
-    it('uses a single DNS lookup for pinning (no TOCTOU second lookup)', async () => {
+    it('uses a single DNS lookup for pinning and reuses it within TTL', async () => {
+        vi.useFakeTimers();
         const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
         const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
-        const address = await new Promise<string>((resolve, reject) => {
-            lookupFn('api.example.com', {}, (err, addr) => {
-                if (err) reject(err);
-                else resolve(addr as string);
-            });
-        });
-        expect(address).toBe('8.8.8.8');
+
+        await lookupVia(lookupFn, 'api.example.com');
         expect(lookupSpy).toHaveBeenCalledTimes(1);
+
+        await lookupVia(lookupFn, 'api.example.com');
+        expect(lookupSpy).toHaveBeenCalledTimes(1);
+
+        vi.advanceTimersByTime(29_999);
+        await lookupVia(lookupFn, 'api.example.com');
+        expect(lookupSpy).toHaveBeenCalledTimes(1);
+
+        vi.useRealTimers();
     });
 
     it('does not reuse pinned addresses across policies with different hostname rules', async () => {
@@ -238,69 +244,42 @@ describe('egress safe lookup pinning', () => {
         const lookupStrict = createSafeHttpAgents(strict).httpsAgent.options.lookup!;
         const host = 'metadata.google.internal';
 
-        await new Promise<string>((resolve, reject) => {
-            lookupLoose(host, {}, (err, addr) => {
-                if (err) reject(err);
-                else resolve(addr as string);
-            });
-        });
+        await lookupVia(lookupLoose, host);
 
-        await expect(
-            new Promise<string>((resolve, reject) => {
-                lookupStrict(host, {}, (err, addr) => {
-                    if (err) reject(err);
-                    else resolve(addr as string);
-                });
-            })
-        ).rejects.toThrow(OutboundUrlError);
+        await expect(lookupVia(lookupStrict, host)).rejects.toThrow(OutboundUrlError);
     });
 
     it('blocks IPv6 literal hostnames during lookup validation', async () => {
         const permissive = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [] });
         const lookupFn = createSafeHttpAgents(permissive).httpsAgent.options.lookup!;
-        await expect(
-            new Promise<string>((resolve, reject) => {
-                lookupFn('::1', {}, (err, address) => {
-                    if (err) reject(err);
-                    else resolve(address as string);
-                });
-            })
-        ).rejects.toMatchObject({ code: 'denied_ip' });
+        await expect(lookupVia(lookupFn, '::1')).rejects.toMatchObject({ code: 'denied_ip' });
     });
 
     it('ignores expired pinned addresses on lookup', async () => {
         vi.useFakeTimers();
         const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
         const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
-        const lookup = (host: string) =>
-            new Promise<string>((resolve, reject) => {
-                lookupFn(host, {}, (err, address) => {
-                    if (err) reject(err);
-                    else resolve(address as string);
-                });
-            });
 
-        await lookup('host-a.example');
+        await lookupVia(lookupFn, 'host-a.example');
         expect(lookupSpy).toHaveBeenCalledTimes(1);
 
         vi.advanceTimersByTime(30_001);
-        await lookup('host-a.example');
+        await lookupVia(lookupFn, 'host-a.example');
 
         expect(lookupSpy).toHaveBeenCalledTimes(2);
         vi.useRealTimers();
     });
 
-    it('bounds pinned address cache size', async () => {
-        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+    it('evicts oldest pinned addresses when cache is full', async () => {
+        const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
         const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
+
         for (let i = 0; i < 1_001; i++) {
-            await new Promise<string>((resolve, reject) => {
-                lookupFn(`host-${i}.example`, {}, (err, address) => {
-                    if (err) reject(err);
-                    else resolve(address as string);
-                });
-            });
+            await lookupVia(lookupFn, `host-${i}.example`);
         }
-        expect(getPinnedAddressCacheSizeForTests()).toBe(1_000);
+        expect(lookupSpy).toHaveBeenCalledTimes(1_001);
+
+        await lookupVia(lookupFn, 'host-0.example');
+        expect(lookupSpy).toHaveBeenCalledTimes(1_002);
     });
 });

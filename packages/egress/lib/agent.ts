@@ -60,10 +60,6 @@ export function clearPinnedAddressCacheForTests(): void {
     pinnedAddresses.clear();
 }
 
-export function getPinnedAddressCacheSizeForTests(): number {
-    return pinnedAddresses.size;
-}
-
 export function createSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {
     const policyCacheKey = policyPinCacheKey(policy);
     const safeLookup = function safeLookup(hostname: string, options: LookupOptions | LookupCallback, callback?: LookupCallback): void {
