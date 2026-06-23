@@ -36,7 +36,7 @@ describe('PATCH /api/v1/flows/:id/enable', () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'airtable', providerConfigKey: 'airtable-enable', scriptName: 'tables', type: 'sync' }
+            body: { providerConfigKey: 'airtable-enable', scriptName: 'tables', type: 'sync' }
         });
 
         isSuccess(deployRes.json);
