@@ -629,6 +629,24 @@ adyntel:
             example: you@company.com
             doc_section: '#step-2-find-your-email-address'
 
+ahrefs:
+    display_name: Ahrefs
+    categories:
+        - marketing
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://app.ahrefs.com/web/oauth/authorize
+    token_url: https://ahrefs.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    body_format: form
+    proxy:
+        base_url: https://api.ahrefs.com
+    docs: https://nango.dev/docs/api-integrations/ahrefs
+    setup_guide_url: https://nango.dev/docs/api-integrations/ahrefs/how-to-register-your-own-ahrefs-api-oauth-app
+
 affinity:
     display_name: Affinity (v1)
     categories:
@@ -10328,6 +10346,39 @@ ironclad:
                 - eu1
             doc_section: '#step-1-finding-your-subdomain'
 
+ironclad-cc:
+    display_name: Ironclad (Client Credentials)
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ironcladapp.com
+        headers:
+            x-as-user-email: ${connectionConfig.userEmail}
+    docs: https://nango.dev/docs/api-integrations/ironclad-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ironclad-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Ironclad environment subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The email of the Ironclad user on whose behalf API requests are made.
+            example: user@yourcompany.com
+            format: email
+            order: 2
+
 jamf:
     display_name: Jamf Pro (Client Credentials)
     categories:
@@ -12414,6 +12465,86 @@ microsoft-oauth2-cc:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
+
+microsoft-oauth2-cc-cert:
+    display_name: Microsoft (Client Credentials - Certificate)
+    auth_mode: TWO_STEP
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    body_format: form
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        scope: ${connectionConfig.oauth_scopes}
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: PS256
+            x5t#S256: ${credentials.certificateThumbprint}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://graph.microsoft.com
+    docs: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        oauth_scopes:
+            type: string
+            title: Scope
+            description: The resource scope to request access for.
+            example: https://graph.microsoft.com/.default
+            doc_section: '#step-5-granting-api-permissions'
+            order: 2
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The application (client) ID assigned to your app in Azure.
+            format: uuid
+            example: 11112222-bbbb-3333-cccc-4444dddd5555
+            doc_section: '#step-2-registering-your-application-and-finding-your-client-id'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) matching the certificate uploaded to your Azure app registration.
+            example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----"
+            secret: true
+            doc_section: '#step-3-generating-a-certificate-and-uploading-it-to-azure'
+        certificateThumbprint:
+            type: string
+            title: Certificate Thumbprint (x5t#S256)
+            description: The base64url-encoded SHA-256 thumbprint of your certificate.
+            example: rCnkMH5GKJI03tRpdjBh8OG2U8I
+            doc_section: '#step-4-computing-the-certificate-thumbprint-x5t'
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 microsoft-intune:
     display_name: Microsoft Intune
@@ -19921,6 +20052,29 @@ superhuman-mcp:
         headers:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/superhuman-mcp
+
+surecontact:
+    display_name: SureContact
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.surecontact.com
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/surecontact
+    docs_connect: https://nango.dev/docs/api-integrations/surecontact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your SureContact API key.
+            example: jWkZ3QYFe7**********************************************qlp
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-create-an-api-key'
 
 survey-monkey:
     display_name: SurveyMonkey

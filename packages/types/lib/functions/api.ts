@@ -94,7 +94,7 @@ export type FunctionDryrunResultBody =
           };
       };
 
-export interface FunctionDeploymentBody {
+export interface FunctionDeploymentCodeBody {
     type: 'function';
     integration_id: string;
     function_name: string;
@@ -104,9 +104,28 @@ export interface FunctionDeploymentBody {
     allow_destructive?: boolean | undefined;
 }
 
+export interface FunctionDeploymentTemplateBody {
+    type: 'template';
+    integration_id: string;
+    template: string;
+    /** Optional; inferred from the template name unless a sync and an action share it. */
+    function_type?: RunnableFunctionType | undefined;
+}
+
+export interface FunctionDeploymentTemplateStoredRequest {
+    type: 'template';
+    integration_id: string;
+    template: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+}
+
+export type FunctionDeploymentBody = FunctionDeploymentCodeBody | FunctionDeploymentTemplateBody;
+
 export interface FunctionDeploymentCreateSuccess {
     id: string;
-    status: Extract<FunctionDeploymentStatus, 'waiting' | 'running'>;
+    // Async `function` deploys start at waiting/running; synchronous `template` deploys return a terminal success/failed.
+    status: FunctionDeploymentStatus;
     created_at: string;
 }
 
@@ -181,7 +200,9 @@ export type PostFunctionDeployment = Endpoint<{
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;
-    Error: ApiError<FunctionErrorCode>;
+    Error: ApiError<FunctionErrorCode> | ApiError<'template_not_found' | 'ambiguous_function' | 'plan_limit' | 'template_already_deployed'>;
+    // Both variants return the same shape. `function` deploys are async (status waiting/running, poll for the result);
+    // `template` deploys run synchronously, so the response already carries a terminal status (success/failed).
     Success: FunctionDeploymentCreateSuccess;
 }>;
 

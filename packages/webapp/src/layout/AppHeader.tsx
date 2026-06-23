@@ -1,4 +1,4 @@
-import { BookOpen, Box, LifeBuoy as HelpIcon, Moon, Sun } from 'lucide-react';
+import { BookOpen, Box, MessageSquareMore as HelpIcon, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';

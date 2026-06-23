@@ -1,0 +1,73 @@
+---
+title: 'How to register your own Ahrefs OAuth app'
+sidebarTitle: 'Ahrefs Setup'
+description: 'Register an OAuth app with Ahrefs Connect and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your app with Ahrefs Connect to obtain your OAuth credentials (Client ID & Client Secret).
+
+<Steps>
+  <Step id="submit-application" title="Submit the application form">
+    Submit the [Ahrefs Connect application form](https://ahrefs.com/connect) with:
+    - A brief description of your product
+    - A link to your website
+    - How you plan to use Ahrefs data in your app
+
+    The Ahrefs team will confirm eligibility and guide you through the next steps.
+
+    <Note>
+    If your app is already part of the legacy Integrations program, you automatically have access to the staging environment and can start building with API v3 right away. Contact support@ahrefs.com when you are ready to kick off the review and activation process for production.
+    </Note>
+  </Step>
+  <Step id="enterprise-plan" title="Get an Enterprise plan (new integrations only)">
+    New integrations require an Ahrefs Enterprise plan to activate in production. You do not need it during development — only to go live.
+
+    Legacy integration partners are exempt from this requirement.
+  </Step>
+  <Step id="development-setup" title="Set up your app in Ahrefs Connect">
+    Once approved, go to **Account settings** → **Ahrefs Connect**. This section provides:
+    - Your **Client ID** and **Client Secret**
+    - Fields to configure **Redirect URIs** for staging and production
+
+    Add the Nango callback URL as your redirect URI:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    <Warning>
+    Ahrefs shares one OAuth client between the legacy API v2 integration and the new API v3. This means staging and production share the same redirect URI. Update the production redirect URI only after your app has been reviewed and activated by Ahrefs.
+    </Warning>
+
+    At this stage your app status is **Inactive**, which lets you:
+    - Test OAuth flows in your staging environment
+    - Make free test requests to API v3 endpoints
+  </Step>
+  <Step id="copy-credentials" title="Copy your credentials">
+    From the Ahrefs Connect section, copy your **Client ID** and **Client Secret**. You will need these when configuring the integration in Nango.
+
+    <Warning>
+    Never expose the Client Secret in client-side code, logs, or URLs. Store it server-side only.
+    </Warning>
+  </Step>
+  <Step id="review" title="Submit for review">
+    When development is complete, contact support@ahrefs.com or your Ahrefs sales manager to start the approval process. You will need to provide:
+
+    - **Enterprise subscription** — required for new integrations before activation. Legacy app owners are exempt.
+    - **User connection flow** — a detailed description and screenshots showing how users connect their Ahrefs account, how their profile looks before and after connecting, how Ahrefs data appears in your app, and how users revoke access.
+    - **Authorization process video** — a full, unedited recording of the OAuth flow from start to a connected user profile. Voiceover is encouraged. Access tokens must never be visible to users in the recording.
+    - **API usage details** — which endpoints you use, what data you pull, how your integration uses that data, and what measures you take to conserve users' API units.
+  </Step>
+  <Step id="activation" title="Activation">
+    Once your app passes verification, Ahrefs switches it to **Active**, enabling:
+    - Live OAuth connections for Ahrefs users via your production credentials
+    - Listing in the Ahrefs Apps Gallery (offered by the sales team)
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see the [Ahrefs Connect OAuth guide](https://docs.ahrefs.com/en/ahrefs-connect/docs/oauth-guide).
+
+---
