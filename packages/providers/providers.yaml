@@ -5876,6 +5876,25 @@ dialpad-sandbox:
         base_url: https://sandbox.dialpad.com
     docs: https://nango.dev/docs/integrations/all/dialpad-sandbox
 
+dialpad-wfm:
+    display_name: Dialpad WFM
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.teamsurfboard.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/dialpad-wfm
+    docs_connect: https://nango.dev/docs/api-integrations/dialpad-wfm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The access token for your account.
+            secret: true
+            doc_section: '#step-1-obtain-your-access-token'
+
 diffbot:
     display_name: Diffbot
     categories:
