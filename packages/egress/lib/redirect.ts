@@ -3,6 +3,24 @@ import { assertSafeOutboundUrl, assertSafeOutboundUrlSync } from './validate.js'
 
 import type { OutboundUrlPolicy } from './policy.js';
 
+function portSuffix(port: unknown): string {
+    if (typeof port === 'number') {
+        return port ? `:${port}` : '';
+    }
+    if (typeof port === 'string') {
+        const trimmed = port.trim();
+        if (!trimmed || !/^\d+$/.test(trimmed)) {
+            return '';
+        }
+        const parsed = Number.parseInt(trimmed, 10);
+        if (parsed <= 0 || parsed > 65535) {
+            return '';
+        }
+        return `:${parsed}`;
+    }
+    return '';
+}
+
 /**
  * Absolute URL for the upcoming redirect request, from Node `follow-redirects` options.
  */
@@ -15,7 +33,7 @@ export function absoluteUrlFromRedirectRequestOptions(options: Record<string, un
         typeof options['host'] === 'string'
             ? options['host']
             : typeof options['hostname'] === 'string'
-              ? `${options['hostname']}${typeof options['port'] === 'number' && options['port'] ? `:${options['port']}` : ''}`
+              ? `${options['hostname']}${portSuffix(options['port'])}`
               : '';
     const path = typeof options['path'] === 'string' ? options['path'] : '/';
     if (!protocol || !host) {

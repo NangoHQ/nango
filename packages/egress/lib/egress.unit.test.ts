@@ -14,7 +14,7 @@ import {
 import { OutboundUrlError } from './errors.js';
 import { classifyBlockedIp } from './ip.js';
 import { resetRunnerPolicyCacheForTests, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
-import { createRedirectValidator } from './redirect.js';
+import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
 import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
 
 describe('egress denylist', () => {
@@ -145,6 +145,41 @@ describe('egress redirect validator', () => {
     it('allows redirect to public host', () => {
         const validator = createRedirectValidator(policy);
         expect(() => validator('https://api.example.com/next')).not.toThrow();
+    });
+});
+
+describe('absoluteUrlFromRedirectRequestOptions', () => {
+    it('returns href when present', () => {
+        expect(absoluteUrlFromRedirectRequestOptions({ href: 'https://a.example/path' })).toBe('https://a.example/path');
+    });
+
+    it('composes from protocol, host, and path when href is missing', () => {
+        expect(
+            absoluteUrlFromRedirectRequestOptions({
+                protocol: 'https:',
+                host: 'api.example.com',
+                path: '/p?q=1'
+            })
+        ).toBe('https://api.example.com/p?q=1');
+    });
+
+    it('includes numeric and string ports when building from hostname', () => {
+        expect(
+            absoluteUrlFromRedirectRequestOptions({
+                protocol: 'http:',
+                hostname: 'api.example.com',
+                port: 8080,
+                path: '/x'
+            })
+        ).toBe('http://api.example.com:8080/x');
+        expect(
+            absoluteUrlFromRedirectRequestOptions({
+                protocol: 'http:',
+                hostname: 'api.example.com',
+                port: '8080',
+                path: '/x'
+            })
+        ).toBe('http://api.example.com:8080/x');
     });
 });
 
