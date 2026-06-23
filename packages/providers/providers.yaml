@@ -17469,6 +17469,52 @@ sage-intacct-oauth:
         base_url: https://api.intacct.com/ia/api
     docs: https://nango.dev/docs/integrations/all/sage-intacct-oauth
 
+sage-intacct-cc:
+    display_name: Sage Intacct (Client Credentials)
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://api.intacct.com/ia/api/v1/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        username: ${credentials.username}
+        session_id: ${credentials.sessionId}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.intacct.com/ia/api
+    docs: https://nango.dev/docs/api-integrations/sage-intacct-cc
+    docs_connect: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Sage Intacct application Client ID.
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Sage Intacct application Client Secret.
+            secret: true
+        username:
+            type: string
+            title: Username
+            description: The Web Services user ID in userId@companyId|entityId format. Required if not using Session ID.
+            example: Admin@MyCompany|Central Region
+            optional: true
+        sessionId:
+            type: string
+            title: Session ID
+            description: A valid UI or API session ID. Required if not using Username.
+            secret: true
+            optional: true
+
 sage-intacct:
     display_name: Sage Intacct
     categories:

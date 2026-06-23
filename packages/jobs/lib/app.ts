@@ -1,6 +1,7 @@
 import './tracer.js';
 
 import db from '@nangohq/database';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
@@ -34,6 +35,8 @@ process.on('uncaughtException', (err) => {
 initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 try {
+    await initializeFeatureFlags();
+
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
     const srv = server.listen(port);
@@ -90,15 +93,16 @@ try {
         srv.close(async () => {
             otlp.stop();
             await processor.stop();
+            await invocationsProcessor.stop();
+            if (webhookDispatchConsumer) {
+                await webhookDispatchConsumer.stop();
+            }
+            await destroyFeatureFlags();
             await destroyLogs();
             await stopFleets();
             await db.knex.destroy();
             await db.readOnly.destroy();
             await destroyKvstore();
-            await invocationsProcessor.stop();
-            if (webhookDispatchConsumer) {
-                await webhookDispatchConsumer.stop();
-            }
             await pubsub.disconnect();
             console.info('Closed');
 
