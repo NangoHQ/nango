@@ -1536,7 +1536,7 @@
               "api-integrations/sage-200",
               "integrations/all/sage-hr",
               "integrations/all/sage-intacct",
-              "api-integrations/sage-intacct-oauth",
+              "integrations/all/sage-intacct-oauth",
               "api-integrations/sage-intacct-cc",
               "integrations/all/sage-people",
               "api-integrations/salesforce",
