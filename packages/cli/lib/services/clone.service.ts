@@ -4,7 +4,15 @@ import path from 'node:path';
 import chalk from 'chalk';
 
 import { printDebug } from '../utils.js';
-import { collectDependencies, fetchDirectoryRecursively, fetchFileContent, fetchGitHubDirectory, GitHubNotFoundError } from '../utils/githubTemplates.js';
+import {
+    collectDependencies,
+    fetchDirectoryRecursively,
+    fetchFileContent,
+    fetchGitHubDirectory,
+    GitHubNotFoundError,
+    localizeIntegrationPath,
+    resolveIntegrationFolder
+} from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
 
@@ -21,7 +29,10 @@ interface ResolvedTemplatePath {
     type: 'directory' | 'file';
     path: string;
     mdPath?: string | undefined;
+    // Real templates-repo folder used for fetching (resolves through symlinks).
     integration: string;
+    // Folder name the user requested; where files are written locally.
+    sourceIntegration: string;
 }
 
 /**
@@ -29,18 +40,25 @@ interface ResolvedTemplatePath {
  * - If the path matches a directory, returns type: 'directory'
  * - If the path doesn't exist but {path}.ts exists, returns type: 'file' with optional .md
  * - Throws GitHubNotFoundError if neither exists
+ *
+ * Symlinked integrations (e.g. `quickbooks-sandbox` → `quickbooks`) are resolved to their target
+ * folder for fetching, while `sourceIntegration` preserves the requested name for local writes.
  */
 async function resolveTemplatePath(templatePath: string, debug: boolean): Promise<ResolvedTemplatePath> {
-    const integration = templatePath.split('/')[0];
-    if (!integration) {
+    const segments = templatePath.split('/');
+    const sourceIntegration = segments[0];
+    if (!sourceIntegration) {
         throw new Error('Template path cannot be empty');
     }
 
+    const integration = await resolveIntegrationFolder(sourceIntegration, debug);
+    const remotePath = [integration, ...segments.slice(1)].join('/');
+
     // First, try to fetch as a directory
     try {
-        await fetchGitHubDirectory(templatePath, debug);
-        printDebug(`Path "${templatePath}" resolved as directory`, debug);
-        return { type: 'directory', path: templatePath, integration };
+        await fetchGitHubDirectory(remotePath, debug);
+        printDebug(`Path "${remotePath}" resolved as directory`, debug);
+        return { type: 'directory', path: remotePath, integration, sourceIntegration };
     } catch (err) {
         if (!(err instanceof GitHubNotFoundError)) {
             throw err; // Re-throw rate limits, network errors, etc.
@@ -48,27 +66,28 @@ async function resolveTemplatePath(templatePath: string, debug: boolean): Promis
         // Directory doesn't exist, try as file
     }
 
-    const tsPath = `${templatePath}.ts`;
+    const tsPath = `${remotePath}.ts`;
     try {
         await fetchFileContent(tsPath, debug);
-        printDebug(`Path "${templatePath}" resolved as file: ${tsPath}`, debug);
+        printDebug(`Path "${remotePath}" resolved as file: ${tsPath}`, debug);
 
         // Check if companion .md file exists
-        const mdPath = `${templatePath}.md`;
+        const mdPath = `${remotePath}.md`;
         let hasMdFile = false;
         try {
             await fetchFileContent(mdPath, debug);
             hasMdFile = true;
             printDebug(`Found companion documentation: ${mdPath}`, debug);
         } catch {
-            printDebug(`No companion documentation found for ${templatePath}`, debug);
+            printDebug(`No companion documentation found for ${remotePath}`, debug);
         }
 
         return {
             type: 'file',
             path: tsPath,
             mdPath: hasMdFile ? mdPath : undefined,
-            integration
+            integration,
+            sourceIntegration
         };
     } catch (err) {
         if (!(err instanceof GitHubNotFoundError)) {
@@ -77,7 +96,7 @@ async function resolveTemplatePath(templatePath: string, debug: boolean): Promis
     }
 
     // Neither directory nor file exists
-    throw new GitHubNotFoundError(templatePath);
+    throw new GitHubNotFoundError(remotePath);
 }
 
 interface FilesToClone {
@@ -124,7 +143,17 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
         printDebug(`Resolved template path: ${JSON.stringify(resolved)}`, debug);
         spinner.text = `Fetching file list for: ${templatePath}`;
 
-        const { files, contentCache } = await getFilesToClone(resolved, debug);
+        const { files: remoteFiles, contentCache: remoteCache } = await getFilesToClone(resolved, debug);
+
+        // Files are fetched from the resolved (target) folder but written under the requested name.
+        const files = remoteFiles.map((file) => ({
+            ...file,
+            relativePath: localizeIntegrationPath(file.relativePath, resolved.integration, resolved.sourceIntegration)
+        }));
+        const contentCache = new Map(
+            [...remoteCache].map(([key, value]) => [localizeIntegrationPath(key, resolved.integration, resolved.sourceIntegration), value])
+        );
+
         if (files.length === 0) {
             spinner.fail(`No files found for template: ${templatePath}`);
             return false;

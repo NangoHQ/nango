@@ -18,6 +18,8 @@ export interface GitHubDirectoryItem {
     name: string;
     path: string;
     type: 'file' | 'dir' | 'symlink';
+    // Present when type === 'symlink'
+    target?: string;
 }
 
 export class GitHubRateLimitError extends Error {
@@ -50,6 +52,19 @@ function getGitHubHeaders(): Record<string, string> {
     return headers;
 }
 
+function mapGitHubApiError(err: unknown, urlPath: string): Error {
+    if (axios.isAxiosError(err)) {
+        if (err.response?.status === 403) {
+            const resetTime = err.response.headers['x-ratelimit-reset'];
+            return new GitHubRateLimitError(resetTime ? Number(resetTime) : undefined);
+        }
+        if (err.response?.status === 404) {
+            return new GitHubNotFoundError(urlPath);
+        }
+    }
+    return err instanceof Error ? err : new Error(String(err));
+}
+
 export async function fetchGitHubDirectory(urlPath: string, debug: boolean): Promise<GitHubDirectoryItem[]> {
     const url = `${GITHUB_API_BASE}/${urlPath}`;
     printDebug(`Fetching GitHub directory: ${url}`, debug);
@@ -60,17 +75,54 @@ export async function fetchGitHubDirectory(urlPath: string, debug: boolean): Pro
         });
         return response.data;
     } catch (err) {
-        if (axios.isAxiosError(err)) {
-            if (err.response?.status === 403) {
-                const resetTime = err.response.headers['x-ratelimit-reset'];
-                throw new GitHubRateLimitError(resetTime ? Number(resetTime) : undefined);
-            }
-            if (err.response?.status === 404) {
-                throw new GitHubNotFoundError(urlPath);
-            }
-        }
-        throw err;
+        throw mapGitHubApiError(err, urlPath);
     }
+}
+
+/**
+ * Resolve a (possibly symlinked) integration folder name to its real folder in the templates repo.
+ */
+export async function resolveIntegrationFolder(integration: string, debug: boolean): Promise<string> {
+    const url = `${GITHUB_API_BASE}/${integration}`;
+    printDebug(`Resolving integration folder: ${url}`, debug);
+
+    let data: GitHubDirectoryItem[] | GitHubDirectoryItem;
+    try {
+        const response = await axios.get<GitHubDirectoryItem[] | GitHubDirectoryItem>(url, {
+            headers: getGitHubHeaders()
+        });
+        data = response.data;
+    } catch (err) {
+        throw mapGitHubApiError(err, integration);
+    }
+
+    if (Array.isArray(data)) {
+        return integration;
+    }
+
+    if (data.type === 'symlink' && typeof data.target === 'string') {
+        const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(integration), data.target));
+        printDebug(`Integration "${integration}" is a symlink to "${resolved}"`, debug);
+        return resolved;
+    }
+
+    return integration;
+}
+
+/**
+ * Rewrite the leading integration segment of a remote templates-repo path to the local folder name.
+ * Used to write symlinked-integration files under the name the user requested while fetching their
+ * content from the resolved target folder. No-op when remote and local folders are the same.
+ */
+export function localizeIntegrationPath(remotePath: string, remoteFolder: string, localFolder: string): string {
+    if (remoteFolder === localFolder) {
+        return remotePath;
+    }
+    const segments = remotePath.split('/');
+    if (segments[0] === remoteFolder) {
+        segments[0] = localFolder;
+    }
+    return segments.join('/');
 }
 
 /**

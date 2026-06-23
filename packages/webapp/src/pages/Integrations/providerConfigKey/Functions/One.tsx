@@ -168,7 +168,8 @@ export const FunctionsOne: React.FC = () => {
         return <PageNotFound />;
     }
 
-    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: integrationData.integration.provider, name: func.name, type: func.type })}`;
+    const repoProvider = integrationData.symLinkTargetName ?? integrationData.integration.provider;
+    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: repoProvider, name: func.name, type: func.type })}`;
 
     return (
         <DashboardLayout>

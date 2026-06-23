@@ -4,7 +4,7 @@ import path from 'node:path';
 import chalk from 'chalk';
 
 import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
-import { collectDependencies, fetchFileContent, GitHubNotFoundError } from '../utils/githubTemplates.js';
+import { collectDependencies, fetchFileContent, GitHubNotFoundError, localizeIntegrationPath, resolveIntegrationFolder } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
 
@@ -144,11 +144,15 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
     try {
         const contentCache = new Map<string, string>();
 
+        // Symlinked integrations are fetched from their target folder;
+        // files are written back under `integrationId` (the requested name) below.
+        const remoteFolder = await resolveIntegrationFolder(integrationId, debug);
+
         const foldersToProbe: ('syncs' | 'actions' | 'on-events')[] = type ? [scriptTypeToFolder[type]] : ['syncs', 'actions', 'on-events'];
 
         const probeResults = await Promise.allSettled(
             foldersToProbe.map(async (folder) => {
-                const candidatePath = `${integrationId}/${folder}/${name}.ts`;
+                const candidatePath = `${remoteFolder}/${folder}/${name}.ts`;
                 const content = await fetchFileContent(candidatePath, debug);
                 return { folder, candidatePath, content };
             })
@@ -186,7 +190,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
 
         const initialFiles: { relativePath: string; isScript: boolean }[] = [{ relativePath: match.candidatePath, isScript: true }];
 
-        const mdPath = `${integrationId}/${match.folder}/${name}.md`;
+        const mdPath = `${remoteFolder}/${match.folder}/${name}.md`;
         try {
             const mdContent = await fetchFileContent(mdPath, debug);
             contentCache.set(mdPath, mdContent);
@@ -199,7 +203,20 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
             printDebug(`No companion documentation found for ${mdPath}`, debug);
         }
 
-        const files = await collectDependencies(initialFiles, integrationId, debug, contentCache);
+        const remoteFiles = await collectDependencies(initialFiles, remoteFolder, debug, contentCache);
+
+        // Rewrite fetched (target) paths to the requested integration name for local writes.
+        const files = remoteFiles.map((file) => ({
+            ...file,
+            relativePath: localizeIntegrationPath(file.relativePath, remoteFolder, integrationId)
+        }));
+        for (const [key, value] of [...contentCache]) {
+            const localKey = localizeIntegrationPath(key, remoteFolder, integrationId);
+            if (localKey !== key) {
+                contentCache.set(localKey, value);
+                contentCache.delete(key);
+            }
+        }
 
         const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug, interactive);
         if (!proceed) {

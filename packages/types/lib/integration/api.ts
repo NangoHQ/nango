@@ -242,6 +242,8 @@ export type GetIntegration = Endpoint<{
         data: {
             integration: ApiIntegration;
             template: Provider;
+            // Canonical templates-repo folder when the provider symlinks to another (e.g. `quickbooks-sandbox` → `quickbooks`); null otherwise.
+            symLinkTargetName: string | null;
             meta: {
                 connectionsCount: number;
                 webhookUrl: string | null;
