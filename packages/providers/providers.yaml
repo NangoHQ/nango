@@ -10328,6 +10328,39 @@ ironclad:
                 - eu1
             doc_section: '#step-1-finding-your-subdomain'
 
+ironclad-cc:
+    display_name: Ironclad (Client Credentials)
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ironcladapp.com
+        headers:
+            x-as-user-email: ${connectionConfig.userEmail}
+    docs: https://nango.dev/docs/api-integrations/ironclad-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ironclad-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Ironclad environment subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The email of the Ironclad user on whose behalf API requests are made.
+            example: user@yourcompany.com
+            format: email
+            order: 2
+
 jamf:
     display_name: Jamf Pro (Client Credentials)
     categories:
@@ -22591,6 +22624,57 @@ workday-refresh-token:
             description: Your Workday refresh token for the Integration System User
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
+
+workday-cc:
+    display_name: Workday (Client Credentials)
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: client_credentials
+        tenant_alias: ${connectionConfig.tenant}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        authorization: ID ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://nango.dev/docs/api-integrations/workday-cc
+    docs_connect: https://nango.dev/docs/api-integrations/workday-cc/connect
+    connection_config:
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The hostname of your Workday tenant.
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name of your Workday account.
+            example: mytenant
+            order: 2
+            doc_section: '#step-3-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID.
+            doc_section: '#step-5-register-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret.
+            secret: true
+            doc_section: '#step-5-register-an-api-client'
 
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning

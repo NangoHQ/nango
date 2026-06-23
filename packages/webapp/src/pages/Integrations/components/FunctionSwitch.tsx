@@ -77,7 +77,6 @@ export const FunctionSwitch: React.FC<{
         }
 
         const body = {
-            provider: integration.provider,
             providerConfigKey: integration.unique_key,
             type: flow.type,
             scriptName: flow.name
@@ -85,7 +84,7 @@ export const FunctionSwitch: React.FC<{
 
         try {
             if (flow.id) {
-                await enableFlow({ params: { id: flow.id }, body });
+                await enableFlow({ params: { id: flow.id }, body: { ...body, provider: integration.provider } });
             } else {
                 await deployFlow(body);
             }
