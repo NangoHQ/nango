@@ -2,8 +2,9 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
 import { ChartCard } from '@/components/patterns/chart';
+import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
-import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N } from '../usageBreakdown';
+import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
@@ -104,6 +105,16 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // that's the sum across the series), so there's no per-state headline override.
     const live = detailMetric ?? data;
 
+    // Filtering without a grouping draws a single series that IS the filtered value, so colour and
+    // label it like that value's breakdown slice — Status gets its semantic red/green, other
+    // dimensions the value's palette colour — and surface a one-row legend, rather than the generic
+    // brand-coloured "Total". (When grouped too, the breakdown series own the colours and legend.)
+    let singleSeries: { label: string; color: string } | undefined;
+    if (inFilterMode && !inBreakdownMode && filter) {
+        const label = formatDimensionValue(filter.dimension, filter.value);
+        singleSeries = { label, color: colorsForValues([label], filter.dimension).get(label) ?? 'var(--ds-color-brand-500)' };
+    }
+
     // No data at all for this metric (ignoring filters) → nothing to slice, so hide the controls.
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
@@ -134,6 +145,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             detailLoading={isDetail ? detailQuery.isLoading : false}
             detailError={isDetail ? detailQuery.isError : false}
             filtered={inFilterMode}
+            singleSeries={singleSeries}
         />
     );
 };

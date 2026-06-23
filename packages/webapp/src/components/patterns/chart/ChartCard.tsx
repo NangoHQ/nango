@@ -32,6 +32,8 @@ interface ChartCardProps {
     detailError?: boolean;
     /** The panel is scoped to a filtered slice — keeps the controls visible when empty and adjusts the AVG tooltip copy. */
     filtered?: boolean;
+    /** Colour + label for a filtered single series (no grouping): tints the one drawn series and shows a one-row legend. */
+    singleSeries?: { label: string; color: string };
 }
 
 /**
@@ -40,7 +42,17 @@ interface ChartCardProps {
  * state. The breakdown rendering and its interactions live in BreakdownChart /
  * ChartLegend; this component just decides what to show.
  */
-export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe, headerActions, breakdownSeries, detailLoading, detailError, filtered }) => {
+export const ChartCard: React.FC<ChartCardProps> = ({
+    isLoading,
+    data,
+    timeframe,
+    headerActions,
+    breakdownSeries,
+    detailLoading,
+    detailError,
+    filtered,
+    singleSeries
+}) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
 
@@ -53,8 +65,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         if (isBreakdown) {
             return Object.fromEntries((breakdownSeries ?? []).map((s) => [s.key, { label: s.label, color: s.color }]));
         }
-        return { total: { label: 'Total', color: 'var(--ds-color-brand-500)' } };
-    }, [isBreakdown, breakdownSeries]);
+        return { total: { label: singleSeries?.label ?? 'Total', color: singleSeries?.color ?? 'var(--ds-color-brand-500)' } };
+    }, [isBreakdown, breakdownSeries, singleSeries]);
 
     // What occupies the chart body: a per-panel detail spinner/error (covers both a
     // breakdown fetch and a filtered-slice fetch), the empty state, or the chart.
@@ -128,6 +140,15 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
                             interactions={interactions}
                         />
                         {breakdownSeries && breakdownSeries.length > 0 && <ChartLegend series={breakdownSeries} interactions={interactions} />}
+                        {!isBreakdown && singleSeries && (
+                            // Static, non-interactive: with one series there's nothing to isolate or hide.
+                            <div className="flex items-center gap-1.5 pt-3 text-xs flex-shrink-0">
+                                <span className="block size-2.5 rounded-[2px]" aria-hidden style={{ backgroundColor: singleSeries.color }} />
+                                <span className="text-text-secondary truncate" title={singleSeries.label}>
+                                    {singleSeries.label}
+                                </span>
+                            </div>
+                        )}
                     </>
                 )}
 
