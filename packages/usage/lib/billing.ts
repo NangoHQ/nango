@@ -34,10 +34,7 @@ export class UsageBillingClient {
         this.billingClient = billing;
     }
 
-    // `fromCache` is exposed so the caller can fire a shadow-CH comparison
-    // only on misses. Temporary — revert to plain `Result<BillingUsageMetrics>`
-    // once the shadow path is removed.
-    public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<{ value: BillingUsageMetrics; fromCache: boolean }>> {
+    public async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         const cacheKey = this.getCacheKey(subscriptionId, opts);
         let cached: string | null = null;
         try {
@@ -50,7 +47,7 @@ export class UsageBillingClient {
             try {
                 const parsed: BillingUsageMetrics = JSON.parse(cached);
                 metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'true' });
-                return Ok({ value: parsed, fromCache: true });
+                return Ok(parsed);
             } catch {
                 // ignore parse errors and proceed to fetch from API
             }
@@ -73,7 +70,7 @@ export class UsageBillingClient {
                 } catch (err) {
                     logger.warning(`billing usage Orb cache write failed for subscription=${subscriptionId}: ${stringifyError(err)}`);
                 }
-                return Ok({ value: res.value, fromCache: false });
+                return Ok(res.value);
             }
             metrics.increment(metrics.Types.BILLING_USAGE_ORB_ERRORS, 1, tags);
             return Err(res.error);

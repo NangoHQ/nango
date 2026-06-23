@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.9] - 2026-06-23
+
+### Added
+
+- *(observability)* Add nango.usage.revalidate.work span for lock-acquired path (#6586) by @pfreixes
+- *(metering)* Persist data_transfer events to CH (#6483) by @ErickRDev
+- *(integrations)* Add a skip_encode config to attio-mcp (#6577) by @hassan254-prog
+- *(feature-flags)* Implement OAuth state cookie enforcement flag (#6533) by @agusayerza
+- Separate function catalog (#6465) by @kaposke
+- *(integrations)* Add support for boondmanager (#6594) by @hassan254-prog
+- *(sync_jobs)* Backfill id_big from id (NAN-5491 Phase 3b) (#6377) by @pfreixes
+- *(integrations)* Add support for netsuite-client-credentials (#6583) by @hassan254-prog
+- *(sync_jobs)* Build unique index on id_big (NAN-5491 Phase 3c) (#6378) by @pfreixes
+- *(integrations)* Add support for workday-cc (#6588) by @hassan254-prog
+- *(sync_jobs)* Validate id_big NOT NULL (NAN-5491 Phase 3d) (#6379) by @pfreixes
+- *(sync_jobs)* Atomic PK swap from int4 id to bigint (NAN-5491 Phase 3e) (#6380) by @pfreixes
+- *(sync_jobs)* Drop legacy id_old and lift sequence to bigint (NAN-5491 Phase 3f) (#6381) by @pfreixes
+- Public endpoint to deploy function template (#6558) by @kaposke
+- *(integrations)* Add support for ironclad-cc (#6585) by @hassan254-prog
+- *(usage)* Compose filter with breakdown (NAN-5874) (#6545) by @macko911
+- *(usage)* Drop the 6h CH inner cache from the capping path (#6605) by @pfreixes
+
+### Changed
+
+- Update version in manifest by @actions-user
+- *(lint)* Move import sorting to Prettier (#6582) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9b90d563da83c22abcd518d1f6f795e865995457 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a25e1767d723dd55aa190e80a94e6a43523c8237 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6e7f1bfa5ac51e442b459131ef28af99424204f4 by Victor Lang'at by @github-actions[bot]
+- Make tsconfigs compatible with typescript-go (#6593) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/13b04626a556f4a2484e90b416b7c2f836bc5e23 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/5746cac87f06e2c80843c02258a0e75b1b0d4926 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/c33f8fe2f97083392dbdd599671e3ce8997ca7b2 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/60c8a54ffc81b42ae2d066cdfdbd7cbbf10d3b0b by Victor Lang'at by @github-actions[bot]
+- *(lint)* Replace ESLint with oxlint (#6604) by @macko911
+- Update egress-metering middleware (#6591) by @ErickRDev
+- Update version in manifest by @actions-user
+
+### Fixed
+
+- *(in-app)* Fix the in-app chat support button location (#6590) by @hassan254-prog
+- *(webapp)* Stop logs table bouncing on auto-refresh (#6592) by @macko911
+- *(server)* Enforce RBAC on flow read routes (#6603) by @pfreixes
+- *(vulns)* Fix high vulnerabilities (#6608) by @rossmcewan
+- *(metrics)* Improve traces on startAction (#6612) by @agusayerza
+- *(frontend)* Make ConnectUI.open() idempotent (#6611) by @nguyendangtrinh
+
 ## [v0.70.8] - 2026-06-19
 
 ### Added
@@ -7124,6 +7171,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.9]: https://github.com/NangoHQ/nango/compare/v0.70.8..v0.70.9
 [v0.70.8]: https://github.com/NangoHQ/nango/compare/v0.70.7..v0.70.8
 [v0.70.7]: https://github.com/NangoHQ/nango/compare/v0.70.6..v0.70.7
 [v0.70.6]: https://github.com/NangoHQ/nango/compare/v0.70.5..v0.70.6

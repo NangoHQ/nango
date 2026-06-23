@@ -1,7 +1,6 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
-import { envsForTests as usageEnvs } from '@nangohq/usage';
 
 import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -17,30 +16,14 @@ describe(`GET ${route}`, () => {
         api.server.close();
     });
 
-    afterEach(() => {
-        (usageEnvs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
-        (usageEnvs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
-    });
-
     it('should be protected', async () => {
         // @ts-expect-error type declares `env` but the controller rejects any query param
         const res = await api.fetch(route, { method: 'GET' });
         shouldBeProtected(res);
     });
 
-    it('returns billingUsageSource=orb by default', async () => {
+    it('returns billingUsageSource=clickhouse', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-        // @ts-expect-error type declares `env` but the controller rejects any query param
-        const res = await api.fetch(route, { method: 'GET', session });
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-        expect(res.json.data.billingUsageSource).toBe('orb');
-    });
-
-    it('returns billingUsageSource=clickhouse when the account is in the rollout allowlist', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
-        (usageEnvs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = String(account.id);
         const session = await authenticateUser(api, user);
         // @ts-expect-error type declares `env` but the controller rejects any query param
         const res = await api.fetch(route, { method: 'GET', session });
