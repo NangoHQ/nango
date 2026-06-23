@@ -24,6 +24,17 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
+    it('should parse a valid NANGO_WEBHOOK_URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_WEBHOOK_URL: 'https://webhooks.example.com' });
+        expect(res.NANGO_WEBHOOK_URL).toBe('https://webhooks.example.com');
+    });
+
+    it('should throw on an invalid NANGO_WEBHOOK_URL', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_WEBHOOK_URL: 'not-a-url' });
+        }).toThrowError();
+    });
+
     it('should parse E2B sandbox metric settings', () => {
         const res = parseEnvs(ENVS, {
             E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',

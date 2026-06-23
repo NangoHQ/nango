@@ -169,7 +169,7 @@ export function getGlobalOAuthCallbackUrl() {
 }
 
 export function getGlobalWebhookReceiveUrl() {
-    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
+    const baseUrl = process.env['NANGO_WEBHOOK_URL'] || process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/webhook';
 }
 
