@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
@@ -29,67 +29,6 @@ import type { BillingUsageMetric, BillingUsageMetrics, BreakdownDimensions, GetB
 import type { Result } from '@nangohq/utils';
 
 const cacheKeyPrefix = 'usageV2';
-
-// CH MV typed-projections started ingesting 2026-05-12; comparing earlier
-// windows against Orb produces known-bad divergence (CH biases high until 30d
-// of depth). Anchor the shadow to a clean post-backfill date.
-const SHADOW_MIN_TIMEFRAME_START = new Date('2026-06-01T00:00:00.000Z');
-// CH server-side ceiling on shadow reads. Bounded much tighter than the
-// dashboard default (30s) so an abandoned shadow doesn't keep burning CH
-// compute after the wall-clock race resolves.
-const SHADOW_CH_MAX_EXECUTION_SECONDS = 5;
-// Wall-clock fallback set ~0.5s above the CH ceiling so CH's own timeout
-// reliably fires first → `outcome:ch_error` is the deterministic signal and
-// the local race only catches network-level wedges.
-const SHADOW_TIMEOUT_MS = SHADOW_CH_MAX_EXECUTION_SECONDS * 1000 + 500;
-
-export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is GetBillingUsageOpts & { timeframe: { start: Date; end: Date } } {
-    if (!envs.FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE) return false;
-    if (!opts?.timeframe?.start || !opts?.timeframe?.end) return false;
-    return opts.timeframe.start >= SHADOW_MIN_TIMEFRAME_START;
-}
-
-// Per-call random sample (not account-based) so we can ramp + killswitch CH
-// load without an account cohort being permanently in or out.
-export function shouldShadowCapping(opts: GetBillingUsageOpts | undefined): boolean {
-    if (opts?.timeframe) return false;
-    const pct = envs.FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE;
-    if (pct <= 0) return false;
-    return Math.random() * 100 < pct;
-}
-
-let cachedAllowlistCsv: string | undefined;
-let cachedAllowlist = new Set<number>();
-function getRolloutAllowlist(): Set<number> {
-    const csv = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS;
-    if (csv !== cachedAllowlistCsv) {
-        cachedAllowlistCsv = csv;
-        cachedAllowlist = new Set();
-        for (const part of csv.split(',')) {
-            const trimmed = part.trim();
-            // Strict digit-only to keep scientific/hex/decimal forms from
-            // silently casting to an unintended account id.
-            if (/^\d+$/.test(trimmed)) cachedAllowlist.add(Number(trimmed));
-        }
-    }
-    return cachedAllowlist;
-}
-
-export function shouldUseClickhouseFor(accountId: number): boolean {
-    if (getRolloutAllowlist().has(accountId)) return true;
-    const pct = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE;
-    if (pct > 0 && accountId % 100 < pct) return true;
-    return false;
-}
-
-export function resolveBillingUsageSource(accountId: number, requestedSource: 'clickhouse' | 'orb' | undefined): 'clickhouse' | 'orb' {
-    const respected = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE ? requestedSource : undefined;
-    return respected ?? (shouldUseClickhouseFor(accountId) ? 'clickhouse' : 'orb');
-}
-
-export function resolveCappingSource(accountId: number): 'clickhouse' | 'orb' {
-    return accountId % 100 < envs.FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE ? 'clickhouse' : 'orb';
-}
 
 async function resolveEnvironmentNamesInBreakdown(
     usage: BillingUsageMetrics,
@@ -178,17 +117,11 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
-    private redis: Awaited<ReturnType<typeof getRedis>>;
     public billingClient: UsageBillingClient;
-    // Read-only client for the dashboard CH path (gated by
-    // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
-    // Lazy-init keeps the dependency out of code paths that never read
-    // billing usage from CH.
     private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
-        this.redis = redis;
         this.billingClient = new UsageBillingClient(redis);
     }
 
@@ -388,26 +321,25 @@ export class UsageTracker implements IUsageTracker {
     }
 
     public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
-        const effectiveSource = resolveBillingUsageSource(accountId, opts?.source);
-        const useClickhouseForDashboard = effectiveSource === 'clickhouse' && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
-
-        if (useClickhouseForDashboard) {
-            return this.getBillingUsageFromClickhouse(accountId, {
-                timeframe: opts.timeframe!,
-                ...(opts.metrics ? { metrics: opts.metrics } : {}),
-                ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
-                ...(opts.top !== undefined ? { top: opts.top } : {}),
-                ...(opts.filter ? { filter: opts.filter } : {})
-            });
+        // ClickHouse is the default. `?source=orb` only takes effect when
+        // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev-only parity checks).
+        const orbOverride = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE && opts?.source === 'orb';
+        if (!orbOverride) {
+            if (opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end) {
+                return this.getBillingUsageFromClickhouse(accountId, {
+                    timeframe: opts.timeframe,
+                    ...(opts.metrics ? { metrics: opts.metrics } : {}),
+                    ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
+                    ...(opts.top !== undefined ? { top: opts.top } : {}),
+                    ...(opts.filter ? { filter: opts.filter } : {})
+                });
+            }
+            return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
         }
 
-        if (!opts?.timeframe && resolveCappingSource(accountId) === 'clickhouse') {
-            return this.getCappingUsageFromClickhouse(accountId);
-        }
-
-        // Orb path: strip CH-only fields so they don't pollute the billing
-        // client's Redis cache key. Orb itself ignores them, but the cache key
-        // hashes the full opts and would miss on otherwise-identical queries.
+        // Strip CH-only fields so they don't pollute the Orb client's Redis
+        // cache key. Orb ignores them, but the cache key hashes the full opts
+        // and would miss on otherwise-identical queries.
         const orbOpts: GetBillingUsageOpts | undefined = opts
             ? {
                   ...(opts.timeframe ? { timeframe: opts.timeframe } : {}),
@@ -415,143 +347,16 @@ export class UsageTracker implements IUsageTracker {
                   ...(opts.billingMetric ? { billingMetric: opts.billingMetric } : {})
               }
             : undefined;
-        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, orbOpts);
-        if (billingUsageMetrics.isErr()) {
-            return Err(billingUsageMetrics.error);
+        const orbResult = await this.billingClient.getUsage(subscriptionId, orbOpts);
+        if (orbResult.isErr()) {
+            return Err(orbResult.error);
         }
-
-        const orbValue = billingUsageMetrics.value.value;
-        const formatted: BillingUsageMetrics = {
+        const orbValue = orbResult.value;
+        return Ok({
             ...orbValue,
             connections: orbValue.connections ? toCumulativeUsage(orbValue.connections) : undefined,
             records: orbValue.records ? toCumulativeUsage(orbValue.records) : undefined
-        };
-
-        if (!billingUsageMetrics.value.fromCache && shouldShadow(opts)) {
-            // Pass raw Orb (pre-`toCumulativeUsage`) so the AVG-metric
-            // comparison isn't biased by the formatter's `Math.floor` — both
-            // sides are floats, true apples-to-apples.
-            void this.shadowAgainstClickhouse({ accountId, timeframe: opts.timeframe, orbResult: orbValue }).catch((err: unknown) => {
-                logger.error(`billing-usage shadow failed: ${stringifyError(err)}`);
-            });
-        }
-
-        if (!billingUsageMetrics.value.fromCache && shouldShadowCapping(opts)) {
-            void this.shadowCappingAgainstClickhouse({ accountId, orbResult: orbValue }).catch((err: unknown) => {
-                logger.error(`billing-usage capping shadow failed: ${stringifyError(err)}`);
-            });
-        }
-
-        return Ok(formatted);
-    }
-
-    /**
-     * Fire CH with the same shape as the just-completed Orb call and emit
-     * per-metric divergence telemetry. Wrapped in a 5s timeout so a slow CH
-     * query can't pile up requests. Observability-only — never throws.
-     */
-    private async shadowAgainstClickhouse({
-        accountId,
-        timeframe,
-        orbResult
-    }: {
-        accountId: number;
-        timeframe: { start: Date; end: Date };
-        orbResult: BillingUsageMetrics;
-    }): Promise<void> {
-        const start = process.hrtime.bigint();
-
-        // Shared error reference so we can identify the timeout branch in the
-        // outcome tag without string-matching the message.
-        const timeoutErr = new Error('shadow_timeout');
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
-            this.getBillingUsageFromClickhouse(accountId, { timeframe, maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
-            new Promise((resolve) => {
-                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
-            })
-        ]);
-        clearTimeout(timeoutId);
-
-        const outcome = chResult.isOk() ? 'ok' : chResult.error === timeoutErr ? 'timeout' : 'ch_error';
-        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
-        metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DURATION_MS, elapsedMs, { outcome });
-        if (chResult.isErr()) return;
-
-        // Iterate the complete metric set (not just one side's keys) and
-        // coerce `undefined` to 0 — a metric absent from either response is
-        // what the customer sees as 0 on the dashboard, so it must count
-        // toward the one-sided signal when only one side has data.
-        // One-sided emits a separate counter rather than divergence=1.0 so
-        // missing-data spikes don't drown out the continuous-divergence p99.
-        const allMetrics: UsageMetric[] = [...COUNTER_METRICS, ...AVG_METRICS];
-        for (const metric of allMetrics) {
-            const orbTotal = orbResult[metric]?.total ?? 0;
-            const chTotal = chResult.value[metric]?.total ?? 0;
-            if (orbTotal === 0 && chTotal === 0) continue;
-            if (orbTotal === 0 || chTotal === 0) {
-                const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
-                metrics.increment(metrics.Types.BILLING_USAGE_SHADOW_ONE_SIDED, 1, { accountId, metric, zeroSide });
-                continue;
-            }
-            const denom = Math.max(orbTotal, chTotal);
-            const divergence = Math.abs(orbTotal - chTotal) / denom;
-            const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
-            metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
-        }
-    }
-
-    private async getCappingUsageFromClickhouse(accountId: number): Promise<Result<BillingUsageMetrics>> {
-        return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
-    }
-
-    private async writeCappingCache(accountId: number, value: BillingUsageMetrics): Promise<void> {
-        try {
-            await this.redis.set(`billing:usage:ch:${accountId}`, JSON.stringify(value), { EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS });
-        } catch (err) {
-            logger.warning(`capping CH cache write failed for account=${accountId}: ${stringifyError(err)}`);
-        }
-    }
-
-    private async shadowCappingAgainstClickhouse({ accountId, orbResult }: { accountId: number; orbResult: BillingUsageMetrics }): Promise<void> {
-        const start = process.hrtime.bigint();
-        const timeoutErr = new Error('shadow_timeout');
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
-            this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date(), { maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
-            new Promise((resolve) => {
-                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
-            })
-        ]);
-        clearTimeout(timeoutId);
-
-        const outcome = chResult.isOk() ? 'ok' : chResult.error === timeoutErr ? 'timeout' : 'ch_error';
-        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
-        metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DURATION_MS, elapsedMs, { outcome });
-        if (chResult.isErr()) return;
-
-        // Populate the CH cache key so the eventual source flip from Orb to
-        // CH doesn't cold-start every account against CH on cutover.
-        await this.writeCappingCache(accountId, chResult.value);
-
-        // Capping path covers only COUNTER metrics — connections/records read
-        // from Postgres on the capping path and aren't returned by either Orb
-        // (no-timeframe scopes to billing period totals, AVG metrics are
-        // formatter-only) or the CH primitive here.
-        for (const metric of COUNTER_METRICS) {
-            const orbTotal = orbResult[metric]?.total ?? 0;
-            const chTotal = chResult.value[metric]?.total ?? 0;
-            if (orbTotal === 0 && chTotal === 0) continue;
-            if (orbTotal === 0 || chTotal === 0) {
-                const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
-                metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED, 1, { accountId, metric, zeroSide });
-                continue;
-            }
-            const denom = Math.max(orbTotal, chTotal);
-            const divergence = Math.abs(orbTotal - chTotal) / denom;
-            const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
-            metrics.distribution(metrics.Types.BILLING_USAGE_CAPPING_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
-        }
+        });
     }
 
     /**
@@ -570,16 +375,13 @@ export class UsageTracker implements IUsageTracker {
             metrics?: UsageMetric[];
             breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
             top?: number;
-            // Override CH `max_execution_time` for every fan-out query. The
-            // shadow path uses this so an abandoned race doesn't keep CH busy.
-            maxExecutionSeconds?: number;
             // Per-metric row-level filter. May combine with `breakdown` on the
             // same metric when the dimensions differ; the controller rejects the
             // same-dim combination.
             filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
         }
     ): Promise<Result<BillingUsageMetrics>> {
-        const { timeframe, metrics: scopedMetrics, breakdown, top, maxExecutionSeconds, filter } = opts;
+        const { timeframe, metrics: scopedMetrics, breakdown, top, filter } = opts;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
         const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
@@ -588,7 +390,6 @@ export class UsageTracker implements IUsageTracker {
         const avgNoDim = avgMetrics.filter((m) => !breakdown?.[m]);
         const ch = this.getClickhouse();
 
-        const maxExecOpt = maxExecutionSeconds !== undefined ? { maxExecutionSeconds } : {};
         // `filter[m]` is the per-metric filter typed as
         // `{ dimension: BreakdownDimensions[m]; value: string } | undefined`.
         // TypeScript can't narrow the union when `m` is a generic counter
@@ -610,9 +411,7 @@ export class UsageTracker implements IUsageTracker {
         // safe because controller-side zod validates the (metric, dim) pair.
         const counterBaseP = Promise.all(
             counterNoDim.map((m) =>
-                ch
-                    .getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...filterOpt(m), ...maxExecOpt } as GetDailyCounterQuery)
-                    .then((r) => [m, r] as const)
+                ch.getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...filterOpt(m) } as GetDailyCounterQuery).then((r) => [m, r] as const)
             )
         );
         const avgBaseP = Promise.all(
@@ -623,8 +422,7 @@ export class UsageTracker implements IUsageTracker {
                         metric: m,
                         dimension: 'none',
                         timeframe,
-                        ...filterOpt(m),
-                        ...maxExecOpt
+                        ...filterOpt(m)
                     } as GetDailySumAndBatchesQuery)
                     .then((r) => [m, r] as const)
             )
@@ -637,7 +435,7 @@ export class UsageTracker implements IUsageTracker {
         const counterBreakdownCalls = [
             inScope('proxy') && breakdown?.proxy
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt, ...maxExecOpt, ...filterOpt('proxy') })
+                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt, ...filterOpt('proxy') })
                       .then((r) => ['proxy' as const, r] as const)
                 : null,
             inScope('function_executions') && breakdown?.function_executions
@@ -648,7 +446,6 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.function_executions,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt,
                           ...filterOpt('function_executions')
                       })
                       .then((r) => ['function_executions' as const, r] as const)
@@ -661,7 +458,6 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.function_logs,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt,
                           ...filterOpt('function_logs')
                       })
                       .then((r) => ['function_logs' as const, r] as const)
@@ -674,7 +470,6 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.function_compute_gbms,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt,
                           ...filterOpt('function_compute_gbms')
                       })
                       .then((r) => ['function_compute_gbms' as const, r] as const)
@@ -687,7 +482,6 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.webhook_forwards,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt,
                           ...filterOpt('webhook_forwards')
                       })
                       .then((r) => ['webhook_forwards' as const, r] as const)
@@ -704,7 +498,6 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.records,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt,
                           ...filterOpt('records')
                       })
                       .then((r) => ['records' as const, r] as const)
@@ -717,7 +510,6 @@ export class UsageTracker implements IUsageTracker {
                           dimension: breakdown.connections,
                           timeframe,
                           ...topOpt,
-                          ...maxExecOpt,
                           ...filterOpt('connections')
                       })
                       .then((r) => ['connections' as const, r] as const)

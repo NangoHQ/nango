@@ -99,10 +99,9 @@ export interface GetBillingUsageOpts {
         group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
     };
     /**
-     * Per-request override of the dashboard backend source. Honoured only
-     * when `FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled (dev gate); ignored
-     * everywhere else, so the default stays Orb. Only used by
-     * `UsageTracker.getBillingUsage`; the Orb client itself ignores it.
+     * Dev-only escape hatch: pins the request to Orb for parity checks.
+     * Honoured only when `FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled;
+     * ignored everywhere else. Default is ClickHouse.
      */
     source?: 'clickhouse' | 'orb';
     /**
