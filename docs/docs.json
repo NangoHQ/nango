@@ -1509,6 +1509,7 @@
               "integrations/all/readwise-reader",
               "api-integrations/read-ai",
               "api-integrations/reapit",
+              "api-integrations/rydership",
               "api-integrations/rydoo",
               "api-integrations/recall-ai",
               "api-integrations/reply-io",
