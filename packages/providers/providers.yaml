@@ -12414,11 +12414,11 @@ microsoft-oauth2-cc-cert:
         content-type: application/x-www-form-urlencoded
     assertion:
         type: jwt
-        key: ${assertionOption.privateKey}
+        key: ${credentials.privateKey}
         lifetimeInSeconds: 3600
         header:
-            alg: RS256
-            x5t: ${assertionOption.certificateThumbprint}
+            alg: PS256
+            x5t#S256: ${credentials.certificateThumbprint}
         payload:
             iss: ${credentials.clientId}
             sub: ${credentials.clientId}
@@ -12456,24 +12456,24 @@ microsoft-oauth2-cc-cert:
             format: uuid
             example: 11112222-bbbb-3333-cccc-4444dddd5555
             doc_section: '#step-2-registering-your-application-and-finding-your-client-id'
-        assertion:
-            type: string
-            title: ''
-            description: ''
-            automated: true
-    assertion_option:
         privateKey:
             type: string
             title: Private Key
             description: The RSA private key (PEM format) matching the certificate uploaded to your Azure app registration.
             example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----"
+            secret: true
             doc_section: '#step-3-generating-a-certificate-and-uploading-it-to-azure'
         certificateThumbprint:
             type: string
-            title: Certificate Thumbprint (x5t)
-            description: The base64url-encoded SHA-1 thumbprint of your certificate.
+            title: Certificate Thumbprint (x5t#S256)
+            description: The base64url-encoded SHA-256 thumbprint of your certificate.
             example: rCnkMH5GKJI03tRpdjBh8OG2U8I
             doc_section: '#step-4-computing-the-certificate-thumbprint-x5t'
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 microsoft-intune:
     display_name: Microsoft Intune
