@@ -4,6 +4,8 @@ import * as z from 'zod';
 
 import { createAction, createFunction, createOnEvent, createSync, createWebhook } from './scripts.js';
 
+import type { HTTP_METHOD } from '@nangohq/types';
+
 describe('scripts', () => {
     describe('createSync', () => {
         it('should create a sync', () => {
@@ -188,29 +190,22 @@ describe('scripts', () => {
     });
 
     describe('createFunction', () => {
-        it('should create a function with explicit triggers', () => {
+        it('should create a function with an http trigger', () => {
             const fn = createFunction({
                 description: 'Handle contact updates',
-                triggers: [
-                    { kind: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
-                    { kind: 'schedule', schedule: 'every hour' }
-                ],
-                exec: async (nango, event) => {
-                    if (event.kind === 'http') {
-                        expectTypeOf(event.request.body).toBeUnknown();
-                    } else {
-                        expectTypeOf(event.payload).toBeUnknown();
-                    }
-                    await nango.log('event', event.kind);
+                trigger: { kind: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
+                exec: async (nango, trigger) => {
+                    // precise typing: an http trigger, no narrowing needed
+                    expectTypeOf(trigger.kind).toEqualTypeOf<'http'>();
+                    expectTypeOf(trigger.request.body).toBeUnknown();
+                    expectTypeOf(trigger.request.method).toEqualTypeOf<HTTP_METHOD>();
+                    await nango.log('event', trigger.request.body);
                 }
             });
 
             expect(fn).toStrictEqual({
                 description: 'Handle contact updates',
-                triggers: [
-                    { kind: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
-                    { kind: 'schedule', schedule: 'every hour' }
-                ],
+                trigger: { kind: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
                 type: 'function',
                 exec: expect.any(Function)
             });
@@ -218,13 +213,13 @@ describe('scripts', () => {
 
         it('should type the schedule payload from the input schema and expose models via data', () => {
             createFunction({
-                triggers: [{ kind: 'schedule', schedule: 'every hour' }],
+                trigger: { kind: 'schedule', schedule: 'every hour' },
                 input: z.object({ portalId: z.string() }),
                 data: { models: { Contact: z.object({ id: z.string() }) } },
-                exec: async (nango, event) => {
-                    if (event.kind === 'schedule') {
-                        expectTypeOf(event.payload).toEqualTypeOf<{ portalId: string }>();
-                    }
+                exec: async (nango, trigger) => {
+                    // precise typing: a schedule trigger, payload typed from input
+                    expectTypeOf(trigger.kind).toEqualTypeOf<'schedule'>();
+                    expectTypeOf(trigger.payload).toEqualTypeOf<{ portalId: string }>();
                     // model names are typed from data.models
                     expectTypeOf(nango.batchSave).parameter(1).toEqualTypeOf<'Contact'>();
                     await nango.batchSave([{ id: '1' }], 'Contact');
@@ -249,18 +244,17 @@ describe('scripts', () => {
                 description: 'Contacts webhook',
                 ingress,
                 debounce: { key: { body: '$.portalId' }, windowMs: 5000 },
-                exec: async (nango, event) => {
+                exec: async (nango, trigger) => {
                     // Webhook bodies are provider-defined → request.body is unknown.
-                    expectTypeOf(event.request.body).toBeUnknown();
-                    await nango.log('event', event.request.body);
+                    expectTypeOf(trigger.request.body).toBeUnknown();
+                    await nango.log('event', trigger.request.body);
                 }
             });
 
             expect(webhook.type).toBe('function');
             expect(webhook.name).toBe('contacts-updated');
-            expect(webhook.triggers).toHaveLength(1);
             // ingress and debounce both live on the implicit http trigger
-            expect(webhook.triggers[0]).toStrictEqual({
+            expect(webhook.trigger).toStrictEqual({
                 kind: 'http',
                 name: 'contacts-updated',
                 ingress,
@@ -281,8 +275,7 @@ describe('scripts', () => {
 
             expect(webhook.type).toBe('function');
             expect(webhook.name).toBeUndefined();
-            expect(webhook.triggers).toHaveLength(1);
-            expect(webhook.triggers[0]).toStrictEqual({ kind: 'http' });
+            expect(webhook.trigger).toStrictEqual({ kind: 'http' });
         });
     });
 });

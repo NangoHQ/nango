@@ -22,7 +22,7 @@ import type {
     CreateOnEventResponse,
     CreateSyncResponse,
     DebounceOptions,
-    FunctionTrigger
+    TriggerDefinition
 } from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type {
@@ -274,33 +274,29 @@ export function parseFunction({
     basename: string;
     basenameClean: string;
 }): Result<ParsedNangoFunction> {
-    if (!Array.isArray(params.triggers) || params.triggers.length === 0) {
-        return Err(new Error(`Function "${basename}" must declare at least one trigger (${filePath})`));
+    if (!params.trigger) {
+        return Err(new Error(`Function "${basename}" must declare a trigger (${filePath})`));
     }
 
-    // Validate schedule intervals and normalize per-http-trigger debounce while building the triggers.
-    const parsedTriggers: ParsedFunctionTrigger[] = [];
-    for (const trigger of params.triggers) {
-        if (trigger.kind === 'schedule') {
-            const interval = getInterval(trigger.schedule, new Date());
-            if (interval instanceof Error) {
-                return Err(new InvalidIntervalDefinitionError(filePath, ['createFunction', 'triggers', 'schedule']));
-            }
+    // Validate the schedule interval and normalize http debounce while building the trigger.
+    const trigger = params.trigger;
+    if (trigger.kind === 'schedule') {
+        const interval = getInterval(trigger.schedule, new Date());
+        if (interval instanceof Error) {
+            return Err(new InvalidIntervalDefinitionError(filePath, ['createFunction', 'trigger', 'schedule']));
         }
+    }
 
-        const parsedTrigger = toParsedTrigger(trigger);
+    const parsedTrigger = toParsedTrigger(trigger);
 
-        if (trigger.kind === 'http' && trigger.debounce !== undefined) {
-            const debounce = normalizeDebounce(trigger.debounce, { filePath, basename });
-            if (debounce instanceof Error) {
-                return Err(debounce);
-            }
-            if (debounce !== undefined) {
-                parsedTrigger.debounce = debounce;
-            }
+    if (trigger.kind === 'http' && trigger.debounce !== undefined) {
+        const debounce = normalizeDebounce(trigger.debounce, { filePath, basename });
+        if (debounce instanceof Error) {
+            return Err(debounce);
         }
-
-        parsedTriggers.push(parsedTrigger);
+        if (debounce !== undefined) {
+            parsedTrigger.debounce = debounce;
+        }
     }
 
     const models = params.data?.models;
@@ -331,7 +327,7 @@ export function parseFunction({
         type: 'function',
         name: params.name || basename,
         description: params.description || '',
-        triggers: parsedTriggers,
+        trigger: parsedTrigger,
         input: inputName,
         output: outputNames.length > 0 ? outputNames : null,
         scopes: params.scopes || [],
@@ -344,7 +340,7 @@ export function parseFunction({
     return Ok(fn);
 }
 
-function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
+function toParsedTrigger(trigger: TriggerDefinition): ParsedFunctionTrigger {
     const parsed: ParsedFunctionTrigger = { kind: trigger.kind };
     if (trigger.kind === 'http') {
         if (trigger.name !== undefined) {

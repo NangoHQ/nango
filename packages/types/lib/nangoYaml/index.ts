@@ -173,7 +173,7 @@ export interface ParsedNangoFunction {
     name: string;
     type: 'function';
     description: string;
-    triggers: ParsedFunctionTrigger[];
+    trigger: ParsedFunctionTrigger;
     input: string | null;
     output: string[] | null;
     scopes: string[];

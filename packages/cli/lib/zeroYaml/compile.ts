@@ -529,7 +529,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                 return t.objectExpression([
                     t.objectProperty(t.identifier('type'), t.stringLiteral('function')),
                     ...topProps,
-                    t.objectProperty(t.identifier('triggers'), t.arrayExpression([t.objectExpression(triggerProps)]))
+                    t.objectProperty(t.identifier('trigger'), t.objectExpression(triggerProps))
                 ]);
             }
 
