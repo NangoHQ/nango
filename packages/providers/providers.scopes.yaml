@@ -2735,17 +2735,63 @@ fanvue:
     - write:post
     - write:tracking_links
 
-# source: https://fathom.video/.well-known/oauth-authorization-server (scopes_supported)
+# source: https://developers.fathom.ai/sdks/oauth#oauth-scopes
 fathom-oauth:
-    - mcp
+    - public_api
 
 # source: https://www.figma.com/.well-known/oauth-authorization-server (scopes_supported)
 figjam:
-    - mcp:connect
+    - current_user:read
+    - file_comments:read
+    - file_comments:write
+    - file_content:read
+    - file_dev_resources:read
+    - file_dev_resources:write
+    - file_metadata:read
+    - file_variables:read
+    - file_variables:write
+    - file_versions:read
+    - files:read
+    - library_analytics:read
+    - library_assets:read
+    - library_content:read
+    - org:activity_log_read
+    - org:ai_metering_usage_read
+    - org:developer_log_read
+    - org:discovery_read
+    - project_metadata:read
+    - projects:read
+    - selections:read
+    - team_library_content:read
+    - webhooks:read
+    - webhooks:write
 
-# source: https://www.figma.com/.well-known/oauth-authorization-server (scopes_supported)
+# source: https://developers.figma.com/docs/rest-api/scopes/
 figma:
-    - mcp:connect
+    - current_user:read
+    - file_comments:read
+    - file_comments:write
+    - file_content:read
+    - file_dev_resources:read
+    - file_dev_resources:write
+    - file_metadata:read
+    - file_variables:read
+    - file_variables:write
+    - file_versions:read
+    - files:read
+    - library_analytics:read
+    - library_assets:read
+    - library_content:read
+    - org:activity_log_read
+    - org:ai_metering_usage_read
+    - org:developer_log_read
+    - org:discovery_read
+    - project_metadata:read
+    - projects:read
+    - selections:read
+    - team_library_content:read
+    - webhooks:read
+    - webhooks:write
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 fillout: []
@@ -10948,6 +10994,9 @@ stripe-app-sandbox: []
 stripe-express:
     - read_only
     - read_write
+
+# source: providers.yaml (no official scopes page or discovery endpoint found)
+surecontact: []
 
 # source: https://developer.surveymonkey.com/api/v3/#scopes
 survey-monkey:
