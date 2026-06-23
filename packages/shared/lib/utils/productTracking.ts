@@ -1,6 +1,6 @@
 import { PostHog } from 'posthog-node';
 
-import { NANGO_VERSION, baseUrl, report } from '@nangohq/utils';
+import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
 
 import type { DBTeam, DBUser } from '@nangohq/types';
 

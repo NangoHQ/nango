@@ -4,10 +4,10 @@ import { useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
+import { cn } from '../../utils/utils.js';
 import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
 import { Tag } from './Tag.js';
-import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';

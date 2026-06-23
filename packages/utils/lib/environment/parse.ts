@@ -92,6 +92,9 @@ export const ENVS = z.object({
     // snapshot it.
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
+    // Metering
+    METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
+
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
     PERSIST_HARD_DELETE_LIMIT: z.coerce.number().int().positive().optional().default(50_000),
@@ -321,23 +324,10 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // Gate that *permits* the per-request `source` override on
-    // `getBillingUsage` (dashboard path). When OFF (prod default), the
-    // `source` query param is ignored and the dashboard always uses Orb;
-    // when ON (dev), the param is honoured, letting individual sessions
-    // flip via localStorage('nango.billingUsageSource') without a redeploy.
-    // The flag does NOT change the default — even when on, missing override
-    // → Orb. Capping is unaffected (no override mechanism there).
+    // Dev-only override: allows the `source` query param on `getBillingUsage`
+    // to pin a request to Orb for parity checks. Default is ClickHouse; when
+    // OFF (prod default), the `source` param is ignored.
     FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
-
-    // Shadow dashboard read against ClickHouse to compare totals vs Orb. Only
-    // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
-    // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
-    FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
-    FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
-    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
-    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
-    FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
@@ -651,7 +641,6 @@ export const ENVS = z.object({
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
     AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
     AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
-    AGENTCORE_REGION: z.string().min(1).optional(),
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),

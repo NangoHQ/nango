@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { posix as path } from 'node:path';
 
-import { CommandExitError, RateLimitError, Sandbox as E2B, TimeoutError } from 'e2b';
+import { CommandExitError, Sandbox as E2B, RateLimitError, TimeoutError } from 'e2b';
 
 import { getLogger, stringifyError } from '@nangohq/utils';
 
-import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 import { envs } from '../env.js';
+import { SandboxCommandExitError, SandboxCommandTimeoutError, SandboxUnavailableError } from './errors.js';
 
 import type { CreateSandboxParams, Sandbox, SandboxCommandParams, SandboxCommandResult, SandboxFile, SandboxProvider } from './types.js';
 import type { SandboxListOpts } from 'e2b';

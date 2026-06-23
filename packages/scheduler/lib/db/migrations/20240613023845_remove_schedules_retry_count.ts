@@ -1,5 +1,6 @@
-import type { Knex } from 'knex';
 import { SCHEDULES_TABLE } from '../../models/schedules.js';
+
+import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`

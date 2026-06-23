@@ -5,16 +5,16 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
 
-import { OperationTag } from '../components/OperationTag';
-import { ProviderTag } from '../components/ProviderTag';
-import { Logs } from './components/Logs';
-import { useGetOperation } from '../../../hooks/useLogs';
-import { useStore } from '../../../store';
-import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
-import { StatusTag } from '../components/StatusTag';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { useGetOperation } from '../../../hooks/useLogs';
+import { useStore } from '../../../store';
+import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
+import { OperationTag } from '../components/OperationTag';
+import { ProviderTag } from '../components/ProviderTag';
+import { StatusTag } from '../components/StatusTag';
+import { Logs } from './components/Logs';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);

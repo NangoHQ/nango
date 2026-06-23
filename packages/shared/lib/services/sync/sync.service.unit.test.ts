@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logContextGetter } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
+import { Orchestrator } from '../../clients/orchestrator.js';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import * as syncConfigService from './config/config.service.js';
 import syncManager from './manager.service.js';
 import { getAndReconcileDifferences } from './sync.service.js';
 import * as syncService from './sync.service.js';
-import { Orchestrator } from '../../clients/orchestrator.js';
 
 import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 import type { Sync, SyncConfigWithProvider } from '../../models/Sync.js';

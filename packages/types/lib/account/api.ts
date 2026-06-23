@@ -107,12 +107,11 @@ export type PostLogout = Endpoint<{
 }>;
 
 export type PostForgotPassword = Endpoint<{
-    Method: 'PUT';
+    Method: 'POST';
     Path: '/api/v1/account/forgot-password';
     Body: {
         email: string;
     };
-    Error: ApiError<'user_not_found'>;
     Success: {
         success: true;
     };

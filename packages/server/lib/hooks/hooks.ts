@@ -2,18 +2,19 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import {
-    NangoError,
-    ProxyRequest,
     connectionService,
     customerKeyService,
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
+    makeDataTransferEvent,
+    NangoError,
     productTracking,
+    ProxyRequest,
     pubsub,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted, metrics, report } from '@nangohq/utils';
+import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { slackService } from '../services/slack.js';
@@ -447,9 +448,18 @@ export async function credentialsTest({
                     oauth_client_id: config.oauth_client_id,
                     oauth_client_secret: config.oauth_client_secret
                 }),
-                onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_credential_test_hook' });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_credential_test_hook' });
+                onBytes: (meteredBytes) => {
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'credential_test_hook',
+                            accountId: logCtx.accountId,
+                            connectionId,
+                            integrationId: config.unique_key,
+                            environmentId: config.environment_id,
+                            meteredBytes
+                        })
+                    );
                 }
             });
 

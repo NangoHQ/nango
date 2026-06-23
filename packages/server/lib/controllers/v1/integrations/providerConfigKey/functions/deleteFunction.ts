@@ -2,9 +2,9 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { handleDeleteIntegrationFunction } from './helpers.js';
 import { deletableFunctionTypeSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import { handleDeleteIntegrationFunction } from './helpers.js';
 
 import type { DeleteIntegrationFunction } from '@nangohq/types';
 

@@ -4,22 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 
-import type { GetConnection } from '@nangohq/types';
-
-export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['data']; providerConfigKey: string }> = ({
-    connectionData,
-    providerConfigKey
-}) => {
+export const SettingsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
     const { data } = useEnvironment(env);
     const environment = data?.environmentAndAccount?.environment;
@@ -72,7 +69,6 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
                         )}
                     </PermissionGate>
                 </div>
-
                 <ConnectionSideInfo connectionData={connectionData} />
             </div>
         </>

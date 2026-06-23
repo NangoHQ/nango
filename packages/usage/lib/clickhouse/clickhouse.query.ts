@@ -17,7 +17,8 @@ const COUNTER_METRICS_SET = {
     function_executions: true,
     function_logs: true,
     function_compute_gbms: true,
-    webhook_forwards: true
+    webhook_forwards: true,
+    data_transfer: true
 } satisfies Record<CounterUsageMetric, true>;
 const AVG_METRICS_SET = {
     records: true,
@@ -37,7 +38,8 @@ export const BREAKDOWN_DIMENSIONS = {
     function_compute_gbms: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
     webhook_forwards: ['environment_id', 'integration_id', 'connection_id', 'success'],
     records: ['environment_id', 'integration_id', 'connection_id', 'model'],
-    connections: ['environment_id', 'integration_id']
+    connections: ['environment_id', 'integration_id'],
+    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'package', 'callsite']
 } as const satisfies { [M in keyof BreakdownDimensions]: readonly BreakdownDimensions[M][] };
 
 export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): boolean {
@@ -67,9 +69,11 @@ export type GetDailyCounterQuery = {
         // Optional row-level filter: scopes the SQL to rows where the given
         // dimension equals the given value. Used by the dashboard's per-metric
         // filter UX. The value is passed through CH's parameterized
-        // `query_params` (no string interpolation of user input). Caller is
-        // expected to ensure mutual exclusion with `dimension !== 'none'`
-        // (breakdown) for the same metric; the primitive does not enforce it.
+        // `query_params` (no string interpolation of user input). Composes with
+        // a breakdown (`dimension !== 'none'`) on a DIFFERENT dim — the SQL adds
+        // the filter to the breakdown branch's WHERE clause — enabling the
+        // drill-in "filter then re-break-down" view. Filtering and breaking down
+        // by the SAME dim is degenerate; the controller rejects that upstream.
         filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` for this query. Defaults to the
         // dashboard ceiling; callers that race against a shorter wall-clock
@@ -113,6 +117,8 @@ export function tableForMetric(metric: UsageMetric): string {
             return `daily_raw_records`;
         case 'connections':
             return `daily_raw_connections`;
+        case 'data_transfer':
+            return `daily_data_transfer`;
     }
 }
 
@@ -165,6 +171,8 @@ export function quantityForMetric(metric: CounterUsageMetric): string {
             // milliseconds (Orb's "Function compute time" = sum(durationMs)).
             // Read `duration_ms` so the CH path matches Orb 1:1.
             return `SUM(duration_ms)`;
+        case 'data_transfer':
+            return `SUM(ingressed_bytes + egressed_bytes)`;
     }
 }
 
@@ -184,8 +192,11 @@ export type GetDailySumAndBatchesQuery = {
         dimension: DimensionFor<M>;
         top?: number;
         // Row-level filter (see GetDailyCounterQuery). For AVG metrics it
-        // narrows BOTH `SUM(value)` and `uniqExact(batch_id)` to the dim
-        // value, producing a standalone running-avg for that one value.
+        // narrows BOTH `SUM(value)` and `uniqExact(batch_id)` to the filtered
+        // rows. Filtered-only → a standalone running-avg for that value. Filter
+        // + breakdown → the shared per-day batches denominator is itself
+        // filtered, so the per-dim running averages stay additive to the
+        // filtered global (the "within this slice" decomposition).
         filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` (see GetDailyCounterQuery).
         maxExecutionSeconds?: number;

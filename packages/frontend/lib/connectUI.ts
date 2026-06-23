@@ -73,9 +73,20 @@ export class ConnectUI {
     }
 
     /**
-     * Open UI in an iframe and listen to events
+     * Open UI in an iframe and listen to events.
+     * No-op if the iframe is already mounted, so duplicate open() calls
+     * don't leave orphan iframes that close() can't clean up.
+     * If the iframe ref is stale (detached externally), reset state before re-creating
+     * so reopen still works.
      */
     open() {
+        if (this.iframe?.isConnected) {
+            return;
+        }
+        if (this.iframe) {
+            this.close();
+        }
+
         this.iframe = this.createIframe();
         document.body.append(this.iframe);
 
@@ -169,9 +180,10 @@ export class ConnectUI {
     close() {
         if (this.listener) {
             window.removeEventListener('message', this.listener);
+            this.listener = null;
         }
         if (this.iframe) {
-            document.body.removeChild(this.iframe);
+            this.iframe.remove();
             this.iframe = null;
 
             document.body.style.overflow = '';

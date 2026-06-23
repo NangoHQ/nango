@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     canonicalizeHostnameForDenylist,
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     isBaseUrlOverrideDenied,
     mergeProxyBaseUrlOverrideDenylist,
     normalizeDenylist,

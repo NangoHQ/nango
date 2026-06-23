@@ -25,6 +25,7 @@
         "@hapi/boom": "10.0.1",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/database": "file:../database",
+        "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/nango-yaml": "file:../nango-yaml",
@@ -54,7 +55,7 @@
         "qs": "6.15.0",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
-        "undici": "6.24.1",
+        "undici": "6.27.0",
         "uuid": "14.0.0",
         "xml-crypto": "6.1.2",
         "zod": "4.0.5"

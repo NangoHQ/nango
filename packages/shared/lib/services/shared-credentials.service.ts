@@ -1,8 +1,8 @@
 import db from '@nangohq/database';
-import { Err, Ok, nanoid } from '@nangohq/utils';
+import { Err, nanoid, Ok } from '@nangohq/utils';
 
-import configService from './config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
+import configService from './config.service.js';
 
 import type { Knex } from '@nangohq/database';
 import type {

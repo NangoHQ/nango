@@ -23,6 +23,7 @@
         "@kubernetes/client-node": "1.4.0",
         "@nangohq/data-ingestion": "file:../data-ingestion",
         "@nangohq/database": "file:../database",
+        "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/fleet": "file:../fleet",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",

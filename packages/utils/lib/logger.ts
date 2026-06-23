@@ -1,4 +1,4 @@
-import { format as utilFormat, inspect } from 'node:util';
+import { inspect, format as utilFormat } from 'node:util';
 
 import colors from '@colors/colors';
 import winston from 'winston';

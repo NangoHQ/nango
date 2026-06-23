@@ -4,14 +4,14 @@ import { Helmet } from 'react-helmet';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { useToast } from '../../hooks/useToast';
-import { apiPatchUser, useUser } from '../../hooks/useUser';
-import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
+import { useToast } from '../../hooks/useToast';
+import { apiPatchUser, useUser } from '../../hooks/useUser';
+import DashboardLayout from '../../layout/DashboardLayout';
 
 import type { Theme } from '@/lib/theme';
 
@@ -39,11 +39,10 @@ export const UserSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout title="Profile settings">
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
-                <h2 className="text-3xl font-semibold text-text-strong mb-16">Profile Settings</h2>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
@@ -61,13 +60,10 @@ export const UserSettings: React.FC = () => {
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout title="Profile settings">
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-text-strong">Profile Settings</h2>
-            </div>
             <div className="flex flex-col gap-12 mt-16">
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>

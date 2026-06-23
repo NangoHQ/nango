@@ -126,6 +126,50 @@ describe('getFeatureFlagsClient', () => {
         await expect(client.isEnabled('any-flag', { 'account.uuid': 'abc' }, false)).resolves.toBe(true);
     });
 
+    it('returns a typed flags facade backed by the shared client', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to initialize');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(true);
+        expect(unleash.isEnabled).toHaveBeenCalledWith(
+            'oauth-state-cookie-enforcement',
+            {
+                userId: 'uuid1',
+                properties: { accountUuid: 'uuid1' }
+            },
+            false
+        );
+    });
+
+    it('shouldKeepActionTrace evaluates per environment', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to initialize');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(getFlags().shouldKeepActionTrace(16693)).resolves.toBe(true);
+        expect(unleash.isEnabled).toHaveBeenCalledWith(
+            'action-trace-manual-keep',
+            {
+                userId: '16693',
+                properties: { environmentId: '16693' }
+            },
+            false
+        );
+    });
+
     it('reads non-boolean variant payloads (getString), falling back to default otherwise', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
@@ -201,6 +245,23 @@ describe('getFeatureFlagsClient', () => {
         await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(false);
     });
 
+    it('returns flag defaults when initialize cannot create the client', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
+    });
+
+    it('returns flag defaults when getFlags is called before initialize', async () => {
+        vi.resetModules();
+        const { getFlags } = await import('./index.js');
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
+        await expect(getFlags().shouldKeepActionTrace(16693)).resolves.toBe(false);
+    });
+
     it('reconnects to unleash in the background after a failed initialization', async () => {
         vi.useFakeTimers();
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
@@ -216,6 +277,32 @@ describe('getFeatureFlagsClient', () => {
         await Promise.resolve();
 
         expect(unleashInstances.length).toBe(1);
+        vi.useRealTimers();
+    });
+
+    it('updates initialized flags and emits a metric after reconnect succeeds', async () => {
+        vi.useFakeTimers();
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        mockEnvs.NANGO_UNLEASH_REFRESH_INTERVAL_MS = 1000;
+        unleashMockState.failNextInit = 1;
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        const { metrics } = await import('@nangohq/utils');
+        const incrementSpy = vi.spyOn(metrics, 'increment');
+        await initialize();
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1000);
+        await Promise.resolve();
+
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to reconnect');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(getFlags().isOAuthStateCookieEnforced('uuid1')).resolves.toBe(true);
+        expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.FEATURE_FLAGS_CLIENT_RECONNECTED, 1);
         vi.useRealTimers();
     });
 

@@ -4,9 +4,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button } from '@nangohq/design-system';
 
+import { cn } from '@/utils/utils';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { cn } from '@/utils/utils';
 
 import type { ComboboxOption } from './Combobox';
 

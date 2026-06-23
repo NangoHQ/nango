@@ -35,7 +35,6 @@ import type {
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
-import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -48,6 +47,7 @@ import type {
     PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
 import type {
     CreateApiKey,
@@ -103,7 +103,7 @@ import type { GetPlainHmac } from './plain/api.js';
 import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
-import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
+import type { GetConnectionRecordModels, GetConnectionRecords, GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
 import type { GetPublicScriptsConfig } from './scripts/http.api.js';
 import type {
     GetSharedCredentialsProvider,
@@ -216,6 +216,8 @@ export type PrivateApiEndpoints =
     | GetConnections
     | GetConnectionsCount
     | GetConnection
+    | GetConnectionRecordModels
+    | GetConnectionRecords
     | GetInvite
     | GetMeta
     | GetEmailByExpiredToken

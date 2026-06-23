@@ -1,18 +1,18 @@
-import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
+import { ENVS, Err, metrics, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
+import { logger } from '../logger.js';
 import { Batcher } from './batcher.js';
 import {
     COUNTER_METRICS,
     FILTER_PARAM_TYPE_FOR_DIM,
-    TOP_N_BREAKDOWN_CAP,
-    TOP_N_BREAKDOWN_DEFAULT,
     isAllowedDimensionFor,
     quantityForMetric,
     rankingQuantityForMetric,
-    tableForMetric
+    tableForMetric,
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT
 } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
-import { logger } from '../logger.js';
 
 import type {
     GetDailyCounterDay,
@@ -30,6 +30,7 @@ import type {
     BillingUsageMetrics,
     UsageActionsEvent,
     UsageConnectionsEvent,
+    UsageDataTransferEvent,
     UsageEvent,
     UsageFunctionExecutionsEvent,
     UsageRecordsEvent
@@ -54,7 +55,8 @@ type ClickhouseRawUsageEventAttrs =
     | UsageAttrs<UsageConnectionsEvent, 'connectionId'>
     | UsageAttrs<UsageActionsEvent>
     | UsageAttrs<UsageEvent>
-    | UsageAttrs<UsageRecordsEvent, 'syncId'>;
+    | UsageAttrs<UsageRecordsEvent, 'syncId'>
+    | UsageAttrs<UsageDataTransferEvent>;
 
 export interface ClickhouseRawUsageEvent {
     ts: number; // Unix timestamp in milliseconds, matches DateTime64(3)
@@ -599,7 +601,8 @@ function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
         case 'usage.actions':
         case 'usage.function_executions':
         case 'usage.proxy':
-        case 'usage.webhook_forward': {
+        case 'usage.webhook_forward':
+        case 'usage.data_transfer': {
             const { accountId, ...properties } = event.payload.properties;
             return {
                 ts: event.createdAt.getTime(),

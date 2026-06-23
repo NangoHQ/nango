@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
+import { cn } from '@/utils/utils';
 import { Badge } from '../ui/Badge.js';
 import {
     Combobox,
@@ -17,7 +18,6 @@ import {
 } from '../ui/Combobox.js';
 import { CopyButton } from '../ui/CopyButton.js';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip.js';
-import { cn } from '@/utils/utils';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;

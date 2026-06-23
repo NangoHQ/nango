@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 
-import type { LinearTokenRevokeResponse } from './types.js';
 import type { InternalNango } from '../../internal-nango.js';
+import type { LinearTokenRevokeResponse } from './types.js';
 
 export default async function execute(nango: InternalNango) {
     try {

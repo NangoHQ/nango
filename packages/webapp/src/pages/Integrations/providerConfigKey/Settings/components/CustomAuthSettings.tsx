@@ -1,7 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -14,6 +13,7 @@ import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud.js';
+import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 

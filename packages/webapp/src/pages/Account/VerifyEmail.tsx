@@ -5,12 +5,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
-import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
-import DefaultLayout from '../../layout/DefaultLayout';
-import { APIError } from '../../utils/api';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useToast } from '@/hooks/useToast';
+import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { APIError } from '../../utils/api';
 
 export function VerifyEmail() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -74,9 +74,11 @@ export function VerifyEmail() {
                 </span>
             </div>
 
-            <Button onClick={handleResendEmail} size="xl" className="w-full" loading={isResendingVerificationEmailByUuid}>
-                Resend email
-            </Button>
+            <div className="grid w-full">
+                <Button onClick={handleResendEmail} size="xl" loading={isResendingVerificationEmailByUuid}>
+                    Resend email
+                </Button>
+            </div>
         </DefaultLayout>
     );
 }

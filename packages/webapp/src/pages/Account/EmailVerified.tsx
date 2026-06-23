@@ -4,12 +4,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffectOnce } from 'react-use';
 import { useSWRConfig } from 'swr';
 
+import { useToast } from '@/hooks/useToast';
+import DefaultLayout from '@/layout/DefaultLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 import { useSignin } from '../../utils/user';
-import { useToast } from '@/hooks/useToast';
-import DefaultLayout from '@/layout/DefaultLayout';
 
 import type { GetUser, ValidateEmailAndLogin } from '@nangohq/types';
 

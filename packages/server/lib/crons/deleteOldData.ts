@@ -16,17 +16,17 @@ import {
 } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
+import { batchDelete } from '../deletion/batchDelete.js';
+import { deleteConnectionData } from '../deletion/deleteConnectionData.js';
+import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
+import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.js';
+import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
+import { deleteSyncs } from '../deletion/deleteSyncs.js';
 import { envs } from '../env.js';
-import { batchDelete } from './delete/batchDelete.js';
-import { deleteConnectionData } from './delete/deleteConnectionData.js';
-import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
-import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
-import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
-import { deleteSyncs } from './delete/deleteSyncs.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
 
-import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
+import type { BatchDeleteSharedOptions } from '../deletion/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.deleteOldData');

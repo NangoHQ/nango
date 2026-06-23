@@ -2,20 +2,20 @@ import { Loader2 } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
-import { useEnvironment } from '../../../hooks/useEnvironment.js';
-import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
-import { useToast } from '../../../hooks/useToast.js';
-import { APIError } from '../../../utils/api.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
+import { useEnvironment } from '../../../hooks/useEnvironment.js';
+import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
+import { useToast } from '../../../hooks/useToast.js';
+import { APIError } from '../../../utils/api.js';
 
-import type { ApiError, ApiIntegration, NangoSyncConfig } from '@nangohq/types';
+import type { ApiError, ApiIntegration, DeployedNangoActionFunction, DeployedNangoSyncFunction } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
-    flow: NangoSyncConfig;
+    flow: DeployedNangoSyncFunction | DeployedNangoActionFunction;
     integration: ApiIntegration;
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
@@ -77,7 +77,6 @@ export const FunctionSwitch: React.FC<{
         }
 
         const body = {
-            provider: integration.provider,
             providerConfigKey: integration.unique_key,
             type: flow.type,
             scriptName: flow.name
@@ -85,7 +84,7 @@ export const FunctionSwitch: React.FC<{
 
         try {
             if (flow.id) {
-                await enableFlow({ params: { id: flow.id }, body });
+                await enableFlow({ params: { id: flow.id }, body: { ...body, provider: integration.provider } });
             } else {
                 await deployFlow(body);
             }
@@ -137,7 +136,7 @@ export const FunctionSwitch: React.FC<{
                 {(allowed) => (
                     <Switch
                         name="script"
-                        checked={flow.enabled === true}
+                        checked={flow.enabled}
                         className="cursor-pointer"
                         disabled={loading || !allowed}
                         onClick={(e) => {

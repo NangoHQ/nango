@@ -1,10 +1,10 @@
 import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationParams } from './getIntegration.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { resolveIntegrationConfig } from '../integrationConfig.js';
 import { patchIntegrationBodySchema } from '../validation.js';
+import { validationParams } from './getIntegration.js';
 
 import type { PatchIntegration } from '@nangohq/types';
 

@@ -1,12 +1,10 @@
-import { BookOpen, Box, Moon, Sun } from 'lucide-react';
+import { BookOpen, Box, MessageSquareMore as HelpIcon, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { SlackIcon } from '@/assets/SlackIcon';
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -25,9 +23,9 @@ export const AppHeader: React.FC = () => {
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
     return (
-        <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5 bg-surface-canvas">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b-[0.5px] border-border-default bg-surface-canvas px-6">
             <Breadcrumbs />
-            <div className="flex gap-1.5 justify-end">
+            <div className="flex justify-end gap-2">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
                         <Button variant="outline" size="md" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
@@ -36,14 +34,19 @@ export const AppHeader: React.FC = () => {
                         </Button>
                     )}
                 </PermissionGate>
-                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="outline" size="md">
-                    <BookOpen />
-                    Docs
-                </ButtonLink>
-                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="outline" size="md">
-                    <SlackIcon />
-                    Help
-                </ButtonLink>
+                <IconButton asChild variant="outline" size="md" label="Docs">
+                    <a href="https://nango.dev/docs" target="_blank" rel="noreferrer">
+                        <BookOpen />
+                    </a>
+                </IconButton>
+                <IconButton
+                    variant="outline"
+                    size="md"
+                    label="Help"
+                    onClick={() => (window.Plain ? window.Plain.open() : window.open('https://nango.dev/slack', '_blank', 'noopener,noreferrer'))}
+                >
+                    <HelpIcon />
+                </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>
                     {darkMode ? <Sun /> : <Moon />}
                 </IconButton>

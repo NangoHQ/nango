@@ -113,13 +113,14 @@ function buildConfig(appId: string, darkMode: boolean, user?: ApiUser, emailHash
             alt: 'Nango'
         },
         links: [
-            { icon: 'book', text: 'View docs', url: 'https://docs.nango.dev' },
-            { icon: 'slack', text: 'Join our Slack', url: 'https://nango.dev/slack' }
+            { icon: 'book', text: 'View docs & ask AI', url: 'https://docs.nango.dev' },
+            { icon: 'slack', text: 'Join Slack & ask our engineers', url: 'https://nango.dev/slack' }
         ],
         chatButtons: [
             { icon: 'chat', text: 'Ask a question', threadDetails: {} },
             { icon: 'bulb', text: 'Share feedback', threadDetails: {} }
         ],
+        hideLauncher: true,
         hideBranding: false,
         position: { right: '16px', bottom: '16px', zIndex: '9999' },
         ...(user ? { customerDetails: { email: user.email, emailHash, fullName: user.name } } : { requireAuthentication: true })

@@ -1,8 +1,8 @@
-import { Ok, flagHasPlan } from '@nangohq/utils';
+import { flagHasPlan, Ok } from '@nangohq/utils';
 
+import { logger } from '../utils/logger.js';
 import { defaultStore } from './default.js';
 import { records2Store } from './records2.js';
-import { logger } from '../utils/logger.js';
 
 import type { RecordsStore } from '../store.js';
 import type { RecordCount } from '../types.js';

@@ -1,8 +1,8 @@
-import type { DBPlan } from './db.js';
 import type { Endpoint } from '../api.js';
 import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
+import type { DBPlan } from './db.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
@@ -113,7 +113,8 @@ export type GetBillingUsage = Endpoint<{
         // Express qs bracket notation: `filter[<metric>]=<dim>:<value>` →
         // `filter: { records: 'integration_id:hubspot', … }`. Server splits
         // the string on the first ':' so values containing ':' stay intact.
-        // Mutually exclusive with `breakdown[<metric>]` on the same metric.
+        // Composes with `breakdown[<metric>]` on the same metric when the
+        // dimensions differ; only the same-dimension pairing is rejected.
         filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
     };
     Success: {

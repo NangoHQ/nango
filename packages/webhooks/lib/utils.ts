@@ -5,20 +5,18 @@ import { isAxiosError } from 'axios';
 import { getRedis } from '@nangohq/kvstore';
 import { createMeteringTransport } from '@nangohq/shared';
 import {
-    Err,
-    Ok,
     axiosInstance as axios,
+    Err,
     getLogger,
     isBaseUrlOverrideDenied,
     networkError,
     normalizeDenylist,
+    Ok,
     redactHeaders,
     retryFlexible,
     stringifyStable,
     userAgent
 } from '@nangohq/utils';
-
-const logger = getLogger('webhooks.utils');
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';
@@ -28,6 +26,8 @@ import type { MeteredBytes } from '@nangohq/shared';
 import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
+
+const logger = getLogger('webhooks.utils');
 
 export const RETRY_ATTEMPTS = envs.NANGO_WEBHOOK_RETRY_ATTEMPTS;
 
