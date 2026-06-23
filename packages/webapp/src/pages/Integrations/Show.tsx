@@ -107,7 +107,7 @@ export const IntegrationsList = () => {
             </Helmet>
             <header className="flex items-center gap-3">
                 <InputGroup className="h-10 flex-1">
-                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
+                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} />
                     <InputGroupAddon>
                         <Search />
                     </InputGroupAddon>
