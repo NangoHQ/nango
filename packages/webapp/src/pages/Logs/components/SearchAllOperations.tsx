@@ -250,13 +250,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     };
 
     return (
-        <>
-            <div className="flex justify-end items-center mb-2">
-                <div className="text-text-strong text-xs">
-                    {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
-                </div>
-            </div>
-            <div className="flex gap-2 justify-between mb-4">
+        <div className="flex h-full min-h-0 flex-col gap-3">
+            <div className="flex gap-2 justify-between">
                 <div className="flex-1 min-w-0">
                     <InputGroup className="border-border-muted">
                         <InputGroupAddon>
@@ -286,6 +281,11 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         presets={logsPresets}
                         defaultPreset={last24hPreset}
                     />
+                </div>
+            </div>
+            <div className="flex items-center justify-end">
+                <div className="text-text-muted text-body-small-regular">
+                    {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
             <div
@@ -354,7 +354,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     )}
                 </table>
             </div>
-        </>
+        </div>
     );
 };
 

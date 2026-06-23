@@ -31,7 +31,7 @@ export const TeamBilling: React.FC = () => {
     }, [canManageBilling, activeTab, setActiveTab]);
 
     return (
-        <DashboardLayout title="Billing & usage" className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Billing & usage" className="flex flex-col gap-8">
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>

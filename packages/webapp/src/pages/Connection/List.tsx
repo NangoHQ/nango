@@ -285,8 +285,6 @@ export const ConnectionList = () => {
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
                         <>
-                            {/* Connection count */}
-                            <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
                                 <InputGroup className="h-10">
@@ -347,6 +345,11 @@ export const ConnectionList = () => {
                                         </ButtonLink>
                                     )}
                                 </PermissionGate>
+                            </div>
+
+                            {/* Connection count */}
+                            <div className="flex items-center justify-end">
+                                <ConnectionCount />
                             </div>
 
                             {/* Table */}
