@@ -19902,6 +19902,29 @@ superhuman-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/superhuman-mcp
 
+surecontact:
+    display_name: SureContact
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.surecontact.com
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/surecontact
+    docs_connect: https://nango.dev/docs/api-integrations/surecontact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your SureContact API key.
+            example: jWkZ3QYFe7**********************************************qlp
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-create-an-api-key'
+
 survey-monkey:
     display_name: SurveyMonkey
     categories:
