@@ -502,24 +502,7 @@ export class UsageTracker implements IUsageTracker {
     }
 
     private async getCappingUsageFromClickhouse(accountId: number): Promise<Result<BillingUsageMetrics>> {
-        const cacheKey = `billing:usage:ch:${accountId}`;
-        try {
-            const cached = await this.redis.get(cacheKey);
-            if (cached) {
-                const value = JSON.parse(cached) as BillingUsageMetrics;
-                metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'true' });
-                return Ok(value);
-            }
-        } catch (err) {
-            logger.warning(`capping CH cache read failed for account=${accountId}: ${stringifyError(err)}`);
-        }
-        metrics.increment(metrics.Types.BILLING_USAGE_CAPPING_CH_CACHE, 1, { hit: 'false' });
-
-        const chResult = await this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
-        if (chResult.isErr()) return Err(chResult.error);
-
-        await this.writeCappingCache(accountId, chResult.value);
-        return Ok(chResult.value);
+        return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
     }
 
     private async writeCappingCache(accountId: number, value: BillingUsageMetrics): Promise<void> {
