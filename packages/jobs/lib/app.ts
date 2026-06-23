@@ -92,17 +92,17 @@ try {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         srv.close(async () => {
             otlp.stop();
-            await destroyFeatureFlags();
             await processor.stop();
+            await invocationsProcessor.stop();
+            if (webhookDispatchConsumer) {
+                await webhookDispatchConsumer.stop();
+            }
+            await destroyFeatureFlags();
             await destroyLogs();
             await stopFleets();
             await db.knex.destroy();
             await db.readOnly.destroy();
             await destroyKvstore();
-            await invocationsProcessor.stop();
-            if (webhookDispatchConsumer) {
-                await webhookDispatchConsumer.stop();
-            }
             await pubsub.disconnect();
             console.info('Closed');
 

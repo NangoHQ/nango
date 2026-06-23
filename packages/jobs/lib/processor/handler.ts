@@ -1,4 +1,5 @@
 import tracer from 'dd-trace';
+import ddtags from 'dd-trace/ext/tags.js';
 
 import { getFlags } from '@nangohq/feature-flags';
 import { Err, Ok } from '@nangohq/utils';
@@ -42,7 +43,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
             },
             async (span) => {
                 if (await getFlags().shouldKeepActionTrace(task.connection.environment_id)) {
-                    span?.setTag('manual.keep', true);
+                    span?.setTag(ddtags.MANUAL_KEEP, true);
                 }
                 return startAction(task);
             }

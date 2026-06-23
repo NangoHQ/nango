@@ -21,6 +21,7 @@ let flagsInstance: Flags | undefined;
 
 const logger = getLogger('FeatureFlags');
 const noopClient = buildFeatureFlagsClient(new NoopProvider());
+const noopFlags = buildFlags(noopClient);
 
 /**
  * Initialize the typed flag facade for this process. Call once during service
@@ -37,12 +38,11 @@ export async function initialize(): Promise<void> {
     flagsInstance = buildFlags(client);
 }
 
-/** Typed flag facade. Requires {@link initialize} to have completed. */
+/**
+ * Typed flag facade. Safe before {@link initialize}: returns defaults via the noop provider.
+ */
 export function getFlags(): Flags {
-    if (!flagsInstance) {
-        throw new Error('Feature flags not initialized. Call initialize() first.');
-    }
-    return flagsInstance;
+    return flagsInstance ?? noopFlags;
 }
 
 export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
