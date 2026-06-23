@@ -6,11 +6,10 @@ import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parse
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
 
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';

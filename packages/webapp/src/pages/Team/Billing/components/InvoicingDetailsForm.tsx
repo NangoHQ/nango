@@ -3,11 +3,10 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Input } from '@nangohq/design-system';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
-import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePutBillingInvoicingDetails } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';

@@ -3,12 +3,11 @@ import { TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Input } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Label } from '@/components/ui/Label';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
-import { Input } from '../../../components/ui/Input';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
 

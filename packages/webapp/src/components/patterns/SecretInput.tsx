@@ -1,11 +1,10 @@
 import { EyeIcon, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '../ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/InputGroup';
 
 interface SecretInputProps extends React.ComponentProps<'input'> {
     copy?: boolean;
