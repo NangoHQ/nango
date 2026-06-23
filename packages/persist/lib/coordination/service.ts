@@ -96,22 +96,22 @@ export async function releaseSyncConflict({
     }
 }
 
-export async function tryAcquireLock(params: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
+export async function tryAcquireLock(params: { namespace: number; owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
     const store = await getStore();
     return locks.tryAcquireLock(store, params);
 }
 
-export async function releaseLock(params: { owner: string; key: string }): Promise<Result<boolean>> {
+export async function releaseLock(params: { namespace: number; owner: string; key: string }): Promise<Result<boolean>> {
     const store = await getStore();
     return locks.releaseLock(store, params);
 }
 
-export async function releaseAllLocks(params: { owner: string }): Promise<Result<void>> {
+export async function releaseAllLocks(params: { namespace: number; owner: string }): Promise<Result<void>> {
     const store = await getStore();
     return locks.releaseAllLocks(store, params);
 }
 
-export async function hasLock(params: { owner: string; key: string }): Promise<Result<boolean>> {
+export async function hasLock(params: { namespace: number; owner: string; key: string }): Promise<Result<boolean>> {
     const store = await getStore();
     return locks.hasLock(store, params);
 }

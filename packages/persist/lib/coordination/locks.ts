@@ -9,28 +9,38 @@ const LOCK_STORAGE_PREFIX = 'runner:lock:';
 const LOCK_OWNER_INDEX_PREFIX = `${LOCK_STORAGE_PREFIX}owner:`;
 const LOCK_OWNER_INDEX_VALUE = '1';
 
+export type LockNamespace = number;
+
 function createHash(key: string): string {
     return crypto.createHash('sha256').update(key).digest().subarray(0, 16).toString('base64url');
 }
 
-function storageKey(logicalKey: string): string {
-    return `${LOCK_STORAGE_PREFIX}${createHash(logicalKey)}`;
+function namespacedLockKey(namespace: LockNamespace, key: string): string {
+    return `${namespace}:${key}`;
 }
 
-function ownerIndexKey(owner: string, logicalKey: string): string {
-    return `${LOCK_OWNER_INDEX_PREFIX}${createHash(owner)}:${createHash(logicalKey)}`;
+function namespacedOwner(namespace: LockNamespace, owner: string): string {
+    return `${namespace}:${owner}`;
 }
 
-function lockKeys({ owner, key }: { owner: string; key: string }): { sk: string; ik: string } {
-    return { sk: storageKey(key), ik: ownerIndexKey(owner, key) };
+function storageKey(namespace: LockNamespace, key: string): string {
+    return `${LOCK_STORAGE_PREFIX}${createHash(namespacedLockKey(namespace, key))}`;
 }
 
-function ownerIndexScanPrefix(owner: string): string {
-    return `${LOCK_OWNER_INDEX_PREFIX}${createHash(owner)}:`;
+function ownerIndexKey(namespace: LockNamespace, owner: string, key: string): string {
+    return `${LOCK_OWNER_INDEX_PREFIX}${createHash(namespacedOwner(namespace, owner))}:${createHash(namespacedLockKey(namespace, key))}`;
 }
 
-function mainKeyFromOwnerIndexKey(owner: string, indexKey: string): string | null {
-    const p = ownerIndexScanPrefix(owner);
+function lockKeys({ namespace, owner, key }: { namespace: LockNamespace; owner: string; key: string }): { sk: string; ik: string } {
+    return { sk: storageKey(namespace, key), ik: ownerIndexKey(namespace, owner, key) };
+}
+
+function ownerIndexScanPrefix(namespace: LockNamespace, owner: string): string {
+    return `${LOCK_OWNER_INDEX_PREFIX}${createHash(namespacedOwner(namespace, owner))}:`;
+}
+
+function mainKeyFromOwnerIndexKey(namespace: LockNamespace, owner: string, indexKey: string): string | null {
+    const p = ownerIndexScanPrefix(namespace, owner);
     if (!indexKey.startsWith(p)) {
         return null;
     }
@@ -41,7 +51,18 @@ function mainKeyFromOwnerIndexKey(owner: string, indexKey: string): string | nul
     return `${LOCK_STORAGE_PREFIX}${logicalHash}`;
 }
 
-function validateTryAcquireInputs(owner: string, key: string, ttlMs: number): Result<boolean> {
+function validateNamespace(namespace: LockNamespace): Result<boolean> {
+    if (!Number.isInteger(namespace) || namespace <= 0) {
+        return Err('Invalid lock namespace (must be a positive integer)');
+    }
+    return Ok(true);
+}
+
+function validateTryAcquireInputs(namespace: LockNamespace, owner: string, key: string, ttlMs: number): Result<boolean> {
+    const namespaceValidation = validateNamespace(namespace);
+    if (namespaceValidation.isErr()) {
+        return namespaceValidation;
+    }
     if (!owner || owner.length === 0 || owner.length > 255) {
         return Err('Invalid lock owner (must be between 1 and 255 characters)');
     }
@@ -54,13 +75,16 @@ function validateTryAcquireInputs(owner: string, key: string, ttlMs: number): Re
     return Ok(true);
 }
 
-export async function tryAcquireLock(store: KVStore, { owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
-    const validation = validateTryAcquireInputs(owner, key, ttlMs);
+export async function tryAcquireLock(
+    store: KVStore,
+    { namespace, owner, key, ttlMs }: { namespace: LockNamespace; owner: string; key: string; ttlMs: number }
+): Promise<Result<boolean>> {
+    const validation = validateTryAcquireInputs(namespace, owner, key, ttlMs);
     if (validation.isErr()) {
         return validation;
     }
 
-    const { sk, ik } = lockKeys({ owner, key });
+    const { sk, ik } = lockKeys({ namespace, owner, key });
     try {
         if (
             await store.setIfValueEqualsWithCompanion({
@@ -92,8 +116,16 @@ export async function tryAcquireLock(store: KVStore, { owner, key, ttlMs }: { ow
     }
 }
 
-export async function releaseLock(store: KVStore, { owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-    const { sk, ik } = lockKeys({ owner, key });
+export async function releaseLock(
+    store: KVStore,
+    { namespace, owner, key }: { namespace: LockNamespace; owner: string; key: string }
+): Promise<Result<boolean>> {
+    const namespaceValidation = validateNamespace(namespace);
+    if (namespaceValidation.isErr()) {
+        return namespaceValidation;
+    }
+
+    const { sk, ik } = lockKeys({ namespace, owner, key });
     try {
         const deleted = await store.deleteIfValueEqualsWithCompanion({
             mainKey: sk,
@@ -106,11 +138,16 @@ export async function releaseLock(store: KVStore, { owner, key }: { owner: strin
     }
 }
 
-export async function releaseAllLocks(store: KVStore, { owner }: { owner: string }): Promise<Result<void>> {
+export async function releaseAllLocks(store: KVStore, { namespace, owner }: { namespace: LockNamespace; owner: string }): Promise<Result<void>> {
+    const namespaceValidation = validateNamespace(namespace);
+    if (namespaceValidation.isErr()) {
+        return namespaceValidation;
+    }
+
     try {
-        const prefix = ownerIndexScanPrefix(owner);
+        const prefix = ownerIndexScanPrefix(namespace, owner);
         for await (const ik of store.scan(`${prefix}*`)) {
-            const sk = mainKeyFromOwnerIndexKey(owner, ik);
+            const sk = mainKeyFromOwnerIndexKey(namespace, owner, ik);
             if (sk) {
                 await store.deleteIfValueEqualsWithCompanion({
                     mainKey: sk,
@@ -126,8 +163,13 @@ export async function releaseAllLocks(store: KVStore, { owner }: { owner: string
     }
 }
 
-export async function hasLock(store: KVStore, { owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-    const { sk } = lockKeys({ owner, key });
+export async function hasLock(store: KVStore, { namespace, owner, key }: { namespace: LockNamespace; owner: string; key: string }): Promise<Result<boolean>> {
+    const namespaceValidation = validateNamespace(namespace);
+    if (namespaceValidation.isErr()) {
+        return namespaceValidation;
+    }
+
+    const { sk } = lockKeys({ namespace, owner, key });
     try {
         const holder = await store.get(sk);
         return Ok(holder === owner);

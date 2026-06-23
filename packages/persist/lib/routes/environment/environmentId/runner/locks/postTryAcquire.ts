@@ -18,10 +18,11 @@ const validate = validateRequest<PostRunnerLockTryAcquire>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRunnerLockTryAcquire, AuthLocals>) => {
     const {
+        parsedParams: { environmentId },
         parsedBody: { owner, key, ttlMs }
     } = res.locals;
 
-    const result = await coordination.tryAcquireLock({ owner, key, ttlMs });
+    const result = await coordination.tryAcquireLock({ namespace: environmentId, owner, key, ttlMs });
     if (result.isErr()) {
         logger.error('Failed to try acquire lock', { owner, key, ttlMs, error: result.error });
         res.status(500).json({ error: { code: 'try_acquire_lock_failed', message: result.error.message } });

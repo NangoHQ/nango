@@ -17,10 +17,11 @@ const validate = validateRequest<PostRunnerLockReleaseAll>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PostRunnerLockReleaseAll, AuthLocals>) => {
     const {
+        parsedParams: { environmentId },
         parsedBody: { owner }
     } = res.locals;
 
-    const result = await coordination.releaseAllLocks({ owner });
+    const result = await coordination.releaseAllLocks({ namespace: environmentId, owner });
     if (result.isErr()) {
         res.status(500).json({ error: { code: 'release_all_locks_failed', message: result.error.message } });
         return;

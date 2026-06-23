@@ -16,8 +16,4 @@ temp
 .context/
 .claude/settings.local.json
 CLAUDE.local.md
-<<<<<<< ross/NAN-6013/move-runner-redis-to-persist
 .cursor/*.local.mdc
-=======
-.cursor/ponytail.local.mdc
->>>>>>> master

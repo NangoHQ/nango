@@ -17,10 +17,11 @@ const validate = validateRequest<GetRunnerLock>({
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRunnerLock, AuthLocals>) => {
     const {
-        parsedQuery: { owner, key }
+        parsedQuery: { owner, key },
+        parsedParams: { environmentId }
     } = res.locals;
 
-    const result = await coordination.hasLock({ owner, key });
+    const result = await coordination.hasLock({ owner, key, namespace: environmentId });
     if (result.isErr()) {
         res.status(500).json({ error: { code: 'has_lock_failed', message: result.error.message } });
         return;
