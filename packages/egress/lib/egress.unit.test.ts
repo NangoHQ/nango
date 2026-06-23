@@ -45,6 +45,21 @@ describe('egress IP classification', () => {
     it('allows public IPs', () => {
         expect(classifyBlockedIp('8.8.8.8')).toBeNull();
     });
+
+    it('blocks alternative IPv6 loopback and mapped forms', () => {
+        expect(classifyBlockedIp('::1')).toBe('loopback');
+        expect(classifyBlockedIp('0000:0000:0000:0000:0000:0000:0000:0001')).toBe('loopback');
+        expect(classifyBlockedIp('::127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('::ffff:127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('::ffff:7f00:1')).toBe('loopback');
+    });
+
+    it('blocks full fe80::/10 link-local prefix range', () => {
+        expect(classifyBlockedIp('fe80::1')).toBe('link_local');
+        expect(classifyBlockedIp('fe90::1')).toBe('link_local');
+        expect(classifyBlockedIp('fea0::1')).toBe('link_local');
+        expect(classifyBlockedIp('feb0::1')).toBe('link_local');
+    });
 });
 
 describe('egress validateOutboundUrl', () => {
