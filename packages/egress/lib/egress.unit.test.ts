@@ -268,9 +268,9 @@ describe('egress safe lookup pinning', () => {
         ).rejects.toMatchObject({ code: 'denied_ip' });
     });
 
-    it('prunes expired pinned addresses', async () => {
+    it('ignores expired pinned addresses on lookup', async () => {
         vi.useFakeTimers();
-        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+        const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
         const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
         const lookup = (host: string) =>
             new Promise<string>((resolve, reject) => {
@@ -281,12 +281,12 @@ describe('egress safe lookup pinning', () => {
             });
 
         await lookup('host-a.example');
-        expect(getPinnedAddressCacheSizeForTests()).toBe(1);
+        expect(lookupSpy).toHaveBeenCalledTimes(1);
 
         vi.advanceTimersByTime(30_001);
-        await lookup('host-b.example');
+        await lookup('host-a.example');
 
-        expect(getPinnedAddressCacheSizeForTests()).toBe(1);
+        expect(lookupSpy).toHaveBeenCalledTimes(2);
         vi.useRealTimers();
     });
 

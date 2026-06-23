@@ -15,27 +15,6 @@ const pinnedAddresses = new Map<string, { addresses: string[]; expiresAt: number
 const PIN_TTL_MS = 30_000;
 const MAX_PINNED_ADDRESSES = 1_000;
 
-function prunePinnedAddressCache(now = Date.now()): void {
-    for (const [key, entry] of pinnedAddresses) {
-        if (entry.expiresAt <= now) {
-            pinnedAddresses.delete(key);
-        }
-    }
-}
-
-function storePinnedAddress(cacheKey: string, addresses: string[], expiresAt: number): void {
-    prunePinnedAddressCache();
-    pinnedAddresses.delete(cacheKey);
-    pinnedAddresses.set(cacheKey, { addresses, expiresAt });
-    while (pinnedAddresses.size > MAX_PINNED_ADDRESSES) {
-        const oldestKey = pinnedAddresses.keys().next().value;
-        if (oldestKey === undefined) {
-            break;
-        }
-        pinnedAddresses.delete(oldestKey);
-    }
-}
-
 function policyPinCacheKey(policy: OutboundUrlPolicy): string {
     const denylist = [...policy.denylist].sort().join(',');
     const allowlist = policy.allowlist
@@ -50,10 +29,10 @@ function policyPinCacheKey(policy: OutboundUrlPolicy): string {
 async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolicy, policyCacheKey: string): Promise<string[]> {
     const cacheKey = `${hostname}:${policyCacheKey}`;
     const cached = pinnedAddresses.get(cacheKey);
+    if (cached !== undefined && cached.expiresAt > Date.now()) {
+        return cached.addresses;
+    }
     if (cached) {
-        if (cached.expiresAt > Date.now()) {
-            return cached.addresses;
-        }
         pinnedAddresses.delete(cacheKey);
     }
 
@@ -64,7 +43,16 @@ async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolic
     }
 
     const addresses = await resolveValidatedHostAddresses(syncResult.hostname, policy, url);
-    storePinnedAddress(cacheKey, addresses, Date.now() + PIN_TTL_MS);
+
+    pinnedAddresses.delete(cacheKey);
+    pinnedAddresses.set(cacheKey, { addresses, expiresAt: Date.now() + PIN_TTL_MS });
+    if (pinnedAddresses.size > MAX_PINNED_ADDRESSES) {
+        const oldest = pinnedAddresses.keys().next().value;
+        if (oldest !== undefined) {
+            pinnedAddresses.delete(oldest);
+        }
+    }
+
     return addresses;
 }
 
