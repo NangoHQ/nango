@@ -307,6 +307,59 @@ acuity-scheduling:
         base_url: https://acuityscheduling.com/api/v1
     docs: https://nango.dev/docs/integrations/all/acuity-scheduling
 
+acumatica:
+    display_name: Acumatica
+    categories:
+        - erp
+        - accounting
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instanceUrl}/identity/connect/token
+    token_params:
+        grant_type: password
+        username: ${connectionConfig.username}
+        password: ${connectionConfig.password}
+    proxy:
+        base_url: https://${connectionConfig.instanceUrl}
+    docs: https://nango.dev/docs/api-integrations/acumatica
+    docs_connect: https://nango.dev/docs/api-integrations/acumatica/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/acumatica/connect
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The hostname of your Acumatica ERP instance.
+            format: hostname
+            example: mycompany.acumatica.com
+            prefix: https://
+            doc_section: '#step-6-identify-your-instance-url'
+            order: 1
+        username:
+            type: string
+            title: Username
+            description: The username of an Acumatica ERP user.
+            doc_section: '#step-7-enter-credentials-in-the-connect-ui'
+            order: 2
+        password:
+            type: string
+            title: Password
+            description: The password for the specified Acumatica ERP username.
+            secret: true
+            doc_section: '#step-7-enter-credentials-in-the-connect-ui'
+            order: 3
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID assigned to your application, including the tenant suffix.
+            example: 88358B02-A48D-A50E-F710-39C1636C30F6@MyTenant
+            doc_section: '#step-5-save-to-activate'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret created for your application in Acumatica ERP.
+            secret: true
+            doc_section: '#step-3-add-a-client-secret'
+
 addepar:
     display_name: Addepar (OAuth)
     categories:

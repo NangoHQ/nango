@@ -13847,6 +13847,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `accelo` | Accelo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/accelo.md) |  | [setup](https://nango.dev/docs/api-integrations/accelo/how-to-register-your-own-accelo-api-oauth-app.md) | invoicing, ticketing |
 | `active-campaign` | ActiveCampaign | API_KEY | [docs](https://nango.dev/docs/integrations/all/active-campaign.md) | [connect](https://nango.dev/docs/integrations/all/active-campaign/connect.md) |  | marketing, communication |
 | `acuity-scheduling` | Acuity Scheduling | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/acuity-scheduling.md) |  |  | productivity |
+| `acumatica` | Acumatica | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/acumatica.md) | [connect](https://nango.dev/docs/api-integrations/acumatica/connect.md) | [setup](https://nango.dev/docs/api-integrations/acumatica/connect.md) | erp, accounting |
 | `addepar` | Addepar (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/addepar.md) | [connect](https://nango.dev/docs/integrations/all/addepar/connect.md) |  | analytics |
 | `addepar-basic` | Addepar (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/addepar-basic.md) | [connect](https://nango.dev/docs/integrations/all/addepar-basic/connect.md) |  | analytics |
 | `adobe` | Adobe | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe.md) |  |  | design |
