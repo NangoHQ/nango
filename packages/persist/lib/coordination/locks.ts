@@ -51,17 +51,17 @@ function mainKeyFromOwnerIndexKey(namespace: LockNamespace, owner: string, index
     return `${LOCK_STORAGE_PREFIX}${logicalHash}`;
 }
 
-function validateNamespace(namespace: LockNamespace): Result<boolean> {
+function validateNamespace(namespace: LockNamespace): Result<void> {
     if (!Number.isInteger(namespace) || namespace <= 0) {
         return Err('Invalid lock namespace (must be a positive integer)');
     }
-    return Ok(true);
+    return Ok(undefined);
 }
 
 function validateTryAcquireInputs(namespace: LockNamespace, owner: string, key: string, ttlMs: number): Result<boolean> {
     const namespaceValidation = validateNamespace(namespace);
     if (namespaceValidation.isErr()) {
-        return namespaceValidation;
+        return Err(namespaceValidation.error);
     }
     if (!owner || owner.length === 0 || owner.length > 255) {
         return Err('Invalid lock owner (must be between 1 and 255 characters)');
@@ -122,7 +122,7 @@ export async function releaseLock(
 ): Promise<Result<boolean>> {
     const namespaceValidation = validateNamespace(namespace);
     if (namespaceValidation.isErr()) {
-        return namespaceValidation;
+        return Err(namespaceValidation.error);
     }
 
     const { sk, ik } = lockKeys({ namespace, owner, key });
@@ -166,7 +166,7 @@ export async function releaseAllLocks(store: KVStore, { namespace, owner }: { na
 export async function hasLock(store: KVStore, { namespace, owner, key }: { namespace: LockNamespace; owner: string; key: string }): Promise<Result<boolean>> {
     const namespaceValidation = validateNamespace(namespace);
     if (namespaceValidation.isErr()) {
-        return namespaceValidation;
+        return Err(namespaceValidation.error);
     }
 
     const { sk } = lockKeys({ namespace, owner, key });
