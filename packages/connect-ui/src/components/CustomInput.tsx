@@ -13,7 +13,7 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 const baseWrapperClasses =
-    'relative flex items-center bg-surface w-full shadow-xs rounded-sm border border-border-muted text-sm h-9 px-3 py-1 overflow-hidden focus-within:border-border-default focus-within:ring-1 focus-within:ring-brand-500/20';
+    'relative flex items-center bg-surface w-full shadow-xs rounded-sm border border-border-muted text-sm h-9 px-3 py-1 overflow-hidden focus-within:border-border-default focus-within:ring-2 focus-within:ring-brand-500/40';
 const baseInputClasses =
     'bg-transparent border-0 h-full w-full rounded-sm focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium outline-none disabled:text-text-primary/10 disabled:cursor-not-allowed text-sm text-text-primary placeholder-text-text-secondary';
 
