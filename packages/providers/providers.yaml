@@ -629,6 +629,24 @@ adyntel:
             example: you@company.com
             doc_section: '#step-2-find-your-email-address'
 
+ahrefs:
+    display_name: Ahrefs
+    categories:
+        - marketing
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://app.ahrefs.com/web/oauth/authorize
+    token_url: https://ahrefs.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    body_format: form
+    proxy:
+        base_url: https://api.ahrefs.com
+    docs: https://nango.dev/docs/api-integrations/ahrefs
+    setup_guide_url: https://nango.dev/docs/api-integrations/ahrefs/how-to-register-your-own-ahrefs-api-oauth-app
+
 affinity:
     display_name: Affinity (v1)
     categories:
@@ -10327,6 +10345,39 @@ ironclad:
                 - demo
                 - eu1
             doc_section: '#step-1-finding-your-subdomain'
+
+ironclad-cc:
+    display_name: Ironclad (Client Credentials)
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ironcladapp.com
+        headers:
+            x-as-user-email: ${connectionConfig.userEmail}
+    docs: https://nango.dev/docs/api-integrations/ironclad-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ironclad-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Ironclad environment subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The email of the Ironclad user on whose behalf API requests are made.
+            example: user@yourcompany.com
+            format: email
+            order: 2
 
 jamf:
     display_name: Jamf Pro (Client Credentials)

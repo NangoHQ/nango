@@ -16,3 +16,4 @@ temp
 .context/
 .claude/settings.local.json
 CLAUDE.local.md
+.cursor/ponytail.local.mdc
