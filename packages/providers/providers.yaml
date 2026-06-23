@@ -17291,10 +17291,13 @@ sap-ariba:
         subdomain:
             type: string
             title: Subdomain
-            description: Your SAP Ariba API subdomain. 
+            description: Your SAP Ariba API subdomain.
             example: api-eu
             default_value: api
-            pattern: '^(api|api-eu|api\.au\.cloud)$'
+            enum:
+                - api
+                - api-eu
+                - api.au.cloud
             doc_section: '#step-1-select-your-subdomain'
             order: 1
         apiKey:
