@@ -82,12 +82,12 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         header: 'Integration',
         size: 100,
         cell: ({ row }) => {
-            const { provider } = row.original;
+            const { provider, provider_config_key } = row.original;
 
             return (
                 <div className="flex gap-1.5 items-center">
-                    <IntegrationLogo provider={row.original.provider} className="size-8 bg-transparent" />
-                    <span className="text-body-small-semi text-text-strong">{provider}</span>
+                    <IntegrationLogo provider={provider} className="size-8 bg-transparent" />
+                    <span className="text-body-small-semi text-text-strong">{provider_config_key}</span>
                 </div>
             );
         }
