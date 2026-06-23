@@ -13,8 +13,19 @@ type LookupCallback = (err: NodeJS.ErrnoException | null, address: string | Look
 const pinnedAddresses = new Map<string, { addresses: string[]; expiresAt: number }>();
 const PIN_TTL_MS = 30_000;
 
+function policyPinCacheKey(policy: OutboundUrlPolicy): string {
+    const denylist = [...policy.denylist].sort().join(',');
+    const allowlist = policy.allowlist
+        .map((entry) => entry.trim().toLowerCase())
+        .filter(Boolean)
+        .sort()
+        .join(',');
+    const schemes = [...policy.allowedSchemes].sort().join(',');
+    return `${policy.mode}|${denylist}|${allowlist}|${policy.blockPrivateIps}|${policy.blockLinkLocal}|${schemes}`;
+}
+
 async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolicy): Promise<string[]> {
-    const cacheKey = `${hostname}:${policy.blockPrivateIps}:${policy.blockLinkLocal}`;
+    const cacheKey = `${hostname}:${policyPinCacheKey(policy)}`;
     const cached = pinnedAddresses.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
         return cached.addresses;

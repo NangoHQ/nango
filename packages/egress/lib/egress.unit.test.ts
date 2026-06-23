@@ -218,4 +218,31 @@ describe('egress safe lookup pinning', () => {
         expect(address).toBe('8.8.8.8');
         expect(lookupSpy).toHaveBeenCalledTimes(1);
     });
+
+    it('does not reuse pinned addresses across policies with different hostname rules', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+        const permissive = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [] });
+        const strict = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+        });
+        const lookupLoose = createSafeHttpAgents(permissive).httpsAgent.options.lookup!;
+        const lookupStrict = createSafeHttpAgents(strict).httpsAgent.options.lookup!;
+        const host = 'metadata.google.internal';
+
+        await new Promise<string>((resolve, reject) => {
+            lookupLoose(host, {}, (err, addr) => {
+                if (err) reject(err);
+                else resolve(addr as string);
+            });
+        });
+
+        await expect(
+            new Promise<string>((resolve, reject) => {
+                lookupStrict(host, {}, (err, addr) => {
+                    if (err) reject(err);
+                    else resolve(addr as string);
+                });
+            })
+        ).rejects.toThrow(OutboundUrlError);
+    });
 });
