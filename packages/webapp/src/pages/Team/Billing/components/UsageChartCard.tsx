@@ -63,9 +63,11 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const rawDimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
     const filter = showControls ? parseFilterParam(filterParam, dimensions) : null;
 
-    // Filter and breakdown can't target the same dimension (the backend rejects it as a
-    // degenerate single-value split). Defensive against a stale deep-link / an "Apply to
-    // all" that lands the breakdown on the filtered dim: drop the breakdown on collision.
+    // A filter and a breakdown can't target the same dimension (the backend rejects it as a
+    // degenerate single-value split). When they collide — e.g. you group by integration, then
+    // filter to one integration that was hidden in 'Rest' — the filter wins and the grouping is
+    // ignored for the query. The grouping stays in the URL, so clearing the filter restores it
+    // without having to re-select it.
     const dimension = rawDimension && filter && rawDimension === filter.dimension ? null : rawDimension;
 
     const inBreakdownMode = showControls && dimension !== null;
@@ -88,15 +90,18 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         void setFilterParam(null);
     };
 
-    // Apply a filter from the typeahead. Filtering by the dimension currently broken down is
-    // the "drill into a Rest value" case — clear the breakdown to avoid the same-dim combo.
+    // Apply a filter from the typeahead. Filtering by the dimension currently grouped by — the
+    // "drill into a Rest value" case — is allowed and keeps the grouping: the two collide, so
+    // the grouping is ignored for the query (see above), but it stays set so clearing the
+    // filter lands back on it.
     const applyFilter = (dim: AnyBreakdownDimension, value: string) => {
         void setFilterParam(`${dim}:${value}`);
-        if (rawDimension === dim) void setDimParam(null);
     };
 
     // "Apply to all" shows when applying this panel's group + filter would change another panel.
-    const selection = { group: dimension, filter };
+    // Use the raw (URL) grouping, not the collision-resolved one, so a panel grouped-and-
+    // filtered on the same dim still propagates (and keeps) its grouping.
+    const selection = { group: rawDimension, filter };
     const canApplyToAll = isDivergingFromGlobal(metric, selection);
 
     // The chart + headline always reflect the "live" metric being shown: the detail response
@@ -125,7 +130,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
                 env={env}
                 timeframe={timeframe}
                 dimensions={dimensions}
-                breakdownDimension={dimension}
+                breakdownDimension={rawDimension}
                 filter={filter}
                 onSetBreakdown={(d) => void setDimParam(d)}
                 onApplyFilter={applyFilter}
