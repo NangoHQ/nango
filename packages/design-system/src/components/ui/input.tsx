@@ -18,10 +18,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors
                 'bg-surface-input border-border-input text-text-default placeholder:text-text-secondary',
-                // Hover / focus border + keyboard focus ring
-                'hover:border-border-input-hover focus:border-border-input-hover focus-visible:shadow-focus-outline-default',
+                // Hover / focus border (focus ring removed pending design review)
+                'hover:border-border-input-hover focus:border-border-input-hover',
                 // Invalid
-                'aria-invalid:border-status-danger-border aria-invalid:focus-visible:shadow-focus-outline-danger',
+                'aria-invalid:border-status-danger-border',
                 // Disabled — dedicated tokens, no opacity (Figma state/selectedMuted bg, border/disabled, text/disabled)
                 'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
                 // File-input affordance

@@ -14,7 +14,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
             data-slot="input-group"
             role="group"
             className={cn(
-                'group/input-group bg-surface-input border-ds-hairline border-border-input text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded transition-[color,box-shadow] outline-none hover:border-border-input-hover has-[[data-slot=input-group-control]:disabled]:hover:border-border-input',
+                'group/input-group bg-surface-input border-ds-hairline border-border-input text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded transition-[color,box-shadow] outline-none hover:border-border-input-hover',
                 'h-9 min-w-0 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -23,16 +23,16 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
                 'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
                 'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
-                // Focus state — the ring lives on the group (the inner control suppresses its own; see below)
-                'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-input-hover has-[[data-slot=input-group-control]:focus-visible]:shadow-focus-outline-default',
+                // Focus state — border darkens when the control is focused (focus ring removed pending design review).
+                'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-input-hover',
                 // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
                 'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-input-hover',
 
                 // Disabled — dedicated tokens (matches Input), no opacity.
                 'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
-                // Error state — danger border always, danger focus ring when the control is focused.
-                'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:shadow-focus-outline-danger',
+                // Error state.
+                'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border',
 
                 className
             )}
@@ -128,10 +128,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
             ref={ref}
             data-slot="input-group-control"
             data-filled={isFilled}
-            className={cn(
-                'flex-1 rounded-none border-0 bg-transparent shadow-none disabled:bg-transparent focus-visible:ring-0 focus-visible:shadow-none aria-invalid:focus-visible:shadow-none',
-                className
-            )}
+            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none disabled:bg-transparent focus-visible:ring-0', className)}
             value={value}
             defaultValue={defaultValue}
             onChange={handleChange}
@@ -175,7 +172,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
                 data-slot="input-group-control"
                 data-filled={isFilled}
                 className={cn(
-                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none disabled:bg-transparent focus-visible:ring-0 focus-visible:shadow-none aria-invalid:focus-visible:shadow-none',
+                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none disabled:bg-transparent focus-visible:ring-0',
                     className
                 )}
                 value={value}
