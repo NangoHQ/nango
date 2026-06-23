@@ -180,6 +180,18 @@ async function resolveAndValidateAddresses(
     return { ok: true, addresses };
 }
 
+/**
+ * Resolve a hostname once and validate every returned address against the policy.
+ * Used by connection pinning so lookup and validation share the same DNS answer.
+ */
+export async function resolveValidatedHostAddresses(hostname: string, policy: OutboundUrlPolicy, url: string): Promise<string[]> {
+    const result = await resolveAndValidateAddresses(hostname, policy, url);
+    if (!result.ok) {
+        throw result.error;
+    }
+    return result.addresses;
+}
+
 export async function validateOutboundUrlAsync(url: string, policy: OutboundUrlPolicy, ctx?: ValidateOutboundUrlContext): Promise<ValidateOutboundUrlOutcome> {
     const syncResult = validateOutboundUrlSync(url, policy, ctx);
     if (!syncResult.ok) {

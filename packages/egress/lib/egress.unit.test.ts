@@ -2,7 +2,7 @@ import dns from 'node:dns/promises';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { clearPinnedAddressCacheForTests } from './agent.js';
+import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.js';
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -130,5 +130,42 @@ describe('egress redirect validator', () => {
     it('allows redirect to public host', () => {
         const validator = createRedirectValidator(policy);
         expect(() => validator('https://api.example.com/next')).not.toThrow();
+    });
+});
+
+describe('egress safe lookup pinning', () => {
+    const policy = resolvePolicyForServer({
+        proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+    });
+
+    afterEach(() => {
+        clearPinnedAddressCacheForTests();
+        vi.restoreAllMocks();
+    });
+
+    it('rejects lookup when DNS returns a blocked address', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
+        await expect(
+            new Promise<string>((resolve, reject) => {
+                lookupFn('rebind.example', {}, (err, address) => {
+                    if (err) reject(err);
+                    else resolve(address as string);
+                });
+            })
+        ).rejects.toThrow(OutboundUrlError);
+    });
+
+    it('uses a single DNS lookup for pinning (no TOCTOU second lookup)', async () => {
+        const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+        const lookupFn = createSafeHttpAgents(policy).httpsAgent.options.lookup!;
+        const address = await new Promise<string>((resolve, reject) => {
+            lookupFn('api.example.com', {}, (err, addr) => {
+                if (err) reject(err);
+                else resolve(addr as string);
+            });
+        });
+        expect(address).toBe('8.8.8.8');
+        expect(lookupSpy).toHaveBeenCalledTimes(1);
     });
 });

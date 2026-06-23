@@ -3,7 +3,7 @@ import http from 'node:http';
 import https from 'node:https';
 import net from 'node:net';
 
-import { assertSafeOutboundUrl } from './validate.js';
+import { resolveValidatedHostAddresses, validateOutboundUrlSync } from './validate.js';
 
 import type { OutboundUrlPolicy } from './policy.js';
 import type { LookupAddress, LookupOptions } from 'node:dns';
@@ -20,9 +20,13 @@ async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolic
         return cached.addresses;
     }
 
-    await assertSafeOutboundUrl(`http://${hostname}/`, policy);
-    const records = await dns.promises.lookup(hostname, { all: true, verbatim: true });
-    const addresses = records.map((r) => r.address);
+    const url = `http://${hostname}/`;
+    const syncResult = validateOutboundUrlSync(url, policy);
+    if (!syncResult.ok) {
+        throw syncResult.error;
+    }
+
+    const addresses = await resolveValidatedHostAddresses(syncResult.hostname, policy, url);
     pinnedAddresses.set(cacheKey, { addresses, expiresAt: Date.now() + PIN_TTL_MS });
     return addresses;
 }
