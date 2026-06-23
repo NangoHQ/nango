@@ -24,7 +24,7 @@ function prunePinnedAddressCache(now = Date.now()): void {
 }
 
 function storePinnedAddress(cacheKey: string, addresses: string[], expiresAt: number): void {
-    prunePinnedAddressCache(expiresAt);
+    prunePinnedAddressCache();
     pinnedAddresses.delete(cacheKey);
     pinnedAddresses.set(cacheKey, { addresses, expiresAt });
     while (pinnedAddresses.size > MAX_PINNED_ADDRESSES) {

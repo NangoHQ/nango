@@ -301,6 +301,6 @@ describe('egress safe lookup pinning', () => {
                 });
             });
         }
-        expect(getPinnedAddressCacheSizeForTests()).toBeLessThanOrEqual(1_000);
+        expect(getPinnedAddressCacheSizeForTests()).toBe(1_000);
     });
 });
