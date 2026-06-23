@@ -56,7 +56,7 @@ function checkAllowlist(hostname: string, policy: OutboundUrlPolicy): OutboundUr
         return null;
     }
     if (!hostnameMatchesAllowlist(hostname, policy.allowlist)) {
-        return new OutboundUrlError('allowlist_miss', 'URL hostname is not on the outbound allowlist.', { hostname, url: hostname });
+        return new OutboundUrlError('allowlist_miss', 'URL hostname is not on the outbound allowlist.', { hostname });
     }
     return null;
 }
