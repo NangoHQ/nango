@@ -1,0 +1,134 @@
+import dns from 'node:dns/promises';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { clearPinnedAddressCacheForTests } from './agent.js';
+import {
+    canonicalizeHostnameForDenylist,
+    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+    isBaseUrlOverrideDenied,
+    normalizeDenylist,
+    resolveProxyBaseUrlOverrideDenylist,
+    resolveProxyBaseUrlOverrideDenylistForRunner
+} from './denylist.js';
+import { OutboundUrlError } from './errors.js';
+import { classifyBlockedIp } from './ip.js';
+import { resetRunnerPolicyCacheForTests, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
+import { createRedirectValidator } from './redirect.js';
+import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
+
+describe('egress denylist', () => {
+    it('canonicalizes hostnames', () => {
+        expect(canonicalizeHostnameForDenylist('localhost.')).toBe('localhost');
+        expect(canonicalizeHostnameForDenylist('[::1]')).toBe('::1');
+    });
+
+    it('blocks denylisted hosts', () => {
+        const list = normalizeDenylist([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+        expect(isBaseUrlOverrideDenied('http://169.254.169.254/foo', list)).toBe(true);
+    });
+
+    it('runner denylist ignores server opt-out', () => {
+        expect(resolveProxyBaseUrlOverrideDenylist('[]')).toEqual([]);
+        expect(resolveProxyBaseUrlOverrideDenylistForRunner('[]')).toEqual([...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]);
+    });
+});
+
+describe('egress IP classification', () => {
+    it('blocks loopback and RFC1918', () => {
+        expect(classifyBlockedIp('127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('10.0.0.1')).toBe('private');
+        expect(classifyBlockedIp('192.168.1.1')).toBe('private');
+        expect(classifyBlockedIp('169.254.169.254')).toBe('link_local');
+    });
+
+    it('allows public IPs', () => {
+        expect(classifyBlockedIp('8.8.8.8')).toBeNull();
+    });
+});
+
+describe('egress validateOutboundUrl', () => {
+    const policy = resolvePolicyForServer({
+        proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+    });
+
+    it('blocks denylisted hostname sync', () => {
+        const result = validateOutboundUrlSync('http://localhost/path', policy);
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe('denied_hostname');
+        }
+    });
+
+    it('blocks IP literals sync', () => {
+        const result = validateOutboundUrlSync('http://127.0.0.1/path', policy);
+        expect(result.ok).toBe(false);
+    });
+
+    it('allows public hostname sync', () => {
+        const result = validateOutboundUrlSync('https://api.example.com/v1', policy);
+        expect(result.ok).toBe(true);
+    });
+
+    it('blocks DNS rebinding to private IP', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const result = await validateOutboundUrlAsync('https://allowed.example.com/path', policy);
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe('denied_dns');
+        }
+    });
+});
+
+describe('egress allowlist mode', () => {
+    it('allows only matching hostnames', () => {
+        const policy = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicyRaw: JSON.stringify({
+                mode: 'allowlist',
+                allowlist: ['.example.com', 'api.hubspot.com'],
+                blockPrivateIps: false,
+                resolveDns: false
+            })
+        });
+        expect(validateOutboundUrlSync('https://api.example.com/x', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('https://evil.com/x', policy).ok).toBe(false);
+    });
+});
+
+describe('egress permissive mode', () => {
+    it('still blocks loopback IP literals when hostname denylist is off', () => {
+        const policy = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [] });
+        expect(policy.mode).toBe('permissive');
+        expect(validateOutboundUrlSync('http://127.0.0.1:8080/', policy).ok).toBe(false);
+        expect(isBaseUrlOverrideDeniedByPolicy('http://127.0.0.1:8080/', policy)).toBe(true);
+    });
+});
+
+describe('egress runner policy', () => {
+    afterEach(() => {
+        resetRunnerPolicyCacheForTests();
+        clearPinnedAddressCacheForTests();
+    });
+
+    it('always applies secure defaults when denylist env is empty', () => {
+        const policy = resolvePolicyForRunnerSync({ proxyBaseUrlOverrideDenylistRaw: '[]' });
+        expect(policy.denylist.has('localhost')).toBe(true);
+    });
+});
+
+describe('egress redirect validator', () => {
+    const policy = resolvePolicyForServer({
+        proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+    });
+
+    it('throws on redirect to denylisted host', () => {
+        const validator = createRedirectValidator(policy);
+        expect(() => validator('http://169.254.169.254/')).toThrow(OutboundUrlError);
+    });
+
+    it('allows redirect to public host', () => {
+        const validator = createRedirectValidator(policy);
+        expect(() => validator('https://api.example.com/next')).not.toThrow();
+    });
+});

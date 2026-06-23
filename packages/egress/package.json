@@ -1,0 +1,21 @@
+{
+    "name": "@nangohq/egress",
+    "version": "0.70.8",
+    "description": "Outbound URL security for Nango (SSRF hardening)",
+    "type": "module",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/egress"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "files": [
+        "dist/"
+    ],
+    "scripts": {},
+    "devDependencies": {
+        "vitest": "4.1.9"
+    }
+}
