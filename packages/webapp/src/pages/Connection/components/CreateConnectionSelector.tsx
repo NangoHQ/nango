@@ -42,6 +42,8 @@ interface CreateConnectionSelectorProps {
     overrideClientId: string | undefined;
     overrideClientSecret: string | undefined;
     overrideDocUrl: string | undefined;
+    overrideWebhookUrl: string | undefined;
+    overrideWebhookUrlSecondary: string | undefined;
     defaultDocUrl?: string;
     isFormValid?: boolean;
 }
@@ -58,6 +60,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     overrideClientId,
     overrideClientSecret,
     overrideDocUrl,
+    overrideWebhookUrl,
+    overrideWebhookUrlSecondary,
     defaultDocUrl,
     isFormValid = true
 }) => {
@@ -122,7 +126,10 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         const isOauth2 = integration && ['OAUTH2', 'OAUTH2_CC', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
 
         const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
-        const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
+        const webhookUrl = overrideWebhookUrl?.trim() ? overrideWebhookUrl.trim() : undefined;
+        const webhookUrlSecondary = webhookUrl && overrideWebhookUrlSecondary?.trim() ? overrideWebhookUrlSecondary.trim() : undefined;
+        const hasConnectionConfigOverrides =
+            overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined || webhookUrl !== undefined;
         const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
 
         return await apiConnectSessions(env, {
@@ -137,7 +144,9 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                   ? {
                                         oauth_client_id_override: overrideClientId,
                                         oauth_client_secret_override: overrideClientSecret,
-                                        oauth_scopes_override: oauthScopesOverride
+                                        oauth_scopes_override: oauthScopesOverride,
+                                        webhook_url: webhookUrl,
+                                        webhook_url_secondary: webhookUrlSecondary
                                     }
                                   : undefined
                       }
@@ -151,7 +160,19 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                   }
                 : undefined
         });
-    }, [integration, overrideOauthScopes, overrideClientId, overrideClientSecret, overrideDocUrl, defaultDocUrl, env, testUser, overrideAuthParams]);
+    }, [
+        integration,
+        overrideOauthScopes,
+        overrideClientId,
+        overrideClientSecret,
+        overrideDocUrl,
+        overrideWebhookUrl,
+        overrideWebhookUrlSecondary,
+        defaultDocUrl,
+        env,
+        testUser,
+        overrideAuthParams
+    ]);
 
     const onClickConnectUI = () => {
         if (!environmentAndAccount) {

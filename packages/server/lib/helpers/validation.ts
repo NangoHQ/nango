@@ -1,8 +1,32 @@
+import { URL } from 'url';
+
 import * as z from 'zod';
 
-import { connectionTagsKeySchema, connectionTagsSchema, TAG_MAX_COUNT, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
+import { connectionTagsKeySchema, connectionTagsSchema, getServerOutboundUrlPolicy, isOutboundUrlAllowed, TAG_MAX_COUNT, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
 
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
+
+/**
+ * Validates a webhook URL: must be a valid URL (or empty), cannot point to Nango's own domain,
+ * and cannot resolve to a blocked host (loopback, private, link-local, metadata, ...).
+ */
+export const webhookUrlSchema = z
+    .union([z.url(), z.literal('')])
+    .optional()
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            return !new URL(url).host.endsWith('nango.dev');
+        },
+        { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
+    )
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            return isOutboundUrlAllowed(url, getServerOutboundUrlPolicy());
+        },
+        { message: 'This webhook URL is not allowed.' }
+    );
 
 export const providerSchema = z
     .string()
