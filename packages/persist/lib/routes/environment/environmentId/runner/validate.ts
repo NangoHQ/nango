@@ -13,14 +13,19 @@ export const taskAbortParamsSchema = z
     })
     .strict();
 
-export const syncConflictBodySchema = z
+const syncConflictBodyBaseSchema = z
     .object({
         scriptType: z.literal('sync'),
-        syncId: z.string().min(1),
-        refresh: z.boolean().optional().default(false),
-        ttlMs: z.coerce.number().int().positive()
+        syncId: z.string().min(1)
     })
     .strict();
+
+export const putSyncConflictBodySchema = syncConflictBodyBaseSchema.extend({
+    refresh: z.boolean().optional().default(false),
+    ttlMs: z.coerce.number().int().positive()
+});
+
+export const deleteSyncConflictBodySchema = syncConflictBodyBaseSchema;
 
 export const lockOwnerKeyBodySchema = z
     .object({

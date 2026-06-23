@@ -2,7 +2,7 @@ import { validateRequest } from '@nangohq/utils';
 
 import * as coordination from '../../../../../coordination/index.js';
 import { logger } from '../../../../../logger.js';
-import { environmentIdParamsSchema, syncConflictBodySchema } from '../validate.js';
+import { environmentIdParamsSchema, putSyncConflictBodySchema } from '../validate.js';
 
 import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
 import type { PutSyncConflict } from '@nangohq/types';
@@ -13,7 +13,7 @@ const method = 'PUT';
 
 const validate = validateRequest<PutSyncConflict>({
     parseParams: (data) => environmentIdParamsSchema.parse(data),
-    parseBody: (data) => syncConflictBodySchema.parse(data)
+    parseBody: (data) => putSyncConflictBodySchema.parse(data)
 });
 
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PutSyncConflict, AuthLocals>) => {
