@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 871
+Provider count: 872
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -666,6 +666,7 @@ URL patterns:
 | `salesloft` | Salesloft | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/salesloft.md) |  |  | marketing |
 | `salesmsg` | Salesmsg (PAT) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/salesmsg.md) | [connect](https://nango.dev/docs/api-integrations/salesmsg/connect.md) |  | communication, marketing |
 | `salesmsg-oauth2` | Salesmsg (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/salesmsg-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app.md) | communication, marketing |
+| `sap-ariba` | SAP Ariba | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/sap-ariba.md) | [connect](https://nango.dev/docs/api-integrations/sap-ariba/connect.md) |  | erp |
 | `sap-business-one` | SAP Business One | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/sap-business-one.md) | [connect](https://nango.dev/docs/integrations/all/sap-business-one/connect.md) |  | erp |
 | `sap-concur` | SAP Concur | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sap-concur.md) | [connect](https://nango.dev/docs/integrations/all/sap-concur/connect.md) |  | erp |
 | `sap-concur-password` | SAP Concur (Password Grant) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/sap-concur-password.md) | [connect](https://nango.dev/docs/api-integrations/sap-concur-password/connect.md) |  | erp |
