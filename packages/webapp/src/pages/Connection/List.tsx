@@ -287,15 +287,14 @@ export const ConnectionList = () => {
                         <>
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="h-10">
+                                <InputGroup className="h-10 flex-1">
                                     <InputGroupInput
-                                        className="pr-2.5"
                                         type="text"
                                         placeholder="Search connections"
                                         value={search || ''}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
-                                    <InputGroupAddon className="pl-2.5">
+                                    <InputGroupAddon>
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
@@ -340,7 +339,7 @@ export const ConnectionList = () => {
                                 />
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
-                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                        <ButtonLink to={`/${env}/connections/create`} size="xl" disabled={!allowed} className="ml-auto">
                                             Add test connection
                                         </ButtonLink>
                                     )}
