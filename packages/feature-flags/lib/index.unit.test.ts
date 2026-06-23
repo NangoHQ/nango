@@ -148,6 +148,28 @@ describe('getFeatureFlagsClient', () => {
         );
     });
 
+    it('shouldKeepActionTrace evaluates per environment', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to initialize');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(getFlags().shouldKeepActionTrace(16693)).resolves.toBe(true);
+        expect(unleash.isEnabled).toHaveBeenCalledWith(
+            'action-trace-manual-keep',
+            {
+                userId: '16693',
+                properties: { environmentId: '16693' }
+            },
+            false
+        );
+    });
+
     it('reads non-boolean variant payloads (getString), falling back to default otherwise', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';

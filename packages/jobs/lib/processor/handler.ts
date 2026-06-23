@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { Err, Ok } from '@nangohq/utils';
 
 import { startAction } from '../execution/action.js';
@@ -39,7 +40,12 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
                     'environment.id': task.connection.environment_id
                 }
             },
-            async () => startAction(task)
+            async (span) => {
+                if (await getFlags().shouldKeepActionTrace(task.connection.environment_id)) {
+                    span?.setTag('manual.keep', true);
+                }
+                return startAction(task);
+            }
         );
     }
     if (task.isWebhook()) {

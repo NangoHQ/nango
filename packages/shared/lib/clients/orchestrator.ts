@@ -3,6 +3,7 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
@@ -139,6 +140,9 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
+        if (await getFlags().shouldKeepActionTrace(connection.environment_id)) {
+            span.setTag('manual.keep', true);
+        }
         try {
             let parsedInput: JsonValue = null;
             try {

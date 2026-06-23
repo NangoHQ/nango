@@ -18,6 +18,13 @@ export function buildFlags(client: FeatureFlagsClient) {
             // targetingKey drives gradual-rollout stickiness (same account => same bucket);
             // accountUuid is exposed as a property so strategies can allow/exclude specific accounts.
             return client.isEnabled('oauth-state-cookie-enforcement', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Sets Datadog manual.keep on action execution traces for this environment,
+         * raising ingestion priority during stall investigations. Default `false`.
+         */
+        shouldKeepActionTrace(environmentId: number) {
+            return client.isEnabled('action-trace-manual-keep', { targetingKey: String(environmentId), environmentId }, false);
         }
     };
 }
