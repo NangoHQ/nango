@@ -1283,6 +1283,7 @@
               "integrations/all/itglue",
               "integrations/all/jamf",
               "integrations/all/jamf-basic",
+              "api-integrations/jamie",
               "integrations/all/jazzhr",
               "api-integrations/jiminny",
               "api-integrations/jira",

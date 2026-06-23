@@ -10387,6 +10387,26 @@ jamf-basic:
             description: Your Jamf Pro password
             secret: true
 
+jamie:
+    display_name: Jamie
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://beta-api.meetjamie.ai
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/jamie
+    docs_connect: https://nango.dev/docs/api-integrations/jamie/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Jamie workspace or personal API key.
+            example: jk_your_api_key
+            pattern: '^jk_[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-key'
+
 jazzhr:
     display_name: JazzHR
     categories:
