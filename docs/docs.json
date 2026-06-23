@@ -1106,6 +1106,7 @@
               "api-integrations/demodesk",
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
+              "api-integrations/dialpad-wfm",
               "api-integrations/diffbot",
               "integrations/all/digitalocean",
               "api-integrations/digits",
