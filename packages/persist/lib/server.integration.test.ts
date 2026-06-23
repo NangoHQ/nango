@@ -125,7 +125,7 @@ describe('Persist API', () => {
         it('should acquire and release sync conflict lock', async () => {
             const acquireResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
                 method: 'PUT',
-                body: JSON.stringify({ scriptType: 'sync', syncId }),
+                body: JSON.stringify({ scriptType: 'sync', syncId, ttlMs: 60_000 }),
                 headers: {
                     Authorization: `Bearer ${mockSecretKey}`,
                     'Content-Type': 'application/json'
@@ -135,7 +135,7 @@ describe('Persist API', () => {
 
             const conflictResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
                 method: 'PUT',
-                body: JSON.stringify({ scriptType: 'sync', syncId }),
+                body: JSON.stringify({ scriptType: 'sync', syncId, ttlMs: 60_000 }),
                 headers: {
                     Authorization: `Bearer ${mockSecretKey}`,
                     'Content-Type': 'application/json'

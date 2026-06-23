@@ -17,7 +17,8 @@ export const syncConflictBodySchema = z
     .object({
         scriptType: z.literal('sync'),
         syncId: z.string().min(1),
-        refresh: z.boolean().optional().default(false)
+        refresh: z.boolean().optional().default(false),
+        ttlMs: z.coerce.number().int().positive()
     })
     .strict();
 

@@ -19,10 +19,10 @@ const validate = validateRequest<PutSyncConflict>({
 const handler = async (_req: EndpointRequest, res: EndpointResponse<PutSyncConflict, AuthLocals>) => {
     const {
         parsedParams: { environmentId },
-        parsedBody: { scriptType, syncId, refresh }
+        parsedBody: { scriptType, syncId, refresh, ttlMs }
     } = res.locals;
 
-    const result = await coordination.acquireSyncConflict({ environmentId, scriptType, syncId, refresh: refresh ?? false });
+    const result = await coordination.acquireSyncConflict({ environmentId, scriptType, syncId, refresh: refresh ?? false, ttlMs });
     if (result.isErr()) {
         if (result.error.message === 'Conflicting sync detected') {
             res.status(409).json({ error: { code: 'sync_conflict', message: result.error.message } });

@@ -4,7 +4,7 @@ import os from 'os';
 import { metrics } from '@nangohq/utils';
 
 import { PersistClient } from './clients/persist.js';
-import { envs } from './env.js';
+import { envs, syncConflictTtlMs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
 
@@ -55,7 +55,7 @@ export class RunnerMonitor {
     }
 
     private conflictTtlMs(): number {
-        return envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER;
+        return syncConflictTtlMs;
     }
 
     private isLocalConflictExpired(entry: LocalConflictEntry): boolean {
@@ -97,7 +97,8 @@ export class RunnerMonitor {
                 environmentId: nangoProps.environmentId,
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId,
-                refresh: opts.refresh
+                refresh: opts.refresh,
+                ttlMs: this.conflictTtlMs()
             });
             if (res.isErr()) {
                 logger.error('Failed to track sync for conflicts', { error: res.error });

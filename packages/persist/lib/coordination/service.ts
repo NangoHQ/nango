@@ -18,10 +18,6 @@ function abortTtlMs(): number {
     return envs.RUNNER_ABORT_CHECK_INTERVAL_MS * 5;
 }
 
-function conflictTtlMs(): number {
-    return envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER;
-}
-
 async function getStore() {
     return getKVStore('customer');
 }
@@ -50,12 +46,14 @@ export async function acquireSyncConflict({
     environmentId,
     scriptType,
     syncId,
-    refresh
+    refresh,
+    ttlMs
 }: {
     environmentId: number;
     scriptType: string;
     syncId: string;
     refresh: boolean;
+    ttlMs: number;
 }): Promise<Result<void>> {
     if (scriptType !== 'sync') {
         return Ok(undefined);
@@ -65,7 +63,7 @@ export async function acquireSyncConflict({
         const store = await getStore();
         await store.set(conflictKey(environmentId, scriptType, syncId), '1', {
             canOverride: refresh,
-            ttlMs: conflictTtlMs()
+            ttlMs
         });
         return Ok(undefined);
     } catch (err: unknown) {

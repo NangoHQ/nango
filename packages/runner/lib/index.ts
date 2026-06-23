@@ -9,7 +9,7 @@ export { NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 export { exec } from './exec.js';
 export type { Locks } from './sdk/locks.js';
 export { HttpLocks, MapLocks } from './sdk/locks.js';
-export { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
+export { abortCheckIntervalMs, heartbeatIntervalMs, syncConflictTtlMs } from './env.js';
 export { jobsClient } from './clients/jobs.js';
 export { PersistClient } from './clients/persist.js';
 export { httpFetch } from './clients/http.js';

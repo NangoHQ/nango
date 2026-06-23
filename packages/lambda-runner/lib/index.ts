@@ -2,7 +2,7 @@ import { gunzipSync } from 'node:zlib';
 
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { abortCheckIntervalMs, exec, heartbeatIntervalMs, HttpLocks, jobsClient, PersistClient } from '@nangohq/runner';
+import { abortCheckIntervalMs, exec, heartbeatIntervalMs, HttpLocks, jobsClient, PersistClient, syncConflictTtlMs } from '@nangohq/runner';
 import { loadProviders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
@@ -93,7 +93,8 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         const conflictRes = await persistClient.putSyncConflict({
             environmentId: nangoProps.environmentId,
             scriptType: nangoProps.scriptType,
-            syncId: nangoProps.syncId
+            syncId: nangoProps.syncId,
+            ttlMs: syncConflictTtlMs
         });
         if (conflictRes.isErr()) {
             logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
@@ -138,7 +139,8 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
                 environmentId: nangoProps.environmentId,
                 scriptType: nangoProps.scriptType,
                 syncId: nangoProps.syncId,
-                refresh: true
+                refresh: true,
+                ttlMs: syncConflictTtlMs
             });
             if (refreshRes.isErr()) {
                 logger.error('Failed to refresh sync conflict lock', { error: refreshRes.error });

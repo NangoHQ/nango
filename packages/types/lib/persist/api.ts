@@ -122,6 +122,7 @@ export type PutSyncConflict = Endpoint<{
         scriptType: 'sync';
         syncId: string;
         refresh?: boolean;
+        ttlMs: number;
     };
     Error: ApiError<'sync_conflict' | 'put_sync_conflict_failed'>;
     Success: never;

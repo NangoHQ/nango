@@ -89,7 +89,8 @@ describe('RunnerMonitor conflict tracking', () => {
                     environmentId: 1,
                     scriptType: 'sync',
                     syncId: 'sync-123',
-                    refresh: false
+                    refresh: false,
+                    ttlMs: expect.any(Number)
                 });
             });
 
@@ -137,7 +138,8 @@ describe('RunnerMonitor conflict tracking', () => {
                     environmentId: 1,
                     scriptType: 'sync',
                     syncId: 'sync-refresh',
-                    refresh: true
+                    refresh: true,
+                    ttlMs: expect.any(Number)
                 });
             });
         });

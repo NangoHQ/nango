@@ -436,17 +436,19 @@ export class PersistClient {
         environmentId,
         scriptType,
         syncId,
-        refresh = false
+        refresh = false,
+        ttlMs
     }: {
         environmentId: number;
         scriptType: 'sync';
         syncId: string;
         refresh?: boolean;
+        ttlMs: number;
     }): Promise<Result<void>> {
         const res = await this.fetch<void>({
             method: 'PUT',
             path: `/environment/${environmentId}/runner/sync-conflict`,
-            data: { scriptType, syncId, refresh }
+            data: { scriptType, syncId, refresh, ttlMs }
         });
         if (res.isErr()) {
             if (isPersistErrorCode(res.error.message, 'sync_conflict')) {
