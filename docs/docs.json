@@ -921,6 +921,7 @@
               "integrations/all/adp-workforce-now-next-gen",
               "integrations/all/adyen",
               "api-integrations/adyntel",
+              "api-integrations/ahrefs",
               "integrations/all/affinity",
               "integrations/all/affinity-v2",
               "api-integrations/agiloft",
