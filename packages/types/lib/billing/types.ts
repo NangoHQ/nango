@@ -124,9 +124,11 @@ export interface GetBillingUsageOpts {
     metrics?: UsageMetric[];
     /**
      * Per-metric row-level filter: scopes that metric's response to rows
-     * where the given dimension equals the given value. Mutually exclusive
-     * with `breakdown[<metric>]` on the same metric — controllers reject
-     * the combination. CH path only; the Orb client ignores it.
+     * where the given dimension equals the given value. Composes with
+     * `breakdown[<metric>]` on the same metric when the dimensions differ
+     * (drill-in: filter to one value, re-break-down by another); controllers
+     * reject only the same-dimension pairing. CH path only; the Orb client
+     * ignores it.
      */
     filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
 }
@@ -159,11 +161,11 @@ export interface BillingUsageMetric {
      * dimension-value series (carrying its own `group: {key, value}`), with
      * one 'rest' entry aggregating the long tail.
      *
-     * Mutually exclusive with the top-level `usage`/`total`: when breakdown
-     * is requested the top-level is empty (`usage: []`, `total: 0`) and only
-     * `breakdown` carries data — callers asking for a breakdown opt into the
-     * per-dim view. When breakdown is NOT requested, the top-level is the
-     * no-dim global and this field is absent.
+     * Paired with the top-level `usage`/`total`: when a breakdown is requested
+     * the top-level `usage` is empty (the per-day points live under `breakdown`)
+     * and `total` is the sum across the top-N + 'rest' series, which partition
+     * every row — so it equals the (filtered) global. When breakdown is NOT
+     * requested, the top-level is the no-dim global and this is absent.
      */
     breakdown?: BillingUsageMetric[];
 }

@@ -29,12 +29,18 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
         });
     }
     if (task.isAction()) {
-        const span = tracer.startSpan('jobs.handler.action');
-        return await tracer.scope().activate(span, async () => {
-            const res = await startAction(task);
-            span.finish();
-            return res;
-        });
+        return tracer.trace(
+            'jobs.handler.action',
+            {
+                tags: {
+                    'task.id': task.id,
+                    'action.name': task.actionName,
+                    'connection.id': task.connection.connection_id,
+                    'environment.id': task.connection.environment_id
+                }
+            },
+            async () => startAction(task)
+        );
     }
     if (task.isWebhook()) {
         const span = tracer.startSpan('jobs.handler.webhook');

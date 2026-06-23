@@ -1280,6 +1280,7 @@
               "api-integrations/intercom",
               "integrations/all/intuit",
               "integrations/all/ironclad",
+              "api-integrations/ironclad-cc",
               "integrations/all/itglue",
               "integrations/all/jamf",
               "integrations/all/jamf-basic",

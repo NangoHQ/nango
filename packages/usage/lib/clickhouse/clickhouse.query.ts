@@ -69,9 +69,11 @@ export type GetDailyCounterQuery = {
         // Optional row-level filter: scopes the SQL to rows where the given
         // dimension equals the given value. Used by the dashboard's per-metric
         // filter UX. The value is passed through CH's parameterized
-        // `query_params` (no string interpolation of user input). Caller is
-        // expected to ensure mutual exclusion with `dimension !== 'none'`
-        // (breakdown) for the same metric; the primitive does not enforce it.
+        // `query_params` (no string interpolation of user input). Composes with
+        // a breakdown (`dimension !== 'none'`) on a DIFFERENT dim — the SQL adds
+        // the filter to the breakdown branch's WHERE clause — enabling the
+        // drill-in "filter then re-break-down" view. Filtering and breaking down
+        // by the SAME dim is degenerate; the controller rejects that upstream.
         filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` for this query. Defaults to the
         // dashboard ceiling; callers that race against a shorter wall-clock
@@ -190,8 +192,11 @@ export type GetDailySumAndBatchesQuery = {
         dimension: DimensionFor<M>;
         top?: number;
         // Row-level filter (see GetDailyCounterQuery). For AVG metrics it
-        // narrows BOTH `SUM(value)` and `uniqExact(batch_id)` to the dim
-        // value, producing a standalone running-avg for that one value.
+        // narrows BOTH `SUM(value)` and `uniqExact(batch_id)` to the filtered
+        // rows. Filtered-only → a standalone running-avg for that value. Filter
+        // + breakdown → the shared per-day batches denominator is itself
+        // filtered, so the per-dim running averages stay additive to the
+        // filtered global (the "within this slice" decomposition).
         filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` (see GetDailyCounterQuery).
         maxExecutionSeconds?: number;
