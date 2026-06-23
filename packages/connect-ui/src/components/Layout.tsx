@@ -8,16 +8,24 @@ import { useI18n } from '@/lib/i18n';
 import { useGlobal } from '@/lib/store';
 import NangoLogoSVG from '@/svg/logo.svg?react';
 
-// Trap focus inside the dialog without disturbing Layout's own Escape / click-away close behaviour:
-// don't auto-grab focus, let outside clicks through, and leave Escape to the Layout handler.
+import type { FocusTrapProps } from 'focus-trap-react';
+
+// focus-trap-react re-exports its option type only as the prop's type, not a named export.
+type FocusTrapOptions = NonNullable<FocusTrapProps['focusTrapOptions']>;
+
+// Trap focus inside the dialog while leaving Layout's own Escape / click-away close handlers in
+// charge: don't deactivate on Escape, and let outside clicks through. On open, move focus onto the
+// dialog's scroll container so keyboard/SR users land inside the dialog — and, because Connect UI
+// renders inside an iframe, focusing an element within it is what pulls focus into the iframe at all.
+// initialFocus / fallbackFocus must resolve to a REAL focusable element inside the trap: the
+// `display:contents` wrapper below has no layout box and cannot receive focus, so both point at the
+// scroll container (tabIndex=-1), not the wrapper.
 const focusTrapOptions = {
     escapeDeactivates: false,
     allowOutsideClick: true,
-    initialFocus: false,
-    // Must resolve to an element INSIDE the trap container (the wrapper below), otherwise on a
-    // zero-tabbable screen focus-trap focuses an ancestor and its containment check thrashes.
+    initialFocus: '#connect-ui-dialog-content',
     fallbackFocus: '#connect-ui-dialog-content'
-} as const;
+} satisfies FocusTrapOptions;
 
 export const Layout: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
@@ -61,8 +69,12 @@ export const Layout: React.FC = () => {
                 tabIndex={-1}
             >
                 <FocusTrap focusTrapOptions={focusTrapOptions}>
-                    <div className="contents" id="connect-ui-dialog-content" tabIndex={-1}>
-                        <div className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto">
+                    <div className="contents">
+                        <div
+                            className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto outline-none"
+                            id="connect-ui-dialog-content"
+                            tabIndex={-1}
+                        >
                             <div className="min-h-full p-10 flex flex-col">
                                 <Outlet />
                             </div>
@@ -101,8 +113,12 @@ export const Layout: React.FC = () => {
                 tabIndex={-1}
             >
                 <FocusTrap focusTrapOptions={focusTrapOptions}>
-                    <div className="contents" id="connect-ui-dialog-content" tabIndex={-1}>
-                        <div className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto">
+                    <div className="contents">
+                        <div
+                            className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto outline-none"
+                            id="connect-ui-dialog-content"
+                            tabIndex={-1}
+                        >
                             <div className="min-h-full p-5 sm:p-10 flex flex-col">
                                 <Outlet />
                             </div>
