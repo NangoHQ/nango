@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 867
+Provider count: 868
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -396,6 +396,7 @@ URL patterns:
 | `itglue` | IT Glue | API_KEY | [docs](https://nango.dev/docs/integrations/all/itglue.md) | [connect](https://nango.dev/docs/integrations/all/itglue/connect.md) |  | productivity, other |
 | `jamf` | Jamf Pro (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/jamf.md) |  |  | other |
 | `jamf-basic` | Jamf Pro (Basic Auth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/jamf-basic.md) |  |  | other |
+| `jamie` | Jamie | API_KEY | [docs](https://nango.dev/docs/api-integrations/jamie.md) | [connect](https://nango.dev/docs/api-integrations/jamie/connect.md) |  | productivity |
 | `jazzhr` | JazzHR | API_KEY | [docs](https://nango.dev/docs/integrations/all/jazzhr.md) | [connect](https://nango.dev/docs/integrations/all/jazzhr/connect.md) |  | hr, ats |
 | `jiminny` | Jiminny | API_KEY | [docs](https://nango.dev/docs/api-integrations/jiminny.md) | [connect](https://nango.dev/docs/api-integrations/jiminny/connect.md) |  | productivity, communication |
 | `jira` | Jira (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/jira.md) |  | [setup](https://nango.dev/docs/api-integrations/jira/how-to-register-your-own-jira-api-oauth-app.md) | popular, productivity, ticketing |
