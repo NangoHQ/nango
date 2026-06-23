@@ -16,12 +16,12 @@ Connect to Sage Intacct with Nango and see data flow in 2 minutes. The Client Cr
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Client ID, Client Secret, and either Username or Session ID, then save.
     </Step>
     <Step id="call-sage-intacct-api" title="Call the Sage Intacct API">
-    Make your first request. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first request (List employee expenses). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/v1/company" \
+            curl "https://api.nango.dev/proxy/v1/objects/expenses/employee-expense" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Sage Intacct with Nango and see data flow in 2 minutes. The Client Cr
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/v1/company',
+            endpoint: '/v1/objects/expenses/employee-expense',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
