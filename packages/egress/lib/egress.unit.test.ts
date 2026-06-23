@@ -281,5 +281,14 @@ describe('egress safe lookup pinning', () => {
 
         await lookupVia(lookupFn, 'host-0.example');
         expect(lookupSpy).toHaveBeenCalledTimes(1_002);
+
+        await lookupVia(lookupFn, 'host-999.example');
+        expect(lookupSpy).toHaveBeenCalledTimes(1_002);
+
+        await lookupVia(lookupFn, 'host-1001.example');
+        expect(lookupSpy).toHaveBeenCalledTimes(1_003);
+
+        await lookupVia(lookupFn, 'host-2.example');
+        expect(lookupSpy).toHaveBeenCalledTimes(1_004);
     });
 });
