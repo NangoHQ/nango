@@ -14,7 +14,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -30,7 +30,7 @@ const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
         hmac: z.string().optional(),
-        params: z.record(z.string(), z.any()).optional()
+        params: connectionConfigParamsSchema
     })
     .and(connectionCredential);
 

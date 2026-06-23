@@ -41,6 +41,58 @@ describe(`GET ${endpoint}`, () => {
         });
     });
 
+    it('should reject a webhook_url override pointing to nango.dev', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
+        });
+        isSuccess(resSession.json);
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSession.json.data.token, params: { webhook_url: 'https://api.nango.dev/hook' } },
+            params: { providerConfigKey: config.unique_key }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_query_params',
+                errors: [{ code: 'custom', message: `Webhook URLs cannot point to Nango's domain (nango.dev).`, path: ['params', 'webhook_url'] }]
+            }
+        });
+    });
+
+    it('should store a valid webhook_url override in connection_config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
+        });
+        isSuccess(resSession.json);
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSession.json.data.token, params: { webhook_url: 'https://example.com/webhooks-from-nango' } },
+            params: { providerConfigKey: config.unique_key }
+        });
+        isSuccess(res.json);
+
+        const connection = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: res.json.connectionId,
+            providerConfigKey: res.json.providerConfigKey,
+            environmentId: env.id
+        });
+        expect(connection?.connection_config).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
+    });
+
     it('should not be allowed to connect to an integration if disallowed by sessionToken', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');

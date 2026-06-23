@@ -5,7 +5,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { configService, connectionService, errorManager, getConnectionConfig, getProvider, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -19,7 +19,7 @@ import type { PostPublicUnauthenticatedAuthorization } from '@nangohq/types';
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional()
+        params: connectionConfigParamsSchema
     })
     .and(connectionCredential);
 

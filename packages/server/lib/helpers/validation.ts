@@ -28,6 +28,13 @@ export const webhookUrlSchema = z
         { message: 'This webhook URL is not allowed.' }
     );
 
+export const connectionConfigParamsSchema = z
+    .looseObject({
+        webhook_url: webhookUrlSchema,
+        webhook_url_secondary: webhookUrlSchema
+    })
+    .optional();
+
 export const providerSchema = z
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/)

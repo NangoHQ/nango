@@ -14,7 +14,13 @@ import {
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionCredentialsBasicSchema, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import {
+    connectionConfigParamsSchema,
+    connectionCredential,
+    connectionCredentialsBasicSchema,
+    connectionIdSchema,
+    providerConfigKeySchema
+} from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -33,7 +39,7 @@ import type { NextFunction } from 'express';
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional()
+        params: connectionConfigParamsSchema
     })
     .and(connectionCredential);
 
