@@ -1405,7 +1405,8 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        if (provider.assertion && (refreshToken === false || refreshToken === undefined)) {
+        // Regenerate the assertion on initial auth or when no refresh_token exists.
+        if (provider.assertion && (refreshToken === false || refreshToken === undefined || !dynamicCredentials['refresh_token'])) {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 

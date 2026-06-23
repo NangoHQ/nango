@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 865
+Provider count: 866
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -476,6 +476,7 @@ URL patterns:
 | `microsoft-excel` | Microsoft Excel | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-excel.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | productivity, analytics |
 | `microsoft-intune` | Microsoft Intune | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-intune.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-intune/connect.md) |  | dev-tools |
 | `microsoft-oauth2-cc` | Microsoft (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-oauth2-cc/connect.md) |  | communication, dev-tools, productivity |
+| `microsoft-oauth2-cc-cert` | Microsoft (Client Credentials - Certificate) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert/connect.md) |  | communication, dev-tools, productivity |
 | `microsoft-people` | Microsoft People | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-people.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft-people/how-to-register-your-own-microsoft-people-api-oauth-app.md) | productivity |
 | `microsoft-planner` | Microsoft Planner | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-planner.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft-planner/how-to-register-your-own-microsoft-planner-api-oauth-app.md) | productivity, analytics |
 | `microsoft-power-bi` | Microsoft Power BI | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-power-bi.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | productivity |
