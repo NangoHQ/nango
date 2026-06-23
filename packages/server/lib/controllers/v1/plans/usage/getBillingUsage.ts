@@ -110,8 +110,13 @@ const querySchema = z
         // also clamps defensively (see `Clickhouse.getDailyCounter`).
         top: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional(),
         // Per-metric row-level filter, `filter[<metric>]=<dim>:<value>`.
-        // Mutually exclusive with `breakdown[<metric>]` on the same metric
-        // (rejected by the refine below). CH path only.
+        // Composes with `breakdown[<metric>]`: the SQL applies the filter inside
+        // the breakdown branch, so e.g. filter `integration_id:hubspot` + break
+        // down by `connection` yields a per-connection breakdown of just hubspot's
+        // rows. The one rejected case is filtering and breaking down by the SAME
+        // dim (e.g. filter `integration_id:hubspot` + breakdown `integration_id`):
+        // that produces a single-value "breakdown" — just the filter restated — so
+        // the refine below 400s it. CH path only.
         filter: filterSchema
     })
     .refine(
@@ -129,13 +134,19 @@ const querySchema = z
     .refine(
         (data) => {
             if (!data.filter || !data.breakdown) return true;
+            // Filter + breakdown compose on the same metric (the SQL applies the
+            // filter inside the breakdown branch), EXCEPT when both target the
+            // same dimension — filtering `integration_id:hubspot` while breaking
+            // down by `integration_id` is degenerate (a single-value split).
             for (const m of Object.keys(data.filter) as UsageMetric[]) {
-                if (data.filter[m] && data.breakdown[m]) return false;
+                const f = data.filter[m];
+                const b = data.breakdown[m];
+                if (f && b && f.dimension === b) return false;
             }
             return true;
         },
         {
-            message: 'filter and breakdown are mutually exclusive on the same metric',
+            message: 'filter and breakdown cannot target the same dimension on a metric',
             path: ['filter']
         }
     );

@@ -3,6 +3,7 @@ import { gzipSync } from 'node:zlib';
 
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import tracer from 'dd-trace';
 
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
@@ -173,9 +174,17 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         routingContext?: RoutingContext | undefined;
     }): Promise<Result<boolean>> {
         try {
-            const func = await this.getFunction({ nangoProps: params.nangoProps, routingContext: params.routingContext });
+            const func = await tracer.trace('lambda.getFunction', async () =>
+                this.getFunction({ nangoProps: params.nangoProps, routingContext: params.routingContext })
+            );
 
-            const payload = await this.preparePayload(params);
+            const payload = await tracer.trace('lambda.preparePayload', async (span) => {
+                const result = await this.preparePayload(params);
+                if (result.isErr()) {
+                    span?.setTag('error', result.error);
+                }
+                return result;
+            });
             if (payload.isErr()) {
                 return Err(new Error(`Failed to prepare payload`, { cause: payload.error }));
             }
@@ -188,7 +197,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                     TenantId: getLambdaTenantId(params.nangoProps)
                 })
             });
-            await client.send(command);
+            await tracer.trace('lambda.invoke', async () => client.send(command));
             return Ok(true);
         } catch (err) {
             logger.error('Lambda was unable to execute the function', err);

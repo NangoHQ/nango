@@ -101,7 +101,6 @@ export const Templates: React.FC = () => {
         if (!selected || !integrationData) return;
         try {
             await deployFlow({
-                provider: integrationData.integration.provider,
                 providerConfigKey: integrationData.integration.unique_key,
                 scriptName: selected.name,
                 type: selected.type
