@@ -119,3 +119,30 @@ jobs:
                   fi
                   echo "Integration shards did not pass: $result"
                   exit 1
+
+    tests-connect-ui:
+        needs: should-run
+        # Accessibility regression suite. connect-ui renders design-system components, so a
+        # design-system change can regress contrast/focus too — run on any non-docs change.
+        if: needs.should-run.outputs.should_skip != 'true'
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: '0'
+
+            - name: Use Node.js
+              uses: ./.github/actions/setup-node
+
+            - run: npm ci
+
+            # connect-ui imports @nangohq/types and @nangohq/frontend; build their dist first.
+            - run: npm run ts-build -- --noCheck
+
+            # Browser Mode needs the Chromium binary (ignore-scripts blocks the postinstall download).
+            - run: npx playwright install --with-deps chromium
+
+            - run: npm test -w packages/connect-ui
