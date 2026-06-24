@@ -11,10 +11,14 @@ import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { useGlobalBreakdown } from '../useGlobalBreakdown';
 import { UsageChartCard } from './UsageChartCard';
 
-import type { UsageMetric } from '@nangohq/types';
+import type { DBPlan, UsageMetric } from '@nangohq/types';
 
 // Render order for the usage panels.
 const METRICS: UsageMetric[] = ['connections', 'proxy', 'function_compute_gbms', 'function_executions', 'function_logs', 'records', 'webhook_forwards'];
+
+// Plans on the current usage model. Any plan not listed here is treated as a legacy plan (different usage metrics).
+// Typed against `DBPlan['name']` so a renamed or removed plan fails to compile instead of silently drifting.
+const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'startup-deal', 'enterprise-cloud-hosted', 'starter-v2', 'growth-v2'];
 
 interface UsageProps {
     selectedMonth: Date;
@@ -48,7 +52,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         return <CriticalErrorAlert message="Error loading usage" />;
     }
 
-    const isLegacyPlan = plan && !['free', 'starter-v2', 'growth-v2'].includes(plan.name);
+    const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
     return (
         <div className="w-full flex flex-col gap-6">
             {isLegacyPlan && (
