@@ -40,6 +40,11 @@ try {
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
     const srv = server.listen(port);
+    // keepAliveTimeout must exceed the fronting proxy/load balancer idle timeout (e.g. AWS ALB defaults to 60s) so the
+    // proxy closes idle connections first. Node's 5s default closes pooled sockets the proxy still considers reusable,
+    // causing the next request to hit a dead socket -> TCP RST -> 502. Mirrors packages/server/lib/server.ts.
+    srv.keepAliveTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT;
+    srv.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000; // needs to be longer than the keep alive timeout to avoid premature disconnections
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
     const invocationsProcessor = new LambdaInvocationsProcessor();
