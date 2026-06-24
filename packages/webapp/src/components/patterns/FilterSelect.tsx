@@ -41,6 +41,11 @@ export interface FilterSelectGroupData {
     isError: boolean;
 }
 
+/** A value-pane row: a real option, or the synthetic free-text "create" row appended after matches. */
+interface PaneItem extends FilterSelectOption {
+    isCreate?: boolean;
+}
+
 interface FilterSelectProps {
     /** The trigger element (Base UI clones it via `render`). */
     trigger: React.ReactElement;
@@ -91,21 +96,28 @@ const FilterValuePane: React.FC<{
 
     const trimmed = inputValue.trim();
     const q = trimmed.toLowerCase();
-    // Mirror Base UI's label-based filtering so the empty state matches what's actually shown.
-    const hasMatches = options.some((o) => o.label.toLowerCase().includes(q));
+    // We filter ourselves (Base UI's own filter is disabled below) so the synthetic "create" row
+    // can be appended after the matches as a real, keyboard-navigable item — not a mouse-only
+    // button sitting outside the list, which arrow keys could never reach.
+    const matches = options.filter((o) => o.label.toLowerCase().includes(q));
+    const hasMatches = matches.length > 0;
     const showCreate = allowCreate && trimmed.length > 0 && !options.some((o) => o.value === trimmed);
+    const items: PaneItem[] = showCreate ? [...matches, { value: trimmed, label: trimmed, isCreate: true }] : matches;
     const selectedOption = options.find((o) => o.value === selectedValue) ?? null;
 
     return (
         <Combobox.Root
-            items={options}
+            items={items}
+            // We pre-filter and append the create row ourselves; null disables Base UI's filtering
+            // so it renders exactly these items, the create row included.
+            filter={null}
             value={selectedOption}
-            // The picked item's value is what we commit; null means cleared (not used here).
-            onValueChange={(item: FilterSelectOption | null) => item && onSelect(item.value)}
+            // The picked item's value is what we commit — for the create row, the typed text.
+            onValueChange={(item: PaneItem | null) => item && onSelect(item.value)}
             inputValue={inputValue}
             onInputValueChange={setInputValue}
             open
-            // Highlight the first match so Enter commits it (free-text Enter is handled on the input).
+            // Highlight the first item so Enter commits it (a match if any, otherwise the create row).
             autoHighlight
         >
             <Combobox.Portal>
@@ -126,14 +138,9 @@ const FilterValuePane: React.FC<{
                             ref={inputRef}
                             placeholder={searchPlaceholder}
                             onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    // Commit a typed value with no match. When there IS a match,
-                                    // autoHighlight + Base UI handle Enter.
-                                    if (allowCreate && trimmed && !hasMatches) {
-                                        e.preventDefault();
-                                        onSelect(trimmed);
-                                    }
-                                } else if (e.key === 'Escape') {
+                                // Enter commits the highlighted item (a match or the create row) — Base UI
+                                // handles it via autoHighlight, so it isn't special-cased here.
+                                if (e.key === 'Escape') {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     onCloseAll();
@@ -153,23 +160,24 @@ const FilterValuePane: React.FC<{
                             ) : (
                                 <>
                                     <Combobox.Collection>
-                                        {(item: FilterSelectOption) => (
-                                            <Combobox.Item key={item.value} value={item} className={VALUE_ITEM}>
-                                                <span>{item.label}</span>
-                                                <Combobox.ItemIndicator className="absolute right-2 flex size-3.5 items-center justify-center text-text-muted">
-                                                    <Check className="size-3.5" />
-                                                </Combobox.ItemIndicator>
-                                            </Combobox.Item>
-                                        )}
+                                        {(item: PaneItem) =>
+                                            item.isCreate ? (
+                                                <Combobox.Item key="__create" value={item} className={VALUE_ITEM}>
+                                                    <span className="flex min-w-0 items-center gap-1">
+                                                        <span className="shrink-0 text-text-muted">Filter to</span>
+                                                        <span className="truncate text-text-strong">&quot;{item.label}&quot;</span>
+                                                    </span>
+                                                </Combobox.Item>
+                                            ) : (
+                                                <Combobox.Item key={item.value} value={item} className={VALUE_ITEM}>
+                                                    <span>{item.label}</span>
+                                                    <Combobox.ItemIndicator className="absolute right-2 flex size-3.5 items-center justify-center text-text-muted">
+                                                        <Check className="size-3.5" />
+                                                    </Combobox.ItemIndicator>
+                                                </Combobox.Item>
+                                            )
+                                        }
                                     </Combobox.Collection>
-                                    {showCreate && (
-                                        <button type="button" onClick={() => onSelect(trimmed)} className={VALUE_ITEM}>
-                                            <span className="flex min-w-0 items-center gap-1">
-                                                <span className="shrink-0 text-text-muted">Filter to</span>
-                                                <span className="truncate text-text-strong">&quot;{trimmed}&quot;</span>
-                                            </span>
-                                        </button>
-                                    )}
                                     {!hasMatches && !showCreate && (
                                         <div className="px-2 py-3 text-center text-text-muted text-body-small-regular">
                                             {isError ? 'Failed to load values' : 'No values'}
