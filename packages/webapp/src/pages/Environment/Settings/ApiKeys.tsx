@@ -1,5 +1,4 @@
-import { IconExternalLink, IconEye, IconEyeOff, IconKey } from '@tabler/icons-react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -124,7 +123,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                             rel="noopener noreferrer"
                             className="text-text-muted hover:text-text-strong"
                         >
-                            <IconExternalLink stroke={1} size={14} />
+                            <ExternalLink strokeWidth={1} size={14} />
                         </a>
                     </div>
                 )}
@@ -275,7 +274,7 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="primary" disabled={disabled}>
-                    <IconKey stroke={1} size={16} />
+                    <Key strokeWidth={1} size={16} />
                     Create new API key
                 </Button>
             </DialogTrigger>
@@ -380,7 +379,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                                     onClick={() => setSecretRevealed((r) => !r)}
                                     className="text-text-muted hover:text-text-strong h-7 w-7"
                                 >
-                                    {secretRevealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
+                                    {secretRevealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
                                 </IconButton>
                                 <CopyButton text={apiKey.secret} />
                             </div>
@@ -453,7 +452,7 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                                 onClick={() => setRevealed((r) => !r)}
                                 className="text-text-muted hover:text-text-strong h-7 w-7"
                             >
-                                {revealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
+                                {revealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
                             </IconButton>
                             <CopyButton text={secretKey} />
                         </div>

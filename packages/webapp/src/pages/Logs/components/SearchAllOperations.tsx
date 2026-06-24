@@ -1,7 +1,7 @@
-import { IconSearch, IconX } from '@tabler/icons-react';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Search, X } from 'lucide-react';
 import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
@@ -261,13 +261,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 <div className="flex-1 min-w-0">
                     <InputGroup className="border-border-muted">
                         <InputGroupAddon>
-                            <IconSearch stroke={1} size={16} />
+                            <Search strokeWidth={1} size={16} />
                         </InputGroupAddon>
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
                                 <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
-                                    <IconX stroke={1} size={18} />
+                                    <X strokeWidth={1} size={18} />
                                 </InputGroupButton>
                             </InputGroupAddon>
                         )}

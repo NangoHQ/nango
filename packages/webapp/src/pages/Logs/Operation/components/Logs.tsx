@@ -1,8 +1,8 @@
-import { IconArrowLeft, IconX, IconZoom } from '@tabler/icons-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { addMinutes } from 'date-fns';
+import { ArrowLeft, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
@@ -211,7 +211,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
             <header className="flex gap-2 items-center">
                 <InputGroup className="grow border-border-muted">
                     <InputGroupAddon>
-                        <IconZoom stroke={1} size={18} />
+                        <Search strokeWidth={1} size={18} />
                     </InputGroupAddon>
                     <InputGroupInput value={search} placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} />
                     {search && (
@@ -225,7 +225,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                     setSearch('');
                                 }}
                             >
-                                <IconX stroke={1} size={16} />
+                                <X strokeWidth={1} size={16} />
                             </InputGroupButton>
                         </InputGroupAddon>
                     )}
@@ -308,7 +308,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                 title="Close"
                                 className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-text-strong focus:text-text-strong"
                             >
-                                <IconArrowLeft stroke={1} size={24} />
+                                <ArrowLeft strokeWidth={1} size={24} />
                             </SheetClose>
                         </div>
                         {message && <ShowMessage message={message} />}
