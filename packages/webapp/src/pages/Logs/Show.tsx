@@ -19,7 +19,7 @@ export const LogsShow: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout fullWidth title="Logs" className="p-6">
+            <DashboardLayout fullWidth title="Logs">
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
@@ -38,7 +38,7 @@ export const LogsShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Logs" className="p-6 h-full">
+        <DashboardLayout fullWidth title="Logs" className="h-full">
             <Helmet>
                 <title>Logs - Nango</title>
             </Helmet>

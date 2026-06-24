@@ -65,7 +65,7 @@ export const AddTeamMemberButton = () => {
             <PermissionGate condition={canManageTeam}>
                 {(allowed) => (
                     <DialogTrigger asChild>
-                        <Button size="xl" disabled={!allowed}>
+                        <Button size="lg" disabled={!allowed}>
                             <Plus /> Add Team Member
                         </Button>
                     </DialogTrigger>

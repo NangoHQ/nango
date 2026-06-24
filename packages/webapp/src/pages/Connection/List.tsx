@@ -285,19 +285,16 @@ export const ConnectionList = () => {
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
                         <>
-                            {/* Connection count */}
-                            <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="h-10">
+                                <InputGroup className="h-10 flex-1">
                                     <InputGroupInput
-                                        className="pr-2.5"
                                         type="text"
                                         placeholder="Search connections"
                                         value={search || ''}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
-                                    <InputGroupAddon className="pl-2.5">
+                                    <InputGroupAddon>
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
@@ -342,11 +339,16 @@ export const ConnectionList = () => {
                                 />
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
-                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                        <ButtonLink to={`/${env}/connections/create`} size="xl" disabled={!allowed} className="ml-auto">
                                             Add test connection
                                         </ButtonLink>
                                     )}
                                 </PermissionGate>
+                            </div>
+
+                            {/* Connection count */}
+                            <div className="flex items-center justify-end">
+                                <ConnectionCount />
                             </div>
 
                             {/* Table */}

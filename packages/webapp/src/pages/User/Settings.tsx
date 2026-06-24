@@ -38,7 +38,7 @@ export const UserSettings: React.FC = () => {
 
     if (loading) {
         return (
-            <DashboardLayout title="Profile settings">
+            <DashboardLayout fullWidth title="Profile settings" className="flex flex-col gap-8">
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
@@ -59,65 +59,63 @@ export const UserSettings: React.FC = () => {
     }
 
     return (
-        <DashboardLayout title="Profile settings">
+        <DashboardLayout fullWidth title="Profile settings" className="flex flex-col gap-8">
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>
-            <div className="flex flex-col gap-12 mt-16">
-                <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>
-                    <InputGroup className="h-[42px]">
-                        <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
-                        <InputGroupAddon align="inline-end">
-                            {!edit && (
-                                <IconButton
-                                    variant={'ghost'}
-                                    size={'2xs'}
-                                    label="Edit"
-                                    onClick={() => {
-                                        setEdit(true);
-                                        setTimeout(() => {
-                                            ref.current?.focus();
-                                        }, 100);
-                                    }}
-                                >
-                                    <Edit />
-                                </IconButton>
-                            )}
-                        </InputGroupAddon>
-                    </InputGroup>
-                    {edit && (
-                        <div className="flex justify-end gap-2 items-center">
-                            <Button
-                                variant={'outline'}
+            <div className="flex flex-col gap-5">
+                <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>
+                <InputGroup className="h-[42px]">
+                    <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
+                    <InputGroupAddon align="inline-end">
+                        {!edit && (
+                            <IconButton
+                                variant={'ghost'}
+                                size={'2xs'}
+                                label="Edit"
                                 onClick={() => {
-                                    setName(user.name);
-                                    setEdit(false);
+                                    setEdit(true);
+                                    setTimeout(() => {
+                                        ref.current?.focus();
+                                    }, 100);
                                 }}
                             >
-                                Cancel
-                            </Button>
-                            <Button onClick={onSave}>Save</Button>
-                        </div>
-                    )}
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Email</h3>
-                    <p className="text-text-strong text-sm">{user.email}</p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Appearance</h3>
-                    <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
-                        <SelectTrigger className="w-48">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="system">System</SelectItem>
-                            <SelectItem value="light">Light</SelectItem>
-                            <SelectItem value="dark">Dark</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+                                <Edit />
+                            </IconButton>
+                        )}
+                    </InputGroupAddon>
+                </InputGroup>
+                {edit && (
+                    <div className="flex justify-end gap-2 items-center">
+                        <Button
+                            variant={'outline'}
+                            onClick={() => {
+                                setName(user.name);
+                                setEdit(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={onSave}>Save</Button>
+                    </div>
+                )}
+            </div>
+            <div className="flex flex-col gap-5">
+                <h3 className="font-semibold text-sm text-text-strong">Email</h3>
+                <p className="text-text-strong text-sm">{user.email}</p>
+            </div>
+            <div className="flex flex-col gap-5">
+                <h3 className="font-semibold text-sm text-text-strong">Appearance</h3>
+                <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
+                    <SelectTrigger className="w-48">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
         </DashboardLayout>
     );

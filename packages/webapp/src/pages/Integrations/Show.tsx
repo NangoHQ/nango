@@ -40,6 +40,7 @@ export const IntegrationsList = () => {
     const initialIntegrations = useMemo(() => {
         return data?.data ?? null;
     }, [data?.data]);
+    const integrationsCount = initialIntegrations?.length ?? 0;
 
     useEffect(() => {
         if (initialIntegrations) {
@@ -101,7 +102,7 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-3">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
@@ -120,6 +121,14 @@ export const IntegrationsList = () => {
                     )}
                 </PermissionGate>
             </header>
+
+            {!isPending && data?.data && data.data.length > 0 && (
+                <div className="flex items-center justify-end">
+                    <span className="text-text-muted text-body-small-regular">
+                        {integrationsCount} {integrationsCount === 1 ? 'integration' : 'integrations'}
+                    </span>
+                </div>
+            )}
 
             <AutoIdlingBanner />
 
