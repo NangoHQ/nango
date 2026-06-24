@@ -157,12 +157,17 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
 ) {
     const dimension = spec.dimension ?? null;
     const filter = spec.filter ?? null;
+
+    // Fetch lazily: only once the panel has something to detail — a breakdown or a filter — and
+    // the caller hasn't disabled it.
+    const hasDetail = Boolean(dimension) || Boolean(filter);
+    const enabled = Boolean(env) && Boolean(timeframe) && hasDetail && (options?.enabled ?? true);
+
     return useQuery<GetBillingUsage['Success'], APIError>({
-        // Fetch lazily: only once the panel has something to detail (a breakdown
-        // or a filter). The filter must be part of the key so changing the
-        // drilled-into value refetches instead of serving the previous slice.
-        enabled: Boolean(env) && Boolean(timeframe) && (Boolean(dimension) || Boolean(filter)) && (options?.enabled ?? true),
-        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter?.dimension ?? null, filter?.value ?? null, top],
+        enabled,
+        // `filter` is part of the key so drilling into a different value refetches rather than
+        // serving the previous slice.
+        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter, top],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
