@@ -26,7 +26,7 @@ import {
     connectionCredentialsTBASchema,
     connectionTagsSchema,
     endUserSchema,
-    webhookUrlConnectionConfigShape
+    webhookUrlSchema
 } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
@@ -40,7 +40,7 @@ const schemaBody = z.strictObject({
     connection_config: z
         .looseObject({
             oauth_scopes_override: z.string().array().optional(),
-            ...webhookUrlConnectionConfigShape
+            webhook_url: webhookUrlSchema
         })
         .optional(),
     connection_id: z.string().optional(),

@@ -29,12 +29,7 @@ export const webhookUrlSchema = z
         { message: 'This webhook URL is not allowed.' }
     );
 
-export const webhookUrlConnectionConfigShape = {
-    webhook_url: webhookUrlSchema,
-    webhook_url_secondary: webhookUrlSchema
-};
-
-export const connectionConfigParamsSchema = z.looseObject(webhookUrlConnectionConfigShape).optional();
+export const connectionConfigParamsSchema = z.looseObject({ webhook_url: webhookUrlSchema }).optional();
 
 export const providerSchema = z
     .string()

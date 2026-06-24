@@ -43,7 +43,6 @@ interface CreateConnectionSelectorProps {
     overrideClientSecret: string | undefined;
     overrideDocUrl: string | undefined;
     overrideWebhookUrl: string | undefined;
-    overrideWebhookUrlSecondary: string | undefined;
     defaultDocUrl?: string;
     isFormValid?: boolean;
 }
@@ -61,7 +60,6 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     overrideClientSecret,
     overrideDocUrl,
     overrideWebhookUrl,
-    overrideWebhookUrlSecondary,
     defaultDocUrl,
     isFormValid = true
 }) => {
@@ -127,7 +125,6 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
 
         const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
         const webhookUrl = overrideWebhookUrl?.trim() ? overrideWebhookUrl.trim() : undefined;
-        const webhookUrlSecondary = webhookUrl && overrideWebhookUrlSecondary?.trim() ? overrideWebhookUrlSecondary.trim() : undefined;
         const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
 
         // OAuth client/scope overrides only apply to OAuth flows; webhook URL overrides apply to every auth type.
@@ -140,9 +137,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                   }
                 : undefined;
         const connectionConfig =
-            oauthConfigOverrides || webhookUrl
-                ? { ...oauthConfigOverrides, ...(webhookUrl ? { webhook_url: webhookUrl, webhook_url_secondary: webhookUrlSecondary } : {}) }
-                : undefined;
+            oauthConfigOverrides || webhookUrl ? { ...oauthConfigOverrides, ...(webhookUrl ? { webhook_url: webhookUrl } : {}) } : undefined;
 
         return await apiConnectSessions(env, {
             allowed_integrations: integration ? [integration.unique_key] : undefined,
@@ -170,7 +165,6 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         overrideClientSecret,
         overrideDocUrl,
         overrideWebhookUrl,
-        overrideWebhookUrlSecondary,
         defaultDocUrl,
         env,
         testUser,

@@ -20,23 +20,17 @@ import { CreateConnectionSelector } from './components/CreateConnectionSelector'
 
 import type { ApiIntegrationList } from '@nangohq/types';
 
-const schema = z
-    .object({
-        testUserId: z.string().min(1, 'User ID is required').max(255, 'User ID must be less than 255 characters'),
-        testUserEmail: z.string().email('Invalid email address').min(5).optional().or(z.literal('')),
-        testUserName: z.string().max(255, 'Display name must be less than 255 characters').optional(),
-        testUserTags: z.record(z.string(), z.string()).refine((tags) => Object.keys(tags).length < 64, 'Max 64 tags allowed'),
-        overrideAuthParams: z.record(z.string(), z.string()),
-        overrideOauthScopes: z.string().optional(),
-        overrideDevAppCredentials: z.boolean(),
-        overrideDocUrl: z.string().optional().or(z.literal('')),
-        overrideWebhookUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-        overrideWebhookUrlSecondary: z.string().url('Please enter a valid URL').optional().or(z.literal(''))
-    })
-    .refine((data) => !(data.overrideWebhookUrlSecondary && !data.overrideWebhookUrl), {
-        message: 'Set a primary webhook URL before a secondary one',
-        path: ['overrideWebhookUrlSecondary']
-    });
+const schema = z.object({
+    testUserId: z.string().min(1, 'User ID is required').max(255, 'User ID must be less than 255 characters'),
+    testUserEmail: z.string().email('Invalid email address').min(5).optional().or(z.literal('')),
+    testUserName: z.string().max(255, 'Display name must be less than 255 characters').optional(),
+    testUserTags: z.record(z.string(), z.string()).refine((tags) => Object.keys(tags).length < 64, 'Max 64 tags allowed'),
+    overrideAuthParams: z.record(z.string(), z.string()),
+    overrideOauthScopes: z.string().optional(),
+    overrideDevAppCredentials: z.boolean(),
+    overrideDocUrl: z.string().optional().or(z.literal('')),
+    overrideWebhookUrl: z.string().url('Please enter a valid URL').optional().or(z.literal(''))
+});
 
 export type ConnectionFormData = z.infer<typeof schema>;
 
@@ -63,8 +57,7 @@ export const ConnectionCreate: React.FC = () => {
             overrideOauthScopes: undefined,
             overrideDevAppCredentials: false,
             overrideDocUrl: '',
-            overrideWebhookUrl: '',
-            overrideWebhookUrlSecondary: ''
+            overrideWebhookUrl: ''
         },
         mode: 'onChange'
     });
@@ -85,8 +78,7 @@ export const ConnectionCreate: React.FC = () => {
             overrideOauthScopes: integration?.oauth_scopes || undefined,
             overrideDevAppCredentials: false,
             overrideDocUrl: '',
-            overrideWebhookUrl: '',
-            overrideWebhookUrlSecondary: ''
+            overrideWebhookUrl: ''
         });
     }, [user, integration, form]);
 
@@ -154,7 +146,6 @@ export const ConnectionCreate: React.FC = () => {
                             overrideClientSecret={overrideClientSecret}
                             overrideDocUrl={formValues.overrideDocUrl}
                             overrideWebhookUrl={formValues.overrideWebhookUrl}
-                            overrideWebhookUrlSecondary={formValues.overrideWebhookUrlSecondary}
                             defaultDocUrl={provider?.data.docs_connect}
                             isFormValid={form.formState.isValid}
                         />

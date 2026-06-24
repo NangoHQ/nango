@@ -15,7 +15,6 @@ export interface ConnectSessionInput {
                             [key: string]: unknown;
                             oauth_scopes_override?: string | undefined;
                             webhook_url?: string | undefined;
-                            webhook_url_secondary?: string | undefined;
                         }
                       | undefined;
               }

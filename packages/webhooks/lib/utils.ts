@@ -192,24 +192,23 @@ export const shouldSend = ({
 };
 
 /**
- * Overrides the environment webhook URLs with the connection's webhook URLs overrides if set.
- * If only the primary URL is set on the connection, the environment secondary URL is NOT used as
- * fallback to prevent leaking the connection's webhooks to the shared endpoint.
+ * Overrides the environment webhook URL with the connection's webhook URL override if set.
+ * The environment secondary URL is dropped so the connection's webhooks are not also delivered to the
+ * shared endpoint.
  */
 export function resolveWebhookSettings(
     webhookSettings: DBExternalWebhook,
-    connectionConfig: Pick<ConnectionConfig, 'webhook_url' | 'webhook_url_secondary'> | null | undefined
+    connectionConfig: Pick<ConnectionConfig, 'webhook_url'> | null | undefined
 ): DBExternalWebhook {
     const primary = connectionConfig?.webhook_url;
     if (typeof primary !== 'string' || primary.trim() === '') {
         return webhookSettings;
     }
 
-    const secondary = connectionConfig?.webhook_url_secondary;
     return {
         ...webhookSettings,
         primary_url: primary,
-        secondary_url: typeof secondary === 'string' && secondary.trim() !== '' ? secondary : null
+        secondary_url: null
     };
 }
 

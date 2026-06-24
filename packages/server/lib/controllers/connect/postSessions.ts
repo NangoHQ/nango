@@ -36,8 +36,7 @@ export const bodySchema = z
                         connection_config: z
                             .looseObject({
                                 oauth_scopes_override: z.string().optional(),
-                                webhook_url: webhookUrlSchema,
-                                webhook_url_secondary: webhookUrlSchema
+                                webhook_url: webhookUrlSchema
                             })
                             .optional()
                     })

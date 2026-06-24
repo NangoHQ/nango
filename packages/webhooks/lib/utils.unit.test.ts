@@ -131,26 +131,14 @@ describe('resolveWebhookSettings', () => {
         expect(resolveWebhookSettings(envSettings, {})).toBe(envSettings);
     });
 
-    it('replaces both URLs and keeps the environment event flags', () => {
-        const result = resolveWebhookSettings(envSettings, {
-            webhook_url: 'https://dev-tunnel.example.com/hook',
-            webhook_url_secondary: 'https://dev-tunnel-2.example.com/hook'
-        });
+    it('overrides the primary URL, drops the env secondary, and keeps the environment event flags', () => {
+        const result = resolveWebhookSettings(envSettings, { webhook_url: 'https://dev-tunnel.example.com/hook' });
         expect(result.primary_url).toBe('https://dev-tunnel.example.com/hook');
-        expect(result.secondary_url).toBe('https://dev-tunnel-2.example.com/hook');
+        // The env secondary is dropped so the connection's webhooks are not also sent to the shared endpoint.
+        expect(result.secondary_url).toBeNull();
         expect(result.on_sync_completion_always).toBe(true);
         expect(result.on_sync_error).toBe(true);
         expect(result.on_auth_creation).toBe(true);
-    });
-
-    it('drops the secondary to null (does NOT fall back to env secondary) when only primary is overridden', () => {
-        const result = resolveWebhookSettings(envSettings, { webhook_url: 'https://dev-tunnel.example.com/hook' });
-        expect(result.primary_url).toBe('https://dev-tunnel.example.com/hook');
-        expect(result.secondary_url).toBeNull();
-    });
-
-    it('ignores a lone secondary override (no primary)', () => {
-        expect(resolveWebhookSettings(envSettings, { webhook_url_secondary: 'https://dev-tunnel-2.example.com/hook' })).toBe(envSettings);
     });
 
     it('treats blank/whitespace override URLs as no override', () => {

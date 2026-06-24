@@ -313,28 +313,6 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={control}
-                                    name="overrideWebhookUrlSecondary"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabelWithTooltip
-                                                tooltip={
-                                                    <p>
-                                                        Optional second URL to also receive this connection&apos;s webhooks. Only used when a primary override
-                                                        URL is set.
-                                                    </p>
-                                                }
-                                            >
-                                                Override secondary webhook URL
-                                            </FormLabelWithTooltip>
-                                            <FormControl>
-                                                <Input placeholder="https://example.com/webhooks-from-nango" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
                                 {showDocsOverrideField && (
                                     <FormField
                                         control={control}
