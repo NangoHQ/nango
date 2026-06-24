@@ -6,12 +6,7 @@ export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /** @deprecated **/
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'functions' | 'webhooks' | 'post-connection-scripts'; // post-connection-scripts is deprecated
-export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
-/**
- * The `function` primitive is authored via `createFunction()` / `createWebhook()`. It is tracked
- * separately from {@link ScriptTypeLiteral} (sync/action/on-event) while it is introduced additively.
- */
-export type FunctionScriptTypeLiteral = 'function';
+export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event' | 'function';
 
 // --------------
 // YAML V1
@@ -133,44 +128,53 @@ export interface ParsedNangoSync {
 export interface ParsedFunctionTrigger {
     kind: 'http' | 'schedule' | 'event';
     /** http trigger: URL path segment. schedule/event triggers: disambiguates multiple of the same kind. */
-    name?: string;
+    name?: string | undefined;
     /** schedule trigger. */
-    schedule?: string;
+    schedule?: string | undefined;
     /** event trigger. */
-    event?: string;
+    event?: string | undefined;
     /**
      * http trigger: declarative ingress validation/challenge. Nango injects and runs the
      * implementation at ingress (no author code runs inline). Discriminated on `type`.
      */
-    ingress?: {
-        validation?: {
-            type: 'hmac';
-            algorithm: 'sha1' | 'sha256' | 'sha512';
-            header: string;
-            encoding: 'base64' | 'hex';
-            prefix?: string;
-            secret: { source: 'integrationConfig'; key: string };
-        };
-        challenge?: {
-            type: 'echo';
-            token: { in: 'query' | 'body' | 'header'; key: string };
-            verify?: { in: 'query' | 'body' | 'header'; key: string; secret: { source: 'integrationConfig'; key: string } };
-            respond?: { status?: number; contentType?: 'text/plain' | 'application/json' };
-        };
-    };
+    ingress?:
+        | {
+              validation?:
+                  | {
+                        type: 'hmac';
+                        algorithm: 'sha1' | 'sha256' | 'sha512';
+                        header: string;
+                        encoding: 'base64' | 'hex';
+                        prefix?: string | undefined;
+                        secret: { source: 'integrationConfig'; key: string };
+                    }
+                  | undefined;
+              challenge?:
+                  | {
+                        type: 'echo';
+                        token: { in: 'query' | 'body' | 'header'; key: string };
+                        verify?: { in: 'query' | 'body' | 'header'; key: string; secret: { source: 'integrationConfig'; key: string } } | undefined;
+                        respond?: { status?: number | undefined; contentType?: 'text/plain' | 'application/json' | undefined } | undefined;
+                    }
+                  | undefined;
+          }
+        | undefined;
     /** http trigger: ingress coalescing config (the window/key). */
-    debounce?: {
-        /** One source, or an array combined into a composite key. */
-        key?: { body: string } | { header: string } | ({ body: string } | { header: string })[];
-        windowMs: number;
-        maxWindowMs?: number;
-        maxEntities?: number;
-        payloadMode?: 'latest' | 'all';
-    };
+    debounce?:
+        | {
+              /** One source, or an array combined into a composite key. */
+              key?: { body: string } | { header: string } | ({ body: string } | { header: string })[] | undefined;
+              windowMs: number;
+              maxWindowMs?: number | undefined;
+              maxEntities?: number | undefined;
+              payloadMode?: 'latest' | 'all' | undefined;
+          }
+        | undefined;
 }
 
 export interface ParsedNangoFunction {
     name: string;
+    fileName: string;
     type: 'function';
     description: string;
     trigger: ParsedFunctionTrigger;
@@ -181,6 +185,15 @@ export interface ParsedNangoFunction {
     version: string;
     json_schema?: JSONSchema7 | undefined;
     features?: Feature[] | undefined;
+}
+
+/**
+ * Function-specific configuration persisted alongside a deployed function (in `_nango_sync_configs.function_config`).
+ * Captures what makes a function distinct from a sync/action: its trigger (and its ingress/debounce config).
+ */
+export interface FunctionConfig {
+    name?: string | undefined;
+    trigger: ParsedFunctionTrigger;
 }
 
 export interface ParsedNangoAction {

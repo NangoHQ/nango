@@ -604,6 +604,7 @@ program
     .option('-s, --sync', 'Disambiguate to a sync when multiple functions share the name')
     .option('-a, --action', 'Disambiguate to an action when multiple functions share the name')
     .option('--on-event', 'Disambiguate to an on-event script when multiple functions share the name')
+    .option('--function', 'Disambiguate to a function when multiple functions share the name')
     .option('-f, --force', 'Overwrite existing files without prompting', false)
     .action(async function (this: Command, integration: string, name: string) {
         const { debug, autoConfirm, force, interactive } = this.opts<GlobalOptions & { force: boolean }>();
@@ -613,6 +614,7 @@ program
             sync?: boolean;
             action?: boolean;
             onEvent?: boolean;
+            function?: boolean;
         }>();
         const fullPath = process.cwd();
 
@@ -628,9 +630,11 @@ program
             return;
         }
 
-        const typeFlags = [opts.sync && 'sync', opts.action && 'action', opts.onEvent && 'on-event'].filter(Boolean) as ScriptTypeLiteral[];
+        const typeFlags = [opts.sync && 'sync', opts.action && 'action', opts.onEvent && 'on-event', opts.function && 'function'].filter(
+            Boolean
+        ) as ScriptTypeLiteral[];
         if (typeFlags.length > 1) {
-            console.error(chalk.red('Specify at most one of --sync, --action, --on-event.'));
+            console.error(chalk.red('Specify at most one of --sync, --action, --on-event, --function.'));
             process.exitCode = 1;
             return;
         }

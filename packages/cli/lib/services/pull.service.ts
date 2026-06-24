@@ -10,16 +10,18 @@ import { Spinner } from '../utils/spinner.js';
 
 import type { ScriptTypeLiteral } from '@nangohq/types';
 
-const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events'> = {
+const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events' | 'functions'> = {
     sync: 'syncs',
     action: 'actions',
-    'on-event': 'on-events'
+    'on-event': 'on-events',
+    function: 'functions'
 };
 
-const folderToScriptType: Record<'syncs' | 'actions' | 'on-events', ScriptTypeLiteral> = {
+const folderToScriptType: Record<'syncs' | 'actions' | 'on-events' | 'functions', ScriptTypeLiteral> = {
     syncs: 'sync',
     actions: 'action',
-    'on-events': 'on-event'
+    'on-events': 'on-event',
+    functions: 'function'
 };
 
 export function isUnsafeName(segment: string): boolean {
@@ -79,7 +81,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
             spinner.fail(`Failed to pull '${name}'`);
             console.log(chalk.red(`\n${errMessage} ${chalk.gray(`(${errCode})`)}`));
             if (errCode === 'ambiguous_function') {
-                console.log(chalk.gray(`Re-run with --sync, --action, or --on-event to disambiguate.`));
+                console.log(chalk.gray(`Re-run with --sync, --action, --on-event, or --function to disambiguate.`));
             }
             return false;
         }
@@ -144,7 +146,9 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
     try {
         const contentCache = new Map<string, string>();
 
-        const foldersToProbe: ('syncs' | 'actions' | 'on-events')[] = type ? [scriptTypeToFolder[type]] : ['syncs', 'actions', 'on-events'];
+        const foldersToProbe: ('syncs' | 'actions' | 'on-events' | 'functions')[] = type
+            ? [scriptTypeToFolder[type]]
+            : ['syncs', 'actions', 'on-events', 'functions'];
 
         const probeResults = await Promise.allSettled(
             foldersToProbe.map(async (folder) => {
@@ -154,7 +158,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
             })
         );
 
-        const matches: { folder: 'syncs' | 'actions' | 'on-events'; candidatePath: string; content: string }[] = [];
+        const matches: { folder: 'syncs' | 'actions' | 'on-events' | 'functions'; candidatePath: string; content: string }[] = [];
         for (const result of probeResults) {
             if (result.status === 'fulfilled') {
                 matches.push(result.value);
@@ -177,7 +181,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
             const matchedTypes = matches.map((m) => folderToScriptType[m.folder]).join(', ');
             spinner.fail(`Failed to pull '${name}'`);
             console.log(chalk.red(`\nMultiple functions named '${name}' exist for '${integrationId}' (${matchedTypes}).`));
-            console.log(chalk.gray(`Re-run with --sync, --action, or --on-event to disambiguate.`));
+            console.log(chalk.gray(`Re-run with --sync, --action, --on-event, or --function to disambiguate.`));
             return false;
         }
 

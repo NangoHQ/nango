@@ -11,10 +11,11 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { GetPublicFunctionCode, ScriptTypeLiteral } from '@nangohq/types';
 
-const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events'> = {
+const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events' | 'functions'> = {
     sync: 'syncs',
     action: 'actions',
-    'on-event': 'on-events'
+    'on-event': 'on-events',
+    function: 'functions'
 };
 
 interface FunctionMatch {
@@ -51,7 +52,7 @@ const validationParams = z
 
 const validationQuery = z
     .object({
-        type: z.enum(['sync', 'action', 'on-event']).optional()
+        type: z.enum(['sync', 'action', 'on-event', 'function']).optional()
     })
     .strict();
 

@@ -476,6 +476,13 @@ export const getAndReconcileDifferences = async ({
             continue;
         }
 
+        // Function scheduling isn't wired up yet. Until it is, skip reconciliation so functions
+        // (persisted on deploy with runs: null) aren't treated as syncs and given sync jobs.
+        // Deletion of a removed function is still handled by the loop below.
+        if (type === 'function') {
+            continue;
+        }
+
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(environmentId, providerConfigKey);

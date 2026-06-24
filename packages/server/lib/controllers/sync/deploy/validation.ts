@@ -1,8 +1,12 @@
 import * as z from 'zod';
 
+import { getInterval } from '@nangohq/nango-yaml';
+
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
 import type { Feature, NangoModelField, OnEventType } from '@nangohq/types';
+
+const MAX_DEBOUNCE_KEY_SOURCES = 10;
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
@@ -37,9 +41,92 @@ const nangoModel = z
     })
     .strict();
 
+const functionDebounceKey = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
+
+const functionDebounce = z
+    .object({
+        key: z.union([functionDebounceKey, z.array(functionDebounceKey).max(MAX_DEBOUNCE_KEY_SOURCES)]).optional(),
+        windowMs: z.number().int().positive(),
+        maxWindowMs: z.number().int().positive().optional(),
+        maxEntities: z.number().int().positive().optional(),
+        payloadMode: z.enum(['latest', 'all']).optional()
+    })
+    .strict();
+
+const functionIngress = z
+    .object({
+        validation: z
+            .object({
+                type: z.literal('hmac'),
+                algorithm: z.enum(['sha1', 'sha256', 'sha512']),
+                header: z.string(),
+                encoding: z.enum(['base64', 'hex']),
+                prefix: z.string().optional(),
+                secret: z.object({ source: z.literal('integrationConfig'), key: z.string() }).strict()
+            })
+            .strict()
+            .optional(),
+        challenge: z
+            .object({
+                type: z.literal('echo'),
+                token: z.object({ in: z.enum(['query', 'body', 'header']), key: z.string() }).strict(),
+                verify: z
+                    .object({
+                        in: z.enum(['query', 'body', 'header']),
+                        key: z.string(),
+                        secret: z.object({ source: z.literal('integrationConfig'), key: z.string() }).strict()
+                    })
+                    .strict()
+                    .optional(),
+                respond: z
+                    .object({ status: z.number().int().min(100).max(599).optional(), contentType: z.enum(['text/plain', 'application/json']).optional() })
+                    .strict()
+                    .optional()
+            })
+            .strict()
+            .optional()
+    })
+    .strict();
+
+const functionTrigger = z.discriminatedUnion('kind', [
+    z
+        .object({
+            kind: z.literal('http'),
+            name: z.string().max(255).optional(),
+            ingress: functionIngress.optional(),
+            debounce: functionDebounce.optional()
+        })
+        .strict(),
+    z
+        .object({
+            kind: z.literal('schedule'),
+            name: z.string().max(255).optional(),
+            schedule: z
+                .string()
+                .max(255)
+                .refine((value) => !(getInterval(value, new Date()) instanceof Error), { message: 'Invalid schedule interval' })
+        })
+        .strict(),
+    z
+        .object({
+            kind: z.literal('event'),
+            name: z.string().max(255).optional(),
+            event: z.string().min(1).max(255)
+        })
+        .strict()
+]);
+
+const functionConfig = z
+    .object({
+        name: z.string().max(255).optional(),
+        trigger: functionTrigger
+    })
+    .strict();
+
 export const flowConfig = z
     .object({
-        type: z.enum(['action', 'sync']),
+        type: z.enum(['action', 'sync', 'function']),
+        function_config: functionConfig.optional(),
         models: z.array(z.string().min(1).max(255)),
         runs: z.union([z.string().length(0), frequencySchema]).nullable(), // TODO: remove or after >0.58.5 is widely adopted
         auto_start: z.boolean().optional().default(false),
@@ -107,6 +194,10 @@ export const flowConfig = z
         },
         { message: 'models_json_schema is missing definitions for some models or input', path: ['models_json_schema'] }
     )
+    .refine((data) => (data.type === 'function' ? data.function_config !== undefined : data.function_config === undefined), {
+        message: 'function_config is required for function deploys and not allowed otherwise',
+        path: ['function_config']
+    })
     .strict();
 const flowConfigs = z.array(flowConfig);
 const onEventScriptsByProvider = z.array(

@@ -1,3 +1,4 @@
+import { ParserErrorFunctionNotSupportedInV1 } from './errors.js';
 import { NangoYamlParser } from './parser.js';
 
 import type { NangoYamlParsedIntegration, NangoYamlV1, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
@@ -28,6 +29,11 @@ export class NangoYamlParserV1 extends NangoYamlParser {
             for (const syncOrActionName in integration) {
                 const syncOrAction = integration[syncOrActionName];
                 if (!syncOrAction) {
+                    continue;
+                }
+
+                if (syncOrAction.type === 'function') {
+                    this.errors.push(new ParserErrorFunctionNotSupportedInV1({ name: syncOrActionName, path: [integrationName, syncOrActionName] }));
                     continue;
                 }
 
