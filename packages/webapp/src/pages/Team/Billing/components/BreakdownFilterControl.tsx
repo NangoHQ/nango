@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useApiGetBillingUsageTopDimensionValues, useApiPrefetchBillingUsageTopDimensionValues } from '@/hooks/usePlan';
-import { DEFAULT_TOP_N, DIMENSION_LABELS, formatDimensionValue } from '../usageBreakdown';
+import { DIMENSION_LABELS, FILTER_VALUES_TOP_N, formatDimensionValue } from '../usageBreakdown';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { FilterSelectGroupData } from '@/components/patterns/FilterSelect';
@@ -94,14 +94,14 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     const filterGroups = dimensions.map((d) => ({ value: d, label: DIMENSION_LABELS[d] }));
 
     // Warm every filterable dimension's values when the menu opens, so each value pane shows instantly.
-    const prefetchValues = useApiPrefetchBillingUsageTopDimensionValues(env, metric, timeframe, DEFAULT_TOP_N);
+    const prefetchValues = useApiPrefetchBillingUsageTopDimensionValues(env, metric, timeframe, FILTER_VALUES_TOP_N);
 
     // Loads one dimension's top-N values for the FilterSelect's value pane. Called only from that
     // pane, which mounts when (and remounts each time) a dimension opens — so it fetches lazily,
     // and the prefetch above keeps it instant.
     const useGroupData = (dimension: string): FilterSelectGroupData => {
         const dim = dimension as AnyBreakdownDimension;
-        const query = useApiGetBillingUsageTopDimensionValues(env, metric, dim, timeframe, DEFAULT_TOP_N, { enabled: true });
+        const query = useApiGetBillingUsageTopDimensionValues(env, metric, dim, timeframe, FILTER_VALUES_TOP_N, { enabled: true });
         const options = (query.data?.data.values ?? []).map((v) => ({ value: v.id, label: formatDimensionValue(dim, v.label) }));
         return { options, isLoading: query.isLoading, isError: query.isError };
     };
@@ -111,7 +111,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     // yet — render a skeleton rather than flash the raw id, then show the name (or the id, if it's
     // outside the fetched top-N).
     const filterNeedsLabel = filter?.dimension === 'environment_id';
-    const filterLabelQuery = useApiGetBillingUsageTopDimensionValues(env, metric, filterNeedsLabel ? 'environment_id' : null, timeframe, DEFAULT_TOP_N, {
+    const filterLabelQuery = useApiGetBillingUsageTopDimensionValues(env, metric, filterNeedsLabel ? 'environment_id' : null, timeframe, FILTER_VALUES_TOP_N, {
         enabled: filterNeedsLabel
     });
     const filterLabel: string | null = !filter
