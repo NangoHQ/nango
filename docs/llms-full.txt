@@ -6715,6 +6715,7 @@ NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.inte
 | - | - | - |
 | `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` | `true` | Set to `false` to reject all base URL overrides |
 | `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
+| `NANGO_OUTBOUND_URL_POLICY` | Secure defaults when unset | JSON object controlling SSRF protection for proxy, customer webhooks, and `uncontrolledFetch` |
 
 **Operator guidance:**
 
@@ -6723,6 +6724,29 @@ NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.inte
 - **No overrides at all:** set `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false`.
 
 Denylist matching is hostname-based and applies to redirect hops as well as the initial override target.
+
+#### Outbound URL policy (DNS rebinding, private IPs, redirects)
+
+Beyond the hostname denylist, Nango routes every outbound connection on the **proxy**, **customer webhook delivery**, and **`uncontrolledFetch`** paths through DNS-pinning agents that re-validate the *resolved* IP address — closing DNS-rebinding and redirect-to-internal-address SSRF holes. The behavior is controlled by `NANGO_OUTBOUND_URL_POLICY`, a JSON object (applied on top of the denylist). It propagates automatically to Kubernetes and Lambda runners.
+
+```sh
+# Block private/link-local IPs (default) and cap redirects at 3
+NANGO_OUTBOUND_URL_POLICY='{"blockPrivateIps":true,"blockLinkLocal":true,"maxRedirects":3}'
+
+# Allowlist mode: only the listed hostnames (and their subdomains) are reachable
+NANGO_OUTBOUND_URL_POLICY='{"mode":"allowlist","allowlist":[".hubspot.com","api.github.com"]}'
+```
+
+| Field | Default | Purpose |
+| - | - | - |
+| `mode` | `denylist` (or `permissive` when denylist is emptied) | `denylist`, `allowlist`, or `permissive` |
+| `allowlist` | `[]` | In `allowlist` mode, hostnames (a leading `.` matches subdomains) that may be reached |
+| `blockPrivateIps` | `true` | Block RFC1918 / CGNAT addresses |
+| `blockLinkLocal` | `true` | Block link-local addresses (incl. `169.254.169.254`) |
+| `resolveDns` | `true` | Resolve and validate addresses (DNS rebinding protection) |
+| `maxRedirects` | `5` | Maximum redirect hops followed |
+
+Each resolved address (including on every redirect hop) is validated; in `allowlist` mode, only listed hostnames are reachable regardless of IP.
 
 #### Securing the dashboard
 
