@@ -1,4 +1,4 @@
-import { Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash, X } from 'lucide-react';
+import { Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, X } from 'lucide-react';
 
 import { Tag } from '@/components/ui/Tag';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
@@ -21,7 +21,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                             {operation.action === 'unpause' && <Play className="w-3.5 h-3.5" />}
                             {operation.action === 'run' && <RefreshCw className="w-3.5 h-3.5" />}
                             {operation.action === 'create_variant' && <Layers className="w-3.5 h-3.5" />}
-                            {operation.action === 'delete_variant' && <Trash className="w-3.5 h-3.5" />}
+                            {operation.action === 'delete_variant' && <Trash2 className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
 
