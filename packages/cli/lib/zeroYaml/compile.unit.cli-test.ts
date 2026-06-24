@@ -76,6 +76,29 @@ describe('edge cases', () => {
 
         expect(result.error.toText().replaceAll('\\', '/')).toMatchSnapshot();
     });
+
+    it('should allow trackDeletes for multiple models authored sequentially', async () => {
+        const result = await bundleFile({
+            entryPoint: path.join(fixturesPath, 'zero/cases/trackDeletes.multiModel.valid.js'),
+            projectRootPath: fixturesPath
+        });
+        if (result.isErr()) {
+            throw result.error;
+        }
+        expect(result.isOk()).toBe(true);
+    });
+
+    it('should catch trackDeletesStart called after the same model batching call', async () => {
+        const result = await bundleFile({
+            entryPoint: path.join(fixturesPath, 'zero/cases/trackDeletes.outOfOrder.error.js'),
+            projectRootPath: fixturesPath
+        });
+        if (result.isErr()) {
+            expect(result.error.message.replaceAll('\\', '/')).toMatchSnapshot();
+        } else {
+            throw new Error('should be an error');
+        }
+    });
 });
 
 describe('detectFeatures', () => {

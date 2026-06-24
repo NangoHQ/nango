@@ -217,3 +217,9 @@ exports[`edge cases > should catch multiple exports 1`] = `
   Named export 'test' is not allowed. Only export default and createAction, createSync, createOnEvent, createFunction, createWebhook are permitted.
 "
 `;
+
+exports[`edge cases > should catch trackDeletesStart called after the same model batching call 1`] = `
+"err - ./zero/cases/trackDeletes.outOfOrder.error.ts:20 
+  trackDeletesStart for model 'ModelA' should be called before any batching records function
+"
+`;
