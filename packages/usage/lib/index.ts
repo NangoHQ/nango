@@ -14,7 +14,8 @@ export {
     COUNTER_METRICS,
     FILTER_PARAM_TYPE_FOR_DIM,
     TOP_N_BREAKDOWN_CAP,
-    TOP_N_BREAKDOWN_DEFAULT
+    TOP_N_BREAKDOWN_DEFAULT,
+    TOP_N_BREAKDOWN_PAGE_SIZE
 } from './clickhouse/clickhouse.query.js';
 export { clickhouseClient } from './clickhouse/config.js';
 export { migrate } from './clickhouse/migrate.js';
