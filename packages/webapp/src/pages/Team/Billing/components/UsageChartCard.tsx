@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
-import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue } from '../usageBreakdown';
+import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
@@ -14,6 +14,7 @@ import type { GroupFilterSelection } from '../useGlobalGroupFilter';
 import type { ChartSeries } from '@/components/patterns/chart';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
+/** Sentinel for the `${metric}.breakdown` URL param when no grouping is selected. */
 const NONE = 'none';
 
 interface UsageChartCardProps {
@@ -26,21 +27,6 @@ interface UsageChartCardProps {
     isDivergingFromGlobal: (metric: UsageMetric, selection: GroupFilterSelection) => boolean;
     /** Apply this panel's group + filter to every applicable metric. */
     onApplyToAll: (selection: GroupFilterSelection) => void;
-}
-
-/**
- * Parse a `${metric}.filter` param value (`<dim>:<value>`) into its parts.
- * Splits on the FIRST ':' to mirror the backend so values containing ':' (e.g.
- * URLs) survive intact. Returns null for malformed input or a dim the metric
- * doesn't support (e.g. a stale deep-link after the dimension list changed).
- */
-function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDimension[]): { dimension: AnyBreakdownDimension; value: string } | null {
-    const colon = raw.indexOf(':');
-    if (colon < 1 || colon === raw.length - 1) return null;
-    const dimension = raw.slice(0, colon) as AnyBreakdownDimension;
-    const value = raw.slice(colon + 1);
-    if (!allowed.includes(dimension)) return null;
-    return { dimension, value };
 }
 
 /**
@@ -63,12 +49,9 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const rawDimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
     const filter = showControls ? parseFilterParam(filterParam, dimensions) : null;
 
-    // A filter and a breakdown can't target the same dimension (the backend rejects it as a
-    // degenerate single-value split). When they collide — e.g. you group by integration, then
-    // filter to one integration that was hidden in 'Rest' — the filter wins and the grouping is
-    // ignored for the query. The grouping stays in the URL, so clearing the filter restores it
-    // without having to re-select it.
-    const dimension = rawDimension && filter && rawDimension === filter.dimension ? null : rawDimension;
+    // Group + filter on the same dimension collide; the filter wins for the query (see
+    // resolveBreakdownDimension), while rawDimension keeps the grouping in the URL.
+    const dimension = resolveBreakdownDimension(rawDimension, filter);
 
     const inBreakdownMode = showControls && dimension !== null;
     const inFilterMode = showControls && filter !== null;
@@ -84,41 +67,32 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         return breakdownEntries ? toChartSeries(breakdownEntries, dimension) : [];
     }, [inBreakdownMode, dimension, breakdownEntries]);
 
-    // Group and filter are independent slots, so clearing the filter only removes the filter —
-    // it never touches the grouping.
+    // Group and filter are independent slots: clearing the filter leaves the grouping untouched.
     const clearFilter = () => {
         void setFilterParam(null);
     };
-
-    // Apply a filter from the typeahead. Filtering by the dimension currently grouped by — the
-    // "drill into a Rest value" case — is allowed and keeps the grouping: the two collide, so
-    // the grouping is ignored for the query (see above), but it stays set so clearing the
-    // filter lands back on it.
+    // Filtering by the grouped dimension is allowed (the "drill into a Rest value" case); the
+    // collision is resolved for the query while the grouping stays set in the URL.
     const applyFilter = (dim: AnyBreakdownDimension, value: string) => {
         void setFilterParam(`${dim}:${value}`);
     };
 
-    // "Apply to all" shows when applying this panel's group + filter would change another panel.
-    // Use the raw (URL) grouping, not the collision-resolved one, so a panel grouped-and-
-    // filtered on the same dim still propagates (and keeps) its grouping.
+    // "Apply to all" uses the raw (URL) grouping, not the collision-resolved one, so a panel
+    // grouped-and-filtered on the same dimension still propagates and keeps its grouping.
     const selection = { group: rawDimension, filter };
     const canApplyToAll = isDivergingFromGlobal(metric, selection);
 
-    // The chart + headline always reflect the "live" metric being shown: the detail response
-    // (filtered and/or broken down) when there is one, else the base metric. The detail metric
-    // is a full ApiBillingUsageMetric (label, view_mode, and — for a breakdown — a `total`
-    // that's the sum across the series), so there's no per-state headline override.
+    // Show the detail response (filtered and/or broken down) when there is one, else the base
+    // metric. Both are full ApiBillingUsageMetrics, so the headline needs no per-state override.
     const live = detailMetric ?? data;
 
-    // When filtered, surface the slice's share of the metric's unfiltered total. `data` is the base
-    // metric we were handed (the filter only re-queries `detailQuery`), so its total is the global
-    // denominator — lets "5,813 failed" be read against the whole ("2.3% of 248,301").
+    // When filtered, the headline shows its share of the metric's unfiltered total. `data` is that
+    // unfiltered base (the filter only re-queries detailQuery), so its total is the denominator.
     const globalTotal = inFilterMode ? data?.total : undefined;
 
-    // Filtering without a grouping draws a single series that IS the filtered value, so colour and
-    // label it like that value's breakdown slice — Status gets its semantic red/green, other
-    // dimensions the value's palette colour — and surface a one-row legend, rather than the generic
-    // brand-coloured "Total". (When grouped too, the breakdown series own the colours and legend.)
+    // A filter without a grouping draws one series that IS the filtered value, so colour + label it
+    // like that value's breakdown slice (Status → semantic red/green, else its palette colour) with
+    // a one-row legend. When also grouped, the breakdown series own the colours and legend.
     let singleSeries: { label: string; color: string } | undefined;
     if (inFilterMode && !inBreakdownMode && filter) {
         const label = formatDimensionValue(filter.dimension, filter.value);

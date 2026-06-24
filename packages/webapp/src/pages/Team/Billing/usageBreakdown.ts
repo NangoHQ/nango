@@ -55,6 +55,35 @@ export function formatDimensionValue(dimension: AnyBreakdownDimension, value: st
     return value;
 }
 
+/**
+ * Parse a `${metric}.filter` URL value (`<dimension>:<value>`) into its parts. Splits on the
+ * FIRST ':' to mirror the backend, so a value containing ':' (e.g. a URL) survives intact.
+ * Returns null for malformed input, or for a dimension the metric doesn't support (e.g. a stale
+ * deep-link from before the dimension list changed).
+ */
+export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDimension[]): { dimension: AnyBreakdownDimension; value: string } | null {
+    const colon = raw.indexOf(':');
+    const hasDimensionAndValue = colon > 0 && colon < raw.length - 1;
+    if (!hasDimensionAndValue) return null;
+
+    const dimension = raw.slice(0, colon) as AnyBreakdownDimension;
+    if (!allowed.includes(dimension)) return null;
+
+    return { dimension, value: raw.slice(colon + 1) };
+}
+
+/**
+ * The breakdown dimension actually sent to the query. Group and filter may target the same
+ * dimension — the backend rejects that degenerate split, so the filter wins and the grouping is
+ * dropped from the query. (The grouping stays in the URL, so clearing the filter restores it.)
+ */
+export function resolveBreakdownDimension(
+    group: AnyBreakdownDimension | null,
+    filter: { dimension: AnyBreakdownDimension } | null
+): AnyBreakdownDimension | null {
+    return group && filter && group === filter.dimension ? null : group;
+}
+
 /** Top-N dimension values requested per breakdown; the long tail collapses into a single 'rest' bucket. */
 export const DEFAULT_TOP_N = 10;
 
