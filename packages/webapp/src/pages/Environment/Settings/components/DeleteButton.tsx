@@ -1,4 +1,4 @@
-import { IconTrash } from '@tabler/icons-react';
+import { Trash } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
@@ -29,7 +29,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
             <PermissionGate condition={canDeleteEnvironment}>
                 {(allowed) => (
                     <Button variant="danger" disabled={!!disabled || !allowed}>
-                        <IconTrash stroke={1} size={18} />
+                        <Trash strokeWidth={1} size={18} />
                         <span>Delete environment</span>
                     </Button>
                 )}

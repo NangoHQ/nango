@@ -1,5 +1,4 @@
-import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
-import { CodeXml, Loader } from 'lucide-react';
+import { CodeXml, Loader, Server, Terminal } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
@@ -144,14 +143,14 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                             snippets={[
                                 {
                                     displayLanguage: 'Node Client',
-                                    icon: <IconBrandNodejs className="w-4 h-4" />,
+                                    icon: <Server className="w-4 h-4" />,
                                     language: 'typescript',
                                     code: nodeClientCode,
                                     highlightedLines: isTooltipOpen ? [7] : undefined
                                 },
                                 {
                                     displayLanguage: 'cURL',
-                                    icon: <IconTerminal2 className="w-4 h-4" />,
+                                    icon: <Terminal className="w-4 h-4" />,
                                     language: 'bash',
                                     code: curlCode,
                                     highlightedLines: isTooltipOpen ? [4] : undefined
