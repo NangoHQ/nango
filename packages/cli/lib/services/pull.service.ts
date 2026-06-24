@@ -146,7 +146,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
 
         // Symlinked integrations are fetched from their target folder;
         // files are written back under `integrationId` (the requested name) below.
-        const remoteFolder = await resolveIntegrationFolder(integrationId, debug);
+        const { folder: remoteFolder } = await resolveIntegrationFolder(integrationId, debug);
 
         const foldersToProbe: ('syncs' | 'actions' | 'on-events')[] = type ? [scriptTypeToFolder[type]] : ['syncs', 'actions', 'on-events'];
 
@@ -205,18 +205,12 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
 
         const remoteFiles = await collectDependencies(initialFiles, remoteFolder, debug, contentCache);
 
-        // Rewrite fetched (target) paths to the requested integration name for local writes.
+        // Keep the remote path for cache lookups; write under the requested name.
         const files = remoteFiles.map((file) => ({
             ...file,
+            remotePath: file.relativePath,
             relativePath: localizeIntegrationPath(file.relativePath, remoteFolder, integrationId)
         }));
-        for (const [key, value] of [...contentCache]) {
-            const localKey = localizeIntegrationPath(key, remoteFolder, integrationId);
-            if (localKey !== key) {
-                contentCache.set(localKey, value);
-                contentCache.delete(key);
-            }
-        }
 
         const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug, interactive);
         if (!proceed) {
@@ -230,7 +224,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
                 continue;
             }
 
-            const content = contentCache.get(file.relativePath)!;
+            const content = contentCache.get(file.remotePath)!;
 
             const localPath = path.join(fullPath, file.relativePath);
             await fs.promises.mkdir(path.dirname(localPath), { recursive: true });

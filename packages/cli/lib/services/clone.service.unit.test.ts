@@ -116,6 +116,25 @@ describe('cloneTemplate', () => {
         expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.md');
     });
 
+    it('reuses the listing from resolution and fetches the integration root only once', async () => {
+        mockGitHub(
+            { 'github/actions/list-repos.ts': 'export default async function () {}' },
+            {
+                github: [{ name: 'actions', path: 'integrations/github/actions', type: 'dir' }],
+                'github/actions': [{ name: 'list-repos.ts', path: 'integrations/github/actions/list-repos.ts', type: 'file' }]
+            }
+        );
+        const axiosSpy = vi.spyOn(axios, 'get');
+        mockFsForWriting();
+
+        const success = await cloneTemplate({ ...baseOptions, templatePath: 'github' });
+
+        expect(success).toBe(true);
+        // The integration root is fetched once (during resolution), not again by the directory probe or recursive walk.
+        const rootFetches = axiosSpy.mock.calls.map((call) => call[0]).filter((url) => url === `${API_BASE}/github`);
+        expect(rootFetches).toHaveLength(1);
+    });
+
     it('clones a whole symlinked integration directory under the requested name', async () => {
         mockGitHub(
             { 'quickbooks/syncs/customers.ts': 'export default async function () {}' },

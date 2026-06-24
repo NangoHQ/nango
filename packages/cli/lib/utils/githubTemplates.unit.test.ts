@@ -20,18 +20,19 @@ describe('resolveIntegrationFolder', () => {
         vi.restoreAllMocks();
     });
 
-    it('returns the same name for a real directory (array response)', async () => {
-        vi.spyOn(axios, 'get').mockResolvedValue({ data: [{ name: 'syncs', path: 'integrations/github/syncs', type: 'dir' }] } as any);
+    it('returns the same name and the fetched listing for a real directory (array response)', async () => {
+        const listing = [{ name: 'syncs', path: 'integrations/github/syncs', type: 'dir' }];
+        vi.spyOn(axios, 'get').mockResolvedValue({ data: listing } as any);
 
-        await expect(resolveIntegrationFolder('github', false)).resolves.toBe('github');
+        await expect(resolveIntegrationFolder('github', false)).resolves.toEqual({ folder: 'github', contents: listing });
     });
 
-    it('follows a symlink to its target sibling', async () => {
+    it('follows a symlink to its target sibling without a directory listing', async () => {
         vi.spyOn(axios, 'get').mockResolvedValue({
             data: { name: 'quickbooks-sandbox', path: 'integrations/quickbooks-sandbox', type: 'symlink', target: 'quickbooks' }
         } as any);
 
-        await expect(resolveIntegrationFolder('quickbooks-sandbox', false)).resolves.toBe('quickbooks');
+        await expect(resolveIntegrationFolder('quickbooks-sandbox', false)).resolves.toEqual({ folder: 'quickbooks', contents: null });
     });
 
     it('throws GitHubNotFoundError when the integration does not exist', async () => {

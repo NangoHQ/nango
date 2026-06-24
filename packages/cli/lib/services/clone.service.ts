@@ -16,6 +16,8 @@ import {
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
 
+import type { GitHubDirectoryItem } from '../utils/githubTemplates.js';
+
 interface CloneOptions {
     fullPath: string;
     templatePath: string;
@@ -33,6 +35,8 @@ interface ResolvedTemplatePath {
     integration: string;
     // Folder name the user requested; where files are written locally.
     sourceIntegration: string;
+    // Directory listing already fetched during resolution (directory type only), to avoid re-fetching.
+    contents?: GitHubDirectoryItem[] | undefined;
 }
 
 /**
@@ -51,14 +55,20 @@ async function resolveTemplatePath(templatePath: string, debug: boolean): Promis
         throw new Error('Template path cannot be empty');
     }
 
-    const integration = await resolveIntegrationFolder(sourceIntegration, debug);
+    const { folder: integration, contents } = await resolveIntegrationFolder(sourceIntegration, debug);
     const remotePath = [integration, ...segments.slice(1)].join('/');
+
+    // Whole-integration request of a real directory: reuse the listing fetched during resolution.
+    if (segments.length === 1 && contents) {
+        printDebug(`Path "${remotePath}" resolved as directory (reused listing)`, debug);
+        return { type: 'directory', path: remotePath, integration, sourceIntegration, contents };
+    }
 
     // First, try to fetch as a directory
     try {
-        await fetchGitHubDirectory(remotePath, debug);
+        const dirContents = await fetchGitHubDirectory(remotePath, debug);
         printDebug(`Path "${remotePath}" resolved as directory`, debug);
-        return { type: 'directory', path: remotePath, integration, sourceIntegration };
+        return { type: 'directory', path: remotePath, integration, sourceIntegration, contents: dirContents };
     } catch (err) {
         if (!(err instanceof GitHubNotFoundError)) {
             throw err; // Re-throw rate limits, network errors, etc.
@@ -109,7 +119,7 @@ interface FilesToClone {
  */
 async function getFilesToClone(resolved: ResolvedTemplatePath, debug: boolean): Promise<FilesToClone> {
     const files: { relativePath: string; isScript: boolean }[] = [];
-    const { type, path: resolvedPath, mdPath, integration } = resolved;
+    const { type, path: resolvedPath, mdPath, integration, contents } = resolved;
 
     if (type === 'file') {
         const isScript = /\/(actions|syncs)\/[^/]+\.ts$/.test(resolvedPath);
@@ -118,7 +128,7 @@ async function getFilesToClone(resolved: ResolvedTemplatePath, debug: boolean): 
             files.push({ relativePath: mdPath, isScript: false });
         }
     } else {
-        const dirFiles = await fetchDirectoryRecursively(resolvedPath, debug);
+        const dirFiles = await fetchDirectoryRecursively(resolvedPath, debug, contents);
         files.push(...dirFiles);
     }
 
