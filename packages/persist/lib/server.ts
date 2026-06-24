@@ -25,6 +25,14 @@ import { routeHandler as deleteRecordsHandler } from './routes/environment/envir
 import { routeHandler as postRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/postRecords.js';
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as postLogHandler } from './routes/environment/environmentId/postLog.js';
+import { routeHandler as getRunnerLockHandler } from './routes/environment/environmentId/runner/locks/getLock.js';
+import { routeHandler as postRunnerLockReleaseHandler } from './routes/environment/environmentId/runner/locks/postRelease.js';
+import { routeHandler as postRunnerLockReleaseAllHandler } from './routes/environment/environmentId/runner/locks/postReleaseAll.js';
+import { routeHandler as postRunnerLockTryAcquireHandler } from './routes/environment/environmentId/runner/locks/postTryAcquire.js';
+import { routeHandler as deleteSyncConflictHandler } from './routes/environment/environmentId/runner/syncConflict/deleteSyncConflict.js';
+import { routeHandler as putSyncConflictHandler } from './routes/environment/environmentId/runner/syncConflict/putSyncConflict.js';
+import { routeHandler as getTaskAbortHandler } from './routes/environment/environmentId/runner/task/taskId/getAbort.js';
+import { routeHandler as putTaskAbortHandler } from './routes/environment/environmentId/runner/task/taskId/putAbort.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postRunnerTelemetryHandler, route as postRunnerTelemetryRoute } from './routes/runner/telemetry/postTelemetry.js';
 
@@ -34,6 +42,7 @@ import type { NextFunction, Request, Response } from 'express';
 const maxSizeJsonLog = '100kb';
 const maxSizeJsonRecords = '100mb';
 const maxSizeJsonRunnerTelemetry = '256kb';
+const maxSizeJsonRunnerCoordination = '4kb';
 
 export const server = express();
 
@@ -50,6 +59,8 @@ server.use(deleteOutdatedRecordsRoute.path, express.json());
 server.use(deleteHardRecordsRoute.path, express.json());
 server.use(getCheckpointRoute.path, express.json());
 server.use(postRunnerTelemetryRoute.path, express.json({ limit: maxSizeJsonRunnerTelemetry }));
+server.use('/environment/:environmentId/runner/sync-conflict', express.json({ limit: maxSizeJsonRunnerCoordination }));
+server.use('/environment/:environmentId/runner/locks', express.json({ limit: maxSizeJsonRunnerCoordination }));
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
@@ -64,6 +75,14 @@ createRoute(server, getCheckpointHandler);
 createRoute(server, putCheckpointHandler);
 createRoute(server, deleteCheckpointHandler);
 createRoute(server, postRunnerTelemetryHandler);
+createRoute(server, putTaskAbortHandler);
+createRoute(server, getTaskAbortHandler);
+createRoute(server, putSyncConflictHandler);
+createRoute(server, deleteSyncConflictHandler);
+createRoute(server, postRunnerLockTryAcquireHandler);
+createRoute(server, postRunnerLockReleaseHandler);
+createRoute(server, postRunnerLockReleaseAllHandler);
+createRoute(server, getRunnerLockHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);
