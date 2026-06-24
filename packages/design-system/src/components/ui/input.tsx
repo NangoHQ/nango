@@ -13,7 +13,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
             data-slot="input"
             className={cn(
                 // Shape + spacing (Figma: hairline border, radius/sm, space/2 × space/1.5)
-                'flex h-9 w-full min-w-0 rounded border-ds-hairline px-2 py-1.5 outline-none transition-[color,box-shadow]',
+                'flex h-9 w-full min-w-0 rounded-ds-sm border-ds-hairline px-2 py-1.5 outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
                 // Typography (Figma text/regular/md)
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors
