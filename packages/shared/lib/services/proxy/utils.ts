@@ -6,6 +6,7 @@ import OAuth from 'oauth-1.0a';
 
 import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
+import providerClient from '../../clients/provider.client.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -15,6 +16,8 @@ import {
 } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 import { signAwsSigV4Request } from './aws-sigv4.js';
+
+const SALESFORCE_INTROSPECT_ON_ERRORS: (number | string)[] = [401, 403];
 
 import type {
     ApplicationConstructedProxyConfiguration,
@@ -38,6 +41,7 @@ type ProxyErrorCode =
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
+    | 'failed_to_refresh_connection'
     | 'invalid_certificate_or_key_format'
     | 'proxy_redirect_to_denied_host'
     | 'base_url_override_disabled'
@@ -273,6 +277,7 @@ export function getProxyConfiguration({
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+        refreshTokenOn: providerClient.shouldIntrospectToken(providerName) ? SALESFORCE_INTROSPECT_ON_ERRORS : null,
         ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
         ...(validateProxyRequestUrl !== undefined ? { validateProxyRequestUrl } : {}),
         ...(validateProxyRedirectUrl !== undefined ? { validateProxyRedirectUrl } : {})
