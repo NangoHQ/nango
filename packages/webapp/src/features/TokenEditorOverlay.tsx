@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
-import { buildContrastIndex } from './tokenContrast';
-import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { Input } from '@/components/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
+import { buildContrastIndex, deriveContrastRelevantVars } from './tokenContrast';
 
 import type { Band, ContrastScore } from './tokenContrast';
 
@@ -184,6 +184,17 @@ const SURFACE_VARS = SEMANTIC_ENTRIES.filter(
 
 /** All semantic token cssVars — passed to the contrast index so it can discover icon tokens. */
 const SEMANTIC_VARS = SEMANTIC_ENTRIES.map((e) => e.cssVar);
+
+/**
+ * Tokens shown in contrast mode — every token that participates in a contrast check. Computed
+ * STRUCTURALLY (token names + component variants), so a row never disappears mid-edit just because
+ * its colour temporarily fails to parse or stops producing a score.
+ */
+const CONTRAST_RELEVANT_VARS = deriveContrastRelevantVars({
+    isKnownToken: (v) => ENTRIES_BY_VAR.has(v),
+    surfaces: SURFACE_VARS,
+    allVars: SEMANTIC_VARS
+});
 /** True when a semantic entry matches a specific primitive ref filter (incl. alias chains). */
 function semanticMatchesRef(entry: TokenEntry, filterRef: string): boolean {
     if (!entry.primitiveRef) return false;
@@ -703,8 +714,10 @@ function TokenRow({
         setHex(current);
     }, [current]);
 
-    // Native color picker only accepts 6-char hex
+    // Native color picker only handles #rrggbb (no alpha). Show the RGB part, and remember any
+    // alpha suffix (#rrggbbAA) so picking a colour preserves it instead of silently dropping alpha.
     const pickerVal = current.startsWith('#') && current.length >= 7 ? current.slice(0, 7) : '#000000';
+    const alphaSuffix = current.startsWith('#') && current.length === 9 ? current.slice(7) : '';
 
     // Column shows the ref override, then display ref, then primitiveRef
     const colRef = refOverride ?? entry.displayRef ?? entry.primitiveRef;
@@ -712,7 +725,9 @@ function TokenRow({
     function handleHex(e: React.ChangeEvent<HTMLInputElement>) {
         const v = e.target.value;
         setHex(v);
-        if (/^#[0-9a-fA-F]{6,8}$/.test(v)) onCommit(entry.cssVar, v);
+        // Only commit valid CSS hex lengths (3/4/6/8). This keeps half-typed values like "#ffffff1"
+        // from being committed as a broken CSS var (which also dropped the token from contrast mode).
+        if (/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)) onCommit(entry.cssVar, v);
     }
 
     return (
@@ -749,11 +764,22 @@ function TokenRow({
             {/* Swatch, hex input, and action buttons share a hover group so link icon is scoped */}
             <div className="group/picker flex shrink-0 items-center gap-1">
                 <label className="relative cursor-pointer">
-                    <div className="size-4 rounded-sm border border-border-muted" style={{ backgroundColor: current }} />
+                    {/* Checkerboard backdrop so translucent tokens (e.g. --border-default #ffffff1a) read as semi-transparent */}
+                    <div
+                        className="size-4 rounded-sm border border-border-muted"
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%),linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%)',
+                            backgroundSize: '6px 6px',
+                            backgroundPosition: '0 0,3px 3px'
+                        }}
+                    >
+                        <div className="size-full rounded-sm" style={{ backgroundColor: current }} />
+                    </div>
                     <input
                         type="color"
                         value={pickerVal}
-                        onChange={(e) => onCommit(entry.cssVar, e.target.value)}
+                        onChange={(e) => onCommit(entry.cssVar, e.target.value + alphaSuffix)}
                         className="absolute inset-0 size-full cursor-pointer opacity-0"
                     />
                 </label>
@@ -881,15 +907,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [contrastOn, themeSeq, overridesPerTheme, refOverridesPerTheme, darkMode]);
 
-    // Every token involved in a scored pair — the scored foregrounds plus the backgrounds/surfaces
-    // they're measured against. Used to hide irrelevant rows when contrast mode is on.
-    const contrastRelevantVars = useMemo(() => {
-        if (!contrastIndex) return null;
-        const set = new Set<string>(contrastIndex.keys());
-        for (const scores of contrastIndex.values()) for (const s of scores) set.add(s.bgVar);
-        return set;
-    }, [contrastIndex]);
-
     // Scroll to target token after mode switch re-renders the list
     useEffect(() => {
         if (!scrollTarget || !listRef.current) return;
@@ -918,14 +935,14 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 primitiveFilter.startsWith('{') ? semanticMatchesRef(e, primitiveFilter) : semanticMatchesCategory(e, primitiveFilter)
             );
         }
-        // When contrast mode is on, narrow to the tokens that participate in a pair (both the
-        // scored foregrounds and the backgrounds/surfaces you'd tweak to fix them). Pairs are
-        // semantic, so this only applies in semantic mode (primitives stay unfiltered).
-        if (contrastOn && mode === 'semantic' && contrastRelevantVars) {
-            result = result.filter((e) => contrastRelevantVars.has(e.cssVar));
+        // When contrast mode is on, narrow to the tokens that participate in a check (scored
+        // foregrounds plus the backgrounds/surfaces you'd tweak to fix them). The set is structural,
+        // so editing a value never drops the row. Pairs are semantic — primitives stay unfiltered.
+        if (contrastOn && mode === 'semantic') {
+            result = result.filter((e) => CONTRAST_RELEVANT_VARS.has(e.cssVar));
         }
         return result;
-    }, [entries, search, primitiveFilter, mode, contrastOn, contrastRelevantVars]);
+    }, [entries, search, primitiveFilter, mode, contrastOn]);
 
     const grouped = useMemo(() => {
         const g: Record<string, TokenEntry[]> = {};
