@@ -123,7 +123,9 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                     </InfoTooltip>
                                 )}
                             </div>
-                            {headlineTotal !== undefined && (
+                            {/* Hidden while the detail slice loads: `data` falls back to the unfiltered
+                                base then, so showing it would flash the wrong number (e.g. "100% of X"). */}
+                            {headlineTotal !== undefined && !showDetailSpinner && (
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
                                     {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
