@@ -126,6 +126,11 @@ const FilterValuePane: React.FC<{
     const items: PaneItem[] = showCreate ? [...matches, { value: trimmed, label: trimmed, isCreate: true }] : matches;
     const selectedOption = options.find((o) => o.value === selectedValue) ?? null;
 
+    // Groups that take no free text (a fixed, fully-listed set like Status or Environment) need no
+    // search box — just their short list. The input stays mounted but visually hidden so the
+    // combobox keeps driving keyboard navigation (arrows, Enter, ←/Esc) the same way.
+    const searchable = allowCreate;
+
     return (
         <Combobox.Root
             items={items}
@@ -142,9 +147,10 @@ const FilterValuePane: React.FC<{
             autoHighlight
         >
             <Combobox.Portal>
-                {/* alignOffset lifts the pane so its first value row lines up with the open group row,
-                    leaving the search sitting one row above it. */}
-                <Combobox.Positioner anchor={anchor} side="right" align="start" sideOffset={4} alignOffset={-41} className="isolate z-50">
+                {/* alignOffset lifts the pane so its first value row lines up with the open group row.
+                    With the search shown it sits one row (~36px) above the first value, so the offset
+                    is larger; without a search the first value is at the top. */}
+                <Combobox.Positioner anchor={anchor} side="right" align="start" sideOffset={4} alignOffset={searchable ? -41 : -5} className="isolate z-50">
                     <Combobox.Popup
                         // Don't grab focus on open (Base UI Combobox would focus the input by default).
                         // We focus the search only on keyboard-open (autoFocus effect) or pointer-enter.
@@ -171,7 +177,11 @@ const FilterValuePane: React.FC<{
                                     onBack();
                                 }
                             }}
-                            className="mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas px-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted"
+                            className={cn(
+                                searchable
+                                    ? 'mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas px-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted'
+                                    : 'sr-only'
+                            )}
                         />
                         <Combobox.List className="max-h-[50vh] overflow-y-auto">
                             {isLoading ? (
