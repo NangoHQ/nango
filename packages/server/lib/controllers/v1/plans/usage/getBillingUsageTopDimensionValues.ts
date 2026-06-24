@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { environmentService } from '@nangohq/shared';
-import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT } from '@nangohq/usage';
+import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_PAGE_SIZE } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -35,7 +35,10 @@ const querySchema = z
         env: z.string(),
         from: z.iso.datetime(),
         to: z.iso.datetime(),
-        limit: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional()
+        // Substring match on the dimension value; the page size is fixed
+        // server-side so callers only ever ask for "the next page".
+        search: z.string().trim().min(1).optional(),
+        page: z.coerce.number().int().nonnegative().optional()
     })
     .and(metricAndDimensionSchema)
     .refine((data) => new Date(data.from) <= new Date(data.to), {
@@ -52,12 +55,20 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
     const query = parsedQuery.data;
     const { account } = res.locals;
 
+    // `environment_id` stores the numeric id, but the user searches by env
+    // name — a server-side substring match on the id can't match a name. Envs
+    // per account are few (always within the first page), so for this one
+    // dimension we never page or push `search` down: return the full small set
+    // (page 0, no search) and let the dropdown filter by label client-side.
+    const isEnvironmentId = query.dimension === 'environment_id';
+
     const result = await usageTracker.getTopDimensionValues({
         accountId: account.id,
         metric: query.metric,
         dimension: query.dimension,
         timeframe: { start: new Date(query.from), end: new Date(query.to) },
-        limit: query.limit ?? TOP_N_BREAKDOWN_DEFAULT
+        search: isEnvironmentId ? undefined : query.search,
+        page: isEnvironmentId ? 0 : (query.page ?? 0)
     });
     if (result.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get top dimension values' } });
@@ -65,12 +76,21 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
     }
 
     let values: { id: string; label: string }[];
-    if (query.dimension === 'environment_id') {
+    if (isEnvironmentId) {
         const names = await environmentService.getEnvironmentNamesByIds(result.value.values.map(Number));
         values = result.value.values.map((id) => ({ id, label: names.get(Number(id)) ?? id }));
     } else {
         values = result.value.values.map((id) => ({ id, label: id }));
     }
 
-    res.status(200).send({ data: { values } });
+    res.status(200).send({
+        data: {
+            values,
+            pagination: {
+                page: isEnvironmentId ? 0 : (query.page ?? 0),
+                limit: TOP_N_BREAKDOWN_PAGE_SIZE,
+                hasMore: isEnvironmentId ? false : result.value.hasMore
+            }
+        }
+    });
 });

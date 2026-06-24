@@ -10,7 +10,8 @@ import {
     rankingQuantityForMetric,
     tableForMetric,
     TOP_N_BREAKDOWN_CAP,
-    TOP_N_BREAKDOWN_DEFAULT
+    TOP_N_BREAKDOWN_DEFAULT,
+    TOP_N_BREAKDOWN_PAGE_SIZE
 } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 
@@ -468,16 +469,19 @@ export class Clickhouse {
     }
 
     /**
-     * Top-N seen dimension values for (metric, dimension) over a timeframe,
-     * ordered DESC by `rankingQuantityForMetric(metric)`. Populates the
-     * filter dropdown UI. Limit is clamped to `TOP_N_BREAKDOWN_CAP`.
+     * Seen dimension values for (metric, dimension) over a timeframe, ordered
+     * DESC by `rankingQuantityForMetric(metric)`. Populates the filter dropdown
+     * UI. A `search` term filters to values whose string contains it
+     * (case-insensitive substring), and `page` walks the long tail in pages of
+     * `TOP_N_BREAKDOWN_PAGE_SIZE`, so any value is reachable — not just the
+     * first page. `hasMore` is a page-full heuristic (avoids a count query).
      */
     async getTopDimensionValues(query: GetTopDimensionValuesQuery): Promise<Result<GetTopDimensionValuesResult>> {
         if (!this.client) {
             return Err(new Error('Clickhouse client not initialized'));
         }
 
-        const { accountId, metric, dimension, timeframe, limit } = query;
+        const { accountId, metric, dimension, timeframe, search, page } = query;
         // `isAllowedDimensionFor` accepts 'none' (valid for breakdown callers,
         // not for top-values — would emit `SELECT toString(none)`). The cast
         // defends against runtime callers bypassing the discriminated-union
@@ -486,30 +490,43 @@ export class Clickhouse {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
-        const tags = { metric };
+        const trimmedSearch = search?.trim();
+        const tags = { metric, search: trimmedSearch ? 'true' : 'false' };
         const startDate = timeframe.start.toISOString().split('T')[0];
         const endDate = timeframe.end.toISOString().split('T')[0];
         const table = `${this.database}.${tableForMetric(metric)}`;
-        const cappedLimit = Math.min(Math.max(limit, 1), TOP_N_BREAKDOWN_CAP);
+        const offset = Math.max(page, 0) * TOP_N_BREAKDOWN_PAGE_SIZE;
+
+        // `search` binds through CH's parameterized `query_params` (no string
+        // interpolation of user input); `positionCaseInsensitiveUTF8` treats it
+        // as a literal substring so `%`/`_` need no escaping. `${dimension}` is
+        // safe to interpolate — it comes from the zod enum, never free text.
+        const searchClause = trimmedSearch ? `AND positionCaseInsensitiveUTF8(toString(${dimension}), {search:String}) > 0` : '';
+        const queryParams = trimmedSearch ? { search: trimmedSearch } : undefined;
 
         // The output alias is `dim` (not `value`) so the `ORDER BY` reference
         // to the table column `value` (used by `rankingQuantityForMetric`) is
-        // not shadowed by the projection.
+        // not shadowed by the projection. The `dim ASC` tie-break makes the
+        // order deterministic across separate paged queries, so equal-ranked
+        // values can't be skipped or duplicated between pages. Paging is
+        // still best-effort for the current month (ranking accrues live).
         const sql = `
             SELECT toString(${dimension}) AS dim
             FROM ${table}
             WHERE account_id = ${accountId}
               AND day >= toDate('${startDate}')
               AND day < toDate('${endDate}')
+              ${searchClause}
             GROUP BY ${dimension}
-            ORDER BY ${rankingQuantityForMetric(metric)} DESC
-            LIMIT ${cappedLimit}
+            ORDER BY ${rankingQuantityForMetric(metric)} DESC, dim ASC
+            LIMIT ${TOP_N_BREAKDOWN_PAGE_SIZE} OFFSET ${offset}
         `;
 
         try {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
+                ...(queryParams ? { query_params: queryParams } : {}),
                 clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{ dim: string }>();
@@ -517,7 +534,7 @@ export class Clickhouse {
                 ...tags,
                 success: 'true'
             });
-            return Ok({ accountId, metric, dimension, values: rows.map((r) => r.dim) });
+            return Ok({ accountId, metric, dimension, values: rows.map((r) => r.dim), hasMore: rows.length === TOP_N_BREAKDOWN_PAGE_SIZE });
         } catch (err) {
             metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
                 ...tags,

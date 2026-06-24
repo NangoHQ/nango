@@ -66,7 +66,10 @@ export interface GetTopDimensionValuesParams {
     metric: UsageMetric;
     dimension: string;
     timeframe: { start: Date; end: Date };
-    limit: number;
+    // Case-insensitive substring match on the dimension value (empty → none).
+    search?: string | undefined;
+    // Zero-based page index; page size is fixed server-side.
+    page: number;
 }
 
 export class UsageTrackerNoOps implements IUsageTracker {
@@ -111,7 +114,7 @@ export class UsageTrackerNoOps implements IUsageTracker {
     }
 
     public async getTopDimensionValues(params: GetTopDimensionValuesParams): Promise<Result<GetTopDimensionValuesResult>> {
-        return Promise.resolve(Ok({ accountId: params.accountId, metric: params.metric, dimension: params.dimension, values: [] }));
+        return Promise.resolve(Ok({ accountId: params.accountId, metric: params.metric, dimension: params.dimension, values: [], hasMore: false }));
     }
 }
 
