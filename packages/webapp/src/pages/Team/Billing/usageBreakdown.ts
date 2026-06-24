@@ -73,6 +73,21 @@ export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDime
 }
 
 /**
+ * Dimensions whose filter values are a small, fully-listed, closed set, so the Filter typeahead
+ * never needs free text: `environment_id` (a handful of envs, and the stored value is an id the
+ * user can't type) and `success` (just true/false, shown as Success/Failed). Free text on these
+ * could only commit a value the backend won't match — a name where it wants an id, or "succ"
+ * where it wants "true" — silently yielding an empty chart. Open-ended id/name dimensions
+ * (integration, connection, model, …) still allow free text to reach long-tail 'Rest' values.
+ */
+const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success']);
+
+/** Whether the Filter typeahead may commit a typed-but-unlisted value for this dimension. */
+export function allowsFreeTextFilter(dimension: AnyBreakdownDimension): boolean {
+    return !ENUMERATED_DIMENSIONS.has(dimension);
+}
+
+/**
  * The breakdown dimension actually sent to the query. Group and filter may target the same
  * dimension — the backend rejects that degenerate split, so the filter wins and the grouping is
  * dropped from the query. (The grouping stays in the URL, so clearing the filter restores it.)

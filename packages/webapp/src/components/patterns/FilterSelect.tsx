@@ -57,8 +57,11 @@ interface FilterSelectProps {
     /** The currently-applied value for a group, if any — drives the check next to the group. */
     selectedValueFor?: (group: string) => string | null;
     onSelect: (group: string, value: string) => void;
-    /** Allow committing a typed value that isn't in the list (e.g. a long-tail value hidden in 'Rest'). */
-    allowCreate?: boolean;
+    /**
+     * Allow committing a typed value that isn't in the list (e.g. a long-tail value hidden in 'Rest').
+     * Pass a predicate to decide per group — e.g. off for groups whose values are a fixed, fully-listed set.
+     */
+    allowCreate?: boolean | ((group: string) => boolean);
     searchPlaceholder?: string;
     /** Called when a group's pane opens — e.g. to prefetch. */
     onOpenGroup?: (group: string) => void;
@@ -331,7 +334,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
                                 group={openGroup}
                                 useGroupData={useGroupData}
                                 selectedValue={selectedValueFor?.(openGroup) ?? null}
-                                allowCreate={allowCreate}
+                                allowCreate={typeof allowCreate === 'function' ? allowCreate(openGroup) : allowCreate}
                                 searchPlaceholder={searchPlaceholder}
                                 autoFocus={openViaKeyboard}
                                 onSelect={(value) => {

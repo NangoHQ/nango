@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useApiGetBillingUsageTopDimensionValues, useApiPrefetchBillingUsageTopDimensionValues } from '@/hooks/usePlan';
 import { cn } from '@/utils/utils';
-import { DIMENSION_LABELS, FILTER_VALUES_TOP_N, formatDimensionValue } from '../usageBreakdown';
+import { allowsFreeTextFilter, DIMENSION_LABELS, FILTER_VALUES_TOP_N, formatDimensionValue } from '../usageBreakdown';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { FilterSelectGroupData } from '@/components/patterns/FilterSelect';
@@ -190,7 +190,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     useGroupData={useGroupData}
                     selectedValueFor={(g) => (filter?.dimension === g ? filter.value : null)}
                     onSelect={(g, value) => onApplyFilter(g as AnyBreakdownDimension, value)}
-                    allowCreate
+                    allowCreate={(g) => allowsFreeTextFilter(g as AnyBreakdownDimension)}
                 />
             </SlotTrigger>
         </div>
