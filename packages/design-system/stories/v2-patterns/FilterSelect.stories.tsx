@@ -77,8 +77,9 @@ const Demo: React.FC<{ initial?: { group: string; value: string } | null }> = ({
             useGroupData={useGroupData}
             selectedValueFor={(g: string) => (filter?.group === g ? filter.value : null)}
             onSelect={(group: string, value: string) => setFilter({ group, value })}
-            // `status` is a fixed set: no free text, and so no search box — the others allow both.
+            // `status` is a fixed set: no free text and no search box — the others allow both.
             allowCreate={(g: string) => g !== 'status'}
+            searchable={(g: string) => g !== 'status'}
         />
     );
 };

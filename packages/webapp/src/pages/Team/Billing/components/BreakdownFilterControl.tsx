@@ -191,6 +191,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     selectedValueFor={(g) => (filter?.dimension === g ? filter.value : null)}
                     onSelect={(g, value) => onApplyFilter(g as AnyBreakdownDimension, value)}
                     allowCreate={(g) => allowsFreeTextFilter(g as AnyBreakdownDimension)}
+                    searchable={(g) => allowsFreeTextFilter(g as AnyBreakdownDimension)}
                 />
             </SlotTrigger>
         </div>
