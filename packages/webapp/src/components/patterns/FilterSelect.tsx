@@ -3,6 +3,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { Spinner } from '@/components/ui/Spinner';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { cn } from '@/utils/utils';
 
 /**
@@ -39,6 +40,13 @@ export interface FilterSelectGroupData {
     options: FilterSelectOption[];
     isLoading: boolean;
     isError: boolean;
+    // Optional incremental paging for long value lists. When `fetchNextPage` is
+    // provided, the value pane loads the next page as it nears the bottom on
+    // scroll (and shows a spinner while `isFetchingNextPage`). Consumers that
+    // return their whole set at once leave these unset.
+    hasNextPage?: boolean;
+    isFetchingNextPage?: boolean;
+    fetchNextPage?: () => void;
 }
 
 /** A value-pane row: a real option, or the synthetic free-text "create" row appended after matches. */
@@ -52,8 +60,13 @@ interface FilterSelectProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     groups: readonly FilterSelectGroup[];
-    /** Hook the value pane calls to load a group's options (mounts per open group). */
-    useGroupData: (group: string) => FilterSelectGroupData;
+    /**
+     * Hook the value pane calls to load a group's options (mounts per open group).
+     * Receives the pane's debounced `search` term so the consumer can filter the
+     * full set server-side; consumers that filter client-side can ignore it (the
+     * pane still narrows the loaded list by the live input).
+     */
+    useGroupData: (group: string, opts: { search: string }) => FilterSelectGroupData;
     /** The currently-applied value for a group, if any — drives the check next to the group. */
     selectedValueFor?: (group: string) => string | null;
     onSelect: (group: string, value: string) => void;
@@ -98,7 +111,7 @@ const ValueRow: React.FC<{ item: PaneItem }> = ({ item }) =>
 const FilterValuePane: React.FC<{
     anchor: React.RefObject<HTMLElement | null>;
     group: string;
-    useGroupData: (group: string) => FilterSelectGroupData;
+    useGroupData: (group: string, opts: { search: string }) => FilterSelectGroupData;
     selectedValue: string | null;
     allowCreate: boolean;
     searchable: boolean;
@@ -112,8 +125,22 @@ const FilterValuePane: React.FC<{
     onCloseAll: () => void;
 }> = ({ anchor, group, useGroupData, selectedValue, allowCreate, searchable, searchPlaceholder, autoFocus, onSelect, onBack, onCloseAll }) => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const { options, isLoading, isError } = useGroupData(group);
     const [inputValue, setInputValue] = useState('');
+    // Debounce the typed term before handing it to the consumer's data hook so a
+    // server-backed `useGroupData` isn't re-queried on every keystroke; the pane's
+    // own Base UI filtering still narrows the loaded list instantly as you type.
+    const debouncedSearch = useDebouncedValue(inputValue.trim(), 300);
+    const { options, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = useGroupData(group, { search: debouncedSearch });
+
+    // Load the next page as the list nears the bottom. A scroll-position check on the list
+    // itself is used rather than an IntersectionObserver sentinel: the list is a short
+    // overflow container inside a portalled popup, where a viewport-rooted observer never
+    // sees a bottom sentinel cross into view.
+    const onListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        if (!fetchNextPage || isFetchingNextPage || !hasNextPage) return;
+        const el = e.currentTarget;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 120) fetchNextPage();
+    };
 
     // Focus the search only when opened via keyboard. On hover-open we defer to the popup's
     // onPointerEnter, so moving the cursor across the group list can't reset a filtered list.
@@ -190,7 +217,7 @@ const FilterValuePane: React.FC<{
                                     : 'sr-only'
                             )}
                         />
-                        <Combobox.List className="max-h-[50vh] overflow-y-auto">
+                        <Combobox.List className="max-h-[50vh] overflow-y-auto" onScroll={onListScroll}>
                             {isLoading ? (
                                 <div className="flex justify-center py-3">
                                     <Spinner />
@@ -203,6 +230,11 @@ const FilterValuePane: React.FC<{
                                     {!hasMatches && !showCreate && (
                                         <div className="px-2 py-3 text-center text-text-muted text-body-small-regular">
                                             {isError ? 'Failed to load values' : 'No values'}
+                                        </div>
+                                    )}
+                                    {isFetchingNextPage && (
+                                        <div className="flex justify-center py-2">
+                                            <Spinner />
                                         </div>
                                     )}
                                 </>
