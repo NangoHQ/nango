@@ -159,6 +159,30 @@ describe('parse', () => {
         });
     });
 
+    it('should default NANGO_OUTBOUND_URL_POLICY to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ mode: 'allowlist', allowlist: ['.hubspot.com'], blockPrivateIps: true, maxRedirects: 3 })
+        });
+        expect(res.NANGO_OUTBOUND_URL_POLICY).toEqual({ mode: 'allowlist', allowlist: ['.hubspot.com'], blockPrivateIps: true, maxRedirects: 3 });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY');
+    });
+
+    it('should throw on an invalid NANGO_OUTBOUND_URL_POLICY shape', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ mode: 'bogus' }) });
+        }).toThrow();
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');

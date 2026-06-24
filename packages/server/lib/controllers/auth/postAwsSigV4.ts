@@ -12,6 +12,7 @@ import {
     getConnectionConfig,
     getProvider,
     getProxyConfiguration,
+    getServerOutboundUrlPolicy,
     LogActionEnum,
     NangoError,
     ProxyRequest,
@@ -411,6 +412,7 @@ async function verifyAwsCredentials({
 
     const proxy = new ProxyRequest({
         proxyConfig: proxyConfigResult.value,
+        outboundPolicy: getServerOutboundUrlPolicy(),
         logger: (msg) => {
             void logCtx?.log(msg);
         },

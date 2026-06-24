@@ -1,23 +1,30 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
-import { axiosInstance, stringifyStable } from '@nangohq/utils';
+import { Ok } from '@nangohq/utils';
 
 import { sendAsyncActionWebhook } from './asyncAction.js';
-import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
-import { TestWebhookServer } from './helpers/test.js';
+import { deliver } from './utils.js';
 
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook } from '@nangohq/types';
 
-const spy = vi.spyOn(axiosInstance, 'post');
+// The sender decides whether/what to deliver; the on-the-wire behavior is `deliver`'s responsibility
+// (covered in utils.unit.test.ts). Mock `deliver` and assert on the sender's orchestration.
+vi.mock('./utils.js', async (importOriginal) => {
+    const actual = await importOriginal<Record<string, unknown>>();
+    return { ...actual, deliver: vi.fn() };
+});
 
-const testServer = new TestWebhookServer(4100);
+const deliverMock = vi.mocked(deliver);
+
+const primaryUrl = 'https://example.com/webhook';
+const secondaryUrl = 'https://example.com/webhook-secondary';
 
 const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
-    primary_url: testServer.primaryUrl,
-    secondary_url: testServer.secondaryUrl,
+    primary_url: primaryUrl,
+    secondary_url: secondaryUrl,
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
@@ -33,18 +40,10 @@ const environment = {
 
 const secret = 'secret' as DBAPISecret['secret'];
 
-describe('AsyncAction webhookds', () => {
-    beforeAll(async () => {
-        await testServer.start();
-    });
-
-    afterAll(async () => {
-        await testServer.stop();
-    });
-
+describe('AsyncAction webhooks', () => {
     beforeEach(() => {
-        vi.resetAllMocks();
-        mockWebhookDenylistAllowAll();
+        deliverMock.mockReset();
+        deliverMock.mockResolvedValue(Ok(undefined));
     });
 
     it('should not be sent if on_async_action_completion is false', async () => {
@@ -63,10 +62,10 @@ describe('AsyncAction webhookds', () => {
             payload: { id: '00000000-0000-0000-0000-000000000000', statusUrl: '/action/00000000-0000-0000-0000-000000000000' },
             logCtx
         });
-        expect(spy).toHaveBeenCalledTimes(0);
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
-    it('should be sent if on_async_action_completion is true', async () => {
+    it('should deliver to both urls with the correct body if on_async_action_completion is true', async () => {
         const logCtx = await logContextGetter.create(
             { operation: { type: 'sync', action: 'run' } },
             { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
@@ -85,42 +84,19 @@ describe('AsyncAction webhookds', () => {
 
         await sendAsyncActionWebhook(props);
 
-        expect(spy).toHaveBeenCalledTimes(2);
-        const body = {
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.webhookType).toBe('async_action');
+        expect(args.webhooks).toEqual([
+            { url: primaryUrl, type: 'webhook url' },
+            { url: secondaryUrl, type: 'secondary webhook url' }
+        ]);
+        expect(args.body).toEqual({
             type: 'async_action',
             from: 'nango',
             connectionId: props.connectionId,
             payload: props.payload,
             providerConfigKey: props.providerConfigKey
-        };
-        const bodyString = stringifyStable(body).unwrap();
-        expect(spy).toHaveBeenNthCalledWith(
-            1,
-            webhookSettings.primary_url,
-            bodyString,
-            expect.objectContaining({
-                headers: {
-                    'X-Nango-Signature': expect.toBeSha256(),
-                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                    'content-type': 'application/json',
-                    'user-agent': expect.stringContaining('nango/')
-                },
-                timeout: expect.any(Number)
-            })
-        );
-        expect(spy).toHaveBeenNthCalledWith(
-            2,
-            webhookSettings.secondary_url,
-            bodyString,
-            expect.objectContaining({
-                headers: {
-                    'X-Nango-Signature': expect.toBeSha256(),
-                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                    'content-type': 'application/json',
-                    'user-agent': expect.stringContaining('nango/')
-                },
-                timeout: expect.any(Number)
-            })
-        );
+        });
     });
 });

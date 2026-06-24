@@ -1,6 +1,8 @@
-import { getBaseUrlOverrideDenylistFromEnv, isBaseUrlOverrideDenied } from './baseUrlOverrideDenylist.js';
+import { getRunnerPolicyFromEnv, validateOutboundUrlAsync } from '@nangohq/egress';
+
 import { ActionError } from './errors.js';
 
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { HTTP_METHOD } from '@nangohq/types';
 
 const UNCONTROLLED_FETCH_MAX_REDIRECTS = 5;
@@ -20,21 +22,29 @@ export interface UncontrolledFetchOptions {
 
 export async function executeUncontrolledFetch(
     options: UncontrolledFetchOptions,
-    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void
+    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void,
+    // The runner builds a single validated policy from its parsed envs and injects it here. Callers that
+    // lack parsed envs (e.g. the CLI) omit it and fall back to resolving the policy from process.env.
+    outboundPolicy?: OutboundUrlPolicy
 ): Promise<Response> {
     const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
         if (params.bytesSent > 0 || params.bytesReceived > 0) onBytes(params);
     };
 
-    const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
+    const policy = outboundPolicy ?? getRunnerPolicyFromEnv();
 
-    const throwIfDenied = (absoluteUrl: string): void => {
-        if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+    // Resolve DNS and validate every resolved address against the policy before each hop.
+    // This closes DNS-rebinding and redirect-to-internal-address SSRF on the uncontrolledFetch path.
+    // A hostname that fails to resolve is not a SSRF risk (no connection is possible), so we let the
+    // fetch attempt fail naturally instead of masking it as a policy denial.
+    const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
+        const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
+        if (!result.ok && result.error.code !== 'dns_resolution_failed') {
             throw makeActionError('url_not_allowed', 'This URL is not allowed by server configuration.');
         }
     };
 
-    throwIfDenied(options.url.toString());
+    await assertOutboundUrlAllowed(options.url.toString());
 
     let currentUrl = new URL(options.url.href);
     let method: HTTP_METHOD = options.method || 'GET';
@@ -106,7 +116,7 @@ export async function executeUncontrolledFetch(
             throw makeActionError('invalid_redirect', 'Redirect Location must use http: or https:.');
         }
 
-        throwIfDenied(nextUrl.toString());
+        await assertOutboundUrlAllowed(nextUrl.toString());
 
         // Native fetch strips sensitive headers when redirecting to a different origin.
         // Because we follow redirects manually, we must replicate that to avoid credential leaks.

@@ -1,26 +1,23 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { axiosInstance, stringifyStable } from '@nangohq/utils';
+import { Ok } from '@nangohq/utils';
 
-import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
-import { TestWebhookServer } from './helpers/test.js';
 import { sendSync } from './sync.js';
+import { deliver } from './utils.js';
 
-import type {
-    ConnectionJobs,
-    DBAPISecret,
-    DBEnvironment,
-    DBExternalWebhook,
-    DBSyncConfig,
-    DBTeam,
-    IntegrationConfig,
-    NangoSyncWebhookBodySuccess
-} from '@nangohq/types';
+import type { ConnectionJobs, DBAPISecret, DBEnvironment, DBExternalWebhook, DBSyncConfig, DBTeam, IntegrationConfig } from '@nangohq/types';
 
-const spy = vi.spyOn(axiosInstance, 'post');
+// The sender decides whether/what to deliver; the on-the-wire behavior is `deliver`'s responsibility
+// (covered in utils.unit.test.ts). Mock `deliver` and assert on the sender's orchestration.
+vi.mock('./utils.js', async (importOriginal) => {
+    const actual = await importOriginal<Record<string, unknown>>();
+    return { ...actual, deliver: vi.fn() };
+});
 
-const testServer = new TestWebhookServer(4103);
+const deliverMock = vi.mocked(deliver);
+
+const primaryUrl = 'https://example.com/webhook';
+const secondaryUrl = 'https://example.com/webhook-secondary';
 
 const account: DBTeam = {
     id: 1,
@@ -84,8 +81,8 @@ const connection: ConnectionJobs = {
 const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
-    primary_url: testServer.primaryUrl,
-    secondary_url: testServer.secondaryUrl,
+    primary_url: primaryUrl,
+    secondary_url: secondaryUrl,
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
@@ -98,17 +95,9 @@ const webhookSettings: DBExternalWebhook = {
 const secret = 'secret' as DBAPISecret['secret'];
 
 describe('Webhooks: sync notification tests', () => {
-    beforeAll(async () => {
-        await testServer.start();
-    });
-
-    afterAll(async () => {
-        await testServer.stop();
-    });
-
     beforeEach(() => {
-        vi.resetAllMocks();
-        mockWebhookDenylistAllowAll();
+        deliverMock.mockReset();
+        deliverMock.mockResolvedValue(Ok(undefined));
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
@@ -134,7 +123,7 @@ describe('Webhooks: sync notification tests', () => {
             operation: 'INCREMENTAL',
             now: new Date()
         });
-        expect(spy).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('Should not send a sync webhook if the webhook url is not present even if always send is checked', async () => {
@@ -159,7 +148,7 @@ describe('Webhooks: sync notification tests', () => {
                 on_sync_completion_always: true
             }
         });
-        expect(axiosInstance.post).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('Should not send a sync webhook if the webhook url is present but if always send is not checked and there were no sync changes', async () => {
@@ -183,7 +172,7 @@ describe('Webhooks: sync notification tests', () => {
                 on_sync_completion_always: false
             }
         });
-        expect(spy).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is not checked and there were sync changes', async () => {
@@ -207,7 +196,7 @@ describe('Webhooks: sync notification tests', () => {
                 on_sync_completion_always: false
             }
         });
-        expect(spy).toHaveBeenCalled();
+        expect(deliverMock).toHaveBeenCalledTimes(1);
     });
 
     it('Should send a sync webhook if the webhook url is present and if always send is checked and there were sync changes', async () => {
@@ -231,7 +220,7 @@ describe('Webhooks: sync notification tests', () => {
                 on_sync_completion_always: true
             }
         });
-        expect(spy).toHaveBeenCalled();
+        expect(deliverMock).toHaveBeenCalledTimes(1);
     });
 
     it('Should send an sync webhook if the webhook url is present and if always send is checked and there were no sync changes', async () => {
@@ -255,10 +244,10 @@ describe('Webhooks: sync notification tests', () => {
                 on_sync_completion_always: true
             }
         });
-        expect(spy).toHaveBeenCalled();
+        expect(deliverMock).toHaveBeenCalledTimes(1);
     });
 
-    it('Should send an sync webhook twice if the webhook url and secondary are present and if always send is checked and there were no sync changes', async () => {
+    it('Should deliver to both webhook urls in a single deliver call when both are present', async () => {
         const responseResults = { added: 0, updated: 0, deleted: 0 };
         await sendSync({
             account,
@@ -278,10 +267,14 @@ describe('Webhooks: sync notification tests', () => {
                 on_sync_completion_always: true
             }
         });
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([
+            { url: primaryUrl, type: 'primary' },
+            { url: secondaryUrl, type: 'secondary' }
+        ]);
     });
 
-    it('Should send a webhook with the correct body on sync success', async () => {
+    it('Should pass the correct body to deliver on sync success', async () => {
         const now = new Date();
 
         const responseResults = { added: 10, updated: 0, deleted: 0 };
@@ -301,50 +294,22 @@ describe('Webhooks: sync notification tests', () => {
             webhookSettings: webhookSettings
         });
 
-        const body: NangoSyncWebhookBodySuccess = {
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.webhookType).toBe('sync');
+        expect(args.body).toMatchObject({
             from: 'nango',
             type: 'sync',
-            modifiedAfter: now.toISOString(),
             model: 'model',
-            queryTimeStamp: now as unknown as string,
-            responseResults,
+            modifiedAfter: now.toISOString(),
+            responseResults: { added: 10, updated: 0, deleted: 0 },
             connectionId: connection.connection_id,
             syncName: 'a_sync',
             syncVariant: 'base',
             providerConfigKey: connection.provider_config_key,
             success: true,
             syncType: 'INCREMENTAL'
-        };
-        const bodyString = stringifyStable(body).unwrap();
-        expect(spy).toHaveBeenCalledTimes(2);
-
-        expect(spy).toHaveBeenNthCalledWith(
-            1,
-            webhookSettings.primary_url,
-            bodyString,
-            expect.objectContaining({
-                headers: {
-                    'X-Nango-Signature': expect.toBeSha256(),
-                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                    'content-type': 'application/json',
-                    'user-agent': expect.stringContaining('nango/')
-                }
-            })
-        );
-
-        expect(spy).toHaveBeenNthCalledWith(
-            2,
-            webhookSettings.secondary_url,
-            bodyString,
-            expect.objectContaining({
-                headers: {
-                    'X-Nango-Signature': expect.toBeSha256(),
-                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                    'content-type': 'application/json',
-                    'user-agent': expect.stringContaining('nango/')
-                }
-            })
-        );
+        });
     });
 
     it('Should not send an error webhook if the option is not checked', async () => {
@@ -372,10 +337,10 @@ describe('Webhooks: sync notification tests', () => {
             }
         });
 
-        expect(spy).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
-    it('Should send an error webhook if the option is checked with the correct body', async () => {
+    it('Should pass the correct body to deliver on sync error if the option is checked', async () => {
         const error = {
             type: 'error',
             description: 'error description'
@@ -400,6 +365,11 @@ describe('Webhooks: sync notification tests', () => {
             }
         });
 
-        expect(spy).toHaveBeenCalled();
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].body).toMatchObject({
+            type: 'sync',
+            success: false,
+            error
+        });
     });
 });

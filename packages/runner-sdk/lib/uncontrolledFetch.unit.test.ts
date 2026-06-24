@@ -153,6 +153,45 @@ describe('uncontrolledFetch', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it('blocks an initial request to a loopback IP literal', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('http://127.0.0.1/secret') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('blocks an initial request to a private RFC1918 IP literal', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('http://10.0.0.1/secret') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('blocks a redirect hop to a cloud metadata IP literal', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'http://169.254.169.254/latest/meta-data/' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('https://example.com/start') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('strips sensitive headers when redirecting to a different origin', async () => {
         const fetchMock = vi
             .fn()

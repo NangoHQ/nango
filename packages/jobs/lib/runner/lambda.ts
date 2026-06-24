@@ -271,6 +271,7 @@ class Lambda {
                 ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
                     ? { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }
                     : {}),
+                ...(envs.NANGO_OUTBOUND_URL_POLICY ? { NANGO_OUTBOUND_URL_POLICY: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) } : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
                 ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }

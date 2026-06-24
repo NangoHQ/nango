@@ -1,11 +1,30 @@
-import { vi } from 'vitest';
+import http from 'node:http';
+import https from 'node:https';
 
-import * as utils from '@nangohq/utils';
+import { createWebhookOutbound } from '../utils.js';
 
-export function mockWebhookDenylistAllowAll(): void {
-    vi.spyOn(utils, 'isBaseUrlOverrideDenied').mockReturnValue(false);
-}
+import type { WebhookOutbound } from '../utils.js';
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 
-export function restoreWebhookDenylistMock(): void {
-    vi.mocked(utils.isBaseUrlOverrideDenied).mockRestore();
+const permissivePolicy: OutboundUrlPolicy = {
+    mode: 'permissive',
+    denylist: new Set(),
+    allowlist: [],
+    blockPrivateIps: false,
+    blockLinkLocal: false,
+    resolveDns: false,
+    allowedSchemes: new Set(['http:', 'https:']),
+    maxRedirects: 5
+};
+
+/**
+ * Outbound transport for `deliver` tests that hit a loopback test server. The real env-derived policy +
+ * DNS-pinning agents always block loopback, so these tests pass this permissive transport (plain
+ * keep-alive agents, no resolved-address validation) to `deliver` via its `outbound` arg.
+ */
+export function allowAllWebhookOutbound(): WebhookOutbound {
+    return createWebhookOutbound({
+        policy: permissivePolicy,
+        agents: { httpAgent: new http.Agent({ keepAlive: true }), httpsAgent: new https.Agent({ keepAlive: true }) }
+    });
 }

@@ -3,15 +3,12 @@ import { URL } from 'url';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { externalWebhookService } from '@nangohq/shared';
-import { isBaseUrlOverrideDenied, normalizeDenylist, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { externalWebhookService, getServerOutboundUrlPolicy, isOutboundUrlAllowed } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
-
-const webhookUrlDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
 
 const urlValidation = z
     .union([z.url(), z.literal('')])
@@ -27,7 +24,8 @@ const urlValidation = z
     .refine(
         (url) => {
             if (!url || url.trim() === '') return true;
-            return !isBaseUrlOverrideDenied(url, webhookUrlDenylist);
+            // Reject denylisted hosts and blocked IP literals (loopback, private, link-local, metadata) at registration.
+            return isOutboundUrlAllowed(url, getServerOutboundUrlPolicy());
         },
         { message: 'This webhook URL is not allowed.' }
     );

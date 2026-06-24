@@ -10,14 +10,14 @@ import {
 export type OutboundUrlPolicyMode = 'denylist' | 'allowlist' | 'permissive';
 
 export interface OutboundUrlPolicyRaw {
-    mode?: OutboundUrlPolicyMode;
-    denylist?: string[];
-    allowlist?: string[];
-    blockPrivateIps?: boolean;
-    blockLinkLocal?: boolean;
-    resolveDns?: boolean;
-    allowedSchemes?: string[];
-    maxRedirects?: number;
+    mode?: OutboundUrlPolicyMode | undefined;
+    denylist?: string[] | undefined;
+    allowlist?: string[] | undefined;
+    blockPrivateIps?: boolean | undefined;
+    blockLinkLocal?: boolean | undefined;
+    resolveDns?: boolean | undefined;
+    allowedSchemes?: string[] | undefined;
+    maxRedirects?: number | undefined;
 }
 
 export interface OutboundUrlPolicy {
@@ -92,14 +92,15 @@ function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): Outb
 
 export interface ServerPolicyEnvInput {
     proxyBaseUrlOverrideDenylist: string[];
-    outboundUrlPolicyRaw?: string | undefined;
+    /** Already-parsed + validated policy object (see ENVS.NANGO_OUTBOUND_URL_POLICY). */
+    outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
 }
 
 /**
  * Build policy for server-side services from parsed env values.
  */
 export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrlPolicy {
-    const jsonRaw = parsePolicyJson(input.outboundUrlPolicyRaw);
+    const jsonRaw = input.outboundUrlPolicy ?? null;
     const denylistEntries = input.proxyBaseUrlOverrideDenylist;
 
     if (!jsonRaw) {
@@ -116,7 +117,11 @@ export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrl
 export interface RunnerPolicyEnvInput {
     proxyBaseUrlOverrideEnabled?: string | undefined;
     proxyBaseUrlOverrideDenylistRaw?: string | undefined;
-    outboundUrlPolicyRaw?: string | undefined;
+    /**
+     * Already-parsed + validated policy object (see ENVS.NANGO_OUTBOUND_URL_POLICY). The runner passes
+     * this through from its parsed envs; the process.env helper parses the raw JSON before calling.
+     */
+    outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
     lambdaRuntimeApi?: string | undefined;
 }
 
@@ -141,7 +146,7 @@ export function resolvePolicyForRunnerSync(input: RunnerPolicyEnvInput): Outboun
         ? resolveProxyBaseUrlOverrideDenylistForRunner(input.proxyBaseUrlOverrideDenylistRaw)
         : [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
 
-    const jsonRaw = parsePolicyJson(input.outboundUrlPolicyRaw);
+    const jsonRaw = input.outboundUrlPolicy ?? null;
     const policy = jsonRaw ? rawToPolicy(mergePolicyRaw({}, jsonRaw), denylistEntries) : rawToPolicy({}, denylistEntries);
 
     if (input.lambdaRuntimeApi) {
@@ -159,7 +164,7 @@ export function resolvePolicyFromProcessEnvForRunner(): OutboundUrlPolicy {
     return resolvePolicyForRunnerSync({
         proxyBaseUrlOverrideEnabled: env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'],
         proxyBaseUrlOverrideDenylistRaw: env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'],
-        outboundUrlPolicyRaw: env['NANGO_OUTBOUND_URL_POLICY'],
+        outboundUrlPolicy: parsePolicyJson(env['NANGO_OUTBOUND_URL_POLICY']) ?? undefined,
         lambdaRuntimeApi: env['AWS_LAMBDA_RUNTIME_API']
     });
 }
@@ -176,10 +181,6 @@ export function getRunnerPolicyFromEnv(): OutboundUrlPolicy {
     }
     memoizedRunnerPolicy = resolvePolicyFromProcessEnvForRunner();
     return memoizedRunnerPolicy;
-}
-
-export function resetRunnerPolicyCacheForTests(): void {
-    memoizedRunnerPolicy = null;
 }
 
 /**

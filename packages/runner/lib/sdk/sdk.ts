@@ -1,15 +1,12 @@
 import { Nango } from '@nangohq/node';
 import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest } from '@nangohq/shared';
+import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest, resolvePolicyForRunner } from '@nangohq/shared';
 import {
-    DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     getCheckpointKey,
     isBaseUrlOverrideDenied,
     isTest,
     MAX_LOG_PAYLOAD,
     metrics,
-    normalizeDenylist,
-    normalizeDenylistHost,
     redactHeaders,
     redactURL,
     stringifyAndTruncateValue,
@@ -56,28 +53,21 @@ const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
 /**
- * Snapshot proxy override policy at runner module load (before any user script runs).
+ * Snapshot the outbound URL policy at runner module load (before any user script runs).
  * Do not read process.env during request handling — sandboxed scripts share the runner process.
+ *
+ * The policy bundles the override denylist (with secure defaults + Lambda runtime API host) and the
+ * SSRF controls (DNS rebinding, private/link-local IP blocking, redirect cap). The denylist keeps its
+ * runner-specific semantics (secure defaults are enforced even if the server opted out), so it is read
+ * from raw env; the SSRF controls come from the already-parsed + validated NANGO_OUTBOUND_URL_POLICY object.
  */
-function buildRunnerProxyDenylistFromEnvs(): Set<string> {
-    const entries =
-        !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED || envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length === 0
-            ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
-            : envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST;
-
-    const denylist = normalizeDenylist(entries);
-    const lambdaRuntimeApi = process.env['AWS_LAMBDA_RUNTIME_API'];
-    if (lambdaRuntimeApi) {
-        const normalized = normalizeDenylistHost(lambdaRuntimeApi);
-        if (normalized) {
-            denylist.add(normalized);
-        }
-    }
-
-    return denylist;
-}
-
-const runnerProxyDenylist = buildRunnerProxyDenylistFromEnvs();
+const runnerOutboundPolicy = resolvePolicyForRunner({
+    proxyBaseUrlOverrideEnabled: process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'],
+    proxyBaseUrlOverrideDenylistRaw: process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'],
+    outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY,
+    lambdaRuntimeApi: process.env['AWS_LAMBDA_RUNTIME_API']
+});
+const runnerProxyDenylist = runnerOutboundPolicy.denylist;
 const runnerProxyOverrideEnabled = envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED;
 
 /**
@@ -132,18 +122,22 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
 
     public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
         this.throwIfAbortedOrKilled();
-        return executeUncontrolledFetch(options, ({ bytesSent, bytesReceived }) => {
-            this.telemetryRecorder?.record({
-                type: 'data_transfer',
-                callsite: 'uncontrolled_fetch',
-                connectionId: this.connectionId,
-                integrationId: this.providerConfigKey,
-                syncId: this.syncId,
-                bytesSent,
-                bytesReceived,
-                count: 1
-            });
-        });
+        return executeUncontrolledFetch(
+            options,
+            ({ bytesSent, bytesReceived }) => {
+                this.telemetryRecorder?.record({
+                    type: 'data_transfer',
+                    callsite: 'uncontrolled_fetch',
+                    connectionId: this.connectionId,
+                    integrationId: this.providerConfigKey,
+                    syncId: this.syncId,
+                    bytesSent,
+                    bytesReceived,
+                    count: 1
+                });
+            },
+            runnerOutboundPolicy
+        );
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -183,6 +177,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     providerName: this.provider!
                 }
             }).unwrap(),
+            outboundPolicy: runnerOutboundPolicy,
             logger: async (log) => {
                 // We only sample successful HTTP logs because they are the most common and the most noisy.
                 if (HTTP_LOG_SAMPLE_PCT && this.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
@@ -858,9 +853,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         let cursor: string | null | undefined = options?.cursor;
         do {
             this.throwIfAbortedOrKilled();
-            const pageOptions: { cursor?: string } = {
-                ...(cursor ? { cursor } : {})
-            };
+            const pageOptions: { cursor?: string } = cursor ? { cursor } : {};
             const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
 
             for (const record of records) {

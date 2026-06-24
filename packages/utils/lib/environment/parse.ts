@@ -61,6 +61,37 @@ export const ENVS = z.object({
                 return z.NEVER;
             }
         }),
+    // Outbound URL policy (JSON), consumed by @nangohq/egress (resolvePolicyForServer / resolvePolicyForRunner).
+    // Controls SSRF hardening for proxy + webhooks + uncontrolledFetch. Parsed and validated here so misconfiguration
+    // fails fast at startup; runners receive it re-serialized and parse it from process.env.
+    NANGO_OUTBOUND_URL_POLICY: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in NANGO_OUTBOUND_URL_POLICY`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z
+                .object({
+                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
+                    denylist: z.array(z.string()).optional(),
+                    allowlist: z.array(z.string()).optional(),
+                    blockPrivateIps: z.boolean().optional(),
+                    blockLinkLocal: z.boolean().optional(),
+                    resolveDns: z.boolean().optional(),
+                    allowedSchemes: z.array(z.string()).optional(),
+                    maxRedirects: z.number().int().nonnegative().optional()
+                })
+                .optional()
+        ),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
