@@ -52,7 +52,7 @@ const validationParams = z
 
 const validationQuery = z
     .object({
-        type: z.enum(['sync', 'action', 'on-event']).optional()
+        type: z.enum(['sync', 'action', 'on-event', 'function']).optional()
     })
     .strict();
 

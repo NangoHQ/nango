@@ -283,13 +283,14 @@ async function createDeployConfirmationPackage({
 
                 // A function lives in either webhooks/ (createWebhook) or functions/ (createFunction);
                 // the bundled artifact preserves that folder, so probe it to pick the right ScriptFileType.
-                const scriptFileType: ScriptFileType = fs.existsSync(path.join(fullPath, 'build', `${providerConfigKey}_webhooks_${fn.name}.cjs`))
+                // The artifact is keyed by the source file basename, not the (possibly custom) function name.
+                const scriptFileType: ScriptFileType = fs.existsSync(path.join(fullPath, 'build', `${providerConfigKey}_webhooks_${fn.fileName}.cjs`))
                     ? 'webhooks'
                     : 'functions';
 
-                const files = await loadScriptFiles({ scriptName: fn.name, providerConfigKey, fullPath, type: scriptFileType });
+                const files = await loadScriptFiles({ scriptName: fn.fileName, providerConfigKey, fullPath, type: scriptFileType });
                 if (!files) {
-                    return Err(new Error(`No script files found for "${fn.name}"`));
+                    return Err(new Error(`No script files found for "${fn.fileName}"`));
                 }
 
                 const body: CLIDeployFlowConfig = {
@@ -301,7 +302,7 @@ async function createDeployConfirmationPackage({
                     metadata,
                     input: fn.input || undefined,
                     type: fn.type,
-                    function_config: { name: fn.name, triggers: fn.triggers },
+                    function_config: { name: fn.name, trigger: fn.trigger },
                     fileBody: files,
                     endpoints: [],
                     track_deletes: false,

@@ -7,6 +7,7 @@ import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { isFunctionDeployBlocked } from './functionDeployGate.js';
 import { validationWithNangoYaml as validation } from './validation.js';
 
 import type { Lock } from '@nangohq/kvstore';
@@ -30,6 +31,11 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
 
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
+
+    if (await isFunctionDeployBlocked({ flowConfigs: body.flowConfigs, accountUuid: account.uuid })) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'Function deployment is not enabled for this account' } });
+        return;
+    }
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();

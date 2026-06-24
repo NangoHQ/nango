@@ -4,6 +4,7 @@ import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { isFunctionDeployBlocked } from './functionDeployGate.js';
 import { validation } from './validation.js';
 
 import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
@@ -26,6 +27,11 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
     const { account } = res.locals;
     const body: PostDeployConfirmation['Body'] = val.data;
     const environmentId = res.locals['environment'].id;
+
+    if (await isFunctionDeployBlocked({ flowConfigs: body.flowConfigs, accountUuid: account.uuid })) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'Function deployment is not enabled for this account' } });
+        return;
+    }
 
     metrics.increment(metrics.Types.DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 

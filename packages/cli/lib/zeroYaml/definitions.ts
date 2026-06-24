@@ -326,6 +326,7 @@ export function parseFunction({
     const fn: ParsedNangoFunction = {
         type: 'function',
         name: params.name || basename,
+        fileName: basename,
         description: params.description || '',
         trigger: parsedTrigger,
         input: inputName,

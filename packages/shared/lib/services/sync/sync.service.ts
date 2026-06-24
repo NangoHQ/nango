@@ -476,6 +476,12 @@ export const getAndReconcileDifferences = async ({
             continue;
         }
 
+        // Functions are persisted on deploy but are not scheduled as syncs, so they have nothing to
+        // reconcile here. Deletion of a removed function is still handled by the loop below.
+        if (type === 'function') {
+            continue;
+        }
+
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(environmentId, providerConfigKey);

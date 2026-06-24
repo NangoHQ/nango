@@ -37,21 +37,11 @@ const nangoModel = z
     })
     .strict();
 
-const functionTrigger = z
-    .object({
-        type: z.enum(['http', 'schedule', 'event']),
-        name: z.string().max(255).optional(),
-        scope: z.enum(['integration', 'connection']).optional(),
-        schedule: z.string().max(255).optional(),
-        event: z.string().max(255).optional(),
-        hasIngressChallenge: z.boolean().optional(),
-        hasIngressValidation: z.boolean().optional()
-    })
-    .strict();
+const functionDebounceKey = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
 
 const functionDebounce = z
     .object({
-        key: z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]).optional(),
+        key: z.union([functionDebounceKey, z.array(functionDebounceKey)]).optional(),
         windowMs: z.number(),
         maxWindowMs: z.number().optional(),
         maxEntities: z.number().optional(),
@@ -59,11 +49,71 @@ const functionDebounce = z
     })
     .strict();
 
+const functionIngress = z
+    .object({
+        validation: z
+            .object({
+                type: z.literal('hmac'),
+                algorithm: z.enum(['sha1', 'sha256', 'sha512']),
+                header: z.string(),
+                encoding: z.enum(['base64', 'hex']),
+                prefix: z.string().optional(),
+                secret: z.object({ source: z.literal('integrationConfig'), key: z.string() }).strict()
+            })
+            .strict()
+            .optional(),
+        challenge: z
+            .object({
+                type: z.literal('echo'),
+                token: z.object({ in: z.enum(['query', 'body', 'header']), key: z.string() }).strict(),
+                verify: z
+                    .object({
+                        in: z.enum(['query', 'body', 'header']),
+                        key: z.string(),
+                        secret: z.object({ source: z.literal('integrationConfig'), key: z.string() }).strict()
+                    })
+                    .strict()
+                    .optional(),
+                respond: z
+                    .object({ status: z.number().optional(), contentType: z.enum(['text/plain', 'application/json']).optional() })
+                    .strict()
+                    .optional()
+            })
+            .strict()
+            .optional()
+    })
+    .strict();
+
+// One trigger per function, discriminated on `kind` so each kind only carries its own fields.
+const functionTrigger = z.discriminatedUnion('kind', [
+    z
+        .object({
+            kind: z.literal('http'),
+            name: z.string().max(255).optional(),
+            ingress: functionIngress.optional(),
+            debounce: functionDebounce.optional()
+        })
+        .strict(),
+    z
+        .object({
+            kind: z.literal('schedule'),
+            name: z.string().max(255).optional(),
+            schedule: z.string().max(255)
+        })
+        .strict(),
+    z
+        .object({
+            kind: z.literal('event'),
+            name: z.string().max(255).optional(),
+            event: z.string().max(255)
+        })
+        .strict()
+]);
+
 const functionConfig = z
     .object({
         name: z.string().max(255).optional(),
-        triggers: z.array(functionTrigger),
-        debounce: functionDebounce.optional()
+        trigger: functionTrigger
     })
     .strict();
 
@@ -138,6 +188,10 @@ export const flowConfig = z
         },
         { message: 'models_json_schema is missing definitions for some models or input', path: ['models_json_schema'] }
     )
+    .refine((data) => (data.type === 'function' ? data.function_config !== undefined : data.function_config === undefined), {
+        message: 'function_config is required for function deploys and not allowed otherwise',
+        path: ['function_config']
+    })
     .strict();
 const flowConfigs = z.array(flowConfig);
 const onEventScriptsByProvider = z.array(

@@ -18,6 +18,14 @@ export function buildFlags(client: FeatureFlagsClient) {
             // targetingKey drives gradual-rollout stickiness (same account => same bucket);
             // accountUuid is exposed as a property so strategies can allow/exclude specific accounts.
             return client.isEnabled('oauth-state-cookie-enforcement', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether this account may deploy functions. Gated to an allowlist of accounts while the
+         * function primitive is rolled out. Default `false`.
+         */
+        canDeployFunctions(accountUuid: string) {
+            // accountUuid is exposed as a property so the Unleash strategy can allowlist specific accounts.
+            return client.isEnabled('function-deployment', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
