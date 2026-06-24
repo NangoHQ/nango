@@ -184,6 +184,55 @@ function isTransparent(hex: string): boolean {
     return !!c && c.a === 0;
 }
 
+/** Focus-ring colour tokens used by the registered variants (shadow-focus-outline-X → --focus-ring-X). */
+function deriveFocusRingVars(isKnownToken: (cssVar: string) => boolean): Set<string> {
+    const out = new Set<string>();
+    for (const source of CONTRAST_SOURCES) {
+        for (const classes of Object.values(source)) {
+            for (const entry of classes) {
+                for (const raw of entry.split(/\s+/)) {
+                    const m = /(?:^|:)shadow-focus-outline-([a-z]+)/.exec(raw);
+                    if (m && isKnownToken(`--focus-ring-${m[1]}`)) out.add(`--focus-ring-${m[1]}`);
+                }
+            }
+        }
+    }
+    return out;
+}
+
+/** Status badge icon tokens paired with the status surface they sit on (--status-X-icon → --status-X-bg). */
+function deriveStatusIconPairs(allVars: string[], isKnownToken: (cssVar: string) => boolean): { iconVar: string; bgVar: string }[] {
+    const out: { iconVar: string; bgVar: string }[] = [];
+    for (const iconVar of allVars) {
+        const m = /^--status-(.+)-icon$/.exec(iconVar);
+        if (!m) continue;
+        const bgVar = `--status-${m[1]}-bg`;
+        if (isKnownToken(bgVar)) out.push({ iconVar, bgVar });
+    }
+    return out;
+}
+
+/**
+ * The set of tokens that participate in any contrast check — STRUCTURAL (derived from token names
+ * and component variants, independent of resolved colour values). Used to decide which rows to show
+ * in contrast mode. Because it doesn't depend on values, a row never disappears mid-edit just because
+ * its colour is temporarily invalid or stops producing a score.
+ */
+export function deriveContrastRelevantVars(opts: { isKnownToken: (cssVar: string) => boolean; surfaces: string[]; allVars: string[] }): Set<string> {
+    const { isKnownToken, surfaces, allVars } = opts;
+    const set = new Set<string>(surfaces);
+    for (const pair of deriveContrastPairs(isKnownToken)) {
+        set.add(pair.fgVar);
+        set.add(pair.bgVar);
+    }
+    for (const ringVar of deriveFocusRingVars(isKnownToken)) set.add(ringVar);
+    for (const { iconVar, bgVar } of deriveStatusIconPairs(allVars, isKnownToken)) {
+        set.add(iconVar);
+        set.add(bgVar);
+    }
+    return set;
+}
+
 /**
  * Builds a map of foregroundCssVar → contrast scores. Transparent-background pairs are
  * expanded to score against each provided container surface. `allVars` (all known semantic
@@ -234,20 +283,8 @@ export function buildContrastIndex(opts: {
     }
 
     // Focus indicator (WCAG 2.4.11 / 1.4.11): the focus ring must contrast ≥3:1 with the surface
-    // it's drawn on. Derive the ring colour token from each variant's focus-visible shadow utility
-    // (shadow-focus-outline-X → --focus-ring-X) so it stays in sync with the components.
-    const focusRingVars = new Set<string>();
-    for (const source of CONTRAST_SOURCES) {
-        for (const classes of Object.values(source)) {
-            for (const entry of classes) {
-                for (const raw of entry.split(/\s+/)) {
-                    const m = /(?:^|:)shadow-focus-outline-([a-z]+)/.exec(raw);
-                    if (m && isKnownToken(`--focus-ring-${m[1]}`)) focusRingVars.add(`--focus-ring-${m[1]}`);
-                }
-            }
-        }
-    }
-    for (const ringVar of focusRingVars) {
+    // it's drawn on. The ring colour token is derived from each variant's focus-visible shadow utility.
+    for (const ringVar of deriveFocusRingVars(isKnownToken)) {
         const ring = parseHex(resolve(ringVar));
         if (!ring || ring.a < 1) continue;
         for (const surfaceVar of surfaces) {
@@ -258,14 +295,10 @@ export function buildContrastIndex(opts: {
     }
 
     // Graphical objects (WCAG 1.4.11): status badge icons must contrast ≥3:1 with the status surface
-    // they sit on (--status-X-icon → --status-X-bg). The general --icon-* family is intentionally not
-    // scored: most of those icons are paired with a text label, which makes them decorative and
-    // 1.4.11-exempt, and the tool can't tell a sole-indicator icon from a decorative one.
-    for (const iconVar of allVars) {
-        const m = /^--status-(.+)-icon$/.exec(iconVar);
-        if (!m) continue;
-        const bgVar = `--status-${m[1]}-bg`;
-        if (!isKnownToken(bgVar)) continue;
+    // they sit on. The general --icon-* family is intentionally not scored: most of those icons are
+    // paired with a text label, which makes them decorative and 1.4.11-exempt, and the tool can't tell
+    // a sole-indicator icon from a decorative one.
+    for (const { iconVar, bgVar } of deriveStatusIconPairs(allVars, isKnownToken)) {
         const ratio = contrastRatio(resolve(iconVar), resolve(bgVar));
         if (ratio == null) continue;
         push(iconVar, { bgVar, ratio, band: bandOf(ratio, 'icon'), kind: 'icon' });
