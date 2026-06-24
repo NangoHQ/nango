@@ -20519,7 +20519,7 @@ tanium:
         verification:
             method: GET
             endpoints:
-                - /v2/session/info
+                - /v2/session/current
     docs: https://nango.dev/docs/api-integrations/tanium
     docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
     credentials:
@@ -20532,8 +20532,8 @@ tanium:
         hostname:
             type: string
             title: Hostname
-            description: Your Tanium Cloud hostname.
-            example: acme.cloud.tanium.com
+            description: Your Tanium Cloud API hostname.
+            example: acme-api.cloud.tanium.com
             format: hostname
             prefix: https://
             doc_section: '#step-2-find-your-hostname'
