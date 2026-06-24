@@ -19,6 +19,15 @@ function formatExact(quantity: number): string {
     return quantity.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
+// A filtered headline is a slice of the metric's unfiltered total; this renders the slice's
+// share so a count like "5,813 failed" carries its denominator ("2.3% of 248,301"). Tiny
+// non-zero slices show "<0.1%" rather than rounding to a misleading "0%".
+function formatShare(part: number, whole: number): string {
+    const pct = (part / whole) * 100;
+    if (pct > 0 && pct < 0.1) return '<0.1%';
+    return `${pct.toLocaleString('en-US', { maximumFractionDigits: 1 })}%`;
+}
+
 interface ChartCardProps {
     isLoading: boolean;
     data?: ApiBillingUsageMetric;
@@ -32,6 +41,8 @@ interface ChartCardProps {
     detailError?: boolean;
     /** The panel is scoped to a filtered slice — keeps the controls visible when empty and adjusts the AVG tooltip copy. */
     filtered?: boolean;
+    /** The metric's unfiltered total. When set (i.e. filtered), the headline shows its share of this ("2.3% of 248,301"). */
+    globalTotal?: number;
     /** Colour + label for a filtered single series (no grouping): tints the one drawn series and shows a one-row legend. */
     singleSeries?: { label: string; color: string };
 }
@@ -51,6 +62,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     detailLoading,
     detailError,
     filtered,
+    globalTotal,
     singleSeries
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
@@ -119,6 +131,11 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
                                     {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
+                                    {globalTotal !== undefined && globalTotal > 0 && (
+                                        <span className="text-text-muted text-body-small-regular">
+                                            {formatShare(headlineTotal, globalTotal)} of {formatExact(globalTotal)}
+                                        </span>
+                                    )}
                                 </div>
                             )}
                         </>

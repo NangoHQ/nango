@@ -110,6 +110,11 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // that's the sum across the series), so there's no per-state headline override.
     const live = detailMetric ?? data;
 
+    // When filtered, surface the slice's share of the metric's unfiltered total. `data` is the base
+    // metric we were handed (the filter only re-queries `detailQuery`), so its total is the global
+    // denominator — lets "5,813 failed" be read against the whole ("2.3% of 248,301").
+    const globalTotal = inFilterMode ? data?.total : undefined;
+
     // Filtering without a grouping draws a single series that IS the filtered value, so colour and
     // label it like that value's breakdown slice — Status gets its semantic red/green, other
     // dimensions the value's palette colour — and surface a one-row legend, rather than the generic
@@ -150,6 +155,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             detailLoading={isDetail ? detailQuery.isLoading : false}
             detailError={isDetail ? detailQuery.isError : false}
             filtered={inFilterMode}
+            globalTotal={globalTotal}
             singleSeries={singleSeries}
         />
     );
