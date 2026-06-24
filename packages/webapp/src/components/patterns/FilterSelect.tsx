@@ -1,6 +1,6 @@
 import { Combobox, Popover } from '@base-ui/react';
 import { Check, ChevronRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/utils/utils';
@@ -66,6 +66,24 @@ interface FilterSelectProps {
 
 const VALUE_ITEM =
     'relative flex h-7 w-full cursor-pointer items-center gap-2 rounded-sm py-1 pr-8 pl-2 text-body-medium-regular text-text-secondary whitespace-nowrap outline-hidden select-none data-highlighted:bg-state-hover data-highlighted:text-text-strong';
+
+/** One value-pane row: a real option (with its selected check), or the free-text "create" row. */
+const ValueRow: React.FC<{ item: PaneItem }> = ({ item }) =>
+    item.isCreate ? (
+        <Combobox.Item value={item} className={VALUE_ITEM}>
+            <span className="flex min-w-0 items-center gap-1">
+                <span className="shrink-0 text-text-muted">Filter to</span>
+                <span className="truncate text-text-strong">&quot;{item.label}&quot;</span>
+            </span>
+        </Combobox.Item>
+    ) : (
+        <Combobox.Item value={item} className={VALUE_ITEM}>
+            <span>{item.label}</span>
+            <Combobox.ItemIndicator className="absolute right-2 flex size-3.5 items-center justify-center text-text-muted">
+                <Check className="size-3.5" />
+            </Combobox.ItemIndicator>
+        </Combobox.Item>
+    );
 
 const FilterValuePane: React.FC<{
     anchor: React.RefObject<HTMLElement | null>;
@@ -160,23 +178,7 @@ const FilterValuePane: React.FC<{
                             ) : (
                                 <>
                                     <Combobox.Collection>
-                                        {(item: PaneItem) =>
-                                            item.isCreate ? (
-                                                <Combobox.Item key="__create" value={item} className={VALUE_ITEM}>
-                                                    <span className="flex min-w-0 items-center gap-1">
-                                                        <span className="shrink-0 text-text-muted">Filter to</span>
-                                                        <span className="truncate text-text-strong">&quot;{item.label}&quot;</span>
-                                                    </span>
-                                                </Combobox.Item>
-                                            ) : (
-                                                <Combobox.Item key={item.value} value={item} className={VALUE_ITEM}>
-                                                    <span>{item.label}</span>
-                                                    <Combobox.ItemIndicator className="absolute right-2 flex size-3.5 items-center justify-center text-text-muted">
-                                                        <Check className="size-3.5" />
-                                                    </Combobox.ItemIndicator>
-                                                </Combobox.Item>
-                                            )
-                                        }
+                                        {(item: PaneItem) => <ValueRow key={item.isCreate ? '__create' : item.value} item={item} />}
                                     </Combobox.Collection>
                                     {!hasMatches && !showCreate && (
                                         <div className="px-2 py-3 text-center text-text-muted text-body-small-regular">
@@ -192,6 +194,51 @@ const FilterValuePane: React.FC<{
         </Combobox.Root>
     );
 };
+
+const GROUP_ROW =
+    'flex h-7 w-full cursor-pointer items-center gap-2 rounded-sm px-2 text-body-medium-regular text-text-secondary outline-hidden hover:bg-state-hover hover:text-text-strong focus-visible:bg-state-hover focus-visible:text-text-strong';
+
+/**
+ * A dimension row in the outer list. Hover / click / → / Enter open its value pane (keyboard-open
+ * focuses the pane's search via the `viaKeyboard` flag); ↑/↓ rove between rows via `onMove`.
+ */
+const GroupRow = forwardRef<
+    HTMLButtonElement,
+    {
+        group: FilterSelectGroup;
+        isSelected: boolean;
+        isOpen: boolean;
+        onOpen: (el: HTMLButtonElement, viaKeyboard: boolean) => void;
+        onMove: (el: HTMLButtonElement, dir: 1 | -1) => void;
+    }
+>(({ group, isSelected, isOpen, onOpen, onMove }, ref) => (
+    <button
+        ref={ref}
+        type="button"
+        data-group={group.value}
+        onPointerEnter={(e) => onOpen(e.currentTarget, false)}
+        onMouseEnter={(e) => onOpen(e.currentTarget, false)}
+        onClick={(e) => onOpen(e.currentTarget, false)}
+        onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                onMove(e.currentTarget, 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                onMove(e.currentTarget, -1);
+            } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                e.preventDefault();
+                onOpen(e.currentTarget, true);
+            }
+        }}
+        className={cn(GROUP_ROW, isOpen && 'bg-state-hover text-text-strong')}
+    >
+        <span className="flex-1 truncate text-left">{group.label}</span>
+        {isSelected && <Check className="size-3.5 shrink-0 text-text-muted" />}
+        <ChevronRight className="size-4 shrink-0 text-text-muted" />
+    </button>
+));
+GroupRow.displayName = 'GroupRow';
 
 export const FilterSelect: React.FC<FilterSelectProps> = ({
     trigger,
@@ -266,43 +313,17 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
                         initialFocus={firstGroupRef}
                         className="flex w-52 flex-col rounded border border-border-muted bg-surface-overlay p-1 text-text-secondary shadow-md outline-hidden"
                     >
-                        {groups.map((g, i) => {
-                            const selected = selectedValueFor?.(g.value) ?? null;
-                            return (
-                                <button
-                                    key={g.value}
-                                    ref={i === 0 ? firstGroupRef : undefined}
-                                    type="button"
-                                    data-group={g.value}
-                                    // Hover opens the pane (Linear-style); the guard in openSubmenu makes
-                                    // repeat calls a no-op.
-                                    onPointerEnter={(e) => openSubmenu(g.value, e.currentTarget)}
-                                    onMouseEnter={(e) => openSubmenu(g.value, e.currentTarget)}
-                                    onClick={(e) => openSubmenu(g.value, e.currentTarget)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'ArrowDown') {
-                                            e.preventDefault();
-                                            moveGroup(e.currentTarget, 1);
-                                        } else if (e.key === 'ArrowUp') {
-                                            e.preventDefault();
-                                            moveGroup(e.currentTarget, -1);
-                                        } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
-                                            // Open via keyboard → the pane focuses its search.
-                                            e.preventDefault();
-                                            openSubmenu(g.value, e.currentTarget, true);
-                                        }
-                                    }}
-                                    className={cn(
-                                        'flex h-7 w-full cursor-pointer items-center gap-2 rounded-sm px-2 text-body-medium-regular text-text-secondary outline-hidden hover:bg-state-hover hover:text-text-strong focus-visible:bg-state-hover focus-visible:text-text-strong',
-                                        openGroup === g.value && 'bg-state-hover text-text-strong'
-                                    )}
-                                >
-                                    <span className="flex-1 truncate text-left">{g.label}</span>
-                                    {selected !== null && <Check className="size-3.5 shrink-0 text-text-muted" />}
-                                    <ChevronRight className="size-4 shrink-0 text-text-muted" />
-                                </button>
-                            );
-                        })}
+                        {groups.map((g, i) => (
+                            <GroupRow
+                                key={g.value}
+                                ref={i === 0 ? firstGroupRef : undefined}
+                                group={g}
+                                isSelected={(selectedValueFor?.(g.value) ?? null) !== null}
+                                isOpen={openGroup === g.value}
+                                onOpen={(el, viaKeyboard) => openSubmenu(g.value, el, viaKeyboard)}
+                                onMove={moveGroup}
+                            />
+                        ))}
                         {openGroup !== null && (
                             <FilterValuePane
                                 key={openGroup}
