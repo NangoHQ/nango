@@ -115,7 +115,7 @@ export type UsageFunctionExecutionsEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            type: 'sync' | 'action' | 'webhook' | 'on-event';
+            type: 'sync' | 'action' | 'webhook' | 'on-event' | 'function';
             success: boolean;
             functionName: string;
             runtime: FunctionRuntime | undefined;

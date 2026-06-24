@@ -81,7 +81,7 @@ export const functionArgsSchema = z.object({
     connection: commonSchemaArgsFields.connection.nullable(),
     activityLogId: z.string(),
     trigger: z
-        .object({ type: z.enum(['http', 'schedule', 'event']), name: z.string().nullable().default(null) })
+        .object({ kind: z.enum(['http', 'schedule', 'event']), name: z.string().nullable().default(null) })
         .nullable()
         .default(null),
     input: jsonSchema

@@ -58,7 +58,7 @@ interface FunctionArgs {
     activityLogId: string;
     // JSON-safe (serialized into the task payload): null (not undefined) for on-demand runs
     // (triggerFunction/API/CLI/UI); only declared triggers carry a value. name is null when absent.
-    trigger: { type: 'http' | 'schedule' | 'event'; name: string | null } | null;
+    trigger: { kind: 'http' | 'schedule' | 'event'; name: string | null } | null;
     input: JsonValue;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
@@ -301,7 +301,8 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
     };
 }
 
-export type ExecuteFunctionProps = Omit<ExecuteProps, 'args'> & { args: FunctionArgs };
+// Function runs use fixed scheduling (see buildFunctionSchedulingProps), so retry/timeout are not caller-configurable.
+export type ExecuteFunctionProps = Omit<ExecuteProps, 'args' | 'retry' | 'timeoutSettingsInSecs'> & { args: FunctionArgs };
 
 export interface ClientError extends Error {
     name: string;

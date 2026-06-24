@@ -8,7 +8,7 @@ export const nangoPropsSchema = z.looseObject({
     scriptType: z.enum(['action', 'webhook', 'sync', 'on-event', 'function']),
     functionEvent: z
         .looseObject({
-            trigger: z.object({ type: z.enum(['http', 'schedule', 'event']), name: z.string().optional() }).optional(),
+            trigger: z.object({ kind: z.enum(['http', 'schedule', 'event']), name: z.string().nullish() }).optional(),
             payload: z.any().optional(),
             headers: z.record(z.string(), z.string()).optional(),
             rawBody: z.string().optional(),

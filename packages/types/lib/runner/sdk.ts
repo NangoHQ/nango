@@ -18,7 +18,7 @@ export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event' | 'function'
  * as its second argument. Absent for non-function script types.
  */
 export interface NangoFunctionEventProps {
-    trigger?: { type: 'http' | 'schedule' | 'event'; name?: string | null | undefined } | undefined;
+    trigger?: { kind: 'http' | 'schedule' | 'event'; name?: string | null | undefined } | undefined;
     payload?: unknown;
     headers?: Record<string, string> | undefined;
     rawBody?: string | undefined;

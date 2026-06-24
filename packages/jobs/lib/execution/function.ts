@@ -1,26 +1,29 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import {
-    NangoError,
     accountService,
     configService,
     environmentService,
     getApiUrl,
     getEndUserByConnectionId,
     getFunctionConfigRaw,
+    NangoError,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
-import { startScript } from './operations/start.js';
+import { bigQueryClient } from '../clients.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
+import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { TaskFunction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
 import type {
     CheckpointRange,
+    ConnectionJobs,
     DBEnvironment,
     DBSyncConfig,
     DBTeam,
@@ -81,9 +84,9 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         }
 
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: team.id });
-        void logCtx.info(`Starting function '${task.functionName}' (trigger: ${task.trigger?.type ?? 'on-demand'})`, {
+        void logCtx.info(`Starting function '${task.functionName}' (trigger: ${task.trigger?.kind ?? 'on-demand'})`, {
             function: task.functionName,
-            trigger: task.trigger?.type ?? 'on-demand',
+            trigger: task.trigger?.kind ?? 'on-demand',
             connection: connection.connection_id,
             integration: connection.provider_config_key
         });
@@ -114,7 +117,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             connectionId: connection.connection_id,
             environmentId: connection.environment_id,
             environmentName: environment.name,
-            providerConfigKey: connection.provider_config_key,
+            providerConfigKey: task.providerConfigKey,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
             secretKey: defaultSecret.value.secret,
@@ -149,7 +152,9 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 export async function handleFunctionSuccess({
     taskId,
     nangoProps,
-    output
+    output,
+    telemetryBag,
+    functionRuntime
 }: {
     taskId: string;
     nangoProps: NangoProps;
@@ -166,12 +171,22 @@ export async function handleFunctionSuccess({
     }
     void logCtx.info(`The function '${nangoProps.syncConfig.sync_name}' was successfully run`);
     void logCtx.success();
+
+    recordFunctionExecution({
+        nangoProps,
+        success: true,
+        content: `The function "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
+        telemetryBag,
+        functionRuntime
+    });
 }
 
 export async function handleFunctionError({
     taskId,
     nangoProps,
-    error
+    error,
+    telemetryBag,
+    functionRuntime
 }: {
     taskId: string;
     nangoProps: NangoProps;
@@ -190,4 +205,75 @@ export async function handleFunctionError({
     if (task.value.attempt === task.value.attemptMax) {
         void logCtx.failed();
     }
+
+    recordFunctionExecution({ nangoProps, success: false, content: error.message, telemetryBag, functionRuntime });
+}
+
+/**
+ * Record a function run for billing/capping (usage.function_executions) and analytics (BigQuery),
+ * mirroring how actions are recorded so function runs are not undercounted.
+ */
+function recordFunctionExecution({
+    nangoProps,
+    success,
+    content,
+    telemetryBag,
+    functionRuntime
+}: {
+    nangoProps: NangoProps;
+    success: boolean;
+    content: string;
+    telemetryBag: TelemetryBag;
+    functionRuntime: FunctionRuntime;
+}): void {
+    const connection: ConnectionJobs = {
+        id: nangoProps.nangoConnectionId,
+        connection_id: nangoProps.connectionId,
+        environment_id: nangoProps.environmentId,
+        provider_config_key: nangoProps.providerConfigKey
+    };
+
+    void bigQueryClient.insert({
+        executionType: 'function',
+        connectionId: connection.connection_id,
+        internalConnectionId: connection.id,
+        accountId: nangoProps.team.id,
+        accountName: nangoProps.team.name,
+        scriptName: nangoProps.syncConfig.sync_name,
+        scriptType: nangoProps.syncConfig.type,
+        environmentId: nangoProps.environmentId,
+        environmentName: nangoProps.environmentName || 'unknown',
+        provider: nangoProps.provider,
+        providerConfigKey: nangoProps.providerConfigKey,
+        status: success ? 'success' : 'failed',
+        syncId: null as unknown as string,
+        syncVariant: null as unknown as string,
+        scriptVersion: nangoProps.syncConfig.version,
+        content,
+        runTimeInSeconds: (Date.now() - nangoProps.startedAt.getTime()) / 1000,
+        createdAt: Date.now(),
+        internalIntegrationId: nangoProps.syncConfig.nango_config_id,
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
+    });
+
+    void pubsub.publisher.publish({
+        subject: 'usage',
+        type: 'usage.function_executions',
+        payload: {
+            value: 1,
+            properties: {
+                accountId: nangoProps.team.id,
+                environmentId: nangoProps.environmentId,
+                environmentName: nangoProps.environmentName,
+                integrationId: nangoProps.providerConfigKey,
+                connectionId: connection.connection_id,
+                type: 'function',
+                functionName: nangoProps.syncConfig.sync_name,
+                success,
+                telemetryBag,
+                runtime: functionRuntime
+            }
+        }
+    });
 }

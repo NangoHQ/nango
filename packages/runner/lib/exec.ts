@@ -20,7 +20,7 @@ import { instrumentSDK, NangoActionRunner, NangoFunctionRunner, NangoSyncRunner 
 import { createTelemetryRecorder } from './telemetry.js';
 
 import type { Locks } from './sdk/locks.js';
-import type { CreateAnyResponse, FunctionEvent } from '@nangohq/runner-sdk';
+import type { CreateAnyResponse } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
@@ -266,11 +266,14 @@ export async function exec({
                         : {})
                 };
 
-                const triggerType = fe?.trigger?.type ?? 'http';
-                const event: FunctionEvent =
-                    triggerType === 'http'
+                const triggerKind = fe?.trigger?.kind ?? 'http';
+                // The runtime event is keyed on `kind` to match the customer-facing Trigger type.
+                // Its full shape (Trigger with request: HttpRequest) is still converging on the
+                // single-trigger spec (NAN-6019/6601), so it is passed untyped to exec for now.
+                const event =
+                    triggerKind === 'http'
                         ? {
-                              type: 'http',
+                              kind: 'http',
                               ...base,
                               headers: fe?.headers ?? {},
                               rawBody: fe?.rawBody ?? '',
@@ -285,11 +288,11 @@ export async function exec({
                                     }
                                   : {})
                           }
-                        : triggerType === 'schedule'
-                          ? { type: 'schedule', ...base }
-                          : { type: 'event', ...base };
+                        : triggerKind === 'schedule'
+                          ? { kind: 'schedule', ...base }
+                          : { kind: 'event', ...base };
 
-                const output = await payload.exec(nango as any, event);
+                const output = await payload.exec(nango as any, event as any);
                 return Ok({ output: output ?? true, telemetryBag: nango.telemetryBag, checkpoints: nango.getCheckpointRange() });
             }
 

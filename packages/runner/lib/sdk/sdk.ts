@@ -858,9 +858,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         let cursor: string | null | undefined = options?.cursor;
         do {
             this.throwIfAbortedOrKilled();
-            const pageOptions: { cursor?: string } = {
-                ...(cursor ? { cursor } : {})
-            };
+            const pageOptions: { cursor?: string } = cursor ? { cursor } : {};
             const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
 
             for (const record of records) {
@@ -918,7 +916,6 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
  */
 export class NangoFunctionRunner extends NangoSyncRunner {
     searchConnections = NangoFunctionBase['prototype']['searchConnections'];
-    ignore = NangoFunctionBase['prototype']['ignore'];
 }
 
 class Locking {
