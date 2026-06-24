@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -396,7 +395,7 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
-                    const params = { ...(values['params'] || {}) };
+                    const params = { ...values['params'] };
                     if (provider.auth_mode === 'AWS_SIGV4') {
                         params['external_id'] = awsExternalId;
                     }
@@ -470,7 +469,9 @@ export const Go: React.FC = () => {
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
-                                <IconCircleCheckFilled aria-hidden="true" className="w-full h-full text-green-600" />
+                                <div className="w-full h-full rounded-full bg-green-600 flex items-center justify-center">
+                                    <Check aria-hidden="true" className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
@@ -500,7 +501,9 @@ export const Go: React.FC = () => {
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
-                                <IconCircleXFilled aria-hidden="true" className="w-full h-full text-red-700" />
+                                <div className="w-full h-full rounded-full bg-red-700 flex items-center justify-center">
+                                    <X aria-hidden="true" className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
                         <h2 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
