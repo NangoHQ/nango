@@ -1,5 +1,6 @@
 import { logger } from '../../logger.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
+import { handleFunctionError, handleFunctionSuccess } from '../function.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
@@ -39,6 +40,9 @@ async function handleSuccess({ taskId, nangoProps, output, telemetryBag, functio
             break;
         case 'on-event':
             await handleOnEventSuccess({ taskId, nangoProps, telemetryBag, functionRuntime });
+            break;
+        case 'function':
+            await handleFunctionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
             break;
     }
 }
@@ -80,6 +84,9 @@ async function handleError({ taskId, nangoProps, error, telemetryBag, functionRu
             break;
         case 'on-event':
             await handleOnEventError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime });
+            break;
+        case 'function':
+            await handleFunctionError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });
             break;
     }
 }

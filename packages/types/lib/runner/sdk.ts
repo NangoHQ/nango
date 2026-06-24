@@ -11,7 +11,19 @@ export interface SdkLogger {
 
 export type ConflictResolutionMode = 'IN_MEMORY' | 'REDIS';
 
-export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event';
+export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event' | 'function';
+
+/**
+ * The event a function run is started with. The runner exposes this to the customer's `exec`
+ * as its second argument. Absent for non-function script types.
+ */
+export interface NangoFunctionEventProps {
+    trigger?: { kind: 'http' | 'schedule' | 'event'; name?: string | null | undefined } | undefined;
+    payload?: unknown;
+    headers?: Record<string, string> | undefined;
+    rawBody?: string | undefined;
+    coalesced?: { count: number; firstSeenAt: string; lastSeenAt: string; overflowed: boolean } | undefined;
+}
 
 export interface NangoProps {
     scriptType: ScriptType;
@@ -51,6 +63,10 @@ export interface NangoProps {
         | undefined;
     isCLI?: boolean | undefined;
     integrationConfig?: IntegrationConfigForProxy;
+    /** Set for `scriptType: 'function'` runs; carries the trigger + payload the run was started with. */
+    functionEvent?: NangoFunctionEventProps | undefined;
+    /** True when the run was started with a bound connection (connection-level URL, triggerFunction({connectionId}), CLI --connection). */
+    connectionBound?: boolean | undefined;
 
     axios?: {
         request?: AxiosInterceptorManager<AxiosRequestConfig>;

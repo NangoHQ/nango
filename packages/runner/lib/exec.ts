@@ -16,7 +16,7 @@ import { Err, errorToObject, isEnterprise, Ok, truncateJson } from '@nangohq/uti
 import { PersistClient } from './clients/persist.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
-import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
+import { instrumentSDK, NangoActionRunner, NangoFunctionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import { createTelemetryRecorder } from './telemetry.js';
 
 import type { Locks } from './sdk/locks.js';
@@ -63,6 +63,8 @@ export async function exec({
             case 'sync':
             case 'webhook':
                 return new NangoSyncRunner(nangoProps, { persistClient, telemetryRecorder, locks });
+            case 'function':
+                return new NangoFunctionRunner(nangoProps, { persistClient, telemetryRecorder, locks });
             case 'action':
             case 'on-event':
                 return new NangoActionRunner(nangoProps, { persistClient, telemetryRecorder, locks });
@@ -233,6 +235,65 @@ export async function exec({
                     output = await def(nango);
                 }
                 return Ok({ output, telemetryBag: nango.telemetryBag });
+            }
+
+            // Function
+            if (nangoProps.scriptType === 'function') {
+                if (!isZeroYaml) {
+                    throw new Error('Functions require the zero-yaml SDK');
+                }
+                const payload = def;
+                if (payload.type !== 'function') {
+                    throw new Error('Incorrect script loaded for function');
+                }
+                if (!payload.exec) {
+                    throw new Error(`Missing exec function`);
+                }
+
+                const fe = nangoProps.functionEvent;
+                const triggerName = fe?.trigger?.name ?? undefined;
+                const base = {
+                    payload: fe?.payload,
+                    ...(triggerName != null ? { name: triggerName } : {}),
+                    // Connection context: present only for connection-bound runs. getConnection() throws otherwise.
+                    ...(nangoProps.connectionBound
+                        ? {
+                              connection: {
+                                  connection_id: nangoProps.connectionId,
+                                  provider_config_key: nangoProps.providerConfigKey
+                              }
+                          }
+                        : {})
+                };
+
+                const triggerKind = fe?.trigger?.kind ?? 'http';
+                // The runtime event is keyed on `kind` to match the customer-facing Trigger type.
+                // Its full shape (Trigger with request: HttpRequest) is still converging on the
+                // single-trigger spec (NAN-6019/6601), so it is passed untyped to exec for now.
+                const event =
+                    triggerKind === 'http'
+                        ? {
+                              kind: 'http',
+                              ...base,
+                              headers: fe?.headers ?? {},
+                              rawBody: fe?.rawBody ?? '',
+                              ...(fe?.coalesced
+                                  ? {
+                                        coalesced: {
+                                            count: fe.coalesced.count,
+                                            firstSeenAt: new Date(fe.coalesced.firstSeenAt),
+                                            lastSeenAt: new Date(fe.coalesced.lastSeenAt),
+                                            overflowed: fe.coalesced.overflowed
+                                        }
+                                    }
+                                  : {})
+                          }
+                        : triggerKind === 'schedule'
+                          ? { kind: 'schedule', ...base }
+                          : { kind: 'event', ...base };
+
+                const output = await payload.exec(nango as any, event as any);
+                return Ok({ output: output ?? true, telemetryBag: nango.telemetryBag, checkpoints: nango.getCheckpointRange() });
             }
 
             // Sync

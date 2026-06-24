@@ -1,5 +1,5 @@
 import { Nango } from '@nangohq/node';
-import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { executeUncontrolledFetch, NangoActionBase, NangoFunctionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest } from '@nangohq/shared';
 import {
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -858,9 +858,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         let cursor: string | null | undefined = options?.cursor;
         do {
             this.throwIfAbortedOrKilled();
-            const pageOptions: { cursor?: string } = {
-                ...(cursor ? { cursor } : {})
-            };
+            const pageOptions: { cursor?: string } = cursor ? { cursor } : {};
             const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
 
             for (const record of records) {
@@ -908,6 +906,16 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     public getCheckpointRange(): CheckpointRange | null {
         return this.checkpointing.getRange(this.checkpointKey);
     }
+}
+
+/**
+ * Function SDK
+ *
+ * Reuses the sync runner's concrete capabilities (records, proxy, triggers) and adds the
+ * function-only methods. Same prototype-borrow approach the sync runner uses for action methods.
+ */
+export class NangoFunctionRunner extends NangoSyncRunner {
+    searchConnections = NangoFunctionBase['prototype']['searchConnections'];
 }
 
 class Locking {

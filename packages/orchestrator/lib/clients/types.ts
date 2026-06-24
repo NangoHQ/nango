@@ -50,6 +50,17 @@ interface OnEventArgs {
     activityLogId: string;
     sdkVersion: string | null;
 }
+interface FunctionArgs {
+    functionName: string;
+    providerConfigKey: string;
+    /** null for connection-less runs (e.g. an integration-level webhook routing run). */
+    connection: ConnectionJobs | null;
+    activityLogId: string;
+    // JSON-safe (serialized into the task payload): null (not undefined) for on-demand runs
+    // (triggerFunction/API/CLI/UI); only declared triggers carry a value. name is null when absent.
+    trigger: { kind: 'http' | 'schedule' | 'event'; name: string | null } | null;
+    input: JsonValue;
+}
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
@@ -68,7 +79,7 @@ export interface OrchestratorSchedule {
     nextDueDate: Date | null;
 }
 
-export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskOnEvent | TaskAbort;
+export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskOnEvent | TaskFunction | TaskAbort;
 
 interface TaskCommonFields {
     id: string;
@@ -87,6 +98,7 @@ interface TaskCommon extends TaskCommonFields {
     isWebhook(this: OrchestratorTask): this is TaskWebhook;
     isAction(this: OrchestratorTask): this is TaskAction;
     isOnEvent(this: OrchestratorTask): this is TaskOnEvent;
+    isFunction(this: OrchestratorTask): this is TaskFunction;
     isSyncAbort(this: OrchestratorTask): this is TaskSyncAbort;
     isAbort(this: OrchestratorTask): this is TaskAbort;
 }
@@ -110,6 +122,7 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
+        isFunction: (): this is TaskFunction => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => true
     };
@@ -138,6 +151,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs & SyncExecutionArgs)
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
+        isFunction: (): this is TaskFunction => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false
     };
@@ -167,6 +181,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
+        isFunction: (): this is TaskFunction => false,
         isSyncAbort: (): this is TaskSyncAbort => true,
         isAbort: (): this is TaskAbort => false
     };
@@ -194,6 +209,7 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => true,
         isOnEvent: (): this is TaskOnEvent => false,
+        isFunction: (): this is TaskFunction => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false
     };
@@ -221,6 +237,7 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         isWebhook: (): this is TaskWebhook => true,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => false,
+        isFunction: (): this is TaskFunction => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false
     };
@@ -249,10 +266,43 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,
         isOnEvent: (): this is TaskOnEvent => true,
+        isFunction: (): this is TaskFunction => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false
     };
 }
+
+export interface TaskFunction extends TaskCommon, FunctionArgs {}
+export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFunction {
+    return {
+        id: props.id,
+        name: props.name,
+        state: props.state,
+        retryKey: props.retryKey,
+        attempt: props.attempt,
+        attemptMax: props.attemptMax,
+        functionName: props.functionName,
+        providerConfigKey: props.providerConfigKey,
+        connection: props.connection,
+        activityLogId: props.activityLogId,
+        trigger: props.trigger,
+        input: props.input,
+        groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
+        ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isFunction: (): this is TaskFunction => true,
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false
+    };
+}
+
+// Function runs use fixed scheduling (see buildFunctionSchedulingProps), so retry/timeout are not caller-configurable.
+export type ExecuteFunctionProps = Omit<ExecuteProps, 'args' | 'retry' | 'timeoutSettingsInSecs'> & { args: FunctionArgs };
 
 export interface ClientError extends Error {
     name: string;
