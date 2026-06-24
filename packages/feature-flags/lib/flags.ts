@@ -24,7 +24,6 @@ export function buildFlags(client: FeatureFlagsClient) {
          * function primitive is rolled out. Default `false`.
          */
         canDeployFunctions(accountUuid: string) {
-            // accountUuid is exposed as a property so the Unleash strategy can allowlist specific accounts.
             return client.isEnabled('function-deployment', { targetingKey: accountUuid, accountUuid }, false);
         }
     };

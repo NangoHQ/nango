@@ -1,8 +1,12 @@
 import * as z from 'zod';
 
+import { getInterval } from '@nangohq/nango-yaml';
+
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
 import type { Feature, NangoModelField, OnEventType } from '@nangohq/types';
+
+const MAX_DEBOUNCE_KEY_SOURCES = 10;
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
@@ -41,10 +45,10 @@ const functionDebounceKey = z.union([z.object({ body: z.string() }).strict(), z.
 
 const functionDebounce = z
     .object({
-        key: z.union([functionDebounceKey, z.array(functionDebounceKey)]).optional(),
-        windowMs: z.number(),
-        maxWindowMs: z.number().optional(),
-        maxEntities: z.number().optional(),
+        key: z.union([functionDebounceKey, z.array(functionDebounceKey).max(MAX_DEBOUNCE_KEY_SOURCES)]).optional(),
+        windowMs: z.number().int().positive(),
+        maxWindowMs: z.number().int().positive().optional(),
+        maxEntities: z.number().int().positive().optional(),
         payloadMode: z.enum(['latest', 'all']).optional()
     })
     .strict();
@@ -75,7 +79,7 @@ const functionIngress = z
                     .strict()
                     .optional(),
                 respond: z
-                    .object({ status: z.number().optional(), contentType: z.enum(['text/plain', 'application/json']).optional() })
+                    .object({ status: z.number().int().min(100).max(599).optional(), contentType: z.enum(['text/plain', 'application/json']).optional() })
                     .strict()
                     .optional()
             })
@@ -84,7 +88,6 @@ const functionIngress = z
     })
     .strict();
 
-// One trigger per function, discriminated on `kind` so each kind only carries its own fields.
 const functionTrigger = z.discriminatedUnion('kind', [
     z
         .object({
@@ -98,14 +101,17 @@ const functionTrigger = z.discriminatedUnion('kind', [
         .object({
             kind: z.literal('schedule'),
             name: z.string().max(255).optional(),
-            schedule: z.string().max(255)
+            schedule: z
+                .string()
+                .max(255)
+                .refine((value) => !(getInterval(value, new Date()) instanceof Error), { message: 'Invalid schedule interval' })
         })
         .strict(),
     z
         .object({
             kind: z.literal('event'),
             name: z.string().max(255).optional(),
-            event: z.string().max(255)
+            event: z.string().min(1).max(255)
         })
         .strict()
 ]);

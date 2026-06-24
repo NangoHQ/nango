@@ -174,7 +174,6 @@ export interface ParsedFunctionTrigger {
 
 export interface ParsedNangoFunction {
     name: string;
-    /** Source file basename. The bundled artifact is keyed by this, while `name` may be a custom logical name. */
     fileName: string;
     type: 'function';
     description: string;

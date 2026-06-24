@@ -476,8 +476,9 @@ export const getAndReconcileDifferences = async ({
             continue;
         }
 
-        // Functions are persisted on deploy but are not scheduled as syncs, so they have nothing to
-        // reconcile here. Deletion of a removed function is still handled by the loop below.
+        // Function scheduling isn't wired up yet. Until it is, skip reconciliation so functions
+        // (persisted on deploy with runs: null) aren't treated as syncs and given sync jobs.
+        // Deletion of a removed function is still handled by the loop below.
         if (type === 'function') {
             continue;
         }

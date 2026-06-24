@@ -32,7 +32,6 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     models_json_schema: JSONSchema7 | null;
     sdk_version: string | null;
     features: Feature[];
-    /** Set only for `type: 'function'` rows; null for sync/action/on-event. */
     function_config?: FunctionConfig | null;
 }
 export type DBSyncConfigInsert = Omit<DBSyncConfig, 'id'>;

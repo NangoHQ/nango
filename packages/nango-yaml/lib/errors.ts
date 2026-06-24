@@ -132,3 +132,13 @@ export class ParserErrorBothPostConnectionScriptsAndOnEventsPresent extends Pars
         });
     }
 }
+
+export class ParserErrorFunctionNotSupportedInV1 extends ParserError {
+    constructor(options: { name: string; path: string[] }) {
+        super({
+            code: 'function_not_supported_in_v1',
+            message: `"${options.name}" declares type "function", which is not supported in nango.yaml. Functions are defined with createFunction in TypeScript.`,
+            path: options.path
+        });
+    }
+}

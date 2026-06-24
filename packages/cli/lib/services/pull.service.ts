@@ -81,7 +81,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
             spinner.fail(`Failed to pull '${name}'`);
             console.log(chalk.red(`\n${errMessage} ${chalk.gray(`(${errCode})`)}`));
             if (errCode === 'ambiguous_function') {
-                console.log(chalk.gray(`Re-run with --sync, --action, or --on-event to disambiguate.`));
+                console.log(chalk.gray(`Re-run with --sync, --action, --on-event, or --function to disambiguate.`));
             }
             return false;
         }
@@ -181,7 +181,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
             const matchedTypes = matches.map((m) => folderToScriptType[m.folder]).join(', ');
             spinner.fail(`Failed to pull '${name}'`);
             console.log(chalk.red(`\nMultiple functions named '${name}' exist for '${integrationId}' (${matchedTypes}).`));
-            console.log(chalk.gray(`Re-run with --sync, --action, or --on-event to disambiguate.`));
+            console.log(chalk.gray(`Re-run with --sync, --action, --on-event, or --function to disambiguate.`));
             return false;
         }
 
