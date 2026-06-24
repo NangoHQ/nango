@@ -90,6 +90,9 @@ export const ENVS = z.object({
                     allowedSchemes: z.array(z.string()).optional(),
                     maxRedirects: z.number().int().nonnegative().optional()
                 })
+                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
+                // being silently dropped and weakening the intended SSRF restrictions.
+                .strict()
                 .optional()
         ),
 

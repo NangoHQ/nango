@@ -35,11 +35,15 @@ export async function executeUncontrolledFetch(
 
     // Resolve DNS and validate every resolved address against the policy before each hop.
     // This closes DNS-rebinding and redirect-to-internal-address SSRF on the uncontrolledFetch path.
-    // A hostname that fails to resolve is not a SSRF risk (no connection is possible), so we let the
-    // fetch attempt fail naturally instead of masking it as a policy denial.
+    //
+    // Fail closed on every validation error, including DNS resolution failures. The validation lookup
+    // and the subsequent native fetch resolve DNS independently (fetch does not use a DNS-pinning agent
+    // here), so a resolution failure during validation does NOT guarantee the fetch will also fail —
+    // a transient/resolver-specific failure (or an attacker-timed one) could be followed by a fetch
+    // that succeeds to a blocked/private IP. Treating the URL as not allowed avoids that fail-open.
     const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
         const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
-        if (!result.ok && result.error.code !== 'dns_resolution_failed') {
+        if (!result.ok) {
             throw makeActionError('url_not_allowed', 'This URL is not allowed by server configuration.');
         }
     };

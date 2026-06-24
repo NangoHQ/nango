@@ -183,6 +183,13 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY (typos fail fast)', () => {
+        expect(() => {
+            // `blockPrivateIp` (missing trailing s) must not be silently dropped.
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ blockPrivateIp: false }) });
+        }).toThrow();
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
