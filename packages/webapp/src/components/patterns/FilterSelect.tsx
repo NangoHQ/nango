@@ -62,6 +62,13 @@ interface FilterSelectProps {
      * Pass a predicate to decide per group — e.g. off for groups whose values are a fixed, fully-listed set.
      */
     allowCreate?: boolean | ((group: string) => boolean);
+    /**
+     * Whether a group's value pane shows a search box. Off for closed, fully-listed sets (e.g.
+     * Status, Environment) where the short list needs no filtering. Pass a predicate to decide per
+     * group. Defaults to true. Independent of `allowCreate` — a list can be searchable without
+     * accepting typed-but-unlisted values (e.g. when search already covers the full set).
+     */
+    searchable?: boolean | ((group: string) => boolean);
     searchPlaceholder?: string;
     /** Called when a group's pane opens — e.g. to prefetch. */
     onOpenGroup?: (group: string) => void;
@@ -94,6 +101,7 @@ const FilterValuePane: React.FC<{
     useGroupData: (group: string) => FilterSelectGroupData;
     selectedValue: string | null;
     allowCreate: boolean;
+    searchable: boolean;
     searchPlaceholder: string;
     /** Focus the search on mount — true only when the pane was opened via keyboard. */
     autoFocus: boolean;
@@ -102,7 +110,7 @@ const FilterValuePane: React.FC<{
     onBack: () => void;
     /** Esc: close the whole filter. */
     onCloseAll: () => void;
-}> = ({ anchor, group, useGroupData, selectedValue, allowCreate, searchPlaceholder, autoFocus, onSelect, onBack, onCloseAll }) => {
+}> = ({ anchor, group, useGroupData, selectedValue, allowCreate, searchable, searchPlaceholder, autoFocus, onSelect, onBack, onCloseAll }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const { options, isLoading, isError } = useGroupData(group);
     const [inputValue, setInputValue] = useState('');
@@ -126,10 +134,9 @@ const FilterValuePane: React.FC<{
     const items: PaneItem[] = showCreate ? [...matches, { value: trimmed, label: trimmed, isCreate: true }] : matches;
     const selectedOption = options.find((o) => o.value === selectedValue) ?? null;
 
-    // Groups that take no free text (a fixed, fully-listed set like Status or Environment) need no
-    // search box — just their short list. The input stays mounted but visually hidden so the
-    // combobox keeps driving keyboard navigation (arrows, Enter, ←/Esc) the same way.
-    const searchable = allowCreate;
+    // When `searchable` is false (a fixed, fully-listed set like Status or Environment) the pane
+    // shows just the short list. The input stays mounted but visually hidden (below) so the combobox
+    // keeps driving keyboard navigation (arrows, Enter, ←/Esc) the same way.
 
     return (
         <Combobox.Root
@@ -262,6 +269,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
     selectedValueFor,
     onSelect,
     allowCreate = false,
+    searchable = true,
     searchPlaceholder = 'Search…',
     onOpenGroup
 }) => {
@@ -345,6 +353,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
                                 useGroupData={useGroupData}
                                 selectedValue={selectedValueFor?.(openGroup) ?? null}
                                 allowCreate={typeof allowCreate === 'function' ? allowCreate(openGroup) : allowCreate}
+                                searchable={typeof searchable === 'function' ? searchable(openGroup) : searchable}
                                 searchPlaceholder={searchPlaceholder}
                                 autoFocus={openViaKeyboard}
                                 onSelect={(value) => {
