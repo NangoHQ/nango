@@ -1,13 +1,14 @@
-import { IconButton } from '@nangohq/design-system';
 import { BarChart3, ChevronRight, Palette, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
-import { TokenEditorContent } from './TokenEditorOverlay';
+import { IconButton } from '@nangohq/design-system';
+
 import { Switch } from '@/components/ui/Switch';
 import { useTeam } from '@/hooks/useTeam';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
+import { TokenEditorContent } from './TokenEditorOverlay';
 
 /**
  * True when the dev tool panel is available based on the current hostname:

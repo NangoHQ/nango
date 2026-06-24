@@ -1,9 +1,8 @@
 import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Contrast, Download, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Input } from '@nangohq/design-system';
 
-import { Input } from '@/components/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
