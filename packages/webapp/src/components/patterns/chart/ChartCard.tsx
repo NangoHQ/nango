@@ -5,6 +5,7 @@ import { cn } from '@/utils/utils';
 import { InfoTooltip } from '../../ui/InfoTooltip';
 import { Skeleton } from '../../ui/Skeleton';
 import { BreakdownChart } from './BreakdownChart';
+import { formatExact, formatShare } from './chartFormat';
 import { ChartLegend } from './ChartLegend';
 import { useChartData, visibleBreakdownTotal } from './useChartData';
 import { useChartInteractions } from './useChartInteractions';
@@ -12,21 +13,6 @@ import { useChartInteractions } from './useChartInteractions';
 import type { ChartConfig } from '../../ui/Chart';
 import type { ChartSeries } from './types';
 import type { ApiBillingUsageMetric } from '@nangohq/types';
-
-// The headline shows the precise total (e.g. "2,172.43"); axis ticks use the shared
-// compact formatter (in BreakdownChart) so big numbers don't clip.
-function formatExact(quantity: number): string {
-    return quantity.toLocaleString('en-US', { maximumFractionDigits: 2 });
-}
-
-// A filtered headline is a slice of the metric's unfiltered total; this renders the slice's
-// share so a count like "5,813 failed" carries its denominator ("2.3% of 248,301"). Tiny
-// non-zero slices show "<0.1%" rather than rounding to a misleading "0%".
-function formatShare(part: number, whole: number): string {
-    const pct = (part / whole) * 100;
-    if (pct > 0 && pct < 0.1) return '<0.1%';
-    return `${pct.toLocaleString('en-US', { maximumFractionDigits: 1 })}%`;
-}
 
 interface ChartCardProps {
     isLoading: boolean;
@@ -80,28 +66,38 @@ export const ChartCard: React.FC<ChartCardProps> = ({
         return { total: { label: singleSeries?.label ?? 'Total', color: singleSeries?.color ?? 'var(--ds-color-brand-500)' } };
     }, [isBreakdown, breakdownSeries, singleSeries]);
 
-    // What occupies the chart body: a per-panel detail spinner/error (covers both a
-    // breakdown fetch and a filtered-slice fetch), the empty state, or the chart.
+    // What occupies the chart body: a per-panel detail spinner/error (covers both a breakdown
+    // fetch and a filtered-slice fetch), the empty state, or the chart. The spinner wins while
+    // the base metric loads, so the error is also gated on !isLoading — otherwise a stale detail
+    // error would render alongside the base loader during a refetch.
     const showDetailSpinner = Boolean(detailLoading);
-    const showDetailError = !detailLoading && Boolean(detailError);
+    const showDetailError = !isLoading && !detailLoading && Boolean(detailError);
     const hasBreakdownSeries =
         isBreakdown && (breakdownSeries?.length ?? 0) > 0 && (breakdownSeries?.some((s) => s.usage.some((u) => u.quantity > 0)) ?? false);
     // In breakdown mode the chart shows only the (possibly filtered) breakdown series, so
     // emptiness is about those; otherwise it's the base/filtered single series.
     const effectiveEmpty = isBreakdown ? !hasBreakdownSeries : isEmpty;
-    // The headline tracks the data actually drawn. In breakdown mode that's the sum of the
-    // visible series, so isolating/hiding a slice updates it live (no backend round-trip) and
-    // it doesn't depend on the response's top-level total. Otherwise it's the single series'
-    // total. `effectiveEmpty` (not `isEmpty`) so a breakdown with empty top-level `usage`
-    // still shows a number.
+
+    // The headline tracks the data actually drawn: in breakdown mode the sum of the visible
+    // series (so isolating/hiding a slice updates it live, no refetch, independent of the
+    // response's top-level total); otherwise the single series' total. `effectiveEmpty` (not
+    // `isEmpty`) so a breakdown with empty top-level `usage` still shows a number.
     const visibleKeys = (breakdownSeries ?? []).filter((s) => !interactions.isSeriesHidden(s.key)).map((s) => s.key);
-    const headlineTotal = isBreakdown
-        ? effectiveEmpty
-            ? undefined
-            : visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey)
-        : effectiveEmpty
-          ? undefined
-          : data?.total;
+    let headlineTotal: number | undefined;
+    if (effectiveEmpty) {
+        headlineTotal = undefined;
+    } else if (isBreakdown) {
+        headlineTotal = visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey);
+    } else {
+        headlineTotal = data?.total;
+    }
+
+    // When filtered, the headline is a slice of the metric's unfiltered total — show its share.
+    const shareLabel =
+        headlineTotal !== undefined && globalTotal !== undefined && globalTotal > 0
+            ? `${formatShare(headlineTotal, globalTotal)} of ${formatExact(globalTotal)}`
+            : null;
+
     // Wait for the base metric to load before drawing — otherwise the chart briefly renders
     // with the wrong type (bars before `view_mode` is known) next to the spinner.
     const showChart = !isLoading && !effectiveEmpty && !showDetailSpinner && !showDetailError && (!isBreakdown || hasBreakdownSeries);
@@ -131,11 +127,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
                                     {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
-                                    {globalTotal !== undefined && globalTotal > 0 && (
-                                        <span className="text-text-muted text-body-small-regular">
-                                            {formatShare(headlineTotal, globalTotal)} of {formatExact(globalTotal)}
-                                        </span>
-                                    )}
+                                    {shareLabel && <span className="text-text-muted text-body-small-regular">{shareLabel}</span>}
                                 </div>
                             )}
                         </>
