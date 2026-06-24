@@ -3,10 +3,9 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useManagedEmailVerification, useManagedEmailVerificationAPI } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';

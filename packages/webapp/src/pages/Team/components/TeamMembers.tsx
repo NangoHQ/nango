@@ -2,7 +2,7 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, IconButton } from '@nangohq/design-system';
+import { Button, IconButton, Input } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Badge } from '@/components/ui/Badge';
@@ -10,7 +10,6 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { Input } from '@/components/ui/Input';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';

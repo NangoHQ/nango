@@ -5,9 +5,8 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, Input } from '@nangohq/design-system';
 
-import { Input } from '@/components/ui/Input';
 import { Separator } from '@/components/ui/Separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';

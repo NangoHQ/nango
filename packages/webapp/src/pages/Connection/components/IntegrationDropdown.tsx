@@ -2,11 +2,10 @@ import Fuse from 'fuse.js';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import { buttonVariants } from '@nangohq/design-system';
+import { buttonVariants, Input } from '@nangohq/design-system';
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { Input } from '@/components/ui/Input';
 import { cn } from '@/utils/utils';
 
 import type { ApiIntegrationList } from '@nangohq/types';
