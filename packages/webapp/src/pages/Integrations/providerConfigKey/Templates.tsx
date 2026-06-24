@@ -250,6 +250,7 @@ export const Templates: React.FC = () => {
                             key={`${selected.type}:${selected.name}`}
                             template={selected}
                             provider={integrationData.integration.provider}
+                            symLinkTargetName={integrationData.symLinkTargetName}
                             onDeploy={onDeploy}
                             isDeploying={isDeploying}
                         />

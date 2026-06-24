@@ -221,5 +221,10 @@ export interface FlowsYaml {
 
 // --- flows.zero.json is a parsed nango.yaml
 // TODO: drop the functions override once flows.zero.json is regenerated with `functions` (NAN-5943)
-export type FlowZeroJson = Omit<NangoYamlParsedIntegration, 'functions'> & { jsonSchema?: JSONSchema7; sdkVersion: string };
+export type FlowZeroJson = Omit<NangoYamlParsedIntegration, 'functions'> & {
+    jsonSchema?: JSONSchema7;
+    sdkVersion: string;
+    // Set when this integration symlinks to a canonical templates-repo folder (e.g. `quickbooks-sandbox` → `quickbooks`).
+    symLinkTargetName?: string;
+};
 export type FlowsZeroJson = FlowZeroJson[];

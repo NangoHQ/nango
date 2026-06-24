@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pullFromCatalog } from './pull.service.js';
 
 const RAW_BASE = 'https://raw.githubusercontent.com/NangoHQ/integration-templates/main/integrations';
+const API_BASE = 'https://api.github.com/repos/NangoHQ/integration-templates/contents/integrations';
 
 function buildNotFoundError(url: string): AxiosError {
     const err = new AxiosError('Not Found', '404', undefined, undefined, {
@@ -18,8 +19,19 @@ function buildNotFoundError(url: string): AxiosError {
     return err;
 }
 
-function mockGitHub(files: Record<string, string>) {
+// `symlinks` maps an integration folder to its target (mirrors the GitHub Contents API symlink response).
+function mockGitHub(files: Record<string, string>, symlinks: Record<string, string> = {}) {
     vi.spyOn(axios, 'get').mockImplementation((url: string) => {
+        if (url.startsWith(`${API_BASE}/`)) {
+            const integration = url.slice(`${API_BASE}/`.length);
+            if (Object.prototype.hasOwnProperty.call(symlinks, integration)) {
+                return Promise.resolve({
+                    data: { name: integration, path: `integrations/${integration}`, type: 'symlink', target: symlinks[integration] }
+                } as any);
+            }
+            // A real directory: resolveIntegrationFolder only checks Array.isArray, contents are irrelevant.
+            return Promise.resolve({ data: [] } as any);
+        }
         const relative = url.replace(`${RAW_BASE}/`, '');
         if (Object.prototype.hasOwnProperty.call(files, relative)) {
             return Promise.resolve({ data: files[relative] } as any);
@@ -166,5 +178,38 @@ describe('pullFromCatalog', () => {
         const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
         expect(writtenPaths).toContain('/project/github/actions/list-repos.ts');
         expect(writtenPaths).toContain('/project/github/mappers/toRepo.ts');
+    });
+
+    it('fetches from the symlink target but writes under the requested integration name', async () => {
+        mockGitHub({ 'quickbooks/syncs/customers.ts': 'export default async function () {}' }, { 'quickbooks-sandbox': 'quickbooks' });
+        const writeSpy = mockFsForWriting();
+        const axiosSpy = vi.spyOn(axios, 'get');
+
+        const success = await pullFromCatalog({ ...baseOptions, integrationId: 'quickbooks-sandbox', name: 'customers', type: 'sync' });
+
+        expect(success).toBe(true);
+        // Content is fetched from the resolved target folder...
+        expect(axiosSpy.mock.calls.map((call) => call[0])).toContain(`${RAW_BASE}/quickbooks/syncs/customers.ts`);
+        // ...but written under the requested (symlink) name so deploy maps it to the right providerConfigKey.
+        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
+        expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.ts');
+    });
+
+    it('localizes symlinked dependency paths too', async () => {
+        mockGitHub(
+            {
+                'quickbooks/syncs/customers.ts': "import { toCustomer } from '../mappers/toCustomer.js';\nexport default async () => toCustomer();",
+                'quickbooks/mappers/toCustomer.ts': 'export const toCustomer = () => ({});'
+            },
+            { 'quickbooks-sandbox': 'quickbooks' }
+        );
+        const writeSpy = mockFsForWriting();
+
+        const success = await pullFromCatalog({ ...baseOptions, integrationId: 'quickbooks-sandbox', name: 'customers', type: 'sync' });
+
+        expect(success).toBe(true);
+        const writtenPaths = writeSpy.mock.calls.map((call) => call[0] as string);
+        expect(writtenPaths).toContain('/project/quickbooks-sandbox/syncs/customers.ts');
+        expect(writtenPaths).toContain('/project/quickbooks-sandbox/mappers/toCustomer.ts');
     });
 });

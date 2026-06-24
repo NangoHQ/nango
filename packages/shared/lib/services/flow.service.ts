@@ -98,6 +98,10 @@ class FlowService {
         return standardConfig;
     }
 
+    public getSymLinkTargetName(provider: string): string | null {
+        return this.flowsJson.find((flow) => flow.providerConfigKey === provider)?.symLinkTargetName ?? null;
+    }
+
     public getFlowByIntegrationAndName({ provider, type, scriptName }: { provider: string; type: ScriptTypeLiteral; scriptName: string }) {
         const availablePublicFlows = this.getAllAvailableFlowsAsStandardConfig();
         const flows = availablePublicFlows.filter((flow) => flow.providerConfigKey === provider);
