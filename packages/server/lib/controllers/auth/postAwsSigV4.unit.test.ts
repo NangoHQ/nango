@@ -131,7 +131,8 @@ vi.mock('../../hooks/hooks.js', () => ({
 
 vi.mock('../../utils/auth.js', () => ({
     errorRestrictConnectionId: vi.fn(),
-    isIntegrationAllowed: mockIsIntegrationAllowed
+    isIntegrationAllowed: mockIsIntegrationAllowed,
+    resolveConnectionConfig: vi.fn(({ params }) => params ?? {})
 }));
 
 vi.mock('../../utils/hmac.js', () => ({
