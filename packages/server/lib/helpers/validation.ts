@@ -16,7 +16,8 @@ export const webhookUrlSchema = z
     .refine(
         (url) => {
             if (!url || url.trim() === '') return true;
-            return !new URL(url).host.endsWith('nango.dev');
+            const hostname = new URL(url).hostname.replace(/\.+$/, '');
+            return hostname !== 'nango.dev' && !hostname.endsWith('.nango.dev');
         },
         { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
     )
@@ -28,12 +29,12 @@ export const webhookUrlSchema = z
         { message: 'This webhook URL is not allowed.' }
     );
 
-export const connectionConfigParamsSchema = z
-    .looseObject({
-        webhook_url: webhookUrlSchema,
-        webhook_url_secondary: webhookUrlSchema
-    })
-    .optional();
+export const webhookUrlConnectionConfigShape = {
+    webhook_url: webhookUrlSchema,
+    webhook_url_secondary: webhookUrlSchema
+};
+
+export const connectionConfigParamsSchema = z.looseObject(webhookUrlConnectionConfigShape).optional();
 
 export const providerSchema = z
     .string()
