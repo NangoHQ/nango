@@ -47,6 +47,6 @@ The seed itself only needs `CLICKHOUSE_URL` and a Postgres connection; the flags
 The dataset is sized to exercise the breakdown filter combobox:
 
 - **20 integrations** with overlapping names (`github`/`gitlab`, `google-calendar`/`google-drive`/`gmail`, …) for partial-string **integration search**.
-- **60 distinct connections** (20 integrations × 3) — beyond the top-N breakdown cap (25) — for **connection pagination**.
+- **Hundreds of connection UUIDs in prod** (dev holds ~10% as many), skewed like production (a few integrations have 60–150 connections, most have a handful) — far beyond the top-N breakdown cap (25) — for **connection pagination**. Connection ids are UUIDs, matching production.
 
-Events span every usage metric (proxy, function executions/logs/compute, webhook forwards, records, connections, data transfer) and every breakdown dimension, across 30 days.
+Events span every usage metric (proxy, function executions/logs/compute, webhook forwards, records, connections, data transfer) and every breakdown dimension, across 30 days. Mix mirrors reality: dev has ~10% as many connections as prod, so prod carries ~90% of traffic across every metric; the Connections/Sync-records metrics reflect the real connection counts; and proxy/webhook/function runs include failures, with the function failure rate fluctuating day to day (mostly healthy, occasional spikes up to ~20%) rather than a flat rate.
