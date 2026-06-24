@@ -2,16 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import {
-    configService,
-    connectionService,
-    errorManager,
-    ErrorSourceEnum,
-    getConnectionConfig,
-    getProvider,
-    LogActionEnum,
-    syncEndUserToConnection
-} from '@nangohq/shared';
+import { configService, connectionService, errorManager, ErrorSourceEnum, getProvider, LogActionEnum, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import {
@@ -28,7 +19,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -78,7 +69,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
     const { username, password }: PostPublicBasicAuthorization['Body'] = val.data;
     const queryString: PostPublicBasicAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBasicAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';

@@ -128,9 +128,21 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
         const webhookUrl = overrideWebhookUrl?.trim() ? overrideWebhookUrl.trim() : undefined;
         const webhookUrlSecondary = webhookUrl && overrideWebhookUrlSecondary?.trim() ? overrideWebhookUrlSecondary.trim() : undefined;
-        const hasConnectionConfigOverrides =
-            overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined || webhookUrl !== undefined;
         const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
+
+        // OAuth client/scope overrides only apply to OAuth flows; webhook URL overrides apply to every auth type.
+        const oauthConfigOverrides =
+            isOauth2 && (overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined)
+                ? {
+                      oauth_client_id_override: overrideClientId,
+                      oauth_client_secret_override: overrideClientSecret,
+                      oauth_scopes_override: oauthScopesOverride
+                  }
+                : undefined;
+        const connectionConfig =
+            oauthConfigOverrides || webhookUrl
+                ? { ...oauthConfigOverrides, ...(webhookUrl ? { webhook_url: webhookUrl, webhook_url_secondary: webhookUrlSecondary } : {}) }
+                : undefined;
 
         return await apiConnectSessions(env, {
             allowed_integrations: integration ? [integration.unique_key] : undefined,
@@ -139,16 +151,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 ? {
                       [integration.unique_key]: {
                           authorization_params: isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
-                          connection_config:
-                              isOauth2 && hasConnectionConfigOverrides
-                                  ? {
-                                        oauth_client_id_override: overrideClientId,
-                                        oauth_client_secret_override: overrideClientSecret,
-                                        oauth_scopes_override: oauthScopesOverride,
-                                        webhook_url: webhookUrl,
-                                        webhook_url_secondary: webhookUrlSecondary
-                                    }
-                                  : undefined
+                          connection_config: connectionConfig
                       }
                   }
                 : undefined,

@@ -93,6 +93,36 @@ describe(`GET ${endpoint}`, () => {
         expect(connection?.connection_config).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
     });
 
+    it('should apply a webhook_url override set as a connect session default (without passing it as a param)', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                end_user: { id: '1', email: 'john@example.com' },
+                allowed_integrations: ['unauthenticated'],
+                integrations_config_defaults: { unauthenticated: { connection_config: { webhook_url: 'https://example.com/webhooks-from-nango' } } }
+            }
+        });
+        isSuccess(resSession.json);
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSession.json.data.token },
+            params: { providerConfigKey: config.unique_key }
+        });
+        isSuccess(res.json);
+
+        const connection = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: res.json.connectionId,
+            providerConfigKey: res.json.providerConfigKey,
+            environmentId: env.id
+        });
+        expect(connection?.connection_config).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
+    });
+
     it('should not be allowed to connect to an integration if disallowed by sessionToken', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
