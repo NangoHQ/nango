@@ -160,7 +160,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         />
                     </div>
                     <div className={cn('flex flex-col gap-5')}>
-                        <Button variant="primary" size="xl" onClick={onExecute} disabled={isExecuting}>
+                        <Button variant="primary" size="lg" onClick={onExecute} disabled={isExecuting}>
                             {isExecuting ? (
                                 <>
                                     <Loader className="size-5 animate-spin" />

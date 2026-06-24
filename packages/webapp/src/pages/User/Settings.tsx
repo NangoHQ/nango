@@ -65,7 +65,7 @@ export const UserSettings: React.FC = () => {
             </Helmet>
             <div className="flex flex-col gap-5">
                 <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>
-                <InputGroup className="h-[42px]">
+                <InputGroup>
                     <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
                     <InputGroupAddon align="inline-end">
                         {!edit && (

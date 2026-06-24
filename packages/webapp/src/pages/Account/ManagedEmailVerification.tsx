@@ -76,7 +76,7 @@ export const ManagedEmailVerification: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
-                <InputGroup className="h-11">
+                <InputGroup>
                     <InputGroupInput
                         value={code}
                         onChange={(event) => setCode(event.target.value)}
@@ -87,7 +87,7 @@ export const ManagedEmailVerification: React.FC = () => {
                     />
                 </InputGroup>
 
-                <Button type="submit" size="xl" loading={isPending} disabled={code.trim().length < 6}>
+                <Button type="submit" size="lg" loading={isPending} disabled={code.trim().length < 6}>
                     Verify and continue
                 </Button>
             </form>

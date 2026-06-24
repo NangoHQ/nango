@@ -228,7 +228,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             loading={props.loading}
             disabled={disabled || options.length === 0}
             variant="ghost"
-            size="xl"
+            size="lg"
             className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
         >
             {props.label}{' '}
@@ -366,16 +366,20 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 )}
                 {showSearch && (
                     <div className="w-full border-b border-border-muted" onKeyDown={(e) => e.stopPropagation()}>
-                        <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
+                        <InputGroup
+                            size="auto"
+                            className="flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5"
+                        >
                             <InputGroupAddon className="p-0 pr-2">
                                 <Search className="size-4 text-text-muted" />
                             </InputGroupAddon>
                             <InputGroupInput
+                                size="auto"
                                 type="text"
                                 placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="h-auto p-0 text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                                className="text-body-medium-regular text-text-muted placeholder:text-text-muted"
                             />
                         </InputGroup>
                     </div>

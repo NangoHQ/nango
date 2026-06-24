@@ -123,7 +123,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
             ) : (
                 <>
                     <div className="flex items-center gap-1.5">
-                        <InputGroup className="h-10">
+                        <InputGroup>
                             <InputGroupInput
                                 type="text"
                                 placeholder="Search functions"
@@ -144,7 +144,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button type="button" size="xl">
+                                <Button type="button" size="lg">
                                     <Plus /> Add
                                 </Button>
                             </DropdownMenuTrigger>

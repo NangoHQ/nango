@@ -75,6 +75,16 @@ export const Addons: Story = {
                     </InputGroupAddon>
                 </InputGroup>
             </div>
+            <div className="flex flex-col gap-1">
+                {/* size="auto" hugs its content instead of the fixed control height — used for search fields inside popovers/dropdowns. */}
+                <span className="story-section-heading">Hug-content (size="auto")</span>
+                <InputGroup size="auto" className="px-2.5 py-1.5">
+                    <InputGroupAddon className="p-0 pr-2">
+                        <Search />
+                    </InputGroupAddon>
+                    <InputGroupInput size="auto" placeholder="Search…" />
+                </InputGroup>
+            </div>
         </div>
     )
 };

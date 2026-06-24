@@ -158,7 +158,7 @@ export const Signin: React.FC = () => {
                                     render={({ field, fieldState }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <InputGroup className="h-11">
+                                                <InputGroup>
                                                     <InputGroupInput placeholder="Email" autoComplete="email" {...field} aria-invalid={!!fieldState.error} />
                                                 </InputGroup>
                                             </FormControl>
@@ -174,7 +174,7 @@ export const Signin: React.FC = () => {
                                         render={({ field, fieldState }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <InputGroup className="h-11">
+                                                    <InputGroup>
                                                         <InputGroupInput
                                                             placeholder="Password"
                                                             type="password"
@@ -196,7 +196,7 @@ export const Signin: React.FC = () => {
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="lg" loading={isPending} disabled={!form.formState.isValid}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>

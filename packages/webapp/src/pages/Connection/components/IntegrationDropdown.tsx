@@ -52,7 +52,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'bg-surface-canvas justify-between grow w-full h-13')}
+                className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'bg-surface-canvas justify-between grow w-full h-13')}
                 disabled={disabled}
             >
                 {selectedIntegration ? (
@@ -84,8 +84,9 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 >
                     <Search className="size-5 shrink-0 text-icon-disabled" />
                     <Input
+                        size="auto"
                         placeholder="Github, accounting, oauth..."
-                        className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 text-text-secondary h-auto p-0"
+                        className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 text-text-secondary"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         autoFocus
