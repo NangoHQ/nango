@@ -30,6 +30,7 @@ export abstract class NangoFunctionBase<
      */
     public async searchConnections(filter: { tags: Record<string, string> }): Promise<ApiPublicConnection[]> {
         this.throwIfAbortedOrKilled();
+        this.throwIfConnectionScoped();
 
         const { connections } = await this.nango.listConnections({
             tags: filter.tags,
@@ -39,18 +40,13 @@ export abstract class NangoFunctionBase<
     }
 
     /**
-     * Drop the current event cleanly. The reason is written to the run's activity log so the
-     * decision is visible, without surfacing as an error.
-     *
-     * @example
-     * ```ts
-     * if (connections.length === 0) {
-     *     await nango.ignore('no matching connection');
-     *     return;
-     * }
-     * ```
+     * `searchConnections` only makes sense for connection-less runs (e.g. an integration-level
+     * webhook) that fan out to the connections they discover. A connection-scoped run already has
+     * its connection, so calling it there is a mistake.
      */
-    public async ignore(reason?: string): Promise<void> {
-        await this.log(reason ? `Event ignored: ${reason}` : 'Event ignored', { level: 'info' });
+    protected throwIfConnectionScoped(): void {
+        if (this.connectionId) {
+            throw new Error('searchConnections() can only be used in connection-less functions');
+        }
     }
 }
