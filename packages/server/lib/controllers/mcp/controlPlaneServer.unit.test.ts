@@ -6,6 +6,7 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
+import { logsGetOperationTool } from './logs/getOperation.js';
 import { logsListOperationsTool } from './logs/listOperations.js';
 import { PublicMcpError } from './utils.js';
 
@@ -149,6 +150,19 @@ describe('createControlPlaneMcpServer', () => {
             await expect(
                 logsListOperationsTool.handler({}, { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] })
             ).resolves.toSatisfy((result) => result.isErr() && result.error instanceof PublicMcpError && result.error.message === 'Nango logs are disabled');
+        } finally {
+            logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
+        }
+    });
+
+    it('returns an explicit public error for invalid get operation arguments', async () => {
+        const previousLogsEnabled = logsEnvs.NANGO_LOGS_ENABLED;
+        logsEnvs.NANGO_LOGS_ENABLED = true;
+
+        try {
+            await expect(
+                logsGetOperationTool.handler({}, { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] })
+            ).resolves.toSatisfy((result) => result.isErr() && result.error.message.includes('Invalid logs_get_operation arguments'));
         } finally {
             logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
         }
