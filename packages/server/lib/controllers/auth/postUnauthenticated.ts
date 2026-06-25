@@ -203,7 +203,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
 
         void connectionCreationFailed(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
                 environment,
                 account,
                 auth_mode: 'NONE',
