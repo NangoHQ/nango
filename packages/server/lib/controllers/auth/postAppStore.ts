@@ -14,11 +14,11 @@ import {
 } from '@nangohq/shared';
 import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -38,7 +38,7 @@ const bodyValidation = z
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional()
+        params: connectionConfigParamsSchema
     })
     .and(connectionCredential);
 
@@ -77,7 +77,6 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     const { issuerId, privateKey, privateKeyId, scope }: PostPublicAppStoreAuthorization['Body'] = val.data;
     const queryString: PostPublicAppStoreAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicAppStoreAuthorization['Params'] = paramsVal.data;
-    // const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -151,6 +150,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
         const connectionConfig: ConnectionConfig = {
+            ...resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey }),
             privateKeyId,
             issuerId,
             scope

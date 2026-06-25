@@ -156,6 +156,13 @@ class AppAuthController {
 
             const tags = connectSession?.connectSession.tags;
 
+            // Apply the connect session's connection_config defaults (e.g. a per-connection webhook URL override).
+            // Done after credential creation so it can't interfere with the GitHub App JWT generation above.
+            const overrideConnectionConfig = connectSession?.connectSession.integrationsConfigDefaults?.[providerConfigKey]?.connectionConfig;
+            if (overrideConnectionConfig) {
+                Object.assign(connectionConfig, overrideConnectionConfig);
+            }
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
