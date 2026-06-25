@@ -1,11 +1,11 @@
 import { ExternalLink } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
+import { Label } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput.js';
 import { SecretInput } from '@/components/patterns/SecretInput.js';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { Label } from '@/components/ui/Label.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';

@@ -1,6 +1,7 @@
+import { Label } from '@nangohq/design-system';
+
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { Label } from '@/components/ui/Label';
 
 interface AppPrivateKeyInputProps {
     initialValue: string;

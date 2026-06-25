@@ -1,5 +1,6 @@
+import { Label } from '@nangohq/design-system';
+
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Label } from '@/components/ui/Label';
 
 import type { TbaCredentials } from '@nangohq/types';
 

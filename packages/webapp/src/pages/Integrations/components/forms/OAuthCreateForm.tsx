@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput, Label } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
-import { Label } from '@/components/ui/Label';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { NangoProvidedInput } from '../NangoProvidedInput';
