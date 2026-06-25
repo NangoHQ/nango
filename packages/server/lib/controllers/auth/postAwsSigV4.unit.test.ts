@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { postPublicAwsSigV4Authorization } from './postAwsSigV4.js';
 
+import type * as AuthUtilsModule from '../../utils/auth.js';
 import type * as DatabaseModule from '@nangohq/database';
 import type * as SharedModule from '@nangohq/shared';
 import type { Request, Response } from 'express';
@@ -25,7 +26,8 @@ const {
     mockHmacCheck,
     mockValidateConnection,
     mockConnectionCreated,
-    mockConnectionCreationFailed
+    mockConnectionCreationFailed,
+    mockUpsertAuthConnection
 } = vi.hoisted(() => {
     return {
         mockCreateLogContext: vi.fn(),
@@ -44,7 +46,8 @@ const {
         mockHmacCheck: vi.fn(),
         mockValidateConnection: vi.fn(),
         mockConnectionCreated: vi.fn(),
-        mockConnectionCreationFailed: vi.fn()
+        mockConnectionCreationFailed: vi.fn(),
+        mockUpsertAuthConnection: vi.fn()
     };
 });
 
@@ -106,14 +109,13 @@ vi.mock('@nangohq/shared', async () => {
             generateConnectionId: mockGenerateConnectionId,
             getConnection: mockGetConnection,
             getConnectionById: vi.fn(),
-            upsertAuthConnection: vi.fn(),
+            upsertAuthConnection: mockUpsertAuthConnection,
             hardDelete: vi.fn()
         },
         errorManager: {
             errResFromNangoErr: vi.fn(),
             report: mockReport
         },
-        getConnectionConfig: vi.fn((params) => params),
         getProvider: mockGetProvider,
         getProxyConfiguration: mockGetProxyConfiguration,
         syncEndUserToConnection: vi.fn()
@@ -129,11 +131,14 @@ vi.mock('../../hooks/hooks.js', () => ({
     connectionCreationFailed: mockConnectionCreationFailed
 }));
 
-vi.mock('../../utils/auth.js', () => ({
-    errorRestrictConnectionId: vi.fn(),
-    isIntegrationAllowed: mockIsIntegrationAllowed,
-    resolveConnectionConfig: vi.fn(({ params }) => params ?? {})
-}));
+vi.mock('../../utils/auth.js', async () => {
+    const actual: typeof AuthUtilsModule = await vi.importActual('../../utils/auth.js');
+    return {
+        ...actual,
+        errorRestrictConnectionId: vi.fn(),
+        isIntegrationAllowed: mockIsIntegrationAllowed
+    };
+});
 
 vi.mock('../../utils/hmac.js', () => ({
     hmacCheck: mockHmacCheck
@@ -183,7 +188,29 @@ describe('postPublicAwsSigV4Authorization', () => {
         mockIsIntegrationAllowed.mockResolvedValue(true);
         mockHmacCheck.mockResolvedValue(true);
         mockValidateConnection.mockResolvedValue(Ok({ tested: true }));
+        mockUpsertAuthConnection.mockResolvedValue([
+            { connection: { id: 1, connection_id: 'generated-connection-id', provider_config_key: 'aws-sigv4' }, operation: 'creation' }
+        ]);
     });
+
+    // Drive the controller all the way to a successful upsert: GetCallerIdentity must return an ARN
+    // whose role name matches the requested role_arn.
+    const succeedCredentialVerification = () =>
+        mockProxyRequest.mockResolvedValue(
+            Ok({
+                data: '<GetCallerIdentityResponse><GetCallerIdentityResult><Arn>arn:aws:sts::123456789012:assumed-role/NangoAccessRole/session</Arn></GetCallerIdentityResult></GetCallerIdentityResponse>'
+            })
+        );
+
+    // The override is only honored from the backend-set connect session default, never from client params,
+    // and is resolved by the real resolveConnectionConfig (not mocked).
+    const connectSessionWithOverride = {
+        operationId: null,
+        connectionId: null,
+        allowedIntegrations: null,
+        integrationsConfigDefaults: { 'aws-sigv4': { connectionConfig: { webhook_url: 'https://override.example.com/hook' } } }
+    };
+    const sessionTokenQuery = { connect_session_token: `nango_connect_session_${'a'.repeat(64)}` };
 
     it('returns connection_test_failed when AWS credential verification fails', async () => {
         const req = {
@@ -267,5 +294,96 @@ describe('postPublicAwsSigV4Authorization', () => {
             actualArn: 'arn:aws:sts::123456789012:assumed-role/UnexpectedRole/session'
         });
         expect(next).not.toHaveBeenCalled();
+    });
+
+    it('stores the resolved per-connection webhook URL override alongside the connection config', async () => {
+        succeedCredentialVerification();
+
+        const req = {
+            body: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole', region: 'us-east-1' },
+            query: sessionTokenQuery,
+            params: { providerConfigKey: 'aws-sigv4' },
+            route: { path: '/auth/aws-sigv4/:providerConfigKey' },
+            originalUrl: '/auth/aws-sigv4/aws-sigv4',
+            header: vi.fn()
+        } as unknown as Request;
+
+        const res = {
+            locals: { account: { id: 1 }, environment: { id: 2 }, connectSession: connectSessionWithOverride, authType: 'connectSession', endUser: null },
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+        const next = vi.fn();
+
+        await postPublicAwsSigV4Authorization(req, res, next);
+
+        expect(mockUpsertAuthConnection).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connectionConfig: expect.objectContaining({
+                    webhook_url: 'https://override.example.com/hook',
+                    role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole',
+                    region: 'us-east-1'
+                })
+            })
+        );
+    });
+
+    it('ignores a client-supplied webhook_url param', async () => {
+        succeedCredentialVerification();
+
+        const req = {
+            body: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole', region: 'us-east-1' },
+            query: { public_key: '550e8400-e29b-41d4-a716-446655440000', params: { webhook_url: 'https://attacker.example.com/hook' } },
+            params: { providerConfigKey: 'aws-sigv4' },
+            route: { path: '/auth/aws-sigv4/:providerConfigKey' },
+            originalUrl: '/auth/aws-sigv4/aws-sigv4',
+            header: vi.fn()
+        } as unknown as Request;
+
+        const res = {
+            locals: { account: { id: 1 }, environment: { id: 2 }, connectSession: null, authType: 'publicKey', endUser: null },
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+        const next = vi.fn();
+
+        await postPublicAwsSigV4Authorization(req, res, next);
+
+        expect(mockUpsertAuthConnection).toHaveBeenCalledWith(
+            expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
+        );
+    });
+
+    it('threads the per-connection webhook URL override into the creation-failure hook', async () => {
+        succeedCredentialVerification();
+        mockUpsertAuthConnection.mockRejectedValue(new Error('boom'));
+
+        const req = {
+            body: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole', region: 'us-east-1' },
+            query: sessionTokenQuery,
+            params: { providerConfigKey: 'aws-sigv4' },
+            route: { path: '/auth/aws-sigv4/:providerConfigKey' },
+            originalUrl: '/auth/aws-sigv4/aws-sigv4',
+            header: vi.fn()
+        } as unknown as Request;
+
+        const res = {
+            locals: { account: { id: 1 }, environment: { id: 2 }, connectSession: connectSessionWithOverride, authType: 'connectSession', endUser: null },
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+        const next = vi.fn();
+
+        await postPublicAwsSigV4Authorization(req, res, next);
+
+        expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connection: expect.objectContaining({
+                    connection_config: expect.objectContaining({ webhook_url: 'https://override.example.com/hook' })
+                })
+            }),
+            expect.anything(),
+            expect.anything()
+        );
     });
 });
