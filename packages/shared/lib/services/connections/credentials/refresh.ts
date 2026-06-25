@@ -467,8 +467,26 @@ export async function refreshCredentialsIfNeeded({
             } else if ('app' in newCredentials && newCredentials.app) {
                 connectionToRefresh.credentials = newCredentials.app;
             } else {
-                // Use newCredentials as fallback when neither user nor app are specifically present
+                // Use newCredentials as fallback when neither user nor app are specifically present.
                 connectionToRefresh.credentials = newCredentials;
+                // For CUSTOM auth_mode + OAUTH2 credentials (e.g. github-app-oauth),
+                // `getFreshOAuth2Credentials` reads the refresh_token from
+                // `connection_config.userCredentials` (oauth2.client.ts:112), not
+                // from `connection.credentials`. The post-connection hook seeds
+                // `userCredentials` on the initial OAuth, but every subsequent
+                // refresh updated only `credentials` here — so providers that
+                // rotate refresh_tokens on every refresh (GitHub Apps, ...)
+                // deterministically failed on the second refresh because the
+                // now-invalidated original refresh_token got re-sent. Mirror the
+                // write to keep `userCredentials` in lockstep with `credentials`.
+                // `provider` is typed as RefreshableProvider here, which doesn't
+                // include ProviderCustom (see the `as RefreshableProvider` cast
+                // in `refreshCredentials` and the "TODO: fix this type" comment
+                // on RefreshableProvider in `@nangohq/types`). Widen via Provider
+                // to read auth_mode without that narrowing lie.
+                if ((provider as Provider).auth_mode === 'CUSTOM' && newCredentials.type === 'OAUTH2') {
+                    connectionToRefresh.connection_config['userCredentials'] = newCredentials;
+                }
             }
 
             if (refreshGithubAppJwtToken) {
