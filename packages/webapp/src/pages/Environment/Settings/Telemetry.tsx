@@ -2,7 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, FieldLabel } from '@nangohq/design-system';
+import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
@@ -111,28 +111,28 @@ export const Telemetry: React.FC = () => {
                         />
                     </div>
                     <fieldset className="flex flex-col gap-4">
-                        <label htmlFor="otlp_headers" className="text-sm">
-                            Headers
-                        </label>
-                        <div className="flex flex-col gap-5">
-                            <KeyValueInput
-                                initialValues={headers}
-                                onChange={setHeaders}
-                                placeholderKey="MY_HEADER"
-                                placeholderValue="value"
-                                disabled={!editHeaders || loading}
-                                isSecret={true}
-                            />
-                            {errors.length > 0 && (
-                                <div className="flex flex-col gap-1">
-                                    {errors.map((err, i) => (
-                                        <div key={i} className="text-body-small-regular text-status-danger-text">
-                                            Row {err.index + 1}, {err.key}: {err.error}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <Field>
+                            <FieldLabel htmlFor="otlp_headers">Headers</FieldLabel>
+                            <div className="flex flex-col gap-5">
+                                <KeyValueInput
+                                    initialValues={headers}
+                                    onChange={setHeaders}
+                                    placeholderKey="MY_HEADER"
+                                    placeholderValue="value"
+                                    disabled={!editHeaders || loading}
+                                    isSecret={true}
+                                />
+                                {errors.length > 0 && (
+                                    <FieldError className="flex flex-col gap-1">
+                                        {errors.map((err, i) => (
+                                            <span key={i}>
+                                                Row {err.index + 1}, {err.key}: {err.error}
+                                            </span>
+                                        ))}
+                                    </FieldError>
+                                )}
+                            </div>
+                        </Field>
                         <div className="flex justify-start gap-3 mt-1.5">
                             {!editHeaders && (
                                 <PermissionGate asChild condition={canEditEnvironment}>
