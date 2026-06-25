@@ -155,17 +155,8 @@ paths:
                                     description: >
                                         Provider-specific configuration for providers that declare an
                                         `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
-                                        Keys and required fields depend on the provider. For `private-api-generic`:
-                                        `baseUrl` (upstream API base URL), `keyPlacement` (`header` or `query`),
-                                        `keyName` (header/query-param name), `valueTemplate` (uses `${apiKey}` as
-                                        the key placeholder), and optional `keyLabel` (Connect UI label). Values are
-                                        validated against the provider schema.
-                                    example:
-                                        baseUrl: https://api.example.com
-                                        keyPlacement: header
-                                        keyName: Authorization
-                                        valueTemplate: Api-Key ${apiKey}
-                                        keyLabel: API Key
+                                        Keys and required fields depend on the provider; values are validated against
+                                        the provider schema.
 
             responses:
                 '200':
@@ -299,8 +290,7 @@ paths:
                                     description: >
                                         Provider-specific configuration for providers that declare an
                                         `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
-                                    example:
-                                        valueTemplate: Bearer ${apiKey}
+                                        Only the fields you pass are updated.
             responses:
                 '200':
                     description: Successfully updated an integration
