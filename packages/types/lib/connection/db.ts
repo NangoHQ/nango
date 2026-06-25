@@ -58,9 +58,7 @@ export interface FailedConnectionError {
 }
 
 export interface RecentlyFailedConnection {
-    // connection_config carries the attempted per-connection webhook URL override so failure webhooks can
-    // honor it even though the connection was never persisted (there is no DB row to read it back from).
-    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & { connection_config?: ConnectionConfig });
+    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'connection_config'>>);
     auth_mode: AuthModeType;
     error?: FailedConnectionError;
     operation: AuthOperationType;

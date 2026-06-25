@@ -77,6 +77,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
     const { issuerId, privateKey, privateKeyId, scope }: PostPublicAppStoreAuthorization['Body'] = val.data;
     const queryString: PostPublicAppStoreAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicAppStoreAuthorization['Params'] = paramsVal.data;
+    const connectionConfigOverride = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -150,7 +151,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
         const connectionConfig: ConnectionConfig = {
-            ...resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey }),
+            ...connectionConfigOverride,
             privateKeyId,
             issuerId,
             scope
@@ -246,7 +247,7 @@ export const postPublicAppStoreAuthorization = asyncWrapper<PostPublicAppStoreAu
         if (logCtx) {
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfigOverride },
                     environment,
                     account,
                     auth_mode: 'APP_STORE',

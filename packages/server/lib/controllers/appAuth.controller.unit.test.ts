@@ -136,4 +136,25 @@ describe('AppAuthController.connect', () => {
             })
         );
     });
+
+    it('threads the per-connection webhook URL override into the creation-failure hook', async () => {
+        mockUpsertConnection.mockRejectedValue(new Error('boom'));
+
+        const req = {
+            query: { installation_id: 'install-1', state: 'session-id' }
+        } as unknown as Request;
+        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const next = vi.fn();
+
+        await appAuthController.connect(req, res, next);
+
+        expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connection: expect.objectContaining({
+                    connection_config: expect.objectContaining({ webhook_url: 'https://override.example.com/hook' })
+                })
+            }),
+            expect.anything()
+        );
+    });
 });

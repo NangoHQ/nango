@@ -50,6 +50,7 @@ vi.mock('@nangohq/shared', async () => {
         ...actual,
         ErrorSourceEnum: { PLATFORM: 'platform' },
         LogActionEnum: { AUTH: 'auth' },
+        errorManager: { report: vi.fn() },
         appleAppStoreClient: { createCredentials: mockCreateCredentials },
         configService: { getProviderConfig: mockGetProviderConfig },
         connectionService: {
@@ -132,6 +133,34 @@ describe('postPublicAppStoreAuthorization', () => {
                     issuerId: 'issuer-id'
                 })
             })
+        );
+    });
+
+    it('threads the per-connection webhook URL override into the creation-failure hook', async () => {
+        mockUpsertConnection.mockRejectedValue(new Error('boom'));
+
+        const req = {
+            body: { privateKeyId: 'key-id', privateKey: 'private-key', issuerId: 'issuer-id' },
+            query: { public_key: '550e8400-e29b-41d4-a716-446655440000', params: { webhook_url: 'https://override.example.com/hook' } },
+            params: { providerConfigKey: 'appstore' }
+        } as unknown as Request;
+
+        const res = {
+            locals: { account: { id: 1 }, environment: { id: 2 }, connectSession: null, authType: 'publicKey', endUser: null },
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+        const next = vi.fn();
+
+        await postPublicAppStoreAuthorization(req, res, next);
+
+        expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
+            expect.objectContaining({
+                connection: expect.objectContaining({
+                    connection_config: expect.objectContaining({ webhook_url: 'https://override.example.com/hook' })
+                })
+            }),
+            expect.anything()
         );
     });
 });
