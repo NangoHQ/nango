@@ -1,4 +1,4 @@
-import { Label } from '@nangohq/design-system';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
 
@@ -11,13 +11,13 @@ export const AppCredentialsComponent: React.FC<{
     return (
         <>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="access_token">Access token</Label>
+                <FieldLabel htmlFor="access_token">Access token</FieldLabel>
                 <SecretInput id="access_token" value={credentials.access_token} disabled copy canRead={canRead} />
             </div>
 
             {credentials.jwtToken && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="jwt_token">JWT token</Label>
+                    <FieldLabel htmlFor="jwt_token">JWT token</FieldLabel>
                     <SecretInput id="jwt_token" value={credentials.jwtToken} disabled copy canRead={canRead} />
                 </div>
             )}

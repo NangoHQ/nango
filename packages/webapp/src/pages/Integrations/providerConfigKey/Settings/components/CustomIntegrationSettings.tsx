@@ -2,7 +2,7 @@ import { AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Label } from '@nangohq/design-system';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
@@ -108,7 +108,7 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
             {visibleFields.map(([name, definition]) => (
                 <div key={name} className="flex flex-col gap-2">
                     <div className="flex gap-2 items-center">
-                        <Label htmlFor={name}>{definition.title}</Label>
+                        <FieldLabel htmlFor={name}>{definition.title}</FieldLabel>
                         {definition.description && <InfoTooltip>{definition.description}</InfoTooltip>}
                     </div>
                     {definition.enum && definition.enum.length > 0 ? (

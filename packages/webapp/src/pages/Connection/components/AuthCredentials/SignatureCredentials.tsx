@@ -1,6 +1,6 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button, Label } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { SecretInput } from '@/components/patterns/SecretInput';
@@ -19,18 +19,18 @@ export const SignatureCredentialsComponent: React.FC<{
     return (
         <>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="username">Username</Label>
+                <FieldLabel htmlFor="username">Username</FieldLabel>
                 <SecretInput id="username" value={credentials.username} disabled copy canRead={canRead} />
             </div>
 
             <div className="flex flex-col gap-2">
-                <Label htmlFor="password">Password</Label>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
                 <SecretInput id="password" value={credentials.password} disabled copy canRead={canRead} />
             </div>
 
             {credentials.token && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="token">Token</Label>
+                    <FieldLabel htmlFor="token">Token</FieldLabel>
                     <div className="flex gap-2 items-center">
                         <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
                         <PermissionGate condition={canRead} asChild>

@@ -10,7 +10,6 @@ export {
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
-export { Label, type LabelProps } from './components/ui/label';
 export {
     Field,
     FieldDescription,
@@ -18,6 +17,7 @@ export {
     type FieldErrorProps,
     FieldGroup,
     FieldLabel,
+    type FieldLabelProps,
     FieldLegend,
     type FieldLegendProps,
     type FieldProps,

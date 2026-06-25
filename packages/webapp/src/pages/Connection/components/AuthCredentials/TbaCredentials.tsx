@@ -1,4 +1,4 @@
-import { Label } from '@nangohq/design-system';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
 
@@ -11,12 +11,12 @@ export const TbaCredentialsComponent: React.FC<{
     return (
         <>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="token_id">Token ID</Label>
+                <FieldLabel htmlFor="token_id">Token ID</FieldLabel>
                 <SecretInput id="token_id" value={credentials.token_id} disabled copy canRead={canRead} />
             </div>
 
             <div className="flex flex-col gap-2">
-                <Label htmlFor="token_secret">Token secret</Label>
+                <FieldLabel htmlFor="token_secret">Token secret</FieldLabel>
                 <SecretInput id="token_secret" value={credentials.token_secret} disabled copy canRead={canRead} />
             </div>
 
@@ -24,14 +24,14 @@ export const TbaCredentialsComponent: React.FC<{
                 <>
                     {credentials.config_override.client_id && (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_id_override">Client ID override</Label>
+                            <FieldLabel htmlFor="client_id_override">Client ID override</FieldLabel>
                             <SecretInput id="client_id_override" value={credentials.config_override.client_id} disabled copy canRead={canRead} />
                         </div>
                     )}
 
                     {credentials.config_override.client_secret && (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_secret_override">Client secret override</Label>
+                            <FieldLabel htmlFor="client_secret_override">Client secret override</FieldLabel>
                             <SecretInput id="client_secret_override" value={credentials.config_override.client_secret} disabled copy canRead={canRead} />
                         </div>
                     )}

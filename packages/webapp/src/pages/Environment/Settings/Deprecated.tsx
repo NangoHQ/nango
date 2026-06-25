@@ -2,7 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Label } from '@nangohq/design-system';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -94,7 +94,7 @@ export const DeprecatedSettings: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="hmac_key">HMAC key</Label>
+                        <FieldLabel htmlFor="hmac_key">HMAC key</FieldLabel>
                         <EditableInput
                             id="hmac_key"
                             placeholder="*****"

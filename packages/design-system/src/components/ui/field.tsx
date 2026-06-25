@@ -1,8 +1,8 @@
+import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '../../lib/cn';
-import { Label } from './label';
 
 import type { VariantProps } from 'class-variance-authority';
 
@@ -65,16 +65,28 @@ function FieldLegend({ className, variant = 'legend', description, children, ...
     );
 }
 
-function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
-    // Turns danger on invalid (Figma): either an ancestor Field carries data-invalid, or the label itself carries data-error.
-    return (
-        <Label
-            data-slot="field-label"
-            className={cn('group-data-[invalid=true]/field:text-text-danger data-[error=true]:text-text-danger', className)}
-            {...props}
-        />
-    );
-}
+export type FieldLabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>;
+
+/** The design system's label (Figma "FieldLabel"). Wraps the radix label; there is no standalone Label component. */
+const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, FieldLabelProps>(({ className, ...props }, ref) => (
+    <LabelPrimitive.Root
+        ref={ref}
+        data-slot="field-label"
+        className={cn(
+            // Layout — inline so the label can sit beside an icon, tooltip, or required asterisk (Figma space/2 gap)
+            'flex items-center gap-2 select-none',
+            // Typography (Figma text/medium/md)
+            'text-text-strong text-ds-md font-ds-medium leading-ds-normal',
+            // Disabled affordances driven by an ancestor [data-disabled] or a peer :disabled control
+            'group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed',
+            // Turns danger on invalid (Figma): an ancestor Field carries data-invalid, or the label itself carries data-error
+            'group-data-[invalid=true]/field:text-text-danger data-[error=true]:text-text-danger',
+            className
+        )}
+        {...props}
+    />
+));
+FieldLabel.displayName = 'FieldLabel';
 
 function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
     return (

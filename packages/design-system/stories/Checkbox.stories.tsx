@@ -1,5 +1,5 @@
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Label } from '../src/components/ui/label';
+import { FieldLabel } from '../src/components/ui/field';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -15,15 +15,15 @@ export const Default: Story = {
         <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
                 <Checkbox id="cb-unchecked" />
-                <Label htmlFor="cb-unchecked">Unchecked</Label>
+                <FieldLabel htmlFor="cb-unchecked">Unchecked</FieldLabel>
             </div>
             <div className="flex items-center gap-2">
                 <Checkbox id="cb-checked" defaultChecked />
-                <Label htmlFor="cb-checked">Checked</Label>
+                <FieldLabel htmlFor="cb-checked">Checked</FieldLabel>
             </div>
             <div className="flex items-center gap-2">
                 <Checkbox id="cb-disabled" disabled />
-                <Label htmlFor="cb-disabled">Disabled</Label>
+                <FieldLabel htmlFor="cb-disabled">Disabled</FieldLabel>
             </div>
         </div>
     )

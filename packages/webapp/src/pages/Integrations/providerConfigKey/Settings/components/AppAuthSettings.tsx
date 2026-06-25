@@ -1,4 +1,4 @@
-import { InputGroup, InputGroupAddon, InputGroupInput, Label } from '@nangohq/design-system';
+import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -41,7 +41,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* Setup URL */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="setup_url">Setup URL</Label>
+                    <FieldLabel htmlFor="setup_url">Setup URL</FieldLabel>
                     <InfoTooltip>
                         Register this setup URL on the app settings page in the &quot;Post Installation section&quot;. Check &quot;Redirect on update&quot; as
                         well.
@@ -58,7 +58,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* App ID */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="app_id">App ID</Label>
+                    <FieldLabel htmlFor="app_id">App ID</FieldLabel>
                     <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
                 </div>
                 <EditableInput initialValue={integration.oauth_client_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
@@ -67,7 +67,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* App Public Link */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="app_link">App Public Link</Label>
+                    <FieldLabel htmlFor="app_link">App Public Link</FieldLabel>
                     <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
                 </div>
                 <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />

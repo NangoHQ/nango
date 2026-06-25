@@ -1,4 +1,4 @@
-import { Label } from '@nangohq/design-system';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
 
@@ -11,7 +11,7 @@ export const ApiKeyCredentialsComponent: React.FC<{
     return (
         <>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="api_key">API key</Label>
+                <FieldLabel htmlFor="api_key">API key</FieldLabel>
                 <SecretInput id="api_key" value={credentials.apiKey} disabled copy canRead={canRead} />
             </div>
         </>
