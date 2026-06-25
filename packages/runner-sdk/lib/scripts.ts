@@ -1,7 +1,7 @@
 import type { NangoActionBase } from './action.js';
 import type { NangoSyncBase } from './sync.js';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
-import type { NangoSyncEndpointV2 } from '@nangohq/types';
+import type { HTTP_METHOD, NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
 import type * as z from 'zod';
 
@@ -445,10 +445,9 @@ export function createOnEvent<TMetadata extends ZodMetadata = undefined, TCheckp
  * - `event`: an internal Nango event
  *
  * On-demand invocation (`nango.triggerFunction()`, the REST API, the CLI, or the UI) is always
- * available regardless of declared triggers — it is not a trigger type. Such runs leave
- * `FunctionEvent.trigger` undefined.
+ * available regardless of the declared trigger — it is not a trigger kind.
  */
-export type FunctionTriggerType = 'http' | 'schedule' | 'event';
+export type TriggerKind = 'http' | 'schedule' | 'event';
 
 /**
  * Declares where the debounce/coalescing key is extracted from.
@@ -460,15 +459,21 @@ export type DebounceKeySource = { body: string } | { header: string };
 /**
  * Coalesces multiple inbound events into a single function run within a sliding window.
  */
-export interface WebhookDebounceConfig {
-    key?: DebounceKeySource;
+export interface DebounceOptions {
+    /**
+     * One source, or an array of sources combined into a composite key (e.g. an object id plus an
+     * event type). Events sharing the same resolved key coalesce together.
+     */
+    key?: DebounceKeySource | DebounceKeySource[];
     /** Sliding window in milliseconds. */
     windowMs: number;
     /** Hard ceiling for the window regardless of incoming events. */
     maxWindowMs?: number;
     /** When exceeded, the window stops sliding and `event.coalesced.overflowed` is set. */
     maxEntities?: number;
-    /** Whether the handler receives only the latest payload or every coalesced payload. */
+    /**
+     * Whether the handler receives only the latest payload or every coalesced payload.
+     */
     payloadMode?: 'latest' | 'all';
 }
 
@@ -479,40 +484,119 @@ export interface IngressEvent {
     query: Record<string, string | string[] | undefined>;
 }
 
-/**
- * Runs synchronously at ingress before enqueueing. Return a response object to short-circuit
- * the HTTP exchange (provider handshake), or `undefined` to let the request proceed.
- */
-export type IngressChallenge = (event: IngressEvent) => MaybePromise<{ status?: number; body?: unknown; headers?: Record<string, string> } | undefined | void>;
-
-/**
- * Runs synchronously at ingress before enqueueing. Return `true` to accept the event,
- * or `false` (or throw) to reject it with a 401.
- */
-export type IngressValidation = (event: IngressEvent) => MaybePromise<boolean>;
-
-export interface HttpTrigger {
-    type: 'http';
-    /** Maps to the webhook URL path segment. Defaults to the file basename. */
-    name?: string;
-    /** `connection` opts into connection-level URLs (`/:webhookName/:targetToken`). */
-    scope?: 'integration' | 'connection';
-    ingressChallenge?: IngressChallenge;
-    ingressValidation?: IngressValidation;
-    debounce?: WebhookDebounceConfig;
+/** A response that short-circuits the HTTP exchange at ingress (e.g. a provider handshake). */
+export interface IngressResponse {
+    status?: number;
+    body?: unknown;
+    headers?: Record<string, string>;
 }
-export interface ScheduleTrigger {
-    type: 'schedule';
+
+/**
+ * Runs synchronously at ingress before the event is enqueued. No SDK, no I/O, hard timeout.
+ * Each interceptor can:
+ * - return an `IngressResponse` to short-circuit the HTTP exchange (e.g. a provider handshake),
+ * - throw to reject the request (responds 401),
+ * - return `undefined` to fall through (and ultimately run the function).
+ *
+ * @internal Interceptors run inline on Nango's ingress servers, so they are never author-supplied.
+ * Nango injects them from the declarative `IngressConfig` on the trigger (see `createWebhook`).
+ */
+export type HttpInterceptor = (event: IngressEvent) => MaybePromise<IngressResponse | undefined | void>;
+
+/**
+ * A secret resolved by Nango at ingress. Authors reference it by key; the value never appears in
+ * the function source. Only the integration config is supported for now.
+ */
+export interface IngressSecretRef {
+    source: 'integrationConfig';
+    /** Key within the integration config holding the secret value. */
+    key: string;
+}
+
+/**
+ * HMAC signature validation. Nango computes `HMAC(rawBody, secret)` and timing-safe compares it
+ * against the value in `header`.
+ */
+export interface HmacValidation {
+    type: 'hmac';
+    algorithm: 'sha1' | 'sha256' | 'sha512';
+    /** Header carrying the provider signature (case-insensitive). */
+    header: string;
+    /** Encoding of the signature in the header. */
+    encoding: 'base64' | 'hex';
+    /** Prefix stripped from the header value before comparison (e.g. `'sha256='`). */
+    prefix?: string;
+    secret: IngressSecretRef;
+}
+
+/**
+ * How an inbound request is authenticated at ingress. Discriminated on `type`; today only `'hmac'`
+ * exists, with `'svix'` / `'token'` / asymmetric schemes to follow as the declarative surface
+ * grows to replace Nango's built-in provider routers.
+ */
+export type IngressValidation = HmacValidation;
+
+/** Where a value is read from on the inbound request. */
+export interface IngressValueSource {
+    in: 'query' | 'body' | 'header';
+    key: string;
+}
+
+/**
+ * Endpoint-verification handshake. Nango echoes the challenge token back so the provider can
+ * confirm the endpoint.
+ */
+export interface EchoChallenge {
+    type: 'echo';
+    /** Where the challenge token arrives. For `body`, `key` is a dot-notation path. */
+    token: IngressValueSource;
+    /** Optional shared-secret check (e.g. a verify token) performed before echoing. */
+    verify?: IngressValueSource & { secret: IngressSecretRef };
+    /** How to respond. Defaults to status 200, `text/plain`. */
+    respond?: { status?: number; contentType?: 'text/plain' | 'application/json' };
+}
+
+/** How an endpoint-verification handshake is answered. Discriminated on `type`. */
+export type IngressChallenge = EchoChallenge;
+
+/**
+ * Declarative ingress checks for an http trigger. Authors *select* validation/challenge behaviour;
+ * Nango injects and runs the implementation at ingress (see `HttpInterceptor`). No author code runs
+ * inline on Nango's servers. For known providers `createWebhook` fills this in automatically.
+ */
+export interface IngressConfig {
+    validation?: IngressValidation;
+    challenge?: IngressChallenge;
+}
+
+/** Fields shared by every declared trigger. */
+interface TriggerDefinitionBase {
+    /**
+     * For http triggers maps to the webhook URL path segment (defaults to the file basename).
+     * Surfaced on the runtime trigger.
+     */
+    name?: string;
+}
+export interface HttpTriggerDefinition extends TriggerDefinitionBase {
+    kind: 'http';
+    /** Declarative ingress validation/challenge. Nango runs the implementation at ingress. */
+    ingress?: IngressConfig;
+    /** Coalesces a burst of inbound webhook events into a single run within a sliding window. */
+    debounce?: DebounceOptions;
+}
+export interface ScheduleTriggerDefinition extends TriggerDefinitionBase {
+    kind: 'schedule';
     /** e.g. 'every hour', 'every 2 minutes'. */
     schedule: string;
 }
-export interface EventTrigger {
-    type: 'event';
+export interface EventTriggerDefinition extends TriggerDefinitionBase {
+    kind: 'event';
     event: string;
 }
-export type FunctionTrigger = HttpTrigger | ScheduleTrigger | EventTrigger;
+/** What a function declares as its trigger. A function has exactly one. */
+export type TriggerDefinition = HttpTriggerDefinition | ScheduleTriggerDefinition | EventTriggerDefinition;
 
-/** Coalescing summary, present on the event when `debounce` is configured. */
+/** Coalescing summary, present on an http trigger when `debounce` is configured and coalescing happened. */
 export interface CoalescedInfo {
     count: number;
     firstSeenAt: Date;
@@ -520,28 +604,10 @@ export interface CoalescedInfo {
     overflowed: boolean;
 }
 
-/**
- * The event a function `exec` receives. Distinct from `(nango, input)` for actions —
- * functions are trigger-driven, so the second argument describes the trigger and its payload.
- */
-export interface FunctionEvent<TPayload = unknown> {
-    /**
-     * Which declared trigger fired, and (for named triggers) its name.
-     * Undefined when the run was started on-demand (`nango.triggerFunction()`, the REST API, the CLI, or the UI).
-     */
-    trigger?: { type: FunctionTriggerType; name?: string };
-    /**
-     * The payload that initiated the run. Typed as the function's `input` schema when declared,
-     * otherwise `unknown`. For http triggers this is the provider's body (not validated against
-     * `input` at runtime), and it is an array of `TPayload` when `payloadMode: 'all'` is set and debounced.
-     */
-    payload: TPayload;
-    /** Raw headers from the provider (http trigger only). */
-    headers?: Record<string, string>;
-    /** Original request body as received by ingress (http trigger only). */
-    rawBody?: string;
-    /** Coalescing summary when `debounce` is configured. */
-    coalesced?: CoalescedInfo;
+/** Fields shared by every runtime trigger a function `exec` receives. */
+interface TriggerBase {
+    /** The name of the trigger that fired, when declared. */
+    name?: string;
     /**
      * Pre-populated when the run was started with connection context (connection-level URL,
      * `triggerFunction({ connectionId })`, or CLI `--connection`). Undefined for connection-less runs.
@@ -549,12 +615,69 @@ export interface FunctionEvent<TPayload = unknown> {
     connection?: { connection_id: string; provider_config_key: string };
 }
 
+/**
+ * The inbound http request that initiated the run. `body` is typed as the function's `input` schema
+ * when declared, otherwise `unknown`.
+ */
+export interface HttpRequest<TBody = unknown> {
+    method: HTTP_METHOD;
+    path: string;
+    headers: Record<string, string>;
+    query: Record<string, string>;
+    body: TBody;
+}
+
+/**
+ * Runtime trigger for an `http` definition (an incoming http call or webhook request). The payload
+ * lives on `request.body`.
+ */
+export interface HttpTrigger<TPayload = unknown> extends TriggerBase {
+    kind: 'http';
+    request: HttpRequest<TPayload>;
+    /**
+     * Coalescing summary when the http trigger's `debounce` is configured and a burst was coalesced
+     * into this run. Undefined for single, non-coalesced runs.
+     */
+    coalesced?: CoalescedInfo;
+}
+
+/** Runtime trigger for a `schedule` definition. */
+export interface ScheduleTrigger<TPayload = unknown> extends TriggerBase {
+    kind: 'schedule';
+    /** The payload that initiated the run. Typed as the function's `input` schema when declared. */
+    payload: TPayload;
+    /** The cadence the trigger was declared with (e.g. 'every hour'), exposed read-only. */
+    schedule?: string;
+}
+
+/** Runtime trigger for an `event` definition (an internal Nango event). */
+export interface EventTrigger<TPayload = unknown> extends TriggerBase {
+    kind: 'event';
+    /** The payload that initiated the run. Typed as the function's `input` schema when declared. */
+    payload: TPayload;
+}
+
+/**
+ * The runtime trigger a function `exec` receives, mapped from the declared `TriggerDefinition` so the
+ * handler gets exactly that kind's shape (keyed by `trigger.kind`). Conditional types distribute, so
+ * bare `Trigger` resolves to the full union. Distinct from `(nango, input)` for actions — functions
+ * are trigger-driven, so the second argument describes the trigger and its payload.
+ */
+export type Trigger<TDef extends TriggerDefinition = TriggerDefinition, TPayload = unknown> = TDef extends { kind: 'http' }
+    ? HttpTrigger<TPayload>
+    : TDef extends { kind: 'schedule' }
+      ? ScheduleTrigger<TPayload>
+      : TDef extends { kind: 'event' }
+        ? EventTrigger<TPayload>
+        : never;
+
 export interface CreateFunctionProps<
     TModels extends Record<string, ZodModel>,
     TInput extends z.ZodTypeAny = z.ZodUnknown,
     TOutput extends z.ZodTypeAny = z.ZodTypeAny,
     TMetadata extends ZodMetadata = undefined,
-    TCheckpoint extends ZodCheckpoint = undefined
+    TCheckpoint extends ZodCheckpoint = undefined,
+    TTrigger extends TriggerDefinition = TriggerDefinition
 > {
     /**
      * The version of the function. Use it to track changes inside Nango's UI.
@@ -567,38 +690,45 @@ export interface CreateFunctionProps<
     description?: string;
 
     /**
-     * What can initiate execution. A function can have multiple triggers of different types
-     * (e.g. a webhook trigger plus a scheduled safety net). Any function can also be started
-     * on-demand via `nango.triggerFunction()` or the API regardless of declared triggers.
+     * What initiates execution. A function declares exactly one trigger. Any function can also be
+     * started on-demand via `nango.triggerFunction()` or the API regardless of the declared trigger.
      */
-    triggers: FunctionTrigger[];
+    trigger: TTrigger;
 
-    /** Models the function can `batchSave`/`batchUpdate`/`batchDelete` against. */
-    models?: TModels;
-
-    /** Optional input schema. When set, it types `event.payload` and is used for API invocation. */
+    /** Optional input schema. When set, it types the trigger payload and is used for API invocation. */
     input?: TInput;
 
-    /** Optional typed output schema (reserved; unused for webhooks today). */
+    /**
+     * Optional output schema, typing `exec`'s return value. The return value is surfaced to
+     * on-demand callers (`triggerFunction()`, the API). Trigger-driven runs (http, schedule,
+     * event) are fire-and-forget and discard it.
+     */
     output?: TOutput;
 
-    metadata?: TMetadata;
-    checkpoint?: TCheckpoint;
     scopes?: string[];
 
+    /** Schemas the function operates on. */
+    data?: {
+        /** Models the function can `batchSave`/`batchUpdate`/`batchDelete` against. */
+        models?: TModels;
+        metadata?: TMetadata;
+        checkpoint?: TCheckpoint;
+    };
+
     /**
-     * The handler. Runs on the customer runner with full SDK access.
+     * The handler. Runs on the customer runner with full SDK access. The `trigger` argument is typed
+     * to the declared trigger's kind.
      * @example
      * ```ts
-     * exec: async (nango, event) => {
-     *   const connections = await nango.searchConnections({ tags: { portalId: event.payload.portalId } });
+     * exec: async (nango, trigger) => {
+     *   const connections = await nango.searchConnections({ tags: { portalId: trigger.request.body.portalId } });
      *   for (const connection of connections) {
      *     await nango.triggerSync(connection.provider_config_key, connection.connection_id, 'contacts');
      *   }
      * }
      * ```
      */
-    exec: (nango: NangoSyncBase<TModels, TMetadata, TCheckpoint>, event: FunctionEvent<z.infer<TInput>>) => MaybePromise<void>;
+    exec: (nango: NangoSyncBase<TModels, TMetadata, TCheckpoint>, trigger: Trigger<TTrigger, z.infer<TInput>>) => MaybePromise<z.infer<TOutput>>;
 }
 
 export interface CreateFunctionResponse<
@@ -606,8 +736,9 @@ export interface CreateFunctionResponse<
     TInput extends z.ZodTypeAny = z.ZodUnknown,
     TOutput extends z.ZodTypeAny = z.ZodTypeAny,
     TMetadata extends ZodMetadata = undefined,
-    TCheckpoint extends ZodCheckpoint = undefined
-> extends CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint> {
+    TCheckpoint extends ZodCheckpoint = undefined,
+    TTrigger extends TriggerDefinition = TriggerDefinition
+> extends CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger> {
     type: 'function';
     /** Set when authored via `createWebhook()`; mirrors the http trigger name. */
     name?: string;
@@ -616,17 +747,17 @@ export interface CreateFunctionResponse<
 /**
  * Create a function — the trigger-agnostic primitive.
  *
- * Use this directly when you need multiple trigger types (e.g. webhook + cron).
- * For a single webhook trigger, prefer the `createWebhook()` sugar.
+ * Use this directly for a schedule or event trigger. For a webhook, prefer the `createWebhook()` sugar.
+ *
+ * @internal Not part of the public authoring surface yet — the spec is still in flux, so
+ * `createWebhook` is the only exposed function primitive (it is not re-exported by the CLI nor
+ * accepted by the compiler). See NAN-5943.
  *
  * @example
  * ```ts
  * export default createFunction({
- *     triggers: [
- *         { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
- *         { type: 'schedule', schedule: 'every hour' }
- *     ],
- *     exec: async (nango, event) => { ... }
+ *     trigger: { kind: 'schedule', schedule: 'every hour' },
+ *     exec: async (nango, trigger) => { ... }
  * });
  * ```
  */
@@ -638,13 +769,19 @@ export function createFunction<
     TInput extends z.ZodTypeAny = z.ZodUnknown,
     TOutput extends z.ZodTypeAny = z.ZodTypeAny,
     TMetadata extends ZodMetadata = undefined,
-    TCheckpoint extends ZodCheckpoint = undefined
->(params: CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint>): CreateFunctionResponse<TModels, TInput, TOutput, TMetadata, TCheckpoint> {
+    TCheckpoint extends ZodCheckpoint = undefined,
+    TTrigger extends TriggerDefinition = TriggerDefinition
+>(
+    params: CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger>
+): CreateFunctionResponse<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger> {
     return { type: 'function', ...params };
 }
 
 export interface CreateWebhookProps<
     TModels extends Record<string, ZodModel>,
+    // Webhook runs are fire-and-forget, the return value is discarded. Default the output to
+    // `void`. Authors who need a typed return for on-demand invocation opt in via `output`.
+    TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined
 > {
@@ -652,31 +789,38 @@ export interface CreateWebhookProps<
     name?: string;
     version?: string;
     description?: string;
-    /** `connection` opts into connection-level URLs (`/:webhookName/:targetToken`). */
-    scope?: 'integration' | 'connection';
-    ingressChallenge?: IngressChallenge;
-    ingressValidation?: IngressValidation;
-    debounce?: WebhookDebounceConfig;
-    models?: TModels;
-    metadata?: TMetadata;
-    checkpoint?: TCheckpoint;
-    exec: (nango: NangoSyncBase<TModels, TMetadata, TCheckpoint>, event: FunctionEvent) => MaybePromise<void>;
+    /** Declarative ingress validation/challenge. Nango runs the implementation at ingress. */
+    ingress?: IngressConfig;
+    /** Coalesces a burst of inbound webhook events into a single run within a sliding window. */
+    debounce?: DebounceOptions;
+    output?: TOutput;
+    /** Schemas the function operates on. */
+    data?: {
+        /** Models the function can `batchSave`/`batchUpdate`/`batchDelete` against. */
+        models?: TModels;
+        metadata?: TMetadata;
+        checkpoint?: TCheckpoint;
+    };
+    exec: (nango: NangoSyncBase<TModels, TMetadata, TCheckpoint>, trigger: HttpTrigger) => MaybePromise<z.infer<TOutput>>;
 }
 
 /**
  * Create a webhook handler — sugar for a function with a single implicit `http` trigger.
  *
  * Routing lives entirely in `exec` (customer-owned, runs on your runner). Provider protocol
- * mechanics (handshake, signature verification) live in `ingressChallenge` / `ingressValidation`,
- * which run synchronously at ingress with no SDK access.
+ * mechanics (signature verification, handshake) are declared in `ingress` and run by Nango at
+ * ingress — authors select a scheme, they do not write the verification code.
  *
  * @example
  * ```ts
  * export default createWebhook({
  *     name: 'contacts-updated',
+ *     ingress: {
+ *         validation: { type: 'hmac', algorithm: 'sha256', header: 'x-signature', encoding: 'hex', secret: { source: 'integrationConfig', key: 'webhookSecret' } }
+ *     },
  *     debounce: { key: { body: '$.portalId' }, windowMs: 5000 },
- *     exec: async (nango, event) => {
- *         const connections = await nango.searchConnections({ tags: { portalId: event.payload.portalId } });
+ *     exec: async (nango, trigger) => {
+ *         const connections = await nango.searchConnections({ tags: { portalId: trigger.request.body.portalId } });
  *         for (const connection of connections) {
  *             await nango.triggerSync(connection.provider_config_key, connection.connection_id, 'contacts');
  *         }
@@ -686,22 +830,26 @@ export interface CreateWebhookProps<
  */
 export function createWebhook<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
+    TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined
->(params: CreateWebhookProps<TModels, TMetadata, TCheckpoint>): CreateFunctionResponse<TModels, z.ZodTypeAny, z.ZodTypeAny, TMetadata, TCheckpoint> {
-    const { name, scope, ingressChallenge, ingressValidation, debounce, ...rest } = params;
-    const trigger: HttpTrigger = {
-        type: 'http',
+>(
+    params: CreateWebhookProps<TModels, TOutput, TMetadata, TCheckpoint>
+): CreateFunctionResponse<TModels, z.ZodTypeAny, TOutput, TMetadata, TCheckpoint, HttpTriggerDefinition> {
+    // The trigger-shaped props (`ingress`/`debounce`) are lifted into the implicit http trigger
+    // definition; everything else lands at the function top level.
+    const { name, ingress, debounce, exec, ...rest } = params;
+    const trigger: HttpTriggerDefinition = {
+        kind: 'http',
         ...(name !== undefined ? { name } : {}),
-        ...(scope !== undefined ? { scope } : {}),
-        ...(ingressChallenge !== undefined ? { ingressChallenge } : {}),
-        ...(ingressValidation !== undefined ? { ingressValidation } : {}),
+        ...(ingress !== undefined ? { ingress } : {}),
         ...(debounce !== undefined ? { debounce } : {})
     };
     return {
         type: 'function',
         ...rest,
+        exec,
         ...(name !== undefined ? { name } : {}),
-        triggers: [trigger]
+        trigger
     };
 }

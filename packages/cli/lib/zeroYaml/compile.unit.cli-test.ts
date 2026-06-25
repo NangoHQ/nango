@@ -29,8 +29,8 @@ describe('bundleFile', () => {
         const value = result.unwrap();
         // createWebhook is stripped at compile time, so the http trigger must be reproduced in the output.
         expect(value).toContain('type: "function"');
-        expect(value).toContain('triggers: [');
-        expect(value).toContain('type: "http"');
+        expect(value).toContain('trigger: {');
+        expect(value).toContain('kind: "http"');
         expect(value).toContain('name: "contacts-updated"');
     });
 });

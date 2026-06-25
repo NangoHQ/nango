@@ -16,7 +16,14 @@ import {
     TrackDeletesDefinitionError
 } from './utils.js';
 
-import type { CreateActionResponse, CreateFunctionResponse, CreateOnEventResponse, CreateSyncResponse, FunctionTrigger } from '@nangohq/runner-sdk';
+import type {
+    CreateActionResponse,
+    CreateFunctionResponse,
+    CreateOnEventResponse,
+    CreateSyncResponse,
+    DebounceOptions,
+    TriggerDefinition
+} from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
 import type {
     NangoYamlParsed,
@@ -267,39 +274,52 @@ export function parseFunction({
     basename: string;
     basenameClean: string;
 }): Result<ParsedNangoFunction> {
-    if (!Array.isArray(params.triggers) || params.triggers.length === 0) {
-        return Err(new Error(`Function "${basename}" must declare at least one trigger (${filePath})`));
+    if (!params.trigger) {
+        return Err(new Error(`Function "${basename}" must declare a trigger (${filePath})`));
     }
 
-    // Validate schedule trigger intervals
-    for (const trigger of params.triggers) {
-        if (trigger.type === 'schedule') {
-            const interval = getInterval(trigger.schedule, new Date());
-            if (interval instanceof Error) {
-                return Err(new InvalidIntervalDefinitionError(filePath, ['createFunction', 'triggers', 'schedule']));
-            }
+    // Validate the schedule interval and normalize http debounce while building the trigger.
+    const trigger = params.trigger;
+    if (trigger.kind === 'schedule') {
+        const interval = getInterval(trigger.schedule, new Date());
+        if (interval instanceof Error) {
+            return Err(new InvalidIntervalDefinitionError(filePath, ['createFunction', 'trigger', 'schedule']));
         }
     }
 
-    const allZodModels: Record<string, z.ZodType> = { ...(params.models ?? {}) };
+    const parsedTrigger = toParsedTrigger(trigger);
+
+    if (trigger.kind === 'http' && trigger.debounce !== undefined) {
+        const debounce = normalizeDebounce(trigger.debounce, { filePath, basename });
+        if (debounce instanceof Error) {
+            return Err(debounce);
+        }
+        if (debounce !== undefined) {
+            parsedTrigger.debounce = debounce;
+        }
+    }
+
+    const models = params.data?.models;
+    const metadata = params.data?.metadata;
+    const allZodModels: Record<string, z.ZodType> = { ...models };
 
     const inputName = params.input ? `FunctionInput_${integrationIdClean}_${basenameClean}` : null;
     if (params.input && inputName) {
         allZodModels[inputName] = params.input;
     }
 
-    const metadataModelName = params.metadata ? `FunctionMetadata_${integrationIdClean}_${basenameClean}` : null;
-    if (params.metadata && metadataModelName) {
-        allZodModels[metadataModelName] = params.metadata;
+    const metadataModelName = metadata ? `FunctionMetadata_${integrationIdClean}_${basenameClean}` : null;
+    if (metadata && metadataModelName) {
+        allZodModels[metadataModelName] = metadata;
     }
 
-    for (const modelName of Object.keys(params.models ?? {})) {
+    for (const modelName of Object.keys(models ?? {})) {
         if (!regexModelName.test(modelName)) {
-            return Err(new InvalidModelDefinitionError(modelName, filePath, ['createFunction', 'models']));
+            return Err(new InvalidModelDefinitionError(modelName, filePath, ['createFunction', 'data', 'models']));
         }
     }
 
-    const outputNames = Object.keys(params.models ?? {});
+    const outputNames = Object.keys(models ?? {});
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
     const features = detectFeatures({ entryPoint: filePath });
 
@@ -307,7 +327,7 @@ export function parseFunction({
         type: 'function',
         name: params.name || basename,
         description: params.description || '',
-        triggers: params.triggers.map(toParsedTrigger),
+        trigger: parsedTrigger,
         input: inputName,
         output: outputNames.length > 0 ? outputNames : null,
         scopes: params.scopes || [],
@@ -320,26 +340,59 @@ export function parseFunction({
     return Ok(fn);
 }
 
-function toParsedTrigger(trigger: FunctionTrigger): ParsedFunctionTrigger {
-    const parsed: ParsedFunctionTrigger = { type: trigger.type };
-    if (trigger.type === 'http') {
+function toParsedTrigger(trigger: TriggerDefinition): ParsedFunctionTrigger {
+    const parsed: ParsedFunctionTrigger = { kind: trigger.kind };
+    if (trigger.kind === 'http') {
         if (trigger.name !== undefined) {
             parsed.name = trigger.name;
         }
-        if (trigger.scope !== undefined) {
-            parsed.scope = trigger.scope;
+        if (trigger.ingress !== undefined) {
+            parsed.ingress = trigger.ingress;
         }
-        if (trigger.debounce !== undefined) {
-            parsed.debounce = trigger.debounce;
+    } else if (trigger.kind === 'schedule') {
+        if (trigger.name !== undefined) {
+            parsed.name = trigger.name;
         }
-        parsed.hasIngressChallenge = typeof trigger.ingressChallenge === 'function';
-        parsed.hasIngressValidation = typeof trigger.ingressValidation === 'function';
-    } else if (trigger.type === 'schedule') {
         parsed.schedule = trigger.schedule;
-    } else if (trigger.type === 'event') {
+    } else if (trigger.kind === 'event') {
+        if (trigger.name !== undefined) {
+            parsed.name = trigger.name;
+        }
         parsed.event = trigger.event;
     }
     return parsed;
+}
+
+const MAX_DEBOUNCE_KEY_SOURCES = 10;
+
+/**
+ * Normalizes an http trigger's debounce config: dedups composite key sources and caps them.
+ */
+function normalizeDebounce(
+    debounce: DebounceOptions | undefined,
+    { filePath, basename }: { filePath: string; basename: string }
+): ParsedFunctionTrigger['debounce'] | Error {
+    if (debounce === undefined || debounce.key === undefined || !Array.isArray(debounce.key)) {
+        return debounce;
+    }
+
+    // Drop duplicate sources, preserving declared order.
+    const seen = new Set<string>();
+    const sources = debounce.key.filter((source) => {
+        const signature = 'body' in source ? `body:${source.body}` : `header:${source.header.toLowerCase()}`;
+        if (seen.has(signature)) {
+            return false;
+        }
+        seen.add(signature);
+        return true;
+    });
+
+    if (sources.length > MAX_DEBOUNCE_KEY_SOURCES) {
+        return new Error(`Function "${basename}" debounce.key cannot have more than ${MAX_DEBOUNCE_KEY_SOURCES} sources (${filePath})`);
+    }
+
+    const { key, ...rest } = debounce;
+    return sources.length === 0 ? rest : { ...rest, key: sources };
 }
 
 function postValidation(parsed: NangoYamlParsed): Result<void> {

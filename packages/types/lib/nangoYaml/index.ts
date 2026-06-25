@@ -131,34 +131,49 @@ export interface ParsedNangoSync {
 
 /** Serializable view of a function trigger (the executable hooks live in the deployed file body). */
 export interface ParsedFunctionTrigger {
-    type: 'http' | 'schedule' | 'event';
-    /** http trigger: maps to the URL path segment. */
+    kind: 'http' | 'schedule' | 'event';
+    /** http trigger: URL path segment. schedule/event triggers: disambiguates multiple of the same kind. */
     name?: string;
-    /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
-    scope?: 'integration' | 'connection';
     /** schedule trigger. */
     schedule?: string;
     /** event trigger. */
     event?: string;
-    /** Whether ingress coalescing is configured (the window/key config). */
+    /**
+     * http trigger: declarative ingress validation/challenge. Nango injects and runs the
+     * implementation at ingress (no author code runs inline). Discriminated on `type`.
+     */
+    ingress?: {
+        validation?: {
+            type: 'hmac';
+            algorithm: 'sha1' | 'sha256' | 'sha512';
+            header: string;
+            encoding: 'base64' | 'hex';
+            prefix?: string;
+            secret: { source: 'integrationConfig'; key: string };
+        };
+        challenge?: {
+            type: 'echo';
+            token: { in: 'query' | 'body' | 'header'; key: string };
+            verify?: { in: 'query' | 'body' | 'header'; key: string; secret: { source: 'integrationConfig'; key: string } };
+            respond?: { status?: number; contentType?: 'text/plain' | 'application/json' };
+        };
+    };
+    /** http trigger: ingress coalescing config (the window/key). */
     debounce?: {
-        key?: { body: string } | { header: string };
+        /** One source, or an array combined into a composite key. */
+        key?: { body: string } | { header: string } | ({ body: string } | { header: string })[];
         windowMs: number;
         maxWindowMs?: number;
         maxEntities?: number;
         payloadMode?: 'latest' | 'all';
     };
-    /** Whether the trigger ships an `ingressChallenge` hook (executed at ingress). */
-    hasIngressChallenge?: boolean;
-    /** Whether the trigger ships an `ingressValidation` hook (executed at ingress). */
-    hasIngressValidation?: boolean;
 }
 
 export interface ParsedNangoFunction {
     name: string;
     type: 'function';
     description: string;
-    triggers: ParsedFunctionTrigger[];
+    trigger: ParsedFunctionTrigger;
     input: string | null;
     output: string[] | null;
     scopes: string[];
