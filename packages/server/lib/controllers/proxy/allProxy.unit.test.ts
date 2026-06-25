@@ -217,6 +217,38 @@ describe('handleResponse', () => {
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 
+    it('should regenerate framing and strip hop-by-hop headers for a chunked response', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('{"ok":true}', {
+            headers: {
+                'transfer-encoding': 'gzip, CHUNKED',
+                'content-length': '11',
+                connection: 'keep-alive, x-provider-hop',
+                'keep-alive': 'timeout=5',
+                'x-provider-hop': 'remove-me',
+                'x-request-id': 'req-123'
+            }
+        });
+        const pipe = vi.fn((destination: Response) => {
+            expect(destination).toBe(mockRes.res);
+            expect(mockRes.res.writeHead).toHaveBeenCalled();
+            return destination;
+        });
+        mockResponseStream.data = { pipe } as unknown as Readable;
+
+        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+
+        const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
+        expect(headersArg).not.toHaveProperty('transfer-encoding');
+        expect(headersArg).not.toHaveProperty('content-length');
+        expect(headersArg).not.toHaveProperty('connection');
+        expect(headersArg).not.toHaveProperty('keep-alive');
+        expect(headersArg).not.toHaveProperty('x-provider-hop');
+        expect(headersArg).toHaveProperty('x-request-id', 'req-123');
+        expect(pipe).toHaveBeenCalledWith(mockRes.res);
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
     it('should preserve content-length for uncompressed attachment responses', async () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('raw binary content', {
