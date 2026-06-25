@@ -62,6 +62,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should not send a forward webhook if the webhook url is not present', async () => {
         await forwardWebhook({
             connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -86,6 +87,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should not send a forward webhook if forward_webhooks is false', async () => {
         await forwardWebhook({
             connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -109,6 +111,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should send a forward webhook to the secondary url if the primary is not present', async () => {
         await forwardWebhook({
             connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -133,6 +136,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should deliver to both webhook urls in a single deliver call when both are present', async () => {
         await forwardWebhook({
             connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -157,6 +161,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should call deliver once per connection when connectionIds are present', async () => {
         await forwardWebhook({
             connectionIds: ['1', '2'],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -186,6 +191,7 @@ describe('Webhooks: forward notification tests', () => {
         let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -206,6 +212,7 @@ describe('Webhooks: forward notification tests', () => {
         let called = false;
         const result = await forwardWebhook({
             connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -228,6 +235,7 @@ describe('Webhooks: forward notification tests', () => {
         const calls: { connectionId: string; sent: number }[] = [];
         const result = await forwardWebhook({
             connectionIds,
+            connectionConfigByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -248,5 +256,24 @@ describe('Webhooks: forward notification tests', () => {
             { connectionId: 'conn1', sent: 10 },
             { connectionId: 'conn2', sent: 10 }
         ]);
+    });
+
+    it('forwards to the per-connection webhook URL override (env secondary is dropped)', async () => {
+        const overrideUrl = 'https://override.example.com/hook';
+        await forwardWebhook({
+            connectionIds: ['conn1'],
+            connectionConfigByConnectionId: new Map([['conn1', { webhook_url: overrideUrl }]]),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {}
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
     });
 });
