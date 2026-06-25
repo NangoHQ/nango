@@ -54,7 +54,7 @@ class AppAuthController {
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
         // Hoisted so the failure hook in the catch can also honor a per-connection webhook URL override.
-        let connectionConfigOverride: ConnectionConfig = {};
+        let resolvedConnectionConfig: ConnectionConfig = {};
 
         try {
             if (!providerConfigKey) {
@@ -161,8 +161,8 @@ class AppAuthController {
 
             // Apply the connect session's connection_config defaults (e.g. a per-connection webhook URL override).
             // Done after credential creation so it can't interfere with the GitHub App JWT generation above.
-            connectionConfigOverride = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
-            Object.assign(connectionConfig, connectionConfigOverride);
+            resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
+            Object.assign(connectionConfig, resolvedConnectionConfig);
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
@@ -225,7 +225,7 @@ class AppAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey, connection_config: connectionConfigOverride },
+                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey, connection_config: resolvedConnectionConfig },
                     environment,
                     account,
                     auth_mode: 'APP',
