@@ -35,6 +35,36 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
     return <div data-slot="field-group" className={cn('flex w-full items-start gap-4 [&>*]:min-w-0 [&>[data-slot=field]]:flex-1', className)} {...props} />;
 }
 
+/** Semantic grouping of related fields under a legend (Figma "FieldSet"). */
+function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
+    return <fieldset data-slot="field-set" className={cn('flex w-full min-w-0 flex-col gap-5', className)} {...props} />;
+}
+
+export interface FieldLegendProps extends Omit<React.ComponentProps<'legend'>, 'title'> {
+    /** `legend` (section heading, default) or the smaller `label` used for nested groups. */
+    variant?: 'legend' | 'label';
+    /** Optional secondary line below the title (Figma legend description). */
+    description?: React.ReactNode;
+}
+
+/** Title and optional description for a FieldSet (Figma "Field / Legend"). */
+function FieldLegend({ className, variant = 'legend', description, children, ...props }: FieldLegendProps) {
+    return (
+        <legend data-slot="field-legend" data-variant={variant} className={cn('flex w-full flex-col gap-0.5', className)} {...props}>
+            <span
+                className={cn(
+                    'text-text-strong font-ds-medium',
+                    // Figma heading/sm for the section legend; text/medium/md for the smaller label variant
+                    variant === 'legend' ? 'text-ds-lg leading-ds-snug tracking-ds-tight' : 'text-ds-md leading-ds-normal'
+                )}
+            >
+                {children}
+            </span>
+            {description != null && <span className="text-text-secondary text-ds-xs font-ds-regular leading-ds-normal">{description}</span>}
+        </legend>
+    );
+}
+
 function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
     // Turns danger on invalid (Figma): either an ancestor Field carries data-invalid, or the label itself carries data-error.
     return (
@@ -91,4 +121,27 @@ function FieldError({ className, children, errors, ...props }: FieldErrorProps) 
     );
 }
 
-export { Field, FieldDescription, FieldError, FieldGroup, FieldLabel };
+/** Horizontal rule, optionally with centered text (Figma "Field / Separator"). */
+function FieldSeparator({ className, children, ...props }: React.ComponentProps<'div'>) {
+    return (
+        <div
+            role="separator"
+            data-slot="field-separator"
+            data-content={children != null ? true : undefined}
+            className={cn('flex items-center gap-2', className)}
+            {...props}
+        >
+            <span aria-hidden className="h-0 flex-1 border-t-ds-hairline border-border-strong" />
+            {children != null && (
+                <>
+                    <span data-slot="field-separator-content" className="text-text-secondary text-ds-md font-ds-regular leading-ds-normal shrink-0">
+                        {children}
+                    </span>
+                    <span aria-hidden className="h-0 flex-1 border-t-ds-hairline border-border-strong" />
+                </>
+            )}
+        </div>
+    );
+}
+
+export { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet };

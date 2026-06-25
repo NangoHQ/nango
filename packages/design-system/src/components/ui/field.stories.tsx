@@ -1,7 +1,7 @@
 import { Controller, useForm } from 'react-hook-form';
 
 import { Button } from './button';
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from './field';
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from './field';
 import { Input } from './input';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -13,10 +13,11 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Focus is an interaction state — inspect it live in the canvas; it can't be forced statically.
+// A Field wraps a label + control + optional description + error. Focus is an interaction state —
+// inspect it live in the canvas; it can't be forced statically.
 export const States: Story = {
     render: () => (
-        <div className="flex flex-col gap-6 w-80">
+        <div className="flex w-80 flex-col gap-6">
             <div className="flex flex-col gap-1">
                 <span className="story-section-heading">Label + input</span>
                 <Field>
@@ -56,20 +57,109 @@ export const States: Story = {
                     <Input id="field-disabled" placeholder="Disabled" disabled />
                 </Field>
             </div>
+        </div>
+    )
+};
+
+// FieldGroup lays sibling Fields out in a row, sharing width evenly.
+export const Group: Story = {
+    render: () => (
+        <FieldGroup className="w-96">
+            <Field>
+                <FieldLabel htmlFor="group-first">First name</FieldLabel>
+                <Input id="group-first" placeholder="Jordan" />
+            </Field>
+            <Field>
+                <FieldLabel htmlFor="group-last">Last name</FieldLabel>
+                <Input id="group-last" placeholder="Lee" />
+            </Field>
+        </FieldGroup>
+    )
+};
+
+// FieldLegend titles a FieldSet — the larger `legend` for a section, the smaller `label` for nested sub-groups.
+export const Legend: Story = {
+    render: () => (
+        <div className="flex w-96 flex-col gap-6">
             <div className="flex flex-col gap-1">
-                <span className="story-section-heading">Field group</span>
-                <FieldGroup>
-                    <Field>
-                        <FieldLabel htmlFor="field-first">First name</FieldLabel>
-                        <Input id="field-first" placeholder="Jordan" />
-                    </Field>
-                    <Field>
-                        <FieldLabel htmlFor="field-last">Last name</FieldLabel>
-                        <Input id="field-last" placeholder="Lee" />
-                    </Field>
-                </FieldGroup>
+                <span className="story-section-heading">Legend variant</span>
+                <FieldSet>
+                    <FieldLegend description="A short supporting line for the section.">Payment method</FieldLegend>
+                </FieldSet>
+            </div>
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">Label variant</span>
+                <FieldSet>
+                    <FieldLegend variant="label" description="Smaller heading for nested sub-groups.">
+                        Billing address
+                    </FieldLegend>
+                </FieldSet>
             </div>
         </div>
+    )
+};
+
+// FieldSeparator: a horizontal rule, optionally with centered text.
+export const Separator: Story = {
+    render: () => (
+        <div className="flex w-80 flex-col gap-6">
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">Plain rule</span>
+                <FieldSeparator />
+            </div>
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">With text</span>
+                <FieldSeparator>or continue with</FieldSeparator>
+            </div>
+        </div>
+    )
+};
+
+// A FieldSet groups related fields under a legend; FieldSeparator divides sub-sections (Figma playground).
+export const FieldSetComposition: Story = {
+    name: 'Field Set',
+    render: () => (
+        <FieldSet className="w-96">
+            <FieldLegend description="Lorem ipsum dolor sit amet, consectetur adipiscing elit.">Payment method</FieldLegend>
+            <Field>
+                <FieldLabel htmlFor="set-name">Name on card</FieldLabel>
+                <Input id="set-name" placeholder="Jordan Lee" />
+            </Field>
+            <Field>
+                <FieldLabel htmlFor="set-number">Card number</FieldLabel>
+                <Input id="set-number" placeholder="1234 5678 9012 3456" />
+            </Field>
+            <FieldGroup>
+                <Field>
+                    <FieldLabel htmlFor="set-month">Month</FieldLabel>
+                    <Input id="set-month" placeholder="MM" />
+                </Field>
+                <Field>
+                    <FieldLabel htmlFor="set-year">Year</FieldLabel>
+                    <Input id="set-year" placeholder="YY" />
+                </Field>
+                <Field>
+                    <FieldLabel htmlFor="set-cvv">CVV</FieldLabel>
+                    <Input id="set-cvv" placeholder="123" />
+                </Field>
+            </FieldGroup>
+            <FieldSeparator />
+            <FieldLegend variant="label" description="The billing address associated with your payment method.">
+                Billing address
+            </FieldLegend>
+            <Field>
+                <FieldLabel htmlFor="set-comments">Comments</FieldLabel>
+                <Input id="set-comments" placeholder="Anything we should know?" />
+            </Field>
+            <div className="flex gap-2">
+                <Button type="submit" size="md">
+                    Submit
+                </Button>
+                <Button type="button" variant="outline" size="md">
+                    Save draft
+                </Button>
+            </div>
+        </FieldSet>
     )
 };
 
