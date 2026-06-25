@@ -12,9 +12,9 @@ export const inputVariants = cva(
         // Typography (Figma text/regular/md)
         'text-ds-md font-ds-regular leading-ds-normal',
         // Default colors
-        'bg-surface-input border-border-input text-text-default placeholder:text-text-secondary',
+        'bg-surface-input border-border-interactive text-text-default placeholder:text-text-secondary',
         // Hover / focus border (focus ring removed pending design review)
-        'hover:border-border-input-hover focus:border-border-input-hover',
+        'hover:border-border-interactive-hover focus:border-border-interactive-hover',
         // Invalid
         'aria-invalid:border-status-danger-border',
         // Disabled — dedicated tokens, no opacity (Figma state/selectedMuted bg, border/disabled, text/disabled)

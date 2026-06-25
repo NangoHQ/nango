@@ -44,10 +44,10 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/outline → --interactive-outline → bg-interactive-outline
-                // border/default → --border-default → border-border-default
+                // border/interactive → --border-interactive → border-border-interactive
                 outline: [
-                    'bg-interactive-outline text-text-default border-border-default',
-                    'hover:bg-interactive-outline-hover hover:border-border-strong',
+                    'bg-interactive-outline text-text-default border-border-interactive',
+                    'hover:bg-interactive-outline-hover hover:border-border-interactive-hover',
                     'active:bg-interactive-outline-active',
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',

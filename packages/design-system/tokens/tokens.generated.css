@@ -291,6 +291,8 @@
     --border-default: #e0e0e0;
     --border-strong: #c4c4c8;
     --border-stronger: #a1a2a5;
+    --border-interactive: #a1a2a5;
+    --border-interactive-hover: #8b8c8f;
     --border-input: #8b8c8f;
     --border-input-hover: #626366;
     --border-selected: #009cc8;
@@ -413,6 +415,8 @@
     --border-default: #ffffff1a;
     --border-strong: #ffffff29;
     --border-stronger: #ffffff3d;
+    --border-interactive: #ffffff3d;
+    --border-interactive-hover: #ffffff66;
     --border-input: #ffffff66;
     --border-input-hover: #ffffff80;
     --border-selected: #00b2e3;
@@ -539,6 +543,8 @@
     --color-border-default: var(--border-default);
     --color-border-strong: var(--border-strong);
     --color-border-stronger: var(--border-stronger);
+    --color-border-interactive: var(--border-interactive);
+    --color-border-interactive-hover: var(--border-interactive-hover);
     --color-border-input: var(--border-input);
     --color-border-input-hover: var(--border-input-hover);
     --color-border-selected: var(--border-selected);
