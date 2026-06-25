@@ -127,20 +127,14 @@ export async function routeWebhook({
                   })
                 : '';
 
-            // Fetch each matched connection's config so forwardWebhook can honor a per-connection webhook URL override.
-            const connectionConfigByConnectionId = new Map<string, ConnectionConfig>();
-            if (webhookSettings) {
-                for (const connectionId of connectionIds) {
-                    connectionConfigByConnectionId.set(
-                        connectionId,
-                        await connectionService.getConnectionConfig({
-                            connection_id: connectionId,
-                            provider_config_key: integration.unique_key,
-                            environment_id: environment.id
-                        })
-                    );
-                }
-            }
+            // Fetch the matched connections' config so forwardWebhook can honor a per-connection webhook URL override.
+            const connectionConfigByConnectionId = webhookSettings
+                ? await connectionService.getConnectionConfigByConnectionIds({
+                      connectionIds,
+                      provider_config_key: integration.unique_key,
+                      environment_id: environment.id
+                  })
+                : new Map<string, ConnectionConfig>();
 
             return forwardWebhook({
                 integration,
