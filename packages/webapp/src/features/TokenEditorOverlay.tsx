@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Contrast, Download, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RgbaColorPicker } from 'react-colorful';
 
 import { Button, Input } from '@nangohq/design-system';
 
@@ -653,6 +654,29 @@ function shortVar(cssVar: string): string {
     return cssVar.replace(/^--/, '').replace(/-/g, '/');
 }
 
+type Rgba = { r: number; g: number; b: number; a: number };
+
+/** Parse #RGB / #RGBA / #RRGGBB / #RRGGBBAA into an {r,g,b, a:0–1} object for the colour picker. */
+function hexToRgba(hex: string): Rgba {
+    const h = hex.trim().replace(/^#/, '');
+    const full = h.length === 3 || h.length === 4 ? [...h].map((c) => c + c).join('') : h;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    const a = full.length >= 8 ? parseInt(full.slice(6, 8), 16) / 255 : 1;
+    return { r: r || 0, g: g || 0, b: b || 0, a: Number.isNaN(a) ? 1 : a };
+}
+
+/** Serialise the picker's {r,g,b,a} back to #RRGGBB (opaque) or #RRGGBBAA (with alpha). */
+function rgbaToHex({ r, g, b, a }: Rgba): string {
+    const to2 = (n: number) =>
+        Math.round(Math.min(255, Math.max(0, n)))
+            .toString(16)
+            .padStart(2, '0');
+    const base = `#${to2(r)}${to2(g)}${to2(b)}`;
+    return a >= 1 ? base : `${base}${to2(a * 255)}`;
+}
+
 /** Compact contrast badge: worst ratio across the token's pairs + WCAG band, breakdown on hover. */
 function ContrastBadge({ scores }: { scores: ContrastScore[] }) {
     if (!scores.length) return <span className="w-16 shrink-0" />;
@@ -713,11 +737,6 @@ function TokenRow({
         setHex(current);
     }, [current]);
 
-    // Native color picker only handles #rrggbb (no alpha). Show the RGB part, and remember any
-    // alpha suffix (#rrggbbAA) so picking a colour preserves it instead of silently dropping alpha.
-    const pickerVal = current.startsWith('#') && current.length >= 7 ? current.slice(0, 7) : '#000000';
-    const alphaSuffix = current.startsWith('#') && current.length === 9 ? current.slice(7) : '';
-
     // Column shows the ref override, then display ref, then primitiveRef
     const colRef = refOverride ?? entry.displayRef ?? entry.primitiveRef;
 
@@ -762,26 +781,28 @@ function TokenRow({
 
             {/* Swatch, hex input, and action buttons share a hover group so link icon is scoped */}
             <div className="group/picker flex shrink-0 items-center gap-1">
-                <label className="relative cursor-pointer">
-                    {/* Checkerboard backdrop so translucent tokens (e.g. --border-default #ffffff1a) read as semi-transparent */}
-                    <div
-                        className="size-4 rounded-sm border border-border-muted"
-                        style={{
-                            backgroundImage:
-                                'linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%),linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%)',
-                            backgroundSize: '6px 6px',
-                            backgroundPosition: '0 0,3px 3px'
-                        }}
-                    >
-                        <div className="size-full rounded-sm" style={{ backgroundColor: current }} />
-                    </div>
-                    <input
-                        type="color"
-                        value={pickerVal}
-                        onChange={(e) => onCommit(entry.cssVar, e.target.value + alphaSuffix)}
-                        className="absolute inset-0 size-full cursor-pointer opacity-0"
-                    />
-                </label>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        {/* Checkerboard backdrop so translucent tokens (e.g. --border-default #ffffff1a) read as semi-transparent */}
+                        <button
+                            type="button"
+                            aria-label={`Edit ${entry.cssVar} colour`}
+                            className="relative size-4 cursor-pointer rounded-sm border border-border-muted"
+                            style={{
+                                backgroundImage:
+                                    'linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%),linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%)',
+                                backgroundSize: '6px 6px',
+                                backgroundPosition: '0 0,3px 3px'
+                            }}
+                        >
+                            <span className="absolute inset-0 rounded-sm" style={{ backgroundColor: current }} />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent side="left" align="center" sideOffset={4} className="w-auto p-2">
+                        {/* Native <input type=color> can't edit alpha; react-colorful adds a checkerboard alpha slider */}
+                        <RgbaColorPicker color={hexToRgba(current)} onChange={(c) => onCommit(entry.cssVar, rgbaToHex(c))} />
+                    </PopoverContent>
+                </Popover>
                 <input
                     type="text"
                     value={hex}
