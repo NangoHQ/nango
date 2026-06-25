@@ -52,12 +52,12 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'bg-surface-canvas justify-between grow w-full h-13')}
+                className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'bg-surface-canvas justify-between grow w-full')}
                 disabled={disabled}
             >
                 {selectedIntegration ? (
-                    <div className="flex gap-3 items-center">
-                        <IntegrationLogo provider={selectedIntegration.provider} className="w-10 h-10" />{' '}
+                    <div className="flex gap-2 items-center">
+                        <IntegrationLogo provider={selectedIntegration.provider} className="size-5" />{' '}
                         {selectedIntegration.display_name || selectedIntegration.meta.displayName}
                     </div>
                 ) : (
