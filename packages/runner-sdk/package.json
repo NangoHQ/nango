@@ -16,7 +16,8 @@
         "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
         "lodash-es": "4.18.1",
-        "parse-link-header": "2.0.0"
+        "parse-link-header": "2.0.0",
+        "undici": "6.27.0"
     },
     "devDependencies": {
         "@nangohq/types": "0.70.9",

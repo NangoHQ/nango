@@ -1,16 +1,21 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { axiosInstance, stringifyStable } from '@nangohq/utils';
+import { Ok } from '@nangohq/utils';
 
 import { sendAuth } from './auth.js';
-import { mockWebhookDenylistAllowAll } from './helpers/setup.unit.js';
-import { TestWebhookServer } from './helpers/test.js';
+import { deliver } from './utils.js';
 
-import type { DBAPISecret, DBConnection, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoAuthWebhookBodySuccess, Tags } from '@nangohq/types';
+import type { DBAPISecret, DBConnection, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, Tags } from '@nangohq/types';
 
-const spy = vi.spyOn(axiosInstance, 'post');
+vi.mock('./utils.js', async (importOriginal) => {
+    const actual = await importOriginal<Record<string, unknown>>();
+    return { ...actual, deliver: vi.fn() };
+});
 
-const testServer = new TestWebhookServer(4101);
+const deliverMock = vi.mocked(deliver);
+
+const primaryUrl = 'https://example.com/webhook';
+const secondaryUrl = 'https://example.com/webhook-secondary';
 
 const account: DBTeam = {
     id: 1,
@@ -30,8 +35,8 @@ const connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_k
 const webhookSettings: DBExternalWebhook = {
     id: 1,
     environment_id: 1,
-    primary_url: testServer.primaryUrl,
-    secondary_url: testServer.secondaryUrl,
+    primary_url: primaryUrl,
+    secondary_url: secondaryUrl,
     on_sync_completion_always: true,
     on_auth_creation: true,
     on_auth_refresh_error: true,
@@ -50,17 +55,9 @@ const providerConfig = {
 const secret = 'secret' as DBAPISecret['secret'];
 
 describe('Webhooks: auth notification tests', () => {
-    beforeAll(async () => {
-        await testServer.start();
-    });
-
-    afterAll(async () => {
-        await testServer.stop();
-    });
-
     beforeEach(() => {
-        vi.resetAllMocks();
-        mockWebhookDenylistAllowAll();
+        deliverMock.mockReset();
+        deliverMock.mockResolvedValue(Ok(undefined));
     });
 
     it('Should not send an auth webhook if the webhook url is not present even if the auth webhook is checked', async () => {
@@ -83,10 +80,10 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
-        expect(spy).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
-    it('Should send an auth webhook if the primary webhook url is present but the secondary is not', async () => {
+    it('Should deliver to the primary webhook url when only the primary is present', async () => {
         await sendAuth({
             connection,
             success: true,
@@ -105,10 +102,11 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
-        expect(spy).toHaveBeenCalledTimes(1);
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: primaryUrl, type: 'webhook url' }]);
     });
 
-    it('Should send an auth webhook if the webhook url is not present but the secondary is', async () => {
+    it('Should deliver to the secondary webhook url when only the secondary is present', async () => {
         await sendAuth({
             connection,
             success: true,
@@ -128,10 +126,11 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
-        expect(spy).toHaveBeenCalledTimes(1);
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: secondaryUrl, type: 'secondary webhook url' }]);
     });
 
-    it('Should send an auth webhook twice if the webhook url is present and the secondary is as well', async () => {
+    it('Should deliver to both webhook urls in a single deliver call when both are present', async () => {
         await sendAuth({
             connection,
             success: true,
@@ -149,7 +148,11 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([
+            { url: primaryUrl, type: 'webhook url' },
+            { url: secondaryUrl, type: 'secondary webhook url' }
+        ]);
     });
 
     it('Should send an auth webhook if the webhook url is present and if the auth webhook is checked and the operation failed', async () => {
@@ -175,7 +178,12 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
-        expect(spy).toHaveBeenCalledTimes(1);
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].body).toMatchObject({
+            type: 'auth',
+            success: false,
+            error: { type: 'error', description: 'error description' }
+        });
     });
 
     it('Should not send an auth webhook if the webhook url is present and if the auth webhook is not checked', async () => {
@@ -196,7 +204,7 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'creation'
         });
-        expect(spy).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('Should not send an auth webhook if on refresh error is checked but there is no webhook url', async () => {
@@ -220,7 +228,8 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
-        expect(spy).not.toHaveBeenCalled();
+        // No webhook urls => shouldSend short-circuits and deliver is never invoked.
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('Should send an auth webhook if on refresh error is checked', async () => {
@@ -243,7 +252,8 @@ describe('Webhooks: auth notification tests', () => {
             auth_mode: 'OAUTH2',
             operation: 'refresh'
         });
-        expect(spy).toHaveBeenCalledTimes(1);
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: primaryUrl, type: 'webhook url' }]);
     });
 
     it('Should not send an auth webhook if on refresh error is not checked', async () => {
@@ -266,10 +276,10 @@ describe('Webhooks: auth notification tests', () => {
             operation: 'refresh'
         });
 
-        expect(spy).not.toHaveBeenCalled();
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
-    it('Should send an auth webhook twice if on refresh error is checked and there are two webhook urls with the correct body', async () => {
+    it('Should deliver to both urls with the correct body on refresh error', async () => {
         await sendAuth({
             connection,
             success: true,
@@ -289,9 +299,14 @@ describe('Webhooks: auth notification tests', () => {
             operation: 'refresh'
         });
 
-        expect(spy).toHaveBeenCalledTimes(2);
-
-        const body: NangoAuthWebhookBodySuccess = {
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.webhookType).toBe('auth');
+        expect(args.webhooks).toEqual([
+            { url: primaryUrl, type: 'webhook url' },
+            { url: secondaryUrl, type: 'secondary webhook url' }
+        ]);
+        expect(args.body).toMatchObject({
             from: 'nango',
             type: 'auth',
             connectionId: connection.connection_id,
@@ -301,36 +316,7 @@ describe('Webhooks: auth notification tests', () => {
             environment: 'dev',
             success: true,
             operation: 'refresh'
-        };
-        const bodyString = stringifyStable(body).unwrap();
-
-        expect(spy).toHaveBeenNthCalledWith(
-            1,
-            webhookSettings.primary_url,
-            bodyString,
-            expect.objectContaining({
-                headers: {
-                    'X-Nango-Signature': expect.toBeSha256(),
-                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                    'content-type': 'application/json',
-                    'user-agent': expect.stringContaining('nango/')
-                }
-            })
-        );
-
-        expect(spy).toHaveBeenNthCalledWith(
-            2,
-            webhookSettings.secondary_url,
-            bodyString,
-            expect.objectContaining({
-                headers: {
-                    'X-Nango-Signature': expect.toBeSha256(),
-                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                    'content-type': 'application/json',
-                    'user-agent': expect.stringContaining('nango/')
-                }
-            })
-        );
+        });
     });
 
     describe('tags', () => {
@@ -360,31 +346,10 @@ describe('Webhooks: auth notification tests', () => {
                 operation: 'creation'
             });
 
-            expect(spy).toHaveBeenCalledTimes(1);
-
-            const body: NangoAuthWebhookBodySuccess = {
-                from: 'nango',
-                type: 'auth',
-                connectionId: connection.connection_id,
-                providerConfigKey: connection.provider_config_key,
-                authMode: 'OAUTH2',
-                provider: 'hubspot',
-                environment: 'dev',
-                success: true,
-                operation: 'creation',
+            expect(deliverMock).toHaveBeenCalledTimes(1);
+            expect(deliverMock.mock.calls[0]![0].body).toMatchObject({
                 tags: { department: 'engineering', priority: 'high' }
-            };
-            const bodyString = stringifyStable(body).unwrap();
-
-            expect(spy).toHaveBeenCalledWith(
-                webhookSettings.primary_url,
-                bodyString,
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'content-type': 'application/json'
-                    })
-                })
-            );
+            });
         });
 
         it('Should not include tags when connection has no tags', async () => {
@@ -407,30 +372,8 @@ describe('Webhooks: auth notification tests', () => {
                 operation: 'creation'
             });
 
-            expect(spy).toHaveBeenCalledTimes(1);
-
-            const body: NangoAuthWebhookBodySuccess = {
-                from: 'nango',
-                type: 'auth',
-                connectionId: connection.connection_id,
-                providerConfigKey: connection.provider_config_key,
-                authMode: 'OAUTH2',
-                provider: 'hubspot',
-                environment: 'dev',
-                success: true,
-                operation: 'creation'
-            };
-            const bodyString = stringifyStable(body).unwrap();
-
-            expect(spy).toHaveBeenCalledWith(
-                webhookSettings.primary_url,
-                bodyString,
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'content-type': 'application/json'
-                    })
-                })
-            );
+            expect(deliverMock).toHaveBeenCalledTimes(1);
+            expect((deliverMock.mock.calls[0]![0].body as Record<string, unknown>)['tags']).toBeUndefined();
         });
     });
 });

@@ -113,3 +113,30 @@ export function createSafeHttpAgents(policy: OutboundUrlPolicy): { httpAgent: ht
 export function agentForUrl(url: string, agents: { httpAgent: http.Agent; httpsAgent: https.Agent }): http.Agent | https.Agent {
     return url.startsWith('https:') ? agents.httpsAgent : agents.httpAgent;
 }
+
+const safeLookupCache = new Map<string, typeof dns.lookup>();
+const safeAgentsCache = new Map<string, { httpAgent: http.Agent; httpsAgent: https.Agent }>();
+
+export function getSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {
+    const key = policyPinCacheKey(policy);
+    let lookup = safeLookupCache.get(key);
+    if (!lookup) {
+        lookup = createSafeLookup(policy);
+        safeLookupCache.set(key, lookup);
+    }
+    return lookup;
+}
+
+export function getSafeHttpAgents(policy: OutboundUrlPolicy): { httpAgent: http.Agent; httpsAgent: https.Agent } {
+    const key = policyPinCacheKey(policy);
+    let agents = safeAgentsCache.get(key);
+    if (!agents) {
+        const lookup = getSafeLookup(policy);
+        agents = {
+            httpAgent: new http.Agent({ lookup, keepAlive: true }),
+            httpsAgent: new https.Agent({ lookup, keepAlive: true })
+        };
+        safeAgentsCache.set(key, agents);
+    }
+    return agents;
+}

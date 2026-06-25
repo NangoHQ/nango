@@ -61,6 +61,36 @@ export const ENVS = z.object({
                 return z.NEVER;
             }
         }),
+    // Outbound URL policy (JSON), consumed by @nangohq/egress.
+    NANGO_OUTBOUND_URL_POLICY: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in NANGO_OUTBOUND_URL_POLICY`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z
+                .object({
+                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
+                    denylist: z.array(z.string()).optional(),
+                    allowlist: z.array(z.string()).optional(),
+                    blockPrivateIps: z.boolean().optional(),
+                    blockLinkLocal: z.boolean().optional(),
+                    maxRedirects: z.number().int().nonnegative().optional()
+                })
+                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
+                // being silently dropped and weakening the intended SSRF restrictions.
+                .strict()
+                .optional()
+        ),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

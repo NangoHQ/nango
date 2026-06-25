@@ -10,14 +10,12 @@ import {
 export type OutboundUrlPolicyMode = 'denylist' | 'allowlist' | 'permissive';
 
 export interface OutboundUrlPolicyRaw {
-    mode?: OutboundUrlPolicyMode;
-    denylist?: string[];
-    allowlist?: string[];
-    blockPrivateIps?: boolean;
-    blockLinkLocal?: boolean;
-    resolveDns?: boolean;
-    allowedSchemes?: string[];
-    maxRedirects?: number;
+    mode?: OutboundUrlPolicyMode | undefined;
+    denylist?: string[] | undefined;
+    allowlist?: string[] | undefined;
+    blockPrivateIps?: boolean | undefined;
+    blockLinkLocal?: boolean | undefined;
+    maxRedirects?: number | undefined;
 }
 
 export interface OutboundUrlPolicy {
@@ -26,7 +24,6 @@ export interface OutboundUrlPolicy {
     allowlist: string[];
     blockPrivateIps: boolean;
     blockLinkLocal: boolean;
-    resolveDns: boolean;
     allowedSchemes: Set<string>;
     maxRedirects: number;
 }
@@ -37,7 +34,6 @@ export const DEFAULT_OUTBOUND_URL_POLICY: OutboundUrlPolicy = {
     allowlist: [],
     blockPrivateIps: true,
     blockLinkLocal: true,
-    resolveDns: true,
     allowedSchemes: new Set(['http:', 'https:']),
     maxRedirects: 5
 };
@@ -68,10 +64,15 @@ function mergePolicyRaw(base: OutboundUrlPolicyRaw, overlay: OutboundUrlPolicyRa
     if (overlay.allowlist !== undefined) merged.allowlist = overlay.allowlist;
     if (overlay.blockPrivateIps !== undefined) merged.blockPrivateIps = overlay.blockPrivateIps;
     if (overlay.blockLinkLocal !== undefined) merged.blockLinkLocal = overlay.blockLinkLocal;
-    if (overlay.resolveDns !== undefined) merged.resolveDns = overlay.resolveDns;
-    if (overlay.allowedSchemes !== undefined) merged.allowedSchemes = overlay.allowedSchemes;
     if (overlay.maxRedirects !== undefined) merged.maxRedirects = overlay.maxRedirects;
     return merged;
+}
+
+function safeMaxRedirects(value: unknown): number {
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 0) {
+        return value;
+    }
+    return DEFAULT_OUTBOUND_URL_POLICY.maxRedirects;
 }
 
 function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): OutboundUrlPolicy {
@@ -84,22 +85,21 @@ function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): Outb
         allowlist: raw.allowlist ?? [],
         blockPrivateIps: raw.blockPrivateIps ?? true,
         blockLinkLocal: raw.blockLinkLocal ?? true,
-        resolveDns: raw.resolveDns ?? true,
-        allowedSchemes: new Set(raw.allowedSchemes ?? ['http:', 'https:']),
-        maxRedirects: raw.maxRedirects ?? 5
+        allowedSchemes: new Set(['http:', 'https:']),
+        maxRedirects: safeMaxRedirects(raw.maxRedirects)
     };
 }
 
 export interface ServerPolicyEnvInput {
     proxyBaseUrlOverrideDenylist: string[];
-    outboundUrlPolicyRaw?: string | undefined;
+    outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
 }
 
 /**
  * Build policy for server-side services from parsed env values.
  */
 export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrlPolicy {
-    const jsonRaw = parsePolicyJson(input.outboundUrlPolicyRaw);
+    const jsonRaw = input.outboundUrlPolicy ?? null;
     const denylistEntries = input.proxyBaseUrlOverrideDenylist;
 
     if (!jsonRaw) {
@@ -116,7 +116,7 @@ export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrl
 export interface RunnerPolicyEnvInput {
     proxyBaseUrlOverrideEnabled?: string | undefined;
     proxyBaseUrlOverrideDenylistRaw?: string | undefined;
-    outboundUrlPolicyRaw?: string | undefined;
+    outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
     lambdaRuntimeApi?: string | undefined;
 }
 
@@ -141,7 +141,7 @@ export function resolvePolicyForRunnerSync(input: RunnerPolicyEnvInput): Outboun
         ? resolveProxyBaseUrlOverrideDenylistForRunner(input.proxyBaseUrlOverrideDenylistRaw)
         : [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
 
-    const jsonRaw = parsePolicyJson(input.outboundUrlPolicyRaw);
+    const jsonRaw = input.outboundUrlPolicy ?? null;
     const policy = jsonRaw ? rawToPolicy(mergePolicyRaw({}, jsonRaw), denylistEntries) : rawToPolicy({}, denylistEntries);
 
     if (input.lambdaRuntimeApi) {
@@ -159,7 +159,7 @@ export function resolvePolicyFromProcessEnvForRunner(): OutboundUrlPolicy {
     return resolvePolicyForRunnerSync({
         proxyBaseUrlOverrideEnabled: env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'],
         proxyBaseUrlOverrideDenylistRaw: env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'],
-        outboundUrlPolicyRaw: env['NANGO_OUTBOUND_URL_POLICY'],
+        outboundUrlPolicy: parsePolicyJson(env['NANGO_OUTBOUND_URL_POLICY']) ?? undefined,
         lambdaRuntimeApi: env['AWS_LAMBDA_RUNTIME_API']
     });
 }
@@ -176,10 +176,6 @@ export function getRunnerPolicyFromEnv(): OutboundUrlPolicy {
     }
     memoizedRunnerPolicy = resolvePolicyFromProcessEnvForRunner();
     return memoizedRunnerPolicy;
-}
-
-export function resetRunnerPolicyCacheForTests(): void {
-    memoizedRunnerPolicy = null;
 }
 
 /**

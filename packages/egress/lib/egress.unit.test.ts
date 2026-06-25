@@ -14,7 +14,7 @@ import {
 } from './denylist.js';
 import { OutboundUrlError } from './errors.js';
 import { classifyBlockedIp } from './ip.js';
-import { resetRunnerPolicyCacheForTests, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
+import { resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
 import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
 import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
 
@@ -108,12 +108,11 @@ describe('egress allowlist mode', () => {
     it('allows only matching hostnames', () => {
         const policy = resolvePolicyForServer({
             proxyBaseUrlOverrideDenylist: [],
-            outboundUrlPolicyRaw: JSON.stringify({
+            outboundUrlPolicy: {
                 mode: 'allowlist',
                 allowlist: ['.example.com', 'api.hubspot.com'],
-                blockPrivateIps: false,
-                resolveDns: false
-            })
+                blockPrivateIps: false
+            }
         });
         expect(validateOutboundUrlSync('https://api.example.com/x', policy).ok).toBe(true);
         expect(validateOutboundUrlSync('https://evil.com/x', policy).ok).toBe(false);
@@ -130,14 +129,45 @@ describe('egress permissive mode', () => {
 });
 
 describe('egress runner policy', () => {
-    afterEach(() => {
-        resetRunnerPolicyCacheForTests();
-        clearPinnedAddressCacheForTests();
-    });
-
     it('always applies secure defaults when denylist env is empty', () => {
         const policy = resolvePolicyForRunnerSync({ proxyBaseUrlOverrideDenylistRaw: '[]' });
         expect(policy.denylist.has('localhost')).toBe(true);
+    });
+});
+
+describe('egress maxRedirects sanitization', () => {
+    // Runners parse NANGO_OUTBOUND_URL_POLICY straight from process.env with no schema, so the policy
+    // resolver must coerce maxRedirects into a safe non-negative integer (else a NaN would disable the
+    // redirect-loop cap entirely).
+    it('accepts a valid non-negative integer', () => {
+        const policy = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: 3 } });
+        expect(policy.maxRedirects).toBe(3);
+    });
+
+    it('falls back to the default for non-numeric values', () => {
+        const policy = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { maxRedirects: 'oops' as unknown as number }
+        });
+        expect(policy.maxRedirects).toBe(5);
+    });
+
+    it('falls back to the default for NaN', () => {
+        const policy = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { maxRedirects: Number.NaN }
+        });
+        expect(policy.maxRedirects).toBe(5);
+    });
+
+    it('falls back to the default for negative or non-integer values', () => {
+        expect(resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: -1 } }).maxRedirects).toBe(5);
+        expect(resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: 2.5 } }).maxRedirects).toBe(5);
+    });
+
+    it('allows zero (disables redirect following)', () => {
+        const policy = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: 0 } });
+        expect(policy.maxRedirects).toBe(0);
     });
 });
 
