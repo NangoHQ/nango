@@ -224,6 +224,20 @@ describe('uncontrolledFetch', () => {
         expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
+    it('returns the 3XX response (does not follow or throw) when maxRedirects is 0', async () => {
+        vi.stubEnv('NANGO_OUTBOUND_URL_POLICY', JSON.stringify({ maxRedirects: 0 }));
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'https://example.org/next' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        // Matches axios/proxy behavior: maxRedirects=0 means "don't follow", so the 3XX is returned as-is.
+        const res = await action.uncontrolledFetch({ url: new URL('https://example.com/start') });
+        expect(res.status).toBe(302);
+        expect(res.headers.get('Location')).toBe('https://example.org/next');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('strips sensitive headers when redirecting to a different origin', async () => {
         const fetchMock = vi
             .fn()

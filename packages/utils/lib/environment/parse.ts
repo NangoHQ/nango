@@ -61,9 +61,7 @@ export const ENVS = z.object({
                 return z.NEVER;
             }
         }),
-    // Outbound URL policy (JSON), consumed by @nangohq/egress (resolvePolicyForServer / resolvePolicyForRunner).
-    // Controls SSRF hardening for proxy + webhooks + uncontrolledFetch. Parsed and validated here so misconfiguration
-    // fails fast at startup; runners receive it re-serialized and parse it from process.env.
+    // Outbound URL policy (JSON), consumed by @nangohq/egress.
     NANGO_OUTBOUND_URL_POLICY: z
         .string()
         .optional()

@@ -23,3 +23,20 @@ export class OutboundUrlError extends Error {
         }
     }
 }
+
+export function findOutboundUrlError(error: unknown): OutboundUrlError | null {
+    let current: unknown = error;
+    const seen = new Set<unknown>();
+    while (current && typeof current === 'object' && !seen.has(current)) {
+        seen.add(current);
+        if (current instanceof OutboundUrlError) {
+            return current;
+        }
+        if ('cause' in current && (current as { cause?: unknown }).cause !== undefined) {
+            current = (current as { cause: unknown }).cause;
+        } else {
+            break;
+        }
+    }
+    return null;
+}

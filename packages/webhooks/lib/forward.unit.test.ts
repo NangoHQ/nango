@@ -8,9 +8,6 @@ import { deliver } from './utils.js';
 
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig } from '@nangohq/types';
 
-// The senders' job is to decide whether/what to deliver and call `deliver`. The on-the-wire behavior
-// (SSRF policy, agents, axios, signatures, byte metering) is `deliver`'s responsibility and is covered
-// in utils.unit.test.ts. So here we mock `deliver` and assert on how the sender orchestrates it.
 vi.mock('./utils.js', async (importOriginal) => {
     const actual = await importOriginal<Record<string, unknown>>();
     return { ...actual, deliver: vi.fn() };

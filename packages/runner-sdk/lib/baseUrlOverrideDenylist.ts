@@ -1,7 +1,3 @@
-/**
- * Backward-compatible re-exports for runner-sdk sandbox code.
- * Canonical implementation lives in @nangohq/egress.
- */
 export {
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
     canonicalizeHostnameForDenylist,

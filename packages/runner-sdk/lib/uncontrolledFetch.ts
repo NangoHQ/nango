@@ -105,6 +105,12 @@ export async function executeUncontrolledFetch(
             return response;
         }
 
+        // maxRedirects === 0 means "don't follow redirects". Match axios/proxy semantics and return the
+        // 3XX response as-is rather than treating it as an error (axios uses the plain transport in this case).
+        if (policy.maxRedirects === 0) {
+            return response;
+        }
+
         // We're about to follow the redirect; we won't return this response, so cancel its body.
         void response.body?.cancel();
 

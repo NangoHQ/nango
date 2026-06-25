@@ -24,10 +24,6 @@ interface Props {
     onBytes?: (bytes: MeteredBytes) => MaybePromise<void>;
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
-    /**
-     * Outbound URL SSRF policy. When set, every connection (including redirect hops) is routed
-     * through DNS-pinning agents that validate the resolved IP, and redirects are capped.
-     */
     outboundPolicy?: OutboundUrlPolicy | undefined;
 }
 

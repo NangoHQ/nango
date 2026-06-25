@@ -52,15 +52,6 @@ export const oldLevelToNewLevel = {
 const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
-/**
- * Snapshot the outbound URL policy at runner module load (before any user script runs).
- * Do not read process.env during request handling — sandboxed scripts share the runner process.
- *
- * The policy bundles the override denylist (with secure defaults + Lambda runtime API host) and the
- * SSRF controls (DNS rebinding, private/link-local IP blocking, redirect cap). The denylist keeps its
- * runner-specific semantics (secure defaults are enforced even if the server opted out), so it is read
- * from raw env; the SSRF controls come from the already-parsed + validated NANGO_OUTBOUND_URL_POLICY object.
- */
 const runnerOutboundPolicy = resolvePolicyForRunner({
     proxyBaseUrlOverrideEnabled: process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'],
     proxyBaseUrlOverrideDenylistRaw: process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'],

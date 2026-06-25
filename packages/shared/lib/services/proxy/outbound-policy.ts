@@ -6,6 +6,7 @@ import type { OutboundUrlPolicy } from '@nangohq/egress';
 
 export {
     OutboundUrlError,
+    findOutboundUrlError,
     resolvePolicyForServer,
     resolvePolicyForRunner,
     resolvePolicyForRunnerSync,
@@ -19,10 +20,6 @@ export type { OutboundUrlPolicy, OutboundUrlPolicyMode, OutboundUrlPolicyRaw } f
 
 let memoizedServerPolicy: OutboundUrlPolicy | null = null;
 
-/**
- * Server-side outbound URL policy, built once from env (denylist + NANGO_OUTBOUND_URL_POLICY).
- * Used by the proxy controller, credential-verification hooks, and any server-side ProxyRequest.
- */
 export function getServerOutboundUrlPolicy(): OutboundUrlPolicy {
     if (memoizedServerPolicy) {
         return memoizedServerPolicy;

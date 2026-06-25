@@ -10,12 +10,12 @@ import {
     enforceProxyOutboundUrlPolicy,
     errorManager,
     ErrorSourceEnum,
+    findOutboundUrlError,
     getProvider,
     getProxyConfiguration,
     getServerOutboundUrlPolicy,
     LogActionEnum,
     makeDataTransferEvent,
-    OutboundUrlError,
     ProxyError,
     ProxyRequest,
     pubsub,
@@ -517,23 +517,6 @@ function proxyErrorFromErrorChain(error: unknown): ProxyError | null {
     return null;
 }
 
-function outboundUrlErrorFromErrorChain(error: unknown): OutboundUrlError | null {
-    let current: unknown = error;
-    const seen = new Set<unknown>();
-    while (current && typeof current === 'object' && !seen.has(current)) {
-        seen.add(current);
-        if (current instanceof OutboundUrlError) {
-            return current;
-        }
-        if ('cause' in current && (current as { cause?: unknown }).cause !== undefined) {
-            current = (current as { cause: unknown }).cause;
-        } else {
-            break;
-        }
-    }
-    return null;
-}
-
 export function handleErrorResponse({
     res,
     error,
@@ -557,8 +540,7 @@ export function handleErrorResponse({
         return;
     }
 
-    // DNS-pinning agent rejected the resolved address (rebinding / private / metadata IP), possibly on a redirect hop.
-    const outboundErr = outboundUrlErrorFromErrorChain(error);
+    const outboundErr = findOutboundUrlError(error);
     if (outboundErr) {
         void logCtx.error('Proxy outbound URL denied by policy', { error: outboundErr });
         res.status(400).send({

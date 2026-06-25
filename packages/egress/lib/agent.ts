@@ -117,10 +117,6 @@ export function agentForUrl(url: string, agents: { httpAgent: http.Agent; httpsA
 const safeLookupCache = new Map<string, typeof dns.lookup>();
 const safeAgentsCache = new Map<string, { httpAgent: http.Agent; httpsAgent: https.Agent }>();
 
-/**
- * Memoized safe DNS lookup keyed by policy. Reuse across requests so the pinned-address
- * cache is shared and so http/https Agents can keep connections alive.
- */
 export function getSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {
     const key = policyPinCacheKey(policy);
     let lookup = safeLookupCache.get(key);
@@ -131,10 +127,6 @@ export function getSafeLookup(policy: OutboundUrlPolicy): typeof dns.lookup {
     return lookup;
 }
 
-/**
- * Memoized keep-alive Agents whose connections only succeed when the resolved address
- * passes the policy. Reused across requests for connection pooling.
- */
 export function getSafeHttpAgents(policy: OutboundUrlPolicy): { httpAgent: http.Agent; httpsAgent: https.Agent } {
     const key = policyPinCacheKey(policy);
     let agents = safeAgentsCache.get(key);

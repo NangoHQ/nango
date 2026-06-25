@@ -68,13 +68,7 @@ function mergePolicyRaw(base: OutboundUrlPolicyRaw, overlay: OutboundUrlPolicyRa
     return merged;
 }
 
-/**
- * Coerce maxRedirects into a safe, non-negative integer. The server validates this via Zod, but runners
- * parse NANGO_OUTBOUND_URL_POLICY straight from process.env with no schema, so an invalid value (string,
- * NaN, negative, float) could otherwise reach the redirect-loop stop condition. A NaN in particular makes
- * `count >= maxRedirects` always false, allowing unbounded redirect loops — so we fail safe to the default.
- */
-function sanitizeMaxRedirects(value: unknown): number {
+function safeMaxRedirects(value: unknown): number {
     if (typeof value === 'number' && Number.isInteger(value) && value >= 0) {
         return value;
     }
@@ -91,15 +85,13 @@ function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): Outb
         allowlist: raw.allowlist ?? [],
         blockPrivateIps: raw.blockPrivateIps ?? true,
         blockLinkLocal: raw.blockLinkLocal ?? true,
-        // Fixed, non-operator-editable security boundary: only http/https are ever permitted.
         allowedSchemes: new Set(['http:', 'https:']),
-        maxRedirects: sanitizeMaxRedirects(raw.maxRedirects)
+        maxRedirects: safeMaxRedirects(raw.maxRedirects)
     };
 }
 
 export interface ServerPolicyEnvInput {
     proxyBaseUrlOverrideDenylist: string[];
-    /** Already-parsed + validated policy object (see ENVS.NANGO_OUTBOUND_URL_POLICY). */
     outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
 }
 
@@ -124,10 +116,6 @@ export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrl
 export interface RunnerPolicyEnvInput {
     proxyBaseUrlOverrideEnabled?: string | undefined;
     proxyBaseUrlOverrideDenylistRaw?: string | undefined;
-    /**
-     * Already-parsed + validated policy object (see ENVS.NANGO_OUTBOUND_URL_POLICY). The runner passes
-     * this through from its parsed envs; the process.env helper parses the raw JSON before calling.
-     */
     outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
     lambdaRuntimeApi?: string | undefined;
 }

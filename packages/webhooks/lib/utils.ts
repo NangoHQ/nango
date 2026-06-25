@@ -29,13 +29,6 @@ export const RETRY_ATTEMPTS = envs.NANGO_WEBHOOK_RETRY_ATTEMPTS;
 
 export type WebhookAgents = ReturnType<typeof getSafeHttpAgents>;
 
-/**
- * Everything needed to deliver a customer webhook safely: the SSRF policy used for the pre-flight
- * allow-check and redirect cap, the DNS-pinning keep-alive agents, and the per-hop redirect validator.
- * Build once and reuse so the agents can pool connections. Production code uses the env-derived default
- * ({@link deliver} fills it in); callers that need a different transport (e.g. a test delivering to a
- * loopback server) construct their own with {@link createWebhookOutbound} and pass it to {@link deliver}.
- */
 export interface WebhookOutbound {
     policy: OutboundUrlPolicy;
     agents: WebhookAgents;
@@ -60,10 +53,6 @@ export function createWebhookOutbound({ policy, agents }: { policy: OutboundUrlP
 
 let defaultWebhookOutbound: WebhookOutbound | undefined;
 
-/**
- * Env-derived outbound transport for customer webhook delivery (denylist + DNS rebinding / private-IP /
- * redirect controls). Built lazily on first use and memoized so the agents can pool connections.
- */
 function getDefaultWebhookOutbound(): WebhookOutbound {
     if (!defaultWebhookOutbound) {
         const policy = resolvePolicyForServer({
@@ -221,10 +210,6 @@ export const deliver = async ({
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
     onBytes?: (bytes: MeteredBytes) => void;
-    /**
-     * Outbound transport (SSRF policy + DNS-pinning agents + redirect validator). Defaults to the
-     * env-derived production transport; tests inject a permissive one to reach a loopback server.
-     */
     outbound?: WebhookOutbound;
 }): Promise<Result<void>> => {
     let success = true;

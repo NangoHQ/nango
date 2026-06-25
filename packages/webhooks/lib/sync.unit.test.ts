@@ -7,8 +7,6 @@ import { deliver } from './utils.js';
 
 import type { ConnectionJobs, DBAPISecret, DBEnvironment, DBExternalWebhook, DBSyncConfig, DBTeam, IntegrationConfig } from '@nangohq/types';
 
-// The sender decides whether/what to deliver; the on-the-wire behavior is `deliver`'s responsibility
-// (covered in utils.unit.test.ts). Mock `deliver` and assert on the sender's orchestration.
 vi.mock('./utils.js', async (importOriginal) => {
     const actual = await importOriginal<Record<string, unknown>>();
     return { ...actual, deliver: vi.fn() };

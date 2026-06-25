@@ -108,8 +108,6 @@ export function getAxiosConfiguration({
             ...(integrationConfig !== undefined ? { integrationConfig } : {})
         });
     }
-    // Synchronous policy check catches blocked IP literals (loopback, private, link-local, metadata), denied hostnames,
-    // schemes, and allowlist misses. Hostname-based DNS rebinding is caught later by the safe agent.
     if (outboundPolicy) {
         assertSafeOutboundUrlSync(url, outboundPolicy, { context: 'proxy' });
     }
@@ -182,7 +180,6 @@ export function getAxiosConfiguration({
                     cert,
                     key,
                     rejectUnauthorized: false,
-                    // Pin + validate the resolved address against the outbound policy even for mTLS connections.
                     ...(outboundPolicy ? { lookup: getSafeLookup(outboundPolicy) } : {})
                 });
 
@@ -197,9 +194,6 @@ export function getAxiosConfiguration({
         }
     }
 
-    // Outbound URL policy: cap redirects and route every connection (including each redirect hop)
-    // through DNS-pinning Agents that validate the resolved IP, closing DNS-rebinding and
-    // redirect-to-internal-address SSRF holes. mTLS connections already received the safe lookup above.
     if (outboundPolicy) {
         axiosConfig.maxRedirects = outboundPolicy.maxRedirects;
         if (!axiosConfig.httpAgent && !axiosConfig.httpsAgent) {

@@ -16,11 +16,6 @@ const permissivePolicy: OutboundUrlPolicy = {
     maxRedirects: 5
 };
 
-/**
- * Outbound transport for `deliver` tests that hit a loopback test server. The real env-derived policy +
- * DNS-pinning agents always block loopback, so these tests pass this permissive transport (plain
- * keep-alive agents, no resolved-address validation) to `deliver` via its `outbound` arg.
- */
 export function allowAllWebhookOutbound(): WebhookOutbound {
     return createWebhookOutbound({
         policy: permissivePolicy,
