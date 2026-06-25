@@ -152,23 +152,6 @@ Create a new integration.
 await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_KEY>' });
 ```
 
-For providers that declare an `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`), pass `integration_config` to set the provider-specific configuration:
-
-```js
-await nango.createIntegration({
-    provider: 'private-api-generic',
-    unique_key: 'acme-internal',
-    display_name: 'Acme Internal API',
-    integration_config: {
-        baseUrl: 'https://api.acme.com',
-        keyPlacement: 'header',
-        keyName: 'Authorization',
-        valueTemplate: 'Api-Key ${apiKey}',
-        keyLabel: 'Acme API Key'
-    }
-});
-```
-
 **Parameters**
 
 <Expandable>
@@ -184,16 +167,16 @@ await nango.createIntegration({
         The display name of this integration
     </ResponseField>
 
-    <ResponseField name="forward_webhooks" type="boolean">
-        Whether to forward webhooks received for this integration. Defaults to `true`.
-    </ResponseField>
-
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
-        Provider-specific configuration for providers that declare an `integration_config` schema. The keys and required fields depend on the provider, and values are validated against the provider schema.
+        Provider-specific configuration for providers with an `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`). See the provider's integration page for fields.
+    </ResponseField>
+
+    <ResponseField name="forward_webhooks" type="boolean">
+        Whether to forward webhooks received for this integration. Defaults to `true`.
     </ResponseField>
 </Expandable>
 
@@ -221,19 +204,6 @@ Patch an integration. The first argument identifies the integration; all body fi
 await nango.updateIntegration({ uniqueKey: '<UNIQUE_KEY>' }, { display_name: 'New name' });
 ```
 
-Update the provider-specific configuration of a `private-api-generic` (or other `integration_config`) integration:
-
-```js
-await nango.updateIntegration(
-    { uniqueKey: 'acme-internal' },
-    {
-        integration_config: {
-            valueTemplate: 'Bearer ${apiKey}'
-        }
-    }
-);
-```
-
 **Parameters**
 
 <Expandable>
@@ -258,7 +228,11 @@ await nango.updateIntegration(
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
-        Provider-specific configuration for providers that declare an `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`). Only the fields you pass are updated. See [Create an integration](#create-an-integration) for the `private-api-generic` fields.
+        Provider-specific configuration for providers with an `integration_config` schema. Only the fields you pass are updated.
+    </ResponseField>
+
+    <ResponseField name="custom" type="Record<string, string>">
+        Free-form custom values for providers without an `integration_config` schema.
     </ResponseField>
 </Expandable>
 
