@@ -83,6 +83,7 @@ export const forwardWebhook = async ({
 
     if (!connectionIds || connectionIds.length === 0) {
         if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
+            await logCtx.success();
             return Ok({ results: [] });
         }
         const webhooks = toWebhooks(webhookSettings);

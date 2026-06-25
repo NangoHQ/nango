@@ -84,6 +84,29 @@ describe('Webhooks: forward notification tests', () => {
         expect(deliverMock).not.toHaveBeenCalled();
     });
 
+    it('closes the log context when there is no URL to send to (no leaked open operation)', async () => {
+        const logCtx = { attachSpan: vi.fn(), success: vi.fn().mockResolvedValue(undefined), failed: vi.fn().mockResolvedValue(undefined) };
+        const createSpy = vi.spyOn(logContextGetter, 'create').mockResolvedValue(logCtx as unknown as Awaited<ReturnType<typeof logContextGetter.create>>);
+
+        await forwardWebhook({
+            connectionIds: [],
+            connectionConfigByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings: { ...webhookSettings, primary_url: '', secondary_url: '' },
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {}
+        });
+
+        expect(deliverMock).not.toHaveBeenCalled();
+        expect(logCtx.success).toHaveBeenCalledTimes(1);
+        expect(logCtx.failed).not.toHaveBeenCalled();
+        createSpy.mockRestore();
+    });
+
     it('Should not send a forward webhook if forward_webhooks is false', async () => {
         await forwardWebhook({
             connectionIds: [],
