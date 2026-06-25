@@ -45,6 +45,11 @@ try {
     api = server.listen(port, () => {
         logger.info(`🚀 API ready at http://localhost:${port}`);
     });
+    // keepAliveTimeout must exceed the fronting proxy/load balancer idle timeout (e.g. AWS ALB defaults to 60s) so the
+    // proxy closes idle connections first. Node's 5s default closes pooled sockets the proxy still considers reusable,
+    // causing the next request to hit a dead socket -> TCP RST -> 502. Mirrors packages/server/lib/server.ts.
+    api.keepAliveTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT;
+    api.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000; // needs to be longer than the keep alive timeout to avoid premature disconnections
 } catch (err) {
     console.error(`Persist API error`, err);
     process.exit(1);

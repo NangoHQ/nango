@@ -21,6 +21,11 @@ try {
             logger.error(`${id} Unable to register`, res.error);
         }
     });
+    // keepAliveTimeout must exceed the fronting proxy/load balancer idle timeout (e.g. AWS ALB defaults to 60s) so the
+    // proxy closes idle connections first. Node's 5s default closes pooled sockets the proxy still considers reusable,
+    // causing the next request to hit a dead socket -> TCP RST -> 502. Mirrors packages/server/lib/server.ts.
+    srv.keepAliveTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT;
+    srv.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000; // needs to be longer than the keep alive timeout to avoid premature disconnections
 
     const close = () => {
         logger.info(`${id} Closing...`);
