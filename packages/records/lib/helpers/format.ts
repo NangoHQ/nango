@@ -42,7 +42,8 @@ export const formatRecords = ({
             break;
         }
 
-        if (!datum['id']) {
+        // Explicit check rather than `!datum['id']` so a falsy-but-valid id (e.g. the number 0) is not treated as missing
+        if (datum['id'] === undefined || datum['id'] === null || datum['id'] === '') {
             const error = new Error(`Missing id field in record: ${JSON.stringify(datum)}. Model: ${model}`);
             return Err(error);
         }
