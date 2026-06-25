@@ -9,6 +9,9 @@
             "path": "../egress"
         },
         {
+            "path": "../feature-flags"
+        },
+        {
             "path": "../utils"
         },
         {

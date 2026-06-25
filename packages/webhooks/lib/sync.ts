@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { metrics, Ok } from '@nangohq/utils';
 
@@ -69,6 +70,13 @@ export const sendSync = async ({
 
     if (!shouldSend({ success, type: 'sync', webhookSettings: settings })) {
         return Ok(undefined);
+    }
+
+    if (success && operation === 'WEBHOOK') {
+        const shouldSendWebhook = await getFlags().shouldSendSyncCompletedWebhookForWebhookOperation(environment.id, connection.provider_config_key);
+        if (!shouldSendWebhook) {
+            return Ok(undefined);
+        }
     }
 
     const logCtx = await logContextGetter.create(

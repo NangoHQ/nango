@@ -7,6 +7,14 @@ import { deliver } from './utils.js';
 
 import type { ConnectionJobs, DBAPISecret, DBEnvironment, DBExternalWebhook, DBSyncConfig, DBTeam, IntegrationConfig } from '@nangohq/types';
 
+const shouldSendSyncCompletedWebhookForWebhookOperation = vi.fn().mockResolvedValue(true);
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({
+        shouldSendSyncCompletedWebhookForWebhookOperation
+    })
+}));
+
 vi.mock('./utils.js', async (importOriginal) => {
     const actual = await importOriginal<Record<string, unknown>>();
     return { ...actual, deliver: vi.fn() };
@@ -96,6 +104,7 @@ describe('Webhooks: sync notification tests', () => {
     beforeEach(() => {
         deliverMock.mockReset();
         deliverMock.mockResolvedValue(Ok(undefined));
+        shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(true);
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
@@ -404,5 +413,57 @@ describe('Webhooks: sync notification tests', () => {
             success: false,
             error
         });
+    });
+
+    it('Should not send a webhook-triggered sync completion webhook when the feature flag disables it', async () => {
+        shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(false);
+
+        await sendSync({
+            account,
+            connection,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            providerConfig,
+            syncConfig,
+            syncVariant: 'base',
+            model: 'model',
+            responseResults: { added: 10, updated: 0, deleted: 0 },
+            success: true,
+            operation: 'WEBHOOK',
+            now: new Date(),
+            webhookSettings
+        });
+
+        expect(shouldSendSyncCompletedWebhookForWebhookOperation).toHaveBeenCalledWith(1, connection.provider_config_key);
+        expect(deliverMock).not.toHaveBeenCalled();
+    });
+
+    it('Should still send webhook-triggered sync error webhooks when the feature flag disables completion webhooks', async () => {
+        shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(false);
+
+        await sendSync({
+            account,
+            connection,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            providerConfig,
+            syncConfig,
+            syncVariant: 'base',
+            model: 'model',
+            success: false,
+            error: {
+                type: 'error',
+                description: 'error description'
+            },
+            operation: 'WEBHOOK',
+            now: new Date(),
+            webhookSettings: {
+                ...webhookSettings,
+                on_sync_error: true
+            }
+        });
+
+        expect(shouldSendSyncCompletedWebhookForWebhookOperation).not.toHaveBeenCalled();
+        expect(deliverMock).toHaveBeenCalledTimes(1);
     });
 });

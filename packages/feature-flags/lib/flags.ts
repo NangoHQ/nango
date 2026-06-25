@@ -25,6 +25,21 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         shouldKeepActionTrace(environmentId: number) {
             return client.isEnabled('action-trace-manual-keep', { targetingKey: String(environmentId), environmentId }, false);
+        },
+        /**
+         * Whether to send sync completion webhooks when the sync was triggered by an incoming
+         * provider webhook (`syncType: WEBHOOK`). Default `true` (preserve existing behavior).
+         */
+        shouldSendSyncCompletedWebhookForWebhookOperation(environmentId: number, providerConfigKey: string) {
+            return client.isEnabled(
+                'sync-completion-webhook-for-webhook-operation',
+                {
+                    targetingKey: `${environmentId}:${providerConfigKey}`,
+                    environmentId,
+                    providerConfigKey
+                },
+                true
+            );
         }
     };
 }
