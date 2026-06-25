@@ -320,7 +320,8 @@ describe('Webhooks: auth notification tests', () => {
     });
 
     it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {
-        const connectionWithOverride = { ...connection, connection_config: { webhook_url: testServer.overrideUrl } };
+        const overrideUrl = 'https://override.example.com/hook';
+        const connectionWithOverride = { ...connection, connection_config: { webhook_url: overrideUrl } };
 
         await sendAuth({
             connection: connectionWithOverride,
@@ -340,12 +341,13 @@ describe('Webhooks: auth notification tests', () => {
             operation: 'creation'
         });
 
-        expect(spy).toHaveBeenCalledTimes(1);
-        expect(spy).toHaveBeenCalledWith(testServer.overrideUrl, expect.any(String), expect.anything());
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
     });
 
     it('routes a connection-creation failure webhook to the per-connection override URL', async () => {
-        const connectionWithOverride = { ...connection, connection_config: { webhook_url: testServer.overrideUrl } };
+        const overrideUrl = 'https://override.example.com/hook';
+        const connectionWithOverride = { ...connection, connection_config: { webhook_url: overrideUrl } };
 
         await sendAuth({
             connection: connectionWithOverride,
@@ -366,8 +368,8 @@ describe('Webhooks: auth notification tests', () => {
             operation: 'creation'
         });
 
-        expect(spy).toHaveBeenCalledTimes(1);
-        expect(spy).toHaveBeenCalledWith(testServer.overrideUrl, expect.any(String), expect.anything());
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
     });
 
     describe('tags', () => {

@@ -106,17 +106,18 @@ describe('AsyncAction webhooks', () => {
             { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
         );
 
+        const overrideUrl = 'https://override.example.com/hook';
         await sendAsyncActionWebhook({
             connectionId: '123',
             secret,
             providerConfigKey: 'some-provider',
-            connectionConfig: { webhook_url: testServer.overrideUrl },
+            connectionConfig: { webhook_url: overrideUrl },
             webhookSettings,
             payload: { id: '00000000-0000-0000-0000-000000000000', statusUrl: '/action/00000000-0000-0000-0000-000000000000' },
             logCtx
         });
 
-        expect(spy).toHaveBeenCalledTimes(1);
-        expect(spy).toHaveBeenCalledWith(testServer.overrideUrl, expect.any(String), expect.anything());
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
     });
 });
