@@ -18079,7 +18079,7 @@ sap-business-one:
         - erp
     body_format: json
     auth_mode: TWO_STEP
-    token_url: https://${connectionConfig.domain}/login
+    token_url: https://${connectionConfig.domain}/Login
     token_params:
         CompanyDB: ${connectionConfig.companyDb}
         UserName: ${credentials.userName}
@@ -18103,7 +18103,7 @@ sap-business-one:
             type: string
             title: Service Layer URL
             prefix: https://
-            suffix: /login
+            suffix: /Login
             pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
             order: 1
             description: The base URL for your SAP Business One Service Layer
