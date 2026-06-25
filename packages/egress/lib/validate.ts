@@ -198,10 +198,6 @@ export async function validateOutboundUrlAsync(url: string, policy: OutboundUrlP
         return syncResult;
     }
 
-    if (!policy.resolveDns) {
-        return syncResult;
-    }
-
     const hostname = syncResult.hostname;
     if (net.isIP(hostname)) {
         return syncResult;

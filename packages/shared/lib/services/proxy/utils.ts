@@ -108,8 +108,8 @@ export function getAxiosConfiguration({
             ...(integrationConfig !== undefined ? { integrationConfig } : {})
         });
     }
-    // Synchronous policy check catches blocked IP literals (loopback, private, link-local, metadata), denied
-    // hostnames, schemes, and allowlist misses. Hostname-based DNS rebinding is caught later by the safe agent.
+    // Synchronous policy check catches blocked IP literals (loopback, private, link-local, metadata), denied hostnames,
+    // schemes, and allowlist misses. Hostname-based DNS rebinding is caught later by the safe agent.
     if (outboundPolicy) {
         assertSafeOutboundUrlSync(url, outboundPolicy, { context: 'proxy' });
     }

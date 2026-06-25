@@ -86,8 +86,6 @@ export const ENVS = z.object({
                     allowlist: z.array(z.string()).optional(),
                     blockPrivateIps: z.boolean().optional(),
                     blockLinkLocal: z.boolean().optional(),
-                    resolveDns: z.boolean().optional(),
-                    allowedSchemes: z.array(z.string()).optional(),
                     maxRedirects: z.number().int().nonnegative().optional()
                 })
                 // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of

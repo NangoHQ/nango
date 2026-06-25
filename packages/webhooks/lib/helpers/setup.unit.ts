@@ -12,7 +12,6 @@ const permissivePolicy: OutboundUrlPolicy = {
     allowlist: [],
     blockPrivateIps: false,
     blockLinkLocal: false,
-    resolveDns: false,
     allowedSchemes: new Set(['http:', 'https:']),
     maxRedirects: 5
 };

@@ -5,9 +5,7 @@ import { ActionError } from './errors.js';
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { HTTP_METHOD } from '@nangohq/types';
 
-const UNCONTROLLED_FETCH_MAX_REDIRECTS = 5;
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
-const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
 
 const makeActionError = (code: string, message: string) => {
     return new ActionError({ code, message });
@@ -104,8 +102,8 @@ export async function executeUncontrolledFetch(
         // We're about to follow the redirect; we won't return this response, so cancel its body.
         void response.body?.cancel();
 
-        if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
-            throw makeActionError('too_many_redirects', `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`);
+        if (redirectsFollowed >= policy.maxRedirects) {
+            throw makeActionError('too_many_redirects', `Exceeded maximum of ${policy.maxRedirects} redirects.`);
         }
 
         let nextUrl: URL;
@@ -115,8 +113,8 @@ export async function executeUncontrolledFetch(
             throw makeActionError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
         }
 
-        // Native fetch rejects redirects to non-HTTP(S) schemes.
-        if (!ALLOWED_REDIRECT_PROTOCOLS.has(nextUrl.protocol)) {
+        // Reject redirects to schemes not permitted by the policy (defaults to http/https).
+        if (!policy.allowedSchemes.has(nextUrl.protocol)) {
             throw makeActionError('invalid_redirect', 'Redirect Location must use http: or https:.');
         }
 

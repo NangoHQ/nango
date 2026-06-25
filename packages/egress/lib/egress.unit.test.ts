@@ -111,8 +111,7 @@ describe('egress allowlist mode', () => {
             outboundUrlPolicy: {
                 mode: 'allowlist',
                 allowlist: ['.example.com', 'api.hubspot.com'],
-                blockPrivateIps: false,
-                resolveDns: false
+                blockPrivateIps: false
             }
         });
         expect(validateOutboundUrlSync('https://api.example.com/x', policy).ok).toBe(true);

@@ -209,6 +209,21 @@ describe('uncontrolledFetch', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it('honors maxRedirects from the outbound policy', async () => {
+        vi.stubEnv('NANGO_OUTBOUND_URL_POLICY', JSON.stringify({ maxRedirects: 1 }));
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'https://example.org/next' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('https://example.com/start') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'too_many_redirects' }
+        });
+        // Initial request + one followed redirect, then capped by the policy's maxRedirects.
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
     it('strips sensitive headers when redirecting to a different origin', async () => {
         const fetchMock = vi
             .fn()

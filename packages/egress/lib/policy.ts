@@ -15,8 +15,6 @@ export interface OutboundUrlPolicyRaw {
     allowlist?: string[] | undefined;
     blockPrivateIps?: boolean | undefined;
     blockLinkLocal?: boolean | undefined;
-    resolveDns?: boolean | undefined;
-    allowedSchemes?: string[] | undefined;
     maxRedirects?: number | undefined;
 }
 
@@ -26,7 +24,6 @@ export interface OutboundUrlPolicy {
     allowlist: string[];
     blockPrivateIps: boolean;
     blockLinkLocal: boolean;
-    resolveDns: boolean;
     allowedSchemes: Set<string>;
     maxRedirects: number;
 }
@@ -37,7 +34,6 @@ export const DEFAULT_OUTBOUND_URL_POLICY: OutboundUrlPolicy = {
     allowlist: [],
     blockPrivateIps: true,
     blockLinkLocal: true,
-    resolveDns: true,
     allowedSchemes: new Set(['http:', 'https:']),
     maxRedirects: 5
 };
@@ -68,8 +64,6 @@ function mergePolicyRaw(base: OutboundUrlPolicyRaw, overlay: OutboundUrlPolicyRa
     if (overlay.allowlist !== undefined) merged.allowlist = overlay.allowlist;
     if (overlay.blockPrivateIps !== undefined) merged.blockPrivateIps = overlay.blockPrivateIps;
     if (overlay.blockLinkLocal !== undefined) merged.blockLinkLocal = overlay.blockLinkLocal;
-    if (overlay.resolveDns !== undefined) merged.resolveDns = overlay.resolveDns;
-    if (overlay.allowedSchemes !== undefined) merged.allowedSchemes = overlay.allowedSchemes;
     if (overlay.maxRedirects !== undefined) merged.maxRedirects = overlay.maxRedirects;
     return merged;
 }
@@ -84,8 +78,8 @@ function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): Outb
         allowlist: raw.allowlist ?? [],
         blockPrivateIps: raw.blockPrivateIps ?? true,
         blockLinkLocal: raw.blockLinkLocal ?? true,
-        resolveDns: raw.resolveDns ?? true,
-        allowedSchemes: new Set(raw.allowedSchemes ?? ['http:', 'https:']),
+        // Fixed, non-operator-editable security boundary: only http/https are ever permitted.
+        allowedSchemes: new Set(['http:', 'https:']),
         maxRedirects: raw.maxRedirects ?? 5
     };
 }
