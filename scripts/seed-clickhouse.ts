@@ -81,12 +81,24 @@ function parseArgs() {
         const i = argv.indexOf(`--${name}`);
         return i >= 0 ? argv[i + 1] : undefined;
     };
+    const fail = (message: string): never => {
+        console.error(`✗ ${message}`);
+        process.exit(1);
+    };
+
     const account = value('account');
+    if (account !== undefined && !/^\d+$/.test(account)) {
+        fail(`--account must be a non-negative integer, got "${account}".`);
+    }
     const days = value('days');
+    if (days !== undefined && (!/^\d+$/.test(days) || Number(days) === 0)) {
+        fail(`--days must be a positive integer, got "${days}".`);
+    }
     return {
-        onlyAccount: account ? Number(account) : undefined,
-        days: days ? Number(days) : 30,
-        reset: !argv.includes('--no-reset')
+        onlyAccount: account !== undefined ? Number(account) : undefined,
+        days: days !== undefined ? Number(days) : 30,
+        reset: !argv.includes('--no-reset'),
+        allowRemote: argv.includes('--allow-remote')
     };
 }
 
@@ -298,12 +310,25 @@ async function resolveTargets(
 }
 
 async function main() {
-    const { onlyAccount, days, reset } = parseArgs();
+    const { onlyAccount, days, reset, allowRemote } = parseArgs();
 
-    if (!process.env['CLICKHOUSE_URL']) {
+    const clickhouseUrl = process.env['CLICKHOUSE_URL'];
+    if (!clickhouseUrl) {
         console.error('✗ CLICKHOUSE_URL is not set.');
         console.error('  Add to .env:  CLICKHOUSE_URL=http://default:@localhost:8123');
         console.error('  And start the container:  npm run dev:docker');
+        process.exit(1);
+    }
+
+    // This script DROPs and re-seeds the `usage` database, so refuse to run against a
+    // non-local ClickHouse — a stray CLICKHOUSE_URL must not be able to wipe a remote
+    // instance. --allow-remote overrides (you almost certainly shouldn't).
+    const host = new URL(clickhouseUrl).hostname;
+    const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+    if (!LOCAL_HOSTS.has(host) && !allowRemote) {
+        console.error(`✗ Refusing to run against non-local ClickHouse host "${host}".`);
+        console.error('  This script resets and seeds synthetic data — it is meant for local dev only.');
+        console.error('  Pass --allow-remote to override.');
         process.exit(1);
     }
 
@@ -359,21 +384,29 @@ async function main() {
             for (const [offset, batchId] of dayBatchIds.entries()) {
                 events.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId));
             }
-            // Insert in chunks to keep batch sizes sane; the batcher flushes the rest.
+            // Flush each chunk before generating the next. The whole generate loop is
+            // synchronous and never yields, so the batcher's auto-flush can't run mid-loop;
+            // without awaiting here the queue fills past maxQueueSize (default 500k) and
+            // silently drops the tail on long runs (large --days or many accounts). Awaiting
+            // flush per chunk applies backpressure and keeps the queue near-empty; the chunk
+            // stays below maxBatchSize so each flush drains it fully. Transient insert errors
+            // are retried by the batcher on the next flush / during shutdown.
             for (let i = 0; i < events.length; i += 1_000) {
                 clickhouse.addRaw(events.slice(i, i + 1_000));
+                await clickhouse.flush();
             }
             total += events.length;
             console.log(`  account ${accountId} · env ${env.id} (${env.name}): ${events.length} events`);
         }
     }
 
-    const flushed = await clickhouse.flush();
-    if (flushed.isErr()) {
-        console.error(`✗ Flush failed: ${flushed.error}`);
+    // shutdown() drains anything still queued, retrying within its timeout. If it errors,
+    // some events were dropped — fail loudly rather than report a count that didn't land.
+    const drained = await clickhouse.shutdown();
+    if (drained.isErr()) {
+        console.error(`✗ Not all events were persisted: ${drained.error}`);
         process.exit(1);
     }
-    await clickhouse.shutdown();
 
     const fromDay = new Date(dayTs(days - 1)).toISOString().split('T')[0];
     const toDay = new Date(dayTs(0)).toISOString().split('T')[0];

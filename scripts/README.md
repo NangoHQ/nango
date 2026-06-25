@@ -40,6 +40,8 @@ NANGO_REDIS_URL=redis://localhost:6379                 # else the server uses a 
 
 The seed itself only needs `CLICKHOUSE_URL` and a Postgres connection; the flags above are what make the dashboard actually read and render the data. With no Orb configured, billing falls back to a no-op client automatically.
 
+It drops and reseeds the `usage` database, so it refuses to run unless `CLICKHOUSE_URL` points at a local host (`localhost`/`127.0.0.1`). Pass `--allow-remote` to override.
+
 **Shared across worktrees** — ClickHouse runs in the shared `clickhouse` Docker container, so every worktree reads the same `usage` database. Seed once from any worktree and the data is visible everywhere; there's no need to re-seed per worktree.
 
 ### Test data shape
