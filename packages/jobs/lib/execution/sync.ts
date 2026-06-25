@@ -717,7 +717,11 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         }
         const { account: team, environment } = accountAndEnv;
 
-        const abortedScript = await abortTaskWithId({ taskId: task.abortedTask.id, teamId: team.id });
+        const abortedScript = await abortTaskWithId({
+            taskId: task.abortedTask.id,
+            teamId: team.id,
+            environmentId: task.connection.environment_id
+        });
         if (abortedScript.isErr()) {
             logger.error(`failed to abort script for task ${task.abortedTask.id}`, abortedScript.error);
         }

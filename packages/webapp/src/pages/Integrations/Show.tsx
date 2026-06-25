@@ -6,13 +6,13 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -40,6 +40,7 @@ export const IntegrationsList = () => {
     const initialIntegrations = useMemo(() => {
         return data?.data ?? null;
     }, [data?.data]);
+    const integrationsCount = initialIntegrations?.length ?? 0;
 
     useEffect(() => {
         if (initialIntegrations) {
@@ -101,13 +102,13 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-3">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
             <header className="flex items-center gap-3">
                 <InputGroup className="h-10 flex-1">
-                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
+                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} />
                     <InputGroupAddon>
                         <Search />
                     </InputGroupAddon>
@@ -120,6 +121,14 @@ export const IntegrationsList = () => {
                     )}
                 </PermissionGate>
             </header>
+
+            {!isPending && data?.data && data.data.length > 0 && (
+                <div className="flex items-center justify-end">
+                    <span className="text-text-muted text-body-small-regular">
+                        {integrationsCount} {integrationsCount === 1 ? 'integration' : 'integrations'}
+                    </span>
+                </div>
+            )}
 
             <AutoIdlingBanner />
 

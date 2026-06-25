@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
-import { Input } from '@/components/ui/Input';
 import { Button } from '../src/components/ui/button';
+import { Input } from '../src/components/ui/input';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

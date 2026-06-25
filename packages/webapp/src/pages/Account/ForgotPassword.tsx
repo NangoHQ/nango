@@ -5,11 +5,10 @@ import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { useToast } from '@/hooks/useToast';
 import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';

@@ -18109,7 +18109,7 @@ sap-business-one:
         - erp
     body_format: json
     auth_mode: TWO_STEP
-    token_url: https://${connectionConfig.domain}/login
+    token_url: https://${connectionConfig.domain}/Login
     token_params:
         CompanyDB: ${connectionConfig.companyDb}
         UserName: ${credentials.userName}
@@ -18133,7 +18133,7 @@ sap-business-one:
             type: string
             title: Service Layer URL
             prefix: https://
-            suffix: /login
+            suffix: /Login
             pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
             order: 1
             description: The base URL for your SAP Business One Service Layer
@@ -20549,7 +20549,7 @@ tanium:
         verification:
             method: GET
             endpoints:
-                - /v2/session/info
+                - /v2/session/current
     docs: https://nango.dev/docs/api-integrations/tanium
     docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
     credentials:
@@ -20562,8 +20562,8 @@ tanium:
         hostname:
             type: string
             title: Hostname
-            description: Your Tanium Cloud hostname.
-            example: acme.cloud.tanium.com
+            description: Your Tanium Cloud API hostname.
+            example: acme-api.cloud.tanium.com
             format: hostname
             prefix: https://
             doc_section: '#step-2-find-your-hostname'

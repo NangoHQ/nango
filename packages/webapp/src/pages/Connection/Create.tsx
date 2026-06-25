@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconBook } from '@tabler/icons-react';
-import { ExternalLink } from 'lucide-react';
+import { Book, ExternalLink } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
@@ -106,7 +105,7 @@ export const ConnectionCreate: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout title="Create test connection">
+            <DashboardLayout fullWidth title="Create test connection" className={'max-w-[1250px]'}>
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
@@ -175,7 +174,7 @@ export const ConnectionCreate: React.FC = () => {
                                     <h2>Authorize users from your app</h2>
                                 </div>
                                 <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                                    <IconBook stroke={1} size={18} />
+                                    <Book strokeWidth={1} size={18} />
                                 </div>
                             </header>
                             <main>

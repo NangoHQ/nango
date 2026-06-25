@@ -1,4 +1,4 @@
-import { IconBrandGithub } from '@tabler/icons-react';
+import { Github } from 'lucide-react';
 import { useCallback, useRef } from 'react';
 import { useUnmount } from 'react-use';
 
@@ -123,7 +123,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 </div>
                 <div className="w-fit">
                     <Button variant="outline" size="xl" onClick={onClickDisconnect} loading={isDeletingConnection}>
-                        <IconBrandGithub className="size-5 mr-2" />
+                        <Github className="size-5 mr-2" />
                         Disconnect from Github
                     </Button>
                 </div>
@@ -146,7 +146,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
             </div>
             <div className="w-fit">
                 <Button variant="primary" size="xl" onClick={onClickConnect}>
-                    <IconBrandGithub className="size-5" />
+                    <Github className="size-5" />
                     Connect to Github
                 </Button>
             </div>

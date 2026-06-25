@@ -71,6 +71,27 @@ export function buildBreakdownChartData(
 }
 
 /**
+ * Headline total for the visible subset of a stacked breakdown — recomputed as the user
+ * isolates/hides series, so the number above the chart tracks what's actually drawn.
+ * Counter metrics sum every day across the visible series; running-average ("cumulative")
+ * metrics take the stacked value on the latest day with data (the month's running average).
+ */
+export function visibleBreakdownTotal(rows: BreakdownChartRow[], visibleKeys: string[], isCumulative: boolean, todayDateKey: string): number {
+    if (visibleKeys.length === 0) return 0;
+    const sumRow = (row: BreakdownChartRow) =>
+        visibleKeys.reduce((sum, key) => {
+            const value = row[key];
+            return sum + (typeof value === 'number' ? value : 0);
+        }, 0);
+    if (isCumulative) {
+        const past = rows.filter((row) => typeof row.date === 'string' && row.date <= todayDateKey);
+        const last = past[past.length - 1];
+        return last ? sumRow(last) : 0;
+    }
+    return rows.reduce((sum, row) => sum + sumRow(row), 0);
+}
+
+/**
  * "No data this month", a property of the base metric (independent of breakdown).
  * Guarded on `data` being defined — an empty array is vacuously "every" falsy, which
  * would collapse the card to its empty state before the first response arrives.

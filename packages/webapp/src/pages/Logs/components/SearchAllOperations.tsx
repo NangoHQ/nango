@@ -1,16 +1,15 @@
-import { IconSearch, IconX } from '@tabler/icons-react';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { Search, X } from 'lucide-react';
 import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
 
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
@@ -251,23 +250,18 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     };
 
     return (
-        <>
-            <div className="flex justify-end items-center mb-2">
-                <div className="text-text-strong text-xs">
-                    {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
-                </div>
-            </div>
-            <div className="flex gap-2 justify-between mb-4">
+        <div className="flex h-full min-h-0 flex-col gap-3">
+            <div className="flex gap-2 justify-between">
                 <div className="flex-1 min-w-0">
                     <InputGroup className="border-border-muted">
                         <InputGroupAddon>
-                            <IconSearch stroke={1} size={16} />
+                            <Search strokeWidth={1} size={16} />
                         </InputGroupAddon>
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
                                 <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
-                                    <IconX stroke={1} size={18} />
+                                    <X strokeWidth={1} size={18} />
                                 </InputGroupButton>
                             </InputGroupAddon>
                         )}
@@ -287,6 +281,11 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         presets={logsPresets}
                         defaultPreset={last24hPreset}
                     />
+                </div>
+            </div>
+            <div className="flex items-center justify-end">
+                <div className="text-text-muted text-body-small-regular">
+                    {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
             <div
@@ -355,7 +354,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     )}
                 </table>
             </div>
-        </>
+        </div>
     );
 };
 

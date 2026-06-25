@@ -1,7 +1,8 @@
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Label } from '@/components/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';

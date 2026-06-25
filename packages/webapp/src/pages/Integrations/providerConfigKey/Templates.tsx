@@ -4,13 +4,14 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { AlertButton } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { EmptyCard } from '@/components/ui/EmptyCard';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -249,6 +250,7 @@ export const Templates: React.FC = () => {
                             key={`${selected.type}:${selected.name}`}
                             template={selected}
                             provider={integrationData.integration.provider}
+                            symLinkTargetName={integrationData.symLinkTargetName}
                             onDeploy={onDeploy}
                             isDeploying={isDeploying}
                         />

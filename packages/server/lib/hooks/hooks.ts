@@ -7,6 +7,7 @@ import {
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
+    getServerOutboundUrlPolicy,
     makeDataTransferEvent,
     NangoError,
     productTracking,
@@ -441,6 +442,7 @@ export async function credentialsTest({
                     void logCtx.log(msg);
                 },
                 proxyConfig,
+                outboundPolicy: getServerOutboundUrlPolicy(),
                 getConnection: () => {
                     return connection;
                 },

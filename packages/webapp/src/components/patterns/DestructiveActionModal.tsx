@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Input } from '@nangohq/design-system';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../ui/Dialog';
-import { Input } from '../ui/Input';
 
 interface DestructiveActionModalProps {
     title: string;

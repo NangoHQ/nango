@@ -1,8 +1,9 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
+import { Input } from '@nangohq/design-system';
+
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Input } from '@/components/ui/Input';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';

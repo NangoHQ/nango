@@ -36,6 +36,9 @@ interface BreakdownChartProps {
  */
 export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, config, isCumulative, isBreakdown, series, todayDateKey, interactions }) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
+    // Clicking a band isolates that series (shows only it; click again shows all) — a
+    // client-only view change, never a query change. Filtering lives on the Filter control.
+    const bandClick = (s: ChartSeries) => () => toggleIsolate(s.key);
     const ChartComponent = isCumulative ? AreaChart : BarChart;
 
     // Stacking follows declaration order (first series = bottom), so pin the neutral
@@ -61,12 +64,13 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                             dot={false}
                             // The active dot sits on top of the band; mirror the band's handlers so
                             // hovering it doesn't drop the highlight / single-series tooltip.
-                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: () => toggleIsolate(s.key) }}
+                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: bandClick(s) }}
                             hide={isSeriesHidden(s.key)}
                             isAnimationActive={false}
                             onMouseEnter={() => hoverSeries(s.key)}
                             onMouseLeave={() => unhoverSeries()}
-                            onClick={() => toggleIsolate(s.key)}
+                            onClick={bandClick(s)}
+                            className="cursor-pointer"
                         />
                     );
                 }
@@ -81,7 +85,8 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                         isAnimationActive={false}
                         onMouseEnter={() => hoverSeries(s.key)}
                         onMouseLeave={() => unhoverSeries()}
-                        onClick={() => toggleIsolate(s.key)}
+                        onClick={bandClick(s)}
+                        className="cursor-pointer"
                     />
                 );
             });
@@ -155,7 +160,10 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
     return (
         <ChartContainer config={config} className="flex-1 min-h-0 w-full">
             <ChartComponent accessibilityLayer data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={4}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border-muted)" />
+                {/* syncWithTicks: draw grid lines only at the axis ticks. Without it, the YAxis
+                    `padding.top` shifts the top tick off the plot's top edge and recharts back-fills a
+                    stray line at that edge — a phantom gridline above the top tick. */}
+                <CartesianGrid vertical={false} syncWithTicks strokeDasharray="3 3" stroke="var(--color-border-muted)" />
                 <XAxis
                     dataKey="date"
                     tickLine={false}
