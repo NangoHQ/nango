@@ -137,6 +137,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
+    ORCHESTRATOR_SCHEDULING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
     // Tasks (generic server-side task queue, see @nangohq/tasks). Runs in an isolated schema on the main Nango DB.
     TASKS_DATABASE_SCHEMA: z
