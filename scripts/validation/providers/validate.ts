@@ -44,7 +44,14 @@ const scriptsContent = fs.readFileSync(pathConnectionScripts, 'utf-8');
 console.log('validating...');
 validator(providersJson);
 if (validator.errors) {
-    console.error(chalk.red('error'), validator.errors);
+    for (const err of validator.errors) {
+        // AJV v6 dataPath looks like "['<providerKey>'].proxy.headers"; surface the provider so contributors know where to look
+        const dataPath = err.dataPath || '';
+        const providerKey = dataPath.match(/^\['([^']+)'\]/)?.[1] || '(root)';
+        const location = dataPath || '(root)';
+        const details = err.params && Object.keys(err.params).length > 0 ? ` ${JSON.stringify(err.params)}` : '';
+        console.error(chalk.red('error'), chalk.blue(providerKey), `${location} ${err.message}${details}`);
+    }
     process.exit(1);
 }
 
@@ -252,6 +259,16 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     } else if (provider.auth_mode === 'OAUTH2_CC') {
         if (!provider.credentials) {
             console.warn(chalk.yellow('warning'), chalk.blue(providerKey), `"credentials" are not defined for OAUTH2_CC auth mode`);
+        }
+    } else if (provider.auth_mode === 'OAUTH2') {
+        if (!provider.token_url) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"token_url" must be defined for OAUTH2 providers`);
+            error = true;
+        }
+        // The authorization code can also arrive via a webhook instead of a redirect, in which case there is no authorization_url
+        if (!provider.authorization_url && !provider.authorization_code_param_in_webhook) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"authorization_url" must be defined for OAUTH2 providers`);
+            error = true;
         }
     } else if (provider.auth_mode === 'AWS_SIGV4') {
         if (!provider.credentials) {
