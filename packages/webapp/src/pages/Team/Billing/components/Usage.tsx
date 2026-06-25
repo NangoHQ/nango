@@ -8,7 +8,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { useGlobalBreakdown } from '../useGlobalBreakdown';
+import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { UsageChartCard } from './UsageChartCard';
 
 import type { DBPlan, UsageMetric } from '@nangohq/types';
@@ -46,7 +46,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source);
 
-    const { isDivergingFromGlobal, applyToAll } = useGlobalBreakdown(METRICS);
+    const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;
