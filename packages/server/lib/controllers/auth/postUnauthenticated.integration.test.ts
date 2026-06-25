@@ -41,7 +41,9 @@ describe(`GET ${endpoint}`, () => {
         });
     });
 
-    it('should reject a webhook_url override pointing to nango.dev', async () => {
+    // webhook_url is privileged: an untrusted client must not be able to redirect a connection's webhooks
+    // by passing it as a param. It is silently dropped and never persisted from this path.
+    it('ignores a client-supplied webhook_url param and does not store it', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
@@ -54,33 +56,7 @@ describe(`GET ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            query: { connect_session_token: resSession.json.data.token, params: { webhook_url: 'https://api.nango.dev/hook' } },
-            params: { providerConfigKey: config.unique_key }
-        });
-
-        isError(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            error: {
-                code: 'invalid_query_params',
-                errors: [{ code: 'custom', message: `Webhook URLs cannot point to Nango's domain (nango.dev).`, path: ['params', 'webhook_url'] }]
-            }
-        });
-    });
-
-    it('should store a valid webhook_url override in connection_config', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
-
-        const resSession = await api.fetch('/connect/sessions', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
-        });
-        isSuccess(resSession.json);
-
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            query: { connect_session_token: resSession.json.data.token, params: { webhook_url: 'https://example.com/webhooks-from-nango' } },
+            query: { connect_session_token: resSession.json.data.token, params: { webhook_url: 'https://attacker.example.com/hook' } },
             params: { providerConfigKey: config.unique_key }
         });
         isSuccess(res.json);
@@ -90,7 +66,36 @@ describe(`GET ${endpoint}`, () => {
             providerConfigKey: res.json.providerConfigKey,
             environmentId: env.id
         });
-        expect(connection?.connection_config).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
+        expect(connection?.connection_config).toStrictEqual({});
+    });
+
+    it('rejects a nango.dev webhook_url set as a connect session default', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                end_user: { id: '1', email: 'john@example.com' },
+                allowed_integrations: ['unauthenticated'],
+                integrations_config_defaults: { unauthenticated: { connection_config: { webhook_url: 'https://api.nango.dev/hook' } } }
+            }
+        });
+
+        isError(resSession.json);
+        expect(resSession.json).toStrictEqual<typeof resSession.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
+                        path: ['integrations_config_defaults', 'unauthenticated', 'connection_config', 'webhook_url']
+                    }
+                ]
+            }
+        });
     });
 
     it('should apply a webhook_url override set as a connect session default (without passing it as a param)', async () => {

@@ -2,7 +2,14 @@ import { URL } from 'url';
 
 import * as z from 'zod';
 
-import { connectionTagsKeySchema, connectionTagsSchema, getServerOutboundUrlPolicy, isOutboundUrlAllowed, TAG_MAX_COUNT, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
+import {
+    connectionTagsKeySchema,
+    connectionTagsSchema,
+    getServerOutboundUrlPolicy,
+    isOutboundUrlAllowed,
+    TAG_MAX_COUNT,
+    validateCaseInsensitiveTagKeys
+} from '@nangohq/shared';
 
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
 
@@ -29,7 +36,10 @@ export const webhookUrlSchema = z
         { message: 'This webhook URL is not allowed.' }
     );
 
-export const connectionConfigParamsSchema = z.looseObject({ webhook_url: webhookUrlSchema }).optional();
+// Connection params come from untrusted clients. `webhook_url` is intentionally NOT accepted here: it is a
+// privileged routing directive set only by the backend via the connect session (see postSessions). Any
+// client-supplied `webhook_url` is stripped in getConnectionConfig.
+export const connectionConfigParamsSchema = z.looseObject({}).optional();
 
 export const providerSchema = z
     .string()

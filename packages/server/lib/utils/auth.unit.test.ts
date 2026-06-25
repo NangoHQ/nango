@@ -71,4 +71,23 @@ describe('resolveConnectionConfig', () => {
             webhook_url: 'https://example.com/hook'
         });
     });
+
+    // webhook_url is privileged: an untrusted client must not be able to redirect a connection's webhooks
+    // by passing it as a request param. It is only honored from the (backend-set) connect session defaults.
+    it('drops a client-supplied webhook_url param', () => {
+        expect(
+            resolveConnectionConfig({
+                params: { subdomain: 'acme', webhook_url: 'https://attacker.example.com/hook' },
+                connectSession: undefined,
+                providerConfigKey: 'github'
+            })
+        ).toEqual({ subdomain: 'acme' });
+    });
+
+    it('ignores a client webhook_url param even when the session pins its own', () => {
+        const connectSession = connectSessionWith({ webhook_url: 'https://backend.example.com/hook' });
+        expect(resolveConnectionConfig({ params: { webhook_url: 'https://attacker.example.com/hook' }, connectSession, providerConfigKey: 'github' })).toEqual({
+            webhook_url: 'https://backend.example.com/hook'
+        });
+    });
 });
