@@ -334,7 +334,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
     } catch (err) {
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
                 environment,
                 account,
                 auth_mode: 'AWS_SIGV4',

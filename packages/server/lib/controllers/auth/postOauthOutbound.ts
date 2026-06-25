@@ -220,7 +220,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
         if (logCtx) {
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
                     environment,
                     account,
                     auth_mode: 'OAUTH2',
