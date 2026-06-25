@@ -25,6 +25,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         shouldKeepActionTrace(environmentId: number) {
             return client.isEnabled('action-trace-manual-keep', { targetingKey: String(environmentId), environmentId }, false);
+        },
+        /**
+         * Demo flag: when enabled, the dashboard shows an obvious banner.
+         * Used to showcase backend-driven feature flags end to end. Default `false`.
+         */
+        isDemoBannerEnabled(accountUuid: string) {
+            return client.isEnabled('demo-banner', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

@@ -14,6 +14,7 @@ export type GetMeta = Endpoint<{
             debugMode: boolean;
             gettingStartedClosed: boolean;
             billingUsageSource: 'clickhouse' | 'orb';
+            demoBanner: boolean;
         };
     };
 }>;

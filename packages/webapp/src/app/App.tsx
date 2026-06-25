@@ -44,6 +44,26 @@ const App = () => {
 
     return (
         <>
+            {meta?.demoBanner && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 9999,
+                        background: 'linear-gradient(90deg, #ff0080, #ff8c00, #ffe600)',
+                        color: '#000',
+                        fontWeight: 800,
+                        fontSize: '18px',
+                        textAlign: 'center',
+                        padding: '12px',
+                        letterSpacing: '0.05em'
+                    }}
+                >
+                    🚩 FEATURE FLAG IS ON — this banner is rendered from a backend Unleash flag 🚩
+                </div>
+            )}
             <PlainChat user={user} />
             <RouterProvider router={router} />
             <Toaster />
