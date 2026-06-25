@@ -17,13 +17,6 @@ const makeActionError = (code: string, message: string) => {
 
 const safeDispatchers = new WeakMap<OutboundUrlPolicy, Dispatcher>();
 
-/**
- * undici dispatcher whose connector resolves DNS through the policy's safe lookup, so the address that
- * passes validation is the exact address undici connects to — on the initial request and on every
- * redirect hop. This closes the DNS-rebinding TOCTOU window that exists when validation and the actual
- * connection resolve DNS independently. Memoized per policy so connections pool and the pinned-address
- * cache is shared.
- */
 function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
     let dispatcher = safeDispatchers.get(policy);
     if (!dispatcher) {
@@ -43,8 +36,6 @@ export interface UncontrolledFetchOptions {
 export async function executeUncontrolledFetch(
     options: UncontrolledFetchOptions,
     onBytes: (params: { bytesSent: number; bytesReceived: number }) => void,
-    // The runner builds a single validated policy from its parsed envs and injects it here. Callers that
-    // lack parsed envs (e.g. the CLI) omit it and fall back to resolving the policy from process.env.
     outboundPolicy?: OutboundUrlPolicy
 ): Promise<Response> {
     const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
@@ -54,9 +45,6 @@ export async function executeUncontrolledFetch(
     const policy = outboundPolicy ?? getRunnerPolicyFromEnv();
     const dispatcher = getSafeDispatcher(policy);
 
-    // Defense-in-depth on top of the DNS-pinning dispatcher above: pre-validate every hop so scripts get
-    // a clean error (and the hostname denylist/allowlist + scheme are enforced) before any socket opens.
-    // Fail closed on every validation error, including DNS resolution failures.
     const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
         const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
         if (!result.ok) {

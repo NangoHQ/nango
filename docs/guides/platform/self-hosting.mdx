@@ -313,12 +313,14 @@ Beyond the hostname denylist, Nango routes every outbound connection on the **pr
 
 The `mode` field selects how hostnames are filtered:
 
-- **`denylist`** (default): every destination is reachable except hostnames on the denylist (plus the IP-based protections below). This is the default whenever the denylist is non-empty.
+- **`denylist`** (default): every destination is reachable except hostnames on the denylist (plus the IP-based protections below). This is the out-of-the-box mode, since the denylist always carries the secure defaults.
 - **`allowlist`**: only hostnames in `allowlist` are reachable (a leading `.` matches subdomains); everything else is rejected. The denylist and the IP-based protections still apply on top, so allowlist is strictly *more* restrictive — a listed hostname that resolves to a blocked IP is still rejected.
-- **`permissive`**: no hostname-based filtering (the denylist is emptied). This is selected automatically when the denylist is empty and no explicit mode is set.
+- **`permissive`**: no hostname-based filtering (the IP-based protections below still apply). You only reach this mode deliberately — either by emptying the server denylist with no explicit mode (see below), or by setting `mode: "permissive"`.
 
 <Note>
-The IP-based protections apply in **every** mode, including `permissive`. Loopback (`127.0.0.0/8`, `::1`) and unspecified addresses are **always** blocked; private/RFC1918/CGNAT addresses (`blockPrivateIps`) and link-local addresses — including the cloud-metadata IP `169.254.169.254` (`blockLinkLocal`) — are blocked by default. Emptying the denylist (e.g. `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'`, which switches the policy to `permissive`) only drops hostname string matches such as `localhost` and `metadata.google.internal` — literal or resolved internal IPs stay blocked unless you also set `blockPrivateIps`/`blockLinkLocal` to `false`. Runners always re-apply the secure denylist defaults even when the server has opted out.
+The IP-based protections apply in **every** mode, including `permissive`. Loopback (`127.0.0.0/8`, `::1`) and unspecified addresses are **always** blocked; private/RFC1918/CGNAT addresses (`blockPrivateIps`) and link-local addresses — including the cloud-metadata IP `169.254.169.254` (`blockLinkLocal`) — are blocked by default.
+
+The denylist is **never empty by default** — it is always seeded with the secure defaults (`localhost`, `metadata.google.internal`, `169.254.169.254`, …). It only becomes empty if you explicitly opt out: either `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` (server only, which then selects `permissive`) or `mode: "permissive"`. Even then, only hostname string matches such as `localhost` are dropped — literal or resolved internal IPs stay blocked unless you also set `blockPrivateIps`/`blockLinkLocal` to `false`. Runners re-apply the secure denylist defaults even when the server has emptied its denylist; note an explicit `mode: "permissive"` empties the denylist everywhere, runners included.
 </Note>
 
 ```sh
@@ -331,7 +333,7 @@ NANGO_OUTBOUND_URL_POLICY='{"mode":"allowlist","allowlist":[".hubspot.com","api.
 
 | Field | Default | Purpose |
 | - | - | - |
-| `mode` | `denylist` (or `permissive` when the denylist is empty) | `denylist`, `allowlist`, or `permissive` (see above) |
+| `mode` | `denylist` (auto-`permissive` only if you empty the denylist) | `denylist`, `allowlist`, or `permissive` (see above) |
 | `allowlist` | `[]` | In `allowlist` mode, hostnames (a leading `.` matches subdomains) that may be reached |
 | `blockPrivateIps` | `true` | Block RFC1918 / CGNAT addresses (all modes) |
 | `blockLinkLocal` | `true` | Block link-local addresses incl. `169.254.169.254` (all modes) |
