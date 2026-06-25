@@ -319,6 +319,31 @@ describe('Webhooks: auth notification tests', () => {
         });
     });
 
+    it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {
+        const connectionWithOverride = { ...connection, connection_config: { webhook_url: testServer.overrideUrl } };
+
+        await sendAuth({
+            connection: connectionWithOverride,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1
+            } as DBEnvironment,
+            secret,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: true
+            },
+            providerConfig,
+            account,
+            auth_mode: 'OAUTH2',
+            operation: 'creation'
+        });
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith(testServer.overrideUrl, expect.any(String), expect.anything());
+    });
+
     describe('tags', () => {
         it('Should include connection tags in webhook body', async () => {
             const tags: Tags = { department: 'engineering', priority: 'high' };

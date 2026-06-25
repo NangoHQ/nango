@@ -30,7 +30,7 @@ import {
     updateSyncJobStatus
 } from '@nangohq/shared';
 import { Err, getFrequencyMs, Ok, tagTraceUser } from '@nangohq/utils';
-import { resolveWebhookSettings, sendSync as sendSyncWebhook } from '@nangohq/webhooks';
+import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { envs } from '../env.js';
@@ -345,10 +345,8 @@ export async function handleSyncSuccess({
             records: {} as Record<string, SyncResult>,
             runTimeSecs: runTime
         };
-        const baseWebhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-        const webhookSettings = baseWebhookSettings
-            ? resolveWebhookSettings(baseWebhookSettings, await connectionService.getConnectionConfig(connection))
-            : null;
+        const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
+        const connectionConfig = webhookSettings ? await connectionService.getConnectionConfig(connection) : null;
         const webhookSigningSecret = webhookSettings
             ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
                   if (r.isErr()) throw r.error;
@@ -471,6 +469,7 @@ export async function handleSyncSuccess({
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
                                 webhookSettings,
+                                connectionConfig,
                                 model,
                                 now: nangoProps.startedAt,
                                 success: true,
@@ -930,10 +929,8 @@ async function onFailure({
     }
 
     if (environment) {
-        const baseWebhookSettings = await externalWebhookService.get(environment.id);
-        const webhookSettings = baseWebhookSettings
-            ? resolveWebhookSettings(baseWebhookSettings, await connectionService.getConnectionConfig(connection))
-            : null;
+        const webhookSettings = await externalWebhookService.get(environment.id);
+        const connectionConfig = webhookSettings ? await connectionService.getConnectionConfig(connection) : null;
 
         if (team && syncConfig && providerConfig && webhookSettings) {
             const span = tracer.startSpan('jobs.sync.webhook', {
@@ -961,6 +958,7 @@ async function onFailure({
                         environment: environment,
                         secret: webhookSigningKey.value,
                         webhookSettings,
+                        connectionConfig,
                         model: models.join(','),
                         success: false,
                         error: {
