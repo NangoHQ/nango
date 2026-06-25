@@ -1,15 +1,37 @@
-import { getRunnerPolicyFromEnv, validateOutboundUrlAsync } from '@nangohq/egress';
+import { Agent } from 'undici';
+
+import { getRunnerPolicyFromEnv, getSafeLookup, validateOutboundUrlAsync } from '@nangohq/egress';
 
 import { ActionError } from './errors.js';
 
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { HTTP_METHOD } from '@nangohq/types';
+import type { LookupFunction } from 'node:net';
+import type { Dispatcher } from 'undici';
 
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 
 const makeActionError = (code: string, message: string) => {
     return new ActionError({ code, message });
 };
+
+const safeDispatchers = new WeakMap<OutboundUrlPolicy, Dispatcher>();
+
+/**
+ * undici dispatcher whose connector resolves DNS through the policy's safe lookup, so the address that
+ * passes validation is the exact address undici connects to — on the initial request and on every
+ * redirect hop. This closes the DNS-rebinding TOCTOU window that exists when validation and the actual
+ * connection resolve DNS independently. Memoized per policy so connections pool and the pinned-address
+ * cache is shared.
+ */
+function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
+    let dispatcher = safeDispatchers.get(policy);
+    if (!dispatcher) {
+        dispatcher = new Agent({ connect: { lookup: getSafeLookup(policy) as unknown as LookupFunction } });
+        safeDispatchers.set(policy, dispatcher);
+    }
+    return dispatcher;
+}
 
 export interface UncontrolledFetchOptions {
     url: URL;
@@ -30,15 +52,11 @@ export async function executeUncontrolledFetch(
     };
 
     const policy = outboundPolicy ?? getRunnerPolicyFromEnv();
+    const dispatcher = getSafeDispatcher(policy);
 
-    // Resolve DNS and validate every resolved address against the policy before each hop.
-    // This closes DNS-rebinding and redirect-to-internal-address SSRF on the uncontrolledFetch path.
-    //
-    // Fail closed on every validation error, including DNS resolution failures. The validation lookup
-    // and the subsequent native fetch resolve DNS independently (fetch does not use a DNS-pinning agent
-    // here), so a resolution failure during validation does NOT guarantee the fetch will also fail —
-    // a transient/resolver-specific failure (or an attacker-timed one) could be followed by a fetch
-    // that succeeds to a blocked/private IP. Treating the URL as not allowed avoids that fail-open.
+    // Defense-in-depth on top of the DNS-pinning dispatcher above: pre-validate every hop so scripts get
+    // a clean error (and the hostname denylist/allowlist + scheme are enforced) before any socket opens.
+    // Fail closed on every validation error, including DNS resolution failures.
     const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
         const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
         if (!result.ok) {
@@ -54,11 +72,11 @@ export async function executeUncontrolledFetch(
     const headerBag = new Headers(options.headers);
 
     for (let redirectsFollowed = 0; ; redirectsFollowed++) {
-        const props: RequestInit = {
+        const props: RequestInit & { dispatcher?: Dispatcher } = {
             headers: new Headers(headerBag),
             method,
-            redirect: 'manual'
-            // TODO: use agent
+            redirect: 'manual',
+            dispatcher
         };
 
         if (body) {
