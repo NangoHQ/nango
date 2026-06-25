@@ -66,6 +66,42 @@ const PROXY_RESPONSE_HEADER_ALLOWLIST = [
     'x-correlation-id'
 ];
 
+// Hop-by-hop and message-framing headers that must not be forwarded from the provider response.
+// Express recomputes framing for the outgoing response, so re-emitting the provider's values
+// produces forbidden combinations (e.g. `transfer-encoding` + `content-length`, RFC 7230 §3.3.2)
+// that downstream HTTP clients such as axios reject.
+const PROXY_RESPONSE_FORBIDDEN_HEADERS = new Set([
+    'transfer-encoding',
+    'content-length',
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailer',
+    'upgrade'
+]);
+
+// Strips hop-by-hop / framing headers from a provider error response before forwarding it,
+// letting Express set correct framing for the proxied response.
+function sanitizeForwardedHeaders(headers: Record<string, unknown>): Record<string, unknown> {
+    const sanitized: Record<string, unknown> = {};
+    const connectionHeader = headers.connection ?? headers.Connection;
+    const connectionTokens = new Set(
+        (Array.isArray(connectionHeader) ? connectionHeader.join(',') : typeof connectionHeader === 'string' ? connectionHeader : '')
+            .split(',')
+            .map((token) => token.trim().toLowerCase())
+            .filter(Boolean)
+    );
+    for (const [name, value] of Object.entries(headers)) {
+        const lowerName = name.toLowerCase();
+        if (!PROXY_RESPONSE_FORBIDDEN_HEADERS.has(lowerName) && !connectionTokens.has(lowerName)) {
+            sanitized[name] = value;
+        }
+    }
+    return sanitized;
+}
+
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
@@ -563,7 +599,7 @@ export function handleErrorResponse({
         const errorObject = { message, stack, code, status, url: requestConfig?.url, method };
 
         const responseStatus = error.response?.status || 500;
-        const responseHeaders = error.response?.headers || {};
+        const responseHeaders = sanitizeForwardedHeaders(error.response?.headers || {});
 
         res.status(responseStatus).set(responseHeaders).send(errorObject);
 
@@ -595,7 +631,7 @@ export function handleErrorResponse({
             }
 
             const responseStatus = error.response?.status || 500;
-            const responseHeaders = error.response?.headers || {};
+            const responseHeaders = sanitizeForwardedHeaders(error.response?.headers || {});
             void logCtx.error('Failed with this body', { body: parsedBody });
 
             res.status(responseStatus).set(responseHeaders).send(data);

@@ -401,5 +401,56 @@ describe('handleErrorResponse', () => {
             body: expect.objectContaining({ error: 'This event is not found (4)!' })
         });
     });
+
+    it('should not forward transfer-encoding/content-length framing headers on the no-data error branch', () => {
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn(),
+            set: vi.fn().mockReturnThis(),
+            writeHead: vi.fn()
+        } as unknown as Response;
+        const axiosError = {
+            isAxiosError: true,
+            response: { status: 502, headers: { 'transfer-encoding': 'chunked', 'content-length': '120', 'x-request-id': 'abc' } },
+            toJSON: () => ({ message: 'Bad Gateway', config: { method: 'GET' }, code: 'ERR_BAD_RESPONSE', status: 502 })
+        };
+
+        handleErrorResponse({ res, error: axiosError, requestConfig: { url: '/api' }, logCtx: mockLogCtx });
+
+        const forwardedHeaders = vi.mocked(res.set).mock.calls[0]![0] as unknown as Record<string, unknown>;
+        expect(forwardedHeaders).not.toHaveProperty('transfer-encoding');
+        expect(forwardedHeaders).not.toHaveProperty('content-length');
+        expect(forwardedHeaders).toHaveProperty('x-request-id', 'abc');
+    });
+
+    it('should not forward transfer-encoding/content-length/connection framing headers on the streamed error body branch', async () => {
+        const body = '{"error":"upstream blew up"}';
+        const stream = Readable.from([body]);
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            set: vi.fn().mockReturnThis(),
+            send: vi.fn()
+        } as unknown as Response;
+        const axiosError = {
+            isAxiosError: true,
+            response: {
+                status: 500,
+                headers: { 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'content-length': '28', connection: 'keep-alive' },
+                data: stream
+            }
+        };
+
+        const endPromise = new Promise<void>((resolve) => {
+            stream.once('end', () => resolve());
+        });
+        handleErrorResponse({ res, error: axiosError, logCtx: mockLogCtx });
+        await endPromise;
+
+        const forwardedHeaders = vi.mocked(res.set).mock.calls[0]![0] as unknown as Record<string, unknown>;
+        expect(forwardedHeaders).not.toHaveProperty('transfer-encoding');
+        expect(forwardedHeaders).not.toHaveProperty('content-length');
+        expect(forwardedHeaders).not.toHaveProperty('connection');
+        expect(forwardedHeaders).toHaveProperty('content-type', 'application/json');
+    });
 });
 /* eslint-enable @typescript-eslint/unbound-method */
