@@ -1,5 +1,5 @@
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Label } from '@/components/ui/Label';
+import { Label } from '../src/components/ui/label';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

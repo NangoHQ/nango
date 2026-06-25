@@ -1,5 +1,5 @@
-import { Label } from '@/components/ui/Label';
 import { Switch } from '@/components/ui/Switch';
+import { Label } from '../src/components/ui/label';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
