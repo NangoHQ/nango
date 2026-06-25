@@ -68,6 +68,19 @@ function mergePolicyRaw(base: OutboundUrlPolicyRaw, overlay: OutboundUrlPolicyRa
     return merged;
 }
 
+/**
+ * Coerce maxRedirects into a safe, non-negative integer. The server validates this via Zod, but runners
+ * parse NANGO_OUTBOUND_URL_POLICY straight from process.env with no schema, so an invalid value (string,
+ * NaN, negative, float) could otherwise reach the redirect-loop stop condition. A NaN in particular makes
+ * `count >= maxRedirects` always false, allowing unbounded redirect loops — so we fail safe to the default.
+ */
+function sanitizeMaxRedirects(value: unknown): number {
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 0) {
+        return value;
+    }
+    return DEFAULT_OUTBOUND_URL_POLICY.maxRedirects;
+}
+
 function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): OutboundUrlPolicy {
     const mode = raw.mode ?? (denylistEntries.length === 0 ? 'permissive' : 'denylist');
     const denylist = mode === 'permissive' ? new Set<string>() : normalizeDenylist(denylistEntries);
@@ -80,7 +93,7 @@ function rawToPolicy(raw: OutboundUrlPolicyRaw, denylistEntries: string[]): Outb
         blockLinkLocal: raw.blockLinkLocal ?? true,
         // Fixed, non-operator-editable security boundary: only http/https are ever permitted.
         allowedSchemes: new Set(['http:', 'https:']),
-        maxRedirects: raw.maxRedirects ?? 5
+        maxRedirects: sanitizeMaxRedirects(raw.maxRedirects)
     };
 }
 

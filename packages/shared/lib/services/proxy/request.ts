@@ -123,13 +123,14 @@ export class ProxyRequest {
                     const byteTotals = { sent: 0, received: 0 };
 
                     if (this.onBytes) {
-                        this.axiosConfig.transport = createMeteringTransport(
-                            (bytes) => {
+                        this.axiosConfig.transport = createMeteringTransport({
+                            onBytes: (bytes) => {
                                 byteTotals.sent += bytes.sent;
                                 byteTotals.received += bytes.received;
                             },
-                            this.axiosConfig.beforeRedirect as (opts: Record<string, unknown>) => void
-                        );
+                            beforeRedirect: this.axiosConfig.beforeRedirect as (opts: Record<string, unknown>) => void,
+                            maxRedirects: this.axiosConfig.maxRedirects
+                        });
                     }
 
                     const start = new Date();

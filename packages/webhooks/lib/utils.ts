@@ -267,10 +267,14 @@ export const deliver = async ({
                     const result = await circuitBreaker.execute(url, async () => {
                         const createdAt = new Date();
                         const attemptBytes: MeteredBytes = { sent: 0, received: 0 };
-                        const transport = createMeteringTransport((hop) => {
-                            attemptBytes.sent += hop.sent;
-                            attemptBytes.received += hop.received;
-                        }, outbound.validateRedirect);
+                        const transport = createMeteringTransport({
+                            onBytes: (hop) => {
+                                attemptBytes.sent += hop.sent;
+                                attemptBytes.received += hop.received;
+                            },
+                            beforeRedirect: outbound.validateRedirect,
+                            maxRedirects: outbound.policy.maxRedirects
+                        });
                         try {
                             const res = await axios.post(url, bodyString.value, {
                                 headers,

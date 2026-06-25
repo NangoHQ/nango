@@ -135,6 +135,42 @@ describe('egress runner policy', () => {
     });
 });
 
+describe('egress maxRedirects sanitization', () => {
+    // Runners parse NANGO_OUTBOUND_URL_POLICY straight from process.env with no schema, so the policy
+    // resolver must coerce maxRedirects into a safe non-negative integer (else a NaN would disable the
+    // redirect-loop cap entirely).
+    it('accepts a valid non-negative integer', () => {
+        const policy = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: 3 } });
+        expect(policy.maxRedirects).toBe(3);
+    });
+
+    it('falls back to the default for non-numeric values', () => {
+        const policy = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { maxRedirects: 'oops' as unknown as number }
+        });
+        expect(policy.maxRedirects).toBe(5);
+    });
+
+    it('falls back to the default for NaN', () => {
+        const policy = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { maxRedirects: Number.NaN }
+        });
+        expect(policy.maxRedirects).toBe(5);
+    });
+
+    it('falls back to the default for negative or non-integer values', () => {
+        expect(resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: -1 } }).maxRedirects).toBe(5);
+        expect(resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: 2.5 } }).maxRedirects).toBe(5);
+    });
+
+    it('allows zero (disables redirect following)', () => {
+        const policy = resolvePolicyForServer({ proxyBaseUrlOverrideDenylist: [], outboundUrlPolicy: { maxRedirects: 0 } });
+        expect(policy.maxRedirects).toBe(0);
+    });
+});
+
 describe('egress redirect validator', () => {
     const policy = resolvePolicyForServer({
         proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
