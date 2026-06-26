@@ -10,4 +10,19 @@ export {
     InputGroupText,
     InputGroupTextarea
 } from './components/ui/input-group';
+export {
+    Field,
+    FieldDescription,
+    FieldError,
+    type FieldErrorProps,
+    FieldGroup,
+    FieldLabel,
+    type FieldLabelProps,
+    FieldLegend,
+    type FieldLegendProps,
+    type FieldProps,
+    FieldSeparator,
+    FieldSet,
+    fieldVariants
+} from './components/ui/field';
 export { dsTwMergeConfig } from './lib/twMergeConfig';

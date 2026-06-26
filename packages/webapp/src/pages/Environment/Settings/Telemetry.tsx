@@ -2,13 +2,12 @@ import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { Label } from '@/components/ui/Label';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
@@ -94,7 +93,7 @@ export const Telemetry: React.FC = () => {
             >
                 <div className="flex flex-col gap-7">
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="otlp_endpoint">Endpoint</Label>
+                        <FieldLabel htmlFor="otlp_endpoint">Endpoint</FieldLabel>
                         <EditableInput
                             id="otlp_endpoint"
                             initialValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
