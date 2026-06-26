@@ -32,6 +32,12 @@ export const ENVS = z.object({
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
+    NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(16 * 1024),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
     SERVER_EGRESS_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().default(1_000),
     SERVER_EGRESS_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
