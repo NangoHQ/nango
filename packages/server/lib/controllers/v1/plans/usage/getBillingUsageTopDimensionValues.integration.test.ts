@@ -238,8 +238,11 @@ describe(`GET ${route}`, () => {
             expect(res.json.data.pagination.hasMore).toBe(false);
         });
 
-        it('ignores search for environment_id (still returns the env)', async () => {
-            const { apiKey, envId, envName } = await seedAccount();
+        it('applies search to environment_id like any dimension (not special-cased)', async () => {
+            // environment_id stores the numeric id, so a search that matches no id returns nothing —
+            // it is not exempt from the search filter. (The dashboard never searches it; it is a
+            // closed dimension with no search box. Labels are still resolved to env names.)
+            const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
                 query: {
@@ -252,7 +255,7 @@ describe(`GET ${route}`, () => {
                 }
             });
             isSuccess(res.json);
-            expect(res.json.data.values).toEqual([{ id: String(envId), label: envName }]);
+            expect(res.json.data.values).toEqual([]);
             expect(res.json.data.pagination.hasMore).toBe(false);
         });
     });

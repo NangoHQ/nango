@@ -55,28 +55,24 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
     const query = parsedQuery.data;
     const { account } = res.locals;
 
-    // `environment_id` stores the numeric id, but the user searches by env
-    // name — a server-side substring match on the id can't match a name. Envs
-    // per account are few (always within the first page), so for this one
-    // dimension we never page or push `search` down: return the full small set
-    // (page 0, no search) and let the dropdown filter by label client-side.
-    const isEnvironmentId = query.dimension === 'environment_id';
-
     const result = await usageTracker.getTopDimensionValues({
         accountId: account.id,
         metric: query.metric,
         dimension: query.dimension,
         timeframe: { start: new Date(query.from), end: new Date(query.to) },
-        search: isEnvironmentId ? undefined : query.search,
-        page: isEnvironmentId ? 0 : (query.page ?? 0)
+        search: query.search,
+        page: query.page ?? 0
     });
     if (result.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get top dimension values' } });
         return;
     }
 
+    // `environment_id` stores the numeric env id; resolve it to the env name here, since the only
+    // env list the dashboard has (`/api/v1/meta`) carries names but not these ids. Every other
+    // dimension already stores a human-readable value, so id === label.
     let values: { id: string; label: string }[];
-    if (isEnvironmentId) {
+    if (query.dimension === 'environment_id') {
         const names = await environmentService.getEnvironmentNamesByIds(result.value.values.map(Number));
         values = result.value.values.map((id) => ({ id, label: names.get(Number(id)) ?? id }));
     } else {
@@ -86,11 +82,7 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
     res.status(200).send({
         data: {
             values,
-            pagination: {
-                page: isEnvironmentId ? 0 : (query.page ?? 0),
-                limit: TOP_N_BREAKDOWN_PAGE_SIZE,
-                hasMore: isEnvironmentId ? false : result.value.hasMore
-            }
+            pagination: { page: query.page ?? 0, limit: TOP_N_BREAKDOWN_PAGE_SIZE, hasMore: result.value.hasMore }
         }
     });
 });
