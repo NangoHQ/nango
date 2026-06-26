@@ -112,9 +112,12 @@ export const sharedCredentialsSchema = z
     })
     .strict();
 
+// MS Graph access tokens are JWTs that scale in size based on the number of scopes requested and can be multiple KBs. Size may need to be increased in the future.
+const OAUTH2_TOKEN_MAX_LENGTH = 16 * 1024;
+
 export const connectionCredentialsOauth2Schema = z.strictObject({
-    access_token: z.string().min(1).max(4096),
-    refresh_token: z.string().min(1).max(4096).optional(),
+    access_token: z.string().min(1).max(OAUTH2_TOKEN_MAX_LENGTH),
+    refresh_token: z.string().min(1).max(OAUTH2_TOKEN_MAX_LENGTH).optional(),
     expires_at: z.coerce.date().optional(),
     config_override: z
         .strictObject({
