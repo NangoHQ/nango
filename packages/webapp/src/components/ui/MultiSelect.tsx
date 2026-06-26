@@ -134,7 +134,11 @@ export function MultiSelect<T extends string = string>({
                     disabled={options.length === 0}
                     variant="ghost"
                     size="lg"
-                    className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover')}
+                    className={cn(
+                        'border-ds-hairline border-border-interactive',
+                        isDirty && 'bg-state-pressed',
+                        open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover'
+                    )}
                 >
                     {label}{' '}
                     {selected.length > 0 && (

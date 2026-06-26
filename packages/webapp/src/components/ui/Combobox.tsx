@@ -229,7 +229,12 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             disabled={disabled || options.length === 0}
             variant="ghost"
             size="lg"
-            className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
+            className={cn(
+                'border-ds-hairline border-border-interactive',
+                isDirty && 'bg-state-pressed',
+                open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
+                className
+            )}
         >
             {props.label}{' '}
             {props.selected.length > 0 && (

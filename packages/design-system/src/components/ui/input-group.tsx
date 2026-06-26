@@ -11,7 +11,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 const inputGroupVariants = cva(
     [
-        'group/input-group bg-surface-input border-ds-hairline border-border-input text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-sm transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-input-hover',
+        'group/input-group bg-surface-input border-ds-hairline border-border-interactive text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-sm transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-interactive-hover',
         'min-w-0 has-[>textarea]:h-auto',
 
         // Variants based on alignment.
@@ -21,9 +21,9 @@ const inputGroupVariants = cva(
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
         // Focus state — border darkens when the control is focused (focus ring removed pending design review).
-        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-input-hover',
+        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-interactive-hover',
         // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
-        'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-input-hover',
+        'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-interactive-hover',
 
         // Disabled — dedicated tokens (matches Input), no opacity.
         'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
