@@ -1,6 +1,7 @@
 import './tracer.js';
 
 import db from '@nangohq/database';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
@@ -36,6 +37,8 @@ const autoDeleting = autoDeletingDaemon();
 records.startDaemons();
 
 try {
+    await initializeFeatureFlags();
+
     const pubsubConnect = await pubsub.connect();
     if (pubsubConnect.isErr()) {
         logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
@@ -57,6 +60,7 @@ const close = once(() => {
     api.close(async () => {
         await autoPruning.abort();
         await autoDeleting.abort();
+        await destroyFeatureFlags();
         await destroyLogs();
         await db.knex.destroy();
         await db.readOnly.destroy();
