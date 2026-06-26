@@ -248,8 +248,8 @@ function fetchTopDimensionValuesPage(
  * Seen values for a (metric, dimension) over a timeframe, ranked by usage and
  * paged so ANY value is reachable — `search` narrows to matching values across
  * the customer's full set (server-side), and pages load incrementally past the
- * first. Backs the filter typeahead; free-text entry remains a fallback for the
- * raw long tail. Lazy — only fires when `enabled` and a dimension is set.
+ * first. Backs the filter value picker. Lazy — only fires when `enabled` and a
+ * dimension is set.
  */
 export function useApiGetBillingUsageTopDimensionValues<M extends UsageMetric>(
     env: string,
