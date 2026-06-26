@@ -21,7 +21,7 @@ describe('parse', () => {
 
     it('should parse NANGO_OAUTH2_TOKEN_MAX_LENGTH', () => {
         expect(parseEnvs(ENVS, {}).NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).toBe(16 * 1024);
-        expect(parseEnvs(ENVS, { NANGO_OAUTH2_TOKEN_MAX_LENGTH: '32768' }).NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).toBe(32768);
+        expect(parseEnvs(ENVS, { NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH: '32768' }).NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).toBe(32768);
     });
 
     it('should parse the sandbox compiler template', () => {
