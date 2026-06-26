@@ -45,6 +45,10 @@ try {
     api = server.listen(port, () => {
         logger.info(`🚀 API ready at http://localhost:${port}`);
     });
+    if (envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS > 0) {
+        api.keepAliveTimeout = envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS;
+        api.headersTimeout = envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS + 1000;
+    }
 } catch (err) {
     console.error(`Persist API error`, err);
     process.exit(1);
