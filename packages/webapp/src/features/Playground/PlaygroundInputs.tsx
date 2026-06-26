@@ -1,6 +1,6 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { Input } from '@nangohq/design-system';
+import { FieldLabel, Input } from '@nangohq/design-system';
 
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -36,7 +36,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
     if (isSync) {
         return (
             <div className="grid grid-cols-[110px_1fr] gap-x-4">
-                <label className="text-text-strong text-label-large">Metadata</label>
+                <FieldLabel>Metadata</FieldLabel>
                 <div className="min-w-0 flex flex-col gap-3">
                     <Alert variant="info" className="px-3 py-2" actionsBelow>
                         <Info />
@@ -111,7 +111,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
 
     return (
         <div className="grid grid-cols-[110px_1fr] gap-x-4">
-            <label className="text-text-strong text-label-large">Inputs</label>
+            <FieldLabel>Inputs</FieldLabel>
             <div className="min-w-0 flex flex-col gap-3">
                 {inputFields.map((field) => (
                     <div key={field.name} className="flex flex-col gap-1">
