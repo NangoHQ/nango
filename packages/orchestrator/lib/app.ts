@@ -53,6 +53,11 @@ try {
         onError: async (err) => {
             report(err);
             logger.error(`Scheduler error: ${stringifyError(err)}`);
+            try {
+                await destroyFeatureFlags();
+            } catch (destroyErr) {
+                logger.error('Error destroying feature flags', destroyErr);
+            }
             await dbClient.destroy();
             logger.close();
 

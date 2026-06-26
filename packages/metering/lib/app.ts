@@ -78,7 +78,11 @@ try {
         if (clickhouseShutdown.isErr()) {
             logger.error('Error shutting down Clickhouse ingestion', clickhouseShutdown.error);
         }
-        await destroyFeatureFlags();
+        try {
+            await destroyFeatureFlags();
+        } catch (err) {
+            logger.error('Error destroying feature flags', err);
+        }
         cron.getTasks().forEach((task) => task.stop());
         process.exit();
     });
