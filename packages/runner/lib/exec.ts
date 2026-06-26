@@ -71,10 +71,6 @@ export async function exec({
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
     nango.abortSignal = abortController.signal;
 
-    // Customer-authored functions receive a restricted facade so they cannot reach internal properties
-    // (most importantly the underlying node client and its raw Axios instance via `nango.nango.http`),
-    // which would let them bypass the SDK. `exec` keeps using the real instance for its own needs
-    // (telemetryBag, getCheckpointRange, clearRecordsIfNeeded, ...).
     const functionNango = createFunctionFacade(nango);
 
     const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${code}

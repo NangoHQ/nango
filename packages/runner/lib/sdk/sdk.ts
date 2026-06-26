@@ -973,9 +973,6 @@ export function instrumentSDK(rawNango: NangoActionRunner | NangoSyncRunner) {
  * @internal
  *
  * Properties on the runner that must never be reachable from customer-authored functions.
- * Most importantly `nango` (the node client) exposes a raw Axios instance via `nango.nango.http`,
- * which would let functions bypass the SDK (HTTP logging, redaction, telemetry, outbound URL policy,
- * retries, credential refresh) and leak the secret key through `nango.nango.apiKey`.
  */
 const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>(['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey']);
 
@@ -988,11 +985,6 @@ function throwBlockedAccess(prop: string | symbol): never {
  * @internal
  *
  * Wraps a runner instance in a Proxy that is safe to hand to customer-authored functions.
- * It hides internal properties (most importantly the underlying node client) so functions cannot
- * bypass the SDK, while binding every method to the real runner so internal calls (which rely on
- * `this.nango` and the other hidden properties) keep working. This also covers the methods that
- * `NangoSyncRunner` borrows from `NangoActionRunner.prototype`, since they are bound to the real
- * target rather than to the facade.
  */
 export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunner>(runner: T): T {
     return new Proxy(runner, {
