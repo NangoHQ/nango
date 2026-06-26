@@ -89,26 +89,22 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     // Warm every filterable dimension's first page when the menu opens, so each value pane shows instantly.
     const prefetchValues = useApiPrefetchBillingUsageTopDimensionValues(env, metric, timeframe);
 
-    // Loads one dimension's values for the FilterSelect's value pane. Called only from that pane,
-    // which mounts when (and remounts each time) a dimension opens — so it fetches lazily, and the
-    // prefetch above keeps the first page instant. `search` (debounced by the pane) hits ClickHouse
-    // so any value is reachable, and pages load on scroll. `environment_id` is the exception: its
-    // stored value is a numeric id, so a name search can't match server-side — its set is tiny, so
-    // we load it whole (no search/paging) and let the pane filter by label client-side.
+    // Loads one dimension's values for the FilterSelect value pane (mounted per open group, so it
+    // fetches lazily; the prefetch above keeps the first page instant). `search` (debounced by the
+    // pane) hits ClickHouse so any value is reachable, and pages load on scroll. Closed dimensions
+    // like environment_id aren't searchable, so they just get their small set back unfiltered.
     const useGroupData = (dimension: string, { search }: { search: string }): FilterSelectGroupData => {
         const dim = dimension as AnyBreakdownDimension;
-        const isEnv = dim === 'environment_id';
-        const query = useApiGetBillingUsageTopDimensionValues(env, metric, dim, timeframe, isEnv ? '' : search, { enabled: true });
+        const query = useApiGetBillingUsageTopDimensionValues(env, metric, dim, timeframe, search, { enabled: true });
         const options = (query.data?.pages.flatMap((p) => p.data.values) ?? []).map((v) => ({ value: v.id, label: formatDimensionValue(dim, v.label) }));
         return {
             options,
             isLoading: query.isLoading,
             isError: query.isError,
-            // env_id never searches server-side, so don't flag a fetch spinner for it.
-            isFetching: isEnv ? false : query.isFetching,
-            hasNextPage: isEnv ? false : query.hasNextPage,
+            isFetching: query.isFetching,
+            hasNextPage: query.hasNextPage,
             isFetchingNextPage: query.isFetchingNextPage,
-            fetchNextPage: isEnv ? undefined : query.fetchNextPage
+            fetchNextPage: query.fetchNextPage
         };
     };
 
