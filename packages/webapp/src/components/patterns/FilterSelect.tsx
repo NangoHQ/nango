@@ -136,17 +136,13 @@ const FilterValuePane: React.FC<{
     const debouncedSearch = useDebouncedValue(inputValue.trim(), 300);
     const { options, isLoading, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage } = useGroupData(group, { search: debouncedSearch });
 
-    // Show an inline search spinner from the moment the user types until fresh results land:
-    // first while the debounce hasn't caught up (input ahead of the term we've queried), then
-    // while that query is in flight. Excludes the first blank load (its own list spinner) and
-    // next-page fetches (their own bottom spinner).
+    // Spinner in the search box while a search is pending — the debounce window (input ahead of the
+    // queried term) then the fetch — but not the first load or next-page (they have their own).
     const searchPending = inputValue.trim() !== debouncedSearch;
     const searching = searchable && !isLoading && (searchPending || (Boolean(isFetching) && !isFetchingNextPage));
 
-    // Load the next page as the list nears the bottom. A scroll-position check on the list
-    // itself is used rather than an IntersectionObserver sentinel: the list is a short
-    // overflow container inside a portalled popup, where a viewport-rooted observer never
-    // sees a bottom sentinel cross into view.
+    // Page when the list nears the bottom. A scroll-position check beats an IntersectionObserver
+    // sentinel here: in this short, portalled overflow pane a viewport-rooted observer never fires.
     const onListScroll = (e: React.UIEvent<HTMLDivElement>) => {
         if (!fetchNextPage || isFetchingNextPage || !hasNextPage) return;
         const el = e.currentTarget;
@@ -204,33 +200,36 @@ const FilterValuePane: React.FC<{
                         // leaves, so the search isn't held focused once you've moved off the pane.
                         onPointerEnter={() => inputRef.current?.focus()}
                         onPointerLeave={() => inputRef.current?.blur()}
-                        className="flex w-fit min-w-[14rem] max-w-[32rem] flex-col rounded border border-border-muted bg-surface-overlay p-1 text-text-secondary shadow-md outline-hidden"
+                        className="relative flex w-fit min-w-[14rem] max-w-[32rem] flex-col rounded border border-border-muted bg-surface-overlay p-1 text-text-secondary shadow-md outline-hidden"
                     >
-                        <div className={cn('relative', !searchable && 'sr-only')}>
-                            <Combobox.Input
-                                ref={inputRef}
-                                placeholder={searchPlaceholder}
-                                onKeyDown={(e) => {
-                                    // Enter commits the highlighted item (a match or the create row) — Base UI
-                                    // handles it via autoHighlight, so it isn't special-cased here.
-                                    if (e.key === 'Escape') {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        onCloseAll();
-                                    } else if (e.key === 'ArrowLeft' && e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === 0) {
-                                        // At the start of the input, ← steps back to the group list.
-                                        e.preventDefault();
-                                        onBack();
-                                    }
-                                }}
-                                className="mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas pr-8 pl-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted"
-                            />
-                            {searching && (
-                                <span className="pointer-events-none absolute top-0 right-2.5 flex h-8 items-center">
-                                    <Spinner className="size-3.5 text-text-muted" />
-                                </span>
+                        <Combobox.Input
+                            ref={inputRef}
+                            placeholder={searchPlaceholder}
+                            onKeyDown={(e) => {
+                                // Enter commits the highlighted item (a match or the create row) — Base UI
+                                // handles it via autoHighlight, so it isn't special-cased here.
+                                if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onCloseAll();
+                                } else if (e.key === 'ArrowLeft' && e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === 0) {
+                                    // At the start of the input, ← steps back to the group list.
+                                    e.preventDefault();
+                                    onBack();
+                                }
+                            }}
+                            className={cn(
+                                searchable
+                                    ? 'mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas pr-8 pl-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted'
+                                    : 'sr-only'
                             )}
-                        </div>
+                        />
+                        {/* Search spinner, overlaid at the input's right (the popup is the positioning context). */}
+                        {searching && (
+                            <span className="pointer-events-none absolute top-1 right-2.5 flex h-8 items-center">
+                                <Spinner className="size-3.5 text-text-muted" />
+                            </span>
+                        )}
                         <Combobox.List className="max-h-[50vh] overflow-y-auto" onScroll={onListScroll}>
                             {isLoading ? (
                                 <div className="flex justify-center py-3">
