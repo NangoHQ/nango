@@ -144,13 +144,15 @@ export const FieldSetComposition: Story = {
                 </Field>
             </FieldGroup>
             <FieldSeparator />
-            <FieldLegend variant="label" description="The billing address associated with your payment method.">
-                Billing address
-            </FieldLegend>
-            <Field>
-                <FieldLabel htmlFor="set-comments">Comments</FieldLabel>
-                <Input id="set-comments" placeholder="Anything we should know?" />
-            </Field>
+            <FieldSet>
+                <FieldLegend variant="label" description="The billing address associated with your payment method.">
+                    Billing address
+                </FieldLegend>
+                <Field>
+                    <FieldLabel htmlFor="set-comments">Comments</FieldLabel>
+                    <Input id="set-comments" placeholder="Anything we should know?" />
+                </Field>
+            </FieldSet>
             <div className="flex gap-2">
                 <Button type="submit" size="md">
                     Submit
