@@ -172,7 +172,7 @@ describe('POST /mcp control-plane server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['logs_list_operations']);
+        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['logs_list_operations', 'logs_get_operation']);
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {
@@ -284,5 +284,44 @@ describe('POST /mcp control-plane server', () => {
         expect(payload.operations[0]).toMatchObject({ id: matchingLogCtx.id });
         expect(payload.operations.map((operation: { id: string }) => operation.id)).not.toContain(otherLogCtx.id);
         expect(payload.pagination).toStrictEqual({ total: 1, cursor: null });
+    });
+
+    it('gets an operation and its messages for the authenticated environment', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:logs:read']);
+        const logCtx = await logContextGetter.create({ operation: { type: 'proxy', action: 'call' } }, { account, environment: env });
+        await logCtx.info('test info');
+        await logCtx.success();
+
+        const res = await mcpFetch({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'logs_get_operation',
+                    arguments: {
+                        operationId: logCtx.id,
+                        messages: { limit: 10 }
+                    }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload.operation).toMatchObject({
+            id: logCtx.id,
+            accountId: account.id,
+            environmentId: env.id,
+            operation: { type: 'proxy', action: 'call' }
+        });
+        expect(payload.messages).toHaveLength(1);
+        expect(payload.messages[0]).toMatchObject({
+            parentId: logCtx.id,
+            accountId: account.id,
+            message: 'test info'
+        });
+        expect(payload.pagination).toMatchObject({ total: 1, cursor: expect.any(String) });
     });
 });
