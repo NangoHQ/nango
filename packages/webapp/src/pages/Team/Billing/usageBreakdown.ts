@@ -73,11 +73,12 @@ export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDime
 }
 
 /**
- * Dimensions whose values are a small, fully-listed, closed set — `environment_id` (a handful of
- * envs) and `success` (true/false). Their Filter value pane shows no search box; the rest are
- * open, high-cardinality id/name dimensions where server-side search earns its place.
+ * Dimensions whose values are a small, fully-listed, closed set, so their Filter value pane shows
+ * no search box: `environment_id` (a handful of envs), `success` (true/false), `function_type`
+ * (sync/action/webhook/…), and data-transfer `package` / `callsite` (a fixed handful each). The
+ * rest are open, high-cardinality id/name dimensions where server-side search earns its place.
  */
-const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success']);
+const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
 
 /** Whether the Filter value pane shows a search box for this dimension. */
 export function isSearchableDimension(dimension: AnyBreakdownDimension): boolean {
