@@ -497,19 +497,14 @@ export class Clickhouse {
         const table = `${this.database}.${tableForMetric(metric)}`;
         const offset = Math.max(page, 0) * TOP_N_BREAKDOWN_PAGE_SIZE;
 
-        // `search` binds through CH's parameterized `query_params` (no string
-        // interpolation of user input); `positionCaseInsensitiveUTF8` treats it
-        // as a literal substring so `%`/`_` need no escaping. `${dimension}` is
-        // safe to interpolate — it comes from the zod enum, never free text.
+        // `search` is bound via `query_params` (no interpolation of user input) and matched as a
+        // literal substring, so `%`/`_` need no escaping. `${dimension}` is a zod enum, safe to inline.
         const searchClause = trimmedSearch ? `AND positionCaseInsensitiveUTF8(toString(${dimension}), {search:String}) > 0` : '';
         const queryParams = trimmedSearch ? { search: trimmedSearch } : undefined;
 
-        // The output alias is `dim` (not `value`) so the `ORDER BY` reference
-        // to the table column `value` (used by `rankingQuantityForMetric`) is
-        // not shadowed by the projection. The `dim ASC` tie-break makes the
-        // order deterministic across separate paged queries, so equal-ranked
-        // values can't be skipped or duplicated between pages. Paging is
-        // still best-effort for the current month (ranking accrues live).
+        // Alias is `dim` (not `value`) so `ORDER BY` still sees the table's `value` column. The
+        // `dim ASC` tie-break keeps the order stable across paged queries, so equal-ranked values
+        // aren't skipped or duplicated (best-effort for the still-accruing current month).
         const sql = `
             SELECT toString(${dimension}) AS dim
             FROM ${table}
