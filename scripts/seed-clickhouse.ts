@@ -1,3 +1,11 @@
+import { randomUUID } from 'node:crypto';
+
+import db from '@nangohq/database';
+import { createPlan, freePlan, updatePlanByTeam } from '@nangohq/shared';
+import { Clickhouse, clickhouseClient, migrate } from '@nangohq/usage';
+
+import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
+
 /**
  * Seeds the local ClickHouse `usage` database with synthetic usage events so the
  * billing/usage breakdown dashboard renders real-looking data without a deployed
@@ -18,16 +26,10 @@
  * Run from the repo root:
  *   npm run seed:clickhouse
  *   npm run seed:clickhouse -- --account 3 --days 90 --no-reset
+ *   npm run seed:clickhouse -- --verbose              # per-env progress + summary
  *
  * Requires CLICKHOUSE_URL in .env and the clickhouse container up (npm run dev:docker).
  */
-import { randomUUID } from 'node:crypto';
-
-import db from '@nangohq/database';
-import { createPlan, freePlan, updatePlanByTeam } from '@nangohq/shared';
-import { Clickhouse, clickhouseClient, migrate } from '@nangohq/usage';
-
-import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
 
 const DATABASE = 'usage';
 
@@ -69,6 +71,10 @@ const INTEGRATIONS: { id: string; models: string[]; webhooks: boolean }[] = [
 const HIGH_VOLUME_INTEGRATION_CHANCE = 0.15;
 const HIGH_VOLUME_CONNECTIONS: [number, number] = [60, 150];
 const LONG_TAIL_CONNECTIONS: [number, number] = [2, 12];
+const MONTHLY_CONNECTION_GROWTH: [number, number] = [1.1, 1.2];
+const MONTHLY_TRAFFIC_GROWTH: [number, number] = [1.08, 1.18];
+const WEEKEND_TRAFFIC_FACTOR = 0.82;
+const DAILY_TRAFFIC_JITTER: [number, number] = [0.82, 1.18];
 // dev holds ~10% as many connections as prod. That fewer-connections ratio is what
 // makes dev ≈ 10% of traffic across every metric — no separate volume scaling.
 const DEV_CONNECTION_SHARE = 0.1;
@@ -102,7 +108,8 @@ function parseArgs() {
         // would leave the start of the previous month empty when you navigate back.
         days: days !== undefined ? Number(days) : 60,
         reset: !argv.includes('--no-reset'),
-        allowRemote: argv.includes('--allow-remote')
+        allowRemote: argv.includes('--allow-remote'),
+        verbose: argv.includes('--verbose')
     };
 }
 
@@ -130,13 +137,82 @@ function baseConnectionCount(integrationId: string): number {
     return count;
 }
 
-// Connection ids are UUIDs in reality. Memoize a stable set per (environment,
-// integration) so the same connections recur across every day. dev holds ~10% as many
-// as prod (DEV_CONNECTION_SHARE) — having fewer connections is what makes dev ≈ 10% of
-// traffic across every metric. dev may end up with 0 for small integrations (it simply
-// doesn't use them).
+// Midday UTC of `offset` days ago — keeps the event inside a single UTC calendar
+// day (CH `toDate(ts)` buckets in UTC) regardless of the runner's local timezone.
+const todayMidnightUTC = (() => {
+    const now = new Date();
+    return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+})();
+const dayTs = (offset: number): number => todayMidnightUTC - offset * 86_400_000 + 12 * 3_600_000;
+
+// Each integration gets its own compounded monthly growth rate (10–20%). Growth is
+// spread across days, not calendar months, so the chart shows a gradual climb
+// rather than a flat line within the current month.
+const DAYS_PER_MONTH = 30;
+const connectionGrowthCache = new Map<string, number>();
+function connectionMonthlyGrowth(integrationId: string): number {
+    let growth = connectionGrowthCache.get(integrationId);
+    if (growth === undefined) {
+        growth = rndFloat(...MONTHLY_CONNECTION_GROWTH);
+        connectionGrowthCache.set(integrationId, growth);
+    }
+    return growth;
+}
+
+function daysAgo(ts: number): number {
+    return Math.round((todayMidnightUTC - ts) / 86_400_000);
+}
+
+function connectionProgress(ts: number, seedDays: number): number {
+    const window = Math.max(1, seedDays - 1);
+    return Math.max(0, Math.min(1, 1 - daysAgo(ts) / window));
+}
+
+// Linear ramp from (fullCount / monthlyGrowth) at the oldest seeded day to fullCount
+// today. Avoids integer plateaus on small pools and skips the ±15% random noise that
+// was flattening the connections chart.
+function reportedConnectionCount(integrationId: string, fullCount: number, ts: number, seedDays: number): number {
+    if (fullCount === 0) {
+        return 0;
+    }
+    const monthlyGrowth = connectionMonthlyGrowth(integrationId);
+    const startCount = fullCount / monthlyGrowth;
+    const exact = startCount + (fullCount - startCount) * connectionProgress(ts, seedDays);
+    return Math.max(1, Math.round(exact));
+}
+
+function isWeekend(ts: number): boolean {
+    const day = new Date(ts).getUTCDay();
+    return day === 0 || day === 6;
+}
+
+// Deterministic per-day jitter so the chart wiggles without changing on every re-seed.
+function dayTrafficJitter(ts: number): number {
+    const dayKey = Math.floor(ts / 86_400_000);
+    const frac = Math.abs(Math.sin(dayKey * 12.9898) * 43758.5453) % 1;
+    return DAILY_TRAFFIC_JITTER[0] + frac * (DAILY_TRAFFIC_JITTER[1] - DAILY_TRAFFIC_JITTER[0]);
+}
+
+// Flow metrics (runs, records, proxy, …) share one daily profile: gradual growth over the
+// seed window, quieter weekends, and small day-to-day noise.
+function trafficScale(ts: number, monthlyGrowth: number): number {
+    const trend = monthlyGrowth ** (-daysAgo(ts) / DAYS_PER_MONTH);
+    const weekend = isWeekend(ts) ? WEEKEND_TRAFFIC_FACTOR : 1;
+    return trend * weekend * dayTrafficJitter(ts);
+}
+
+function scaledInt(min: number, max: number, scale: number, floor = 1): number {
+    return Math.max(floor, Math.round(rnd(min, max) * scale));
+}
+
+// Connection ids are UUIDs in reality. Memoize the current connection pool per
+// (environment, integration), then slice it by date so the same connections recur while
+// older months have fewer active connections. dev holds ~10% as many current
+// connections as prod (DEV_CONNECTION_SHARE) — having fewer connections is what makes
+// dev ≈ 10% of traffic across every metric. dev may end up with 0 for small
+// integrations (it simply doesn't use them).
 const connectionIdCache = new Map<string, string[]>();
-function connectionsFor(environmentId: number, integrationId: string, isProduction: boolean): string[] {
+function connectionPool(environmentId: number, integrationId: string, isProduction: boolean): string[] {
     const key = `${environmentId}:${integrationId}`;
     let connections = connectionIdCache.get(key);
     if (!connections) {
@@ -148,13 +224,10 @@ function connectionsFor(environmentId: number, integrationId: string, isProducti
     return connections;
 }
 
-// Midday UTC of `offset` days ago — keeps the event inside a single UTC calendar
-// day (CH `toDate(ts)` buckets in UTC) regardless of the runner's local timezone.
-const todayMidnightUTC = (() => {
-    const now = new Date();
-    return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-})();
-const dayTs = (offset: number): number => todayMidnightUTC - offset * 86_400_000 + 12 * 3_600_000;
+function connectionsFor(environmentId: number, integrationId: string, isProduction: boolean, ts: number, seedDays: number): string[] {
+    const pool = connectionPool(environmentId, integrationId, isProduction);
+    return pool.slice(0, reportedConnectionCount(integrationId, pool.length, ts, seedDays));
+}
 
 function event(
     type: ClickhouseRawUsageEvent['type'],
@@ -173,38 +246,56 @@ function event(
     };
 }
 
-function generateForEnvDay(accountId: number, environmentId: number, isProduction: boolean, ts: number, batchId: string): ClickhouseRawUsageEvent[] {
+function generateForEnvDay(
+    accountId: number,
+    environmentId: number,
+    isProduction: boolean,
+    ts: number,
+    batchId: string,
+    trafficMonthlyGrowth: number,
+    seedDays: number
+): ClickhouseRawUsageEvent[] {
     const events: ClickhouseRawUsageEvent[] = [];
+    const dayScale = trafficScale(ts, trafficMonthlyGrowth);
     // One failure rate for the whole day, shared across this day's function groups, so
     // the failure series fluctuates day to day (mostly healthy, occasional spikes)
     // instead of averaging to a flat ~10%. Squared → biased low; capped near 20%.
     const dayFailureRate = Math.random() ** 2 * 0.2;
     for (const integration of INTEGRATIONS) {
-        const connections = connectionsFor(environmentId, integration.id, isProduction);
-        if (connections.length === 0) {
+        const pool = connectionPool(environmentId, integration.id, isProduction);
+        if (pool.length === 0) {
             continue; // dev doesn't actively use every integration
+        }
+        const connections = connectionsFor(environmentId, integration.id, isProduction, ts, seedDays);
+        if (connections.length === 0) {
+            continue;
         }
         const base = { environmentId, integrationId: integration.id };
 
         for (const connectionId of connections) {
+            // Skip a fraction of connections on the quietest days only.
+            if (dayScale < 0.45 && chance(0.2)) {
+                continue;
+            }
+
             // proxy — mostly successful, with an occasional batch of failures
-            events.push(event('usage.proxy', accountId, ts, rnd(5, 80), { ...base, connectionId, success: true }));
-            if (chance(0.4)) {
-                events.push(event('usage.proxy', accountId, ts, rnd(1, 10), { ...base, connectionId, success: false }));
+            events.push(event('usage.proxy', accountId, ts, scaledInt(5, 80, dayScale), { ...base, connectionId, success: true }));
+            if (chance(0.4 * Math.min(1, dayScale + 0.3))) {
+                events.push(event('usage.proxy', accountId, ts, scaledInt(1, 10, dayScale), { ...base, connectionId, success: false }));
             }
 
             // webhook_forwards — only for integrations that emit webhooks
             if (integration.webhooks) {
-                events.push(event('usage.webhook_forward', accountId, ts, rnd(2, 30), { ...base, connectionId, success: true }));
-                if (chance(0.3)) {
-                    events.push(event('usage.webhook_forward', accountId, ts, rnd(1, 5), { ...base, connectionId, success: false }));
+                events.push(event('usage.webhook_forward', accountId, ts, scaledInt(2, 30, dayScale), { ...base, connectionId, success: true }));
+                if (chance(0.3 * Math.min(1, dayScale + 0.3))) {
+                    events.push(event('usage.webhook_forward', accountId, ts, scaledInt(1, 5, dayScale), { ...base, connectionId, success: false }));
                 }
             }
 
             // data_transfer — broken down by package + callsite
             for (const pkg of PACKAGES) {
-                const egressedBytes = rnd(500, 200_000);
-                const ingressedBytes = rnd(500, 100_000);
+                const egressedBytes = scaledInt(500, 200_000, dayScale, 100);
+                const ingressedBytes = scaledInt(500, 100_000, dayScale, 100);
                 events.push(
                     event('usage.data_transfer', accountId, ts, egressedBytes + ingressedBytes, {
                         ...base,
@@ -220,16 +311,16 @@ function generateForEnvDay(accountId: number, environmentId: number, isProductio
             // function_executions — runs happen per connection (its own syncs/actions),
             // so they spread roughly evenly across connections. sync runs every day;
             // actions/webhooks fire some days. value = #runs, split by the day's rate.
-            const fnRuns: { type: 'sync' | 'action' | 'webhook'; runs: number }[] = [{ type: 'sync', runs: rnd(1, 10) }];
-            if (chance(0.5)) {
-                fnRuns.push({ type: 'action', runs: rnd(1, 6) });
+            const fnRuns: { type: 'sync' | 'action' | 'webhook'; runs: number }[] = [{ type: 'sync', runs: scaledInt(1, 10, dayScale) }];
+            if (chance(0.5 * Math.min(1, dayScale + 0.25))) {
+                fnRuns.push({ type: 'action', runs: scaledInt(1, 6, dayScale) });
             }
-            if (integration.webhooks && chance(0.5)) {
-                fnRuns.push({ type: 'webhook', runs: rnd(1, 8) });
+            if (integration.webhooks && chance(0.5 * Math.min(1, dayScale + 0.25))) {
+                fnRuns.push({ type: 'webhook', runs: scaledInt(1, 8, dayScale) });
             }
             for (const { type, runs } of fnRuns) {
                 const failed = Math.min(runs, Math.round(runs * dayFailureRate * rndFloat(0.7, 1.3)));
-                const perRunMs = rnd(40, 900);
+                const perRunMs = scaledInt(40, 900, dayScale * rndFloat(0.9, 1.1));
                 for (const [success, count] of [
                     [true, runs - failed],
                     [false, failed]
@@ -247,8 +338,8 @@ function generateForEnvDay(accountId: number, environmentId: number, isProductio
                             success,
                             telemetryBag: {
                                 durationMs: count * perRunMs,
-                                customLogs: count * rnd(0, 6),
-                                proxyCalls: count * rnd(0, 4),
+                                customLogs: count * rnd(0, Math.max(1, Math.round(6 * dayScale))),
+                                proxyCalls: count * rnd(0, Math.max(1, Math.round(4 * dayScale))),
                                 memoryGb: pick([0.5, 1, 2, 3])
                             }
                         })
@@ -261,14 +352,18 @@ function generateForEnvDay(accountId: number, environmentId: number, isProductio
         // reflects the daily total record count, not a per-integration average.
         for (const model of integration.models) {
             for (const connectionId of connections.slice(0, 2)) {
-                events.push(event('usage.records', accountId, ts, rnd(50, 5_000), { ...base, connectionId, model, batchId }));
+                events.push(event('usage.records', accountId, ts, scaledInt(50, 5_000, dayScale, 10), { ...base, connectionId, model, batchId }));
             }
         }
 
-        // connections — AVG metric. value = this integration's active connection count
-        // (most connections active), so the metric mirrors the real connection cardinality.
+        // connections — AVG metric. value = this integration's active connection count.
         // Shares the day's batchId so the headline is the daily total, not a per-row average.
-        events.push(event('usage.connections', accountId, ts, Math.round(connections.length * rndFloat(0.85, 1)), { ...base, batchId }));
+        events.push(
+            event('usage.connections', accountId, ts, reportedConnectionCount(integration.id, pool.length, ts, seedDays), {
+                ...base,
+                batchId
+            })
+        );
     }
     return events;
 }
@@ -314,7 +409,7 @@ async function resolveTargets(
 }
 
 async function main() {
-    const { onlyAccount, days, reset, allowRemote } = parseArgs();
+    const { onlyAccount, days, reset, allowRemote, verbose } = parseArgs();
 
     const clickhouseUrl = process.env['CLICKHOUSE_URL'];
     if (!clickhouseUrl) {
@@ -337,13 +432,17 @@ async function main() {
     }
 
     if (reset) {
-        console.log(`Resetting local ClickHouse database "${DATABASE}" (synthetic dev data)…`);
+        if (verbose) {
+            console.log(`Resetting local ClickHouse database "${DATABASE}" (synthetic dev data)…`);
+        }
         const client = clickhouseClient();
         await client?.command({ query: `DROP DATABASE IF EXISTS ${DATABASE}` });
         await client?.close();
     }
 
-    console.log('Running ClickHouse migrations…');
+    if (verbose) {
+        console.log('Running ClickHouse migrations…');
+    }
     const migrated = await migrate();
     if (migrated.isErr()) {
         console.error(`✗ Migration failed: ${migrated.error}`);
@@ -379,6 +478,7 @@ async function main() {
     const clickhouse = new Clickhouse();
     let total = 0;
     for (const { accountId, environments } of targets) {
+        const trafficMonthlyGrowth = rndFloat(...MONTHLY_TRAFFIC_GROWTH);
         // One snapshot batchId per day, shared across environments — matches the real
         // metering cron so the AVG metrics (connections, records) reconstruct the daily
         // total instead of a per-row average.
@@ -386,7 +486,7 @@ async function main() {
         for (const env of environments) {
             const events: ClickhouseRawUsageEvent[] = [];
             for (const [offset, batchId] of dayBatchIds.entries()) {
-                events.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId));
+                events.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId, trafficMonthlyGrowth, days));
             }
             // Flush each chunk before generating the next. The whole generate loop is
             // synchronous and never yields, so the batcher's auto-flush can't run mid-loop;
@@ -400,7 +500,9 @@ async function main() {
                 await clickhouse.flush();
             }
             total += events.length;
-            console.log(`  account ${accountId} · env ${env.id} (${env.name}): ${events.length} events`);
+            if (verbose) {
+                console.log(`  account ${accountId} · env ${env.id} (${env.name}): ${events.length} events`);
+            }
         }
     }
 
@@ -415,8 +517,10 @@ async function main() {
     const fromDay = new Date(dayTs(days - 1)).toISOString().split('T')[0];
     const toDay = new Date(dayTs(0)).toISOString().split('T')[0];
     console.log(`\n✓ Seeded ${total} events across ${targets.length} account(s), ${days} days (${fromDay} → ${toDay}).`);
-    console.log('  Materialized views aggregate raw_events into the daily_* tables the dashboard reads.');
-    console.log('  Ensure FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE=100 (or your account is allowlisted) so the server reads ClickHouse.');
+    if (verbose) {
+        console.log('  Materialized views aggregate raw_events into the daily_* tables the dashboard reads.');
+        console.log('  Ensure FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE=100 (or your account is allowlisted) so the server reads ClickHouse.');
+    }
 }
 
 main()
