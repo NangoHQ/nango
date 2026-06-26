@@ -42,7 +42,7 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents, getOAuthSafeUndiciDispatcher } from './proxy/outbound-policy.js';
+import { assertSafeOAuthUrl, findOutboundUrlError, getOAuthSafeHttpAgents, getOAuthSafeUndiciDispatcher } from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -1247,8 +1247,17 @@ class ConnectionService {
 
         try {
             await assertSafeOAuthUrl(url.href);
-        } catch {
-            return { success: false, error: new NangoError('client_credentials_fetch_error'), response: null };
+        } catch (err) {
+            const outboundErr = findOutboundUrlError(err);
+            const reasonCode = outboundErr?.code ?? 'blocked';
+            const errorMessage = outboundErr?.message ?? (err instanceof Error ? err.message : String(err));
+            logger.error(`OAuth client credentials token URL blocked by outbound policy (host: ${url.host}, code: ${reasonCode})`);
+            void logCtx.error('Token URL blocked by outbound policy', { host: url.host, code: reasonCode, error: errorMessage });
+            return {
+                success: false,
+                error: new NangoError('client_credentials_fetch_error', { host: url.host, code: reasonCode, message: errorMessage }),
+                response: null
+            };
         }
 
         let interpolatedParams: Record<string, any> = {};
@@ -1337,8 +1346,6 @@ class ConnectionService {
             }
         }
 
-        // Always route through the OAuth safe dispatcher so the policy-validated IP is the one
-        // connected to (closes the DNS-rebinding gap between validation and the request).
         let agent: Agent = getOAuthSafeUndiciDispatcher();
 
         if (client_certificate && client_private_key) {
