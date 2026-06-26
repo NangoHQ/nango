@@ -58,7 +58,7 @@ export interface FailedConnectionError {
 }
 
 export interface RecentlyFailedConnection {
-    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'connection_config'>>);
+    connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'connection_config'>;
     auth_mode: AuthModeType;
     error?: FailedConnectionError;
     operation: AuthOperationType;
