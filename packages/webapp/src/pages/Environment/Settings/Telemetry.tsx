@@ -111,7 +111,7 @@ export const Telemetry: React.FC = () => {
                         />
                     </div>
                     <fieldset className="flex flex-col gap-4">
-                        <Field>
+                        <Field data-invalid={errors.length > 0}>
                             <FieldLabel htmlFor="otlp_headers">Headers</FieldLabel>
                             <div className="flex flex-col gap-5">
                                 <KeyValueInput
