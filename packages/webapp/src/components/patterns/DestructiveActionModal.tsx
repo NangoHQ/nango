@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
-import { Button, Input } from '@nangohq/design-system';
+import { Button, Field, FieldLabel, Input } from '@nangohq/design-system';
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../ui/Dialog';
 
@@ -30,6 +30,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     onOpenChange
 }) => {
     const [confirmText, setConfirmText] = useState('');
+    const inputId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
 
     return (
@@ -39,10 +40,18 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                 <DialogTitle>{title}</DialogTitle>
                 <DialogDescription className="-mt-3">{description}</DialogDescription>
 
-                <div className="flex flex-col gap-2">
-                    <p className="text-sm text-text-strong break-words">{inputLabel}</p>
-                    <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" className="w-full" />
-                </div>
+                <Field>
+                    <FieldLabel htmlFor={inputId} className="break-words">
+                        {inputLabel}
+                    </FieldLabel>
+                    <Input
+                        id={inputId}
+                        value={confirmText}
+                        onChange={(e) => setConfirmText(e.target.value)}
+                        placeholder="Enter confirmation text"
+                        className="w-full"
+                    />
+                </Field>
 
                 <DialogFooter>
                     <DialogClose asChild>

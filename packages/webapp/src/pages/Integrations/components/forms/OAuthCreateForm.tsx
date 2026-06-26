@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Button, FieldLabel, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
-import { Label } from '@/components/ui/Label';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { NangoProvidedInput } from '../NangoProvidedInput';
@@ -89,17 +88,17 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_id">Client ID</Label>
+                            <FieldLabel htmlFor="client_id">Client ID</FieldLabel>
                             <NangoProvidedInput fakeValueSize={24} />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_secret">Client secret</Label>
+                            <FieldLabel htmlFor="client_secret">Client secret</FieldLabel>
                             <NangoProvidedInput fakeValueSize={48} />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="scopes">Scopes</Label>
+                            <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
                             <ScopesInput isSharedCredentials scopesString={provider.preConfiguredScopes.join(',')} />
                         </div>
                     </div>
