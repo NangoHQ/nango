@@ -30,9 +30,6 @@ const instagramLongLivedTokenUrl = 'https://graph.instagram.com/access_token';
 
 const logger = getLogger('Provider.Client');
 
-// Route every OAuth/token request through the OAuth safe agents, which pin the policy-validated IP.
-// This also covers interpolated secondary hosts (e.g. sharepoint `tenantId`, teams-bot
-// `botHostTenantId`) at connect time, not just the primary token URL validated at entry.
 const axios = {
     post: (url: string, data?: unknown, config?: Parameters<typeof axiosInstance.post>[2]) =>
         axiosInstance.post(url, data, { ...config, ...getOAuthSafeHttpAgents() }),

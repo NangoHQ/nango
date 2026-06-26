@@ -3,7 +3,6 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
-// Outbound URL policy (JSON), consumed by @nangohq/egress. Shared by the base and OAuth-specific vars.
 function outboundUrlPolicySchema(varName: string) {
     return z
         .string()
@@ -29,8 +28,6 @@ function outboundUrlPolicySchema(varName: string) {
                     blockLinkLocal: z.boolean().optional(),
                     maxRedirects: z.number().int().nonnegative().optional()
                 })
-                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
-                // being silently dropped and weakening the intended SSRF restrictions.
                 .strict()
                 .optional()
         );

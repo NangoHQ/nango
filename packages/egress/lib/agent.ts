@@ -147,11 +147,6 @@ export function getSafeHttpAgents(policy: OutboundUrlPolicy): { httpAgent: http.
 
 const safeUndiciCache = new Map<string, UndiciAgent>();
 
-/**
- * Build an undici dispatcher whose connector resolves DNS through the policy's pinned, validated
- * lookup. Use for `fetch`-based outbound paths. Pass `connectOverrides` (e.g. mTLS cert/key) for
- * one-off dispatchers; those are not cached.
- */
 export function getSafeUndiciDispatcher(policy: OutboundUrlPolicy, connectOverrides?: buildConnector.BuildOptions): UndiciAgent {
     const lookup = getSafeLookup(policy) as unknown as LookupFunction;
     if (!connectOverrides) {
