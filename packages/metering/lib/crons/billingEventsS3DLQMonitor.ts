@@ -40,12 +40,20 @@ export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.billingEventsS3DLQMonitor', async () => {
         logger.info(`Starting`);
         await withLock(async () => {
-            const fileCount = await countObjects();
-            metrics.gauge(metrics.Types.BILLING_EVENTS_S3_DLQ_FILES, fileCount);
-            if (fileCount > 0) {
-                logger.warning(`DLQ bucket s3://${bucket!} has ${fileCount} file(s); alert should fire.`);
-            } else {
-                logger.info(`DLQ bucket s3://${bucket!} is empty.`);
+            let success = false;
+            try {
+                const fileCount = await countObjects();
+                metrics.gauge(metrics.Types.BILLING_EVENTS_S3_DLQ_FILES, fileCount);
+                if (fileCount > 0) {
+                    logger.warning(`DLQ bucket s3://${bucket!} has ${fileCount} file(s); alert should fire.`);
+                } else {
+                    logger.info(`DLQ bucket s3://${bucket!} is empty.`);
+                }
+                success = true;
+            } catch (err) {
+                logger.error(`Failed to inspect DLQ bucket s3://${bucket!}`, err);
+            } finally {
+                metrics.increment(metrics.Types.BILLING_EVENTS_S3_DLQ_MONITOR_RUN_RESULT, 1, { success: success ? 'true' : 'false' });
             }
         });
     });

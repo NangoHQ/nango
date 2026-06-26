@@ -145,6 +145,7 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
     BILLING_USAGE_TRACKER_CALLS = 'nango.billing.usage.tracker.calls',
     BILLING_EVENTS_S3_DLQ_FILES = 'nango.billing.events.s3.dlq.files',
+    BILLING_EVENTS_S3_DLQ_MONITOR_RUN_RESULT = 'nango.billing.events.s3.dlq.monitor.run.result',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
