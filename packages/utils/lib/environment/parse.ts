@@ -3,6 +3,39 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
+// Outbound URL policy (JSON), consumed by @nangohq/egress. Shared by the base and OAuth-specific vars.
+function outboundUrlPolicySchema(varName: string) {
+    return z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in ${varName}`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z
+                .object({
+                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
+                    denylist: z.array(z.string()).optional(),
+                    allowlist: z.array(z.string()).optional(),
+                    blockPrivateIps: z.boolean().optional(),
+                    blockLinkLocal: z.boolean().optional(),
+                    maxRedirects: z.number().int().nonnegative().optional()
+                })
+                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
+                // being silently dropped and weakening the intended SSRF restrictions.
+                .strict()
+                .optional()
+        );
+}
+
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -64,36 +97,11 @@ export const ENVS = z.object({
                 return z.NEVER;
             }
         }),
-    // Outbound URL policy (JSON), consumed by @nangohq/egress.
-    NANGO_OUTBOUND_URL_POLICY: z
-        .string()
-        .optional()
-        .transform((s, ctx) => {
-            if (s === undefined || s.trim() === '') {
-                return undefined;
-            }
-            try {
-                return JSON.parse(s) as unknown;
-            } catch {
-                ctx.addIssue(`Invalid JSON in NANGO_OUTBOUND_URL_POLICY`);
-                return z.NEVER; // tells Zod to stop here and mark parse as failed
-            }
-        })
-        .pipe(
-            z
-                .object({
-                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
-                    denylist: z.array(z.string()).optional(),
-                    allowlist: z.array(z.string()).optional(),
-                    blockPrivateIps: z.boolean().optional(),
-                    blockLinkLocal: z.boolean().optional(),
-                    maxRedirects: z.number().int().nonnegative().optional()
-                })
-                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
-                // being silently dropped and weakening the intended SSRF restrictions.
-                .strict()
-                .optional()
-        ),
+    // Outbound URL policy (JSON), consumed by @nangohq/egress for proxy/webhook/uncontrolledFetch paths.
+    NANGO_OUTBOUND_URL_POLICY: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY'),
+    // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
+    // but RFC1918 blocking defaults off (configurable) so self-hosted token endpoints keep working.
+    NANGO_OUTBOUND_URL_POLICY_OAUTH: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY_OAUTH'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

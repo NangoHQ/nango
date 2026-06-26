@@ -178,23 +178,34 @@ export function getRunnerPolicyFromEnv(): OutboundUrlPolicy {
     return memoizedRunnerPolicy;
 }
 
+export interface OAuthPolicyEnvInput {
+    proxyBaseUrlOverrideDenylist: string[];
+    /** Base policy (NANGO_OUTBOUND_URL_POLICY), already parsed. */
+    outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
+    /** OAuth-specific overlay (NANGO_OUTBOUND_URL_POLICY_OAUTH), already parsed. */
+    outboundUrlPolicyOAuth?: OutboundUrlPolicyRaw | undefined;
+}
+
 /**
- * OAuth-specific policy: blocks metadata/loopback/link-local + DNS rebinding by default;
- * RFC1918 blocking off unless explicitly configured.
+ * OAuth/token-flow policy: blocks metadata/loopback/link-local + DNS rebinding by default;
+ * RFC1918 blocking is off unless explicitly configured, so self-hosted integrations whose token
+ * endpoints live on private networks keep working. Layering: secure defaults -> base policy ->
+ * OAuth overlay. The default denylist (metadata/loopback) is always re-applied so it cannot be
+ * dropped by an operator opt-out.
  */
-export function resolvePolicyForOAuth(input: { outboundUrlPolicyOAuthRaw?: string | undefined; outboundUrlPolicyRaw?: string | undefined }): OutboundUrlPolicy {
-    const oauthRaw = parsePolicyJson(input.outboundUrlPolicyOAuthRaw);
-    const baseRaw = parsePolicyJson(input.outboundUrlPolicyRaw);
+export function resolvePolicyForOAuth(input: OAuthPolicyEnvInput): OutboundUrlPolicy {
+    const denylistEntries =
+        input.proxyBaseUrlOverrideDenylist.length === 0 ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] : input.proxyBaseUrlOverrideDenylist;
     const merged = mergePolicyRaw(
         mergePolicyRaw(
             {
                 blockPrivateIps: false,
                 mode: 'denylist',
-                denylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+                denylist: denylistEntries
             },
-            baseRaw ?? {}
+            input.outboundUrlPolicy ?? {}
         ),
-        oauthRaw ?? {}
+        input.outboundUrlPolicyOAuth ?? {}
     );
     return rawToPolicy(merged, mergeProxyBaseUrlOverrideDenylist(merged.denylist ?? []));
 }

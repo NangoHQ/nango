@@ -3,8 +3,9 @@ import { randomUUID } from 'crypto';
 import braintree from 'braintree';
 import qs from 'qs';
 
-import { axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance, getLogger, stringifyError } from '@nangohq/utils';
 
+import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
@@ -28,6 +29,15 @@ const instagramExpiresIn = 3600;
 const instagramLongLivedTokenUrl = 'https://graph.instagram.com/access_token';
 
 const logger = getLogger('Provider.Client');
+
+// Route every OAuth/token request through the OAuth safe agents, which pin the policy-validated IP.
+// This also covers interpolated secondary hosts (e.g. sharepoint `tenantId`, teams-bot
+// `botHostTenantId`) at connect time, not just the primary token URL validated at entry.
+const axios = {
+    post: (url: string, data?: unknown, config?: Parameters<typeof axiosInstance.post>[2]) =>
+        axiosInstance.post(url, data, { ...config, ...getOAuthSafeHttpAgents() }),
+    get: (url: string, config?: Parameters<typeof axiosInstance.get>[1]) => axiosInstance.get(url, { ...config, ...getOAuthSafeHttpAgents() })
+};
 
 class ProviderClient {
     public shouldUseProviderClient(provider: string): boolean {
@@ -93,6 +103,11 @@ class ProviderClient {
         connectionConfig?: Record<string, string>,
         state?: string
     ): Promise<object> {
+        try {
+            await assertSafeOAuthUrl(tokenUrl);
+        } catch (err) {
+            throw new NangoError('request_token_external_error', err instanceof Error ? err.message : 'Outbound URL blocked by policy');
+        }
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
@@ -184,6 +199,15 @@ class ProviderClient {
         const credentials = connection.credentials;
         const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
         const interpolatedRefreshUrl = provider.refresh_url ? makeUrl(provider.refresh_url, connection.connection_config) : null;
+
+        try {
+            await assertSafeOAuthUrl(interpolatedTokenUrl.href);
+            if (interpolatedRefreshUrl) {
+                await assertSafeOAuthUrl(interpolatedRefreshUrl.href);
+            }
+        } catch (err) {
+            throw new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'Outbound URL blocked by policy' });
+        }
 
         if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin' && config.provider !== 'instagram') {
             throw new NangoError('missing_refresh_token');
