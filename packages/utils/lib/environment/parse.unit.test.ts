@@ -195,6 +195,36 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should default NANGO_OUTBOUND_URL_POLICY_OAUTH to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY_OAUTH).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY_OAUTH', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIps: true, maxRedirects: 2 })
+        });
+        expect(res.NANGO_OUTBOUND_URL_POLICY_OAUTH).toEqual({ blockPrivateIps: true, maxRedirects: 2 });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY_OAUTH', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY_OAUTH');
+    });
+
+    it('should throw on an invalid NANGO_OUTBOUND_URL_POLICY_OAUTH shape', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ mode: 'bogus' }) });
+        }).toThrow();
+    });
+
+    it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY_OAUTH (typos fail fast)', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIp: false }) });
+        }).toThrow();
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
