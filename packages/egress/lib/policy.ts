@@ -95,9 +95,6 @@ export interface ServerPolicyEnvInput {
     outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
 }
 
-/**
- * Build policy for server-side services from parsed env values.
- */
 export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrlPolicy {
     const jsonRaw = input.outboundUrlPolicy ?? null;
     const denylistEntries = input.proxyBaseUrlOverrideDenylist;
@@ -128,9 +125,6 @@ function isBaseUrlOverrideEnabledFromEnv(raw: string | undefined): boolean {
     return normalized !== 'false' && normalized !== '0';
 }
 
-/**
- * Build policy for runner / runner-sdk. Always applies secure denylist defaults when env is empty.
- */
 export function resolvePolicyForRunner(input: RunnerPolicyEnvInput): OutboundUrlPolicy {
     return resolvePolicyForRunnerSync(input);
 }
@@ -186,13 +180,6 @@ export interface OAuthPolicyEnvInput {
     outboundUrlPolicyOAuth?: OutboundUrlPolicyRaw | undefined;
 }
 
-/**
- * OAuth/token-flow policy: blocks metadata/loopback/link-local + DNS rebinding by default;
- * RFC1918 blocking is off unless explicitly configured, so self-hosted integrations whose token
- * endpoints live on private networks keep working. Layering: secure defaults -> base policy ->
- * OAuth overlay. The default denylist (metadata/loopback) is always re-applied so it cannot be
- * dropped by an operator opt-out.
- */
 export function resolvePolicyForOAuth(input: OAuthPolicyEnvInput): OutboundUrlPolicy {
     const denylistEntries =
         input.proxyBaseUrlOverrideDenylist.length === 0 ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] : input.proxyBaseUrlOverrideDenylist;
