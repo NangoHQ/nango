@@ -122,7 +122,7 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-heading-sm text-text-strong">Team members</h3>
+            <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
             <Table>
                 <TableHeader>
                     <TableRow>
