@@ -150,10 +150,12 @@ export const ENVS = z.object({
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
+    NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
 
     // Orchestrator
     ORCHESTRATOR_SERVICE_URL: z.url().optional(),
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
+    NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     ORCHESTRATOR_DATABASE_URL: z.url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
@@ -180,6 +182,7 @@ export const ENVS = z.object({
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
+    NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
     JOBS_PROCESSOR_CONFIG: z
@@ -247,6 +250,7 @@ export const ENVS = z.object({
         .default([]),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
+    NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().default(1),
