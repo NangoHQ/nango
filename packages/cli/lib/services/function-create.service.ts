@@ -41,9 +41,6 @@ export async function create({
             case 'on-event':
                 templateFile = path.join(templateFolder, 'on-event.ts');
                 break;
-            case 'webhook':
-                templateFile = path.join(templateFolder, 'webhook.ts');
-                break;
         }
 
         if (!fs.existsSync(templateFile)) {
