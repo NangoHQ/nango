@@ -978,7 +978,7 @@ const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>(['nango', 'persistC
 
 function throwBlockedAccess(prop: string | symbol): never {
     const name = typeof prop === 'symbol' ? prop.toString() : prop;
-    throw new Error(`Access to "${name}" is not allowed. Use the Nango SDK methods (e.g. nango.proxy(), nango.fetch()) to make HTTP requests.`);
+    throw new Error(`Access to "${name}" is not allowed. Use the Nango SDK methods (e.g. nango.proxy(), nango.uncontrolledFetch()) to make HTTP requests.`);
 }
 
 /**
