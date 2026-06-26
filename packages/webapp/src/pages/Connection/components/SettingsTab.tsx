@@ -50,7 +50,7 @@ export const SettingsTab = () => {
                         {(allowed) => (
                             <Button
                                 variant="danger"
-                                size="xl"
+                                size="lg"
                                 loading={isDeletingConnection}
                                 disabled={!allowed}
                                 onClick={() =>

@@ -107,7 +107,7 @@ export const IntegrationsList = () => {
                 <title>Integrations - Nango</title>
             </Helmet>
             <header className="flex items-center gap-3">
-                <InputGroup className="h-10 flex-1">
+                <InputGroup className="flex-1">
                     <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} />
                     <InputGroupAddon>
                         <Search />
@@ -115,7 +115,7 @@ export const IntegrationsList = () => {
                 </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
-                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
+                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                             Set up new integration
                         </ButtonLink>
                     )}
@@ -147,7 +147,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration
                             </ButtonLink>
                         )}
@@ -161,7 +161,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration
                             </ButtonLink>
                         )}

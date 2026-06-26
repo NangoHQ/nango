@@ -71,7 +71,7 @@ export default function Signin() {
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
@@ -80,7 +80,7 @@ export default function Signin() {
                             )}
                         />
 
-                        <Button type="submit" size={'xl'} loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
                             Send password reset email
                         </Button>
                     </form>

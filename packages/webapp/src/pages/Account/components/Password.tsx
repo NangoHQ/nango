@@ -8,6 +8,8 @@ import { InputGroup, InputGroupInput } from '@nangohq/design-system';
 import { FormControl, FormItem, FormMessage, useFormField } from '@/components/ui/Form';
 import { cn } from '@/utils/utils';
 
+import type { InputProps } from '@nangohq/design-system';
+
 export const passwordSchema = z
     .string()
     .min(12, 'Password must be at least 12 characters')
@@ -15,7 +17,7 @@ export const passwordSchema = z
     .refine((value) => /[0-9]/.test(value), 'Password must contain at least one number')
     .refine((value) => /[^a-zA-Z0-9]/.test(value), 'Password must contain at least one special character');
 
-export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => {
+export const Password: React.FC<InputProps> = (props) => {
     const { name } = useFormField();
     const { control } = useFormContext();
     const { field, fieldState } = useController({ name, control });
@@ -37,7 +39,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
     return (
         <FormItem>
             <FormControl>
-                <InputGroup className="h-11">
+                <InputGroup>
                     <InputGroupInput
                         {...field}
                         id={field.name}

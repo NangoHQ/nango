@@ -20,8 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
-// 'xl' (40px) is deprecated — kept only for migrating legacy webapp buttons
-const SIZES = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
+const SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 export const AllVariants: Story = {
     name: 'All variants',

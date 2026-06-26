@@ -119,7 +119,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                         id={id}
                         value={displayValue}
                         onChange={handleChange}
-                        className="h-36"
+                        rows={6}
                         disabled={!editing}
                         onKeyDown={(e) => {
                             if (e.key === 'Escape') onCancelClicked();

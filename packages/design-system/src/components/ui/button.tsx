@@ -88,9 +88,7 @@ export const buttonVariants = cva(
                 xs: 'h-6 px-1.5 text-ds-xs',
                 sm: 'h-7 px-2',
                 md: 'h-8 px-2.5',
-                lg: 'h-9 px-3',
-                // @deprecated 40px — legacy webapp size, kept only to migrate existing usages; do not use for new buttons
-                xl: 'h-10 px-4'
+                lg: 'h-9 px-3'
             }
         },
         defaultVariants: {

@@ -293,7 +293,7 @@ export const ConnectionList = () => {
                         <>
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="h-10 flex-1">
+                                <InputGroup className="flex-1">
                                     <InputGroupInput
                                         type="text"
                                         placeholder="Search connections"
@@ -345,7 +345,7 @@ export const ConnectionList = () => {
                                 />
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
-                                        <ButtonLink to={`/${env}/connections/create`} size="xl" disabled={!allowed} className="ml-auto">
+                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
                                             Add test connection
                                         </ButtonLink>
                                     )}
@@ -440,7 +440,7 @@ export const ConnectionList = () => {
                                 </StyledLink>
                                 , or manually here.
                             </p>
-                            <ButtonLink to={`/${env}/connections/create`} size="xl">
+                            <ButtonLink to={`/${env}/connections/create`} size="lg">
                                 Add test connection
                             </ButtonLink>
                         </div>
