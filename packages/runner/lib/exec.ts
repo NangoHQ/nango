@@ -16,7 +16,7 @@ import { Err, errorToObject, isEnterprise, Ok, truncateJson } from '@nangohq/uti
 import { PersistClient } from './clients/persist.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
-import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
+import { createFunctionFacade, instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 import { createTelemetryRecorder } from './telemetry.js';
 
 import type { Locks } from './sdk/locks.js';
@@ -70,6 +70,12 @@ export async function exec({
     })();
     const nango = process.env['NANGO_TELEMETRY_SDK'] ? instrumentSDK(rawNango) : rawNango;
     nango.abortSignal = abortController.signal;
+
+    // Customer-authored functions receive a restricted facade so they cannot reach internal properties
+    // (most importantly the underlying node client and its raw Axios instance via `nango.nango.http`),
+    // which would let them bypass the SDK. `exec` keeps using the real instance for its own needs
+    // (telemetryBag, getCheckpointRange, clearRecordsIfNeeded, ...).
+    const functionNango = createFunctionFacade(nango);
 
     const wrappedCode = `(function() { var module = { exports: {} }; var exports = module.exports; ${code}
         return module.exports;
@@ -153,7 +159,7 @@ export async function exec({
                         throw new Error(`Missing onWebhook function`);
                     }
 
-                    const output = await payload.onWebhook(nango as any, codeParams);
+                    const output = await payload.onWebhook(functionNango as any, codeParams);
                     return Ok({
                         output,
                         telemetryBag: nango.telemetryBag,
@@ -166,7 +172,7 @@ export async function exec({
                         throw new Error(content);
                     }
 
-                    const output = await scriptExports.onWebhookPayloadReceived(nango as NangoSyncRunner, codeParams);
+                    const output = await scriptExports.onWebhookPayloadReceived(functionNango as NangoSyncRunner, codeParams);
                     return Ok({
                         output,
                         telemetryBag: nango.telemetryBag,
@@ -191,9 +197,9 @@ export async function exec({
                     if (!payload.exec) {
                         throw new Error(`Missing exec function`);
                     }
-                    output = await payload.exec(nango, codeParams);
+                    output = await payload.exec(functionNango, codeParams);
                 } else {
-                    output = await def(nango, inputParams);
+                    output = await def(functionNango, inputParams);
                 }
 
                 if (output) {
@@ -228,9 +234,9 @@ export async function exec({
                     if (!payload.exec) {
                         throw new Error(`Missing exec function`);
                     }
-                    output = await payload.exec(nango as any);
+                    output = await payload.exec(functionNango as any);
                 } else {
-                    output = await def(nango);
+                    output = await def(functionNango);
                 }
                 return Ok({ output, telemetryBag: nango.telemetryBag });
             }
@@ -246,14 +252,14 @@ export async function exec({
                     throw new Error(`Missing exec function`);
                 }
 
-                await payload.exec(nango as any);
+                await payload.exec(functionNango as any);
                 return Ok({
                     output: true,
                     telemetryBag: nango.telemetryBag,
                     checkpoints: nango.getCheckpointRange()
                 });
             } else {
-                await def(nango);
+                await def(functionNango);
                 return Ok({
                     output: true,
                     telemetryBag: nango.telemetryBag,
