@@ -50,14 +50,48 @@ const DATA: Record<string, { value: string; label: string }[]> = {
     ].map((v) => ({ value: v, label: v }))
 };
 
-const Demo: React.FC<{ initial?: { group: string; value: string } | null }> = ({ initial = null }) => {
+// A long list to demonstrate paging — far more than fits without scrolling.
+const MANY = Array.from({ length: 60 }, (_, i) => {
+    const v = `conn-${String(i + 1).padStart(2, '0')}`;
+    return { value: v, label: v };
+});
+
+// Serves MANY in pages of 20, with a brief simulated delay on each load so the next-page spinner
+// shows. Lives in FilterSelect's value pane (which remounts per group), so the page count resets
+// each time the group reopens. Named `use*` because it holds hook state.
+const usePaginatingGroupData = (_group: string): FilterSelectGroupData => {
+    const PAGE = 20;
+    const [loaded, setLoaded] = useState(PAGE);
+    const [fetchingNext, setFetchingNext] = useState(false);
+    return {
+        options: MANY.slice(0, loaded),
+        isLoading: false,
+        isError: false,
+        hasNextPage: loaded < MANY.length,
+        isFetchingNextPage: fetchingNext,
+        fetchNextPage: () => {
+            if (fetchingNext || loaded >= MANY.length) return;
+            setFetchingNext(true);
+            setTimeout(() => {
+                setLoaded((n) => Math.min(n + PAGE, MANY.length));
+                setFetchingNext(false);
+            }, 500);
+        }
+    };
+};
+
+const Demo: React.FC<{
+    initial?: { group: string; value: string } | null;
+    groups?: { value: string; label: string }[];
+    useGroupData?: (group: string) => FilterSelectGroupData;
+}> = ({ initial = null, groups = GROUPS, useGroupData }) => {
     const [open, setOpen] = useState(false);
     const [filter, setFilter] = useState<{ group: string; value: string } | null>(initial);
 
-    // In the app this fetches per-dimension values; here it's static.
-    const useGroupData = (group: string): FilterSelectGroupData => ({ options: DATA[group] ?? [], isLoading: false, isError: false });
+    // In the app this fetches per-dimension values; here it's static unless a story overrides it.
+    const defaultUseGroupData = (group: string): FilterSelectGroupData => ({ options: DATA[group] ?? [], isLoading: false, isError: false });
 
-    const activeLabel = filter ? `${GROUPS.find((g) => g.value === filter.group)?.label}: ${filter.value}` : 'Filter';
+    const activeLabel = filter ? `${groups.find((g) => g.value === filter.group)?.label}: ${filter.value}` : 'Filter';
     const trigger = (
         <button
             type="button"
@@ -73,8 +107,8 @@ const Demo: React.FC<{ initial?: { group: string; value: string } | null }> = ({
             trigger={trigger}
             open={open}
             onOpenChange={setOpen}
-            groups={GROUPS}
-            useGroupData={useGroupData}
+            groups={groups}
+            useGroupData={useGroupData ?? defaultUseGroupData}
             selectedValueFor={(g: string) => (filter?.group === g ? filter.value : null)}
             onSelect={(group: string, value: string) => setFilter({ group, value })}
             // `status` is a fixed set: no free text and no search box — the others allow both.
@@ -91,4 +125,24 @@ export const Default: Story = {
 export const WithSelection: Story = {
     name: 'With a selection',
     render: () => <Demo initial={{ group: 'status', value: 'true' }} />
+};
+
+export const Paginating: Story = {
+    name: 'Paging (load more on scroll)',
+    render: () => <Demo groups={[{ value: 'connection', label: 'Connection' }]} useGroupData={usePaginatingGroupData} />
+};
+
+export const Loading: Story = {
+    name: 'Loading values',
+    render: () => <Demo groups={[{ value: 'function', label: 'Function name' }]} useGroupData={() => ({ options: [], isLoading: true, isError: false })} />
+};
+
+export const Searching: Story = {
+    name: 'Search fetch in flight',
+    render: () => (
+        <Demo
+            groups={[{ value: 'function', label: 'Function name' }]}
+            useGroupData={(group) => ({ options: DATA[group] ?? [], isLoading: false, isFetching: true, isError: false })}
+        />
+    )
 };
