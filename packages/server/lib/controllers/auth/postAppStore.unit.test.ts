@@ -4,6 +4,7 @@ import { Ok } from '@nangohq/utils';
 
 import { postPublicAppStoreAuthorization } from './postAppStore.js';
 
+import type * as DatabaseModule from '@nangohq/database';
 import type * as SharedModule from '@nangohq/shared';
 import type { Request, Response } from 'express';
 
@@ -34,7 +35,7 @@ const {
 });
 
 vi.mock('@nangohq/database', async () => {
-    const actual: typeof import('@nangohq/database') = await vi.importActual('@nangohq/database');
+    const actual: typeof DatabaseModule = await vi.importActual('@nangohq/database');
     return { ...actual, default: { knex: {} } };
 });
 
