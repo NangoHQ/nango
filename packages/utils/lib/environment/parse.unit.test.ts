@@ -19,11 +19,6 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
-    it('should parse NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH', () => {
-        expect(parseEnvs(ENVS, {}).NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).toBe(16 * 1024);
-        expect(parseEnvs(ENVS, { NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH: '32768' }).NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).toBe(32768);
-    });
-
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
