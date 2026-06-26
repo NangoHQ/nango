@@ -109,63 +109,58 @@ export async function routeWebhook({
         const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 
+        const webhookSettings = await externalWebhookService.get(environment.id);
+
+        const webhookSigningSecret = webhookSettings
+            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
+                  if (r.isErr()) throw r.error;
+                  return r.value;
+              })
+            : '';
+
+        // Fetch the matched connections' config so forwardWebhook can honor a per-connection webhook URL override.
+        const connectionConfigByConnectionId = webhookSettings
+            ? await connectionService.getConnectionConfigByConnectionIds({
+                  connectionIds,
+                  provider_config_key: integration.unique_key,
+                  environment_id: environment.id
+              })
+            : new Map<string, ConnectionConfig>();
+
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
-        // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints.
-        // All forward-related DB work (settings, signing key, per-connection config) runs inside this
-        // fire-and-forget block, off the provider response path, so a large connection fan-out can't delay
-        // the response back to the provider.
+        // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
         const forwardSpan = tracer.startSpan('webhook.forward');
         const pendingEvents: MaybeStampedEvent<'usage'>[] = [];
 
-        void (async () => {
-            const webhookSettings = await externalWebhookService.get(environment.id);
-
-            const webhookSigningSecret = webhookSettings
-                ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
-                      if (r.isErr()) throw r.error;
-                      return r.value;
-                  })
-                : '';
-
-            // Fetch the matched connections' config so forwardWebhook can honor a per-connection webhook URL override.
-            const connectionConfigByConnectionId = webhookSettings
-                ? await connectionService.getConnectionConfigByConnectionIds({
-                      connectionIds,
-                      provider_config_key: integration.unique_key,
-                      environment_id: environment.id
-                  })
-                : new Map<string, ConnectionConfig>();
-
-            return forwardWebhook({
-                integration,
-                account,
-                environment,
-                secret: webhookSigningSecret,
-                webhookSettings,
-                connectionIds,
-                connectionConfigByConnectionId,
-                payload: webhookBodyToForward,
-                webhookOriginalHeaders: headers,
-                logContextGetter,
-                onBytes: (bytes, connectionId) => {
-                    pendingEvents.push(
-                        makeDataTransferEvent({
-                            pkg: 'server',
-                            callsite: 'webhook_forward',
-                            accountId: account.id,
-                            connectionId,
-                            integrationId: integration.unique_key,
-                            environmentId: environment.id,
-                            meteredBytes: bytes,
-                            environmentName: environment.name
-                        })
-                    );
-                }
-            });
-        })()
-            .then((forwardResult) => {
-                if (forwardResult?.isOk()) {
-                    for (const { connectionId, success } of forwardResult.value.results) {
+        void forwardWebhook({
+            integration,
+            account,
+            environment,
+            secret: webhookSigningSecret,
+            webhookSettings,
+            connectionIds,
+            connectionConfigByConnectionId,
+            payload: webhookBodyToForward,
+            webhookOriginalHeaders: headers,
+            logContextGetter,
+            onBytes: (bytes, connectionId) => {
+                pendingEvents.push(
+                    makeDataTransferEvent({
+                        pkg: 'server',
+                        callsite: 'webhook_forward',
+                        accountId: account.id,
+                        connectionId,
+                        integrationId: integration.unique_key,
+                        environmentId: environment.id,
+                        meteredBytes: bytes,
+                        environmentName: environment.name
+                    })
+                );
+            }
+        })
+            .then((res) => {
+                if (res.isOk()) {
+                    for (const { connectionId, success } of res.value.results) {
                         pendingEvents.push({
                             subject: 'usage',
                             type: 'usage.webhook_forward',
@@ -183,9 +178,6 @@ export async function routeWebhook({
                         });
                     }
                 }
-            })
-            .catch((err: unknown) => {
-                logger.error(`error forwarding webhook for ${integration.unique_key} - `, err);
             })
             .finally(() => {
                 if (pendingEvents.length > 0) {
