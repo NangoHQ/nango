@@ -52,6 +52,10 @@ export async function exec(): Promise<void> {
                 success = true;
             } catch (err) {
                 logger.error(`Failed to inspect DLQ bucket s3://${bucket!}`, err);
+                // Re-throw so dd-trace tags the enclosing span as errored — without this, the
+                // span looks clean in APM even though the run failed. The `finally` below still
+                // emits success:false before the rejection propagates.
+                throw err;
             } finally {
                 metrics.increment(metrics.Types.BILLING_EVENTS_S3_DLQ_MONITOR_RUN_RESULT, 1, { success: success ? 'true' : 'false' });
             }
