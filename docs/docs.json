@@ -798,6 +798,10 @@
                       {
                         "group": "Functions",
                         "pages": [
+                          "reference/backend/http-api/functions/list",
+                          "reference/backend/http-api/functions/get",
+                          "reference/backend/http-api/functions/code",
+                          "reference/backend/http-api/functions/delete",
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
@@ -840,7 +844,8 @@
                         "group": "Providers",
                         "pages": [
                           "reference/backend/http-api/providers/list",
-                          "reference/backend/http-api/providers/get"
+                          "reference/backend/http-api/providers/get",
+                          "reference/backend/http-api/providers/templates"
                         ]
                       },
                       {

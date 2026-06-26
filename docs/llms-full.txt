@@ -8776,6 +8776,9 @@ The **Default - Full access** key that comes with each environment already has a
 
 | Scope | Description |
 |-------|-------------|
+| `environment:functions:list` | List deployed functions |
+| `environment:functions:read` | Read a single deployed function |
+| `environment:functions:delete` | Delete a deployed function |
 | `environment:functions:compile` | Compile function source code |
 | `environment:functions:dryrun` | Dry run function source code |
 
@@ -9158,6 +9161,46 @@ Source: https://nango.dev/docs/reference/backend/http-api/connections/delete.md
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
+
+## List functions
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/list.md
+
+<Info>
+  Requires an API key with the `environment:functions:list` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the functions deployed to an integration.
+
+## Get a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/get.md
+
+<Info>
+  Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns a single deployed function.
+
+## Get a function's source code
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/code.md
+
+<Info>
+  Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the TypeScript source code of a function for a given integration.
+
+## Delete a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/delete.md
+
+<Info>
+  Requires an API key with the `environment:functions:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint.
 
 ## Compile a function
 
@@ -9710,6 +9753,12 @@ Source: https://nango.dev/docs/reference/backend/http-api/providers/get.md
 }
 ```
 </ResponseExample>
+
+## List provider templates
+
+Source: https://nango.dev/docs/reference/backend/http-api/providers/templates.md
+
+Returns the template functions available in the catalog for a provider.
 
 ## List connections (deprecated)
 
