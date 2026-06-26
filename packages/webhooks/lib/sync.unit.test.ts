@@ -104,6 +104,7 @@ describe('Webhooks: sync notification tests', () => {
     beforeEach(() => {
         deliverMock.mockReset();
         deliverMock.mockResolvedValue(Ok(undefined));
+        shouldSendSyncCompletedWebhookForWebhookOperation.mockReset();
         shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(true);
     });
 
