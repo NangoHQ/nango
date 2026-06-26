@@ -104,6 +104,8 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
             options,
             isLoading: query.isLoading,
             isError: query.isError,
+            // env_id never searches server-side, so don't flag a fetch spinner for it.
+            isFetching: isEnv ? false : query.isFetching,
             hasNextPage: isEnv ? false : query.hasNextPage,
             isFetchingNextPage: query.isFetchingNextPage,
             fetchNextPage: isEnv ? undefined : query.fetchNextPage
