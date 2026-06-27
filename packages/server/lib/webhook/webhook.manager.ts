@@ -179,6 +179,9 @@ export async function routeWebhook({
                     }
                 }
             })
+            .catch((err: unknown) => {
+                logger.error(`error forwarding webhook for ${integration.unique_key} - `, err);
+            })
             .finally(() => {
                 if (pendingEvents.length > 0) {
                     void pubsub.publisher.publishBatch({ subject: 'usage', events: pendingEvents });
