@@ -1,7 +1,6 @@
-import { makeDataTransferEvent } from '@nangohq/shared';
+import { makeDataTransferEvent, pubsub } from '@nangohq/shared';
 import { validateRequest } from '@nangohq/utils';
 
-import { pubsub } from '../../../pubsub.js';
 import { telemetryBodySchema, telemetryParamsSchema } from './validate.js';
 
 import type { AuthLocals } from '../../../middleware/auth.middleware.js';
