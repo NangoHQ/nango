@@ -7,11 +7,11 @@ import { deliver } from './utils.js';
 
 import type { ConnectionJobs, DBAPISecret, DBEnvironment, DBExternalWebhook, DBSyncConfig, DBTeam, IntegrationConfig } from '@nangohq/types';
 
-const shouldSendSyncCompletedWebhookForWebhookOperation = vi.fn().mockResolvedValue(true);
+const shouldSendSyncCompletedWebhook = vi.fn().mockResolvedValue(true);
 
 vi.mock('@nangohq/feature-flags', () => ({
     getFlags: () => ({
-        shouldSendSyncCompletedWebhookForWebhookOperation
+        shouldSendSyncCompletedWebhook
     })
 }));
 
@@ -104,8 +104,8 @@ describe('Webhooks: sync notification tests', () => {
     beforeEach(() => {
         deliverMock.mockReset();
         deliverMock.mockResolvedValue(Ok(undefined));
-        shouldSendSyncCompletedWebhookForWebhookOperation.mockReset();
-        shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(true);
+        shouldSendSyncCompletedWebhook.mockReset();
+        shouldSendSyncCompletedWebhook.mockResolvedValue(true);
     });
 
     it('Should not send a sync webhook if the webhook url is not present', async () => {
@@ -417,7 +417,7 @@ describe('Webhooks: sync notification tests', () => {
     });
 
     it('Should not send a webhook-triggered sync completion webhook when the feature flag disables it', async () => {
-        shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(false);
+        shouldSendSyncCompletedWebhook.mockResolvedValue(false);
 
         await sendSync({
             account,
@@ -435,12 +435,12 @@ describe('Webhooks: sync notification tests', () => {
             webhookSettings
         });
 
-        expect(shouldSendSyncCompletedWebhookForWebhookOperation).toHaveBeenCalledWith(1, connection.provider_config_key);
+        expect(shouldSendSyncCompletedWebhook).toHaveBeenCalledWith(1, connection.provider_config_key);
         expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('Should still send webhook-triggered sync error webhooks when the feature flag disables completion webhooks', async () => {
-        shouldSendSyncCompletedWebhookForWebhookOperation.mockResolvedValue(false);
+        shouldSendSyncCompletedWebhook.mockResolvedValue(false);
 
         await sendSync({
             account,
@@ -464,7 +464,7 @@ describe('Webhooks: sync notification tests', () => {
             }
         });
 
-        expect(shouldSendSyncCompletedWebhookForWebhookOperation).not.toHaveBeenCalled();
+        expect(shouldSendSyncCompletedWebhook).not.toHaveBeenCalled();
         expect(deliverMock).toHaveBeenCalledTimes(1);
     });
 });

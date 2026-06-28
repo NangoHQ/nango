@@ -170,7 +170,7 @@ describe('getFeatureFlagsClient', () => {
         );
     });
 
-    it('shouldSendSyncCompletedWebhookForWebhookOperation evaluates per environment and provider', async () => {
+    it('shouldSendSyncCompletedWebhook evaluates per environment and provider', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
         vi.resetModules();
@@ -181,7 +181,7 @@ describe('getFeatureFlagsClient', () => {
             throw new Error('Expected Unleash provider to initialize');
         }
         unleash.isEnabled.mockReturnValue(false);
-        await expect(getFlags().shouldSendSyncCompletedWebhookForWebhookOperation(16693, 'hubspot')).resolves.toBe(false);
+        await expect(getFlags().shouldSendSyncCompletedWebhook(16693, 'hubspot')).resolves.toBe(false);
         expect(unleash.isEnabled).toHaveBeenCalledWith(
             'sync-completion-webhook-for-webhook-operation',
             {

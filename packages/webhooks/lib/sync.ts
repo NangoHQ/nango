@@ -72,8 +72,10 @@ export const sendSync = async ({
         return Ok(undefined);
     }
 
+    // Real-time integrations can emit a completion webhook on every provider event.
+    // This flag lets us disable those callbacks per environment and integration.
     if (success && operation === 'WEBHOOK') {
-        const shouldSendWebhook = await getFlags().shouldSendSyncCompletedWebhookForWebhookOperation(environment.id, connection.provider_config_key);
+        const shouldSendWebhook = await getFlags().shouldSendSyncCompletedWebhook(environment.id, connection.provider_config_key);
         if (!shouldSendWebhook) {
             return Ok(undefined);
         }
