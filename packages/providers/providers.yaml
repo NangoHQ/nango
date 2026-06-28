@@ -12375,6 +12375,34 @@ medallia:
             default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
 
+meilisearch:
+    display_name: Meilisearch
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.instanceUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /keys
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: Your Meilisearch host, including scheme. e.g. https://ms-xxxx.meilisearch.io or http://localhost:7700
+            example: https://ms-1a2b3c4d5e6f.meilisearch.io
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Meilisearch API key. Use a key (not the master key) so it can sign tenant tokens.
+            secret: true
+    docs: https://nango.dev/docs/integrations/all/meilisearch
+
 metabase:
     display_name: Metabase
     categories:
