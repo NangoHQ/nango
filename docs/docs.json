@@ -1368,6 +1368,7 @@
               "api-integrations/mattermost",
               "integrations/all/mcp-generic",
               "integrations/all/medallia",
+              "integrations/all/meilisearch",
               "api-integrations/mercury",
               "api-integrations/metabase",
               "api-integrations/meta-marketing-api",
