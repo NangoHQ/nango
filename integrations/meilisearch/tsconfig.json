@@ -1,0 +1,17 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "include": ["index.ts", "**/*.ts"],
+    "exclude": ["node_modules", "dist", "build", ".nango"],
+    "compilerOptions": {
+        "module": "node16",
+        "target": "esnext",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node16",
+        "exactOptionalPropertyTypes": true,
+        "noUncheckedIndexedAccess": true,
+        "noEmit": true
+    }
+}

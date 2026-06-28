@@ -1,0 +1,16 @@
+{
+    "name": "nango-integration-meilisearch",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=22.22.2"
+    },
+    "scripts": {
+        "compile": "nango compile",
+        "dev": "nango dev"
+    },
+    "devDependencies": {
+        "zod": "4.3.6"
+    }
+}
