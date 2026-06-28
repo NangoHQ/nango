@@ -34,7 +34,7 @@ const action = createAction({
 
         let apiKeyUid = input.apiKeyUid;
         if (!apiKeyUid) {
-            const res = await nango.get<{ uid: string }>({ endpoint: `/keys/${apiKey}` });
+            const res = await nango.get<{ uid: string }>({ endpoint: `/keys/${encodeURIComponent(apiKey)}` });
             apiKeyUid = res.data.uid;
         }
 

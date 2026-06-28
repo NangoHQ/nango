@@ -15,6 +15,10 @@ describe('searchRulesSchema', () => {
     it('accepts boolean and array rule values', () => {
         expect(() => searchRulesSchema.parse({ a: true, b: ['title'] })).not.toThrow();
     });
+
+    it('rejects a non-object/boolean/array rule value', () => {
+        expect(() => searchRulesSchema.parse({ a: 123 })).toThrow();
+    });
 });
 
 describe('enqueuedTaskSchema', () => {

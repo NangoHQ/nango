@@ -29,7 +29,7 @@ const action = createAction({
 
     exec: async (nango, input) => {
         const { indexUid, ...body } = input;
-        const res = await nango.post({ endpoint: `/indexes/${indexUid}/documents/fetch`, data: body });
+        const res = await nango.post({ endpoint: `/indexes/${encodeURIComponent(indexUid)}/documents/fetch`, data: body });
         return res.data;
     }
 });

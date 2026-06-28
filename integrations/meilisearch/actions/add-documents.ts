@@ -18,7 +18,7 @@ const action = createAction({
 
     exec: async (nango, input) => {
         const res = await nango.post({
-            endpoint: `/indexes/${input.indexUid}/documents`,
+            endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents`,
             data: input.documents,
             ...(input.primaryKey ? { params: { primaryKey: input.primaryKey } } : {})
         });
