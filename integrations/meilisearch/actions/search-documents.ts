@@ -34,7 +34,7 @@ const action = createAction({
 
     exec: async (nango, input) => {
         const { indexUid, ...body } = input;
-        const res = await nango.post({ endpoint: `/indexes/${indexUid}/search`, data: body });
+        const res = await nango.post({ endpoint: `/indexes/${encodeURIComponent(indexUid)}/search`, data: body });
         return res.data;
     }
 });

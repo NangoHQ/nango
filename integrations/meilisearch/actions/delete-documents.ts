@@ -22,8 +22,8 @@ const action = createAction({
 
     exec: async (nango, input) => {
         const res = input.ids
-            ? await nango.post({ endpoint: `/indexes/${input.indexUid}/documents/delete-batch`, data: input.ids })
-            : await nango.post({ endpoint: `/indexes/${input.indexUid}/documents/delete`, data: { filter: input.filter } });
+            ? await nango.post({ endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents/delete-batch`, data: input.ids })
+            : await nango.post({ endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents/delete`, data: { filter: input.filter } });
         return res.data;
     }
 });
