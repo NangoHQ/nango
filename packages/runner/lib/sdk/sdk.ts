@@ -1005,7 +1005,9 @@ const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
     'batchSize',
     'getRecordsBatchSize',
     'mergingByModel',
-    'httpLogSample'
+    'httpLogSample',
+    '__proto__',
+    'constructor'
 ]);
 
 function throwBlockedAccess(prop: string | symbol): never {
@@ -1072,6 +1074,12 @@ export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunn
         },
         ownKeys(target) {
             return Reflect.ownKeys(target).filter((key) => !FUNCTION_BLOCKED_PROPERTIES.has(key));
+        },
+        getPrototypeOf() {
+            return null;
+        },
+        setPrototypeOf() {
+            throwBlockedAccess('prototype');
         }
     });
 }

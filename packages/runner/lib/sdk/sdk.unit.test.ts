@@ -916,6 +916,45 @@ describe('createFunctionFacade', () => {
         });
     });
 
+    describe('blocks prototype-chain escape hatches', () => {
+        it('hides the real runner prototype via getPrototypeOf', () => {
+            const { facade } = buildActionFacade();
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+            expect(Reflect.getPrototypeOf(facade)).toBeNull();
+        });
+
+        it('throws when reading __proto__ or constructor', () => {
+            const { facade } = buildActionFacade();
+            expect(() => (facade as any).__proto__).toThrowError(/is not allowed/);
+            expect(() => (facade as any).constructor).toThrowError(/is not allowed/);
+        });
+
+        it('throws when re-parenting the runner', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).__proto__ = {};
+            }).toThrowError(/is not allowed/);
+            expect(() => Object.setPrototypeOf(facade, {})).toThrowError(/is not allowed/);
+        });
+
+        it('cannot pollute the shared class prototype through the facade', () => {
+            const { facade } = buildActionFacade();
+            const original = NangoActionRunner.prototype.proxy;
+
+            // getPrototypeOf returns null, so there is no reachable prototype object to mutate
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+
+            // and the real shared prototype is left untouched
+            expect(NangoActionRunner.prototype.proxy).toBe(original);
+        });
+
+        it('hides prototype escape hatches on the sync runner facade too', () => {
+            const { facade } = buildSyncFacade();
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+            expect(() => (facade as any).constructor).toThrowError(/is not allowed/);
+        });
+    });
+
     describe('still exposes the public SDK surface', () => {
         it('reads non-blocked properties', () => {
             const { facade } = buildActionFacade();
