@@ -1405,35 +1405,44 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        // Regenerate the assertion on initial auth or when no refresh_token exists.
+        // Regenerate the assertion on initial auth or when no refresh_token exists and when the assertion expires.
         if (provider.assertion && (refreshToken === false || refreshToken === undefined || !dynamicCredentials['refresh_token'])) {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
             const assertionType = provider.assertion.type;
-            const create =
-                assertionType === 'jwt'
-                    ? assertionClient.generateJwtAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      })
-                    : assertionClient.generateSamlAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      });
+            const existingAssertion = credentials['assertion'] as string | undefined;
+            const assertionExpired =
+                !existingAssertion ||
+                (assertionType === 'jwt'
+                    ? assertionClient.isJwtAssertionExpired(existingAssertion)
+                    : assertionClient.isSamlAssertionExpired(existingAssertion));
 
-            if (create.isErr()) {
-                console.log(create.error);
-                return { success: false, error: create.error, response: null };
+            if (assertionExpired) {
+                const create =
+                    assertionType === 'jwt'
+                        ? assertionClient.generateJwtAssertion({
+                              provider,
+                              dynamicCredentials: credentials,
+                              connectionConfig,
+                              ...(assertionOption && { assertionOption })
+                          })
+                        : assertionClient.generateSamlAssertion({
+                              provider,
+                              dynamicCredentials: credentials,
+                              connectionConfig,
+                              ...(assertionOption && { assertionOption })
+                          });
+
+                if (create.isErr()) {
+                    console.log(create.error);
+                    return { success: false, error: create.error, response: null };
+                }
+
+                credentials['assertion'] = create.value;
+
+                Object.assign(dynamicCredentials, credentials);
             }
-
-            credentials['assertion'] = create.value;
-
-            Object.assign(dynamicCredentials, credentials);
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
