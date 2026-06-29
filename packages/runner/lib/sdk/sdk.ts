@@ -1026,11 +1026,11 @@ export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunn
     const boundCache = new Map<string | symbol, (...args: any[]) => any>();
 
     return new Proxy(runner, {
-        get(target, prop) {
+        get(target, prop, receiver) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
                 throwBlockedAccess(prop);
             }
-            const value = Reflect.get(target, prop);
+            const value = Reflect.get(target, prop, receiver);
             if (typeof value !== 'function') {
                 return value;
             }
@@ -1041,12 +1041,12 @@ export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunn
             }
             return bound;
         },
-        set(target, prop, value) {
+        set(target, prop, value, receiver) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
                 throwBlockedAccess(prop);
             }
             boundCache.delete(prop);
-            return Reflect.set(target, prop, value);
+            return Reflect.set(target, prop, value, receiver);
         },
         defineProperty(target, prop, descriptor) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {

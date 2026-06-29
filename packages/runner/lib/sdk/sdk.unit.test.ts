@@ -952,6 +952,55 @@ describe('createFunctionFacade', () => {
         });
     });
 
+    describe('blocks injected-accessor receiver escapes', () => {
+        it('blocks a getter installed via defineProperty from leaking the raw client', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'x', { get: () => (facade as any).nango, configurable: true });
+            // The injected getter runs with `this` = the facade, so reaching `.nango` re-enters the trap
+            expect(() => (facade as any).x).toThrowError(/is not allowed/);
+        });
+
+        it('blocks a getter that returns `this.nango`', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'x', {
+                get() {
+                    return (this as any).nango;
+                },
+                configurable: true
+            });
+            expect(() => (facade as any).x).toThrowError(/is not allowed/);
+        });
+
+        it('does not let a setter capture the raw runner instance', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'capture', {
+                set(v: any) {
+                    v.stolen = this;
+                },
+                configurable: true
+            });
+            const box: any = {};
+            (facade as any).capture = box;
+            // `this` inside the setter must be the facade, never the raw runner
+            expect(box.stolen).toBe(facade);
+            expect(() => box.stolen.nango).toThrowError(/is not allowed/);
+        });
+
+        it('blocks a getter installed via __defineGetter__', () => {
+            const { facade } = buildActionFacade();
+            (facade as any).__defineGetter__('y', function (this: any) {
+                return this.nango;
+            });
+            expect(() => (facade as any).y).toThrowError(/is not allowed/);
+        });
+
+        it('still allows normal data-property writes and reads through the facade', () => {
+            const { facade } = buildActionFacade();
+            (facade as any).customField = 42;
+            expect((facade as any).customField).toBe(42);
+        });
+    });
+
     describe('blocks prototype-chain escape hatches', () => {
         it('hides the real runner prototype via getPrototypeOf', () => {
             const { facade } = buildActionFacade();
