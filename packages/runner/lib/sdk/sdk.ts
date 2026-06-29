@@ -974,34 +974,19 @@ export function instrumentSDK(rawNango: NangoActionRunner | NangoSyncRunner) {
  *
  * Properties on the runner that must never be reachable from customer-authored functions.
  *
- * This is the complement of the public SDK surface (everything declared on `NangoAction` /
- * `NangoSync` in `runner-sdk/models.d.ts`). Anything that is NOT a documented public method or a
- * non-sensitive public field belongs here: internal clients, secret-bearing state, usage/metering
- * accounting, and internal helper methods. When adding a new internal member to the runner classes,
- * add it here too.
- *
- * Note: internal `this.*` access from the runner's own methods bypasses the facade entirely (the
- * proxy binds methods to the raw target), so blocking these only affects direct customer access.
  */
 const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
-    // Internal clients & cross-run capabilities (raw node client carries the secret key + raw axios)
     'nango',
     'persistClient',
     'telemetryRecorder',
     'locking',
     'checkpointing',
     'checkpointKey',
-
-    // Secret-bearing / sensitive state
-    'integrationConfig', // holds the decrypted oauth_client_secret
-    'memoizedConnections', // cached connection credentials
+    'integrationConfig',
+    'memoizedConnections',
     'memoizedIntegration',
     'attributes',
-
-    // Usage/metering accounting — must not be tamperable by customer code
     'telemetryBag',
-
-    // Internal helper methods (not part of the public SDK surface)
     'getProxyConfig',
     'throwIfAbortedOrKilled',
     'throwIfInterrupted',
@@ -1017,8 +1002,6 @@ const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
     'fetchRecordsPage',
     'getCheckpointRange',
     'clearRecordsIfNeeded',
-
-    // Internal tuning / bookkeeping state
     'batchSize',
     'getRecordsBatchSize',
     'mergingByModel',
