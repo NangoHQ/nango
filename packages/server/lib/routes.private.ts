@@ -66,6 +66,7 @@ import { postIntegration } from './controllers/v1/integrations/postIntegration.j
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
 import { deleteIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/deleteFunction.js';
+import { getIntegrationFunctionCode } from './controllers/v1/integrations/providerConfigKey/functions/getCode.js';
 import { getIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/getFunction.js';
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
@@ -248,6 +249,11 @@ web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ actio
 web.route('/integrations/:providerConfigKey/functions/:functionName')
     .get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunction)
     .delete(webAuth, can({ action: 'delete', resource: 'flow', scopedBy: envScope }), deleteIntegrationFunction);
+web.route('/integrations/:providerConfigKey/functions/:functionName/code').get(
+    webAuth,
+    can({ action: 'read', resource: 'flow', scopedBy: envScope }),
+    getIntegrationFunctionCode
+);
 web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers

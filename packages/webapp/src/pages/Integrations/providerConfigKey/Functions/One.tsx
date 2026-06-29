@@ -9,19 +9,21 @@ import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { LineSnippet } from '@/components/ui/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
-import { useGetIntegrationFunction } from '@/hooks/useIntegrationFunctions';
+import { useGetIntegrationFunction, useGetIntegrationFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -98,6 +100,18 @@ export const FunctionsOne: React.FC = () => {
     }, [func]);
 
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
+
+    const {
+        data: codeData,
+        isLoading: codeLoading,
+        error: codeError
+    } = useGetIntegrationFunctionCode({
+        env,
+        providerConfigKey: providerConfigKey!,
+        name: functionName!,
+        type: func?.type,
+        enabled: Boolean(func)
+    });
 
     const isLoading = integrationLoading || functionLoading;
 
@@ -292,6 +306,7 @@ export const FunctionsOne: React.FC = () => {
                             <TabsList className="w-fit gap-0">
                                 <TabsTrigger value="input">Input</TabsTrigger>
                                 <TabsTrigger value="output">Output</TabsTrigger>
+                                <TabsTrigger value="code">Code</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
                                 <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
@@ -340,6 +355,19 @@ export const FunctionsOne: React.FC = () => {
                                 <EmptyCard>
                                     <span className="text-text-secondary text-body-medium-regular">No outputs.</span>
                                 </EmptyCard>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="code" className="flex flex-col gap-4">
+                            {codeLoading ? (
+                                <div className="flex items-center justify-center h-96">
+                                    <Spinner className="size-5 text-text-muted" />
+                                </div>
+                            ) : codeError || !codeData ? (
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">Failed to load source code.</span>
+                                </EmptyCard>
+                            ) : (
+                                <CodeBlock title={`${func.name}.ts`} language="typescript" code={codeData.code} />
                             )}
                         </TabsContent>
                     </Tabs>

@@ -2,7 +2,7 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-qu
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
+import type { GetFunctionCode, GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
 
 interface UseGetIntegrationFunctionsArgs {
     env: string;
@@ -83,6 +83,40 @@ export function useGetIntegrationFunction({ env, providerConfigKey, name, type }
             return json;
         },
         enabled: Boolean(env && providerConfigKey && name)
+    });
+}
+
+interface UseGetIntegrationFunctionCodeArgs {
+    env: string;
+    providerConfigKey: string;
+    name: string;
+    type?: GetFunctionCode['Querystring']['type'];
+    enabled?: boolean;
+}
+
+export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, type, enabled = true }: UseGetIntegrationFunctionCodeArgs) {
+    return useQuery<GetFunctionCode['Success'], APIError>({
+        queryKey: ['integrations', env, providerConfigKey, 'functions', name, 'code', { type }],
+        queryFn: async (): Promise<GetFunctionCode['Success']> => {
+            const usp = new URLSearchParams();
+            usp.set('env', env);
+            if (type) {
+                usp.set('type', type);
+            }
+
+            const res = await apiFetch(
+                `/api/v1/integrations/${encodeURIComponent(providerConfigKey)}/functions/${encodeURIComponent(name)}/code?${usp.toString()}`,
+                { method: 'GET' }
+            );
+
+            const json = (await res.json()) as GetFunctionCode['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        enabled: enabled && Boolean(env && providerConfigKey && name)
     });
 }
 

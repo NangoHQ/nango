@@ -128,6 +128,24 @@ export type GetPublicFunctionCode = Endpoint<{
     Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
+export type GetFunctionCode = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName/code';
+    Params: {
+        providerConfigKey: string;
+        functionName: string;
+    };
+    Querystring: {
+        env: string;
+        type?: ScriptTypeLiteral | undefined;
+    };
+    Success: {
+        type: ScriptTypeLiteral;
+        code: string;
+    };
+    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+}>;
+
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
