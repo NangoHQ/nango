@@ -973,8 +973,57 @@ export function instrumentSDK(rawNango: NangoActionRunner | NangoSyncRunner) {
  * @internal
  *
  * Properties on the runner that must never be reachable from customer-authored functions.
+ *
+ * This is the complement of the public SDK surface (everything declared on `NangoAction` /
+ * `NangoSync` in `runner-sdk/models.d.ts`). Anything that is NOT a documented public method or a
+ * non-sensitive public field belongs here: internal clients, secret-bearing state, usage/metering
+ * accounting, and internal helper methods. When adding a new internal member to the runner classes,
+ * add it here too.
+ *
+ * Note: internal `this.*` access from the runner's own methods bypasses the facade entirely (the
+ * proxy binds methods to the raw target), so blocking these only affects direct customer access.
  */
-const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>(['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey']);
+const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
+    // Internal clients & cross-run capabilities (raw node client carries the secret key + raw axios)
+    'nango',
+    'persistClient',
+    'telemetryRecorder',
+    'locking',
+    'checkpointing',
+    'checkpointKey',
+
+    // Secret-bearing / sensitive state
+    'integrationConfig', // holds the decrypted oauth_client_secret
+    'memoizedConnections', // cached connection credentials
+    'memoizedIntegration',
+    'attributes',
+
+    // Usage/metering accounting — must not be tamperable by customer code
+    'telemetryBag',
+
+    // Internal helper methods (not part of the public SDK surface)
+    'getProxyConfig',
+    'throwIfAbortedOrKilled',
+    'throwIfInterrupted',
+    'shouldLog',
+    'validateRecords',
+    'removeMetadata',
+    'modelFullName',
+    'sendLogToPersist',
+    'logAPICall',
+    'getMergingStrategy',
+    'setMergingStrategyByModel',
+    'trackDeletesKey',
+    'fetchRecordsPage',
+    'getCheckpointRange',
+    'clearRecordsIfNeeded',
+
+    // Internal tuning / bookkeeping state
+    'batchSize',
+    'getRecordsBatchSize',
+    'mergingByModel',
+    'httpLogSample'
+]);
 
 function throwBlockedAccess(prop: string | symbol): never {
     const name = typeof prop === 'symbol' ? prop.toString() : prop;
@@ -987,33 +1036,43 @@ function throwBlockedAccess(prop: string | symbol): never {
  * Wraps a runner instance in a Proxy that is safe to hand to customer-authored functions.
  */
 export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunner>(runner: T): T {
+    const boundCache = new Map<string | symbol, (...args: any[]) => any>();
+
     return new Proxy(runner, {
         get(target, prop) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
                 throwBlockedAccess(prop);
             }
             const value = Reflect.get(target, prop);
-            if (typeof value === 'function') {
-                return value.bind(target);
+            if (typeof value !== 'function') {
+                return value;
             }
-            return value;
+            let bound = boundCache.get(prop);
+            if (!bound) {
+                bound = (value as (...args: any[]) => any).bind(target);
+                boundCache.set(prop, bound);
+            }
+            return bound;
         },
         set(target, prop, value) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
                 throwBlockedAccess(prop);
             }
+            boundCache.delete(prop);
             return Reflect.set(target, prop, value);
         },
         defineProperty(target, prop, descriptor) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
                 throwBlockedAccess(prop);
             }
+            boundCache.delete(prop);
             return Reflect.defineProperty(target, prop, descriptor);
         },
         deleteProperty(target, prop) {
             if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
                 throwBlockedAccess(prop);
             }
+            boundCache.delete(prop);
             return Reflect.deleteProperty(target, prop);
         },
         has(target, prop) {
