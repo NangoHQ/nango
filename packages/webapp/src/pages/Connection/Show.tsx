@@ -128,6 +128,7 @@ export const ConnectionShow = () => {
                             className={tabsTriggerClassName}
                             onClick={() => {
                                 openPlaygroundWithContext({
+                                    source: 'connection',
                                     integration: integrationData.integration.unique_key,
                                     connection: connectionResponse.connection.connection_id
                                 });
