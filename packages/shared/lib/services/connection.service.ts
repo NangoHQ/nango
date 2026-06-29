@@ -1412,28 +1412,18 @@ class ConnectionService {
 
             const assertionType = provider.assertion.type;
             const existingAssertion = credentials['assertion'] as string | undefined;
-            const assertionExpired =
-                !existingAssertion ||
-                (assertionType === 'jwt'
-                    ? assertionClient.isJwtAssertionExpired(existingAssertion)
-                    : assertionClient.isSamlAssertionExpired(existingAssertion));
+            const assertionArgs = { provider, dynamicCredentials: credentials, connectionConfig, ...(assertionOption && { assertionOption }) };
 
-            if (assertionExpired) {
-                const create =
-                    assertionType === 'jwt'
-                        ? assertionClient.generateJwtAssertion({
-                              provider,
-                              dynamicCredentials: credentials,
-                              connectionConfig,
-                              ...(assertionOption && { assertionOption })
-                          })
-                        : assertionClient.generateSamlAssertion({
-                              provider,
-                              dynamicCredentials: credentials,
-                              connectionConfig,
-                              ...(assertionOption && { assertionOption })
-                          });
+            let create;
+            if (assertionType === 'jwt') {
+                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                    create = assertionClient.generateJwtAssertion(assertionArgs);
+                }
+            } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {
+                create = assertionClient.generateSamlAssertion(assertionArgs);
+            }
 
+            if (create) {
                 if (create.isErr()) {
                     console.log(create.error);
                     return { success: false, error: create.error, response: null };
