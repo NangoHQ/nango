@@ -8,8 +8,7 @@ const envs = parseEnvs(ENVS);
 const logger = getLogger('server.egress.telemetry');
 
 export interface ServerEgressTelemetry {
-    package: 'server';
-    callsite: Extract<DataTransferCallsite, 'get_/records'>;
+    callsite: Extract<DataTransferCallsite, 'get_/records' | 'get_/proxy' | 'post_/proxy' | 'patch_/proxy' | 'put_/proxy' | 'delete_/proxy'>;
     accountId: number;
     connectionId: string;
     integrationId: string;
@@ -39,7 +38,7 @@ const batcher = new Batcher<ServerEgressTelemetry>({
             subject: 'usage',
             events: events.map((t) =>
                 makeDataTransferEvent({
-                    pkg: t.package,
+                    pkg: 'server',
                     callsite: t.callsite,
                     accountId: t.accountId,
                     connectionId: t.connectionId,
