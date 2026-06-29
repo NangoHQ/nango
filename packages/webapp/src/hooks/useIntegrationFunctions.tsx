@@ -91,9 +91,10 @@ interface UseGetIntegrationFunctionCodeArgs {
     providerConfigKey: string;
     name: string;
     type?: GetFunctionCode['Querystring']['type'];
+    enabled?: boolean;
 }
 
-export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, type }: UseGetIntegrationFunctionCodeArgs) {
+export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, type, enabled = true }: UseGetIntegrationFunctionCodeArgs) {
     return useQuery<GetFunctionCode['Success'], APIError>({
         queryKey: ['integrations', env, providerConfigKey, 'functions', name, 'code', { type }],
         queryFn: async (): Promise<GetFunctionCode['Success']> => {
@@ -115,7 +116,7 @@ export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, ty
 
             return json;
         },
-        enabled: Boolean(env && providerConfigKey && name)
+        enabled: enabled && Boolean(env && providerConfigKey && name)
     });
 }
 

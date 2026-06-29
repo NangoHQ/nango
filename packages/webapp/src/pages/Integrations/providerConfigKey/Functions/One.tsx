@@ -109,7 +109,8 @@ export const FunctionsOne: React.FC = () => {
         env,
         providerConfigKey: providerConfigKey!,
         name: functionName!,
-        type: func?.type
+        type: func?.type,
+        enabled: Boolean(func)
     });
 
     const isLoading = integrationLoading || functionLoading;
