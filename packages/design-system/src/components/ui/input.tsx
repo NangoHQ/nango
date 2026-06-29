@@ -1,33 +1,52 @@
+import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '../../lib/cn';
 
-export type InputProps = React.ComponentProps<'input'>;
+import type { VariantProps } from 'class-variance-authority';
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type, autoComplete, ...props }, ref) => {
+export const inputVariants = cva(
+    [
+        // Shape + spacing (Figma: hairline border, radius/sm)
+        'flex w-full min-w-0 rounded-ds-sm border-ds-hairline outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
+        // Typography (Figma text/regular/md)
+        'text-ds-md font-ds-regular leading-ds-normal',
+        // Default colors
+        'bg-surface-input border-border-interactive text-text-default placeholder:text-text-secondary',
+        // Hover / focus border (focus ring removed pending design review)
+        'hover:border-border-interactive-hover focus:border-border-interactive-hover',
+        // Invalid
+        'aria-invalid:border-status-danger-border',
+        // Disabled — dedicated tokens, no opacity (Figma state/selectedMuted bg, border/disabled, text/disabled)
+        'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
+        // File-input affordance
+        'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-text-strong file:text-ds-md file:font-ds-medium'
+    ],
+    {
+        variants: {
+            size: {
+                // Default control height (Figma: space/2 × space/1.5)
+                default: 'h-9 px-2 py-1.5',
+                // Hug-content — for in-popover search fields where the wrapper owns the padding
+                auto: 'h-auto p-0'
+            }
+        },
+        defaultVariants: {
+            size: 'default'
+        }
+    }
+);
+
+export interface InputProps extends Omit<React.ComponentProps<'input'>, 'size'>, VariantProps<typeof inputVariants> {}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type, size, autoComplete, ...props }, ref) => {
     const blockPasswordManager = !autoComplete || autoComplete === 'off';
     return (
         <input
             ref={ref}
             type={type}
             data-slot="input"
-            className={cn(
-                // Shape + spacing (Figma: hairline border, radius/sm, space/2 × space/1.5)
-                'flex h-9 w-full min-w-0 rounded-ds-sm border-ds-hairline px-2 py-1.5 outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
-                // Typography (Figma text/regular/md)
-                'text-ds-md font-ds-regular leading-ds-normal',
-                // Default colors
-                'bg-surface-input border-border-input text-text-default placeholder:text-text-secondary',
-                // Hover / focus border (focus ring removed pending design review)
-                'hover:border-border-input-hover focus:border-border-input-hover',
-                // Invalid
-                'aria-invalid:border-status-danger-border',
-                // Disabled — dedicated tokens, no opacity (Figma state/selectedMuted bg, border/disabled, text/disabled)
-                'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
-                // File-input affordance
-                'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-text-strong file:text-ds-md file:font-ds-medium',
-                className
-            )}
+            className={cn(inputVariants({ size }), className)}
             autoComplete={autoComplete ?? 'off'}
             {...(blockPasswordManager ? { 'data-1p-ignore': true, 'data-lpignore': 'true', 'data-protonpass-ignore': 'true' } : {})}
             {...props}

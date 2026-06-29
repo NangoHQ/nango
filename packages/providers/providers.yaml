@@ -13288,7 +13288,6 @@ modmed:
             title: API Key
             description: Your API key (x-api-key)
             secret: true
-            format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-request-access-to-modmed-sandbox'
 

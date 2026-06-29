@@ -6,6 +6,8 @@ import { IconButton, InputGroup, InputGroupAddon, InputGroupInput, InputGroupTex
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '../ui/CopyButton';
 
+import type { InputProps } from '@nangohq/design-system';
+
 interface SecretTextAreaProps extends Omit<React.ComponentProps<'textarea'>, 'onChange'> {
     copy?: boolean;
     canRead?: boolean;
@@ -40,7 +42,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
                 />
             ) : (
                 <InputGroupInput
-                    {...(props as React.ComponentProps<'input'>)}
+                    {...(props as unknown as InputProps)}
                     value={canRead ? (value as string) : '•'.repeat(32)}
                     defaultValue={canRead ? (defaultValue as string) : undefined}
                     type="password"

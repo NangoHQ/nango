@@ -1,4 +1,5 @@
 import { permissions } from '@nangohq/authz';
+import { Field, FieldLabel } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -44,9 +45,9 @@ export const TeamSettings: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col gap-3">
-            <h3 className="text-heading-sm text-text-strong">Team name</h3>
-            <EditableInput initialValue={team?.name} canEdit={canManageTeam} onSave={onSaveTeamName} />
-        </div>
+        <Field>
+            <FieldLabel htmlFor="team-name">Team name</FieldLabel>
+            <EditableInput id="team-name" initialValue={team?.name} canEdit={canManageTeam} onSave={onSaveTeamName} />
+        </Field>
     );
 };

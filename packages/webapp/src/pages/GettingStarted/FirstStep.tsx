@@ -122,7 +122,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                     <h3 className="text-text-brand text-sm font-semibold">Github connection authorized!</h3>
                 </div>
                 <div className="w-fit">
-                    <Button variant="outline" size="xl" onClick={onClickDisconnect} loading={isDeletingConnection}>
+                    <Button variant="outline" size="lg" onClick={onClickDisconnect} loading={isDeletingConnection}>
                         <Github className="size-5 mr-2" />
                         Disconnect from Github
                     </Button>
@@ -145,7 +145,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 </p>
             </div>
             <div className="w-fit">
-                <Button variant="primary" size="xl" onClick={onClickConnect}>
+                <Button variant="primary" size="lg" onClick={onClickConnect}>
                     <Github className="size-5" />
                     Connect to Github
                 </Button>

@@ -2,7 +2,7 @@ import { Edit } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Button, IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button, Field, FieldLabel, IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -64,27 +64,29 @@ export const UserSettings: React.FC = () => {
                 <title>Profile Settings - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-5">
-                <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>
-                <InputGroup className="h-[42px]">
-                    <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
-                    <InputGroupAddon align="inline-end">
-                        {!edit && (
-                            <IconButton
-                                variant={'ghost'}
-                                size={'2xs'}
-                                label="Edit"
-                                onClick={() => {
-                                    setEdit(true);
-                                    setTimeout(() => {
-                                        ref.current?.focus();
-                                    }, 100);
-                                }}
-                            >
-                                <Edit />
-                            </IconButton>
-                        )}
-                    </InputGroupAddon>
-                </InputGroup>
+                <Field>
+                    <FieldLabel htmlFor="display-name">Display Name</FieldLabel>
+                    <InputGroup>
+                        <InputGroupInput id="display-name" ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
+                        <InputGroupAddon align="inline-end">
+                            {!edit && (
+                                <IconButton
+                                    variant={'ghost'}
+                                    size={'2xs'}
+                                    label="Edit"
+                                    onClick={() => {
+                                        setEdit(true);
+                                        setTimeout(() => {
+                                            ref.current?.focus();
+                                        }, 100);
+                                    }}
+                                >
+                                    <Edit />
+                                </IconButton>
+                            )}
+                        </InputGroupAddon>
+                    </InputGroup>
+                </Field>
                 {edit && (
                     <div className="flex justify-end gap-2 items-center">
                         <Button
@@ -100,14 +102,14 @@ export const UserSettings: React.FC = () => {
                     </div>
                 )}
             </div>
-            <div className="flex flex-col gap-5">
-                <h3 className="font-semibold text-sm text-text-strong">Email</h3>
+            <Field>
+                <FieldLabel>Email</FieldLabel>
                 <p className="text-text-strong text-sm">{user.email}</p>
-            </div>
-            <div className="flex flex-col gap-5">
-                <h3 className="font-semibold text-sm text-text-strong">Appearance</h3>
+            </Field>
+            <Field>
+                <FieldLabel htmlFor="appearance">Appearance</FieldLabel>
                 <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger id="appearance" className="w-48">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -116,7 +118,7 @@ export const UserSettings: React.FC = () => {
                         <SelectItem value="dark">Dark</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </Field>
         </DashboardLayout>
     );
 };

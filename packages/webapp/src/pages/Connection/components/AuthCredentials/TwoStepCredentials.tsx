@@ -1,10 +1,9 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Label } from '@/components/ui/Label';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 import { formatKeyToLabel } from '@/utils/utils';
 
@@ -22,7 +21,7 @@ export const TwoStepCredentialsComponent: React.FC<{
         <>
             {credentials.token && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="token">Token</Label>
+                    <FieldLabel htmlFor="token">Token</FieldLabel>
                     <div className="flex gap-2 items-center">
                         <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
                         <PermissionGate condition={canRead} asChild>
@@ -39,7 +38,7 @@ export const TwoStepCredentialsComponent: React.FC<{
 
             {credentials.refresh_token && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="refresh_token">Refresh token</Label>
+                    <FieldLabel htmlFor="refresh_token">Refresh token</FieldLabel>
                     <SecretInput id="refresh_token" value={credentials.refresh_token} disabled copy canRead={canRead} />
                 </div>
             )}
@@ -54,7 +53,7 @@ export const TwoStepCredentialsComponent: React.FC<{
 
                 return (
                     <div className="flex flex-col gap-2" key={key}>
-                        <Label htmlFor={key}>{label}</Label>
+                        <FieldLabel htmlFor={key}>{label}</FieldLabel>
                         <SecretInput id={key} value={value} disabled copy canRead={canRead} />
                     </div>
                 );

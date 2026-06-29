@@ -2,6 +2,8 @@ import * as z from 'zod';
 
 import { connectionTagsKeySchema, connectionTagsSchema, TAG_MAX_COUNT, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
 
+import { envs } from '../env.js';
+
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
 
 export const providerSchema = z
@@ -113,8 +115,8 @@ export const sharedCredentialsSchema = z
     .strict();
 
 export const connectionCredentialsOauth2Schema = z.strictObject({
-    access_token: z.string().min(1).max(4096),
-    refresh_token: z.string().min(1).max(4096).optional(),
+    access_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH),
+    refresh_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).optional(),
     expires_at: z.coerce.date().optional(),
     config_override: z
         .strictObject({

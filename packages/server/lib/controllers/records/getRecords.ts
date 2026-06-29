@@ -7,6 +7,7 @@ import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
 
@@ -106,6 +107,18 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         metrics.increment(metrics.Types.GET_RECORDS_COUNT, recordsCount, { accountId: account.id });
         metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
         metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
+
+        egressTelemetryRecorder.record({
+            accountId: account.id,
+            environmentId: environment.id,
+            environmentName: environment.name,
+            integrationId: headers['provider-config-key'],
+            connectionId: connection.connection_id,
+            package: 'server',
+            callsite: 'get_/records',
+            egressedBytes: responseSize,
+            count: 1
+        });
 
         if (result.value.budgetTruncated) {
             metrics.increment(metrics.Types.RECORDS_BUDGET_TRUNCATE, 1, {

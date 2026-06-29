@@ -10024,10 +10024,7 @@ await nango.getIntegration(<INTEGRATION-ID>);
 Create a new integration.
 
 ```js
-await nango.createIntegration({ provider: <PROVIDER-ID>, unique_key: <UNIQUE_KEY>, [...] });
-
-// Deprecated
-await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
+await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_KEY>' });
 ```
 
 **Parameters**
@@ -10047,6 +10044,14 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
     <ResponseField name="credentials" type="Record<string, string>">
         The credentials to include depend on the specific integration that you want to create.
+    </ResponseField>
+
+    <ResponseField name="integration_config" type="Record<string, string>">
+        Provider-specific configuration for providers with an `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`). See the provider's integration page for fields.
+    </ResponseField>
+
+    <ResponseField name="forward_webhooks" type="boolean">
+        Whether to forward webhooks received for this integration. Defaults to `true`.
     </ResponseField>
 </Expandable>
 
@@ -10068,28 +10073,41 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
 ### Update an integration
 
-Patch an integration, all fields are optional.
+Patch an integration. The first argument identifies the integration; all body fields are optional and only the fields you pass are updated.
 
 ```js
-await nango.updateIntegration({ uniqueKey: <UNIQUE_KEY> }, { [...body] });
-
-// Deprecated
-await nango.updateIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
+await nango.updateIntegration({ uniqueKey: '<UNIQUE_KEY>' }, { display_name: 'New name' });
 ```
 
 **Parameters**
 
 <Expandable>
+    <ResponseField name="uniqueKey" type="string" required>
+        The integration ID to update. Passed in the first argument.
+    </ResponseField>
+
     <ResponseField name="unique_key" type="string">
-        The integration ID.
+        A new integration ID, to rename the integration. Not allowed when the integration has active connections.
     </ResponseField>
 
     <ResponseField name="display_name" type="string">
         The display name of this integration
     </ResponseField>
 
+    <ResponseField name="forward_webhooks" type="boolean">
+        Whether to forward webhooks received for this integration.
+    </ResponseField>
+
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to create.
+        The credentials to include depend on the specific integration that you want to update.
+    </ResponseField>
+
+    <ResponseField name="integration_config" type="Record<string, string>">
+        Provider-specific configuration for providers with an `integration_config` schema. Only the fields you pass are updated.
+    </ResponseField>
+
+    <ResponseField name="custom" type="Record<string, string>">
+        Free-form custom values for providers without an `integration_config` schema.
     </ResponseField>
 </Expandable>
 

@@ -171,11 +171,11 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
             </div>
             <DialogFooter>
                 <DialogClose asChild>
-                    <Button variant="outline" size="xl">
+                    <Button variant="outline" size="lg">
                         Cancel
                     </Button>
                 </DialogClose>
-                <Button type="submit" disabled={loading} variant={'primary'} size="xl">
+                <Button type="submit" disabled={loading} variant={'primary'} size="lg">
                     {loading && <Loader className="animate-spin" />}
                     Save payment method
                 </Button>

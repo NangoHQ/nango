@@ -253,15 +253,15 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         <div className="flex h-full min-h-0 flex-col gap-3">
             <div className="flex gap-2 justify-between">
                 <div className="flex-1 min-w-0">
-                    <InputGroup className="border-border-muted">
+                    <InputGroup>
                         <InputGroupAddon>
-                            <Search strokeWidth={1} size={16} />
+                            <Search />
                         </InputGroupAddon>
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
                                 <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
-                                    <X strokeWidth={1} size={18} />
+                                    <X />
                                 </InputGroupButton>
                             </InputGroupAddon>
                         )}
