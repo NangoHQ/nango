@@ -916,6 +916,42 @@ describe('createFunctionFacade', () => {
         });
     });
 
+    describe('protects execution-control fields (abort/kill)', () => {
+        it('throws when reading abortSignal or lifecycle', () => {
+            const { facade } = buildActionFacade();
+            expect(() => (facade as any).abortSignal).toThrowError(/is not allowed/);
+            expect(() => (facade as any).lifecycle).toThrowError(/is not allowed/);
+        });
+
+        it('throws when overwriting abortSignal or lifecycle', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).abortSignal = { aborted: false };
+            }).toThrowError(/is not allowed/);
+            expect(() => {
+                (facade as any).lifecycle = undefined;
+            }).toThrowError(/is not allowed/);
+        });
+
+        it('cannot disable abort enforcement by overwriting abortSignal through the facade', async () => {
+            const ac = new AbortController();
+            const persistClient = new PersistClient({ secretKey: '***' });
+            persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+            const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action', abortSignal: ac.signal }, { persistClient, locks });
+            const facade = createFunctionFacade(runner);
+            ac.abort();
+
+            // Attempt to neutralize the abort signal via the facade — must be rejected
+            expect(() => {
+                (facade as any).abortSignal = { aborted: false };
+            }).toThrowError(/is not allowed/);
+
+            // The real signal is untouched, so SDK calls still honor the abort
+            expect(runner.abortSignal?.aborted).toBe(true);
+            await expect(facade.log('hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
+        });
+    });
+
     describe('blocks prototype-chain escape hatches', () => {
         it('hides the real runner prototype via getPrototypeOf', () => {
             const { facade } = buildActionFacade();
