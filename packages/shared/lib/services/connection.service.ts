@@ -540,6 +540,33 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
+    public async getConnectionConfigByConnectionIds({
+        connectionIds,
+        provider_config_key,
+        environment_id
+    }: {
+        connectionIds: string[];
+        provider_config_key: string;
+        environment_id: number;
+    }): Promise<Map<string, ConnectionConfig>> {
+        const configByConnectionId = new Map<string, ConnectionConfig>();
+        if (connectionIds.length === 0) {
+            return configByConnectionId;
+        }
+
+        const result = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .select('connection_id', 'connection_config')
+            .whereIn('connection_id', connectionIds)
+            .where({ provider_config_key, environment_id, deleted: false });
+
+        for (const row of result) {
+            configByConnectionId.set(row.connection_id, row.connection_config);
+        }
+
+        return configByConnectionId;
+    }
+
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)

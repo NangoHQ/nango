@@ -17,6 +17,22 @@ describe('Proxy service Construct Header Tests', () => {
         expect(utils.isValidHttpUrl('/api/v2/tickets?per_page=100&include=requester,description&page=3')).toBe(false);
     });
 });
+describe('getConnectionConfig', () => {
+    it('keeps string query params', () => {
+        expect(utils.getConnectionConfig({ subdomain: 'acme', region: 'eu' })).toEqual({ subdomain: 'acme', region: 'eu' });
+    });
+
+    it('drops non-string values', () => {
+        expect(utils.getConnectionConfig({ subdomain: 'acme', count: 5, flag: true })).toEqual({ subdomain: 'acme' });
+    });
+
+    // webhook_url is a privileged routing directive: it must only be settable by the backend via the
+    // connect session, never by an untrusted client passing it as a connection param. Stripping it here
+    // closes every client-param entry point (auth endpoints + OAuth) in one place.
+    it('strips webhook_url so an untrusted client cannot route webhooks', () => {
+        expect(utils.getConnectionConfig({ subdomain: 'acme', webhook_url: 'https://attacker.example.com/hook' })).toEqual({ subdomain: 'acme' });
+    });
+});
 describe('encodeParameters Function Tests', () => {
     it('should encode parameters correctly', () => {
         const params = {

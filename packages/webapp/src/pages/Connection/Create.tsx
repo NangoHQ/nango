@@ -28,7 +28,8 @@ const schema = z.object({
     overrideAuthParams: z.record(z.string(), z.string()),
     overrideOauthScopes: z.string().optional(),
     overrideDevAppCredentials: z.boolean(),
-    overrideDocUrl: z.string().optional().or(z.literal(''))
+    overrideDocUrl: z.string().optional().or(z.literal('')),
+    overrideWebhookUrl: z.string().url('Please enter a valid URL').optional().or(z.literal(''))
 });
 
 export type ConnectionFormData = z.infer<typeof schema>;
@@ -55,7 +56,8 @@ export const ConnectionCreate: React.FC = () => {
             overrideAuthParams: {},
             overrideOauthScopes: undefined,
             overrideDevAppCredentials: false,
-            overrideDocUrl: ''
+            overrideDocUrl: '',
+            overrideWebhookUrl: ''
         },
         mode: 'onChange'
     });
@@ -75,7 +77,8 @@ export const ConnectionCreate: React.FC = () => {
             overrideAuthParams: Object.fromEntries(Object.entries(integration?.meta.authorizationParams ?? {}).map(([k, v]) => [k, String(v)])),
             overrideOauthScopes: integration?.oauth_scopes || undefined,
             overrideDevAppCredentials: false,
-            overrideDocUrl: ''
+            overrideDocUrl: '',
+            overrideWebhookUrl: ''
         });
     }, [user, integration, form]);
 
@@ -142,6 +145,7 @@ export const ConnectionCreate: React.FC = () => {
                             overrideClientId={overrideClientId}
                             overrideClientSecret={overrideClientSecret}
                             overrideDocUrl={formValues.overrideDocUrl}
+                            overrideWebhookUrl={formValues.overrideWebhookUrl}
                             defaultDocUrl={provider?.data.docs_connect}
                             isFormValid={form.formState.isValid}
                         />

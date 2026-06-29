@@ -104,6 +104,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -129,6 +130,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -154,6 +156,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -178,6 +181,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -202,6 +206,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -226,6 +231,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -250,6 +256,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -279,6 +286,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -310,6 +318,31 @@ describe('Webhooks: sync notification tests', () => {
         });
     });
 
+    it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {
+        const responseResults = { added: 10, updated: 0, deleted: 0 };
+        const overrideUrl = 'https://override.example.com/hook';
+
+        await sendSync({
+            account,
+            connection,
+            connectionConfig: { webhook_url: overrideUrl },
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            providerConfig,
+            syncConfig,
+            syncVariant: 'base',
+            model: 'model',
+            responseResults,
+            operation: 'INCREMENTAL',
+            now: new Date(),
+            success: true,
+            webhookSettings
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'primary' }]);
+    });
+
     it('Should not send an error webhook if the option is not checked', async () => {
         const error = {
             type: 'error',
@@ -319,6 +352,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -347,6 +381,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,

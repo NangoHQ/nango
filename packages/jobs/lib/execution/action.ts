@@ -5,6 +5,7 @@ import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs
 import {
     accountService,
     configService,
+    connectionService,
     customerKeyService,
     environmentService,
     errorManager,
@@ -559,10 +560,16 @@ async function sendWebhookIfNeeded({
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }
+        const connectionConfig = await connectionService.getConnectionConfig({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            environment_id: environment.id
+        });
         await sendAsyncActionWebhook({
             secret: webhookSigningKey.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
+            connectionConfig,
             payload: {
                 id: task.retryKey,
                 statusUrl: `/action/${task.retryKey}`

@@ -53,6 +53,7 @@ describe('AsyncAction webhooks', () => {
             connectionId: '123',
             secret,
             providerConfigKey: 'some-provider',
+            connectionConfig: null,
             webhookSettings: {
                 ...webhookSettings,
                 on_async_action_completion: false
@@ -72,6 +73,7 @@ describe('AsyncAction webhooks', () => {
             connectionId: '123',
             secret,
             providerConfigKey: 'some-provider',
+            connectionConfig: null,
             webhookSettings: {
                 ...webhookSettings,
                 on_async_action_completion: true
@@ -96,5 +98,26 @@ describe('AsyncAction webhooks', () => {
             payload: props.payload,
             providerConfigKey: props.providerConfigKey
         });
+    });
+
+    it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'sync', action: 'run' } },
+            { account: { id: environment.account_id, name: '' }, environment: { id: environment.id, name: environment.name } }
+        );
+
+        const overrideUrl = 'https://override.example.com/hook';
+        await sendAsyncActionWebhook({
+            connectionId: '123',
+            secret,
+            providerConfigKey: 'some-provider',
+            connectionConfig: { webhook_url: overrideUrl },
+            webhookSettings,
+            payload: { id: '00000000-0000-0000-0000-000000000000', statusUrl: '/action/00000000-0000-0000-0000-000000000000' },
+            logCtx
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
     });
 });
