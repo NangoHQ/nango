@@ -24,17 +24,27 @@ This guide will walk you through finding both credentials in YouCanBookMe.
 2. Navigate to [Account Security settings](https://app.youcanbook.me/#/account/security).
 3. You will find your **Account ID** and your **API Key** (starting with `ak_`) on this page.
 
-<img src="/api-integrations/youcanbook-me/generate_api_key.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/youcanbook-me/generate_api_key.png"/>
 
 <Tip>If you are part of a Team plan, you must use the Organization Owner's API key — your own key will not work.</Tip>
 
-#### Step 2: Enter credentials in the Connect UI
+<a id="step-2-finding-your-subdomain"></a>
+### Step 2: Finding your subdomain
 
-Once you have your **Account ID** and **API Key**:
+Your subdomain is the part of your YouCanBookMe booking URL before `.youcanbook.me`. For example, if your booking page is at `mycompany.youcanbook.me`, your subdomain is `mycompany`.
+
+You can find it by opening any of your booking pages and copying the prefix from the URL.
+
+### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API key** and **subdomain**:
+
 1. Open the form where you need to authenticate with YouCanBookMe.
-2. Enter your **Account ID** and **API Key** in their respective fields.
-3. Submit the form, and you should be successfully authenticated.
+2. Enter your **API key** and **subdomain** in their respective fields.
+3. Submit the form and you will be successfully authenticated.
 
 <img src="/api-integrations/youcanbook-me/form.png" style={{maxWidth: "450px" }}/>
 
+
 You are now connected to YouCanBookMe.
+
