@@ -1,14 +1,14 @@
 import { createPrivateKey } from 'crypto';
 
-import { DOMImplementation, XMLSerializer } from '@xmldom/xmldom';
+import { DOMImplementation, DOMParser, XMLSerializer } from '@xmldom/xmldom';
 import { v4 as uuidv4 } from 'uuid';
 import { SignedXml } from 'xml-crypto';
 
 import { Err, Ok } from '@nangohq/utils';
 
 import { AuthCredentialsError } from '../utils/error.js';
-import { formatPem, interpolateObject, interpolateString } from '../utils/utils.js';
-import { signJWT } from './jwt.js';
+import { formatPem, interpolateObject, interpolateString, isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
+import { decode, signJWT } from './jwt.js';
 
 import type { ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -88,6 +88,8 @@ const OBJECT_FIELD_HANDLERS: Record<string, ObjectFieldHandler> = {
 };
 
 const NAMESPACE = 'urn:oasis:names:tc:SAML:2.0:assertion';
+
+const ASSERTION_REFRESH_MARGIN_SECONDS = 60;
 
 function uid(len: number = 32) {
     return uuidv4().replace(/-/g, '').slice(0, len);
@@ -316,6 +318,40 @@ export function generateSamlAssertion({
         return Ok(assertion);
     } catch (err) {
         return Err(new AuthCredentialsError('failed_to_generate_assertion', { cause: err }));
+    }
+}
+
+export function isJwtAssertionExpired(assertion: string): boolean {
+    try {
+        const decoded = decode(assertion);
+        if (!decoded || typeof decoded['exp'] !== 'number') {
+            return true;
+        }
+        return isTokenExpired(new Date(decoded['exp'] * 1000), ASSERTION_REFRESH_MARGIN_SECONDS);
+    } catch {
+        return true;
+    }
+}
+
+export function isSamlAssertionExpired(assertion: string): boolean {
+    try {
+        const xml = Buffer.from(assertion, 'base64').toString('utf-8');
+        const doc = new DOMParser().parseFromString(xml, 'text/xml');
+        const conditions = doc.getElementsByTagNameNS(NAMESPACE, 'Conditions')[0];
+        if (!conditions) {
+            return true;
+        }
+        const notOnOrAfter = conditions.getAttribute('NotOnOrAfter');
+        if (!notOnOrAfter) {
+            return true;
+        }
+        const expireDate = parseTokenExpirationDate(notOnOrAfter);
+        if (!expireDate) {
+            return true;
+        }
+        return isTokenExpired(expireDate, ASSERTION_REFRESH_MARGIN_SECONDS);
+    } catch {
+        return true;
     }
 }
 
