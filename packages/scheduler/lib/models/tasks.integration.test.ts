@@ -170,6 +170,22 @@ describe('Task', () => {
             }
         }
     });
+    it('should not let concurrent transitions from the same state both succeed', async () => {
+        // Race: a worker succeeding a task while the monitor expires it.
+        // Both read STARTED and both validate, but only one update may win.
+        const t = await startTask(db);
+        const [succeeded, expired] = await Promise.all([
+            tasks.transitionState(db, { taskId: t.id, newState: 'SUCCEEDED', output: { foo: 'bar' } }),
+            tasks.transitionState(db, { taskId: t.id, newState: 'EXPIRED', output: { reason: 'timeout_exceeded' } })
+        ]);
+        const winners = [succeeded, expired].filter((r) => r.isOk());
+        const losers = [succeeded, expired].filter((r) => r.isErr());
+        expect(winners).toHaveLength(1);
+        expect(losers).toHaveLength(1);
+        const winner = winners[0];
+        const finalState = (await tasks.get(db, t.id)).unwrap().state;
+        expect(finalState).toBe(winner && winner.isOk() ? winner.value.state : undefined);
+    });
     it('should be dequeued', async () => {
         const t0 = await createTask(db, { groupKey: nanoid() });
         const t1 = await createTask(db);
