@@ -540,6 +540,33 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
+    public async getConnectionConfigByConnectionIds({
+        connectionIds,
+        provider_config_key,
+        environment_id
+    }: {
+        connectionIds: string[];
+        provider_config_key: string;
+        environment_id: number;
+    }): Promise<Map<string, ConnectionConfig>> {
+        const configByConnectionId = new Map<string, ConnectionConfig>();
+        if (connectionIds.length === 0) {
+            return configByConnectionId;
+        }
+
+        const result = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .select('connection_id', 'connection_config')
+            .whereIn('connection_id', connectionIds)
+            .where({ provider_config_key, environment_id, deleted: false });
+
+        for (const row of result) {
+            configByConnectionId.set(row.connection_id, row.connection_config);
+        }
+
+        return configByConnectionId;
+    }
+
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
@@ -1405,34 +1432,33 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        // Regenerate the assertion on initial auth or when no refresh_token exists.
+        // Regenerate the assertion on initial auth or when no refresh_token exists and when the assertion expires.
         if (provider.assertion && (refreshToken === false || refreshToken === undefined || !dynamicCredentials['refresh_token'])) {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
             const assertionType = provider.assertion.type;
-            const create =
-                assertionType === 'jwt'
-                    ? assertionClient.generateJwtAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      })
-                    : assertionClient.generateSamlAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      });
+            const existingAssertion = credentials['assertion'] as string | undefined;
+            const assertionArgs = { provider, dynamicCredentials: credentials, connectionConfig, ...(assertionOption && { assertionOption }) };
 
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
+            let create;
+            if (assertionType === 'jwt') {
+                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                    create = assertionClient.generateJwtAssertion(assertionArgs);
+                }
+            } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {
+                create = assertionClient.generateSamlAssertion(assertionArgs);
             }
 
-            credentials['assertion'] = create.value;
+            if (create) {
+                if (create.isErr()) {
+                    return { success: false, error: create.error, response: null };
+                }
 
-            Object.assign(dynamicCredentials, credentials);
+                credentials['assertion'] = create.value;
+
+                Object.assign(dynamicCredentials, credentials);
+            }
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.

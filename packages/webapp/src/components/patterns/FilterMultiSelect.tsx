@@ -1,9 +1,8 @@
 import { Check, Search, XCircle } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/utils/utils';

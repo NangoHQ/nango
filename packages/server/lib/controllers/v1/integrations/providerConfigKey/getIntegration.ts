@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import { permissions } from '@nangohq/authz';
 import { getProviderScopes } from '@nangohq/providers';
-import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
+import { configService, connectionService, flowService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolve } from '../../../../authz/resolve.js';
@@ -76,6 +76,7 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         data: {
             integration: apiIntegration,
             template: provider, // TODO: fix this naming
+            symLinkTargetName: flowService.getSymLinkTargetName(integration.provider),
             meta: {
                 connectionsCount: count,
                 webhookSecret,

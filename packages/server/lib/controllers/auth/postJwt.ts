@@ -7,7 +7,6 @@ import {
     connectionService,
     errorManager,
     ErrorSourceEnum,
-    getConnectionConfig,
     getProvider,
     jwtClient,
     LogActionEnum,
@@ -15,7 +14,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -23,7 +22,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -35,7 +34,7 @@ const bodyValidation = z.looseObject({});
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional(),
+        params: connectionConfigParamsSchema,
         user_scope: z.string().optional()
     })
     .and(connectionCredential);
@@ -75,7 +74,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
     const bodyData = val.data as PostPublicJwtAuthorization['Body'];
     const queryString: PostPublicJwtAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicJwtAuthorization['Params'] = paramVal.data;
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -249,7 +248,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
                 environment,
                 account,
                 auth_mode: 'JWT',

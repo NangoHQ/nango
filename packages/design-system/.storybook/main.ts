@@ -30,8 +30,7 @@ const config: StorybookConfig = {
                 ...config.resolve,
                 alias: {
                     ...existingAlias,
-                    '@': path.resolve(__dirname, '../../webapp/src'),
-                    '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
+                    '@': path.resolve(__dirname, '../../webapp/src')
                 }
             },
             server: {

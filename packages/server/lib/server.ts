@@ -30,6 +30,7 @@ import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import { tasks } from './tasks/index.js';
+import { egressTelemetryRecorder } from './utils/egressTelemetry.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
@@ -138,6 +139,7 @@ const close = once(() => {
         await destroyKvstore();
         await destroyFeatureFlags();
         await billing.shutdown();
+        await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
 
         logger.close();

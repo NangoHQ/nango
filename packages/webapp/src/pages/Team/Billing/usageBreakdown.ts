@@ -55,8 +55,59 @@ export function formatDimensionValue(dimension: AnyBreakdownDimension, value: st
     return value;
 }
 
+/**
+ * Parse a `${metric}.filter` URL value (`<dimension>:<value>`) into its parts. Splits on the
+ * FIRST ':' to mirror the backend, so a value containing ':' (e.g. a URL) survives intact.
+ * Returns null for malformed input, or for a dimension the metric doesn't support (e.g. a stale
+ * deep-link from before the dimension list changed).
+ */
+export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDimension[]): { dimension: AnyBreakdownDimension; value: string } | null {
+    const colon = raw.indexOf(':');
+    const hasDimensionAndValue = colon > 0 && colon < raw.length - 1;
+    if (!hasDimensionAndValue) return null;
+
+    const dimension = raw.slice(0, colon) as AnyBreakdownDimension;
+    if (!allowed.includes(dimension)) return null;
+
+    return { dimension, value: raw.slice(colon + 1) };
+}
+
+/**
+ * Dimensions whose filter values are a small, fully-listed, closed set, so the Filter typeahead
+ * never needs free text: `environment_id` (a handful of envs, and the stored value is an id the
+ * user can't type) and `success` (just true/false, shown as Success/Failed). Free text on these
+ * could only commit a value the backend won't match — a name where it wants an id, or "succ"
+ * where it wants "true" — silently yielding an empty chart. Open-ended id/name dimensions
+ * (integration, connection, model, …) still allow free text to reach long-tail 'Rest' values.
+ */
+const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success']);
+
+/** Whether the Filter typeahead may commit a typed-but-unlisted value for this dimension. */
+export function allowsFreeTextFilter(dimension: AnyBreakdownDimension): boolean {
+    return !ENUMERATED_DIMENSIONS.has(dimension);
+}
+
+/**
+ * The breakdown dimension actually sent to the query. Group and filter may target the same
+ * dimension — the backend rejects that degenerate split, so the filter wins and the grouping is
+ * dropped from the query. (The grouping stays in the URL, so clearing the filter restores it.)
+ */
+export function resolveBreakdownDimension(
+    group: AnyBreakdownDimension | null,
+    filter: { dimension: AnyBreakdownDimension } | null
+): AnyBreakdownDimension | null {
+    return group && filter && group === filter.dimension ? null : group;
+}
+
 /** Top-N dimension values requested per breakdown; the long tail collapses into a single 'rest' bucket. */
 export const DEFAULT_TOP_N = 10;
+
+/**
+ * How many values the Filter dropdown lists per dimension — more than the chart's top-N so more
+ * are directly pickable (incl. ones in the chart's 'rest'). Matches the backend's TOP_N_BREAKDOWN_CAP;
+ * the searchable, height-capped pane handles the length. Reaching beyond this is server-side search (NAN-6038).
+ */
+export const FILTER_VALUES_TOP_N = 25;
 
 /**
  * Earliest month (UTC epoch ms) with ClickHouse granular data; the month picker is

@@ -27,7 +27,7 @@ export const ThirdStep = ({ onSetupIntegrationClicked }: ThirdStepProps) => {
                 <p className="text-text-strong">Now that you’ve had a glimpse of Nango, you can go ahead and configure your first integration!</p>
             </div>
 
-            <ButtonLink to={`/${env}/integrations/create`} onClick={onSetupIntegrationClicked} variant="primary" size="xl">
+            <ButtonLink to={`/${env}/integrations/create`} onClick={onSetupIntegrationClicked} variant="primary" size="lg">
                 Set up your own integrations
             </ButtonLink>
         </div>

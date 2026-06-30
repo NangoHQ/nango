@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 const route = '/providers/:provider/templates';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -28,14 +28,13 @@ describe(`GET ${route}`, () => {
         shouldBeProtected(res);
     });
 
-    it('should reject a key lacking the list scope', async () => {
+    it('should not require a specific scope (public catalog data)', async () => {
         const seed = await seedWithScopes(['environment:connections:read']);
 
         const res = await api.fetch(route, { method: 'GET', token: seed.apiKey.secret, params: { provider: 'github' } });
 
-        isError(res.json);
-        expect(res.res.status).toBe(403);
-        expect(res.json.error.code).toBe('forbidden');
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
     });
 
     it('should return template functions for a known provider', async () => {

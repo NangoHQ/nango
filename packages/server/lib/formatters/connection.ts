@@ -26,6 +26,7 @@ export function connectionSimpleToApi({
 }): ApiConnectionSimple {
     return {
         id: data.id,
+        config_id: data.config_id,
         connection_id: data.connection_id,
         provider_config_key: data.provider_config_key,
         provider,

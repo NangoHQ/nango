@@ -6,9 +6,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton.js';
 import { useStore } from '@/store';
 import { useProviders } from '../../hooks/useProviders.js';

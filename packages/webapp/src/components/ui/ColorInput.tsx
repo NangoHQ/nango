@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 
-import { Input as _Input } from '@/components/ui/Input';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { cn } from '@/utils/utils';
 
-import type { InputHTMLAttributes } from 'react';
+import type { InputProps } from '@nangohq/design-system';
 
 export const isValidCSSColor = (color: string): boolean => {
     if (!color) return false;
@@ -17,7 +17,7 @@ export const isValidCSSColor = (color: string): boolean => {
     return tempElement.style.color !== '';
 };
 
-export interface ColorInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value'> {
+export interface ColorInputProps extends Omit<InputProps, 'type' | 'value'> {
     value: string;
     className?: string;
     placeholder?: string;

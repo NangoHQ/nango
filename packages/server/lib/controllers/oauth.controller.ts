@@ -592,7 +592,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey!, connection_config: connectionConfig },
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
@@ -1522,7 +1522,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1606,7 +1606,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1733,7 +1733,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2023,7 +2023,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2202,7 +2202,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2363,7 +2363,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2532,7 +2532,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,

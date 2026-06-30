@@ -495,8 +495,14 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
     return str;
 }
 
+// Connection config keys a client is not allowed to supply: they are privileged and only set by the backend.
+const CLIENT_FORBIDDEN_CONNECTION_CONFIG_KEYS = new Set([
+    // `webhook_url` routes a connection's webhooks, so it is only honored from the backend-set connect session.
+    'webhook_url'
+]);
+
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
+    const arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && !CLIENT_FORBIDDEN_CONNECTION_CONFIG_KEYS.has(k));
     return Object.fromEntries(arr) as Record<string, string>;
 }
 

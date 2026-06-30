@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { customerKeyService, externalWebhookService, getProvider, makeDataTransferEvent, NangoError, pubsub } from '@nangohq/shared';
+import { connectionService, customerKeyService, externalWebhookService, getProvider, makeDataTransferEvent, NangoError, pubsub } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
@@ -13,7 +13,7 @@ import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MaybeStampedEvent } from '@nangohq/pubsub';
 import type { Config } from '@nangohq/shared';
-import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { ConnectionConfig, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.Manager');
@@ -118,6 +118,15 @@ export async function routeWebhook({
               })
             : '';
 
+        // Fetch the matched connections' config so forwardWebhook can honor a per-connection webhook URL override.
+        const connectionConfigByConnectionId = webhookSettings
+            ? await connectionService.getConnectionConfigByConnectionIds({
+                  connectionIds,
+                  provider_config_key: integration.unique_key,
+                  environment_id: environment.id
+              })
+            : new Map<string, ConnectionConfig>();
+
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
         const forwardSpan = tracer.startSpan('webhook.forward');
@@ -130,6 +139,7 @@ export async function routeWebhook({
             secret: webhookSigningSecret,
             webhookSettings,
             connectionIds,
+            connectionConfigByConnectionId,
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
             logContextGetter,
@@ -168,6 +178,9 @@ export async function routeWebhook({
                         });
                     }
                 }
+            })
+            .catch((err: unknown) => {
+                logger.error(`error forwarding webhook for ${integration.unique_key} - `, err);
             })
             .finally(() => {
                 if (pendingEvents.length > 0) {

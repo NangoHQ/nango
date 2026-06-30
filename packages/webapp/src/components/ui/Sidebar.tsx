@@ -5,9 +5,8 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, Input } from '@nangohq/design-system';
 
-import { Input } from '@/components/ui/Input';
 import { Separator } from '@/components/ui/Separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -83,7 +82,7 @@ function SidebarProvider({
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-        return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+        return isMobile ? void setOpenMobile((open) => !open) : void setOpen((open) => !open);
     }, [isMobile, setOpen, setOpenMobile]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -288,7 +287,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
 }
 
 function SidebarInput({ className, ...props }: React.ComponentProps<typeof Input>) {
-    return <Input data-slot="sidebar-input" data-sidebar="input" className={cn('bg-surface-input h-8 w-full shadow-none', className)} {...props} />;
+    return <Input data-slot="sidebar-input" data-sidebar="input" className={cn('bg-surface-input w-full shadow-none', className)} {...props} />;
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {

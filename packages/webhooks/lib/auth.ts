@@ -1,7 +1,7 @@
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { metrics } from '@nangohq/utils';
 
-import { deliver, shouldSend } from './utils.js';
+import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type {
     AuthModeType,
@@ -54,11 +54,13 @@ export async function sendAuth({
         return;
     }
 
+    const settings = resolveWebhookSettings(webhookSettings, 'connection_config' in connection ? connection.connection_config : null);
+
     if (operation === 'unknown') {
         return;
     }
 
-    if (!shouldSend({ success, type: AUTH_OPERATION_TO_TYPE[operation], webhookSettings })) {
+    if (!shouldSend({ success, type: AUTH_OPERATION_TO_TYPE[operation], webhookSettings: settings })) {
         return;
     }
 
@@ -99,11 +101,11 @@ export async function sendAuth({
     }
 
     const webhooks: { url: string; type: string }[] = [];
-    if (webhookSettings.primary_url) {
-        webhooks.push({ url: webhookSettings.primary_url, type: 'webhook url' });
+    if (settings.primary_url) {
+        webhooks.push({ url: settings.primary_url, type: 'webhook url' });
     }
-    if (webhookSettings.secondary_url) {
-        webhooks.push({ url: webhookSettings.secondary_url, type: 'secondary webhook url' });
+    if (settings.secondary_url) {
+        webhooks.push({ url: settings.secondary_url, type: 'secondary webhook url' });
     }
 
     const action = operation === 'creation' ? 'connection_create' : 'connection_refresh';

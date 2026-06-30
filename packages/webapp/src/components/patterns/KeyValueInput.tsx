@@ -1,10 +1,8 @@
 import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, Input, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
-import { Input } from '@/components/ui/Input';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { cn } from '@/utils/utils';
 
 interface KeyValuePair {

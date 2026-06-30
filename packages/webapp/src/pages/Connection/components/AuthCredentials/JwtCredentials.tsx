@@ -1,10 +1,9 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Label } from '@/components/ui/Label';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 import { formatKeyToLabel } from '@/utils/utils';
 
@@ -22,7 +21,7 @@ export const JwtCredentialsComponent: React.FC<{
         <>
             {credentials.token && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="token">Token</Label>
+                    <FieldLabel htmlFor="token">Token</FieldLabel>
                     <div className="flex gap-2 items-center">
                         <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
                         <PermissionGate condition={canRead} asChild>
@@ -40,7 +39,7 @@ export const JwtCredentialsComponent: React.FC<{
             {/* Special handling for Private key (based on legacy code before redesign) */}
             {'privateKey' in credentials && credentials.privateKey != null && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="privateKey">Private key</Label>
+                    <FieldLabel htmlFor="privateKey">Private key</FieldLabel>
                     <SecretInput
                         id="privateKey"
                         value={
@@ -67,7 +66,7 @@ export const JwtCredentialsComponent: React.FC<{
 
                 return (
                     <div className="flex flex-col gap-2" key={key}>
-                        <Label htmlFor={key}>{label}</Label>
+                        <FieldLabel htmlFor={key}>{label}</FieldLabel>
                         <SecretInput id={key} value={value} disabled copy canRead={canRead} />
                     </div>
                 );

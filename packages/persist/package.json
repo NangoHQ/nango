@@ -19,6 +19,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/database": "file:../database",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/kms": "file:../kms",
         "@nangohq/logs": "file:../logs",
         "@nangohq/pubsub": "file:../pubsub",
@@ -32,6 +33,7 @@
         "zod": "4.0.5"
     },
     "devDependencies": {
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/types": "file:../types",
         "node-fetch": "3.3.2",
         "typescript": "5.8.3",

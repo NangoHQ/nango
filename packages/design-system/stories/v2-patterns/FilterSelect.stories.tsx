@@ -1,0 +1,93 @@
+import { ListFilter } from 'lucide-react';
+import { useState } from 'react';
+
+import { FilterSelect } from '@/components/patterns/FilterSelect';
+
+import type { FilterSelectGroupData } from '@/components/patterns/FilterSelect';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const meta: Meta = {
+    title: 'Components/Patterns/FilterSelect',
+    parameters: { layout: 'centered' }
+};
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const GROUPS = [
+    { value: 'integration', label: 'Integration' },
+    { value: 'connection', label: 'Connection' },
+    { value: 'status', label: 'Status' },
+    { value: 'function', label: 'Function name' }
+];
+
+// Static options per group. `connection` shows full UUIDs (width-fit), `function` is long
+// enough to scroll (auto-height cap), `status` is a short semantic pair.
+const DATA: Record<string, { value: string; label: string }[]> = {
+    integration: ['google-calendar', 'algolia', 'unauthenticated', 'twitter-v2', 'github-getting-started'].map((v) => ({ value: v, label: v })),
+    connection: [
+        'a42cf515-6bd4-4c1f-9389-b4ccd1ab9ce4',
+        'b9e58975-4dc5-4243-8feb-07ce377532da',
+        'c14fad81-ccd2-4479-be64-3174e3fc3a15',
+        '78f14123-3d01-49a5-8e5e-825dea272e53'
+    ].map((v) => ({ value: v, label: v })),
+    status: [
+        { value: 'true', label: 'Success' },
+        { value: 'false', label: 'Failed' }
+    ],
+    function: [
+        'settings',
+        'get-me',
+        'me',
+        'busy-me',
+        'list-monthly-events',
+        'get-issue',
+        'create-event',
+        'delete-event',
+        'update-event',
+        'list-calendars',
+        'get-availability',
+        'watch-channel'
+    ].map((v) => ({ value: v, label: v }))
+};
+
+const Demo: React.FC<{ initial?: { group: string; value: string } | null }> = ({ initial = null }) => {
+    const [open, setOpen] = useState(false);
+    const [filter, setFilter] = useState<{ group: string; value: string } | null>(initial);
+
+    // In the app this fetches per-dimension values; here it's static.
+    const useGroupData = (group: string): FilterSelectGroupData => ({ options: DATA[group] ?? [], isLoading: false, isError: false });
+
+    const activeLabel = filter ? `${GROUPS.find((g) => g.value === filter.group)?.label}: ${filter.value}` : 'Filter';
+    const trigger = (
+        <button
+            type="button"
+            className="flex h-7 w-fit items-center gap-1.5 rounded border border-border-muted bg-surface-overlay px-1.5 text-s whitespace-nowrap text-text-secondary hover:bg-state-hover"
+        >
+            <ListFilter className="size-3.5 shrink-0 text-text-muted" />
+            <span className={filter ? 'max-w-[220px] truncate text-text-strong' : undefined}>{activeLabel}</span>
+        </button>
+    );
+
+    return (
+        <FilterSelect
+            trigger={trigger}
+            open={open}
+            onOpenChange={setOpen}
+            groups={GROUPS}
+            useGroupData={useGroupData}
+            selectedValueFor={(g: string) => (filter?.group === g ? filter.value : null)}
+            onSelect={(group: string, value: string) => setFilter({ group, value })}
+            // `status` is a fixed set: no free text, and so no search box — the others allow both.
+            allowCreate={(g: string) => g !== 'status'}
+        />
+    );
+};
+
+export const Default: Story = {
+    render: () => <Demo />
+};
+
+export const WithSelection: Story = {
+    name: 'With a selection',
+    render: () => <Demo initial={{ group: 'status', value: 'true' }} />
+};

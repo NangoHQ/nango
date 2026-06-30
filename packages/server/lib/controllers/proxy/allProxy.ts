@@ -10,8 +10,10 @@ import {
     enforceProxyOutboundUrlPolicy,
     errorManager,
     ErrorSourceEnum,
+    findOutboundUrlError,
     getProvider,
     getProxyConfiguration,
+    getServerOutboundUrlPolicy,
     LogActionEnum,
     makeDataTransferEvent,
     ProxyError,
@@ -286,6 +288,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 },
                 internalConfig
             }).unwrap(),
+            outboundPolicy: getServerOutboundUrlPolicy(),
             logger: (msg) => {
                 void logCtx?.log(msg);
             },
@@ -532,6 +535,18 @@ export function handleErrorResponse({
             error: {
                 code: 'base_url_override_not_allowed',
                 message: 'This base URL override is not allowed by server configuration.'
+            }
+        });
+        return;
+    }
+
+    const outboundErr = findOutboundUrlError(error);
+    if (outboundErr) {
+        void logCtx.error('Proxy outbound URL denied by policy', { error: outboundErr });
+        res.status(400).send({
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This outbound URL is not allowed by server configuration.'
             }
         });
         return;

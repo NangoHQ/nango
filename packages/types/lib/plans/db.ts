@@ -5,7 +5,19 @@ type FunctionRuntime = 'runner' | 'lambda';
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
-    name: 'free' | 'starter-v2' | 'growth-v2' | 'enterprise' | 'starter' | 'growth' | 'starter-legacy' | 'scale-legacy' | 'growth-legacy';
+    name:
+        | 'free'
+        | 'free-uncapped'
+        | 'startup-deal'
+        | 'starter-v2'
+        | 'growth-v2'
+        | 'enterprise'
+        | 'enterprise-cloud-hosted'
+        | 'starter'
+        | 'growth'
+        | 'starter-legacy'
+        | 'scale-legacy'
+        | 'growth-legacy';
 
     // Stripe
     stripe_customer_id: string | null;
