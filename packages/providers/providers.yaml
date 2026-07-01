@@ -10849,7 +10849,10 @@ jobber:
         headers:
             x-jobber-graphql-version: ${connectionConfig.version} || 2025-01-20
         base_url: https://api.getjobber.com/api
-    docs: https://nango.dev/docs/integrations/all/jobber
+    webhook_routing_script: jobberWebhookRouting
+    webhook_user_defined_secret: true
+    docs: https://nango.dev/docs/api-integrations/jobber
+    setup_guide_url: https://nango.dev/docs/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app
     connection_config:
         version:
             type: string

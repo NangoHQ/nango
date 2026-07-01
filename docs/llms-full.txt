@@ -14287,7 +14287,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `jira-data-center-api-key` | Jira Data Center (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/jira-data-center-api-key.md) | [connect](https://nango.dev/docs/integrations/all/jira-data-center-api-key/connect.md) |  | productivity, ticketing |
 | `jira-data-center-basic` | Jira Data Center (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/jira-data-center-basic.md) | [connect](https://nango.dev/docs/integrations/all/jira-data-center-basic/connect.md) |  | productivity, ticketing |
 | `jobadder` | Jobadder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/jobadder.md) |  |  | hr, ats |
-| `jobber` | Jobber | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/jobber.md) |  |  | crm, invoicing |
+| `jobber` | Jobber | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/jobber.md) |  | [setup](https://nango.dev/docs/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app.md) | crm, invoicing |
 | `jobdiva` | JobDiva | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/jobdiva.md) | [connect](https://nango.dev/docs/integrations/all/jobdiva/connect.md) |  | hr, ats |
 | `jobvite` | Jobvite | API_KEY | [docs](https://nango.dev/docs/integrations/all/jobvite.md) | [connect](https://nango.dev/docs/integrations/all/jobvite/connect.md) |  | ats |
 | `jotform` | Jotform | API_KEY | [docs](https://nango.dev/docs/integrations/all/jotform.md) |  |  | surveys |
