@@ -7927,7 +7927,7 @@ freshsales:
             title: API Key
             description: The API key for your Freshsales account
             example: 4oBqA_AzM_G3xbW3TJGvrA
-            pattern: '[A-Za-z0-9_]{22}'
+            pattern: '[A-Za-z0-9_-]+'
             doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
@@ -8189,16 +8189,16 @@ google-gemini:
                 content-type: application/json
             endpoints:
                 - /v1/models
-    docs: https://nango.dev/docs/integrations/all/google-gemini
-    docs_connect: https://nango.dev/docs/integrations/all/google-gemini/connect
+    docs: https://nango.dev/docs/api-integrations/google-gemini
+    docs_connect: https://nango.dev/docs/api-integrations/google-gemini/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Gemini account
             doc_section: '#step-1-generating-your-api-key'
-            example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
-            pattern: '^[0-9A-Za-z_-]+$'
+            example: 'AQ.Ab8RN6I5RF**********-0Fe3mTuqX3**'
+            pattern: '^[0-9A-Za-z_.\-]+$'
 
 gem:
     display_name: Gem
@@ -23257,6 +23257,8 @@ youcanbook-me:
     auth_mode: BASIC
     proxy:
         base_url: https://api.youcanbook.me
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
         verification:
             method: GET
             endpoints:
@@ -23270,7 +23272,7 @@ youcanbook-me:
             description: Your YouCanBookMe Account ID.
             format: uuid
             example: 78c3430e-21f5-483b-8e26-84cd6dabf7a6
-            doc_section: '#step-1-finding-your-account-id'
+            doc_section: '#step-1-finding-your-account-id-and-api-key'
         password:
             type: string
             title: API Key
@@ -23278,7 +23280,14 @@ youcanbook-me:
             pattern: '^ak_[A-Za-z0-9_-]+$'
             example: ak_xxxxxxxxxxxxxxxxxxxxx
             secret: true
-            doc_section: '#step-2-finding-your-api-key'
+            doc_section: '#step-1-finding-your-account-id-and-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your YouCanBookMe booking page.
+            example: mycompany
+            doc_section: '#step-2-finding-your-subdomain'
 
 yandex:
     display_name: Yandex

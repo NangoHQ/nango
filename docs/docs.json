@@ -83,6 +83,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/google-gemini",
+      "destination": "/api-integrations/google-gemini"
+    },
+    {
+      "source": "/integrations/all/google-gemini/connect",
+      "destination": "/api-integrations/google-gemini/connect"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1193,7 +1201,7 @@
               "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
-              "integrations/all/google-gemini",
+              "api-integrations/google-gemini",
               "integrations/all/gebruder-weiss",
               "integrations/all/gem",
               "integrations/all/gerrit",

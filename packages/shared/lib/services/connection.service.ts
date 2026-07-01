@@ -1452,7 +1452,6 @@ class ConnectionService {
 
             if (create) {
                 if (create.isErr()) {
-                    console.log(create.error);
                     return { success: false, error: create.error, response: null };
                 }
 
