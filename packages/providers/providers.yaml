@@ -7216,7 +7216,6 @@ facebook:
         - marketing
         - social
     auth_mode: OAUTH2
-    disable_pkce: true
     authorization_url: https://www.facebook.com/v22.0/dialog/oauth
     token_url: https://graph.facebook.com/v22.0/oauth/access_token
     proxy:
