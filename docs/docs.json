@@ -960,6 +960,7 @@
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
               "api-integrations/apple-business-manager",
+              "api-integrations/applied-epic",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
               "api-integrations/asana-mcp",
