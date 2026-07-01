@@ -9015,6 +9015,16 @@ google-forms:
     docs: https://nango.dev/docs/api-integrations/google-forms
     setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
 
+google-health:
+    display_name: Google Health
+    categories:
+        - sports
+    alias: google
+    proxy:
+        base_url: https://health.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-health
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app
+
 google-tasks:
     display_name: Google Tasks
     categories:
