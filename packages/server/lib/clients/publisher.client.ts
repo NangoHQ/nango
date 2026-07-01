@@ -219,7 +219,14 @@ export class Publisher {
         isPending?: boolean;
     }) {
         if (!wsClientId) {
-            authHtml({ res });
+            authHtml({
+                res,
+                successPayload: {
+                    providerConfigKey,
+                    connectionId,
+                    isPending
+                }
+            });
             return;
         }
 
@@ -234,7 +241,14 @@ export class Publisher {
         if (published) {
             await this.unsubscribe(wsClientId);
         }
-        authHtml({ res });
+        authHtml({
+            res,
+            successPayload: {
+                providerConfigKey,
+                connectionId,
+                isPending
+            }
+        });
     }
 }
 
