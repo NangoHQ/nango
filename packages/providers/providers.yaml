@@ -692,6 +692,30 @@ affinity-v2:
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
 
+agentline:
+    display_name: AgentLine
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.agentline.cloud
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/agents
+    docs: https://nango.dev/docs/api-integrations/agentline
+    docs_connect: https://nango.dev/docs/api-integrations/agentline/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your AgentLine API key.
+            pattern: '^sk_live_[a-zA-Z0-9_]+$'
+            prefix: sk_live_
+            doc_section: '#step-1-finding-your-api-key'
+
 agiloft:
     display_name: Agiloft
     categories:
@@ -795,27 +819,6 @@ aimfox-oauth:
         base_url: https://api.aimfox.com/api
     docs: https://nango.dev/docs/integrations/all/aimfox-oauth
 
-agentline:
-    display_name: AgentLine
-    categories:
-        - communication
-        - voice
-        - dev-tools
-    auth_mode: API_KEY
-    proxy:
-        base_url: https://api.agentline.cloud
-        verification:
-            method: GET
-            endpoint: /v1/agents
-    docs: https://nango.dev/docs/integrations/all/agentline
-    credentials:
-        api_key:
-            type: string
-            title: API Key
-            description: Your AgentLine API key (starts with sk_live_)
-            pattern: '^sk_live_[a-zA-Z0-9_]+$'
-            prefix: sk_live_
-            doc_section: '#step-1-finding-your-api-key'
 
 aircall:
     display_name: Aircall (OAuth)

@@ -925,7 +925,7 @@
               "integrations/all/affinity-v2",
               "api-integrations/agiloft",
               "api-integrations/agiloft-cc",
-              "integrations/all/agentline",
+              "api-integrations/agentline",
               "integrations/all/aimfox",
               "integrations/all/aimfox-oauth",
               "integrations/all/aircall",
