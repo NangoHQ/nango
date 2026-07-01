@@ -5,11 +5,12 @@ sidebarTitle: YouCanBookMe
 
 # Overview
 
-To authenticate with YouCanBookMe, you need two pieces of information:
-1. **API Key** - A key starting with `ak_` that grants Nango access to your YouCanBookMe account.
-2. **Subdomain** - The prefix of your YouCanBookMe booking URL (e.g. `mycompany` from `mycompany.youcanbook.me`).
+To authenticate with YouCanBookMe, you need three pieces of information:
+1. **Account ID** - A UUID that uniquely identifies your YouCanBookMe account.
+2. **API Key** - A key starting with `ak_` that grants Nango access to your YouCanBookMe account.
+3. **Subdomain** - The prefix of your YouCanBookMe booking URL (e.g. `mycompany` from `mycompany.youcanbook.me`).
 
-This guide will walk you through finding both credentials in YouCanBookMe.
+This guide will walk you through finding all three credentials in YouCanBookMe.
 
 ### Prerequisites:
 
@@ -18,11 +19,11 @@ This guide will walk you through finding both credentials in YouCanBookMe.
 
 ### Instructions:
 
-#### Step 1: Finding your API key
+#### Step 1: Finding your account ID and API key
 
 1. Log in to your YouCanBookMe account.
 2. Navigate to [Account Security settings](https://app.youcanbook.me/#/account/security).
-3. You will find your **API Key** (starting with `ak_`) on this page.
+3. You will find your **Account ID** (a UUID) and your **API Key** (starting with `ak_`) on this page.
 
 <img src="/api-integrations/youcanbook-me/generate_api_key.png"/>
 
@@ -37,10 +38,10 @@ You can find it by opening any of your booking pages and copying the prefix from
 
 ### Step 3: Enter credentials in the Connect UI
 
-Once you have your **API key** and **subdomain**:
+Once you have your **Account ID**, **API key**, and **subdomain**:
 
 1. Open the form where you need to authenticate with YouCanBookMe.
-2. Enter your **API key** and **subdomain** in their respective fields.
+2. Enter your **Account ID**, **API key**, and **subdomain** in their respective fields.
 3. Submit the form and you will be successfully authenticated.
 
 <img src="/api-integrations/youcanbook-me/form.png" style={{maxWidth: "450px" }}/>
