@@ -218,6 +218,7 @@ export const FunctionsOne: React.FC = () => {
                                     disabled={!func.enabled}
                                     onClick={() => {
                                         openPlaygroundWithContext({
+                                            source: 'function',
                                             integration: integrationData.integration.unique_key,
                                             functionName: func.name,
                                             functionType: func.type as 'action' | 'sync'
