@@ -67,13 +67,17 @@ export async function migrate({ database }: { database: string } = { database: u
 
         for (const migration of migrations) {
             const { sql } = (await import(path.join(migrationsDir, migration))) as { sql: string[] };
-            logger.info(`Clickhouse migration: applying ${migration}`);
+            logger.debug(`Clickhouse migration: applying ${migration}`);
             for (const statement of sql) {
                 await client.command({ query: statement, query_params: { database } });
             }
             await client.insert({ table: migrationTable, values: [{ name: migration }], format: 'JSONEachRow' });
         }
-        logger.info(`Clickhouse migration: ${migrations.length > 0 ? `applied ${migrations.length} migration(s)` : `no migrations`}`);
+        if (migrations.length > 0) {
+            logger.info(`Clickhouse migration: applied ${migrations.length} migration(s)`);
+        } else {
+            logger.debug('Clickhouse migration: no migrations');
+        }
         return Ok(undefined);
     } catch (err) {
         return Err(`Clickhouse migration failed: ${stringifyError(err)}`);
