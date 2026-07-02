@@ -422,6 +422,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -445,6 +446,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
+            connectionConfig: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
