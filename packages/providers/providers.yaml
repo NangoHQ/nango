@@ -11123,6 +11123,32 @@ kintone-user-api:
             order: 1
             pattern: '^[a-z0-9_-]+$'
 
+konnektive:
+    display_name: Konnektive
+    categories:
+        - crm
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.konnektive.com
+        query:
+            loginId: ${credentials.username}
+            password: ${credentials.password}
+    docs: https://nango.dev/docs/api-integrations/konnektive
+    docs_connect: https://nango.dev/docs/api-integrations/konnektive/connect
+    credentials:
+        username:
+            type: string
+            title: API Login ID
+            description: Your Konnektive API Login ID.
+            doc_section: '#step-1-find-your-api-credentials'
+        password:
+            type: string
+            title: API Password
+            description: Your Konnektive API password.
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
+
 knowbe4:
     display_name: KnowBe4
     categories:

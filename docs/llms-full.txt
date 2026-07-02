@@ -14252,6 +14252,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `klipfolio` | Klipfolio | API_KEY | [docs](https://nango.dev/docs/integrations/all/klipfolio.md) |  |  | productivity, dev-tools |
 | `kno-commerce` | Kno Commerce | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/kno-commerce.md) | [connect](https://nango.dev/docs/api-integrations/kno-commerce/connect.md) |  | e-commerce |
 | `knowbe4` | KnowBe4 | API_KEY | [docs](https://nango.dev/docs/api-integrations/knowbe4.md) | [connect](https://nango.dev/docs/api-integrations/knowbe4/connect.md) |  | support |
+| `konnektive` | Konnektive | API_KEY | [docs](https://nango.dev/docs/api-integrations/konnektive.md) | [connect](https://nango.dev/docs/api-integrations/konnektive/connect.md) |  | crm, e-commerce |
 | `kustomer` | Kustomer | API_KEY | [docs](https://nango.dev/docs/integrations/all/kustomer.md) |  |  | crm |
 | `lagrowthmachine` | La Growth Machine | API_KEY | [docs](https://nango.dev/docs/integrations/all/lagrowthmachine.md) | [connect](https://nango.dev/docs/integrations/all/lagrowthmachine/connect.md) |  | marketing |
 | `lastpass` | LastPass | BASIC | [docs](https://nango.dev/docs/integrations/all/lastpass.md) | [connect](https://nango.dev/docs/integrations/all/lastpass/connect.md) |  | productivity |
