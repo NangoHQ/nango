@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import { axiosInstance as axios, Err, Ok } from '@nangohq/utils';
 
+import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { formatPem, interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
 
@@ -108,7 +109,7 @@ export function fetchJwtToken({
     payload: Record<string, string | number>;
     options: object;
 }): Result<{ jwtToken: string }, AuthCredentialsError> {
-    const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+    const hasLineBreak = privateKey.startsWith('-----BEGIN RSA PRIVATE KEY-----\n');
 
     if (!hasLineBreak) {
         privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
@@ -156,11 +157,14 @@ export async function createCredentialsFromURL({
             Object.assign(headers, additionalApiHeaders);
         }
 
+        await assertSafeOAuthUrl(url);
+
         const tokenResponse = await axios.post(
             url,
             {},
             {
-                headers
+                headers,
+                ...getOAuthSafeHttpAgents()
             }
         );
 

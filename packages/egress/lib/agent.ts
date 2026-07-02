@@ -3,11 +3,15 @@ import http from 'node:http';
 import https from 'node:https';
 import net from 'node:net';
 
+import { Agent as UndiciAgent } from 'undici';
+
 import { formatHostForUrlAuthority } from './denylist.js';
 import { resolveValidatedHostAddresses, validateOutboundUrlSync } from './validate.js';
 
 import type { OutboundUrlPolicy } from './policy.js';
 import type { LookupAddress, LookupOptions } from 'node:dns';
+import type { LookupFunction } from 'node:net';
+import type { buildConnector } from 'undici';
 
 type LookupCallback = (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void;
 
@@ -139,4 +143,20 @@ export function getSafeHttpAgents(policy: OutboundUrlPolicy): { httpAgent: http.
         safeAgentsCache.set(key, agents);
     }
     return agents;
+}
+
+const safeUndiciCache = new Map<string, UndiciAgent>();
+
+export function getSafeUndiciDispatcher(policy: OutboundUrlPolicy, connectOverrides?: buildConnector.BuildOptions): UndiciAgent {
+    const lookup = getSafeLookup(policy) as unknown as LookupFunction;
+    if (!connectOverrides) {
+        const key = policyPinCacheKey(policy);
+        let agent = safeUndiciCache.get(key);
+        if (!agent) {
+            agent = new UndiciAgent({ connect: { lookup } as buildConnector.BuildOptions });
+            safeUndiciCache.set(key, agent);
+        }
+        return agent;
+    }
+    return new UndiciAgent({ connect: { ...connectOverrides, lookup } as buildConnector.BuildOptions });
 }

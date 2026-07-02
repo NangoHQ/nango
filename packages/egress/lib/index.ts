@@ -4,7 +4,7 @@ export * from './ip.js';
 export * from './validate.js';
 export * from './redirect.js';
 
-export { createSafeLookup, createSafeHttpAgents, agentForUrl, getSafeLookup, getSafeHttpAgents } from './agent.js';
+export { createSafeLookup, createSafeHttpAgents, agentForUrl, getSafeLookup, getSafeHttpAgents, getSafeUndiciDispatcher } from './agent.js';
 export {
     DEFAULT_OUTBOUND_URL_POLICY,
     resolvePolicyForServer,
@@ -15,4 +15,11 @@ export {
     getRunnerPolicyFromEnv,
     resolvePolicyForOAuth
 } from './policy.js';
-export type { OutboundUrlPolicyMode, OutboundUrlPolicyRaw, OutboundUrlPolicy, ServerPolicyEnvInput, RunnerPolicyEnvInput } from './policy.js';
+export type {
+    OutboundUrlPolicyMode,
+    OutboundUrlPolicyRaw,
+    OutboundUrlPolicy,
+    ServerPolicyEnvInput,
+    RunnerPolicyEnvInput,
+    OAuthPolicyEnvInput
+} from './policy.js';

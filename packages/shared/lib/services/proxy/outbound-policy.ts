@@ -1,8 +1,11 @@
-import { resolvePolicyForServer } from '@nangohq/egress';
+import { assertSafeOutboundUrl, getSafeHttpAgents, getSafeUndiciDispatcher, resolvePolicyForOAuth, resolvePolicyForServer } from '@nangohq/egress';
 
 import { envs } from '../../env.js';
 
-import type { OutboundUrlPolicy } from '@nangohq/egress';
+import type { OutboundUrlPolicy, ValidateOutboundUrlContext } from '@nangohq/egress';
+import type http from 'node:http';
+import type https from 'node:https';
+import type { buildConnector, Agent as UndiciAgent } from 'undici';
 
 export {
     OutboundUrlError,
@@ -33,4 +36,34 @@ export function getServerOutboundUrlPolicy(): OutboundUrlPolicy {
 
 export function resetServerOutboundUrlPolicyForTests(): void {
     memoizedServerPolicy = null;
+}
+
+let memoizedOAuthPolicy: OutboundUrlPolicy | null = null;
+
+export function getOAuthOutboundUrlPolicy(): OutboundUrlPolicy {
+    if (memoizedOAuthPolicy) {
+        return memoizedOAuthPolicy;
+    }
+    memoizedOAuthPolicy = resolvePolicyForOAuth({
+        proxyBaseUrlOverrideDenylist: envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+        outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY,
+        outboundUrlPolicyOAuth: envs.NANGO_OUTBOUND_URL_POLICY_OAUTH
+    });
+    return memoizedOAuthPolicy;
+}
+
+export function resetOAuthOutboundUrlPolicyForTests(): void {
+    memoizedOAuthPolicy = null;
+}
+
+export async function assertSafeOAuthUrl(url: string, ctx?: ValidateOutboundUrlContext): Promise<URL> {
+    return assertSafeOutboundUrl(url, getOAuthOutboundUrlPolicy(), { context: 'oauth', ...ctx });
+}
+
+export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: https.Agent } {
+    return getSafeHttpAgents(getOAuthOutboundUrlPolicy());
+}
+
+export function getOAuthSafeUndiciDispatcher(connectOverrides?: buildConnector.BuildOptions): UndiciAgent {
+    return getSafeUndiciDispatcher(getOAuthOutboundUrlPolicy(), connectOverrides);
 }

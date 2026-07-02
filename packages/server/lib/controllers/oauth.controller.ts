@@ -10,6 +10,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     accountService,
+    assertSafeOAuthUrl,
     configService,
     connectionService,
     environmentService,
@@ -1088,7 +1089,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
@@ -1694,6 +1695,7 @@ class OAuthController {
 
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
             const interpolatedTokenUrl = makeUrl(tokenUrl, connectionConfig, provider.token_url_skip_encode);
+            await assertSafeOAuthUrl(interpolatedTokenUrl.href);
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(
                     config,
