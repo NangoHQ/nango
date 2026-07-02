@@ -188,6 +188,14 @@ The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
 
 <Note>You can customize the callback URL by updating the "Callback URL" field in the "Environment Settings" tab in the Nango admin.</Note>
 
+By default, the inbound webhook URL (shown under Integrations > [Integration] > Webhooks and registered with providers) is also derived from `NANGO_SERVER_URL`. To route inbound provider webhooks through a separate host, set `NANGO_WEBHOOK_URL`:
+
+```sh
+NANGO_WEBHOOK_URL=<WEBHOOK-INSTANCE-URL>
+```
+
+The resulting webhook URL is `<WEBHOOK-INSTANCE-URL>/webhook/<environment-uuid>/<integration>`. When unset, it falls back to `NANGO_SERVER_URL`. This only affects the inbound webhook URL; the OAuth callback URL stays derived from `NANGO_SERVER_URL`.
+
 <Note>
 If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
 </Note>
