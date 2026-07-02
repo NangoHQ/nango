@@ -1,5 +1,6 @@
 import { errors as osErrors } from '@opensearch-project/opensearch';
 
+import { envs } from '../env.js';
 import { policyMessages, policyOperations } from '../es/schema.js';
 import { logger } from '../utils.js';
 
@@ -9,7 +10,7 @@ import type { Client as OpenSearchClient } from '@opensearch-project/opensearch'
  * OpenSearch Index State Management policies mirroring our Elasticsearch ILM intent.
  * Target: OpenSearch 2.x with the ISM plugin enabled (default in OpenSearch distributions).
  *
- * Messages and operations policies both use a simple hot → delete (15d) flow. Warm/shrink/readonly
+ * Messages and operations policies both use a simple hot → delete flow. Warm/shrink/readonly
  * from Elasticsearch ILM are not replicated here because ISM action shapes differ by OpenSearch
  * version and often fail on managed clusters; advanced tuning can be done via custom policies in-cluster.
  *
@@ -43,7 +44,7 @@ function buildRetentionIsmPolicy(id: string): { id: string; body: Record<string,
         body: {
             policy: {
                 policy_id: id,
-                description: 'Nango logs retention (ISM): delete indices after 15d',
+                description: `Nango logs retention (ISM): delete indices after ${envs.NANGO_LOGS_ES_RETENTION_PERIOD}`,
                 default_state: 'hot',
                 states: [
                     {
@@ -52,7 +53,7 @@ function buildRetentionIsmPolicy(id: string): { id: string; body: Record<string,
                         transitions: [
                             {
                                 state_name: 'delete',
-                                conditions: { min_index_age: '15d' }
+                                conditions: { min_index_age: envs.NANGO_LOGS_ES_RETENTION_PERIOD }
                             }
                         ]
                     },
