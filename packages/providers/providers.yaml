@@ -3262,6 +3262,7 @@ bird:
             title: Subdomain
             description: The subdomain of your Bird API instance
             example: api
+            default_value: api
             suffix: .bird.com
             prefix: https://
             order: 1
