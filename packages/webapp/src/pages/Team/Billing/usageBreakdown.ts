@@ -73,17 +73,15 @@ export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDime
 }
 
 /**
- * Dimensions whose filter values are a small, fully-listed, closed set, so the Filter typeahead
- * never needs free text: `environment_id` (a handful of envs, and the stored value is an id the
- * user can't type) and `success` (just true/false, shown as Success/Failed). Free text on these
- * could only commit a value the backend won't match — a name where it wants an id, or "succ"
- * where it wants "true" — silently yielding an empty chart. Open-ended id/name dimensions
- * (integration, connection, model, …) still allow free text to reach long-tail 'Rest' values.
+ * Dimensions whose values are a small, fully-listed, closed set, so their Filter value pane shows
+ * no search box: `environment_id` (a handful of envs), `success` (true/false), `function_type`
+ * (sync/action/webhook/…), and data-transfer `package` / `callsite` (a fixed handful each). The
+ * rest are open, high-cardinality id/name dimensions where server-side search earns its place.
  */
-const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success']);
+const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
 
-/** Whether the Filter typeahead may commit a typed-but-unlisted value for this dimension. */
-export function allowsFreeTextFilter(dimension: AnyBreakdownDimension): boolean {
+/** Whether the Filter value pane shows a search box for this dimension. */
+export function isSearchableDimension(dimension: AnyBreakdownDimension): boolean {
     return !ENUMERATED_DIMENSIONS.has(dimension);
 }
 
