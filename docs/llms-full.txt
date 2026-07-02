@@ -14529,6 +14529,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `rocketreach` | RocketReach | API_KEY | [docs](https://nango.dev/docs/api-integrations/rocketreach.md) | [connect](https://nango.dev/docs/api-integrations/rocketreach/connect.md) |  | crm |
 | `roller` | Roller | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/roller.md) |  |  | ticketing |
 | `rootly` | Rootly | API_KEY | [docs](https://nango.dev/docs/api-integrations/rootly.md) | [connect](https://nango.dev/docs/api-integrations/rootly/connect.md) |  | dev-tools |
+| `rydership` | RyderShip | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/rydership.md) |  | [setup](https://nango.dev/docs/api-integrations/rydership/how-to-register-your-own-rydership-oauth-app.md) | e-commerce |
 | `rydoo` | Rydoo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/rydoo.md) | [connect](https://nango.dev/docs/api-integrations/rydoo/connect.md) |  | accounting |
 | `sage` | Sage | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/sage.md) |  |  | accounting, erp |
 | `sage-200` | Sage 200 | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sage-200.md) |  | [setup](https://nango.dev/docs/api-integrations/sage-200/how-to-register-your-own-sage-200-oauth-app.md) | accounting, erp |

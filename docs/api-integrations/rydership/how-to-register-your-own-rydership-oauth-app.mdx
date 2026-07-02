@@ -1,0 +1,32 @@
+---
+title: 'How to register your own RyderShip OAuth app'
+sidebarTitle: 'RyderShip Setup'
+description: 'Register an OAuth app with RyderShip and connect it to Nango'
+---
+
+This guide shows you how to register your own app with RyderShip (formerly Whiplash) to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their RyderShip account.
+
+<Steps>
+  <Step title="Request developer access">
+    RyderShip OAuth apps are provisioned by the RyderShip team. Contact your RyderShip account manager (or RyderShip support) to request third-party developer access and an OAuth application for your integration. See [Accessing the RyderShip API as a Third-Party Developer Partner](https://help.whiplash.com/hc/en-us/articles/16397000384411-Accessing-the-RyderShip-API-as-a-Third-Party-Developer-Partner).
+  </Step>
+  <Step title="Provide the Nango callback URL">
+    When your OAuth app is created, provide `https://api.nango.dev/oauth/callback` as the redirect URI (callback URL).
+  </Step>
+  <Step title="Confirm your scopes">
+    Confirm the scopes your application needs with the RyderShip team (for example, `user_manage`). The scopes you request must match the scopes you configure on the integration in Nango.
+  </Step>
+  <Step title="Get your credentials">
+    RyderShip provides your credentials when the OAuth app is created. The **Application ID** they provide is your **Client ID**, and you'll also receive a **Client Secret**. Enter both when configuring the integration in Nango.
+  </Step>
+  <Step title="Pick your environment">
+    When creating a connection in Nango, choose the **Environment** that matches your credentials: `www.getwhiplash.com` for production or `sandbox.whiplash.app` for testing.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Authentication for the V2 API](https://help.whiplash.com/hc/en-us/articles/360050870691-Authentication-for-the-V2-API) and [V2 API OAuth2 Examples](https://help.whiplash.com/hc/en-us/articles/360053541971-V2-API-Oauth2-Examples).
+
+---
