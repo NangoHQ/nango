@@ -68,6 +68,7 @@ const server = http.createServer(app);
 
 server.keepAliveTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT;
 server.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000; //needs to be longer than the keep alive timeout to avoid premature disconnections
+server.requestTimeout = envs.NANGO_SERVER_REQUEST_TIMEOUT;
 // -------
 // Websocket
 const wss = new WebSocketServer({ server, path: getWebsocketsPath() });

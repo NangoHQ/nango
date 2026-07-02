@@ -27,6 +27,7 @@ export const ENVS = z.object({
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
+    NANGO_SERVER_REQUEST_TIMEOUT: z.coerce.number().optional().default(1_800_000), // 30 minutes; covers long deploy operations (O(connections) schedule reconciliation)
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
