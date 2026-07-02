@@ -1,18 +1,11 @@
 import posthog from 'posthog-js';
 
-import storage, { LocalStorageKeys } from '@/utils/local-storage';
-
 export type PlaygroundOpenSource = 'header' | 'connection' | 'integration' | 'function';
 
 type AnalyticsProperties = Record<string, string | number | boolean>;
 
 function track(event: string, properties?: AnalyticsProperties) {
-    const accountId = storage.getItem(LocalStorageKeys.AccountId) as number | undefined;
-
-    posthog?.capture(event, {
-        ...properties,
-        ...(accountId != null ? { account_id: accountId } : {})
-    });
+    posthog?.capture(event, properties);
 }
 
 export function trackPlaygroundOpened(source: PlaygroundOpenSource) {
