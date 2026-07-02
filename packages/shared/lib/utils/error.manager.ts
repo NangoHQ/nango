@@ -68,8 +68,8 @@ class ErrorManager {
         }
     }
 
-    public errRes(res: Response, type: string) {
-        const err = new NangoError(type);
+    public errRes(res: Response, type: string, payload = {}) {
+        const err = new NangoError(type, payload);
         this.errResFromNangoErr(res, err);
     }
 

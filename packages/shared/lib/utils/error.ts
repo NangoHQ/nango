@@ -117,6 +117,10 @@ export class NangoError extends NangoInternalError {
                 this.status = 400;
                 this.message = 'The requested OAuth scopes are invalid. OAuth scopes should be comma separated and not an array';
                 break;
+            case 'oauth2_cc_error':
+                this.status = 502;
+                this.message = 'OAuth2 client credentials token request failed.';
+                break;
 
             case 'invalid_invite_token':
                 this.status = 400;
