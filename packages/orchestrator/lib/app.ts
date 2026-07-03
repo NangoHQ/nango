@@ -82,7 +82,10 @@ try {
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });
-
+    if (envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS > 0) {
+        api.keepAliveTimeout = envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS;
+        api.headersTimeout = envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS + 1000;
+    }
     // --- Close function
     const close = once(() => {
         logger.info('Closing...');

@@ -3,9 +3,12 @@ import { useMemo, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import z from 'zod';
 
+import { FieldDescription, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import { FormControl, FormItem, FormMessage, useFormField } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { cn } from '@/utils/utils';
+
+import type { InputProps } from '@nangohq/design-system';
 
 export const passwordSchema = z
     .string()
@@ -14,7 +17,7 @@ export const passwordSchema = z
     .refine((value) => /[0-9]/.test(value), 'Password must contain at least one number')
     .refine((value) => /[^a-zA-Z0-9]/.test(value), 'Password must contain at least one special character');
 
-export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => {
+export const Password: React.FC<InputProps> = (props) => {
     const { name } = useFormField();
     const { control } = useFormContext();
     const { field, fieldState } = useController({ name, control });
@@ -36,7 +39,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
     return (
         <FormItem>
             <FormControl>
-                <InputGroup className="h-11">
+                <InputGroup>
                     <InputGroupInput
                         {...field}
                         id={field.name}
@@ -57,7 +60,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
                 id="password-requirements"
                 className={cn('flex flex-col gap-1.5 overflow-hidden transition-[max-height] duration-200 ease-out', open ? 'max-h-40' : 'max-h-0 absolute')}
             >
-                <span className="text-body-small-regular text-text-strong">Password must contain:</span>
+                <FieldDescription>Password must contain:</FieldDescription>
                 <Requirement text="At least 12 characters" check={checks.length} />
                 <Requirement text="At least one uppercase letter" check={checks.uppercase} />
                 <Requirement text="At least one number" check={checks.number} />

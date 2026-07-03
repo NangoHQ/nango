@@ -6,7 +6,7 @@ import { mergeFlags } from './plans.js';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
-    it('should only enable RBAC by default on growth, growth-v2, and enterprise', () => {
+    it('should enable RBAC by default on free-uncapped, startup-deal, growth, growth-v2 and enterprise plans', () => {
         expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
@@ -16,12 +16,33 @@ describe('mergeFlags', () => {
         expect(getPlanDefinition('growth')?.flags.has_rbac).toBe(true);
         expect(getPlanDefinition('growth-v2')?.flags.has_rbac).toBe(true);
         expect(getPlanDefinition('enterprise')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('enterprise-cloud-hosted')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('free-uncapped')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('startup-deal')?.flags.has_rbac).toBe(true);
     });
 
-    describe('when downgrading', () => {
+    describe.each([
+        { from: 'starter-v2', to: 'free' },
+        { from: 'growth-v2', to: 'starter-v2' },
+        { from: 'enterprise-cloud-hosted', to: 'free' },
+        { from: 'enterprise-cloud-hosted', to: 'starter-v2' },
+        { from: 'enterprise-cloud-hosted', to: 'growth-v2' },
+        { from: 'enterprise-cloud-hosted', to: 'enterprise' },
+        { from: 'enterprise-cloud-hosted', to: 'free-uncapped' },
+        { from: 'enterprise-cloud-hosted', to: 'startup-deal' },
+        { from: 'free-uncapped', to: 'free' },
+        { from: 'free-uncapped', to: 'starter-v2' },
+        { from: 'free-uncapped', to: 'growth-v2' },
+        { from: 'free-uncapped', to: 'enterprise' },
+        { from: 'free-uncapped', to: 'enterprise-cloud-hosted' },
+        { from: 'free-uncapped', to: 'startup-deal' },
+        { from: 'startup-deal', to: 'free' },
+        { from: 'startup-deal', to: 'free-uncapped' },
+        { from: 'startup-deal', to: 'starter-v2' }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when downgrading from $from to $to', ({ from, to }) => {
         it('should reset all flags to new plan default values, including overrides', () => {
             const currentPlan = makePlan({
-                code: 'starter-v2',
+                code: from,
                 flagOverrides: {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
@@ -29,7 +50,7 @@ describe('mergeFlags', () => {
                     proxy_max: 99_999_999
                 }
             });
-            const newPlanDefinition = getPlanDefinition('free')!;
+            const newPlanDefinition = getPlanDefinition(to)!;
             const newFlags = mergeFlags({
                 currentPlan,
                 newPlanDefinition

@@ -181,12 +181,10 @@ program
     .option('--sync', 'Create a new sync scaffold')
     .option('--action', 'Create a new action scaffold')
     .option('--on-event', 'Create a new on event scaffold')
-    // TODO: add once released (NAN-5943)
-    //.option('--webhook', 'Create a new webhook function scaffold')
     .argument('[integration]', 'Integration name, e.g. "google-calendar"')
     .argument('[name]', 'Name of the sync/action, e.g. "calendar-events"')
     .action(async function (this: Command) {
-        const { debug, sync, action, onEvent, webhook, interactive } = this.opts();
+        const { debug, sync, action, onEvent, interactive } = this.opts();
         let [integration, name] = this.args;
         const absolutePath = process.cwd();
 
@@ -195,7 +193,7 @@ program
 
         try {
             const ensure = new Ensure(interactive);
-            const functionType = await ensure.functionType({ sync, action, onEvent, webhook });
+            const functionType = await ensure.functionType({ sync, action, onEvent });
 
             let integrations: string[] = [];
 

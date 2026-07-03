@@ -1,41 +1,18 @@
-import { URL } from 'url';
-
 import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { externalWebhookService } from '@nangohq/shared';
-import { isBaseUrlOverrideDenied, normalizeDenylist, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../../../env.js';
+import { webhookUrlSchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 
-const webhookUrlDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
-
-const urlValidation = z
-    .union([z.url(), z.literal('')])
-    .optional()
-    .refine(
-        (url) => {
-            if (!url || url.trim() === '') return true;
-            const inputUrl = new URL(url);
-            return !inputUrl.host.endsWith('nango.dev');
-        },
-        { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
-    )
-    .refine(
-        (url) => {
-            if (!url || url.trim() === '') return true;
-            return !isBaseUrlOverrideDenied(url, webhookUrlDenylist);
-        },
-        { message: 'This webhook URL is not allowed.' }
-    );
-
 const validation = z
     .object({
-        primary_url: urlValidation,
-        secondary_url: urlValidation,
+        primary_url: webhookUrlSchema,
+        secondary_url: webhookUrlSchema,
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),

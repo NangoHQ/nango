@@ -85,6 +85,7 @@ import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/ap
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
+    GetFunctionCode,
     GetIntegration,
     GetIntegrationFlows,
     GetPublicFunctionCode,
@@ -206,6 +207,7 @@ export type PrivateApiEndpoints =
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions
+    | GetFunctionCode
     | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates

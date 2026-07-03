@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { Button } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Badge } from '@/components/ui/Badge';
@@ -135,7 +135,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
 
     return (
         <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-6">
-            <label className="text-text-strong text-label-large">Integration</label>
+            <FieldLabel>Integration</FieldLabel>
             <ComboboxSelect
                 value={playgroundIntegration || ''}
                 onValueChange={handleIntegrationChange}
@@ -163,7 +163,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 }
             />
 
-            <label className="text-text-strong text-label-large">Connection</label>
+            <FieldLabel>Connection</FieldLabel>
             <ComboboxSelect
                 value={playgroundConnection || ''}
                 onValueChange={handleConnectionChange}
@@ -193,7 +193,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 }
             />
 
-            <label className="text-text-strong text-label-large">Function</label>
+            <FieldLabel>Function</FieldLabel>
             <ComboboxSelect
                 value={playgroundFunction || ''}
                 onValueChange={handleFunctionChange}

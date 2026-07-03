@@ -7,6 +7,9 @@
     "include": ["lib/**/*"],
     "references": [
         {
+            "path": "../egress"
+        },
+        {
             "path": "../node-client"
         },
         {

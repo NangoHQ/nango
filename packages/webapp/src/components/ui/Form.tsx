@@ -4,11 +4,12 @@ import { Slot } from '@radix-ui/react-slot';
 import * as React from 'react';
 import { Controller, FormProvider, useFormContext, useFormState } from 'react-hook-form';
 
-import { Label } from '@/components/ui/Label';
-import { cn } from '@/utils/utils';
+import { Field, FieldDescription, FieldError, FieldLabel } from '@nangohq/design-system';
 
-import type * as LabelPrimitive from '@radix-ui/react-label';
 import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
+
+// Thin react-hook-form adapter over the design-system Field family. The DS owns all presentation
+// and tokens; this file only wires RHF state (errors, ids, aria) into Field/FieldLabel/FieldError.
 
 const Form = FormProvider;
 
@@ -57,20 +58,20 @@ interface FormItemContextValue {
 
 const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
-function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
+function FormItem({ ...props }: React.ComponentProps<typeof Field>) {
     const id = React.useId();
 
     return (
         <FormItemContext.Provider value={{ id }}>
-            <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
+            <Field data-slot="form-item" {...props} />
         </FormItemContext.Provider>
     );
 }
 
-function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
+function FormLabel({ ...props }: React.ComponentProps<typeof FieldLabel>) {
     const { error, formItemId } = useFormField();
 
-    return <Label data-slot="form-label" data-error={!!error} className={cn(className)} htmlFor={formItemId} {...props} />;
+    return <FieldLabel data-slot="form-label" data-error={!!error} htmlFor={formItemId} {...props} />;
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
@@ -87,24 +88,24 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
     );
 }
 
-function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
+function FormDescription({ ...props }: React.ComponentProps<typeof FieldDescription>) {
     const { formDescriptionId } = useFormField();
 
-    return <p data-slot="form-description" id={formDescriptionId} className={cn('!text-text-muted text-body-small-regular', className)} {...props} />;
+    return <FieldDescription data-slot="form-description" id={formDescriptionId} {...props} />;
 }
 
-function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
+function FormMessage({ children, ...props }: React.ComponentProps<typeof FieldError>) {
     const { error, formMessageId } = useFormField();
-    const body = error ? String(error?.message ?? '') : props.children;
+    const body = error ? String(error?.message ?? '') : children;
 
     if (!body) {
         return null;
     }
 
     return (
-        <p data-slot="form-message" id={formMessageId} className={cn('!text-text-danger text-body-small-regular', className)} {...props}>
+        <FieldError data-slot="form-message" id={formMessageId} {...props}>
             {body}
-        </p>
+        </FieldError>
     );
 }
 

@@ -3,12 +3,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { InputGroup, InputGroupInput, InputGroupTextarea } from '@/components/ui/InputGroup';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 

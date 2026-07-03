@@ -57,7 +57,6 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 syncs: parsedSyncs,
                 actions: parseActions,
                 onEventScripts: parsedOnEventScripts,
-                functions: [],
                 ...(postConnectionScripts.length > 0 ? { postConnectionScripts } : {})
             };
 

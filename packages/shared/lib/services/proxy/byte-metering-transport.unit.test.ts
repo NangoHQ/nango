@@ -58,7 +58,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         });
 
         const { onBytes, promise } = onBytesAwaitable();
-        const transport = createMeteringTransport(onBytes);
+        const transport = createMeteringTransport({ onBytes });
         const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'GET', path: '/' }, (res) => {
             void drainResponse(res);
         });
@@ -80,7 +80,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         });
 
         const { onBytes, promise } = onBytesAwaitable();
-        const transport = createMeteringTransport(onBytes);
+        const transport = createMeteringTransport({ onBytes });
         const req = transport.request(
             {
                 host: '127.0.0.1',
@@ -108,7 +108,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         });
 
         const { onBytes, promise } = onBytesAwaitable();
-        const transport = createMeteringTransport(onBytes);
+        const transport = createMeteringTransport({ onBytes });
         const headers = { 'x-custom-header': 'somevalue', accept: 'application/json' };
         const headerBytes = Buffer.byteLength(
             Object.entries(headers)
@@ -134,7 +134,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         });
 
         const { onBytes, promise } = onBytesAwaitable();
-        const transport = createMeteringTransport(onBytes);
+        const transport = createMeteringTransport({ onBytes });
         const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'GET', path: '/' }, (res) => {
             void drainResponse(res);
         });
@@ -154,7 +154,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         });
 
         const { onBytes, promise } = onBytesAwaitable();
-        const transport = createMeteringTransport(onBytes);
+        const transport = createMeteringTransport({ onBytes });
         const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'GET', path: '/' }, (res) => {
             void drainResponse(res);
         });
@@ -181,7 +181,7 @@ describe('createMeteringTransport (socket bytes)', () => {
             hops.push({ ...bytes });
             if (hops.length === 2) onBytes(bytes);
         };
-        const transport = createMeteringTransport(wrapped);
+        const transport = createMeteringTransport({ onBytes: wrapped });
 
         const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'GET', path: '/' }, (res) => {
             void drainResponse(res);
@@ -190,6 +190,29 @@ describe('createMeteringTransport (socket bytes)', () => {
 
         await promise;
         expect(hops).toHaveLength(2);
+    });
+
+    it('enforces the maxRedirects cap passed to the transport', async () => {
+        // Axios does not copy config.maxRedirects into options.maxRedirects for custom transports, so the
+        // cap must be applied by the transport itself; otherwise follow-redirects defaults to 21.
+        let hits = 0;
+        handle = await startServer((_req, res) => {
+            hits++;
+            res.writeHead(302, { location: '/next' });
+            res.end();
+        });
+
+        const transport = createMeteringTransport({ onBytes: () => {}, maxRedirects: 2 });
+        await expect(
+            axios.request({
+                url: `http://127.0.0.1:${handle.port}/`,
+                method: 'GET',
+                transport: transport as any
+            })
+        ).rejects.toMatchObject({ code: 'ERR_FR_TOO_MANY_REDIRECTS' });
+
+        // Initial request + 2 followed redirects = 3 hits, then capped (well under follow-redirects' default of 21).
+        expect(hits).toBe(3);
     });
 
     it('fires exactly once on connect failure', async () => {
@@ -204,7 +227,7 @@ describe('createMeteringTransport (socket bytes)', () => {
             fires.push(bytes);
             onBytes(bytes);
         };
-        const transport = createMeteringTransport(wrapped);
+        const transport = createMeteringTransport({ onBytes: wrapped });
         const req = transport.request({ host: '127.0.0.1', port, method: 'GET', path: '/' }, () => {});
         req.on('error', () => {});
         req.end();
@@ -220,7 +243,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         const { port } = handle;
 
         const fires: MeteredBytes[] = [];
-        const transport = createMeteringTransport((c) => fires.push({ ...c }));
+        const transport = createMeteringTransport({ onBytes: (c) => fires.push({ ...c }) });
         // Destroy before req.end() so no HTTP headers are flushed — sent and received both remain 0.
         const req = transport.request({ host: '127.0.0.1', port, method: 'GET', path: '/' }, () => {});
         req.destroy();
@@ -243,7 +266,7 @@ describe('createMeteringTransport (socket bytes)', () => {
 
         const agent = new http.Agent({ keepAlive: true });
         const hops: MeteredBytes[] = [];
-        const transport = createMeteringTransport((c) => hops.push({ ...c }));
+        const transport = createMeteringTransport({ onBytes: (c) => hops.push({ ...c }) });
         const { port } = handle;
 
         for (let i = 0; i < 2; i++) {
@@ -289,7 +312,7 @@ describe('createMeteringTransport (socket bytes)', () => {
                 }
             };
 
-            const transport = createMeteringTransport(() => {}, userBeforeRedirect);
+            const transport = createMeteringTransport({ onBytes: () => {}, beforeRedirect: userBeforeRedirect });
             try {
                 const res = await axios.request({
                     url: `http://127.0.0.1:${handle.port}/`,
@@ -317,7 +340,7 @@ describe('createMeteringTransport (socket bytes)', () => {
                 res.end();
             });
 
-            const transport = createMeteringTransport(() => {});
+            const transport = createMeteringTransport({ onBytes: () => {} });
             try {
                 const res = await axios.request({
                     url: `http://127.0.0.1:${handle.port}/`,
@@ -340,7 +363,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         const agent = new http.Agent({ keepAlive: true });
 
         const fires: MeteredBytes[] = [];
-        const transport = createMeteringTransport((c) => fires.push({ ...c }));
+        const transport = createMeteringTransport({ onBytes: (c) => fires.push({ ...c }) });
         const { port } = handle;
 
         // First request — establishes the keep-alive connection and accumulates socket bytes.
@@ -373,7 +396,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         });
 
         const fires: MeteredBytes[] = [];
-        const transport = createMeteringTransport((c) => fires.push({ ...c }));
+        const transport = createMeteringTransport({ onBytes: (c) => fires.push({ ...c }) });
         const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'POST', path: '/' }, (res) => {
             void drainResponse(res);
         });

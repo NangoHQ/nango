@@ -13,7 +13,7 @@ export const ConnectionCount = ({ className, ...rest }: ConnectionCountProps) =>
     const { data: connectionsCount, loading: connectionsCountLoading } = useConnectionsCount(env);
 
     if (connectionsCountLoading) {
-        return <Skeleton className={cn('w-48 h-6', className)} />;
+        return <Skeleton className={cn('w-48 h-5', className)} />;
     }
 
     const { total, withError } = connectionsCount?.data ?? { total: 0, withError: 0 };
@@ -21,7 +21,7 @@ export const ConnectionCount = ({ className, ...rest }: ConnectionCountProps) =>
     return (
         <div className={cn('inline-flex items-center gap-1.5', className)} {...rest}>
             <Dot variant="error" />
-            <span className="text-text-muted text-body-medium-medium">
+            <span className="text-text-muted text-body-small-regular">
                 {total} connections ({withError} errored)
             </span>
         </div>

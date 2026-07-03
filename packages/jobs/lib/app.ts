@@ -40,6 +40,10 @@ try {
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
     const srv = server.listen(port);
+    if (envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS > 0) {
+        srv.keepAliveTimeout = envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS;
+        srv.headersTimeout = envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS + 1000;
+    }
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
     const invocationsProcessor = new LambdaInvocationsProcessor();
