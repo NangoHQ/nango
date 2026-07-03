@@ -23,7 +23,8 @@ const rateLimiterSize: Record<DBPlan['api_rate_limit_size'], number> = {
     xl: defaultLimit * 10,
     '2xl': defaultLimit * 25,
     '3xl': defaultLimit * 50,
-    '4xl': defaultLimit * 75
+    '4xl': defaultLimit * 75,
+    '5xl': defaultLimit * 100
 };
 const limiters = new Map<DBPlan['api_rate_limit_size'], RateLimiterAbstract>();
 
