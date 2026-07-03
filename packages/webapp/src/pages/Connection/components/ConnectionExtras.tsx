@@ -1,8 +1,9 @@
 import { Braces } from 'lucide-react';
 
+import { FieldLabel } from '@nangohq/design-system';
+
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Label } from '@/components/ui/Label';
 
 import type { ConnectionConfig, Metadata } from '@nangohq/types';
 
@@ -26,13 +27,13 @@ export const ConnectionExtras = ({
         <>
             {config.oauth_scopes_override && (
                 <div className="flex flex-col gap-2">
-                    <Label>OAuth scopes override</Label>
+                    <FieldLabel>OAuth scopes override</FieldLabel>
                     <ScopesInput scopesString={config.oauth_scopes_override.join(',')} placeholder="Scopes override" readOnly />
                 </div>
             )}
 
             <div className="flex flex-col gap-2">
-                <Label>Connection configuration</Label>
+                <FieldLabel>Connection configuration</FieldLabel>
                 <CodeBlock
                     language="json"
                     displayLanguage="JSON"
@@ -42,7 +43,7 @@ export const ConnectionExtras = ({
             </div>
 
             <div className="flex flex-col gap-2">
-                <Label>Connection metadata</Label>
+                <FieldLabel>Connection metadata</FieldLabel>
                 <CodeBlock
                     language="json"
                     displayLanguage="JSON"
@@ -53,7 +54,7 @@ export const ConnectionExtras = ({
 
             {rawTokenResponse !== null && (
                 <div className="flex flex-col gap-2">
-                    <Label>Raw token response</Label>
+                    <FieldLabel>Raw token response</FieldLabel>
                     <CodeBlock
                         secret={shouldBlurRawTokenResponse}
                         language="json"

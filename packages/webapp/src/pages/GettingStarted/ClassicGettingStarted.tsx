@@ -1,5 +1,5 @@
-import { IconChevronRight, IconLockOpen2, IconPencil, IconPlayerPlay, IconRefresh, IconTool } from '@tabler/icons-react';
 import { useScript } from '@uidotdev/usehooks';
+import { ChevronRight, LockOpen, Pencil, Play, RefreshCw, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -96,7 +96,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     <img src="/images/demo_thumbnail.png" alt="" className="rounded-lg" />
                     <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center z-10 text-text-strong">
                         <div className="transition-transform bg-surface-panel p-2 rounded-full shadow-[0_1px_100px_50px_black] group-hover:animate-pulse">
-                            <IconPlayerPlay size={50} fill="#000" />
+                            <Play size={50} fill="#000" />
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Authorize</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconLockOpen2 stroke={1} size={18} />
+                            <LockOpen strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -124,7 +124,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>
@@ -142,7 +142,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Read data</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconRefresh stroke={1} size={18} />
+                            <RefreshCw strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -150,7 +150,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>
@@ -168,7 +168,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Write data</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconPencil stroke={1} size={18} />
+                            <Pencil strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -176,7 +176,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>
@@ -194,7 +194,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Build custom integrations</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconTool stroke={1} size={18} />
+                            <Wrench strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -202,7 +202,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>

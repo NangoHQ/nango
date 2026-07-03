@@ -3,7 +3,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -13,7 +13,6 @@ import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
@@ -124,7 +123,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
             ) : (
                 <>
                     <div className="flex items-center gap-1.5">
-                        <InputGroup className="h-10">
+                        <InputGroup>
                             <InputGroupInput
                                 type="text"
                                 placeholder="Search functions"
@@ -145,7 +144,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button type="button" size="xl">
+                                <Button type="button" size="lg">
                                     <Plus /> Add
                                 </Button>
                             </DropdownMenuTrigger>

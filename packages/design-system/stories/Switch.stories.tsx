@@ -1,5 +1,5 @@
-import { Label } from '@/components/ui/Label';
 import { Switch } from '@/components/ui/Switch';
+import { FieldLabel } from '../src/components/ui/field';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -15,15 +15,15 @@ export const Default: Story = {
         <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
                 <Switch id="sw-off" />
-                <Label htmlFor="sw-off">Off</Label>
+                <FieldLabel htmlFor="sw-off">Off</FieldLabel>
             </div>
             <div className="flex items-center gap-2">
                 <Switch id="sw-on" defaultChecked />
-                <Label htmlFor="sw-on">On</Label>
+                <FieldLabel htmlFor="sw-on">On</FieldLabel>
             </div>
             <div className="flex items-center gap-2">
                 <Switch id="sw-disabled" disabled />
-                <Label htmlFor="sw-disabled">Disabled</Label>
+                <FieldLabel htmlFor="sw-disabled">Disabled</FieldLabel>
             </div>
         </div>
     )

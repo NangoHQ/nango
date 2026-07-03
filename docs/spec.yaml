@@ -68,7 +68,7 @@ paths:
     /providers/{provider}/templates:
         get:
             summary: List provider templates
-            description: Returns the template functions available in the catalog for a provider. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the template functions available in the catalog for a provider. Requires a valid API key (no specific scope).
             parameters:
                 - name: provider
                   in: path
@@ -94,8 +94,6 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
-                '403':
-                    $ref: '#/components/responses/Forbidden'
     /integrations:
         get:
             summary: List integrations
@@ -143,8 +141,20 @@ paths:
                                 display_name:
                                     type: string
                                     description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
+                                integration_config:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Provider-specific configuration for providers that declare an
+                                        `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
+                                        Keys and required fields depend on the provider; values are validated against
+                                        the provider schema.
 
             responses:
                 '200':
@@ -266,8 +276,19 @@ paths:
                                 display_name:
                                     type: string
                                     description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks received for this integration.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
+                                integration_config:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Provider-specific configuration for providers that declare an
+                                        `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
+                                        Only the fields you pass are updated.
             responses:
                 '200':
                     description: Successfully updated an integration
@@ -502,7 +523,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}/code:
         get:
             summary: Get a function's source code
-            description: Returns the TypeScript source code of a function for a given integration.
+            description: Returns the TypeScript source code of a function for a given integration. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -545,6 +566,8 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
                 '409':

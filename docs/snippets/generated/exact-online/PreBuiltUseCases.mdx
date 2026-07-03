@@ -1,11 +1,40 @@
-### Customers
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `customers` | Fetches all customers in Exact Online | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/customers.ts) |
-
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `payments` | Fetches all payments in Exact Online | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/payments.ts) |
+| `create-contact` | Create a new contact linked to an account | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/create-contact.ts) |
+| `create-customer` | Create a new customer/account in Exact Online. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/create-customer.ts) |
+| `create-invoice` | Create a new sales invoice. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/create-invoice.ts) |
+| `create-purchase-invoice` | Create a new purchase invoice/entry | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/create-purchase-invoice.ts) |
+| `create-sales-order` | Create a new sales order | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/create-sales-order.ts) |
+| `delete-customer` | Delete a customer/account by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/delete-customer.ts) |
+| `get-account` | Retrieve a single CRM account by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/get-account.ts) |
+| `get-contact` | Retrieve a single contact by ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/get-contact.ts) |
+| `list-accounts` | List CRM accounts (customers and/or suppliers) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-accounts.ts) |
+| `list-divisions` | List all divisions/administrations accessible to the authenticated user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-divisions.ts) |
+| `list-document-attachments` | List document attachment metadata. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-document-attachments.ts) |
+| `list-documents` | List documents (invoice PDFs, attachments) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-documents.ts) |
+| `list-financial-transactions` | List financial transaction headers. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-financial-transactions.ts) |
+| `list-gl-accounts` | List general ledger accounts. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-gl-accounts.ts) |
+| `list-item-groups` | List logistics item groups. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-item-groups.ts) |
+| `list-items` | List logistics items/products. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-items.ts) |
+| `list-journals` | List financial journals | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-journals.ts) |
+| `list-payments` | List outgoing payments from the cashflow module. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-payments.ts) |
+| `list-sales-invoices` | List sales invoices | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-sales-invoices.ts) |
+| `list-sales-orders` | List sales orders. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-sales-orders.ts) |
+| `list-transaction-lines` | List financial transaction line details including amounts. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-transaction-lines.ts) |
+| `list-vat-codes` | List VAT/tax codes. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/list-vat-codes.ts) |
+| `update-contact` | Update an existing contact. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/update-contact.ts) |
+| `update-invoice` | Update a sales invoice (only Status 20 = Open invoices) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/actions/update-invoice.ts) |
+| `contacts` | Sync CRM contacts with incremental updates via Modified timestamp | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/contacts.ts) |
+| `customers` | Sync CRM accounts (customers and suppliers) with incremental updates via Modified timestamp. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/customers.ts) |
+| `divisions` | Sync divisions/administrations as full snapshot | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/divisions.ts) |
+| `document-attachments` | Sync document attachment metadata as full snapshot | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/document-attachments.ts) |
+| `documents` | Sync document metadata (invoices, files) with incremental updates. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/documents.ts) |
+| `financial-transactions` | Sync financial transaction headers with date-window checkpoints | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/financial-transactions.ts) |
+| `gl-accounts` | Sync general ledger accounts as full snapshot. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/gl-accounts.ts) |
+| `item-groups` | Sync item groups as full snapshot (small static dataset). | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/item-groups.ts) |
+| `items` | Sync logistics items/products with incremental updates. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/items.ts) |
+| `journals` | Sync financial journals as full snapshot | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/journals.ts) |
+| `payments` | Sync outgoing payments from the cashflow module. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/payments.ts) |
+| `sales-invoices` | Sync sales invoices with incremental updates via Modified timestamp | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/exact-online/syncs/sales-invoices.ts) |

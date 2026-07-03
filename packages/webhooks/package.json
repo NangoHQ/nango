@@ -15,6 +15,7 @@
     },
     "keywords": [],
     "dependencies": {
+        "@nangohq/egress": "file:../egress",
         "@nangohq/logs": "file:../logs",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",

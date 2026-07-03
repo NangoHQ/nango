@@ -3,10 +3,9 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useManagedEmailVerification, useManagedEmailVerificationAPI } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
@@ -77,7 +76,7 @@ export const ManagedEmailVerification: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
-                <InputGroup className="h-11">
+                <InputGroup>
                     <InputGroupInput
                         value={code}
                         onChange={(event) => setCode(event.target.value)}
@@ -88,7 +87,7 @@ export const ManagedEmailVerification: React.FC = () => {
                     />
                 </InputGroup>
 
-                <Button type="submit" size="xl" loading={isPending} disabled={code.trim().length < 6}>
+                <Button type="submit" size="lg" loading={isPending} disabled={code.trim().length < 6}>
                     Verify and continue
                 </Button>
             </form>

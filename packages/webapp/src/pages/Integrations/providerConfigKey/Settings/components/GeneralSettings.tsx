@@ -3,14 +3,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
-import { Label } from '@/components/ui/Label';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
@@ -80,7 +79,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
         <div className="flex flex-col gap-10">
             {/* Display name */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="display_name">Display name</Label>
+                <FieldLabel htmlFor="display_name">Display name</FieldLabel>
                 <EditableInput
                     initialValue={integration.display_name || template.display_name}
                     onSave={(value) => onSave({ displayName: value })}
@@ -91,7 +90,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
 
             {/* Integration ID */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="unique_key">Integration ID</Label>
+                <FieldLabel htmlFor="unique_key">Integration ID</FieldLabel>
                 <EditableInput
                     initialValue={integration.unique_key}
                     hintText="Must only contain letters, numbers, underscores and dashes."
@@ -122,7 +121,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
             {template.webhook_routing_script && (
                 <>
                     <div className="flex gap-5 items-center">
-                        <Label htmlFor="webhook_forwarding">Webhook Forwarding</Label>
+                        <FieldLabel htmlFor="webhook_forwarding">Webhook Forwarding</FieldLabel>
                         <PermissionGate asChild condition={canEdit}>
                             {(allowed) => (
                                 <div className="flex items-center">
@@ -139,7 +138,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     {/* Webhook URL */}
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">
-                            <Label htmlFor="webhook_url">Webhook URL</Label>
+                            <FieldLabel htmlFor="webhook_url">Webhook URL</FieldLabel>
                             <InfoTooltip>
                                 Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks
                             </InfoTooltip>
@@ -156,7 +155,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     {meta.webhookSecret && (
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2 items-center">
-                                <Label htmlFor="webhook_secret">Webhook Secret</Label>
+                                <FieldLabel htmlFor="webhook_secret">Webhook Secret</FieldLabel>
                                 <InfoTooltip>Input this secret into the &quot;Webhook secret (optional)&quot; field in the Webhook section</InfoTooltip>
                             </div>
                             <InputGroup>
@@ -172,7 +171,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     {template.webhook_user_defined_secret && (
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2 items-center">
-                                <Label htmlFor="incoming_webhook_secret">Webhook Secret</Label>
+                                <FieldLabel htmlFor="incoming_webhook_secret">Webhook Secret</FieldLabel>
                                 <InfoTooltip>Obtain the Webhook Secret from on the developer portal of the Integration Provider</InfoTooltip>
                             </div>
                             <EditableInput

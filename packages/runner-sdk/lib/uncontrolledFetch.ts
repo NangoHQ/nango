@@ -1,15 +1,30 @@
-import { getBaseUrlOverrideDenylistFromEnv, isBaseUrlOverrideDenied } from './baseUrlOverrideDenylist.js';
+import { Agent } from 'undici';
+
+import { getRunnerPolicyFromEnv, getSafeLookup, validateOutboundUrlAsync } from '@nangohq/egress';
+
 import { ActionError } from './errors.js';
 
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { HTTP_METHOD } from '@nangohq/types';
+import type { LookupFunction } from 'node:net';
+import type { Dispatcher } from 'undici';
 
-const UNCONTROLLED_FETCH_MAX_REDIRECTS = 5;
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
-const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
 
 const makeActionError = (code: string, message: string) => {
     return new ActionError({ code, message });
 };
+
+const safeDispatchers = new WeakMap<OutboundUrlPolicy, Dispatcher>();
+
+function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
+    let dispatcher = safeDispatchers.get(policy);
+    if (!dispatcher) {
+        dispatcher = new Agent({ connect: { lookup: getSafeLookup(policy) as unknown as LookupFunction } });
+        safeDispatchers.set(policy, dispatcher);
+    }
+    return dispatcher;
+}
 
 export interface UncontrolledFetchOptions {
     url: URL;
@@ -20,21 +35,24 @@ export interface UncontrolledFetchOptions {
 
 export async function executeUncontrolledFetch(
     options: UncontrolledFetchOptions,
-    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void
+    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void,
+    outboundPolicy?: OutboundUrlPolicy
 ): Promise<Response> {
     const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
         if (params.bytesSent > 0 || params.bytesReceived > 0) onBytes(params);
     };
 
-    const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
+    const policy = outboundPolicy ?? getRunnerPolicyFromEnv();
+    const dispatcher = getSafeDispatcher(policy);
 
-    const throwIfDenied = (absoluteUrl: string): void => {
-        if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+    const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
+        const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
+        if (!result.ok) {
             throw makeActionError('url_not_allowed', 'This URL is not allowed by server configuration.');
         }
     };
 
-    throwIfDenied(options.url.toString());
+    await assertOutboundUrlAllowed(options.url.toString());
 
     let currentUrl = new URL(options.url.href);
     let method: HTTP_METHOD = options.method || 'GET';
@@ -42,11 +60,11 @@ export async function executeUncontrolledFetch(
     const headerBag = new Headers(options.headers);
 
     for (let redirectsFollowed = 0; ; redirectsFollowed++) {
-        const props: RequestInit = {
+        const props: RequestInit & { dispatcher?: Dispatcher } = {
             headers: new Headers(headerBag),
             method,
-            redirect: 'manual'
-            // TODO: use agent
+            redirect: 'manual',
+            dispatcher
         };
 
         if (body) {
@@ -87,11 +105,17 @@ export async function executeUncontrolledFetch(
             return response;
         }
 
+        // maxRedirects === 0 means "don't follow redirects". Match axios/proxy semantics and return the
+        // 3XX response as-is rather than treating it as an error (axios uses the plain transport in this case).
+        if (policy.maxRedirects === 0) {
+            return response;
+        }
+
         // We're about to follow the redirect; we won't return this response, so cancel its body.
         void response.body?.cancel();
 
-        if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
-            throw makeActionError('too_many_redirects', `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`);
+        if (redirectsFollowed >= policy.maxRedirects) {
+            throw makeActionError('too_many_redirects', `Exceeded maximum of ${policy.maxRedirects} redirects.`);
         }
 
         let nextUrl: URL;
@@ -101,12 +125,12 @@ export async function executeUncontrolledFetch(
             throw makeActionError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
         }
 
-        // Native fetch rejects redirects to non-HTTP(S) schemes.
-        if (!ALLOWED_REDIRECT_PROTOCOLS.has(nextUrl.protocol)) {
+        // Reject redirects to schemes not permitted by the policy (defaults to http/https).
+        if (!policy.allowedSchemes.has(nextUrl.protocol)) {
             throw makeActionError('invalid_redirect', 'Redirect Location must use http: or https:.');
         }
 
-        throwIfDenied(nextUrl.toString());
+        await assertOutboundUrlAllowed(nextUrl.toString());
 
         // Native fetch strips sensitive headers when redirecting to a different origin.
         // Because we follow redirects manually, we must replicate that to avoid credential leaks.

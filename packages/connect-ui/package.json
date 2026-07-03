@@ -7,7 +7,8 @@
         "dev": "vite --port ${NANGO_CONNECT_UI_PORT:-3009}",
         "build": "tsc -b --noCheck && vite build",
         "preview": "vite preview",
-        "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}"
+        "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}",
+        "test": "vitest run"
     },
     "dependencies": {
         "serve": "14.2.6"
@@ -19,7 +20,6 @@
         "@radix-ui/react-label": "2.1.1",
         "@radix-ui/react-select": "2.2.6",
         "@radix-ui/react-slot": "1.1.1",
-        "@tabler/icons-react": "3.21.0",
         "@tailwindcss/postcss": "4.3.1",
         "@tailwindcss/vite": "4.3.1",
         "@tanstack/react-query": "5.65.1",
@@ -27,11 +27,14 @@
         "@types/react": "18.3.3",
         "@types/react-dom": "18.3.0",
         "@vitejs/plugin-react-swc": "4.3.1",
+        "@vitest/browser-playwright": "4.1.8",
+        "axe-core": "4.12.0",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
         "focus-trap-react": "12.0.2",
         "globals": "15.14.0",
         "lucide-react": "0.542.0",
+        "playwright": "1.61.0",
         "postcss": "8.5.14",
         "react": "18.3.1",
         "react-dom": "18.3.1",
@@ -44,6 +47,8 @@
         "typescript": "5.8.3",
         "vite": "8.0.16",
         "vite-plugin-svgr": "5.2.0",
+        "vitest": "4.1.8",
+        "vitest-browser-react": "2.2.0",
         "zod": "4.0.5",
         "zustand": "5.0.3"
     }

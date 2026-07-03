@@ -14,9 +14,8 @@ type Story = StoryObj<typeof meta>;
 
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-// 'xl' (40px) is a deprecated migration-only size (flagged in the "All sizes" story).
-const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
-// IconButton supports 2xs (20px) through lg; xl is not offered for icon buttons.
+const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
+// IconButton supports 2xs (20px) through lg.
 const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 export const AllVariants: Story = {
@@ -51,10 +50,6 @@ export const AllSizes: Story = {
     name: 'All sizes',
     render: () => (
         <div className="flex flex-col gap-10">
-            <div className="max-w-2xl rounded-ds-sm border-ds-1 border-status-warning-border bg-status-warning-bg px-3 py-2 text-ds-sm text-status-warning-text">
-                <p className="font-ds-medium text-status-warning-strong">xl is deprecated</p>
-                <p>xl (40px) exists only to migrate legacy 40px webapp buttons. Use lg for new buttons.</p>
-            </div>
             {SIZES.map((size) => (
                 <div key={size} className="flex items-center gap-6">
                     <span className="text-ds-xs text-text-secondary w-12 shrink-0">{size}</span>

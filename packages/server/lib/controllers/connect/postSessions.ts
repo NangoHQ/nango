@@ -6,7 +6,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { buildTagsFromEndUser, configService, EndUserMapper } from '@nangohq/shared';
 import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -35,7 +35,8 @@ export const bodySchema = z
                         authorization_params: z.record(z.string(), z.string()).optional(),
                         connection_config: z
                             .looseObject({
-                                oauth_scopes_override: z.string().optional()
+                                oauth_scopes_override: z.string().optional(),
+                                webhook_url: webhookUrlSchema
                             })
                             .optional()
                     })

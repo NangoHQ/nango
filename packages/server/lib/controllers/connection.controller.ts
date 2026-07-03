@@ -10,8 +10,9 @@ import {
     githubAppClient,
     NangoError
 } from '@nangohq/shared';
-import { flags } from '@nangohq/utils';
+import { flags, zodErrorToHTTP } from '@nangohq/utils';
 
+import { webhookUrlSchema } from '../helpers/validation.js';
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -178,6 +179,12 @@ class ConnectionController {
 
             if (!provider_config_key) {
                 errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            const webhookUrlValidation = webhookUrlSchema.safeParse(connection_config?.webhook_url);
+            if (!webhookUrlValidation.success) {
+                res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(webhookUrlValidation.error) } });
                 return;
             }
 

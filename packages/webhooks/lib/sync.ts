@@ -4,10 +4,11 @@ import utc from 'dayjs/plugin/utc.js';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { metrics, Ok } from '@nangohq/utils';
 
-import { deliver, shouldSend } from './utils.js';
+import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type {
     CheckpointRange,
+    ConnectionConfig,
     ConnectionJobs,
     DBAPISecret,
     DBEnvironment,
@@ -32,6 +33,7 @@ export const sendSync = async ({
     account,
     providerConfig,
     webhookSettings,
+    connectionConfig,
     syncConfig,
     syncVariant,
     model,
@@ -48,6 +50,7 @@ export const sendSync = async ({
     account: Pick<DBTeam, 'id' | 'name'>;
     providerConfig: IntegrationConfig;
     webhookSettings: DBExternalWebhook | null;
+    connectionConfig: Pick<ConnectionConfig, 'webhook_url'> | null;
     syncConfig: Pick<DBSyncConfig, 'id' | 'sync_name' | 'version'>;
     syncVariant: string;
     model: string;
@@ -62,7 +65,9 @@ export const sendSync = async ({
         return Ok(undefined);
     }
 
-    if (!shouldSend({ success, type: 'sync', webhookSettings })) {
+    const settings = resolveWebhookSettings(webhookSettings, connectionConfig);
+
+    if (!shouldSend({ success, type: 'sync', webhookSettings: settings })) {
         return Ok(undefined);
     }
 
@@ -101,7 +106,7 @@ export const sendSync = async ({
         const noChanges =
             responseResults?.added === 0 && responseResults?.updated === 0 && (responseResults.deleted === 0 || responseResults.deleted === undefined);
 
-        if (!webhookSettings.on_sync_completion_always && noChanges) {
+        if (!settings.on_sync_completion_always && noChanges) {
             void logCtx.info(`There were no added, updated, or deleted results for model ${model}. No webhook sent, as per your environment settings`);
             await logCtx.success();
 
@@ -135,8 +140,8 @@ export const sendSync = async ({
     }
 
     const webhooks = [
-        { url: webhookSettings.primary_url, type: 'primary' },
-        { url: webhookSettings.secondary_url, type: 'secondary' }
+        { url: settings.primary_url, type: 'primary' },
+        { url: settings.secondary_url, type: 'secondary' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     const result = await deliver({

@@ -21,7 +21,10 @@ try {
             logger.error(`${id} Unable to register`, res.error);
         }
     });
-
+    if (envs.NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS > 0) {
+        srv.keepAliveTimeout = envs.NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS;
+        srv.headersTimeout = envs.NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS + 1000;
+    }
     const close = () => {
         logger.info(`${id} Closing...`);
         providersMonitorCleanup();

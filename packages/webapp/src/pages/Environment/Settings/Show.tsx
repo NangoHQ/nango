@@ -41,15 +41,10 @@ export const EnvironmentSettings: React.FC = () => {
 
     if (!environmentAndAccount || !team) {
         return (
-            <DashboardLayout className="flex-col">
+            <DashboardLayout fullWidth title="Environment settings" className="flex flex-col gap-8">
                 <Helmet>
                     <title>Environment Settings - Nango</title>
                 </Helmet>
-                <div className="flex justify-between mb-8 items-center">
-                    <div className="flex text-left text-3xl tracking-tight text-text-strong">
-                        <h2 className="font-semibold">Environment Settings &mdash;</h2>&nbsp;{env}
-                    </div>
-                </div>
                 <div className="flex gap-6 h-[280px]">
                     <Skeleton className="w-[209px]" />
                     <Skeleton className="h-full w-full" />

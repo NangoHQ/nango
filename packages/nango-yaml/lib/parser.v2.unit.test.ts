@@ -62,8 +62,7 @@ describe('parse', () => {
                             version: '',
                             features: []
                         }
-                    ],
-                    functions: []
+                    ]
                 }
             ],
             models: new Map([
@@ -112,8 +111,7 @@ describe('parse', () => {
                             version: '',
                             features: []
                         }
-                    ],
-                    functions: []
+                    ]
                 }
             ],
             models: new Map([
@@ -160,8 +158,7 @@ describe('parse', () => {
                         }
                     ],
                     onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
-                    actions: [],
-                    functions: []
+                    actions: []
                 }
             ],
             models: new Map([

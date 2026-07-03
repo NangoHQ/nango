@@ -3,12 +3,10 @@ import { TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, FieldLabel, Input } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Label } from '@/components/ui/Label';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
-import { Input } from '../../../components/ui/Input';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
 
@@ -46,7 +44,7 @@ export const ImpersonateForm: React.FC = () => {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="account_uuid">Account UUID</Label>
+                        <FieldLabel htmlFor="account_uuid">Account UUID</FieldLabel>
                         <FormField
                             control={form.control}
                             name="account_uuid"
@@ -62,7 +60,7 @@ export const ImpersonateForm: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="login_reason">Login reason</Label>
+                        <FieldLabel htmlFor="login_reason">Login reason</FieldLabel>
                         <FormField
                             control={form.control}
                             name="login_reason"

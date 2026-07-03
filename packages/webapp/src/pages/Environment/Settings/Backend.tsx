@@ -1,5 +1,4 @@
-import { IconExternalLink } from '@tabler/icons-react';
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -47,7 +46,7 @@ export const BackendSettings: React.FC = () => {
                                 target="_blank"
                                 to="https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional"
                             >
-                                <IconExternalLink stroke={1} size={18} />
+                                <ExternalLink strokeWidth={1} size={18} />
                             </Link>
                         </div>
                     </>

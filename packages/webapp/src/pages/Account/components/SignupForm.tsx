@@ -5,12 +5,11 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import GoogleButton from '@/components/patterns/GoogleButton';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSignupAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -145,7 +144,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput placeholder="Name" autoComplete="name" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
@@ -159,7 +158,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput
                                                 disabled={!!invitation?.email}
                                                 placeholder="Email"
@@ -176,7 +175,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                         <FormField control={form.control} name="password" render={() => <Password autoComplete="new-password" />} />
 
-                        <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size="lg" loading={isPending} disabled={!form.formState.isValid}>
                             {isPending ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </form>

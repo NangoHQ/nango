@@ -25,6 +25,7 @@
         "@hapi/boom": "10.0.1",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/database": "file:../database",
+        "@nangohq/egress": "file:../egress",
         "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
