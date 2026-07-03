@@ -7046,6 +7046,35 @@ eventbrite:
         base_url: https://www.eventbriteapi.com
     docs: https://nango.dev/docs/integrations/all/eventbrite
 
+everflow:
+    display_name: Everflow
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.eflow.team
+        headers:
+            x-eflow-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/everflow
+    docs_connect: https://nango.dev/docs/api-integrations/everflow/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Everflow API subdomain.
+            enum:
+                - api
+                - api-eu
+            order: 1
+            doc_section: '#step-2-find-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Everflow account.
+            doc_section: '#step-1-generate-your-api-key'
+
 etsy:
     display_name: Etsy
     categories:
