@@ -1316,6 +1316,7 @@
               "integrations/all/kintone",
               "integrations/all/kintone-user-api",
               "integrations/all/keeper-scim",
+              "api-integrations/konnektive",
               "api-integrations/knowbe4",
               "integrations/all/klaviyo",
               "integrations/all/klaviyo-oauth",
