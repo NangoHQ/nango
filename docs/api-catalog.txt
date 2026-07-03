@@ -260,6 +260,7 @@ URL patterns:
 | `etsy` | Etsy | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/etsy.md) |  | [setup](https://nango.dev/docs/api-integrations/etsy/how-to-register-your-own-etsy-api-oauth-app.md) | e-commerce |
 | `evaluagent` | EvaluAgent | BASIC | [docs](https://nango.dev/docs/integrations/all/evaluagent.md) |  |  | support |
 | `eventbrite` | Eventbrite | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/eventbrite.md) |  |  | marketing |
+| `everflow` | Everflow | API_KEY | [docs](https://nango.dev/docs/api-integrations/everflow.md) | [connect](https://nango.dev/docs/api-integrations/everflow/connect.md) |  | marketing, analytics |
 | `exa` | Exa | API_KEY | [docs](https://nango.dev/docs/integrations/all/exa.md) |  |  | analytics |
 | `exact-online` | Exact Online | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exact-online.md) |  |  | accounting, erp |
 | `exist` | Exist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/exist.md) |  |  | other |
