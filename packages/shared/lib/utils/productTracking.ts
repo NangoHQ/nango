@@ -2,15 +2,17 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { DBTeam, DBUser } from '@nangohq/types';
+import type { CliTelemetryEvent, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
+    | CliTelemetryEvent
     | 'account:trial:extend'
     | 'account:trial:started'
     | 'account:billing:plan_changed'
     | 'account:billing:downgraded'
     | 'account:billing:upgraded'
     | 'deploy:success'
+    | 'deploy:error'
     | 'prod:connections:threshold_hit'
     | 'server:resource_capped:connection_creation'
     | 'server:resource_capped:connection_imported'
@@ -75,6 +77,35 @@ class ProductTracking {
             }
 
             eventProperties['$set'] = userProperties;
+            this.client.capture({ event: name, distinctId, properties: eventProperties });
+        } catch (err) {
+            report(err);
+        }
+    }
+
+    /**
+     * Track an event that isn't tied to a resolved team, e.g. CLI events sent before or without authentication.
+     * The distinctId is a client-generated device id
+     */
+    public trackAnonymous({
+        name,
+        distinctId,
+        eventProperties
+    }: {
+        name: ProductTrackingTypes;
+        distinctId: string;
+        eventProperties?: Record<string | number, any>;
+    }) {
+        try {
+            if (this.client == null) {
+                return;
+            }
+
+            eventProperties = eventProperties || {};
+            eventProperties['host'] = baseUrl;
+            eventProperties['nango-server-version'] = NANGO_VERSION || 'unknown';
+            eventProperties['device-id'] = distinctId;
+
             this.client.capture({ event: name, distinctId, properties: eventProperties });
         } catch (err) {
             report(err);

@@ -21,6 +21,7 @@ import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
 import { getClientMetadata } from './controllers/clientMetadata/environmentUuid/getClientMetadata.js';
+import { postCliTelemetry } from './controllers/cli/postTelemetry.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -270,6 +271,10 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, withScope('environment:deploy'), postDeployInternal);
+
+// CLI
+publicAPI.use('/cli', jsonContentTypeMiddleware);
+publicAPI.route('/cli/telemetry').post(rateLimiterMiddleware, postCliTelemetry);
 
 // Syncs
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, withScope('environment:syncs:update'), putSyncConnectionFrequency);

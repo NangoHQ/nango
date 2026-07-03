@@ -15,7 +15,7 @@ import semver from 'semver';
 import { serializeError } from 'serialize-error';
 
 import { cloudHost, localhostUrl } from './constants.js';
-import { state } from './state.js';
+import { getDeviceId, state } from './state.js';
 import { Err, Ok } from './utils/result.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -273,10 +273,25 @@ export function enrichHeaders(headers: Record<string, string | number | boolean>
     return headers;
 }
 
+export function isTelemetryDisabled(): boolean {
+    return process.env['TELEMETRY'] === 'false' || process.env['NANGO_CLI_TELEMETRY'] === 'false';
+}
+
+export function isCliDebugEnabled(): boolean {
+    return process.env['NANGO_CLI_DEBUG'] === 'true';
+}
+
 const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
 export const http = axios.create({
-    httpsAgent: defaultHttpsAgent,
-    headers: { 'User-Agent': getUserAgent() }
+    httpsAgent: defaultHttpsAgent
+});
+
+http.interceptors.request.use((config) => {
+    const cliHeaders = getCliHeaders();
+    for (const [key, value] of Object.entries(cliHeaders)) {
+        config.headers.set(key, value);
+    }
+    return config;
 });
 
 export function getUserAgent(): string {
@@ -286,6 +301,16 @@ export function getUserAgent(): string {
     const osName = os.platform().replace(' ', '_');
     const osVersion = os.release().replace(' ', '_');
     return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
+}
+
+export function getCliHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        'User-Agent': getUserAgent()
+    };
+    if (!isTelemetryDisabled()) {
+        headers['Nango-CLI-Device-Id'] = getDeviceId();
+    }
+    return headers;
 }
 
 export function getNangoRootPath(debug = false): string {
