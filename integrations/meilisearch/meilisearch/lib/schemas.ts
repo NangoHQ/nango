@@ -3,8 +3,15 @@ import * as z from 'zod';
 /** A single Meilisearch document — arbitrary JSON object. */
 export const meiliDocumentSchema = z.record(z.string(), z.unknown());
 
-/** searchRules value for one index: object (optionally with filter), boolean, or array. */
-const searchRuleValueSchema = z.union([z.object({ filter: z.string().optional() }).catchall(z.unknown()), z.boolean(), z.array(z.unknown())]);
+/**
+ * A Meilisearch filter expression: a string, or an array mixing strings and
+ * string arrays (inner arrays are OR'd, outer entries are AND'd).
+ * e.g. [["genres = horror", "genres = comedy"], "release_date > 795484800"]
+ */
+export const filterSchema = z.union([z.string(), z.array(z.union([z.string(), z.array(z.string())]))]);
+
+/** searchRules value for one index: an object (optionally with a filter) or null (no restriction). */
+const searchRuleValueSchema = z.union([z.object({ filter: filterSchema.optional() }).catchall(z.unknown()), z.null()]);
 
 /** Per-index search rules keyed by index uid or the "*" wildcard. */
 export const searchRulesSchema = z.record(z.string(), searchRuleValueSchema);

@@ -20,8 +20,8 @@ import Overview from "/snippets/overview.mdx"
 
 Meilisearch uses API-key authentication. When creating a connection provide:
 
-- **Instance URL** — your Meilisearch host including scheme, e.g. `https://ms-xxxx.meilisearch.io` or `http://localhost:7700`.
-- **API Key** — a Meilisearch API key. Use a *key* (not the master key) so it can sign tenant tokens.
+- **Instance URL** — your Meilisearch host including scheme, without a trailing slash, e.g. `https://ms-xxxx.meilisearch.io` or `http://localhost:7700`.
+- **API Key** — a Meilisearch API key (not the master key). The Default Admin API Key works out of the box. A custom key must cover the actions you plan to use (`search`, `documents.*`, `tasks.get`, plus `version` for connection verification and `keys.get` for automatic tenant-token uid resolution).
 
 ## Pre-built actions
 
@@ -45,6 +45,12 @@ Meilisearch uses API-key authentication. When creating a connection provide:
   "expiresInSeconds": 3600
 }
 ```
+
+Notes:
+
+- Tokens expire after **1 hour** by default. Set `expiresInSeconds` or `expiresAt` (epoch seconds) to change this; `expiresAt` takes precedence when both are provided.
+- A rule value can also be `null` (no restriction), e.g. `{ "searchRules": { "*": null } }`.
+- If the connection's key lacks the `keys.get` action, pass `apiKeyUid` explicitly (find it via `GET /keys` with an authorized key). Master keys cannot sign tenant tokens.
 
 ## Useful links
 

@@ -1,11 +1,12 @@
 import { createAction } from 'nango';
 import * as z from 'zod';
 
-import { meiliDocumentSchema } from '../lib/schemas.js';
+import { filterSchema, meiliDocumentSchema } from '../lib/schemas.js';
 
 const input = z.object({
     indexUid: z.string(),
-    filter: z.union([z.string(), z.array(z.string())]).optional(),
+    ids: z.array(z.union([z.string(), z.number()])).optional(),
+    filter: filterSchema.optional(),
     fields: z.array(z.string()).optional(),
     limit: z.number().optional(),
     offset: z.number().optional()
