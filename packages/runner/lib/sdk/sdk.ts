@@ -968,3 +968,120 @@ export function instrumentSDK(rawNango: NangoActionRunner | NangoSyncRunner) {
         }
     });
 }
+
+/**
+ * @internal
+ *
+ * Properties on the runner that must never be reachable from customer-authored functions.
+ *
+ */
+const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
+    'nango',
+    'persistClient',
+    'telemetryRecorder',
+    'locking',
+    'checkpointing',
+    'checkpointKey',
+    'integrationConfig',
+    'memoizedConnections',
+    'memoizedIntegration',
+    'attributes',
+    'telemetryBag',
+    'abortSignal',
+    'lifecycle',
+    'getProxyConfig',
+    'throwIfAbortedOrKilled',
+    'throwIfInterrupted',
+    'shouldLog',
+    'validateRecords',
+    'removeMetadata',
+    'modelFullName',
+    'sendLogToPersist',
+    'logAPICall',
+    'getMergingStrategy',
+    'setMergingStrategyByModel',
+    'trackDeletesKey',
+    'fetchRecordsPage',
+    'getCheckpointRange',
+    'clearRecordsIfNeeded',
+    'batchSize',
+    'getRecordsBatchSize',
+    'mergingByModel',
+    'httpLogSample',
+    '__proto__',
+    'constructor'
+]);
+
+function throwBlockedAccess(prop: string | symbol): never {
+    const name = typeof prop === 'symbol' ? prop.toString() : prop;
+    throw new Error(`Access to "${name}" is not allowed.`);
+}
+
+/**
+ * @internal
+ *
+ * Wraps a runner instance in a Proxy that is safe to hand to customer-authored functions.
+ */
+export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunner>(runner: T): T {
+    const boundCache = new Map<string | symbol, (...args: any[]) => any>();
+
+    return new Proxy(runner, {
+        get(target, prop, receiver) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            const value = Reflect.get(target, prop, receiver);
+            if (typeof value !== 'function') {
+                return value;
+            }
+            let bound = boundCache.get(prop);
+            if (!bound) {
+                bound = (value as (...args: any[]) => any).bind(target);
+                boundCache.set(prop, bound);
+            }
+            return bound;
+        },
+        set(target, prop, value, receiver) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            boundCache.delete(prop);
+            return Reflect.set(target, prop, value, receiver);
+        },
+        defineProperty(target, prop, descriptor) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            boundCache.delete(prop);
+            return Reflect.defineProperty(target, prop, descriptor);
+        },
+        deleteProperty(target, prop) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            boundCache.delete(prop);
+            return Reflect.deleteProperty(target, prop);
+        },
+        has(target, prop) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                return false;
+            }
+            return Reflect.has(target, prop);
+        },
+        getOwnPropertyDescriptor(target, prop) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                return undefined;
+            }
+            return Reflect.getOwnPropertyDescriptor(target, prop);
+        },
+        ownKeys(target) {
+            return Reflect.ownKeys(target).filter((key) => !FUNCTION_BLOCKED_PROPERTIES.has(key));
+        },
+        getPrototypeOf() {
+            return null;
+        },
+        setPrototypeOf() {
+            throwBlockedAccess('prototype');
+        }
+    });
+}

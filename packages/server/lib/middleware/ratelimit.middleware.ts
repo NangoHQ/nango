@@ -23,7 +23,9 @@ const rateLimiterSize: Record<DBPlan['api_rate_limit_size'], number> = {
     xl: defaultLimit * 10,
     '2xl': defaultLimit * 25,
     '3xl': defaultLimit * 50,
-    '4xl': defaultLimit * 75
+    '4xl': defaultLimit * 75,
+    '5xl': defaultLimit * 100,
+    '6xl': defaultLimit * 125
 };
 const limiters = new Map<DBPlan['api_rate_limit_size'], RateLimiterAbstract>();
 
@@ -92,7 +94,7 @@ export const rateLimiterMiddleware = async (req: Request, res: Response<any, Req
 
             setXRateLimitHeaders(maxPoints, err);
             res.setHeader('Retry-After', Math.floor(err.msBeforeNext / 1000));
-            res.status(429).send({ error: { code: 'too_many_request' } });
+            res.status(429).send({ error: { code: 'too_many_request', method: req.method, path: req.path } });
             return;
         }
 
