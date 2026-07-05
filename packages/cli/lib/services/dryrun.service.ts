@@ -2,6 +2,7 @@ import { Buffer } from 'buffer';
 import * as crypto from 'crypto';
 import { createRequire } from 'module';
 import fs from 'node:fs';
+import { inspect } from 'node:util';
 import * as vm from 'node:vm';
 import * as url from 'url';
 
@@ -116,7 +117,7 @@ export class DryRunService {
         if (jsonMode) {
             originalLog = console.log;
             console.log = (...args: any[]) => {
-                process.stderr.write(args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ') + '\n');
+                process.stderr.write(args.map((a) => (typeof a === 'string' ? a : inspect(a))).join(' ') + '\n');
             };
         }
 

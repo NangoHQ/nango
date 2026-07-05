@@ -68,8 +68,13 @@ When `--json` is set, the CLI suppresses human-readable formatting and writes a 
 {
   "ok": true,
   "error": null,
-  "output": <action-output>,
-  "logs": { "counts": {...}, "messages": [...] }
+  "output": { "id": "TKT-123", "status": "created" },
+  "logs": {
+    "counts": { "success": 5 },
+    "messages": [
+      { "level": "info", "msg": "Fetched 5 tickets" }
+    ]
+  }
 }
 ```
 
