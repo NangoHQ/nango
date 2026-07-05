@@ -12387,19 +12387,20 @@ meilisearch:
         verification:
             method: GET
             endpoints:
-                - /keys
+                - /version
     connection_config:
         instanceUrl:
             type: string
             title: Instance URL
-            description: Your Meilisearch host, including scheme. e.g. https://ms-xxxx.meilisearch.io or http://localhost:7700
+            description: Your Meilisearch host, including scheme and no trailing slash. e.g. https://ms-xxxx.meilisearch.io or http://localhost:7700
             example: https://ms-1a2b3c4d5e6f.meilisearch.io
+            pattern: '^https?://.+[^/]$'
             order: 1
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: A Meilisearch API key. Use a key (not the master key) so it can sign tenant tokens.
+            description: A Meilisearch API key (not the master key), e.g. the Default Admin API Key or a custom key covering the actions you need. The keys.get action enables automatic tenant-token uid resolution.
             secret: true
     docs: https://nango.dev/docs/integrations/all/meilisearch
 

@@ -11,6 +11,7 @@
         "dev": "nango dev"
     },
     "devDependencies": {
+        "nango": "0.70.9",
         "zod": "4.3.6"
     }
 }

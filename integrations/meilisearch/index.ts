@@ -1,7 +1,7 @@
-import './actions/generate-tenant-token.js';
-import './actions/search-documents.js';
-import './actions/get-documents.js';
-import './actions/add-documents.js';
-import './actions/update-documents.js';
-import './actions/delete-documents.js';
-import './actions/get-task.js';
+import './meilisearch/actions/generate-tenant-token.js';
+import './meilisearch/actions/search-documents.js';
+import './meilisearch/actions/get-documents.js';
+import './meilisearch/actions/add-documents.js';
+import './meilisearch/actions/update-documents.js';
+import './meilisearch/actions/delete-documents.js';
+import './meilisearch/actions/get-task.js';

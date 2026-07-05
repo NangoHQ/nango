@@ -1,7 +1,9 @@
 import crypto from 'crypto';
 
+type FilterExpression = string | (string | string[])[];
+
 export interface SearchRules {
-    [indexOrWildcard: string]: { filter?: string } | Record<string, unknown> | boolean | unknown[];
+    [indexOrWildcard: string]: { filter?: FilterExpression } | Record<string, unknown> | null;
 }
 
 export interface TenantTokenParams {
@@ -16,7 +18,7 @@ export interface TenantTokenParams {
 }
 
 function base64url(input: Buffer | string): string {
-    return Buffer.from(input).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+    return Buffer.from(input).toString('base64url');
 }
 
 /**
