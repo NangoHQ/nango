@@ -150,4 +150,104 @@ describe('DryRunService', () => {
             expect(result.error.message).toBe('script failed');
         }
     });
+
+    describe('--json mode', () => {
+        beforeEach(() => {
+            vi.spyOn(process.stdout, 'write');
+        });
+
+        it('writes a JSON envelope to stdout on success', async () => {
+            const service = buildService();
+            vi.spyOn(service, 'runScript').mockResolvedValue({ success: true, error: null, response: null } as any);
+
+            const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isOk()).toBe(true);
+            expect(process.stdout.write).toHaveBeenCalledTimes(1);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope).toMatchObject({ ok: true, error: null, output: null, logs: null });
+        });
+
+        it('writes an error JSON envelope to stdout on script failure', async () => {
+            const service = buildService();
+            vi.spyOn(service, 'runScript').mockResolvedValue({ success: false, error: new Error('script failed'), response: null });
+
+            const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isErr()).toBe(true);
+            expect(process.stdout.write).toHaveBeenCalledTimes(1);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.ok).toBe(false);
+            expect(envelope.error.message).toContain('script failed');
+        });
+
+        it('writes an error JSON envelope on unexpected exception', async () => {
+            const service = buildService();
+            vi.spyOn(service, 'runScript').mockRejectedValue(new Error('unexpected error'));
+
+            const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isErr()).toBe(true);
+            expect(process.stdout.write).toHaveBeenCalledTimes(1);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.ok).toBe(false);
+            expect(envelope.error.message).toContain('unexpected error');
+        });
+
+        it('does not write JSON envelope when outputJson is not set', async () => {
+            const service = buildService();
+            vi.spyOn(service, 'runScript').mockResolvedValue({ success: true, error: null, response: null } as any);
+
+            await service.run({ sync: 'syncIssues', connectionId: 'conn-1' } as any);
+
+            expect(process.stdout.write).not.toHaveBeenCalled();
+        });
+
+        it('preserves exit code on script error', async () => {
+            const service = buildService();
+            vi.spyOn(service, 'runScript').mockResolvedValue({ success: false, error: new Error('script failed'), response: null });
+
+            const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isErr()).toBe(true);
+        });
+
+        it('includes action output in envelope for action scripts', async () => {
+            const service = buildService();
+            const actionOutput = { result: 'hello' };
+            vi.spyOn(service, 'runScript').mockResolvedValue({
+                success: true,
+                error: null,
+                response: { output: actionOutput, nango: null }
+            } as any);
+
+            const parsedWithAction = {
+                integrations: [
+                    {
+                        providerConfigKey: 'github',
+                        syncs: [],
+                        actions: [{ name: 'myAction', type: 'action', output: ['MyModel'] }],
+                        onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] }
+                    }
+                ]
+            };
+            mocks.parseIntegrationDefinitions.mockResolvedValue(Ok(parsedWithAction as any));
+
+            const result = await service.run({
+                sync: 'myAction',
+                connectionId: 'conn-1',
+                outputJson: true
+            } as any);
+
+            expect(result.isOk()).toBe(true);
+            expect(process.stdout.write).toHaveBeenCalledTimes(1);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.ok).toBe(true);
+            expect(envelope.output).toEqual(actionOutput);
+        });
+    });
 });

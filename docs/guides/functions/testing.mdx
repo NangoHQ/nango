@@ -57,7 +57,23 @@ nango dryrun fetch-tickets abc-123 --integration-id github
 
 # Execute a specific variant
 nango dryrun fetch-tickets abc-123 --variant premium
+
+# Machine-readable JSON output (useful for CI and agent tooling)
+nango dryrun fetch-tickets abc-123 --json
 ```
+
+When `--json` is set, the CLI suppresses human-readable formatting and writes a single JSON object to stdout:
+
+```json
+{
+  "ok": true,
+  "error": null,
+  "output": <action-output>,
+  "logs": { "counts": {...}, "messages": [...] }
+}
+```
+
+On failure the `ok` field is `false` and `error` contains the error message. This is designed for CI pipelines and agent harnesses that need to parse the dry run result.
 
 ## Data validation
 

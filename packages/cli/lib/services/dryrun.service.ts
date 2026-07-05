@@ -60,6 +60,7 @@ interface RunArgs extends GlobalOptions {
     saveResponses?: boolean;
     variant?: string;
     diagnostics?: boolean;
+    outputJson?: boolean;
 }
 
 const require = createRequire(import.meta.url);
@@ -109,6 +110,16 @@ export class DryRunService {
     }
 
     public async run(options: RunArgs, debug = false): Promise<Result<string | undefined>> {
+        const jsonMode = options.outputJson;
+        let originalLog: typeof console.log | null = null;
+
+        if (jsonMode) {
+            originalLog = console.log;
+            console.log = (...args: any[]) => {
+                process.stderr.write(args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ') + '\n');
+            };
+        }
+
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
 
@@ -406,14 +417,38 @@ export class DryRunService {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.code})`));
                     if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.type === 'invalid_sync_record') {
                         displayValidationError(err.payload);
+                        if (jsonMode) {
+                            this.writeJsonEnvelope({
+                                ok: false,
+                                error: { type: 'validation_error', message: err.message, code: err.code },
+                                output: null,
+                                logs: null
+                            });
+                        }
                         return Err(err.message);
                     }
 
                     console.error(JSON.stringify(err.payload, null, 2));
+                    if (jsonMode) {
+                        this.writeJsonEnvelope({
+                            ok: false,
+                            error: { message: err.message, code: err.code },
+                            output: null,
+                            logs: null
+                        });
+                    }
                     return Err(err.message);
                 }
 
                 console.error(err instanceof Error ? JSON.stringify(err, ['name', 'message'], 2) : JSON.stringify(err, null, 2));
+                if (jsonMode) {
+                    this.writeJsonEnvelope({
+                        ok: false,
+                        error: { message: err instanceof Error ? err.message : String(err) },
+                        output: null,
+                        logs: null
+                    });
+                }
                 return Err(err instanceof Error ? err.message : JSON.stringify(err));
             }
 
@@ -453,15 +488,16 @@ export class DryRunService {
 
                     while (index < messages.length) {
                         const remaining = messages.length - index;
-                        const { confirmation } = options.autoConfirm
-                            ? { confirmation: true }
-                            : await inquirer.prompt([
-                                  {
-                                      type: 'confirm',
-                                      name: 'confirmation',
-                                      message: `There are ${remaining} log messages remaining. Would you like to see the next 10 log messages?`
-                                  }
-                              ]);
+                        const { confirmation } =
+                            options.autoConfirm || jsonMode
+                                ? { confirmation: true }
+                                : await inquirer.prompt([
+                                      {
+                                          type: 'confirm',
+                                          name: 'confirmation',
+                                          message: `There are ${remaining} log messages remaining. Would you like to see the next 10 log messages?`
+                                      }
+                                  ]);
                         if (confirmation) {
                             displayBatch();
                         } else {
@@ -492,14 +528,51 @@ export class DryRunService {
                 console.log(chalk.green(`\n✅ Mocks saved to ${testFilePath}`));
             }
 
+            if (jsonMode) {
+                const nangoInstance = results.response?.nango;
+                const logMessages = nangoInstance instanceof NangoSyncCLI ? nangoInstance.logMessages : null;
+                this.writeJsonEnvelope({
+                    ok: true,
+                    error: null,
+                    output: type === 'actions' ? (results.response?.output ?? null) : null,
+                    logs: logMessages
+                        ? {
+                              counts: logMessages.counts as Record<string, number>,
+                              messages: logMessages.messages
+                          }
+                        : null
+                });
+            }
+
             if (this.returnOutput) {
                 return Ok(resultOutput.join('\n'));
             }
 
             return Ok(undefined);
         } catch (err) {
+            if (jsonMode) {
+                this.writeJsonEnvelope({
+                    ok: false,
+                    error: { message: err instanceof Error ? err.message : 'Dry run failed' },
+                    output: null,
+                    logs: null
+                });
+            }
             return Err(err instanceof Error ? err : new Error('Dry run failed'));
+        } finally {
+            if (originalLog) {
+                console.log = originalLog;
+            }
         }
+    }
+
+    private writeJsonEnvelope(data: {
+        ok: boolean;
+        error: { message: string; code?: string; type?: string } | null;
+        output: unknown;
+        logs: { counts: Record<string, number>; messages: unknown[] } | null;
+    }): void {
+        process.stdout.write(JSON.stringify(data) + '\n');
     }
 
     async runScript({

@@ -275,6 +275,7 @@ program
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
+    .option('--json', 'Optional: Output the dry run result as a single JSON object to stdout, suppressing human-readable formatting.', false)
     .action(async function (this: Command) {
         const {
             autoConfirm,
@@ -289,7 +290,8 @@ program
             variant,
             metadata,
             checkpoint,
-            diagnostics
+            diagnostics,
+            json
         } = this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
@@ -411,7 +413,8 @@ program
             variant,
             metadata,
             checkpoint,
-            diagnostics
+            diagnostics,
+            outputJson: json
         });
         if (resDryRun.isErr()) {
             process.exitCode = NangoCliExitCode.DryrunError;
