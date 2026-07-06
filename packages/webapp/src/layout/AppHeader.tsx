@@ -5,6 +5,7 @@ import { Button, IconButton } from '@nangohq/design-system';
 
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { trackPlaygroundOpened } from '@/features/Playground/analytics';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -28,7 +29,17 @@ export const AppHeader: React.FC = () => {
             <div className="flex justify-end gap-2">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
-                        <Button variant="outline" size="md" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
+                        <Button
+                            variant="outline"
+                            size="md"
+                            disabled={!allowed}
+                            onClick={() => {
+                                if (!playgroundOpen) {
+                                    trackPlaygroundOpened('header');
+                                }
+                                setPlaygroundOpen(!playgroundOpen);
+                            }}
+                        >
                             <Box />
                             Playground
                         </Button>
