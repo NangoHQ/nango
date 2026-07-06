@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as utils from './utils.js';
 
@@ -568,6 +568,33 @@ describe('makeUrl', () => {
         const config = { username: 'alice' };
         const result = utils.makeUrl(template, config, ['base_url']);
         expect(result.toString()).toBe('https://api.example.com/auth?user=alice');
+    });
+});
+
+describe('getGlobalWebhookReceiveUrl', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('uses NANGO_WEBHOOK_URL when set', () => {
+        vi.stubEnv('NANGO_WEBHOOK_URL', 'https://webhooks.example.test');
+        vi.stubEnv('NANGO_SERVER_URL', 'https://api.example.test');
+
+        expect(utils.getGlobalWebhookReceiveUrl()).toBe('https://webhooks.example.test/webhook');
+    });
+
+    it('falls back to NANGO_SERVER_URL when NANGO_WEBHOOK_URL is not set', () => {
+        vi.stubEnv('NANGO_WEBHOOK_URL', '');
+        vi.stubEnv('NANGO_SERVER_URL', 'https://api.example.test');
+
+        expect(utils.getGlobalWebhookReceiveUrl()).toBe('https://api.example.test/webhook');
+    });
+
+    it('falls back to the local dev URL when neither is set', () => {
+        vi.stubEnv('NANGO_WEBHOOK_URL', '');
+        vi.stubEnv('NANGO_SERVER_URL', '');
+
+        expect(utils.getGlobalWebhookReceiveUrl()).toBe(`${utils.getLocalOAuthCallbackUrlBaseUrl()}/webhook`);
     });
 });
 
