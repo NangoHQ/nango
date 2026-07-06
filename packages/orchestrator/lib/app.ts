@@ -1,5 +1,6 @@
 import './tracer.js';
 
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
 import { initSentry, once, report, stringifyError } from '@nangohq/utils';
 
@@ -31,6 +32,8 @@ const databaseUrl =
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
 
 try {
+    await initializeFeatureFlags();
+
     const dbClient = new DatabaseClient({
         ...defaultDatabaseClientOptions,
         url: databaseUrl,
@@ -50,6 +53,7 @@ try {
         onError: async (err) => {
             report(err);
             logger.error(`Scheduler error: ${stringifyError(err)}`);
+            await destroyFeatureFlags();
             await dbClient.destroy();
             logger.close();
 
@@ -94,6 +98,7 @@ try {
             await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
+            await destroyFeatureFlags();
             await dbClient.destroy();
 
             logger.close();
