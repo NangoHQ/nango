@@ -783,11 +783,12 @@ function TokenRow({
             <div className="group/picker flex shrink-0 items-center gap-1">
                 <Popover>
                     <PopoverTrigger asChild>
-                        {/* Checkerboard backdrop so translucent tokens (e.g. --border-default #ffffff1a) read as semi-transparent */}
+                        {/* Checkerboard backdrop so translucent tokens (e.g. --border-default #ffffff1a) read as semi-transparent.
+                            bg-clip-padding keeps the checkerboard out from under the (translucent) border so it doesn't tint it. */}
                         <button
                             type="button"
                             aria-label={`Edit ${entry.cssVar} colour`}
-                            className="relative size-4 cursor-pointer rounded-sm border border-border-muted"
+                            className="relative size-4 cursor-pointer rounded-sm border border-border-muted bg-clip-padding"
                             style={{
                                 backgroundImage:
                                     'linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%),linear-gradient(45deg,#80808059 25%,transparent 25%,transparent 75%,#80808059 75%)',
