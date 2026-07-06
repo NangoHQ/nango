@@ -170,14 +170,30 @@ describe('RedisKVStore', () => {
         });
     });
 
-    it('should scan keys', async () => {
-        await store.set('key1', 'value1');
-        await store.set('key2', 'value2');
-        await store.set('another-key', 'value3');
-        const keys = [];
-        for await (const key of store.scan('key*')) {
-            keys.push(key);
-        }
-        expect(keys.sort()).toEqual(['key1', 'key2']);
+    describe('set operations', () => {
+        it('adds and lists members', async () => {
+            await store.sAdd('s', 'a');
+            await store.sAdd('s', 'b');
+            await store.sAdd('s', 'a'); // idempotent
+            expect((await store.sMembers('s')).sort()).toEqual(['a', 'b']);
+        });
+
+        it('returns an empty array for a missing set', async () => {
+            expect(await store.sMembers('missing')).toEqual([]);
+        });
+
+        it('expires the set after its TTL', async () => {
+            const ttlMs = 100;
+            await store.sAdd('s-ttl', 'a', { ttlMs });
+            await new Promise((resolve) => setTimeout(resolve, ttlMs * 2));
+            expect(await store.sMembers('s-ttl')).toEqual([]);
+        });
+
+        it('extends the TTL but never shrinks it below the longest-lived member', async () => {
+            await store.sAdd('s-ext', 'long', { ttlMs: 10_000 });
+            await store.sAdd('s-ext', 'short', { ttlMs: 50 }); // must not shrink the set to 50ms
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            expect((await store.sMembers('s-ext')).sort()).toEqual(['long', 'short']);
+        });
     });
 });

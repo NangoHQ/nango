@@ -6,8 +6,9 @@ import type { KVStore } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
 
 const LOCK_STORAGE_PREFIX = 'runner:lock:';
-const LOCK_OWNER_INDEX_PREFIX = `${LOCK_STORAGE_PREFIX}owner:`;
-const LOCK_OWNER_INDEX_VALUE = '1';
+const LOCK_OWNER_SET_PREFIX = `${LOCK_STORAGE_PREFIX}owner:`;
+// Grace added to the owner-set TTL so it outlives the lock it indexes despite being written before the lock.
+const OWNER_SET_TTL_GRACE_MS = 10_000;
 
 export type LockNamespace = number;
 
@@ -27,28 +28,8 @@ function storageKey(namespace: LockNamespace, key: string): string {
     return `${LOCK_STORAGE_PREFIX}${createHash(namespacedLockKey(namespace, key))}`;
 }
 
-function ownerIndexKey(namespace: LockNamespace, owner: string, key: string): string {
-    return `${LOCK_OWNER_INDEX_PREFIX}${createHash(namespacedOwner(namespace, owner))}:${createHash(namespacedLockKey(namespace, key))}`;
-}
-
-function lockKeys({ namespace, owner, key }: { namespace: LockNamespace; owner: string; key: string }): { sk: string; ik: string } {
-    return { sk: storageKey(namespace, key), ik: ownerIndexKey(namespace, owner, key) };
-}
-
-function ownerIndexScanPrefix(namespace: LockNamespace, owner: string): string {
-    return `${LOCK_OWNER_INDEX_PREFIX}${createHash(namespacedOwner(namespace, owner))}:`;
-}
-
-function mainKeyFromOwnerIndexKey(namespace: LockNamespace, owner: string, indexKey: string): string | null {
-    const p = ownerIndexScanPrefix(namespace, owner);
-    if (!indexKey.startsWith(p)) {
-        return null;
-    }
-    const logicalHash = indexKey.slice(p.length);
-    if (!logicalHash) {
-        return null;
-    }
-    return `${LOCK_STORAGE_PREFIX}${logicalHash}`;
+function ownerSetKey(namespace: LockNamespace, owner: string): string {
+    return `${LOCK_OWNER_SET_PREFIX}${createHash(namespacedOwner(namespace, owner))}`;
 }
 
 function validateNamespace(namespace: LockNamespace): Result<void> {
@@ -84,33 +65,34 @@ export async function tryAcquireLock(
         return validation;
     }
 
-    const { sk, ik } = lockKeys({ namespace, owner, key });
+    const sk = storageKey(namespace, key);
+    const os = ownerSetKey(namespace, owner);
+    // The owner set is append-only: it may hold stale members but must never miss a live lock.
+    const indexOwnerLock = async () => {
+        await store.sAdd(os, sk, { ttlMs: ttlMs + OWNER_SET_TTL_GRACE_MS });
+    };
     try {
-        if (
-            await store.setIfValueEqualsWithCompanion({
-                mainKey: sk,
-                companionKey: ik,
-                expectedValue: owner,
-                newValue: owner,
-                companionValue: LOCK_OWNER_INDEX_VALUE,
-                ttlMs
-            })
-        ) {
+        // Pre-index before acquiring, so a successful lock is not missed if we crash later.
+        await indexOwnerLock();
+
+        if (await store.setIfValueEquals(sk, owner, owner, ttlMs)) {
+            // Re-extend after the refresh, so the set outlives the refreshed lock.
+            await indexOwnerLock();
             return Ok(true);
         }
 
-        if (
-            await store.setNxWithCompanion({
-                mainKey: sk,
-                companionKey: ik,
-                value: owner,
-                companionValue: LOCK_OWNER_INDEX_VALUE,
-                ttlMs
-            })
-        ) {
-            return Ok(true);
+        try {
+            await store.set(sk, owner, { canOverride: false, ttlMs });
+        } catch (err) {
+            if (err instanceof Error && err.message.includes('set_key_already_exists')) {
+                return Ok(false);
+            }
+            throw err;
         }
-        return Ok(false);
+
+        // Re-extend after the new lock write, so delay between pre-add and SET cannot make the set expire first.
+        await indexOwnerLock();
+        return Ok(true);
     } catch (err: unknown) {
         return Err(new Error(`Error acquiring lock for key ${key}`, { cause: err }));
     }
@@ -125,13 +107,11 @@ export async function releaseLock(
         return Err(namespaceValidation.error);
     }
 
-    const { sk, ik } = lockKeys({ namespace, owner, key });
+    const sk = storageKey(namespace, key);
     try {
-        const deleted = await store.deleteIfValueEqualsWithCompanion({
-            mainKey: sk,
-            companionKey: ik,
-            expectedValue: owner
-        });
+        // Intentionally not removing the owner-set member: removing it could drop a concurrently re-acquired lock
+        // Stale set member is harmless and will be cleaned by the set's TTL
+        const deleted = await store.deleteIfValueEquals(sk, owner);
         return Ok(deleted);
     } catch (err: unknown) {
         return Err(new Error(`Error releasing lock for key ${key}`, { cause: err }));
@@ -144,18 +124,12 @@ export async function releaseAllLocks(store: KVStore, { namespace, owner }: { na
         return namespaceValidation;
     }
 
+    const os = ownerSetKey(namespace, owner);
     try {
-        const prefix = ownerIndexScanPrefix(namespace, owner);
-        for await (const ik of store.scan(`${prefix}*`)) {
-            const sk = mainKeyFromOwnerIndexKey(namespace, owner, ik);
-            if (sk) {
-                await store.deleteIfValueEqualsWithCompanion({
-                    mainKey: sk,
-                    companionKey: ik,
-                    expectedValue: owner
-                });
-            }
-            await store.delete(ik);
+        // Intentionally not deleting the owner set: a wholesale delete could drop a member added by a concurrent acquire
+        // Stale members are harmless no-ops and the set is cleaned by its TTL
+        for (const sk of await store.sMembers(os)) {
+            await store.deleteIfValueEquals(sk, owner);
         }
         return Ok(undefined);
     } catch (err: unknown) {
@@ -169,7 +143,7 @@ export async function hasLock(store: KVStore, { namespace, owner, key }: { names
         return Err(namespaceValidation.error);
     }
 
-    const { sk } = lockKeys({ namespace, owner, key });
+    const sk = storageKey(namespace, key);
     try {
         const holder = await store.get(sk);
         return Ok(holder === owner);

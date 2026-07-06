@@ -135,7 +135,6 @@ describe(`POST ${endpoint}`, () => {
             tryAcquire: vi.fn(),
             release: vi.fn(),
             acquire: vi.fn().mockRejectedValue(new Error('Failed to acquire lock')),
-            releaseAll: vi.fn(),
             hasLock: vi.fn()
         } as any);
 

@@ -10,7 +10,7 @@ import type { NangoRedisClient, RedisBoundary } from './redisClient.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { RedisKVStore } from './RedisStore.js';
-export type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
+export type { KVStore } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
 export { type NangoRedisClient, type RedisBoundary, getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
 

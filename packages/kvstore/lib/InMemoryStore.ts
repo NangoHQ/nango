@@ -1,14 +1,22 @@
-import type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
+import type { KVStore } from './KVStore.js';
 
-interface Value {
+interface StringEntry {
+    kind: 'string';
     value: string;
     timestamp: number;
     ttlMs: number;
 }
+interface SetEntry {
+    kind: 'set';
+    members: Set<string>;
+    timestamp: number;
+    ttlMs: number;
+}
+type Entry = StringEntry | SetEntry; // one key -> one type, like Redis
 const KVSTORE_INTERVAL_CLEANUP = 10000;
 
 export class InMemoryKVStore implements KVStore {
-    private store: Map<string, Value>;
+    private store: Map<string, Entry>;
     private interval: NodeJS.Timeout;
 
     constructor() {
@@ -26,7 +34,7 @@ export class InMemoryKVStore implements KVStore {
 
     public async get(key: string): Promise<string | null> {
         const res = this.store.get(key);
-        if (res === undefined) {
+        if (res === undefined || res.kind !== 'string') {
             return null;
         }
         if (this.isExpired(res)) {
@@ -40,7 +48,7 @@ export class InMemoryKVStore implements KVStore {
         const res = this.store.get(key);
         const isExpired = res && this.isExpired(res);
         if (isExpired || opts?.canOverride || res === undefined) {
-            this.store.set(key, { value: value, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
+            this.store.set(key, { kind: 'string', value: value, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
             return Promise.resolve();
         }
         return Promise.reject(new Error('set_key_already_exists'));
@@ -48,72 +56,25 @@ export class InMemoryKVStore implements KVStore {
 
     public async setIfValueEquals(key: string, expectedValue: string, newValue: string, ttlMs: number): Promise<boolean> {
         const res = this.store.get(key);
-        if (res === undefined || this.isExpired(res)) {
+        if (res === undefined || res.kind !== 'string' || this.isExpired(res)) {
             return Promise.resolve(false);
         }
         if (res.value !== expectedValue) {
             return Promise.resolve(false);
         }
-        this.store.set(key, { value: newValue, timestamp: Date.now(), ttlMs });
+        this.store.set(key, { kind: 'string', value: newValue, timestamp: Date.now(), ttlMs });
         return Promise.resolve(true);
     }
 
     public async deleteIfValueEquals(key: string, expectedValue: string): Promise<boolean> {
         const res = this.store.get(key);
-        if (res === undefined || this.isExpired(res)) {
+        if (res === undefined || res.kind !== 'string' || this.isExpired(res)) {
             return Promise.resolve(false);
         }
         if (res.value !== expectedValue) {
             return Promise.resolve(false);
         }
         this.store.delete(key);
-        return Promise.resolve(true);
-    }
-
-    public async setNxWithCompanion({ mainKey, companionKey, value, companionValue, ttlMs }: SetNxWithCompanionArgs): Promise<boolean> {
-        const main = this.store.get(mainKey);
-        if (main !== undefined && !this.isExpired(main)) {
-            return Promise.resolve(false);
-        }
-        const now = Date.now();
-        const entry = { value, timestamp: now, ttlMs };
-        this.store.set(mainKey, entry);
-        this.store.set(companionKey, { value: companionValue, timestamp: now, ttlMs });
-        return Promise.resolve(true);
-    }
-
-    public async setIfValueEqualsWithCompanion({
-        mainKey,
-        companionKey,
-        expectedValue,
-        newValue,
-        companionValue,
-        ttlMs
-    }: SetIfValueEqualsWithCompanionArgs): Promise<boolean> {
-        const res = this.store.get(mainKey);
-        if (res === undefined || this.isExpired(res)) {
-            return Promise.resolve(false);
-        }
-        if (res.value !== expectedValue) {
-            return Promise.resolve(false);
-        }
-        const now = Date.now();
-        const entry = { value: newValue, timestamp: now, ttlMs };
-        this.store.set(mainKey, entry);
-        this.store.set(companionKey, { value: companionValue, timestamp: now, ttlMs });
-        return Promise.resolve(true);
-    }
-
-    public async deleteIfValueEqualsWithCompanion({ mainKey, companionKey, expectedValue }: DeleteIfValueEqualsWithCompanionArgs): Promise<boolean> {
-        const res = this.store.get(mainKey);
-        if (res === undefined || this.isExpired(res)) {
-            return Promise.resolve(false);
-        }
-        if (res.value !== expectedValue) {
-            return Promise.resolve(false);
-        }
-        this.store.delete(mainKey);
-        this.store.delete(companionKey);
         return Promise.resolve(true);
     }
 
@@ -126,7 +87,7 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(this.store.has(key));
     }
 
-    private isExpired(value: Value): boolean {
+    private isExpired(value: { timestamp: number; ttlMs: number }): boolean {
         if (value.ttlMs > 0 && value.timestamp + value.ttlMs < Date.now()) {
             return true;
         }
@@ -144,30 +105,39 @@ export class InMemoryKVStore implements KVStore {
 
     public async incr(key: string, opts?: { ttlMs?: number; delta?: number }): Promise<number> {
         const res = this.store.get(key);
-
-        const nextVal = res && !this.isExpired(res) ? String(parseInt(res.value, 10) + (opts?.delta || 1)) : '1';
-        this.store.set(key, { value: nextVal, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
-
+        const current = res && res.kind === 'string' && !this.isExpired(res) ? res.value : null;
+        const nextVal = current !== null ? String(parseInt(current, 10) + (opts?.delta || 1)) : '1';
+        this.store.set(key, { kind: 'string', value: nextVal, timestamp: Date.now(), ttlMs: opts?.ttlMs || 0 });
         return Promise.resolve(Number(nextVal));
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async *scan(pattern: string): AsyncGenerator<string> {
-        for (const key of this.store.keys()) {
-            if (this.matchesPattern(key, pattern)) {
-                yield key;
+    public async sAdd(key: string, member: string, opts?: { ttlMs?: number }): Promise<void> {
+        const existing = this.store.get(key);
+        const entry: SetEntry =
+            existing?.kind === 'set' && !this.isExpired(existing) ? existing : { kind: 'set', members: new Set<string>(), timestamp: Date.now(), ttlMs: 0 };
+        entry.members.add(member);
+        if (opts?.ttlMs) {
+            // Extend-only: never shrink the set below its longest-lived member.
+            const now = Date.now();
+            const newExpiry = now + opts.ttlMs;
+            const currentExpiry = entry.ttlMs > 0 ? entry.timestamp + entry.ttlMs : 0; // 0 = no expiry yet
+            if (newExpiry > currentExpiry) {
+                entry.timestamp = now;
+                entry.ttlMs = opts.ttlMs;
             }
         }
+        this.store.set(key, entry);
+        return Promise.resolve();
     }
 
-    // AI generated - works well for `usage:*:something:*`
-    private matchesPattern(key: string, pattern: string): boolean {
-        // Convert glob pattern to regex
-        const regexPattern = pattern
-            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex special characters
-            .replace(/\\\*/g, '.*'); // Convert escaped * to .*
-
-        const regex = new RegExp(`^${regexPattern}$`);
-        return regex.test(key);
+    public async sMembers(key: string): Promise<string[]> {
+        const entry = this.store.get(key);
+        if (entry === undefined || entry.kind !== 'set' || this.isExpired(entry)) {
+            if (entry?.kind === 'set') {
+                this.store.delete(key);
+            }
+            return Promise.resolve([]);
+        }
+        return Promise.resolve(Array.from(entry.members));
     }
 }

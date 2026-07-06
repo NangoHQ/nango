@@ -56,15 +56,11 @@ describe('coordination locks', () => {
 
     it('releaseAllLocks must not remove a lock whose value was taken over by another owner', async () => {
         const lockApi = createLocks(store);
-        expect((await lockApi.tryAcquireLock({ owner: 'owner1', key: 'reassigned', ttlMs: 10_000 })).unwrap()).toBe(true);
-        const keyList: string[] = [];
-        for await (const k of store.scan('runner:lock:*')) {
-            if (!k.startsWith('runner:lock:owner:')) {
-                keyList.push(k);
-            }
-        }
-        expect(keyList).toHaveLength(1);
-        await store.set(keyList[0]!, 'owner2', { canOverride: true, ttlMs: 10_000 });
+        expect((await lockApi.tryAcquireLock({ owner: 'owner1', key: 'reassigned', ttlMs: 100 })).unwrap()).toBe(true);
+        expect((await lockApi.tryAcquireLock({ owner: 'owner1', key: 'keepalive', ttlMs: 100_000 })).unwrap()).toBe(true);
+
+        vi.advanceTimersByTime(101);
+        expect((await lockApi.tryAcquireLock({ owner: 'owner2', key: 'reassigned', ttlMs: 100_000 })).unwrap()).toBe(true);
 
         await lockApi.releaseAllLocks({ owner: 'owner1' });
 

@@ -43,12 +43,6 @@ export class Locking {
         return { key };
     }
 
-    public async releaseAll(prefix: string): Promise<void> {
-        for await (const key of this.store.scan(`${prefix}:*`)) {
-            await this.store.delete(key);
-        }
-    }
-
     public async release(lock: Lock): Promise<void> {
         try {
             await this.store.delete(lock.key);
