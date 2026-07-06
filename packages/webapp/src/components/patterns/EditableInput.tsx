@@ -1,4 +1,4 @@
-import { Check, Edit, Loader2, X } from 'lucide-react';
+import { Check, Loader2, Pencil, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
@@ -52,12 +52,16 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         onEditingChange?.(true);
     };
 
-    // We have to focus on useEffect because the input is disabled when not editing
+    // Focus in an effect because the control only becomes editable once `editing` flips.
     useEffect(() => {
         onEditingChange?.(editing);
-        if (editing) {
-            inputRef.current?.focus();
-        }
+        if (!editing) return;
+        const el = textareaRef.current ?? inputRef.current;
+        if (!el) return;
+        el.focus();
+        // Start editing from the end of the value, not wherever the caret was left in read mode.
+        const end = el.value.length;
+        el.setSelectionRange(end, end);
     }, [editing, onEditingChange]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -111,7 +115,8 @@ export const EditableInput: React.FC<EditableInputProps> = ({
     const displayValue = !canRead ? '•'.repeat(32) : value;
 
     return (
-        <div className="flex flex-col gap-2">
+        // In read mode the control is editable-looking but not editable, so drop the text caret cursor.
+        <div className={`flex flex-col gap-2 ${!editing ? '[&_input]:cursor-default [&_textarea]:cursor-default' : ''}`}>
             <InputGroup>
                 {textArea && (!secret || editing) ? (
                     <InputGroupTextarea
@@ -120,8 +125,10 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                         value={displayValue}
                         onChange={handleChange}
                         rows={6}
-                        disabled={!editing}
+                        // Read-only (not disabled) so the field still looks editable at rest; editing is gated by the pencil.
+                        readOnly={!editing}
                         onKeyDown={(e) => {
+                            if (!editing) return;
                             if (e.key === 'Escape') onCancelClicked();
                         }}
                         aria-invalid={!!error}
@@ -134,8 +141,10 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                         placeholder={editing ? placeHolder : undefined}
                         onChange={handleChange}
                         type={secret && !editing ? 'password' : 'text'}
-                        disabled={!editing}
+                        // Read-only (not disabled) so the field still looks editable at rest; editing is gated by the pencil.
+                        readOnly={!editing}
                         onKeyDown={(e) => {
+                            if (!editing) return;
                             if (e.key === 'Enter') void onSaveClicked();
                             if (e.key === 'Escape') onCancelClicked();
                         }}
@@ -152,7 +161,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                             <PermissionGate condition={canEdit} tooltipSide="bottom">
                                 {(allowed) => (
                                     <InputGroupButton label="Edit" disabled={!!disabled || !allowed} onClick={onEditClicked} size="icon-sm">
-                                        <Edit className="size-3.5" />
+                                        <Pencil className="size-3.5" />
                                     </InputGroupButton>
                                 )}
                             </PermissionGate>
