@@ -16,10 +16,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors
                 'bg-surface-input border-border-interactive text-text-default placeholder:text-text-secondary',
-                // Hover / focus border (focus ring removed pending design review)
+                // Hover / focus border + focus ring. The ring is flush against the field (no offset), unlike the button's padded ring.
                 'hover:border-border-interactive-hover focus:border-border-interactive-hover',
+                'focus:shadow-[0_0_0_2px_var(--focus-ring-default)]',
                 // Invalid
-                'aria-invalid:border-status-danger-border',
+                'aria-invalid:border-status-danger-border aria-invalid:focus:shadow-[0_0_0_2px_var(--focus-ring-danger)]',
                 // Disabled — dedicated tokens, no opacity
                 'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
                 className

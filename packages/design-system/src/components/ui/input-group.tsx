@@ -20,8 +20,8 @@ const inputGroupVariants = cva(
         'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
-        // Focus state — border darkens when the control is focused (focus ring removed pending design review).
-        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-interactive-hover',
+        // Focus state — border darkens and a flush focus ring appears when the control is focused (no offset like the button's padded ring).
+        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-interactive-hover has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_0_0_2px_var(--focus-ring-default)]',
         // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
         'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-interactive-hover',
 
@@ -29,7 +29,7 @@ const inputGroupVariants = cva(
         'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
         // Error state.
-        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border'
+        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_2px_var(--focus-ring-danger)]'
     ],
     {
         variants: {
@@ -138,7 +138,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputProps>(({ classN
             size={size}
             data-slot="input-group-control"
             data-filled={isFilled}
-            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none disabled:bg-transparent focus-visible:ring-0', className)}
+            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none focus:shadow-none disabled:bg-transparent focus-visible:ring-0', className)}
             value={value}
             defaultValue={defaultValue}
             onChange={handleChange}
@@ -182,7 +182,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
                 data-slot="input-group-control"
                 data-filled={isFilled}
                 className={cn(
-                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none disabled:bg-transparent focus-visible:ring-0',
+                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus:shadow-none disabled:bg-transparent focus-visible:ring-0',
                     className
                 )}
                 value={value}
