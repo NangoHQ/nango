@@ -677,6 +677,41 @@ function rgbaToHex({ r, g, b, a }: Rgba): string {
     return a >= 1 ? base : `${base}${to2(a * 255)}`;
 }
 
+/**
+ * Per-channel R/G/B/A number inputs under the picker. react-colorful's own arrow-key step is a
+ * hardcoded 5%; native number inputs step by 1 (per 255) / 1% for alpha — much finer — and give
+ * exact entry.
+ */
+function RgbaInputs({ value, onChange }: { value: Rgba; onChange: (c: Rgba) => void }) {
+    const fields = [
+        { key: 'r' as const, label: 'R', max: 255, display: Math.round(value.r), toValue: (n: number) => n },
+        { key: 'g' as const, label: 'G', max: 255, display: Math.round(value.g), toValue: (n: number) => n },
+        { key: 'b' as const, label: 'B', max: 255, display: Math.round(value.b), toValue: (n: number) => n },
+        { key: 'a' as const, label: 'A%', max: 100, display: Math.round(value.a * 100), toValue: (n: number) => n / 100 }
+    ];
+    return (
+        <div className="mt-2 flex gap-1">
+            {fields.map((f) => (
+                <label key={f.key} className="flex flex-1 flex-col items-center gap-0.5">
+                    <input
+                        type="number"
+                        min={0}
+                        max={f.max}
+                        value={f.display}
+                        onChange={(e) => {
+                            const n = Number(e.target.value);
+                            if (Number.isNaN(n)) return;
+                            onChange({ ...value, [f.key]: f.toValue(Math.max(0, Math.min(f.max, n))) });
+                        }}
+                        className="w-11 rounded border border-border-muted bg-surface-input px-1 py-0.5 text-center font-mono text-[11px] text-text-default focus:outline-none focus:ring-1 focus:ring-border-selected"
+                    />
+                    <span className="text-[10px] text-text-muted">{f.label}</span>
+                </label>
+            ))}
+        </div>
+    );
+}
+
 /** Compact contrast badge: worst ratio across the token's pairs + WCAG band, breakdown on hover. */
 function ContrastBadge({ scores }: { scores: ContrastScore[] }) {
     if (!scores.length) return <span className="w-16 shrink-0" />;
@@ -798,9 +833,11 @@ function TokenRow({
                             <span className="absolute inset-0 rounded-sm" style={{ backgroundColor: current }} />
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent side="left" align="center" sideOffset={4} className="w-auto p-2">
+                    {/* Open below the swatch (not left) so the current row's contrast badge stays visible while dragging */}
+                    <PopoverContent side="bottom" align="end" sideOffset={6} className="w-auto p-2">
                         {/* Native <input type=color> can't edit alpha; react-colorful adds a checkerboard alpha slider */}
                         <RgbaColorPicker color={hexToRgba(current)} onChange={(c) => onCommit(entry.cssVar, rgbaToHex(c))} />
+                        <RgbaInputs value={hexToRgba(current)} onChange={(c) => onCommit(entry.cssVar, rgbaToHex(c))} />
                     </PopoverContent>
                 </Popover>
                 <input
