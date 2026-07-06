@@ -12,11 +12,6 @@ function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     return res;
 }
 
-function joinPaths(basePath: string, path: string) {
-    const trimmedBase = basePath.replace(/\/$/, '');
-    return `${trimmedBase}${path.startsWith('/') ? path : `/${path}`}`;
-}
-
 export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: any; Method: any; Querystring?: any }>>(
     path: TEndpoint['Path'],
     opts: (TEndpoint['Method'] extends 'GET' ? { method?: TEndpoint['Method'] } : { method: TEndpoint['Method'] }) &
@@ -27,7 +22,10 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(useGlobal.getState().apiURL);
-    url.pathname = joinPaths(url.pathname, opts.params ? uriParamsReplacer(path, opts.params) : path);
+    const resolvedPath: string = opts.params ? uriParamsReplacer(path, opts.params) : path;
+    // Append instead of assigning to `url.pathname` directly, so a base path configured in
+    // `apiURL` (e.g. a self-hosted reverse-proxy prefix) is preserved rather than replaced.
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}${resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`}`;
 
     if (opts?.query) {
         for (const key in opts.query) {
