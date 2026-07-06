@@ -44,7 +44,7 @@ export type TriggerDefinition =
     | { kind: 'schedule'; frequency: string; autoStart?: boolean }
     | { kind: 'http'; input?: z.ZodTypeAny; subscriptions?: string[]; debounce?: DebounceOptions }
     | { kind: 'event'; events: OnEventType[] }
-    | { kind: 'invoke'; input: z.ZodTypeAny };
+    | { kind: 'invoke'; input?: z.ZodTypeAny };
 
 // The inbound http request that initiated the run.
 export interface HttpRequest {
@@ -145,17 +145,18 @@ export interface MetadataCapability<TValue> {
     setMetadata(metadata: TValue): Promise<void>;
     updateMetadata(metadata: Partial<TValue>): Promise<void>;
 }
-type InferInput<T> =
-    T extends CreateFunctionResponse<infer _M, infer _O, infer _Me, infer _Cp, infer Tr, infer _Ac>
-        ? Tr extends { kind: 'invoke'; input: infer I extends z.ZodTypeAny }
-            ? z.infer<I>
-            : never
-        : never;
+// Any function can be invoked.
+// The caller's input is the function's declared input or `void` when the trigger declares none.
+type InferInput<T> = T extends CreateFunctionResponse<infer _M, infer _O, infer _Me, infer _Cp, infer Tr, infer _Ac> ? z.infer<TriggerInput<Tr>> : never;
 type InferOutput<T> = T extends CreateFunctionResponse<infer _M, infer O extends z.ZodTypeAny, infer _Me, infer _Cp, infer _Tr, infer _Ac> ? z.infer<O> : never;
+type InvokeConnection = { connection_id: string; integrationId: string };
+// `invoke` options: `input` is required when the target declares one, and the whole object is optional when it declares none.
+type InvokeArgs<T> = [InferInput<T>] extends [void]
+    ? [options?: { connection?: InvokeConnection }]
+    : [options: { input: InferInput<T>; connection?: InvokeConnection }];
 // Present when `requires.invoke` is set: call another function and get its typed output back.
-// Pass `connection` to run the invoked function against a specific connection (e.g. one found via `searchConnections`).
 export interface InvokeCapability {
-    invoke<T extends { type: 'function' }>(fn: T, input: InferInput<T>, connection?: { connection_id: string; integrationId: string }): Promise<InferOutput<T>>;
+    invoke<T extends { type: 'function' }>(fn: T, ...args: InvokeArgs<T>): Promise<InferOutput<T>>;
 }
 
 // The capability-narrowed SDK surface a function `exec` receives.

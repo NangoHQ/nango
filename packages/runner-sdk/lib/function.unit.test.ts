@@ -149,7 +149,7 @@ describe('createFunction', () => {
                 exec: async (nango) => {
                     expectTypeOf<Has<typeof nango, 'invoke'>>().toEqualTypeOf<true>();
                     expectTypeOf<Has<typeof nango, 'proxy'>>().toEqualTypeOf<false>();
-                    const res = await nango.invoke(child, { q: 'x' });
+                    const res = await nango.invoke(child, { input: { q: 'x' } });
                     expectTypeOf(res).toEqualTypeOf<{ n: number }>();
                 }
             });
@@ -160,6 +160,38 @@ describe('createFunction', () => {
                 useMetadata: false,
                 useOutbound: false,
                 useInvoke: true
+            });
+        });
+
+        it('invoke types its input from the target trigger, regardless of trigger kind', () => {
+            const httpFn = createFunction({
+                description: 'http target',
+                output: z.object({ ok: z.boolean() }),
+                trigger: { kind: 'http', input: z.object({ title: z.string() }), debounce: { windowMs: 1000, take: 'all' } },
+                exec: () => ({ ok: true })
+            });
+
+            const scheduleFn = createFunction({
+                description: 'schedule target',
+                trigger: { kind: 'schedule', frequency: 'every hour' },
+                exec: () => {}
+            });
+
+            createFunction({
+                description: 'dispatcher',
+                requires: { outbound: false, invoke: true },
+                trigger: { kind: 'schedule', frequency: 'every hour' },
+                exec: async (nango) => {
+                    // http target: input matches the trigger input (single, not the coalesced array), output is typed
+                    const httpRes = await nango.invoke(httpFn, { input: { title: 'x' } });
+                    expectTypeOf(httpRes).toEqualTypeOf<{ ok: boolean }>();
+
+                    // @ts-expect-error http input must match the trigger's input schema
+                    await nango.invoke(httpFn, { input: { wrong: 1 } });
+
+                    // schedule target: no declared input
+                    await nango.invoke(scheduleFn);
+                }
             });
         });
 
