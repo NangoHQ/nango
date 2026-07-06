@@ -35,7 +35,7 @@ const inputGroupVariants = cva(
         variants: {
             size: {
                 // Default control height (matches Input).
-                default: 'h-9',
+                default: 'h-8',
                 // Hug-content — for in-popover search fields. Pair with `size="auto"` on the inner InputGroupInput.
                 auto: 'h-auto'
             }

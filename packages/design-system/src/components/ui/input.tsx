@@ -26,7 +26,7 @@ export const inputVariants = cva(
         variants: {
             size: {
                 // Default control height (Figma: space/2 × space/1.5)
-                default: 'h-9 px-2 py-1.5',
+                default: 'h-8 px-2 py-1.5',
                 // Hug-content — for in-popover search fields where the wrapper owns the padding
                 auto: 'h-auto p-0'
             }
