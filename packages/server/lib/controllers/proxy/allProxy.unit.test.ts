@@ -170,7 +170,7 @@ describe('handleResponse', () => {
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 
-    it('should forward allowlisted headers (mcp-session-id, x-request-id) and drop others', async () => {
+    it('should forward provider response headers on the buffered path', async () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('{"ok":true}', {
             contentType: 'application/json',
@@ -179,7 +179,8 @@ describe('handleResponse', () => {
                 'mcp-session-id': 'session-abc123',
                 'x-request-id': 'req-xyz',
                 'x-ratelimit-limit': '100',
-                'x-ratelimit-remaining': '42'
+                'x-ratelimit-remaining': '42',
+                link: '<https://api.example.com/page/2>; rel="next"'
             }
         });
 
@@ -189,8 +190,34 @@ describe('handleResponse', () => {
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('mcp-session-id', 'session-abc123');
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
-        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-limit', expect.anything());
-        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-remaining', expect.anything());
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-ratelimit-limit', '100');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-ratelimit-remaining', '42');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('link', '<https://api.example.com/page/2>; rel="next"');
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should not forward hop-by-hop, content-length and CORS headers on the buffered path', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('{"ok":true}', {
+            contentType: 'application/json',
+            status: 200,
+            headers: {
+                connection: 'keep-alive',
+                'keep-alive': 'timeout=5',
+                'content-length': '500',
+                'access-control-allow-origin': 'https://provider.example.com',
+                'x-request-id': 'req-xyz'
+            }
+        });
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await mockRes.waitForSend();
+
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('connection', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('keep-alive', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('content-length', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('access-control-allow-origin', expect.anything());
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 

@@ -60,13 +60,26 @@ const schemaHeaders = z.object({
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
 });
 
-// Headers from provider responses that Nango needs to explicitly forwards to the client.
-const PROXY_RESPONSE_HEADER_ALLOWLIST = [
-    'content-type',
-    'mcp-session-id', // MCP RFC — https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management
-    'x-request-id',
-    'x-correlation-id'
-];
+// Headers from provider responses that must not be forwarded to the client:
+// hop-by-hop headers describe the upstream connection, not ours; content-length
+// may be stale after axios decompression (express recomputes it on send).
+const PROXY_RESPONSE_HEADER_DENYLIST = new Set([
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailer',
+    'transfer-encoding',
+    'upgrade',
+    'content-length'
+]);
+
+export function shouldForwardResponseHeader(header: string): boolean {
+    const lowered = header.toLowerCase();
+    // access-control-* is excluded because Nango sets its own CORS headers
+    return !PROXY_RESPONSE_HEADER_DENYLIST.has(lowered) && !lowered.startsWith('access-control-');
+}
 
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
@@ -479,9 +492,11 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        for (const header of PROXY_RESPONSE_HEADER_ALLOWLIST) {
-            const value = responseStream.headers[header];
-            if (typeof value === 'string' && value !== '') {
+        for (const [header, value] of Object.entries(responseStream.headers)) {
+            if (!shouldForwardResponseHeader(header)) {
+                continue;
+            }
+            if ((typeof value === 'string' && value !== '') || typeof value === 'number' || Array.isArray(value)) {
                 res.setHeader(header, value);
             }
         }
