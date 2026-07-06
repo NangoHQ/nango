@@ -19,7 +19,6 @@ describe('createFunction', () => {
                     metadata: z.object({ org: z.string() })
                 },
                 trigger: { kind: 'schedule', frequency: 'every 2h', autoStart: true },
-                limits: { concurrency: 1 },
                 exec: async (nango, trigger) => {
                     await nango.batchSave([{ id: '1', title: 't' }], 'GithubIssue');
                     await nango.batchUpdate([{ id: '1', title: 't' }], 'GithubIssue');
@@ -100,7 +99,6 @@ describe('createFunction', () => {
                 description: 'Create a GitHub issue',
                 output: z.object({ issueId: z.string() }),
                 trigger: { kind: 'http', input: z.object({ title: z.string() }) },
-                limits: { concurrency: 'max' },
                 exec: (_nango, trigger) => {
                     expectTypeOf<Has<typeof _nango, 'proxy'>>().toEqualTypeOf<true>();
                     expectTypeOf<Has<typeof _nango, 'batchSave'>>().toEqualTypeOf<false>();
@@ -226,40 +224,27 @@ describe('createFunction', () => {
         });
     });
 
-    describe('limits.concurrency', () => {
-        it('is fixed to 1 for schedule triggers and a Concurrency value otherwise', () => {
+    describe('limits.concurrency.perConnection', () => {
+        it('is fixed to 1 for schedule triggers and a ConcurrencyLimit otherwise', () => {
             createFunction({
                 description: 'scheduled',
-                data: { models: { M: z.object({ id: z.string() }) } },
                 trigger: { kind: 'schedule', frequency: 'every hour' },
-                limits: { concurrency: 1 },
-                exec: async (nango) => {
-                    await nango.batchSave([{ id: '1' }], 'M');
-                }
-            });
-
-            createFunction({
-                description: 'http',
-                trigger: { kind: 'http', input: z.object({}) },
-                limits: { concurrency: 'max' },
+                limits: { concurrency: { perConnection: 1 } },
                 exec: () => {}
             });
 
             createFunction({
-                description: 'http writing records can exceed 1',
-                data: { models: { M: z.object({ id: z.string() }) } },
+                description: 'http can overlap runs for a connection',
                 trigger: { kind: 'http', input: z.object({}) },
-                limits: { concurrency: 'max' },
-                exec: async (nango) => {
-                    await nango.batchSave([{ id: '1' }], 'M');
-                }
+                limits: { concurrency: { perConnection: 'max' } },
+                exec: () => {}
             });
 
             createFunction({
-                description: 'schedule function cannot exceed 1',
+                description: 'schedule function cannot overlap',
                 trigger: { kind: 'schedule', frequency: 'every hour' },
-                // @ts-expect-error schedule triggers are pinned to concurrency: 1
-                limits: { concurrency: 'max' },
+                // @ts-expect-error schedule triggers are pinned to perConnection: 1
+                limits: { concurrency: { perConnection: 'max' } },
                 exec: () => {}
             });
         });

@@ -8,6 +8,7 @@ type InferZod<T> = T extends z.ZodTypeAny ? z.infer<T> : never;
 
 // Limits
 
+// Max concurrent runs for a single connection: `1` serializes, `'max'` lets them overlap.
 export type ConcurrencyLimit = 1 | 'max';
 
 // Debounce
@@ -220,8 +221,10 @@ export interface CreateFunctionProps<
     // Opt in/out of capabilities (connection, outbound, invoke). See `Requires`.
     requires?: TRequires;
     limits?: {
-        // Max concurrent runs. Pinned to `1` for schedule triggers; `'max'` allowed otherwise.
-        concurrency?: TTrigger extends { kind: 'schedule' } ? 1 : ConcurrencyLimit;
+        concurrency?: {
+            // Max concurrent runs for a single connection. Pinned to `1` for schedule triggers.
+            perConnection?: TTrigger extends { kind: 'schedule' } ? 1 : ConcurrencyLimit;
+        };
     };
     // The handler. Runs on the runner with the capability-narrowed `nango` surface.
     exec: (nango: Nango<TModels, TMetadata, TCheckpoint, TRequires>, trigger: Trigger<TTrigger>) => MaybePromise<z.infer<TOutput>>;
