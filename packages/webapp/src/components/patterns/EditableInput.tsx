@@ -186,7 +186,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                 )}
             </InputGroup>
             {editing && (error || hintText) && (
-                <p className={`text-body-small-regular ${error ? 'text-status-danger-text' : 'text-text-muted'}`}>*{error || hintText}</p>
+                <p className={`text-body-small-regular ${error ? 'text-status-danger-text' : 'text-text-muted'}`}>{error || hintText}</p>
             )}
         </div>
     );
