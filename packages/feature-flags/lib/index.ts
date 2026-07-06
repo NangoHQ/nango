@@ -139,6 +139,8 @@ export async function destroy(): Promise<void> {
             logger.info('Destroying feature flags client');
             const client = await promise;
             await client.destroy();
+        } catch (err) {
+            logger.error('Error destroying feature flags client', err);
         } finally {
             clientPromise = undefined;
             destroyPromise = undefined;

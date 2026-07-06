@@ -340,4 +340,14 @@ describe('getFeatureFlagsClient', () => {
         unleashInstances[1]!.isEnabled.mockReturnValue(true);
         await expect(second.isEnabled('any-flag', {}, false)).resolves.toBe(true);
     });
+
+    it('swallows errors from client.destroy()', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { getFeatureFlagsClient, destroy } = await import('./index.js');
+        const client = await getFeatureFlagsClient();
+        vi.spyOn(client, 'destroy').mockRejectedValue(new Error('destroy failed'));
+        await expect(destroy()).resolves.toBeUndefined();
+    });
 });
