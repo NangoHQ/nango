@@ -187,8 +187,17 @@ describe('createFunction', () => {
                     // @ts-expect-error http input must match the trigger's input schema
                     await nango.invoke(httpFn, { input: { wrong: 1 } });
 
+                    // @ts-expect-error required input cannot be skipped
+                    await nango.invoke(httpFn);
+
                     // schedule target: no declared input
                     await nango.invoke(scheduleFn);
+
+                    // a widened/opaque function reference (with no trigger) is rejected
+                    // so it can't skip required input
+                    const opaque = httpFn as { type: 'function' };
+                    // @ts-expect-error opaque reference does not satisfy the invoke target constraint
+                    await nango.invoke(opaque, { input: { title: 'x' } });
                 }
             });
         });

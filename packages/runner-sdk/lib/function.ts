@@ -148,7 +148,7 @@ export interface MetadataCapability<TValue> {
 }
 // Any function can be invoked.
 // The caller's input is the function's declared input or `void` when the trigger declares none.
-type InferInput<T> = T extends CreateFunctionResponse<infer _M, infer _O, infer _Me, infer _Cp, infer Tr, infer _Ac> ? z.infer<TriggerInput<Tr>> : never;
+type InferInput<T> = T extends { trigger: infer Tr } ? z.infer<TriggerInput<Tr>> : never;
 type InferOutput<T> = T extends CreateFunctionResponse<infer _M, infer O extends z.ZodTypeAny, infer _Me, infer _Cp, infer _Tr, infer _Ac> ? z.infer<O> : never;
 type InvokeConnection = { connection_id: string; integrationId: string };
 // `invoke` options: `input` is required when the target declares one, and the whole object is optional when it declares none.
@@ -157,7 +157,7 @@ type InvokeArgs<T> = [InferInput<T>] extends [void]
     : [options: { input: InferInput<T>; connection?: InvokeConnection }];
 // Present when `requires.invoke` is set: call another function and get its typed output back.
 export interface InvokeCapability {
-    invoke<T extends { type: 'function' }>(fn: T, ...args: InvokeArgs<T>): Promise<InferOutput<T>>;
+    invoke<T extends { type: 'function'; trigger: TriggerDefinition }>(fn: T, ...args: InvokeArgs<T>): Promise<InferOutput<T>>;
 }
 
 // The capability-narrowed SDK surface a function `exec` receives.
