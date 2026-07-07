@@ -35,6 +35,13 @@ export default defineConfig({
         fileParallelism: false,
         pool: 'forks',
         // Vitest 4 removed test.poolOptions; poolOptions.forks.singleFork is now maxWorkers: 1.
-        maxWorkers: 1
+        maxWorkers: 1,
+        // Send worker console output straight to stdout/stderr instead of routing it
+        // through Vitest's onUserConsoleLog RPC. Handlers here do fire-and-forget logging
+        // (e.g. the proxy's enrichOperation in a finally block) that outlives the request,
+        // so a stray log can land while the worker is tearing down. With interception on,
+        // that races the closing RPC and fails the run with
+        // "EnvironmentTeardownError: Closing rpc while onUserConsoleLog was pending".
+        disableConsoleIntercept: true
     }
 });
