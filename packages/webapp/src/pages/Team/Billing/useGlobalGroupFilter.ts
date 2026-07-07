@@ -1,7 +1,8 @@
 import { parseAsString, useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
-import { metricsSupportingDimension } from './usageBreakdown';
+import { useBillingUsageValueAvailability } from '@/hooks/usePlan';
+import { isSearchableDimension, metricsSupportingDimension } from './usageBreakdown';
 
 import type { AnyBreakdownDimension } from './usageBreakdown';
 import type { UsageMetric } from '@nangohq/types';
@@ -23,7 +24,7 @@ export interface GroupFilterSelection {
  * `isDivergingFromGlobal` reports whether applying would change at least one other
  * applicable panel — the signal for showing the button.
  */
-export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
+export function useGlobalGroupFilter(metrics: readonly UsageMetric[], env: string, timeframe: { start: string; end: string }) {
     const params = useMemo(() => {
         const p: Record<string, typeof breakdownParam> = {};
         for (const m of metrics) {
@@ -33,6 +34,10 @@ export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
         return p;
     }, [metrics]);
     const [values, setValues] = useQueryStates(params);
+
+    // Backs the "skip metrics with no data for the filter value" behaviour below. Keyed on the same
+    // top-N the filter popover uses so it reads the cache that's already warm from picking the value.
+    const { cachedHasValue, ensureHasValue } = useBillingUsageValueAvailability(env, timeframe);
 
     // Metrics this hook manages (i.e. on screen) that support `dim`. Intersecting with
     // `metrics` stops metrics that aren't displayed — and so never appear in the URL —
@@ -46,7 +51,7 @@ export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
     );
 
     const applyToAll = useCallback(
-        (sel: GroupFilterSelection) => {
+        async (sel: GroupFilterSelection) => {
             const updates: Record<string, string | null> = {};
             // Group: copy to supporting metrics when set; clear on every metric when null.
             if (sel.group !== null) {
@@ -56,14 +61,27 @@ export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
             }
             // Filter: copy to supporting metrics when set; clear on every metric when null.
             if (sel.filter !== null) {
-                const value = `${sel.filter.dimension}:${sel.filter.value}`;
-                for (const m of supporting(sel.filter.dimension)) updates[`${m}.filter`] = value;
+                const { dimension, value } = sel.filter;
+                const filterValue = `${dimension}:${value}`;
+                const targets = supporting(dimension);
+                // Non-searchable dims have a small, fully-listed value set (the first page is
+                // complete), so a value's absence from a metric's list reliably means "no data".
+                if (!isSearchableDimension(dimension)) {
+                    // Only fan the filter out to metrics that actually have data for this value, and
+                    // clear it on the rest — so a metric with no data for the value falls back to its
+                    // unfiltered chart instead of showing the raw value with "No data". On a lookup
+                    // failure, default to applying (optimistic) rather than silently dropping it.
+                    const availability = await Promise.all(targets.map((m) => ensureHasValue(m, dimension, value).catch(() => true)));
+                    targets.forEach((m, i) => (updates[`${m}.filter`] = availability[i] ? filterValue : null));
+                } else {
+                    for (const m of targets) updates[`${m}.filter`] = filterValue;
+                }
             } else {
                 for (const m of metrics) updates[`${m}.filter`] = null;
             }
             if (Object.keys(updates).length > 0) void setValues(updates);
         },
-        [setValues, supporting, metrics]
+        [setValues, supporting, metrics, ensureHasValue]
     );
 
     const isDivergingFromGlobal = useCallback(
@@ -79,12 +97,25 @@ export function useGlobalGroupFilter(metrics: readonly UsageMetric[]) {
             const groupTargets = sel.group !== null ? supporting(sel.group) : metrics;
             const groupTarget = sel.group ?? 'none';
             const groupDiverges = others(groupTargets).some((m) => (values[`${m}.breakdown`] ?? 'none') !== groupTarget);
-            const filterTargets = sel.filter !== null ? supporting(sel.filter.dimension) : metrics;
-            const filterTarget = sel.filter ? `${sel.filter.dimension}:${sel.filter.value}` : '';
-            const filterDiverges = others(filterTargets).some((m) => (values[`${m}.filter`] ?? '') !== filterTarget);
+            let filterDiverges: boolean;
+            if (sel.filter === null) {
+                filterDiverges = others(metrics).some((m) => (values[`${m}.filter`] ?? '') !== '');
+            } else {
+                const { dimension, value } = sel.filter;
+                const filterValue = `${dimension}:${value}`;
+                // A non-searchable filter targets a metric to unfiltered ('') when the cache says it
+                // has no data for the value — matching what applyToAll writes — so those panels don't
+                // read as a permanent divergence and keep the button up. Stay optimistic (target the
+                // value) while the cache is still cold.
+                const fullyListed = !isSearchableDimension(dimension);
+                filterDiverges = others(supporting(dimension)).some((m) => {
+                    const target = fullyListed && cachedHasValue(m, dimension, value) === false ? '' : filterValue;
+                    return (values[`${m}.filter`] ?? '') !== target;
+                });
+            }
             return groupDiverges || filterDiverges;
         },
-        [values, supporting, metrics]
+        [values, supporting, metrics, cachedHasValue]
     );
 
     return { isDivergingFromGlobal, applyToAll };

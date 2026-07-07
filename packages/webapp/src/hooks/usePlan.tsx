@@ -279,6 +279,43 @@ export function useApiGetBillingUsageTopDimensionValues<M extends UsageMetric>(
 }
 
 /**
+ * Resolvers for "does (metric, dimension) hold value V", read against the top-dimension-values
+ * cache. Backs "Apply to all": a filter should only fan out to metrics that actually carry the
+ * value, and for a non-searchable dimension the first page is the complete value set, so absence
+ * from it means the metric has no data for the value. `cachedHasValue` reads the warm cache
+ * synchronously (undefined when nothing is cached yet, so callers stay optimistic until it lands);
+ * `ensureHasValue` fetches on demand. Both read the no-search (first page) cache the filter popover
+ * and label lookups already populate.
+ */
+export function useBillingUsageValueAvailability(env: string, timeframe: { start: string; end: string } | undefined) {
+    const queryClient = useQueryClient();
+    const cachedHasValue = useCallback(
+        (metric: UsageMetric, dimension: string, value: string): boolean | undefined => {
+            const cached = queryClient.getQueryData<InfiniteData<GetBillingUsageTopDimensionValues['Success']>>(
+                topDimensionValuesQueryKey(timeframe, metric, dimension, '')
+            );
+            return cached ? cached.pages.some((p) => p.data.values.some((v) => v.id === value)) : undefined;
+        },
+        [queryClient, timeframe]
+    );
+    const ensureHasValue = useCallback(
+        async (metric: UsageMetric, dimension: string, value: string): Promise<boolean> => {
+            const data = await queryClient.ensureInfiniteQueryData({
+                staleTime: TOP_DIMENSION_VALUES_STALE_TIME,
+                queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, ''),
+                queryFn: fetchTopDimensionValuesPage(env, metric, dimension, timeframe, ''),
+                initialPageParam: 0,
+                getNextPageParam: (lastPage: GetBillingUsageTopDimensionValues['Success']) =>
+                    lastPage.data.pagination.hasMore ? lastPage.data.pagination.page + 1 : undefined
+            });
+            return data.pages.some((p) => p.data.values.some((v) => v.id === value));
+        },
+        [queryClient, env, timeframe]
+    );
+    return { cachedHasValue, ensureHasValue };
+}
+
+/**
  * Returns a callback that warms the value cache (first page, no search) for a set of dimensions.
  * Call it when the filter popover opens so picking a dimension shows its values instantly instead
  * of spinning through a fetch. No-ops per dimension while the cached values are still fresh.
