@@ -5,10 +5,19 @@ import type { ChartSeries } from '../../../components/patterns/chart/types';
 import type { AnyBreakdownDimension } from './usageBreakdown';
 import type { BillingUsageMetric } from '@nangohq/types';
 
-/** Map breakdown entries to stacked chart series: largest usage first, with the 'rest' rollup last. */
-export function toChartSeries(entries: BillingUsageMetric[], dimension: AnyBreakdownDimension): ChartSeries[] {
+/**
+ * Map breakdown entries to stacked chart series: largest usage first, with the 'rest' rollup last.
+ * `labelForValue` turns a raw dim value into its display label; it defaults to `formatDimensionValue`
+ * but callers pass a resolver for dimensions whose stored value isn't the label (e.g. `environment_id`,
+ * whose value is an id resolved to a name via top-dimension-values).
+ */
+export function toChartSeries(
+    entries: BillingUsageMetric[],
+    dimension: AnyBreakdownDimension,
+    labelForValue: (value: string) => string = (value) => formatDimensionValue(dimension, value)
+): ChartSeries[] {
     const ranked = entries.filter((e) => !e.isRest).sort((a, b) => b.total - a.total);
-    const labels = ranked.map((entry) => (entry.group ? formatDimensionValue(dimension, entry.group.value) : '—'));
+    const labels = ranked.map((entry) => (entry.group ? labelForValue(entry.group.value) : '—'));
     // Resolve all of this chart's colors at once so no two series share a color (see colorsForValues).
     const colors = colorsForValues(labels, dimension);
     const series: ChartSeries[] = ranked.map((entry, i) => {

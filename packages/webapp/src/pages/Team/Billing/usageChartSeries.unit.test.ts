@@ -57,4 +57,11 @@ describe('toChartSeries', () => {
         const e = entry({ value: 'a', total: 8 });
         expect(toChartSeries([e], 'integration_id')[0].usage).toBe(e.usage);
     });
+
+    it('resolves labels via labelForValue while keeping the raw value for drill-in', () => {
+        const names = new Map([['105', 'dev']]);
+        const series = toChartSeries([entry({ value: '105', total: 7 })], 'environment_id', (v) => names.get(v) ?? v);
+        expect(series[0].label).toBe('dev'); // env id resolved to its name for display
+        expect(series[0].value).toBe('105'); // raw id preserved so a drill-in builds a valid filter param
+    });
 });

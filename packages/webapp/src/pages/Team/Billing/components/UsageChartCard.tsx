@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
-import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
+import { useApiGetBillingUsageDetail, useApiGetBillingUsageTopDimensionValues } from '@/hooks/usePlan';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
@@ -61,11 +61,26 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail });
     const detailMetric = detailQuery.data?.data.usage[metric];
 
+    // `environment_id` values are stored/returned as raw env ids; only top-dimension-values carries
+    // the display name. Fetch it when an env grouping or filter is active (shares the cache the filter
+    // chip already warms) and resolve ids → names for the chart's series labels, matching the chip.
+    const envInvolved = dimension === 'environment_id' || filter?.dimension === 'environment_id';
+    // No search term (''): environment_id's full set fits the first page (it's a non-searchable dim).
+    const envValuesQuery = useApiGetBillingUsageTopDimensionValues(env, metric, envInvolved ? 'environment_id' : null, timeframe, '', {
+        enabled: envInvolved
+    });
+    // The display label for a raw dim value: env ids resolve to names, everything else formats as-is.
+    const labelForValue = useMemo(() => {
+        const values = envValuesQuery.data?.pages.flatMap((p) => p.data.values) ?? [];
+        const byId = new Map(values.map((v) => [v.id, v.label] as const));
+        return (dim: AnyBreakdownDimension, value: string) => (dim === 'environment_id' ? (byId.get(value) ?? value) : formatDimensionValue(dim, value));
+    }, [envValuesQuery.data]);
+
     const breakdownEntries = detailMetric?.breakdown;
     const breakdownSeries = useMemo<ChartSeries[] | undefined>(() => {
         if (!inBreakdownMode || dimension === null) return undefined;
-        return breakdownEntries ? toChartSeries(breakdownEntries, dimension) : [];
-    }, [inBreakdownMode, dimension, breakdownEntries]);
+        return breakdownEntries ? toChartSeries(breakdownEntries, dimension, (value) => labelForValue(dimension, value)) : [];
+    }, [inBreakdownMode, dimension, breakdownEntries, labelForValue]);
 
     // Group and filter are independent slots: clearing the filter leaves the grouping untouched.
     const clearFilter = () => {
@@ -95,7 +110,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // a one-row legend. When also grouped, the breakdown series own the colours and legend.
     let singleSeries: { label: string; color: string } | undefined;
     if (inFilterMode && !inBreakdownMode && filter) {
-        const label = formatDimensionValue(filter.dimension, filter.value);
+        const label = labelForValue(filter.dimension, filter.value);
         singleSeries = { label, color: colorsForValues([label], filter.dimension).get(label) ?? 'var(--ds-color-brand-500)' };
     }
 
