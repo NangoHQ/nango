@@ -81,7 +81,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <PermissionGate condition={canCreateTestConnection} asChild>
                         {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg" disabled={!allowed}>
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
                                 Add test connection
                             </ButtonLink>
                         )}

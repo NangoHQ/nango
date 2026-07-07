@@ -7,8 +7,8 @@ import type { VariantProps } from 'class-variance-authority';
 
 export const inputVariants = cva(
     [
-        // Shape + spacing (Figma: hairline border, radius/sm)
-        'flex w-full min-w-0 rounded-ds-sm border-ds-hairline outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
+        // Shape + spacing (Figma: hairline border, radius/xs)
+        'flex w-full min-w-0 rounded-ds-xs border-ds-hairline outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
         // Typography (Figma text/regular/md)
         'text-ds-md font-ds-regular leading-ds-normal',
         // Default colors
@@ -28,7 +28,7 @@ export const inputVariants = cva(
         variants: {
             size: {
                 // Default control height (Figma: space/2 × space/1.5)
-                default: 'h-9 px-2 py-1.5',
+                default: 'h-8 px-2 py-1.5',
                 // Hug-content — for in-popover search fields where the wrapper owns the padding
                 auto: 'h-auto p-0'
             }
