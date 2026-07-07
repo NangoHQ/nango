@@ -91,7 +91,7 @@ export const ShowIntegration: React.FC = () => {
                     value={activeTab}
                     onValueChange={(value) => {
                         if (value === 'playground') {
-                            openPlaygroundWithContext({ integration: integration.integration.unique_key });
+                            openPlaygroundWithContext({ source: 'integration', integration: integration.integration.unique_key });
                         } else {
                             setActiveTab(value);
                         }

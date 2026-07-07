@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { metrics, Ok } from '@nangohq/utils';
 
@@ -69,6 +70,15 @@ export const sendSync = async ({
 
     if (!shouldSend({ success, type: 'sync', webhookSettings: settings })) {
         return Ok(undefined);
+    }
+
+    // Real-time integrations can emit a completion webhook on every provider event.
+    // This flag lets us disable those callbacks per environment and integration.
+    if (success && operation === 'WEBHOOK') {
+        const shouldSendWebhook = await getFlags().shouldSendSyncCompletedWebhook(environment.id, connection.provider_config_key);
+        if (!shouldSendWebhook) {
+            return Ok(undefined);
+        }
     }
 
     const logCtx = await logContextGetter.create(
