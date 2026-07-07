@@ -560,13 +560,12 @@ export async function handleResponse({
 
         try {
             res.send(Buffer.concat(responseData));
+            onEgressedBytes?.(responseLen);
         } catch (err) {
             void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
             return;
-        } finally {
-            onEgressedBytes?.(responseLen);
         }
 
         await logCtx.success();
