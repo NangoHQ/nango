@@ -68,36 +68,4 @@ Obtain your AgentLine API key and connect it to Nango.
 
 Official docs: [AgentLine API](https://docs.agentline.cloud)
 
-## 🔄 Syncing AgentLine data
-
-AgentLine list endpoints (`/v1/agents`, `/v1/numbers`, `/v1/calls`, `/v1/messages`) support offset pagination (`limit` + `offset`) and return a bare JSON array — Nango auto-paginates them via the proxy.
-
-To continuously mirror AgentLine data into Nango, define a [Sync](/reference/sdk/cli/sync) in your integration. Example for call history:
-
-```typescript
-import type { NangoSync } from '@nangohq/node';
-
-interface Call {
-    id: string;
-    agent_id: string;
-    direction: 'inbound' | 'outbound';
-    to_number: string;
-    from_number: string;
-    status: string;
-    duration_seconds: number;
-    started_at: string;
-}
-
-export default async function syncCalls(nango: NangoSync) {
-    // Nango paginates automatically thanks to the provider's paginate config.
-    const calls = await nango.get<Call[]>({
-        endpoint: '/v1/calls',
-        // incremental: only fetch calls that changed since the last run
-        params: { since: nango.lastSyncDate?.toISOString() ?? '' }
-    });
-
-    await nango.batchSave<Call>(calls.data, 'Call');
-}
-```
-
-The same pattern applies to `Agent` (`/v1/agents`), `PhoneNumber` (`/v1/numbers`), and `Message` (`/v1/messages`). Use [Actions](/reference/sdk/cli/action) for write operations like `POST /v1/calls` (make an outbound call) or `POST /v1/numbers` (buy a number).
+---
