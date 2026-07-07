@@ -75,9 +75,7 @@ When `--json` is set, the CLI suppresses human-readable formatting and writes a 
       { "level": "info", "msg": "Fetched 5 tickets" }
     ]
   },
-  "requests": [
-    { "method": "GET", "endpoint": "/issues", "status": 200 }
-  ],
+  "requests": [],
   "diagnostics": null
 }
 ```
@@ -86,10 +84,10 @@ Envelope fields:
 
 - `output` — for action functions, the returned value; for sync functions, the records that would have been persisted, keyed by model.
 - `logs` — the log counts and messages the run produced.
-- `requests` — the external API calls made during the run. Only populated when `--save-responses` is set; otherwise an empty array.
+- `requests` — the external API calls made during the run. Only populated when `--save-responses` (`--save`) is set; otherwise an empty array.
 - `diagnostics` — memory and CPU stats. Only populated when `--diagnostics` is set; otherwise `null`.
 
-On failure the `ok` field is `false` and `error` contains the error message (and `code` when available). Every failure path, including argument and configuration errors, still emits a single envelope, and the process exit code is preserved so CI can detect failure without parsing the body. This is designed for CI pipelines and agent harnesses that need to parse the dry run result.
+On failure the `ok` field is `false` and `error` contains the error message (and `code` when available). Once the dry run starts, every failure path emits a single envelope and the process exit code is preserved, so CI can detect failure without parsing the body. Errors caught earlier by the CLI itself, such as missing arguments or invalid options, are still reported as plain text on stderr with a non-zero exit code. This is designed for CI pipelines and agent harnesses that need to parse the dry run result.
 
 ## Data validation
 
