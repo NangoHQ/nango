@@ -167,8 +167,6 @@ publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(cookieParser(), oauthController.oauthCallback.bind(oauthController));
-// Registered before the /oauth jsonContentTypeMiddleware mount: authorization servers
-// fetch this document and may send arbitrary headers.
 publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(getClientMetadata);
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 

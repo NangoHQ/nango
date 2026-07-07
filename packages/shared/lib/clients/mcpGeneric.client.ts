@@ -139,6 +139,18 @@ export async function discoverMcpMetadata(
             }
         }
 
+        if (metadata.registration_endpoint) {
+            try {
+                validateUrl(metadata.registration_endpoint);
+            } catch (err) {
+                void logCtx.error('Discovered registration_endpoint failed security validation, ignoring it', {
+                    url: metadata.registration_endpoint,
+                    error: err instanceof Error ? err.message : String(err)
+                });
+                delete metadata.registration_endpoint;
+            }
+        }
+
         void logCtx.info('MCP metadata discovery successful', {
             tokenEndpoint: metadata.token_endpoint,
             authEndpoint: metadata.authorization_endpoint

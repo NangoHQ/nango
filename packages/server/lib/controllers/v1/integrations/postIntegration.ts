@@ -103,7 +103,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
                     res.status(400).send({
                         error: {
                             code: 'invalid_body',
-                            message: 'Client ID metadata documents require Nango to be reachable at a public https URL (NANGO_SERVER_URL)'
+                            message: 'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
                         }
                     });
                     return;

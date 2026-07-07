@@ -108,6 +108,21 @@ describe(`GET ${endpoint}`, () => {
         expect(res.status).toBe(404);
     });
 
+    it('should 404 for non-MCP integrations', async () => {
+        vi.stubEnv('NANGO_SERVER_URL', serverUrl);
+        const { env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const { res, json } = await api.fetch(endpoint, {
+            method: 'GET',
+            params: { environmentUuid: env.uuid, providerConfigKey: 'github' }
+        });
+
+        isError(json);
+        expect(json.error.code).toBe('unknown_provider_config');
+        expect(res.status).toBe(404);
+    });
+
     it('should 404 on unknown integration', async () => {
         vi.stubEnv('NANGO_SERVER_URL', serverUrl);
         const { env } = await seeders.seedAccountEnvAndUser();

@@ -1070,10 +1070,9 @@ class OAuthController {
             let clientInformation: OAuthClientInformation;
             const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
             const clientIdMethod = genericMcpClient.chooseMcpClientIdMethod(metadata, cimdUrl);
+            metrics.increment(metrics.Types.MCP_CLIENT_ID_METHOD, 1, { method: clientIdMethod, provider: config.provider });
             if (clientIdMethod === 'cimd' && cimdUrl) {
-                // The authorization server fetches our hosted metadata document from this URL
                 clientInformation = { client_id: cimdUrl };
-                void logCtx.info('Using client ID metadata document (CIMD)', { clientId: cimdUrl });
             } else if (clientIdMethod === 'dcr') {
                 clientInformation = await registerClient(mcpServerUrl, {
                     metadata,

@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { accountService, configService, getGlobalClientMetadataDocumentUrl, getGlobalOAuthCallbackUrl } from '@nangohq/shared';
+import { accountService, configService, getGlobalClientMetadataDocumentUrl, getGlobalOAuthCallbackUrl, getProvider } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -32,9 +32,7 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
 
     const clientId = getGlobalClientMetadataDocumentUrl(environmentUuid, providerConfigKey);
     if (!clientId) {
-        res.status(404).send({
-            error: { code: 'feature_disabled', message: 'Client ID metadata documents require NANGO_SERVER_URL to be a public https URL' }
-        });
+        res.status(404).send({ error: { code: 'feature_disabled' } });
         return;
     }
 
@@ -47,6 +45,12 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
 
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
+        res.status(404).send({ error: { code: 'unknown_provider_config' } });
+        return;
+    }
+
+    const provider = getProvider(integration.provider);
+    if (provider?.auth_mode !== 'MCP_OAUTH2' && provider?.auth_mode !== 'MCP_OAUTH2_GENERIC') {
         res.status(404).send({ error: { code: 'unknown_provider_config' } });
         return;
     }
