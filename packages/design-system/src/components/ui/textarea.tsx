@@ -16,12 +16,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors
                 'bg-surface-input border-border-interactive text-text-default placeholder:text-text-secondary',
-                // Hover border. On focus the 0.5px hairline border adopts the ring color and a 1px inset shadow draws the ring just inside
-                // the edge, so the ring covers the border and sits flush inside without expanding the field's footprint.
+                // Hover border. On focus the hairline border adopts the ring color and 0.5px outset + 0.5px inset shadows draw a 1px ring
+                // centered on the field edge (half outside, half inside), continuous with the recolored border.
                 'hover:border-border-interactive-hover',
-                'focus:border-[var(--focus-ring-default)] focus:shadow-[inset_0_0_0_1px_var(--focus-ring-default)]',
+                'focus:border-[var(--focus-ring-default)] focus:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
                 // Invalid
-                'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[inset_0_0_0_1px_var(--focus-ring-danger)]',
+                'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
                 // Disabled — dedicated tokens, no opacity
                 'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
                 className
