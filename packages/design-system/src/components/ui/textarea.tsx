@@ -11,7 +11,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
             data-slot="textarea"
             className={cn(
                 // Shape + spacing (matches Input)
-                'flex w-full min-w-0 rounded-ds-sm border-ds-hairline px-2 py-1.5 outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
+                'flex w-full min-w-0 rounded-ds-xs border-ds-hairline px-2 py-1.5 outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
                 // Typography (Figma text/regular/md)
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors

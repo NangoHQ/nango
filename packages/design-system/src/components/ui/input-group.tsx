@@ -11,7 +11,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 const inputGroupVariants = cva(
     [
-        'group/input-group bg-surface-input border-ds-hairline border-border-interactive text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-sm transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-interactive-hover',
+        'group/input-group bg-surface-input border-ds-hairline border-border-interactive text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-xs transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-interactive-hover',
         'min-w-0 has-[>textarea]:h-auto',
 
         // Variants based on alignment.
