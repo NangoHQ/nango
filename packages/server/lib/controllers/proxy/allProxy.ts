@@ -604,41 +604,52 @@ export function handleErrorResponse({
     logCtx: LogContext;
     onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
 }) {
+    const countBytes = (body: Record<string, unknown>): number => {
+        return Buffer.byteLength(JSON.stringify(body));
+    };
+
     const proxyErr = proxyErrorFromErrorChain(error);
     if (proxyErr?.code === 'proxy_redirect_to_denied_host') {
         void logCtx.error('Proxy redirect denied by denylist', { error: proxyErr });
-        res.status(400).send({
+        const body = {
             error: {
                 code: 'base_url_override_not_allowed',
                 message: 'This base URL override is not allowed by server configuration.'
             }
-        });
+        };
+        res.status(400).send(body);
+        onEgressedBytes?.(countBytes(body));
         return;
     }
 
     const outboundErr = findOutboundUrlError(error);
     if (outboundErr) {
         void logCtx.error('Proxy outbound URL denied by policy', { error: outboundErr });
-        res.status(400).send({
+        const body = {
             error: {
                 code: 'base_url_override_not_allowed',
                 message: 'This outbound URL is not allowed by server configuration.'
             }
-        });
+        };
+        res.status(400).send(body);
+        onEgressedBytes?.(countBytes(body));
         return;
     }
 
     if (!isAxiosError(error)) {
         if (error instanceof ProxyError) {
             void logCtx.error('Unknown error', { error });
-            res.status(400).send({
+            const body = {
                 error: { code: error.code, message: error.message }
-            });
+            };
+            res.status(400).send(body);
+            onEgressedBytes?.(countBytes(body));
             return;
         }
 
         void logCtx.error('Unknown error', { error });
         res.status(500).send();
+        onEgressedBytes?.(0);
         return;
     }
 
@@ -657,6 +668,7 @@ export function handleErrorResponse({
         const responseHeaders = error.response?.headers || {};
 
         res.status(responseStatus).set(responseHeaders).send(errorObject);
+        onEgressedBytes?.(countBytes(errorObject));
 
         return;
     }
@@ -670,6 +682,7 @@ export function handleErrorResponse({
         errorStream.on('error', (err) => {
             void logCtx.error('Error reading upstream error stream', { error: err });
             res.status(500).send();
+            onEgressedBytes?.(0);
         });
         errorStream.on('end', () => {
             const buffer = chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0);
