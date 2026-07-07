@@ -74,7 +74,7 @@ export const UserSettings: React.FC = () => {
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>
-            <div className="grid grid-cols-[237px_1fr] items-center gap-x-6 gap-y-8">
+            <div className="grid max-w-[600px] grid-cols-[237px_1fr] items-center gap-x-6 gap-y-8">
                 <FieldLabel htmlFor="display-name">Display name</FieldLabel>
                 <EditableInput id="display-name" initialValue={user.name} onSave={onSaveDisplayName} validate={validateDisplayName} />
 
@@ -91,7 +91,7 @@ export const UserSettings: React.FC = () => {
 
                 <FieldLabel htmlFor="appearance">Appearance</FieldLabel>
                 <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
-                    <SelectTrigger id="appearance" className="w-48">
+                    <SelectTrigger id="appearance" className="w-full">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
