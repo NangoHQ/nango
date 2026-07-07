@@ -21,7 +21,7 @@ const inputGroupVariants = cva(
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
         // Focus state — border darkens and a flush focus ring appears when the control is focused (no offset like the button's padded ring).
-        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-interactive-hover has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_0_0_2px_var(--focus-ring-default)]',
+        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-interactive-hover has-[[data-slot=input-group-control]:focus-visible]:shadow-[inset_0_0_0_2px_var(--focus-ring-default)]',
         // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
         'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-interactive-hover',
 
@@ -29,7 +29,7 @@ const inputGroupVariants = cva(
         'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
         // Error state.
-        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_2px_var(--focus-ring-danger)]'
+        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[inset_0_0_0_2px_var(--focus-ring-danger)]'
     ],
     {
         variants: {
