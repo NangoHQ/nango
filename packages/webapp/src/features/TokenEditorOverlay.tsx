@@ -525,16 +525,19 @@ function FilterPicker({ value, onChange }: { value: string | null; onChange: (re
                     </Tooltip>
                 </div>
             ) : (
-                /* Inactive: ghost icon button. TooltipTrigger must wrap the Button directly (Popover trigger
-                   outer) — nesting it under PopoverTrigger breaks the tooltip's anchor (renders off-screen). */
+                /* Inactive: ghost icon button. Tooltip + Popover triggers can't both go on the same node
+                   (one order breaks the tooltip anchor, the other breaks the popover click), so the tooltip
+                   anchors to a wrapper span and the popover trigger stays on the button inside it. */
                 <Tooltip delayDuration={500}>
-                    <PopoverTrigger asChild>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1">
-                                <ListFilter className="size-3.5" />
-                            </Button>
-                        </TooltipTrigger>
-                    </PopoverTrigger>
+                    <TooltipTrigger asChild>
+                        <span className="inline-flex shrink-0">
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1">
+                                    <ListFilter className="size-3.5" />
+                                </Button>
+                            </PopoverTrigger>
+                        </span>
+                    </TooltipTrigger>
                     <TooltipContent side="top">Filter by source token</TooltipContent>
                 </Tooltip>
             )}
