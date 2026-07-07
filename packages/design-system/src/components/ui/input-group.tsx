@@ -138,7 +138,10 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, InputProps>(({ classN
             size={size}
             data-slot="input-group-control"
             data-filled={isFilled}
-            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none focus:shadow-none disabled:bg-transparent focus-visible:ring-0', className)}
+            className={cn(
+                'flex-1 rounded-none border-0 bg-transparent shadow-none focus:shadow-none aria-invalid:focus:shadow-none disabled:bg-transparent focus-visible:ring-0',
+                className
+            )}
             value={value}
             defaultValue={defaultValue}
             onChange={handleChange}
@@ -182,7 +185,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
                 data-slot="input-group-control"
                 data-filled={isFilled}
                 className={cn(
-                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus:shadow-none disabled:bg-transparent focus-visible:ring-0',
+                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus:shadow-none aria-invalid:focus:shadow-none disabled:bg-transparent focus-visible:ring-0',
                     className
                 )}
                 value={value}
