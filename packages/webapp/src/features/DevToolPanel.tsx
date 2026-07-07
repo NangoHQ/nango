@@ -1,5 +1,5 @@
 import { BarChart3, ChevronRight, Palette, X } from 'lucide-react';
-import { lazy, Suspense, useEffect } from 'react';
+import { Component, lazy, Suspense, useEffect } from 'react';
 import { create } from 'zustand';
 
 import { IconButton } from '@nangohq/design-system';
@@ -9,9 +9,34 @@ import { useTeam } from '@/hooks/useTeam';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
+import type { ReactNode } from 'react';
+
 // Lazy-loaded so the Token Editor — and its bundled tokens.json + usage snapshot — is code-split
 // out of the main bundle. It's a dev/admin-only tool, so the chunk is only fetched when opened.
 const TokenEditorContent = lazy(() => import('./TokenEditorOverlay').then((m) => ({ default: m.TokenEditorContent })));
+
+// Local boundary so a failed lazy chunk load stays contained to the dev panel (with a reload) rather
+// than bubbling to the app-level error boundary. React caches a rejected lazy import, so recovering
+// from a chunk failure needs a full reload, not just a re-render.
+class TokenEditorErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+    state = { failed: false };
+    static getDerivedStateFromError() {
+        return { failed: true };
+    }
+    render() {
+        if (this.state.failed) {
+            return (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-text-muted">
+                    <span>Couldn&apos;t load the Token Editor.</span>
+                    <button onClick={() => window.location.reload()} className="rounded border border-border-muted px-2 py-1 hover:text-text-default">
+                        Reload
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 /**
  * True when the dev tool panel is available based on the current hostname:
@@ -139,9 +164,11 @@ export const DevToolPanel: React.FC = () => {
                     </div>
                 </>
             ) : (
-                <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-text-muted">Loading…</div>}>
-                    <TokenEditorContent onBack={() => setView('home')} onClose={close} />
-                </Suspense>
+                <TokenEditorErrorBoundary>
+                    <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-text-muted">Loading…</div>}>
+                        <TokenEditorContent onBack={() => setView('home')} onClose={close} />
+                    </Suspense>
+                </TokenEditorErrorBoundary>
             )}
         </div>
     );
