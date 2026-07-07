@@ -1,4 +1,4 @@
-import { configService, connectionService, getProvider } from '@nangohq/shared';
+import { configService, connectionService, getGlobalClientMetadataDocumentUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -6,7 +6,7 @@ import { resolveIntegrationConfig } from '../integrationConfig.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 import { validationParams } from './getIntegration.js';
 
-import type { PatchIntegration } from '@nangohq/types';
+import type { PatchIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -63,6 +63,14 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         }
 
         integration.unique_key = body.integrationId;
+
+        // The CIMD-based client_id embeds the unique_key, keep it in sync on rename
+        if (provider.auth_mode === 'MCP_OAUTH2' && (provider as ProviderMcpOAUTH2).client_registration === 'metadata') {
+            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, integration.unique_key);
+            if (cimdUrl) {
+                integration.oauth_client_id = cimdUrl;
+            }
+        }
     }
 
     // Custom display name
@@ -124,6 +132,15 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                 ...(body.privateKey !== undefined && { private_key: Buffer.from(body.privateKey).toString('base64') })
             };
         } else if (body.authType === 'MCP_OAUTH2') {
+            // For dynamic (DCR) and metadata (CIMD) registration the client_id is
+            // managed by Nango, only static integrations accept user credentials
+            const clientRegistration = provider.auth_mode === 'MCP_OAUTH2' ? (provider as ProviderMcpOAUTH2).client_registration : undefined;
+            if (clientRegistration !== 'static' && (body.clientId !== undefined || body.clientSecret !== undefined)) {
+                res.status(400).send({
+                    error: { code: 'invalid_body', message: `Client credentials can't be updated for ${clientRegistration} client registration` }
+                });
+                return;
+            }
             if (body.clientId !== undefined) {
                 integration.oauth_client_id = body.clientId;
             }

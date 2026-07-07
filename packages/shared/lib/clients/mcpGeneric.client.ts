@@ -52,6 +52,25 @@ function validateUrl(url: string): void {
 }
 
 /**
+ * Picks the client identification method following the MCP spec priority:
+ * Client ID Metadata Documents (when the authorization server advertises support
+ * and we can host the document at a public https URL) over Dynamic Client
+ * Registration, with a static placeholder client as last resort.
+ */
+export function chooseMcpClientIdMethod(
+    metadata: Pick<OAuthMetadata, 'registration_endpoint' | 'client_id_metadata_document_supported'>,
+    cimdUrl: string | null
+): 'cimd' | 'dcr' | 'static' {
+    if (metadata.client_id_metadata_document_supported === true && cimdUrl) {
+        return 'cimd';
+    }
+    if (metadata.registration_endpoint) {
+        return 'dcr';
+    }
+    return 'static';
+}
+
+/**
  * Discovers OAuth scopes from server metadata, with preference for resource metadata scopes
  */
 function discoverScopes(resourceMetadata?: OAuthProtectedResourceMetadata, metadata?: OAuthMetadata): string | undefined {

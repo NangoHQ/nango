@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as utils from './utils.js';
 
@@ -685,5 +685,42 @@ describe('awsSigV4 interpolation', () => {
         // The credential scope in the auth header uses the date stamp (first 8 chars)
         const auth = utils.interpolateString('${awsSigV4(KEY, SECRET, us-east-1, iam)}', { now: NOW });
         expect(auth).toContain(`Credential=KEY/${date.slice(0, 8)}/`);
+    });
+});
+
+describe('getGlobalClientMetadataDocumentUrl', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('builds the document url from NANGO_SERVER_URL', () => {
+        vi.stubEnv('NANGO_SERVER_URL', 'https://api.example.com');
+        expect(utils.getGlobalClientMetadataDocumentUrl('env-uuid', 'my-integration')).toBe(
+            'https://api.example.com/oauth/client-metadata/env-uuid/my-integration'
+        );
+    });
+
+    it('strips trailing slashes from the base url', () => {
+        vi.stubEnv('NANGO_SERVER_URL', 'https://api.example.com/');
+        expect(utils.getGlobalClientMetadataDocumentUrl('env-uuid', 'my-integration')).toBe(
+            'https://api.example.com/oauth/client-metadata/env-uuid/my-integration'
+        );
+    });
+
+    it('url-encodes the provider config key', () => {
+        vi.stubEnv('NANGO_SERVER_URL', 'https://api.example.com');
+        expect(utils.getGlobalClientMetadataDocumentUrl('env-uuid', 'my integration')).toBe(
+            'https://api.example.com/oauth/client-metadata/env-uuid/my%20integration'
+        );
+    });
+
+    it('returns null when NANGO_SERVER_URL is not https', () => {
+        vi.stubEnv('NANGO_SERVER_URL', 'http://localhost:3003');
+        expect(utils.getGlobalClientMetadataDocumentUrl('env-uuid', 'my-integration')).toBeNull();
+    });
+
+    it('returns null when NANGO_SERVER_URL is unset', () => {
+        vi.stubEnv('NANGO_SERVER_URL', '');
+        expect(utils.getGlobalClientMetadataDocumentUrl('env-uuid', 'my-integration')).toBeNull();
     });
 });

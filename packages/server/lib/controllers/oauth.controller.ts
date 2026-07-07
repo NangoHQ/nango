@@ -19,6 +19,7 @@ import {
     genericMcpClient,
     getConnectionConfig,
     getConnectionMetadata,
+    getGlobalClientMetadataDocumentUrl,
     getProvider,
     hmacService,
     interpolateObjectValues,
@@ -320,6 +321,7 @@ class OAuthController {
                     res,
                     connectionConfig,
                     callbackUrl,
+                    environment,
                     logCtx
                 });
                 return;
@@ -1016,6 +1018,7 @@ class OAuthController {
         res,
         connectionConfig,
         callbackUrl,
+        environment,
         logCtx
     }: {
         provider: ProviderMcpOAuth2Generic;
@@ -1025,6 +1028,7 @@ class OAuthController {
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
+        environment: DBEnvironment;
         logCtx: LogContext;
     }) {
         const channel = session.webSocketClientId;
@@ -1064,7 +1068,13 @@ class OAuthController {
             };
 
             let clientInformation: OAuthClientInformation;
-            if (metadata.registration_endpoint) {
+            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
+            const clientIdMethod = genericMcpClient.chooseMcpClientIdMethod(metadata, cimdUrl);
+            if (clientIdMethod === 'cimd' && cimdUrl) {
+                // The authorization server fetches our hosted metadata document from this URL
+                clientInformation = { client_id: cimdUrl };
+                void logCtx.info('Using client ID metadata document (CIMD)', { clientId: cimdUrl });
+            } else if (clientIdMethod === 'dcr') {
                 clientInformation = await registerClient(mcpServerUrl, {
                     metadata,
                     clientMetadata
@@ -1088,7 +1098,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
