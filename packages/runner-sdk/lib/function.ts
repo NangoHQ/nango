@@ -35,17 +35,15 @@ export interface DebounceOptions {
 // Triggers
 
 /**
- * A function declares exactly one trigger: the `kind` discriminates what initiates execution.
+ * A trigger declares how a function is initiated FROM OUTSIDE; the `kind` discriminates what initiates execution.
  * - `schedule`: a periodic schedule
  * - `http`: an incoming http call or webhook request
  * - `event`: an internal Nango lifecycle event
- * - `invoke`: called by another function via `nango.invoke()`
  */
 export type TriggerDefinition =
     | { kind: 'schedule'; frequency: string; autoStart?: boolean }
-    | { kind: 'http'; input?: z.ZodTypeAny; subscriptions?: string[]; debounce?: DebounceOptions }
-    | { kind: 'event'; events: OnEventType[] }
-    | { kind: 'invoke'; input?: z.ZodTypeAny };
+    | { kind: 'http'; subscriptions?: string[]; debounce?: DebounceOptions }
+    | { kind: 'event'; events: OnEventType[] };
 
 // The inbound http request that initiated the run.
 export interface HttpRequest {
@@ -62,29 +60,43 @@ export interface CoalescedInfo {
     lastSeenAt: Date;
 }
 
-type TriggerInput<TTrigger> = TTrigger extends { input: infer I extends z.ZodTypeAny } ? I : z.ZodVoid;
-
 // `debounce.take: 'all'` delivers the whole coalesced batch, so the payload becomes an array; otherwise a single input.
-type HttpPayload<TT> = TT extends { debounce: { take: 'all' } } ? z.infer<TriggerInput<TT>>[] : z.infer<TriggerInput<TT>>;
+type HttpPayload<TT, TInput extends z.ZodTypeAny> = TT extends { debounce: { take: 'all' } } ? z.infer<TInput>[] : z.infer<TInput>;
 
 interface TriggerBase {
     /**
-     * Pre-populated when the run was started with connection context.
-     * Undefined for connection-less runs.
+     * Present when the run carries connection context (invoke calls may pass one;
+     * http/event may resolve one). Undefined for connection-less runs.
      */
     connection?: { connection_id: string; integrationId: string };
 }
 
-// The runtime trigger a function `exec` receives, mapped from the declared `TriggerDefinition`.
-export type Trigger<TT extends TriggerDefinition> = TT extends { kind: 'schedule' }
-    ? TriggerBase & { kind: 'schedule'; payload: null }
-    : TT extends { kind: 'invoke' }
-      ? TriggerBase & { kind: 'invoke'; payload: z.infer<TriggerInput<TT>> }
-      : TT extends { kind: 'http' }
-        ? TriggerBase & { kind: 'http'; payload: HttpPayload<TT>; request: HttpRequest; subscriptions?: string[]; coalesced: CoalescedInfo }
-        : TT extends { kind: 'event' }
-          ? TriggerBase & { kind: 'event'; payload: { event: OnEventType } }
-          : never;
+// The per-kind runtime trigger shapes an `exec` can receive.
+export type InvokeTrigger<TInput extends z.ZodTypeAny> = TriggerBase & { kind: 'invoke'; input: z.infer<TInput> };
+export type ScheduleTrigger = TriggerBase & { kind: 'schedule'; input: null };
+export type HttpTrigger<TT, TInput extends z.ZodTypeAny> = TriggerBase & {
+    kind: 'http';
+    input: HttpPayload<TT, TInput>;
+    request: HttpRequest;
+    subscriptions?: string[];
+    coalesced: CoalescedInfo;
+};
+export type EventTrigger = TriggerBase & { kind: 'event'; input: { event: OnEventType } };
+
+/**
+ * The runtime trigger a function `exec` receives. Any function can be invoked by another, but an
+ * invoke reuses the declared trigger's shape rather than adding a separate arrival — so `exec` only
+ * ever sees its declared kind and never has to discriminate. On the invoke path the runtime
+ * synthesizes the envelope (e.g. an http `request`/`coalesced` derived from the invoked input).
+ * A function with no declared trigger is invoke-only and receives `InvokeTrigger`.
+ */
+export type Trigger<TT extends TriggerDefinition | undefined, TInput extends z.ZodTypeAny> = TT extends { kind: 'schedule' }
+    ? ScheduleTrigger
+    : TT extends { kind: 'http' }
+      ? HttpTrigger<TT, TInput>
+      : TT extends { kind: 'event' }
+        ? EventTrigger
+        : InvokeTrigger<TInput>;
 
 // Capability-narrowed nango
 
@@ -146,18 +158,21 @@ export interface MetadataCapability<TValue> {
     setMetadata(metadata: TValue): Promise<void>;
     updateMetadata(metadata: Partial<TValue>): Promise<void>;
 }
-// Any function can be invoked.
-// The caller's input is the function's declared input or `void` when the trigger declares none.
-type InferInput<T> = T extends { trigger: infer Tr } ? z.infer<TriggerInput<Tr>> : never;
-type InferOutput<T> = T extends CreateFunctionResponse<infer _M, infer O extends z.ZodTypeAny, infer _Me, infer _Cp, infer _Tr, infer _Ac> ? z.infer<O> : never;
+type InferInput<T> =
+    T extends CreateFunctionResponse<infer _M, infer I extends z.ZodTypeAny, infer _O, infer _Me, infer _Cp, infer _Tr, infer _R> ? z.infer<I> : void;
+type InferOutput<T> =
+    T extends CreateFunctionResponse<infer _M, infer _I, infer O extends z.ZodTypeAny, infer _Me, infer _Cp, infer _Tr, infer _R> ? z.infer<O> : void;
+
+// Any function can be invoked. Input/output live on the function itself, not the trigger.
 type InvokeConnection = { connection_id: string; integrationId: string };
+type InvokeTarget = { type: 'function'; capabilities: FunctionCapabilities };
 // `invoke` options: `input` is required when the target declares one, and the whole object is optional when it declares none.
 type InvokeArgs<T> = [InferInput<T>] extends [void]
     ? [options?: { connection?: InvokeConnection }]
     : [options: { input: InferInput<T>; connection?: InvokeConnection }];
 // Present when `requires.invoke` is set: call another function and get its typed output back.
 export interface InvokeCapability {
-    invoke<T extends { type: 'function'; trigger: TriggerDefinition }>(fn: T, ...args: InvokeArgs<T>): Promise<InferOutput<T>>;
+    invoke<T extends InvokeTarget>(fn: T, ...args: InvokeArgs<T>): Promise<InferOutput<T>>;
 }
 
 // The capability-narrowed SDK surface a function `exec` receives.
@@ -197,13 +212,16 @@ export interface FunctionCapabilities {
 }
 export interface CreateFunctionProps<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
+    TInput extends z.ZodTypeAny = z.ZodVoid,
     TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined,
-    TTrigger extends TriggerDefinition = TriggerDefinition,
+    TTrigger extends TriggerDefinition | undefined = undefined,
     TRequires extends Requires = { outbound: true; connection: true }
 > {
     description: string;
+    // Optional input schema: the invoke call argument and/or the http request body. Omit when there is no input.
+    input?: TInput;
     // Optional output schema, typing `exec`'s return value.
     output?: TOutput;
     data?: TRequires extends { connection: false }
@@ -216,8 +234,8 @@ export interface CreateFunctionProps<
               // Progress/resume state schema.
               checkpoint?: TCheckpoint;
           };
-    // What initiates execution.
-    trigger: TTrigger;
+    // How the function is initiated from outside. Omit for an invoke-only helper.
+    trigger?: TTrigger;
     // Opt in/out of capabilities (connection, outbound, invoke). See `Requires`.
     requires?: TRequires;
     limits?: {
@@ -227,16 +245,17 @@ export interface CreateFunctionProps<
         };
     };
     // The handler. Runs on the runner with the capability-narrowed `nango` surface.
-    exec: (nango: Nango<TModels, TMetadata, TCheckpoint, TRequires>, trigger: Trigger<TTrigger>) => MaybePromise<z.infer<TOutput>>;
+    exec: (nango: Nango<TModels, TMetadata, TCheckpoint, TRequires>, trigger: Trigger<TTrigger, TInput>) => MaybePromise<z.infer<TOutput>>;
 }
 export interface CreateFunctionResponse<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
+    TInput extends z.ZodTypeAny = z.ZodVoid,
     TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined,
-    TTrigger extends TriggerDefinition = TriggerDefinition,
+    TTrigger extends TriggerDefinition | undefined = undefined,
     TRequires extends Requires = { outbound: true; connection: true }
-> extends CreateFunctionProps<TModels, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
+> extends CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
     type: 'function';
     // The capabilities derived from the function definition.
     capabilities: FunctionCapabilities;
@@ -259,14 +278,15 @@ export interface CreateFunctionResponse<
  */
 export function createFunction<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
+    TInput extends z.ZodTypeAny = z.ZodVoid,
     TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined,
-    TTrigger extends TriggerDefinition = TriggerDefinition,
+    TTrigger extends TriggerDefinition | undefined = undefined,
     TRequires extends Requires = { outbound: true; connection: true }
 >(
-    params: CreateFunctionProps<TModels, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires>
-): CreateFunctionResponse<TModels, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
+    params: CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires>
+): CreateFunctionResponse<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
     const models = params.data?.models;
     // A connection-less function has no connection to proxy through, so outbound is always off.
     const connectionLess = params.requires?.connection === false;

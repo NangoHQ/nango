@@ -34,7 +34,7 @@ describe('createFunction', () => {
                     expectTypeOf(cp).toEqualTypeOf<{ lastId: string } | undefined>();
                     expectTypeOf(nango.getMetadata()).toEqualTypeOf<Promise<{ org: string }>>();
                     expectTypeOf(trigger.kind).toEqualTypeOf<'schedule'>();
-                    expectTypeOf(trigger.payload).toEqualTypeOf<null>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<null>();
                 }
             });
 
@@ -53,14 +53,15 @@ describe('createFunction', () => {
         it('exposes record capability and types the http payload from the trigger input', () => {
             const fn = createFunction({
                 description: 'Handle GitHub issue webhooks',
+                input: z.object({ action: z.string() }),
                 data: { models: { GithubIssue: z.object({ id: z.string() }) } },
-                trigger: { kind: 'http', input: z.object({ action: z.string() }), subscriptions: ['issues.opened'] },
+                trigger: { kind: 'http', subscriptions: ['issues.opened'] },
                 exec: async (nango, trigger) => {
                     await nango.batchSave([{ id: '1' }], 'GithubIssue');
 
                     expectTypeOf<Has<typeof nango, 'batchSave'>>().toEqualTypeOf<true>();
                     expectTypeOf(trigger.kind).toEqualTypeOf<'http'>();
-                    expectTypeOf(trigger.payload).toEqualTypeOf<{ action: string }>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ action: string }>();
                     expectTypeOf(trigger.request.headers).toEqualTypeOf<Record<string, string>>();
                 }
             });
@@ -74,35 +75,38 @@ describe('createFunction', () => {
             });
         });
 
-        it('types the payload as an array when debounce take is "all"', () => {
+        it('types the input as an array when debounce take is "all"', () => {
             createFunction({
                 description: 'Handle coalesced webhooks',
-                trigger: { kind: 'http', input: z.object({ action: z.string() }), debounce: { windowMs: 5000, take: 'all' } },
+                input: z.object({ action: z.string() }),
+                trigger: { kind: 'http', debounce: { windowMs: 5000, take: 'all' } },
                 exec: (_nango, trigger) => {
-                    expectTypeOf(trigger.payload).toEqualTypeOf<{ action: string }[]>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ action: string }[]>();
                 }
             });
 
             createFunction({
                 description: 'Handle latest webhook',
-                trigger: { kind: 'http', input: z.object({ action: z.string() }), debounce: { windowMs: 5000, take: 'latest' } },
+                input: z.object({ action: z.string() }),
+                trigger: { kind: 'http', debounce: { windowMs: 5000, take: 'latest' } },
                 exec: (_nango, trigger) => {
-                    expectTypeOf(trigger.payload).toEqualTypeOf<{ action: string }>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ action: string }>();
                 }
             });
         });
     });
 
     describe('http without models (action)', () => {
-        it('has no record methods, types trigger input and output', () => {
+        it('has no record methods, types input and output', () => {
             const fn = createFunction({
                 description: 'Create a GitHub issue',
+                input: z.object({ title: z.string() }),
                 output: z.object({ issueId: z.string() }),
-                trigger: { kind: 'http', input: z.object({ title: z.string() }) },
+                trigger: { kind: 'http' },
                 exec: (_nango, trigger) => {
                     expectTypeOf<Has<typeof _nango, 'proxy'>>().toEqualTypeOf<true>();
                     expectTypeOf<Has<typeof _nango, 'batchSave'>>().toEqualTypeOf<false>();
-                    expectTypeOf(trigger.payload).toEqualTypeOf<{ title: string }>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ title: string }>();
                     return { issueId: '123' };
                 }
             });
@@ -120,7 +124,7 @@ describe('createFunction', () => {
                 exec: async (nango, trigger) => {
                     await nango.log('executed');
                     expectTypeOf(trigger.kind).toEqualTypeOf<'event'>();
-                    expectTypeOf(trigger.payload).toEqualTypeOf<{ event: OnEventType }>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ event: OnEventType }>();
                 }
             });
 
@@ -132,10 +136,11 @@ describe('createFunction', () => {
         it('exposes invoke and removes proxy when requires disables it', () => {
             const child = createFunction({
                 description: 'child',
+                input: z.object({ q: z.string() }),
                 output: z.object({ n: z.number() }),
-                trigger: { kind: 'invoke', input: z.object({ q: z.string() }) },
                 exec: (_nango, trigger) => {
-                    expectTypeOf(trigger.payload).toEqualTypeOf<{ q: string }>();
+                    expectTypeOf(trigger.kind).toEqualTypeOf<'invoke'>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ q: string }>();
                     return { n: 1 };
                 }
             });
@@ -161,11 +166,12 @@ describe('createFunction', () => {
             });
         });
 
-        it('invoke types its input from the target trigger, regardless of trigger kind', () => {
+        it('invoke types its input from the target, regardless of trigger kind', () => {
             const httpFn = createFunction({
                 description: 'http target',
+                input: z.object({ title: z.string() }),
                 output: z.object({ ok: z.boolean() }),
-                trigger: { kind: 'http', input: z.object({ title: z.string() }), debounce: { windowMs: 1000, take: 'all' } },
+                trigger: { kind: 'http', debounce: { windowMs: 1000, take: 'all' } },
                 exec: () => ({ ok: true })
             });
 
@@ -180,11 +186,11 @@ describe('createFunction', () => {
                 requires: { outbound: false, invoke: true },
                 trigger: { kind: 'schedule', frequency: 'every hour' },
                 exec: async (nango) => {
-                    // http target: input matches the trigger input (single, not the coalesced array), output is typed
+                    // http target: invoke passes the single declared input (not the coalesced array)
                     const httpRes = await nango.invoke(httpFn, { input: { title: 'x' } });
                     expectTypeOf(httpRes).toEqualTypeOf<{ ok: boolean }>();
 
-                    // @ts-expect-error http input must match the trigger's input schema
+                    // @ts-expect-error http input must match the declared input schema
                     await nango.invoke(httpFn, { input: { wrong: 1 } });
 
                     // @ts-expect-error required input cannot be skipped
@@ -193,8 +199,7 @@ describe('createFunction', () => {
                     // schedule target: no declared input
                     await nango.invoke(scheduleFn);
 
-                    // a widened/opaque function reference (with no trigger) is rejected
-                    // so it can't skip required input
+                    // a widened/opaque function reference is rejected
                     const opaque = httpFn as { type: 'function' };
                     // @ts-expect-error opaque reference does not satisfy the invoke target constraint
                     await nango.invoke(opaque, { input: { title: 'x' } });
@@ -244,7 +249,7 @@ describe('createFunction', () => {
 
             createFunction({
                 description: 'http can overlap runs for a connection',
-                trigger: { kind: 'http', input: z.object({}) },
+                trigger: { kind: 'http' },
                 limits: { concurrency: { perConnection: 'max' } },
                 exec: () => {}
             });
