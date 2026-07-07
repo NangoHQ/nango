@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Contrast, Download, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Contrast, Download, Hash, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
@@ -9,8 +9,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { buildContrastIndex, deriveContrastRelevantVars } from './tokenContrast';
+import tokenUsageRaw from './tokenUsage.generated.json';
 
 import type { Band, ContrastScore } from './tokenContrast';
+
+/** Precomputed { "--token": usageCount } snapshot (see scripts/generate-token-usage.mjs). Semantic tokens only. */
+const TOKEN_USAGE = tokenUsageRaw as Record<string, number>;
 
 // Raw import avoids TypeScript OOM on the 3k-line JSON (same technique as design-system/tokens/types.ts)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -634,6 +638,8 @@ interface RowProps {
     showRef: boolean;
     /** Contrast scores for this token (foreground) against its real backgrounds; null when contrast mode is off. */
     contrast: ContrastScore[] | null;
+    /** How many times this token is used in code (from the precomputed snapshot); null when usage mode is off. */
+    usage: number | null;
 }
 
 // True when the entry has a resolvable primitive ref — covers both semantic tokens and primitive aliases
@@ -707,6 +713,18 @@ function ContrastBadge({ scores }: { scores: ContrastScore[] }) {
     );
 }
 
+/** Usage-count badge: how many times the token appears in code. 0 is flagged (likely dead token). */
+function UsageBadge({ count }: { count: number }) {
+    return (
+        <span
+            className={`flex w-14 shrink-0 justify-end font-mono tabular-nums ${count === 0 ? 'text-status-warning-text' : 'text-text-muted'}`}
+            title={count === 0 ? 'No usages found in code (heuristic — may be used dynamically)' : `${count} usage${count === 1 ? '' : 's'} in code`}
+        >
+            {count}×
+        </span>
+    );
+}
+
 function TokenRow({
     entry,
     override,
@@ -720,7 +738,8 @@ function TokenRow({
     onFilterByRef,
     onJumpToPrimitive,
     showRef,
-    contrast
+    contrast,
+    usage
 }: RowProps) {
     // Prefer the live CSS variable value over the JSON-derived baseHex, since some
     // semantic tokens reference other semantic tokens (e.g. {state.hover}) whose
@@ -775,6 +794,9 @@ function TokenRow({
                 ) : (
                     <span className="w-36 shrink-0" />
                 ))}
+
+            {/* Usage count (from the precomputed snapshot), when usage mode is on */}
+            {usage != null && <UsageBadge count={usage} />}
 
             {/* Contrast ratio (worst across the token's real backgrounds), when contrast mode is on */}
             {contrast && <ContrastBadge scores={contrast} />}
@@ -875,6 +897,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const [linkedVars, setLinkedVars] = useState<Set<string>>(new Set());
     const [showDiff, setShowDiff] = useState(false);
     const [contrastOn, setContrastOn] = useState(false);
+    const [usageOn, setUsageOn] = useState(false);
     const [search, setSearch] = useState('');
 
     // Stable refs for use in effects that must not re-run on every override change
@@ -1203,6 +1226,21 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                         <Button
                             variant="ghost"
                             size="2xs"
+                            onClick={() => setUsageOn((v) => !v)}
+                            aria-label={usageOn ? 'Hide usage counts' : 'Show usage counts'}
+                            aria-pressed={usageOn}
+                            className={`size-8 shrink-0 ${usageOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
+                        >
+                            <Hash className="size-3.5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{usageOn ? 'Hide usage counts' : 'Show usage counts'}</TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={500}>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="2xs"
                             onClick={() => setContrastOn((v) => !v)}
                             aria-label={contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}
                             aria-pressed={contrastOn}
@@ -1246,6 +1284,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                                 onPickRef={commitRef}
                                 showRef={true}
                                 contrast={contrastIndex ? (contrastIndex.get(entry.cssVar) ?? []) : null}
+                                usage={usageOn && entry.mode === 'semantic' ? (TOKEN_USAGE[entry.cssVar] ?? 0) : null}
                             />
                         ))}
                     </div>
