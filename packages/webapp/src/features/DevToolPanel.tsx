@@ -1,5 +1,5 @@
 import { BarChart3, ChevronRight, Palette, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { create } from 'zustand';
 
 import { IconButton } from '@nangohq/design-system';
@@ -8,7 +8,10 @@ import { Switch } from '@/components/ui/Switch';
 import { useTeam } from '@/hooks/useTeam';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
-import { TokenEditorContent } from './TokenEditorOverlay';
+
+// Lazy-loaded so the Token Editor — and its bundled tokens.json + usage snapshot — is code-split
+// out of the main bundle. It's a dev/admin-only tool, so the chunk is only fetched when opened.
+const TokenEditorContent = lazy(() => import('./TokenEditorOverlay').then((m) => ({ default: m.TokenEditorContent })));
 
 /**
  * True when the dev tool panel is available based on the current hostname:
@@ -136,7 +139,9 @@ export const DevToolPanel: React.FC = () => {
                     </div>
                 </>
             ) : (
-                <TokenEditorContent onBack={() => setView('home')} onClose={close} />
+                <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-text-muted">Loading…</div>}>
+                    <TokenEditorContent onBack={() => setView('home')} onClose={close} />
+                </Suspense>
             )}
         </div>
     );

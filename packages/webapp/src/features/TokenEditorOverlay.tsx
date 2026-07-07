@@ -665,9 +665,13 @@ function ContrastBadge({ scores }: { scores: ContrastScore[] }) {
     return (
         <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
-                <span className={`flex w-16 shrink-0 cursor-help justify-end font-mono tabular-nums ${BAND_CLASS[worst.band]}`}>
+                <button
+                    type="button"
+                    aria-label={`Worst contrast ${worst.ratio.toFixed(1)} to 1 — see per-surface breakdown`}
+                    className={`flex w-16 shrink-0 cursor-help justify-end font-mono tabular-nums ${BAND_CLASS[worst.band]}`}
+                >
                     {worst.ratio.toFixed(1)}:1
-                </span>
+                </button>
             </TooltipTrigger>
             <TooltipContent side="left">
                 <div className="flex flex-col gap-0.5">
@@ -993,11 +997,13 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
             const entry = entryMap.get(cssVar);
             const chainVars = getChainVars(entry, linkedVars.has(cssVar), semEntries);
 
-            // The token's default value: the value captured before the first override, or — if not yet
-            // overridden — the current live CSS value (which equals the default at that point).
+            // The token's default value: the value captured before the first override, else the token's
+            // known default (baseHex). Don't fall back to the live CSS value — after reloading persisted
+            // overrides the live value IS the override, so re-entering it would wrongly clear the override
+            // and true defaults wouldn't be recognized as unchanged.
             const recordedOriginal = originalsPerTheme[theme][cssVar];
             const liveValue = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
-            const defaultValue = recordedOriginal ?? liveValue;
+            const defaultValue = recordedOriginal ?? entry?.baseHex ?? liveValue;
 
             // Reverting to the default (e.g. Esc in the color picker, or retyping the original hex) should
             // mark the token unchanged again — but only when its source ref hasn't been rerouted.
@@ -1165,36 +1171,41 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                     className="h-8 flex-1 font-mono text-xs"
                 />
                 {mode === 'semantic' && <FilterPicker value={primitiveFilter} onChange={setPrimitiveFilter} />}
-                <Tooltip delayDuration={500}>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="2xs"
-                            onClick={() => setUsageOn((v) => !v)}
-                            aria-label={usageOn ? 'Hide usage counts' : 'Show usage counts'}
-                            aria-pressed={usageOn}
-                            className={`size-8 shrink-0 ${usageOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
-                        >
-                            <Hash className="size-3.5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">{usageOn ? 'Hide usage counts' : 'Show usage counts'}</TooltipContent>
-                </Tooltip>
-                <Tooltip delayDuration={500}>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="2xs"
-                            onClick={() => setContrastOn((v) => !v)}
-                            aria-label={contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}
-                            aria-pressed={contrastOn}
-                            className={`size-8 shrink-0 ${contrastOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
-                        >
-                            <Contrast className="size-3.5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">{contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}</TooltipContent>
-                </Tooltip>
+                {/* Usage + contrast overlays only apply to semantic tokens — hidden in primitives mode, like the filter */}
+                {mode === 'semantic' && (
+                    <>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="2xs"
+                                    onClick={() => setUsageOn((v) => !v)}
+                                    aria-label={usageOn ? 'Hide usage counts' : 'Show usage counts'}
+                                    aria-pressed={usageOn}
+                                    className={`size-8 shrink-0 ${usageOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
+                                >
+                                    <Hash className="size-3.5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">{usageOn ? 'Hide usage counts' : 'Show usage counts'}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip delayDuration={500}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="2xs"
+                                    onClick={() => setContrastOn((v) => !v)}
+                                    aria-label={contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}
+                                    aria-pressed={contrastOn}
+                                    className={`size-8 shrink-0 ${contrastOn ? 'text-text-default' : 'text-text-muted hover:text-text-default'}`}
+                                >
+                                    <Contrast className="size-3.5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">{contrastOn ? 'Hide contrast ratios' : 'Show contrast ratios'}</TooltipContent>
+                        </Tooltip>
+                    </>
+                )}
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
                         <Button variant="ghost" size="2xs" onClick={toggleDarkMode} className="size-8 shrink-0 text-text-muted hover:text-text-default">

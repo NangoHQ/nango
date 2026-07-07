@@ -47,7 +47,9 @@ const PREFIXES = [
     'decoration',
     'shadow'
 ];
-const CLASS_RE = new RegExp(String.raw`\b(?:${PREFIXES.join('|')})-([a-z][a-z0-9]*(?:-[a-z0-9]+)*)`, 'g');
+// Longest prefixes first — regex alternation matches left-to-right, so `ring-offset` must be tried
+// before `ring` (otherwise `ring-offset-x` captures token `offset-x` and gets dropped).
+const CLASS_RE = new RegExp(String.raw`\b(?:${[...PREFIXES].sort((a, b) => b.length - a.length).join('|')})-([a-z][a-z0-9]*(?:-[a-z0-9]+)*)`, 'g');
 const VAR_RE = /var\(\s*--([a-z][a-z0-9]*(?:-[a-z0-9]+)*)\s*\)/g;
 
 const toKebab = (s) => s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -102,7 +104,8 @@ for (const dir of scanDirs) {
 
 // Sort by descending count then name for a stable, readable file.
 const sorted = Object.fromEntries(Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])));
-writeFileSync(outPath, JSON.stringify(sorted, null, 2) + '\n');
+// 4-space indent to match the repo's Prettier config (so the committed snapshot isn't reformatted).
+writeFileSync(outPath, JSON.stringify(sorted, null, 4) + '\n');
 
 const used = Object.values(counts).filter((n) => n > 0).length;
 console.log(`token usage: scanned ${filesScanned} files, ${tokens.size} tokens (${used} used, ${tokens.size - used} unused) → ${relative(repoRoot, outPath)}`);
