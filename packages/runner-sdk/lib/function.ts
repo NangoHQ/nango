@@ -1,7 +1,17 @@
 import type { ProxyConfiguration } from './action.js';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
 import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
-import type { GetPublicConnection, HTTP_METHOD, MaybePromise, MergingStrategy, OnEventType } from '@nangohq/types';
+import type {
+    AllAuthCredentials,
+    EnvironmentVariable,
+    GetPublicConnection,
+    GetPublicIntegration,
+    HTTP_METHOD,
+    MaybePromise,
+    MergingStrategy,
+    OnEventType,
+    SdkLogger
+} from '@nangohq/types';
 import type * as z from 'zod';
 
 type InferZod<T> = T extends z.ZodTypeAny ? z.infer<T> : never;
@@ -103,10 +113,15 @@ export type Trigger<TT extends TriggerDefinition | undefined, TInput extends z.Z
 // Always present: base methods every function can use.
 export interface NangoBase {
     log(message: string, options?: unknown): Promise<void>;
+    setLogger(logger: SdkLogger): void;
+    getEnvironmentVariables(): Promise<EnvironmentVariable[] | null>;
 }
 // Present for connection-bound runs: the single connection the run executes against.
 export interface ConnectionCapability {
     getConnection(): Promise<GetPublicConnection['Success']>;
+    getToken(): Promise<string | AllAuthCredentials>;
+    getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']>;
+    getVariant(): string;
 }
 /**
  * Present for connection-less runs instead of `getConnection`.
@@ -138,8 +153,6 @@ export interface RecordCapability<TModels extends Record<string, ZodModel>> {
     batchSave<K extends keyof TModels>(records: z.infer<TModels[K]>[], model: K): Promise<void>;
     batchUpdate<K extends keyof TModels>(records: z.infer<TModels[K]>[], model: K): Promise<void>;
     batchDelete<K extends keyof TModels>(records: z.infer<TModels[K]>[], model: K): Promise<void>;
-    getRecordsByIds<K extends keyof TModels, TKey extends string | number = string>(ids: TKey[], model: K): Promise<Map<TKey, z.infer<TModels[K]>>>;
-    listRecords<K extends keyof TModels>(model: K, options?: { cursor?: string }): AsyncGenerator<z.infer<TModels[K]>>;
     setMergingStrategy(merging: MergingStrategy, model: keyof TModels): Promise<void>;
     trackDeletesStart(model: keyof TModels): Promise<void>;
     trackDeletesEnd(model: keyof TModels): Promise<void>;
