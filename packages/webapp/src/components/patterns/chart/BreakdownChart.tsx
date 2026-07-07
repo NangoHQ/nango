@@ -70,7 +70,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                             onMouseEnter={() => hoverSeries(s.key)}
                             onMouseLeave={() => unhoverSeries()}
                             onClick={bandClick(s)}
-                            className="cursor-pointer"
+                            className="cursor-pointer [&_path]:transition-all [&_path]:duration-150"
                         />
                     );
                 }

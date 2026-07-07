@@ -51,12 +51,13 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                             <button {...toggleProps} className="group/swatch relative flex size-[18px] shrink-0 items-center justify-center">
                                 <span
                                     className={cn(
-                                        'block size-3.5 rounded-[3px] transition group-hover/swatch:opacity-0',
+                                        // border-box keeps the outer size fixed, so a thicker border on hover grows inward, not outward.
+                                        'block size-3.5 rounded-[3px] border transition group-hover/swatch:opacity-0',
                                         dimmed
-                                            ? '[box-shadow:0_0_0_1px_var(--color-border-default)]'
+                                            ? 'border-border-default'
                                             : cn(
-                                                  '[box-shadow:0_0_0_1px_color-mix(in_srgb,var(--swatch),#000_28%)] group-hover/row:[box-shadow:0_0_0_1.5px_color-mix(in_srgb,var(--swatch),#000_45%)]',
-                                                  active && '[box-shadow:0_0_0_1.5px_color-mix(in_srgb,var(--swatch),#000_45%)]'
+                                                  '[border-color:color-mix(in_srgb,var(--swatch),#000_28%)] group-hover/row:border-[1.5px] group-hover/row:[border-color:color-mix(in_srgb,var(--swatch),#000_45%)]',
+                                                  active && 'border-[1.5px] [border-color:color-mix(in_srgb,var(--swatch),#000_45%)]'
                                               )
                                     )}
                                     style={dimmed ? undefined : ({ backgroundColor: s.color, ['--swatch']: s.color } as React.CSSProperties)}
