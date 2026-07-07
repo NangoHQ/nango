@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 22.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 60.1 52.7" style="enable-background:new 0 0 60.1 52.7;" xml:space="preserve">
+	 width="64" height="64" viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<svg x="10" y="12.7088" width="44" height="38.5824" viewBox="0 0 60.1 52.7" overflow="hidden">
 <style type="text/css">
 	.st0{clip-path:url(#SVGID_1_);fill:url(#SVGID_2_);}
 	.st1{clip-path:url(#SVGID_3_);fill:url(#SVGID_4_);}
@@ -70,4 +71,5 @@
 		<path class="st2" d="M-1.4,37.8H9c4.7-13.7,9-21.2,24.1-39.5H-1.4V37.8z"/>
 	</g>
 </g>
+</svg>
 </svg>
