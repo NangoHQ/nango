@@ -19,7 +19,8 @@ export type PostCliTelemetry = Endpoint<{
     Body: {
         deviceId: string;
         event: CliTelemetryEvent;
-        properties?: Record<string, string | number | boolean> | undefined;
+        // True when deviceId is a throwaway id that couldn't be persisted, so it shouldn't be treated as a stable device.
+        ephemeral?: boolean;
     };
     Success: never;
 }>;

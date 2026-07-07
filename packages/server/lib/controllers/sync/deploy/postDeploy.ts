@@ -32,12 +32,16 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
 
-    const { cliVersion } = getCliContext(req);
+    const { cliVersion, deviceId } = getCliContext(req);
     const trackingProperties: Record<string, string | number | boolean> = {
         'cli-version': cliVersion || 'unknown',
         source: body.source ?? 'repo',
         'flow-count': body.flowConfigs.length
     };
+
+    if (deviceId) {
+        productTracking.alias({ deviceId, team: account });
+    }
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();

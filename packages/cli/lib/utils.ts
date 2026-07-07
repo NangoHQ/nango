@@ -274,7 +274,7 @@ export function enrichHeaders(headers: Record<string, string | number | boolean>
 }
 
 export function isTelemetryDisabled(): boolean {
-    return process.env['TELEMETRY'] === 'false' || process.env['NANGO_CLI_TELEMETRY'] === 'false';
+    return process.env['NANGO_CLI_TELEMETRY'] === 'false';
 }
 
 export function isCliDebugEnabled(): boolean {
@@ -308,7 +308,11 @@ export function getCliHeaders(): Record<string, string> {
         'User-Agent': getUserAgent()
     };
     if (!isTelemetryDisabled()) {
-        headers['Nango-CLI-Device-Id'] = getDeviceId();
+        const { deviceId, ephemeral } = getDeviceId();
+        // Only correlate persisted ids; a throwaway id would just create junk aliases server-side.
+        if (!ephemeral) {
+            headers['Nango-CLI-Device-Id'] = deviceId;
+        }
     }
     return headers;
 }

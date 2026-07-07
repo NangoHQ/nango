@@ -10,7 +10,7 @@ export { isTelemetryDisabled };
 /**
  * Send an anonymous CLI usage event. Fire-and-forget
  */
-export function trackCliEvent(event: CliTelemetryEvent, properties?: Record<string, string | number | boolean>): void {
+export function trackCliEvent(event: CliTelemetryEvent): void {
     if (isTelemetryDisabled()) {
         return;
     }
@@ -18,7 +18,8 @@ export function trackCliEvent(event: CliTelemetryEvent, properties?: Record<stri
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TELEMETRY_TIMEOUT_MS);
 
-    const body: PostCliTelemetry['Body'] = { deviceId: getDeviceId(), event, properties };
+    const { deviceId, ephemeral } = getDeviceId();
+    const body: PostCliTelemetry['Body'] = { deviceId, event, ephemeral };
     void fetch(new URL('/cli/telemetry', resolveHostport()), {
         method: 'POST',
         body: JSON.stringify(body),
