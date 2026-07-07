@@ -16,10 +16,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors
                 'bg-surface-input border-border-interactive text-text-default placeholder:text-text-secondary',
-                // Hover / focus border (focus ring removed pending design review)
-                'hover:border-border-interactive-hover focus:border-border-interactive-hover',
+                // Hover border. On focus the hairline border adopts the ring color and 0.5px outset + 0.5px inset shadows draw a 1px ring
+                // centered on the field edge (half outside, half inside), continuous with the recolored border.
+                'hover:border-border-interactive-hover',
+                'focus:border-[var(--focus-ring-default)] focus:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
                 // Invalid
-                'aria-invalid:border-status-danger-border',
+                'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
                 // Disabled — dedicated tokens, no opacity
                 'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
                 className
