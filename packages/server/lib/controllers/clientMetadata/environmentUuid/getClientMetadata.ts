@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { accountService, configService, getGlobalClientMetadataDocumentUrl, getGlobalOAuthCallbackUrl, getProvider } from '@nangohq/shared';
+import { accountService, configService, getGlobalClientMetadataDocumentUrl, getGlobalOAuthCallbackUrl, getProvider, isValidHttpUrl } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -55,7 +55,10 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
         return;
     }
 
-    const logoUri = integration.custom?.['oauth_client_logo_uri'];
+    const storedClientUri = integration.custom?.['oauth_client_uri'];
+    const clientUri = storedClientUri && isValidHttpUrl(storedClientUri) ? storedClientUri : 'https://nango.dev';
+    const storedLogoUri = integration.custom?.['oauth_client_logo_uri'];
+    const logoUri = storedLogoUri && isValidHttpUrl(storedLogoUri) ? storedLogoUri : undefined;
 
     // Authorization servers cache this document respecting HTTP cache headers.
     // Short TTL so callback URL and branding edits propagate quickly.
@@ -63,7 +66,7 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
     res.status(200).send({
         client_id: clientId,
         client_name: integration.custom?.['oauth_client_name'] || 'Nango',
-        client_uri: integration.custom?.['oauth_client_uri'] || 'https://nango.dev',
+        client_uri: clientUri,
         ...(logoUri && { logo_uri: logoUri }),
         redirect_uris: [environment.callback_url || getGlobalOAuthCallbackUrl()],
         grant_types: ['authorization_code', 'refresh_token'],
