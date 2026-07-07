@@ -20,8 +20,8 @@ const inputGroupVariants = cva(
         'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
-        // Focus state — a 2px ring is drawn as an outset shadow and the 0.5px hairline border adopts the ring color so it blends into the ring.
-        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-[var(--focus-ring-default)] has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_0_0_2px_var(--focus-ring-default)]',
+        // Focus state — the 0.5px hairline border adopts the ring color and a 1px inset shadow draws the ring just inside the edge, covering the border without expanding the footprint.
+        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-[var(--focus-ring-default)] has-[[data-slot=input-group-control]:focus-visible]:shadow-[inset_0_0_0_1px_var(--focus-ring-default)]',
         // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
         'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-interactive-hover',
 
@@ -29,7 +29,7 @@ const inputGroupVariants = cva(
         'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
         // Error state.
-        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_2px_var(--focus-ring-danger)]'
+        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[inset_0_0_0_1px_var(--focus-ring-danger)]'
     ],
     {
         variants: {
