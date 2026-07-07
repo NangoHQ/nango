@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '../utils/result.js';
 import { DryRunService } from './dryrun.service.js';
+import { NangoSyncCLI } from './sdk.js';
 
 const mocks = vi.hoisted(() => ({
     getConfig: vi.fn(),
@@ -213,6 +214,66 @@ describe('DryRunService', () => {
             const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
 
             expect(result.isErr()).toBe(true);
+        });
+
+        it('writes an error JSON envelope on early guard failure (missing environment)', async () => {
+            const service = new DryRunService({ fullPath: '/tmp/nango-integrations', validation: false });
+
+            const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isErr()).toBe(true);
+            expect(process.stdout.write).toHaveBeenCalledTimes(1);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.ok).toBe(false);
+            expect(envelope.error.message).toBe('Environment is required');
+        });
+
+        it('writes an error JSON envelope on early guard failure (no script matched)', async () => {
+            const result = await buildService().run({ sync: 'missingSync', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isErr()).toBe(true);
+            expect(process.stdout.write).toHaveBeenCalledTimes(1);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.ok).toBe(false);
+            expect(envelope.error.message).toBe('No script matched "missingSync"');
+        });
+
+        it('includes requests and diagnostics fields in the success envelope', async () => {
+            const service = buildService();
+            vi.spyOn(service, 'runScript').mockResolvedValue({ success: true, error: null, response: null } as any);
+
+            await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.requests).toEqual([]);
+            expect(envelope.diagnostics).toBeNull();
+        });
+
+        it('includes sync records in output for sync scripts', async () => {
+            const service = buildService();
+            const rawSaveOutput = new Map<string, unknown[]>([['GithubIssue', [{ id: 1 }, { id: 2 }]]]);
+            vi.spyOn(service, 'runScript').mockResolvedValue({
+                success: true,
+                error: null,
+                response: {
+                    output: undefined,
+                    nango: Object.assign(Object.create(NangoSyncCLI.prototype), {
+                        rawSaveOutput,
+                        logMessages: { counts: { added: 2, updated: 0, deleted: 0 }, messages: [] }
+                    })
+                }
+            } as any);
+
+            const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1', outputJson: true } as any);
+
+            expect(result.isOk()).toBe(true);
+            const written = (process.stdout.write as any).mock.calls[0][0] as string;
+            const envelope = JSON.parse(written);
+            expect(envelope.ok).toBe(true);
+            expect(envelope.output).toEqual({ GithubIssue: [{ id: 1 }, { id: 2 }] });
         });
 
         it('includes action output in envelope for action scripts', async () => {

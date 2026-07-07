@@ -122,6 +122,14 @@ export class ResponseCollector {
         return Promise.reject(error);
     }
 
+    public getRequests(): { method: string; endpoint: string; status: number }[] {
+        return this.apiCalls.map((call) => ({
+            method: call.requestIdentity.method,
+            endpoint: call.requestIdentity.endpoint,
+            status: call.status
+        }));
+    }
+
     public addBatchSave(model: string, data: unknown[]): void {
         if (!this.batchSaveData[model]) {
             this.batchSaveData[model] = [];

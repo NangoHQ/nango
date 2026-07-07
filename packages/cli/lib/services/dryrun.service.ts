@@ -34,6 +34,7 @@ import { ResponseCollector } from './response-collector.service.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 
 import type { GlobalOptions } from '../types.js';
+import type { DiagnosticsStats } from './diagnostics-monitor.service.js';
 import type {
     Checkpoint,
     DBSyncConfig,
@@ -89,6 +90,8 @@ export class DryRunService {
     validation: boolean;
     environment?: string;
     returnOutput?: boolean;
+    private lastDiagnostics: DiagnosticsStats | null = null;
+    private jsonEnvelopeWritten = false;
 
     constructor({
         environment,
@@ -115,11 +118,38 @@ export class DryRunService {
         let originalLog: typeof console.log | null = null;
 
         if (jsonMode) {
+            this.jsonEnvelopeWritten = false;
+            this.lastDiagnostics = null;
             originalLog = console.log;
             console.log = (...args: any[]) => {
                 process.stderr.write(args.map((a) => (typeof a === 'string' ? a : inspect(a))).join(' ') + '\n');
             };
         }
+
+        try {
+            const result = await this._run(options, debug);
+
+            // Guarantee a single JSON envelope on every failure path, including early
+            // guard returns that don't emit one themselves.
+            if (jsonMode && result.isErr()) {
+                this.writeJsonEnvelope({
+                    ok: false,
+                    error: { message: result.error.message },
+                    output: null,
+                    logs: null
+                });
+            }
+
+            return result;
+        } finally {
+            if (originalLog) {
+                console.log = originalLog;
+            }
+        }
+    }
+
+    private async _run(options: RunArgs, debug = false): Promise<Result<string | undefined>> {
+        const jsonMode = options.outputJson;
 
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
@@ -532,16 +562,32 @@ export class DryRunService {
             if (jsonMode) {
                 const nangoInstance = results.response?.nango;
                 const logMessages = nangoInstance instanceof NangoSyncCLI ? nangoInstance.logMessages : null;
+
+                // For syncs the output is the records the script would have persisted; for
+                // actions it is the returned value.
+                let output: unknown = null;
+                if (type === 'actions') {
+                    output = results.response?.output ?? null;
+                } else if (nangoInstance instanceof NangoSyncCLI) {
+                    const records: Record<string, unknown[]> = {};
+                    for (const [model, data] of nangoInstance.rawSaveOutput.entries()) {
+                        records[model] = data;
+                    }
+                    output = Object.keys(records).length > 0 ? records : null;
+                }
+
                 this.writeJsonEnvelope({
                     ok: true,
                     error: null,
-                    output: type === 'actions' ? (results.response?.output ?? null) : null,
+                    output,
                     logs: logMessages
                         ? {
                               counts: logMessages.counts as Record<string, number>,
                               messages: logMessages.messages
                           }
-                        : null
+                        : null,
+                    requests: responseCollector.getRequests(),
+                    diagnostics: this.lastDiagnostics
                 });
             }
 
@@ -560,10 +606,6 @@ export class DryRunService {
                 });
             }
             return Err(err instanceof Error ? err : new Error('Dry run failed'));
-        } finally {
-            if (originalLog) {
-                console.log = originalLog;
-            }
         }
     }
 
@@ -572,7 +614,15 @@ export class DryRunService {
         error: { message: string; code?: string; type?: string } | null;
         output: unknown;
         logs: { counts: Record<string, number>; messages: unknown[] } | null;
+        requests?: { method: string; endpoint: string; status: number }[];
+        diagnostics?: DiagnosticsStats | null;
     }): void {
+        // Guarantee exactly one envelope on stdout, even if both a specific error site
+        // and the run() wrapper try to emit one.
+        if (this.jsonEnvelopeWritten) {
+            return;
+        }
+        this.jsonEnvelopeWritten = true;
         process.stdout.write(JSON.stringify(data) + '\n');
     }
 
@@ -832,6 +882,7 @@ export class DryRunService {
             // Stop diagnostics monitoring and display results
             if (monitor) {
                 const stats = monitor.stop();
+                this.lastDiagnostics = stats;
                 console.log('');
                 console.log(formatDiagnostics(stats));
             }
