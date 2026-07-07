@@ -350,6 +350,10 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    // Temporary. Appended to HTTP-fed Orb event_name during the S3-fed
+    // cutover so HTTP emissions remain queryable as a defensive backup.
+    // Remove once the HTTP emission path is retired.
+    BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX: z.string().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
 
     // ClickHouse

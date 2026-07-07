@@ -2,6 +2,7 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { envs } from '../../envs.js';
 import { putOrbCustomerSchema } from './types.js';
 
 import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, Result, UsageMetric } from '@nangohq/types';
@@ -24,7 +25,7 @@ export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Ev
     }
 
     return {
-        event_name: event.type,
+        event_name: `${event.type}${envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX ?? ''}`,
         idempotency_key: idempotencyKey || uuidv7(),
         external_customer_id: accountId.toString(),
         timestamp: timestamp.toISOString(),

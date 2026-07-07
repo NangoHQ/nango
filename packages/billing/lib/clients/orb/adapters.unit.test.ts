@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { envs } from '../../envs.js';
 import { fromOrbAddress, fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
@@ -65,6 +66,17 @@ describe('toOrbEvent', () => {
         expect(result.event_name).toBe('proxy');
         expect(result.external_customer_id).toBe('42');
         expect(result.timestamp).toBe('2024-01-15T10:00:00.000Z');
+    });
+
+    it('appends BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX to event_name when set', () => {
+        const original = envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX;
+        try {
+            (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = '_http';
+            const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
+            expect(toOrbEvent(event).event_name).toBe('proxy_http');
+        } finally {
+            (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = original;
+        }
     });
 });
 
