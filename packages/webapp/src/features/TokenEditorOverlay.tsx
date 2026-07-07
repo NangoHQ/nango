@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpRight, ChevronDown, ChevronUp, Contrast, Download, Hash, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Contrast, Download, Hash, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
@@ -525,15 +525,16 @@ function FilterPicker({ value, onChange }: { value: string | null; onChange: (re
                     </Tooltip>
                 </div>
             ) : (
-                /* Inactive: ghost icon button */
+                /* Inactive: ghost icon button. TooltipTrigger must wrap the Button directly (Popover trigger
+                   outer) — nesting it under PopoverTrigger breaks the tooltip's anchor (renders off-screen). */
                 <Tooltip delayDuration={500}>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
+                    <PopoverTrigger asChild>
+                        <TooltipTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1">
                                 <ListFilter className="size-3.5" />
                             </Button>
-                        </PopoverTrigger>
-                    </TooltipTrigger>
+                        </TooltipTrigger>
+                    </PopoverTrigger>
                     <TooltipContent side="top">Filter by source token</TooltipContent>
                 </Tooltip>
             )}
@@ -556,11 +557,9 @@ interface RefPickerProps {
     currentRef: string;
     chainTooltip?: string;
     onPickRef: (cssVar: string, newRef: string) => void;
-    onFilter?: (ref: string) => void;
-    onJump?: (ref: string) => void;
 }
 
-function RefPicker({ entry, currentRef, chainTooltip, onPickRef, onFilter, onJump }: RefPickerProps) {
+function RefPicker({ entry, currentRef, chainTooltip, onPickRef }: RefPickerProps) {
     const [open, setOpen] = useState(false);
     const label = shortRefLabel(currentRef);
 
@@ -583,31 +582,6 @@ function RefPicker({ entry, currentRef, chainTooltip, onPickRef, onFilter, onJum
                         <ChevronDown className="size-3 shrink-0 opacity-0 group-hover/ref:opacity-100" />
                     </button>
                 </PopoverTrigger>
-                {/* Filter icon — hover only */}
-                {onFilter && (
-                    <Tooltip delayDuration={500}>
-                        <TooltipTrigger asChild>
-                            <button
-                                onClick={() => onFilter(currentRef)}
-                                className="shrink-0 p-0.5 opacity-0 hover:text-text-default group-hover/ref:opacity-100"
-                            >
-                                <ListFilter className="size-3" />
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">Filter by this source</TooltipContent>
-                    </Tooltip>
-                )}
-                {/* Jump icon — hover only */}
-                {onJump && (
-                    <Tooltip delayDuration={500}>
-                        <TooltipTrigger asChild>
-                            <button onClick={() => onJump(currentRef)} className="shrink-0 p-0.5 opacity-0 hover:text-text-default group-hover/ref:opacity-100">
-                                <ArrowUpRight className="size-3.5" />
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">View in primitives</TooltipContent>
-                    </Tooltip>
-                )}
             </div>
             <TokenPickerContent
                 currentValue={currentRef}
@@ -633,8 +607,6 @@ interface RowProps {
     onReset: (cssVar: string) => void;
     onToggleLink: (cssVar: string) => void;
     onPickRef: (cssVar: string, newRef: string) => void;
-    onFilterByRef: (ref: string) => void;
-    onJumpToPrimitive: (ref: string) => void;
     showRef: boolean;
     /** Contrast scores for this token (foreground) against its real backgrounds; null when contrast mode is off. */
     contrast: ContrastScore[] | null;
@@ -735,8 +707,6 @@ function TokenRow({
     onReset,
     onToggleLink,
     onPickRef,
-    onFilterByRef,
-    onJumpToPrimitive,
     showRef,
     contrast,
     usage
@@ -775,22 +745,9 @@ function TokenRow({
             {/* Primitive / source ref column */}
             {showRef &&
                 (colRef && entry.mode === 'semantic' ? (
-                    <RefPicker
-                        entry={entry}
-                        currentRef={colRef}
-                        chainTooltip={refOverride ? undefined : entry.displayTooltip}
-                        onPickRef={onPickRef}
-                        onFilter={onFilterByRef}
-                        onJump={onJumpToPrimitive}
-                    />
+                    <RefPicker entry={entry} currentRef={colRef} chainTooltip={refOverride ? undefined : entry.displayTooltip} onPickRef={onPickRef} />
                 ) : colRef ? (
-                    <button
-                        onClick={() => onFilterByRef(colRef)}
-                        className="w-36 shrink-0 truncate text-left font-mono text-text-muted hover:text-text-default"
-                        title="Filter by this primitive"
-                    >
-                        {shortRefLabel(colRef)}
-                    </button>
+                    <span className="w-36 shrink-0 truncate text-left font-mono text-text-muted">{shortRefLabel(colRef)}</span>
                 ) : (
                     <span className="w-36 shrink-0" />
                 ))}
@@ -851,7 +808,13 @@ function TokenRow({
                             <Link2 className="size-3.5" />
                         </Button>
                     </TooltipTrigger>
-                    {canLink && <TooltipContent side="top">{linked ? 'Synced with source token' : 'Sync with source token'}</TooltipContent>}
+                    {canLink && (
+                        <TooltipContent side="top">
+                            {linked
+                                ? 'Edits also update the source primitive and every token using it — click to unlink'
+                                : 'Edits change only this token — click to also update its source primitive'}
+                        </TooltipContent>
+                    )}
                 </Tooltip>
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
@@ -886,7 +849,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     // null = all | 'neutral' = category | '{color.neutral.800}' = exact ref
     const [primitiveFilter, setPrimitiveFilter] = useState<string | null>(null);
     const listRef = useRef<HTMLDivElement>(null);
-    const [scrollTarget, setScrollTarget] = useState<string | null>(null);
     // Per-theme color overrides: changes in light mode are separate from dark mode changes
     const [overridesPerTheme, setOverridesPerTheme] = useState<BiThemeOverrides>({ ...EMPTY_BI });
     // Per-theme ref reroutes (which primitive a semantic token points to, per theme)
@@ -953,16 +915,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
         // resolved values change with edits/theme; themeSeq fires after the DOM vars settle
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [contrastOn, themeSeq, overridesPerTheme, refOverridesPerTheme, darkMode]);
-
-    // Scroll to target token after mode switch re-renders the list
-    useEffect(() => {
-        if (!scrollTarget || !listRef.current) return;
-        const el = listRef.current.querySelector(`[data-cssvar="${scrollTarget}"]`);
-        if (el) {
-            el.scrollIntoView({ block: 'nearest' });
-            setScrollTarget(null);
-        }
-    }, [scrollTarget, mode]);
 
     // Clear primitive filter when switching to primitive mode
     useEffect(() => {
@@ -1099,17 +1051,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
         },
         [darkMode]
     );
-
-    const filterByRef = useCallback((ref: string) => {
-        setPrimitiveFilter((prev) => (prev === ref ? null : ref));
-    }, []);
-
-    const jumpToPrimitive = useCallback((ref: string) => {
-        // Dereference: {color.neutral.800} → --ds-color-neutral-800
-        const cssVar = '--ds-' + ref.slice(1, -1).split('.').map(toKebab).join('-');
-        setMode('primitive');
-        setScrollTarget(cssVar);
-    }, []);
 
     const toggleLink = useCallback((cssVar: string) => {
         setLinkedVars((prev) => {
@@ -1279,8 +1220,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                                 onReset={reset}
                                 onToggleLink={toggleLink}
                                 themeSeq={themeSeq}
-                                onFilterByRef={filterByRef}
-                                onJumpToPrimitive={jumpToPrimitive}
                                 onPickRef={commitRef}
                                 showRef={true}
                                 contrast={contrastIndex ? (contrastIndex.get(entry.cssVar) ?? []) : null}
