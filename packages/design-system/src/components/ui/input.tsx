@@ -7,16 +7,18 @@ import type { VariantProps } from 'class-variance-authority';
 
 export const inputVariants = cva(
     [
-        // Shape + spacing (Figma: hairline border, radius/sm)
-        'flex w-full min-w-0 rounded-ds-sm border-ds-hairline outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
+        // Shape + spacing (Figma: hairline border, radius/xs)
+        'flex w-full min-w-0 rounded-ds-xs border-ds-hairline outline-none transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out',
         // Typography (Figma text/regular/md)
         'text-ds-md font-ds-regular leading-ds-normal',
         // Default colors
         'bg-surface-input border-border-interactive text-text-default placeholder:text-text-secondary',
-        // Hover / focus border (focus ring removed pending design review)
-        'hover:border-border-interactive-hover focus:border-border-interactive-hover',
+        // Hover border. On focus the hairline border adopts the ring color and 0.5px outset + 0.5px inset shadows draw a 1px ring
+        // centered on the field edge (half outside, half inside), continuous with the recolored border.
+        'hover:border-border-interactive-hover',
+        'focus:border-[var(--focus-ring-default)] focus:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
         // Invalid
-        'aria-invalid:border-status-danger-border',
+        'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
         // Disabled — dedicated tokens, no opacity (Figma state/selectedMuted bg, border/disabled, text/disabled)
         'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
         // File-input affordance
@@ -26,7 +28,7 @@ export const inputVariants = cva(
         variants: {
             size: {
                 // Default control height (Figma: space/2 × space/1.5)
-                default: 'h-9 px-2 py-1.5',
+                default: 'h-8 px-2 py-1.5',
                 // Hug-content — for in-popover search fields where the wrapper owns the padding
                 auto: 'h-auto p-0'
             }

@@ -2150,6 +2150,7 @@ auvik:
             enum:
                 - us1
                 - us2
+                - us6
                 - eu1
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
