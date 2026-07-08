@@ -117,13 +117,12 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
         enabled: filterNeedsLabel
     });
     const filterLabelValues = filterLabelQuery.data?.pages.flatMap((p) => p.data.values) ?? null;
-    const filterLabel: string | null = !filter
-        ? ''
-        : filterNeedsLabel
-          ? filterLabelValues
-              ? (filterLabelValues.find((v) => v.id === filter.value)?.label ?? filter.value)
-              : null
-          : filter.value;
+    // Non-env dimensions already store a readable value. For environment_id, resolve the id to the
+    // env name once loaded; `null` means it's still loading, which renders a skeleton in the chip.
+    let filterLabel: string | null = filter ? filter.value : '';
+    if (filter && filterNeedsLabel) {
+        filterLabel = filterLabelValues ? (filterLabelValues.find((v) => v.id === filter.value)?.label ?? filter.value) : null;
+    }
 
     const filterTriggerButton = (
         <button type="button" className={cn(TRIGGER, filter ? 'pr-9' : 'pr-6')} title="Filter this metric to a single value">
