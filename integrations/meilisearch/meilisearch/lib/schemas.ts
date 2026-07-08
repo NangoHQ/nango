@@ -10,8 +10,12 @@ export const meiliDocumentSchema = z.record(z.string(), z.unknown());
  */
 export const filterSchema = z.union([z.string(), z.array(z.union([z.string(), z.array(z.string())]))]);
 
-/** searchRules value for one index: an object (optionally with a filter) or null (no restriction). */
-const searchRuleValueSchema = z.union([z.object({ filter: filterSchema.optional() }).catchall(z.unknown()), z.null()]);
+/**
+ * searchRules value for one index: an object (optionally with a filter) or null (no restriction).
+ * Strict: Meilisearch ignores unknown rule keys, so a typo like "filters" would silently
+ * remove the restriction from a signed token. Fail closed instead.
+ */
+const searchRuleValueSchema = z.union([z.strictObject({ filter: filterSchema.optional() }), z.null()]);
 
 /** Per-index search rules keyed by index uid or the "*" wildcard. */
 export const searchRulesSchema = z.record(z.string(), searchRuleValueSchema);

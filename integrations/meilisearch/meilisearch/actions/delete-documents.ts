@@ -20,8 +20,7 @@ const action = createAction({
     output: enqueuedTaskSchema,
 
     exec: async (nango, input) => {
-        // Enforced here because declarative zod refinements are stripped from the
-        // deployed JSON schema and never run against action input at runtime.
+        // Enforced here because action input is not validated at runtime.
         const hasIds = input.ids !== undefined;
         const hasFilter = input.filter !== undefined;
         if (hasIds === hasFilter) {

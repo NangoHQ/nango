@@ -21,6 +21,10 @@ describe('searchRulesSchema', () => {
         expect(() => searchRulesSchema.parse({ a: ['title'] })).toThrow();
         expect(() => searchRulesSchema.parse({ a: 123 })).toThrow();
     });
+
+    it('rejects unknown rule keys (fail closed: Meilisearch would silently ignore them)', () => {
+        expect(() => searchRulesSchema.parse({ records: { filters: 'tenant = 7' } })).toThrow();
+    });
 });
 
 describe('filterSchema', () => {

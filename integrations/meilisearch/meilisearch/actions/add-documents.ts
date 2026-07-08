@@ -17,6 +17,10 @@ const action = createAction({
     output: enqueuedTaskSchema,
 
     exec: async (nango, input) => {
+        // Enforced here because action input is not validated at runtime.
+        if (input.documents.length === 0) {
+            throw new nango.ActionError({ message: '"documents" must contain at least one document.' });
+        }
         const res = await nango.post({
             endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents`,
             data: input.documents,
