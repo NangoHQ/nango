@@ -235,4 +235,56 @@ describe(`PATCH ${endpoint}`, () => {
         isSuccess(resGet.json);
         expect(resGet.json.data.integration.custom?.['stsEndpointUrl']).toBe('');
     });
+
+    it('rejects client credential updates for MCP integrations with managed client registration', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        // amplitude-mcp uses client_registration: dynamic, its client_id is managed by Nango
+        await seeders.createConfigSeed(env, 'amplitude-mcp', 'amplitude-mcp');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'amplitude-mcp' },
+            body: { authType: 'MCP_OAUTH2', clientId: 'attacker-client-id' }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: "Client credentials can't be updated for dynamic client registration" }
+        });
+    });
+
+    it('allows scope updates for MCP integrations with managed client registration', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'amplitude-mcp', 'amplitude-mcp');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'amplitude-mcp' },
+            body: { authType: 'MCP_OAUTH2', scopes: 'read write' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
+    });
+
+    it('allows client credential updates for MCP integrations with static client registration', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        // asana-mcp uses client_registration: static, users bring their own credentials
+        await seeders.createConfigSeed(env, 'asana-mcp', 'asana-mcp');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'asana-mcp' },
+            body: { authType: 'MCP_OAUTH2', clientId: 'my-client-id', clientSecret: 'my-client-secret' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
+    });
 });
