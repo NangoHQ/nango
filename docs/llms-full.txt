@@ -1443,9 +1443,9 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
   <Tab title="Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
-    
+
     api.post('/sessionToken', async (req, res) => {
       const { data } = await nango.createConnectSession({
         tags: {
@@ -1508,7 +1508,7 @@ Nango stores tags on the connection itself.
   <Tab title="Read with Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
     const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
@@ -6954,9 +6954,62 @@ To subscribe to Nango webhooks:
 4. Implement processing logic for each [webhook type](#types-of-nango-webhooks) from Nango you want to handle
     - Make sure your processing logic handles the webhooks you have enabled in the environment settings
 
-You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both.
+You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both. A single connection can [override these with its own URL](#override-webhook-urls-per-connection).
 
 To test webhooks locally, use a webhook forwarding service like [ngrok](https://dev.to/mmascioni/testing-and-debugging-webhooks-with-ngrok-4alp), or [webhook.site](https://webhook.site/).
+
+## Override webhook URLs per connection
+
+A single connection can override the environment's webhook URLs with its own `webhook_url`. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
+
+When a connection sets `webhook_url`, its webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
+
+Set `webhook_url` when creating a [connect session](/reference/backend/http-api/connect/sessions/create), under `integrations_config_defaults.<integration>.connection_config`:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    const session = await nango.createConnectSession({
+        allowed_integrations: ['<INTEGRATION-ID>'],
+        integrations_config_defaults: {
+            '<INTEGRATION-ID>': {
+                connection_config: {
+                    webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+                }
+            }
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "allowed_integrations": ["<INTEGRATION-ID>"],
+        "integrations_config_defaults": {
+          "<INTEGRATION-ID>": {
+            "connection_config": {
+              "webhook_url": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
+            }
+          }
+        }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+You can also set `webhook_url` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
+
+<Note>
+    `webhook_url` can only be set at connect-session creation time — the trusted actor that creates the session. The same key passed to `nango.auth()` `params` from the client is ignored.
+</Note>
+
+<Tip>
+    **Local development:** create a connection with `webhook_url` pointing at your local tunnel (e.g. [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs.
+</Tip>
 
 ## Verifying webhooks from Nango
 
@@ -6992,7 +7045,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
   <Tab title="JavaScript/TypeScript">
     ```typescript
     import crypto from 'crypto';
-    
+
     // From Environment Settings > Webhooks > Signing key
     const webhookSigningKey = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     const body = // raw request body as string
@@ -7003,7 +7056,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     ```python
     import hmac
     import hashlib
-    
+
     # From Environment Settings > Webhooks > Signing key
     webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     body = # raw request body as bytes
@@ -7015,18 +7068,18 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     import javax.crypto.Mac;
     import javax.crypto.spec.SecretKeySpec;
     import java.nio.charset.StandardCharsets;
-    
+
     public class Main {
         public static void main(String[] args) throws Exception {
             // From Environment Settings > Webhooks > Signing key
             String webhookSigningKey = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
             String body = // raw request body as string
-    
+
             Mac mac = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKey = new SecretKeySpec(webhookSigningKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKey);
             byte[] hashBytes = mac.doFinal(body.getBytes(StandardCharsets.UTF_8));
-            
+
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 hexString.append(String.format("%02x", b));
@@ -7039,17 +7092,17 @@ Verify the signature with the **webhook signing key** from **Environment Setting
   <Tab title="Ruby">
     ```ruby
     require 'openssl'
-    
+
     # From Environment Settings > Webhooks > Signing key
     webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    body = # raw request body 
+    body = # raw request body
     hash = OpenSSL::HMAC.hexdigest('SHA256', webhook_signing_key, body)
     ```
   </Tab>
   <Tab title="Go">
     ```go
     package main
-    
+
     import (
         "crypto/hmac"
         "crypto/sha256"
@@ -7057,12 +7110,12 @@ Verify the signature with the **webhook signing key** from **Environment Setting
         "io"
         "net/http"
     )
-    
+
     func main() {
         // From Environment Settings > Webhooks > Signing key
         webhookSigningKey := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         var body []byte // raw request body
-    
+
         h := hmac.New(sha256.New, []byte(webhookSigningKey))
         h.Write(body)
         hash := hex.EncodeToString(h.Sum(nil))
@@ -7073,9 +7126,9 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     ```rust
     use hmac::{Hmac, Mac};
     use sha2::Sha256;
-    
+
     type HmacSha256 = Hmac<Sha256>;
-    
+
     // From Environment Settings > Webhooks > Signing key
     let webhook_signing_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
     let body = // raw request body as string or bytes
@@ -7221,7 +7274,7 @@ const isFullSync = !checkpoints || checkpoints.from === null;
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and sync functions not executed for 60 days will have all records deleted.
 </Warning>
 
-By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
+By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be:
 ```json
 {
     "added": 0,
@@ -10242,6 +10295,17 @@ const { data } = await nango.createConnectSession({
     }
     ```
     When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+
+    `connection_config` also accepts `webhook_url` to override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
+    ```js
+    integrations_config_defaults: {
+      '<INTEGRATION-ID>': {
+        connection_config: {
+          webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+        }
+      }
+    }
+    ```
   </ResponseField>
 
   <ResponseField name="overrides" type="object">
