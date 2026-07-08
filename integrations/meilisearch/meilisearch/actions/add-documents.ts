@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import { enqueuedTaskSchema, meiliDocumentSchema } from '../lib/schemas.js';
 
-const input = z.object({
+const inputSchema = z.object({
     indexUid: z.string(),
     documents: z.array(meiliDocumentSchema).min(1),
     primaryKey: z.string().optional()
@@ -13,14 +13,12 @@ const action = createAction({
     description: 'Add or replace documents in a Meilisearch index (batch). Returns the enqueued task.',
     version: '1.0.0',
     endpoint: { method: 'POST', path: '/meilisearch/documents', group: 'Documents' },
-    input,
+    input: inputSchema,
     output: enqueuedTaskSchema,
 
-    exec: async (nango, input) => {
-        // Enforced here because action input is not validated at runtime.
-        if (input.documents.length === 0) {
-            throw new nango.ActionError({ message: '"documents" must contain at least one document.' });
-        }
+    exec: async (nango, rawInput) => {
+        // Declared input schemas are not enforced at runtime; validate explicitly.
+        const { data: input } = await nango.zodValidateInput({ zodSchema: inputSchema, input: rawInput });
         const res = await nango.post({
             endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents`,
             data: input.documents,
