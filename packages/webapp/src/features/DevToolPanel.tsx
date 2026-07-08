@@ -23,11 +23,15 @@ class TokenEditorErrorBoundary extends Component<{ children: ReactNode }, { fail
     static getDerivedStateFromError() {
         return { failed: true };
     }
+    componentDidCatch(error: unknown) {
+        // Log the real error so a runtime bug in the editor isn't silently reported as a chunk-load failure.
+        console.error('Token Editor failed to load or render:', error);
+    }
     render() {
         if (this.state.failed) {
             return (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-text-muted">
-                    <span>Couldn&apos;t load the Token Editor.</span>
+                    <span>The Token Editor failed to load. Check the console for details.</span>
                     <button onClick={() => window.location.reload()} className="rounded border border-border-muted px-2 py-1 hover:text-text-default">
                         Reload
                     </button>
