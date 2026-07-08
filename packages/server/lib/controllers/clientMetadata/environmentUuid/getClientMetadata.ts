@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { accountService, configService, getGlobalClientMetadataDocumentUrl, getGlobalOAuthCallbackUrl, getProvider, isValidHttpUrl } from '@nangohq/shared';
+import { accountService, configService, getGlobalClientMetadataDocumentUrl, getGlobalOAuthCallbackUrl, getProvider, isValidUrl } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -56,9 +56,9 @@ export const getClientMetadata = asyncWrapper<GetPublicClientMetadata>(async (re
     }
 
     const storedClientUri = integration.custom?.['oauth_client_uri'];
-    const clientUri = storedClientUri && isValidHttpUrl(storedClientUri) ? storedClientUri : 'https://nango.dev';
+    const clientUri = storedClientUri && isValidUrl(storedClientUri) ? storedClientUri : 'https://nango.dev';
     const storedLogoUri = integration.custom?.['oauth_client_logo_uri'];
-    const logoUri = storedLogoUri && isValidHttpUrl(storedLogoUri) ? storedLogoUri : undefined;
+    const logoUri = storedLogoUri && isValidUrl(storedLogoUri) ? storedLogoUri : undefined;
 
     // Authorization servers cache this document respecting HTTP cache headers.
     // Short TTL so callback URL and branding edits propagate quickly.

@@ -97,7 +97,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
                 const mcpRegistration = await mcpClient.registerClientId({ provider, environment, team: account });
                 config.oauth_client_id = mcpRegistration.client_id;
                 config.oauth_client_secret = mcpRegistration.client_secret || '';
-            } else if (clientRegistration === 'metadata') {
+            } else if (clientRegistration === 'cimd') {
                 const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
                 if (!cimdUrl) {
                     res.status(400).send({

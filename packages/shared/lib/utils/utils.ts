@@ -62,7 +62,7 @@ export function getOrchestratorUrl() {
     return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
 }
 
-export function isValidHttpUrl(str: string) {
+export function isValidUrl(str: string) {
     try {
         new URL(str);
         return true;

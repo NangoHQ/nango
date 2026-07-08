@@ -7,7 +7,7 @@ export type GetPublicClientMetadata = Endpoint<{
         environmentUuid: string;
         providerConfigKey: string;
     };
-    Error: ApiError<'invalid_uri_params'> | ApiError<'feature_disabled'> | ApiError<'unknown_environment'> | ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_environment'> | ApiError<'unknown_provider_config'>;
     Success: {
         client_id: string;
         client_name: string;

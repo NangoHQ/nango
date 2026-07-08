@@ -65,7 +65,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
         integration.unique_key = body.integrationId;
 
         // The CIMD-based client_id embeds the unique_key, keep it in sync on rename
-        if (provider.auth_mode === 'MCP_OAUTH2' && (provider as ProviderMcpOAUTH2).client_registration === 'metadata') {
+        if (provider.auth_mode === 'MCP_OAUTH2' && (provider as ProviderMcpOAUTH2).client_registration === 'cimd') {
             const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, integration.unique_key);
             if (cimdUrl) {
                 integration.oauth_client_id = cimdUrl;
