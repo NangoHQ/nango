@@ -2111,20 +2111,18 @@ Function templates are pre-built Nango functions for common provider operations.
 
 You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
 
-When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [clone it into a local functions project and customize it](#extend-a-template).
+When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
 
 <a id="extend-a-template"></a>
 #### Extend a template
 
-Use the CLI to clone template code into your local functions project:
+Use the CLI to pull a template's code into your local functions project from the public catalog:
 
 ```bash
-nango clone github
-nango clone github/actions
-nango clone github/actions/list-repos
+nango pull github list-repos --catalog
 ```
 
-You can clone an entire integration, a function-type folder, or a single function. After cloning, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
@@ -2315,6 +2313,17 @@ At a high level, the flow is:
 Resolve these endpoints against `NANGO_SERVER_URL`, or `https://api.nango.dev` by default. Send `Authorization: Bearer <NANGO-API-KEY>` and `Content-Type: application/json`. Scoped API keys need `environment:functions:compile` for compile, `environment:functions:dryrun` for dry run creation and polling, and `environment:deploy` for deployment.
 
 The Functions API is powerful, but it intentionally skips a local Git workflow. For production integrations that need code review, tests, ownership, and CI/CD, prefer [local development with the CLI](#build-locally-with-the-cli).
+
+<a id="take-ownership-of-a-deployed-function"></a>
+### Take ownership of a deployed function
+
+Pull the source of a function that is already deployed to an environment so you can manage it in your own repository:
+
+```bash
+nango pull github list-repos --env dev
+```
+
+This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 
@@ -7187,18 +7196,35 @@ Payload received following a successful sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED — use checkpoints instead
     "success": true,
     "modifiedAfter": "<timestamp>",
     "responseResults": {
         "added": number,
         "updated": number,
         "deleted": number
+    },
+    // checkpoints itself may be missing or null if the sync doesn't use checkpoints —
+    // always guard against that before reading `from`/`to`.
+    "checkpoints": {
+        "from": { "<key>": "<string | number | boolean>" }, // or null if no prior checkpoint
+        "to": { "<key>": "<string | number | boolean>" } // or null if the sync didn't save one
     }
 }
 ```
 
 `modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/functions/syncs/records-cache#cursors-and-sync-progress).
+
+**Distinguishing full vs incremental syncs:** use `checkpoints` instead of the deprecated `syncType` field. `checkpoints.from`/`checkpoints.to` are checkpoint objects (`Record<string, string | number | boolean>`) as saved by the sync function via `saveCheckpoint()` — not strings — and either can be `null`. The `checkpoints` field itself can also be missing or `null`, so guard against that before reading nested fields:
+
+```javascript
+const { checkpoints } = payload;
+const isFullSync = !checkpoints || checkpoints.from === null;
+```
+
+- `checkpoints` is missing/`null`, or `checkpoints.from === null` — the run started with no prior state. This happens on the first run, after a manual reset, or when the sync explicitly cleared its checkpoint. Treat this as a full sync and overwrite your data.
+- `checkpoints.from` is a non-null checkpoint object — the run continued from a previously saved checkpoint. This is an incremental sync; merge the new records into your existing data.
+- **Webhook-triggered runs** (deprecated `syncType: "WEBHOOK"`): always treat these as incremental merges, regardless of `checkpoints.from`. A webhook-triggered run processes a single incoming external event on top of already-synced data — it never represents a full resync.
 
 <Warning>
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and sync functions not executed for 60 days will have all records deleted.
@@ -7222,14 +7248,19 @@ Payload received following a failed sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
-    "success": true,
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED — use checkpoints instead
+    "success": false,
     "error": {
         "type": "<string>",
         "description": "<string>"
     },
     "startedAt": "<timestamp>",
-    "failedAt": "<timestamp>"
+    "failedAt": "<timestamp>",
+    // checkpoints itself may be missing or null — see the note above.
+    "checkpoints": {
+        "from": { "<key>": "<string | number | boolean>" }, // or null
+        "to": { "<key>": "<string | number | boolean>" } // or null
+    }
 }
 ```
 
@@ -8776,6 +8807,9 @@ The **Default - Full access** key that comes with each environment already has a
 
 | Scope | Description |
 |-------|-------------|
+| `environment:functions:list` | List deployed functions |
+| `environment:functions:read` | Read a single deployed function |
+| `environment:functions:delete` | Delete a deployed function |
 | `environment:functions:compile` | Compile function source code |
 | `environment:functions:dryrun` | Dry run function source code |
 
@@ -9158,6 +9192,46 @@ Source: https://nango.dev/docs/reference/backend/http-api/connections/delete.md
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
+
+## List functions
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/list.md
+
+<Info>
+  Requires an API key with the `environment:functions:list` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the functions deployed to an integration.
+
+## Get a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/get.md
+
+<Info>
+  Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns a single deployed function.
+
+## Get a function's source code
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/code.md
+
+<Info>
+  Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the TypeScript source code of a function for a given integration.
+
+## Delete a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/delete.md
+
+<Info>
+  Requires an API key with the `environment:functions:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint.
 
 ## Compile a function
 
@@ -9710,6 +9784,12 @@ Source: https://nango.dev/docs/reference/backend/http-api/providers/get.md
 }
 ```
 </ResponseExample>
+
+## List provider templates
+
+Source: https://nango.dev/docs/reference/backend/http-api/providers/templates.md
+
+Returns the template functions available in the catalog for a provider.
 
 ## List connections (deprecated)
 

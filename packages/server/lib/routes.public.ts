@@ -51,7 +51,7 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getMcp, postMcp } from './controllers/mcp/mcp.js';
+import { getConnectionToolsMcp, postConnectionToolsMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
@@ -288,8 +288,8 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, withScope('envir
 
 // MCP
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
-publicAPI.route('/mcp').post(apiAuth, withScope('environment:mcp'), postMcp);
-publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getMcp);
+publicAPI.route('/mcp').post(apiAuth, withScope('environment:mcp'), postConnectionToolsMcp);
+publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getConnectionToolsMcp);
 
 // Scripts config
 publicAPI.use('/scripts', jsonContentTypeMiddleware);

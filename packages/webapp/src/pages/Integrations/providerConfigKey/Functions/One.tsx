@@ -218,6 +218,7 @@ export const FunctionsOne: React.FC = () => {
                                     disabled={!func.enabled}
                                     onClick={() => {
                                         openPlaygroundWithContext({
+                                            source: 'function',
                                             integration: integrationData.integration.unique_key,
                                             functionName: func.name,
                                             functionType: func.type as 'action' | 'sync'
@@ -292,7 +293,7 @@ export const FunctionsOne: React.FC = () => {
                                 })}
                             />
                             {func.source === 'catalog' && (
-                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="md">
                                     View code <ExternalLink />
                                 </ButtonLink>
                             )}

@@ -228,7 +228,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             loading={props.loading}
             disabled={disabled || options.length === 0}
             variant="ghost"
-            size="lg"
+            size="md"
             className={cn(
                 'border-ds-hairline border-border-interactive',
                 isDirty && 'bg-state-pressed',

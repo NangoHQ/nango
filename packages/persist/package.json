@@ -19,6 +19,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/database": "file:../database",
+        "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/kms": "file:../kms",
         "@nangohq/logs": "file:../logs",

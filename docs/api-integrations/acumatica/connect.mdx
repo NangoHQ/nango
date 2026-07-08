@@ -6,7 +6,7 @@ sidebarTitle: 'Acumatica'
 # Overview
 
 To authenticate with Acumatica using the Resource Owner Password Credentials flow, you will need:
-1. **Instance URL** — The hostname of your Acumatica ERP instance (e.g. `mycompany.acumatica.com`)
+1. **Instance URL** — The hostname of your Acumatica ERP instance, including the virtual directory if your instance is hosted at a subpath (e.g. `mycompany.acumatica.com` or `mycompany.acumatica.com/Instance1`)
 2. **Client ID** — The client ID assigned to your connected application, including the tenant suffix (e.g. `88358B02-A48D-A50E-F710-39C1636C30F6@MyTenant`)
 3. **Client Secret** — The client secret created for your connected application
 4. **Username** — The username of an Acumatica ERP user
@@ -52,12 +52,12 @@ Click **Save**. Once saved, copy your **Client ID** from the application record.
 
 #### Step 6: Identify your instance URL
 
-Your instance URL is the hostname you use to access Acumatica. For example, if you access Acumatica at `https://mycompany.acumatica.com`, your instance URL is `mycompany.acumatica.com`.
+Your instance URL is the hostname you use to access Acumatica, plus the virtual directory if your instance is hosted at a subpath. For example, if you access Acumatica at `https://mycompany.acumatica.com`, your instance URL is `mycompany.acumatica.com`. If you access it at `https://mycompany.acumatica.com/Instance1`, your instance URL is `mycompany.acumatica.com/Instance1`.
 
 #### Step 7: Enter credentials in the Connect UI
 
 1. Open the form where you need to authenticate with Acumatica.
-2. Enter your **Instance URL** (hostname only, without `https://`).
+2. Enter your **Instance URL** (hostname and optional virtual directory, without `https://`).
 3. Enter your **Username** and **Password** for the Acumatica ERP user.
 4. Enter your **Client ID** (the full value including the `@TenantId` suffix).
 5. Enter your **Client Secret**.

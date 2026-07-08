@@ -9,6 +9,7 @@ import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { securityMiddlewares } from './middleware/security.js';
 import { getReady } from './ready.js';
+import { controlPlaneMcpAPI } from './routes.control-plane-mcp.js';
 import { internalApi } from './routes.internal.js';
 import { privateApi } from './routes.private.js';
 import { publicAPI } from './routes.public.js';
@@ -32,6 +33,7 @@ router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
 // Import main routers
 // Order is important because public API has no prefix
+router.use(controlPlaneMcpAPI);
 router.use('/api/v1', privateApi);
 router.use('/internal', internalApi);
 router.use('/', publicAPI);

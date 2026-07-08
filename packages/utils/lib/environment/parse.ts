@@ -26,6 +26,7 @@ export const ENVS = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    NANGO_CONTROL_PLANE_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
@@ -130,6 +131,8 @@ export const ENVS = z.object({
     // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
     // snapshot it.
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
+    // Triggers the count of files in BILLING_EVENTS_S3_DLQ_BUCKET (must also be set). -1 disables.
+    CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Metering
     METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
@@ -351,6 +354,9 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
+    // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
+    // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
+    BILLING_EVENTS_S3_DLQ_BUCKET: z.string().optional(),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),

@@ -328,7 +328,7 @@ acumatica:
             type: string
             title: Instance URL
             description: The hostname of your Acumatica ERP instance.
-            format: hostname
+            pattern: '^[A-Za-z0-9.-]+(?::\d+)?(?:/[A-Za-z0-9._-]+)*$'
             example: mycompany.acumatica.com
             prefix: https://
             doc_section: '#step-6-identify-your-instance-url'
@@ -2150,6 +2150,7 @@ auvik:
             enum:
                 - us1
                 - us2
+                - us6
                 - eu1
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
