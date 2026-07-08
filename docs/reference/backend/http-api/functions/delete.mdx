@@ -1,0 +1,10 @@
+---
+title: 'Delete a function'
+openapi: 'DELETE /integrations/{uniqueKey}/functions/{name}'
+---
+
+<Info>
+  Requires an API key with the `environment:functions:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint.
