@@ -234,7 +234,8 @@ export interface CreateFunctionProps<
 > {
     description: string;
     // Optional input schema: the invoke call argument and/or the http request body. Omit when there is no input.
-    input?: TInput;
+    // schedule or event triggers have no input
+    input?: TTrigger extends { kind: 'schedule' } | { kind: 'event' } ? never : TInput;
     // Optional output schema, typing `exec`'s return value.
     output?: TOutput;
     data?: TRequires extends { connection: false }

@@ -47,6 +47,28 @@ describe('createFunction', () => {
                 useInvoke: false
             });
         });
+
+        it('disallows a declared input on schedule and event triggers', () => {
+            createFunction({
+                description: 'schedule cannot declare input',
+                // @ts-expect-error schedule triggers carry no caller input
+                input: z.object({ since: z.string() }),
+                trigger: { kind: 'schedule', frequency: 'every hour' },
+                exec: (_nango, trigger) => {
+                    expectTypeOf(trigger.input).toEqualTypeOf<null>();
+                }
+            });
+
+            createFunction({
+                description: 'event cannot declare input',
+                // @ts-expect-error event triggers carry no caller input
+                input: z.object({ since: z.string() }),
+                trigger: { kind: 'event', events: ['pre-connection-deletion'] },
+                exec: (_nango, trigger) => {
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ event: OnEventType }>();
+                }
+            });
+        });
     });
 
     describe('http with models (webhook)', () => {
