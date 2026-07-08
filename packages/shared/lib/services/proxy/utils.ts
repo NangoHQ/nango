@@ -509,25 +509,47 @@ export function buildProxyBody({
 }: {
     config: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
-}): Record<string, string> | null {
+}): Record<string, string | Record<string, string>> | null {
     if (!config.provider?.proxy?.body) {
         return null;
     }
 
-    const body: Record<string, string> = {};
     const replacers = {
         connectionConfig: connection.connection_config,
         credentials: connection.credentials,
         ...(connection.credentials as unknown as Record<string, string>)
     };
 
+    const interpolateLeaf = (value: string): string | null => {
+        const interpolated = interpolateIfNeeded(value, replacers);
+        return interpolated.includes('${') ? null : interpolated;
+    };
+
+    const body: Record<string, string | Record<string, string>> = {};
     for (const [key, value] of Object.entries(config.provider.proxy.body)) {
-        if (typeof value !== 'string') {
+        if (typeof value === 'string') {
+            const interpolated = interpolateLeaf(value);
+            if (interpolated !== null) {
+                body[key] = interpolated;
+            }
             continue;
         }
-        const interpolated = interpolateIfNeeded(value, replacers);
-        if (!interpolated.includes('${')) {
-            body[key] = interpolated;
+
+        if (!isPlainObject(value)) {
+            continue;
+        }
+        const nested: Record<string, string> = {};
+        for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            if (typeof nestedValue !== 'string') {
+                continue;
+            }
+            const interpolated = interpolateLeaf(nestedValue);
+            if (interpolated !== null) {
+                nested[nestedKey] = interpolated;
+            }
+        }
+        if (Object.keys(nested).length > 0) {
+            body[key] = nested;
         }
     }
 
@@ -545,15 +567,19 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     );
 }
 
-function mergeInjectedBody(existing: unknown, injected: Record<string, string>): unknown {
+function mergeInjectedBody(existing: unknown, injected: Record<string, string | Record<string, string>>): unknown {
     if (!existing) return injected;
     if (isPlainObject(existing)) return { ...existing, ...injected };
     if (existing instanceof FormData) {
-        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        for (const [key, value] of Object.entries(injected)) {
+            if (typeof value === 'string') existing.append(key, value);
+        }
         return existing;
     }
     if (existing instanceof URLSearchParams) {
-        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        for (const [key, value] of Object.entries(injected)) {
+            if (typeof value === 'string') existing.append(key, value);
+        }
         return existing;
     }
     return existing;

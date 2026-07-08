@@ -2183,4 +2183,89 @@ describe('buildProxyBody', () => {
         const result = buildProxyBody({ config, connection: getTestConnection() });
         expect(result).toEqual({ label: 'static' });
     });
+
+    it('builds a nested object from a nested proxy.body map', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        auth: {
+                            acctId: '${connectionConfig.acctId}',
+                            loginId: '${connectionConfig.loginId}',
+                            key: '${apiKey}'
+                        }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'my-secret-key' },
+                connection_config: { acctId: '26878', loginId: 'TestUser' }
+            })
+        });
+        expect(result).toEqual({ auth: { acctId: '26878', loginId: 'TestUser', key: 'my-secret-key' } });
+    });
+
+    it('drops unresolved keys from a nested proxy.body map but keeps the resolved ones', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        auth: {
+                            acctId: '${connectionConfig.acctId}',
+                            key: '${apiKey}'
+                        }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' }, connection_config: {} })
+        });
+        expect(result).toEqual({ auth: { key: 'my-secret-key' } });
+    });
+
+    it('omits a nested map entirely when none of its keys resolve', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: { auth: { acctId: '${connectionConfig.acctId}' } }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ connection_config: {} })
+        });
+        expect(result).toBeNull();
+    });
+
+    it('mixes flat and nested values in the same proxy.body map', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        serviceId: '101',
+                        auth: { key: '${apiKey}' }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+        expect(result).toEqual({ serviceId: '101', auth: { key: 'my-secret-key' } });
+    });
 });
