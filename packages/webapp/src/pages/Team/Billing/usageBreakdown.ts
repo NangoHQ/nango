@@ -101,13 +101,6 @@ export function resolveBreakdownDimension(
 export const DEFAULT_TOP_N = 10;
 
 /**
- * How many values the Filter dropdown lists per dimension — more than the chart's top-N so more
- * are directly pickable (incl. ones in the chart's 'rest'). Matches the backend's TOP_N_BREAKDOWN_CAP;
- * the searchable, height-capped pane handles the length. Reaching beyond this is server-side search (NAN-6038).
- */
-export const FILTER_VALUES_TOP_N = 25;
-
-/**
  * Earliest month (UTC epoch ms) with ClickHouse granular data; the month picker is
  * floored here while the breakdown view is active. A primitive — not a shared `Date` —
  * so it can't be mutated by reference.
