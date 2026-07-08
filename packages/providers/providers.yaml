@@ -328,7 +328,7 @@ acumatica:
             type: string
             title: Instance URL
             description: The hostname of your Acumatica ERP instance.
-            format: hostname
+            pattern: '^[A-Za-z0-9.-]+(?::\d+)?(?:/[A-Za-z0-9._-]+)*$'
             example: mycompany.acumatica.com
             prefix: https://
             doc_section: '#step-6-identify-your-instance-url'
