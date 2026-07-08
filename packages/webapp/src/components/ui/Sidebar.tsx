@@ -82,7 +82,7 @@ function SidebarProvider({
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-        return isMobile ? void setOpenMobile((open) => !open) : void setOpen((open) => !open);
+        return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
     }, [isMobile, setOpen, setOpenMobile]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -362,11 +362,13 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<'ul'>) {
 }
 
 function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
-    return <li data-slot="sidebar-menu-item" data-sidebar="menu-item" className={cn('group/menu-item relative', className)} {...props} />;
+    return (
+        <li data-slot="sidebar-menu-item" data-sidebar="menu-item" className={cn('group/menu-item relative has-[:focus-visible]:z-10', className)} {...props} />
+    );
 }
 
 const sidebarMenuButtonVariants = cva(
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded p-2 text-left text-body-medium-medium outline-hidden focus-default transition-[width,height,padding] hover:bg-state-hover hover:text-text-strong focus-visible:bg-state-hover focus-visible:text-text-strong active:bg-state-selected disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-state-selected data-[active=true]:text-text-strong data-[state=open]:hover:bg-state-hover data-[state=open]:hover:text-text-strong group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded p-2 text-left text-body-medium-medium outline-hidden focus-default transition-[width,height,padding] hover:bg-state-hover hover:text-text-strong active:bg-state-selected disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-state-selected data-[active=true]:text-text-strong data-[state=open]:hover:bg-state-hover data-[state=open]:hover:text-text-strong group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0',
     {
         variants: {
             variant: {
