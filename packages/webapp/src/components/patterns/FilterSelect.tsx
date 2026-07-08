@@ -240,7 +240,10 @@ const FilterValuePane: React.FC<{
                                     <Combobox.Collection>
                                         {(item: PaneItem) => <ValueRow key={item.isCreate ? '__create' : item.value} item={item} />}
                                     </Combobox.Collection>
-                                    {!hasMatches && !showCreate && (
+                                    {/* Hold off on "No values" while a search is pending — the loaded list may not
+                                        match the term being typed yet, and flashing it before results land reads as
+                                        "nothing found". */}
+                                    {!hasMatches && !showCreate && !searching && (
                                         <div className="px-2 py-3 text-center text-text-muted text-body-small-regular">
                                             {isError ? 'Failed to load values' : 'No values'}
                                         </div>
