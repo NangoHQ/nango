@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import { filterSchema, meiliDocumentSchema } from '../lib/schemas.js';
 
-const input = z.object({
+const inputSchema = z.object({
     indexUid: z.string(),
     ids: z.array(z.union([z.string(), z.number()])).optional(),
     filter: filterSchema.optional(),
@@ -25,11 +25,14 @@ const action = createAction({
     description: 'Fetch documents from a Meilisearch index, optionally filtered.',
     version: '1.0.0',
     endpoint: { method: 'POST', path: '/meilisearch/documents/fetch', group: 'Documents' },
-    input,
+    input: inputSchema,
     output,
 
-    exec: async (nango, input) => {
-        const { indexUid, ...body } = input;
+    exec: async (nango, rawInput) => {
+        // Declared input schemas are not enforced at runtime; validate explicitly.
+        // The raw input is forwarded so extra Meilisearch fetch params pass through.
+        await nango.zodValidateInput({ zodSchema: inputSchema, input: rawInput });
+        const { indexUid, ...body } = rawInput;
         const res = await nango.post({ endpoint: `/indexes/${encodeURIComponent(indexUid)}/documents/fetch`, data: body });
         return res.data;
     }

@@ -8,7 +8,7 @@ const DEFAULT_TTL_SECONDS = 3600;
 const KEYS_PAGE_SIZE = 100;
 const MAX_KEY_PAGES = 20;
 
-const input = z.object({
+const inputSchema = z.object({
     searchRules: searchRulesSchema,
     expiresAt: z.number().optional().describe('Expiry as epoch seconds. Takes precedence over expiresInSeconds.'),
     expiresInSeconds: z.number().optional().describe('Expiry as a duration from now. Defaults to 3600 (1 hour) when neither field is set.'),
@@ -28,19 +28,15 @@ const action = createAction({
         'Generate a Meilisearch tenant token: a scoped, signed search JWT carrying per-index ACL rules. Expires after 1 hour unless expiresAt or expiresInSeconds is set.',
     version: '1.0.0',
     endpoint: { method: 'POST', path: '/meilisearch/tenant-token', group: 'Tenant Tokens' },
-    input,
+    input: inputSchema,
     output,
 
-    exec: async (nango, input) => {
-        // Parsed here because action input is not validated at runtime; a malformed
-        // rule (e.g. a typo'd "filters" key) would otherwise be signed into the token
-        // and silently ignored by Meilisearch, broadening access.
-        const parsedRules = searchRulesSchema.safeParse(input.searchRules);
-        if (!parsedRules.success) {
-            throw new nango.ActionError({ message: `Invalid searchRules: ${parsedRules.error.issues.map((i) => i.message).join('; ')}` });
-        }
-        const searchRules = parsedRules.data;
-        if (Object.keys(searchRules).length === 0) {
+    exec: async (nango, rawInput) => {
+        // Declared input schemas are not enforced at runtime; validate explicitly.
+        // The strict rule schema matters here: Meilisearch ignores unknown rule keys,
+        // so a typo'd key would silently broaden a signed token's access.
+        const { data: input } = await nango.zodValidateInput({ zodSchema: inputSchema, input: rawInput });
+        if (Object.keys(input.searchRules).length === 0) {
             throw new nango.ActionError({ message: 'searchRules must define at least one index rule.' });
         }
 
@@ -85,7 +81,7 @@ const action = createAction({
         const token = generateTenantToken({
             apiKey,
             apiKeyUid,
-            searchRules,
+            searchRules: input.searchRules,
             expiresAt
         });
 
