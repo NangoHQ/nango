@@ -11,12 +11,13 @@
  *      endpoint returns `feature_disabled` without one (and FLAG_PLAN_ENABLED
  *      must be on; see .env).
  *   4. Inserts events into `raw_events` across every metric and breakdown
- *      dimension over the last N days. ClickHouse materialized views aggregate
- *      them into the daily_* tables the dashboard reads.
+ *      dimension over the last N days (default 60, enough to fill the dashboard's
+ *      month view when navigating to the previous month). ClickHouse materialized
+ *      views aggregate them into the daily_* tables the dashboard reads.
  *
  * Run from the repo root:
  *   npm run seed:clickhouse
- *   npm run seed:clickhouse -- --account 3 --days 60 --no-reset
+ *   npm run seed:clickhouse -- --account 3 --days 90 --no-reset
  *
  * Requires CLICKHOUSE_URL in .env and the clickhouse container up (npm run dev:docker).
  */
@@ -96,7 +97,10 @@ function parseArgs() {
     }
     return {
         onlyAccount: account !== undefined ? Number(account) : undefined,
-        days: days !== undefined ? Number(days) : 30,
+        // Default to 60 days so the dashboard's month view (1st → last day) is fully
+        // covered even when the current month is only a few days in — a 30-day window
+        // would leave the start of the previous month empty when you navigate back.
+        days: days !== undefined ? Number(days) : 60,
         reset: !argv.includes('--no-reset'),
         allowRemote: argv.includes('--allow-remote')
     };
