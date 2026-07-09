@@ -284,6 +284,20 @@ describe(`GET ${route}`, () => {
             expect(page1.json.data.pagination).toEqual({ page: 1, limit: 25, hasMore: false });
         });
 
+        it('reports hasMore: false when the last page is exactly full', async () => {
+            // Exactly one page of values: the final page is full but there's nothing after it, so
+            // hasMore must be false (guards the phantom next-page a naive page-full check would return).
+            const exactlyOnePage = recordsFor(Array.from({ length: 25 }, (_, i) => ({ integrationId: `int-${String(i).padStart(2, '0')}`, value: 1000 - i })));
+            const { apiKey } = await seedAccountWith(exactlyOnePage);
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: { env: 'dev', metric: 'records', dimension: 'integration_id', from: day0.toISOString(), to: end.toISOString(), page: '0' }
+            });
+            isSuccess(res.json);
+            expect(res.json.data.values).toHaveLength(25);
+            expect(res.json.data.pagination).toEqual({ page: 0, limit: 25, hasMore: false });
+        });
+
         it('pages equal-ranked values disjointly and completely (stable tie-break)', async () => {
             // All 30 share the same volume, so only the `dim ASC` tie-break orders them.
             const tied = recordsFor(Array.from({ length: 30 }, (_, i) => ({ integrationId: `tie-${String(i).padStart(2, '0')}`, value: 100 })));

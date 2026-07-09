@@ -474,7 +474,8 @@ export class Clickhouse {
      * UI. A `search` term filters to values whose string contains it
      * (case-insensitive substring), and `page` walks the long tail in pages of
      * `TOP_N_BREAKDOWN_PAGE_SIZE`, so any value is reachable — not just the
-     * first page. `hasMore` is a page-full heuristic (avoids a count query).
+     * first page. To set `hasMore` we fetch one extra row as a next-page
+     * sentinel (avoids a count query) and drop it from the returned values.
      */
     async getTopDimensionValues(query: GetTopDimensionValuesQuery): Promise<Result<GetTopDimensionValuesResult>> {
         if (!this.client) {
@@ -514,7 +515,7 @@ export class Clickhouse {
               ${searchClause}
             GROUP BY ${dimension}
             ORDER BY ${rankingQuantityForMetric(metric)} DESC, dim ASC
-            LIMIT ${TOP_N_BREAKDOWN_PAGE_SIZE} OFFSET ${offset}
+            LIMIT ${TOP_N_BREAKDOWN_PAGE_SIZE + 1} OFFSET ${offset}
         `;
 
         try {
@@ -529,7 +530,10 @@ export class Clickhouse {
                 ...tags,
                 success: 'true'
             });
-            return Ok({ accountId, metric, dimension, values: rows.map((r) => r.dim), hasMore: rows.length === TOP_N_BREAKDOWN_PAGE_SIZE });
+            // We fetched one row past the page; if it came back there's a next page — drop it here.
+            const hasMore = rows.length > TOP_N_BREAKDOWN_PAGE_SIZE;
+            const values = hasMore ? rows.slice(0, TOP_N_BREAKDOWN_PAGE_SIZE) : rows;
+            return Ok({ accountId, metric, dimension, values: values.map((r) => r.dim), hasMore });
         } catch (err) {
             metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
                 ...tags,
