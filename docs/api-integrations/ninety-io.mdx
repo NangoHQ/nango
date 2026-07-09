@@ -9,13 +9,13 @@ description: 'Integrate your application with the Ninety.io API'
 Connect to Ninety.io with Nango and see data flow in 2 minutes.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Ninety.io_.
     </Step>
-    <Step title="Authorize Ninety.io">
+    <Step id="authorize-ninety-io" title="Authorize Ninety.io">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Personal Access Token. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Ninety.io API">
+    <Step id="call-the-api" title="Call the Ninety.io API">
     Let's make your first request to the Ninety.io API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -55,7 +55,7 @@ Connect to Ninety.io with Nango and see data flow in 2 minutes.
     You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-in-app" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
@@ -66,7 +66,7 @@ Connect to Ninety.io with Nango and see data flow in 2 minutes.
 Ninety.io's Public API is only available on the Thrive subscription plan, and every request executes under the permissions of the user who generated the token. Rate limit: 25 requests/second, per user.
 </Note>
 
-## Ninety.io Integration Guides
+## Ninety.io integration guides
 
 Nango-maintained guides for common use cases.
 
