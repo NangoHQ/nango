@@ -140,6 +140,19 @@ describe('createControlPlaneMcpServer', () => {
             logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
         }
     });
+
+    it('returns an explicit public error when logs are disabled', async () => {
+        const previousLogsEnabled = logsEnvs.NANGO_LOGS_ENABLED;
+        logsEnvs.NANGO_LOGS_ENABLED = false;
+
+        try {
+            await expect(
+                logsListOperationsTool.handler({}, { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] })
+            ).resolves.toSatisfy((result) => result.isErr() && result.error instanceof PublicMcpError && result.error.message === 'Nango logs are disabled');
+        } finally {
+            logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
+        }
+    });
 });
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {

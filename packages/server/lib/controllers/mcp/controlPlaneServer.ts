@@ -25,8 +25,7 @@ export function createControlPlaneMcpServer(account: DBTeam, environment: DBEnvi
 
     const context = { account, environment, grantedScopes };
     for (const toolDefinition of controlPlaneMcpTools) {
-        // packages/server and the MCP SDK resolve different Zod versions. Schemas are runtime-compatible,
-        // but TypeScript cannot assign package-local Zod schemas to the SDK's AnySchema.
+        // Need to cast because we have a different Zod version than the MCP SDK
         const config = {
             description: toolDefinition.description,
             inputSchema: toolDefinition.inputSchema as unknown as AnySchema,

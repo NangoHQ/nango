@@ -1,22 +1,20 @@
 import * as z from 'zod/v4';
 
-import { modelMessages, modelOperations } from '@nangohq/logs';
+import { LogsDisabledError, logsOperationsService } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
 import { PublicMcpError } from '../utils.js';
-import { checkLogsEnabled, defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
+import { defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
 
+import type { ListLogOperationsParams, ListLogOperationsResult } from '@nangohq/logs';
 import type {
-    DBEnvironment,
-    DBTeam,
     OperationAction,
     OperationAdmin,
     OperationAuth,
     OperationDeploy,
     OperationOnEvents,
     OperationProxy,
-    OperationRow,
     OperationSync,
     OperationWebhook,
     SearchOperationsState,
@@ -170,16 +168,9 @@ const listOperationsOutputSchema = z
     .strict();
 
 type ListOperationsArguments = z.infer<typeof listOperationsArgumentsSchema>;
+type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' | 'environmentId'>;
 
-interface ListOperationsResponse {
-    operations: OperationRow[];
-    pagination: {
-        total: number;
-        cursor: string | null;
-    };
-}
-
-export const logsListOperationsTool = defineControlPlaneMcpTool<ListOperationsResponse>({
+export const logsListOperationsTool = defineControlPlaneMcpTool<ListLogOperationsResult>({
     name: 'logs_list_operations',
     description: [
         'List Nango log operations.',
@@ -190,12 +181,24 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<ListOperationsRe
     outputSchema: listOperationsOutputSchema,
     requiredScopes: [logsReadScope],
     async handler(args, { account, environment }) {
-        const logsEnabled = checkLogsEnabled();
-        if (logsEnabled.isErr()) {
-            return Err(logsEnabled.error);
+        const parsedArgs = parseListOperationsArguments(args);
+        if (parsedArgs.isErr()) {
+            return Err(parsedArgs.error);
         }
 
-        return listOperations({ account, environment, args });
+        const result = await logsOperationsService.listOperations({
+            accountId: account.id,
+            environmentId: environment.id,
+            ...parsedArgs.value
+        });
+
+        return result.mapError((error) => {
+            if (error instanceof LogsDisabledError) {
+                return new PublicMcpError(error.message);
+            }
+
+            return error;
+        });
     }
 });
 
@@ -229,15 +232,7 @@ function normalizeFilterArray<T>(values: T[] | undefined): T[] | undefined {
     return values && values.length > 0 ? values : undefined;
 }
 
-async function listOperations({
-    account,
-    environment,
-    args
-}: {
-    account: DBTeam;
-    environment: DBEnvironment;
-    args: unknown;
-}): Promise<Result<ListOperationsResponse>> {
+function parseListOperationsArguments(args: unknown): Result<ParsedListOperationsArguments> {
     const parsedArgs = listOperationsArgumentsSchema.safeParse(args ?? {});
     if (!parsedArgs.success) {
         return Err(new PublicMcpError(formatListOperationsArgumentsError(parsedArgs.error)));
@@ -245,44 +240,17 @@ async function listOperations({
 
     const parsed = parsedArgs.data;
     const period = parsed.period ? normalizePeriod(parsed.period) : defaultOperationsPeriod();
-    let rawOps: Awaited<ReturnType<typeof modelOperations.listOperations>>;
-    try {
-        rawOps = await modelOperations.listOperations({
-            accountId: account.id,
-            environmentId: environment.id,
-            limit: parsed.limit,
-            states: normalizeFilterArray(parsed.states),
-            types: normalizeOperations(parsed.operations),
-            integrations: normalizeFilterArray(parsed.integrations),
-            connections: normalizeFilterArray(parsed.connections),
-            syncs: normalizeFilterArray(parsed.syncs),
-            period,
-            cursor: parsed.cursor
-        });
-    } catch (err) {
-        return Err(err);
-    }
-
-    let operations = rawOps.items;
-    if (parsed.search && rawOps.items.length > 0) {
-        try {
-            const bucket = await modelMessages.searchForMessagesInsideOperations({ search: parsed.search, operationsIds: rawOps.items.map((op) => op.id) });
-            const matched = new Set(bucket.items.map((item) => item.key));
-            operations = rawOps.items.filter((item) => matched.has(item.id));
-        } catch (err) {
-            return Err(err);
-        }
-    }
 
     return Ok({
-        operations,
-        pagination: {
-            // With search, we fetch a page of operations first and then keep only the ones with matching messages.
-            // rawOps.count still counts every operation before that message filter. The real fix is to move
-            // message search into the operation query so the backend can return a filtered count and cursor.
-            total: parsed.search ? operations.length : rawOps.count,
-            cursor: rawOps.cursor
-        }
+        limit: parsed.limit,
+        cursor: parsed.cursor,
+        states: normalizeFilterArray(parsed.states),
+        types: normalizeOperations(parsed.operations),
+        integrations: normalizeFilterArray(parsed.integrations),
+        connections: normalizeFilterArray(parsed.connections),
+        syncs: normalizeFilterArray(parsed.syncs),
+        period,
+        search: parsed.search
     });
 }
 

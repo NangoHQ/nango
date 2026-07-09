@@ -5,6 +5,7 @@ export * from './models/logContextGetter.js';
 export * as modelMessages from './models/messages.js';
 export * as modelOperations from './models/operations.js';
 export * as modelInsights from './models/insights.js';
+export * from './services/operations.service.js';
 export * from './otlp/otlp.js';
 export { OtlpSpan } from './otlp/otlpSpan.js';
 export { defaultOperationExpiration, envs } from './env.js';
