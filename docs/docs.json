@@ -810,6 +810,7 @@
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
                           "reference/backend/http-api/functions/deployments",
+                          "reference/backend/http-api/functions/deployments-get",
                           "reference/backend/http-api/scripts/config"
                         ]
                       },
