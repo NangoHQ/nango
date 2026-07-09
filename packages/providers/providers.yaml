@@ -10082,6 +10082,26 @@ hover:
         base_url: https://api.hover.to
     docs: https://nango.dev/docs/integrations/all/hover
 
+humaans-io:
+    display_name: Humaans.io
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.humaans.io/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/humaans-io
+    docs_connect: https://nango.dev/docs/api-integrations/humaans-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: The API access token for your Humaans.io account
+            secret: true
+            example: P9IAs9**********************9oVR
+            pattern: '^[A-Za-z0-9]{32}$'
+
 huntress:
     display_name: Huntress
     categories:
