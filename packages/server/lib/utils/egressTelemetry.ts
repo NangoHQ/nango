@@ -7,9 +7,13 @@ import type { Grouping, Result } from '@nangohq/utils';
 const envs = parseEnvs(ENVS);
 const logger = getLogger('server.egress.telemetry');
 
+export type ServerEgressCallsite = Extract<
+    DataTransferCallsite,
+    'get_/records' | 'get_/proxy' | 'post_/proxy' | 'patch_/proxy' | 'put_/proxy' | 'delete_/proxy' | 'unknown_/proxy'
+>;
+
 export interface ServerEgressTelemetry {
-    package: 'server';
-    callsite: Extract<DataTransferCallsite, 'get_/records'>;
+    callsite: ServerEgressCallsite;
     accountId: number;
     connectionId: string;
     integrationId: string;
@@ -39,7 +43,7 @@ const batcher = new Batcher<ServerEgressTelemetry>({
             subject: 'usage',
             events: events.map((t) =>
                 makeDataTransferEvent({
-                    pkg: t.package,
+                    pkg: 'server',
                     callsite: t.callsite,
                     accountId: t.accountId,
                     connectionId: t.connectionId,
