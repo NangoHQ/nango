@@ -19289,14 +19289,14 @@ splunk:
     connection_config:
         hostname:
             type: string
-            title: Splunk host (including port)
-            description: Your Splunk management host and port, e.g. my-splunk.example.com:8089
+            title: Splunk host
+            description: Your Splunk management host and port.
             example: my-splunk.example.com:8089
     credentials:
         apiKey:
             type: string
             title: Authentication Token
-            description: A Splunk authentication token (Settings → Tokens in Splunk Web)
+            description: Your Splunk authentication token.
             doc_section: '#step-1-create-an-authentication-token'
 
 spotify:

@@ -1612,6 +1612,7 @@
               "integrations/all/snowflake-jwt",
               "api-integrations/sophos-central",
               "integrations/all/splitwise",
+              "api-integrations/splunk",
               "integrations/all/spotify",
               "integrations/all/spotify-oauth2-cc",
               "integrations/all/squarespace",
