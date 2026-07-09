@@ -6395,7 +6395,6 @@ dope-security:
             description: Your Flightdeck API Client Secret from the dope console.
             secret: true
             example: 7SBGztUm*****************************jfYlMM
-            pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-1-creating-api-client-credentials'
 
 dropbox:
