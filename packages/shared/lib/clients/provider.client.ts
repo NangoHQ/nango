@@ -1943,7 +1943,7 @@ class ProviderClient {
 
             throw new NangoError('microsoft_admin_token_request_error', response.data);
         } catch (err: any) {
-            throw new NangoError('microsoft_admin_token_request_error', err.message);
+            throw new NangoError('microsoft_admin_token_request_error', err.response?.data ?? err.message);
         }
     }
 

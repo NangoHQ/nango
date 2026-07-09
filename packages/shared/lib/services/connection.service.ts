@@ -1396,7 +1396,7 @@ class ConnectionService {
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
         if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
-            const error = new NangoError('client_credentials_fetch_error');
+            const error = new NangoError('client_credentials_fetch_error', fetchRes.isOk() ? fetchRes.value.body : {});
             return { success: false, error, response: null };
         }
 

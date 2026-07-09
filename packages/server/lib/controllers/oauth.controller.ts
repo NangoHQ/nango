@@ -504,7 +504,7 @@ class OAuthController {
                 void logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errRes(res, 'oauth2_cc_error');
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -1088,7 +1088,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
