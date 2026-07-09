@@ -1,0 +1,73 @@
+---
+title: 'ConnectSecure'
+sidebarTitle: 'ConnectSecure'
+description: 'Integrate your application with the ConnectSecure API'
+---
+
+## 🚀 Quickstart
+
+Connect to ConnectSecure with Nango and make your first API request.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ConnectSecure_.
+    </Step>
+    <Step id="authorize-connectsecure" title="Authorize ConnectSecure">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_. Enter your ConnectSecure pod Base URL, tenant, Client ID, and Client Secret. Nango verifies the credentials against your pod before creating the connection.
+    </Step>
+    <Step id="call-connectsecure-api" title="Call the ConnectSecure API">
+    Request a ConnectSecure access token. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/w/authorize" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Accept: application/json"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/w/authorize',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {}
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+    Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+    To find your ConnectSecure connection details, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 ConnectSecure guides
+
+- [How do I link my ConnectSecure account?](/api-integrations/connectsecure/connect) — Find the four required connection values and connect to Nango.
+
+Official resources: [ConnectSecure support and documentation](https://connectsecure.com/support)
+
+---
