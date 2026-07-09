@@ -5,7 +5,9 @@ import { create } from 'zustand';
 import { IconButton } from '@nangohq/design-system';
 
 import { Switch } from '@/components/ui/Switch';
+import { syncPersistedOverridesToTheme } from '@/features/tokenEditorPersistence';
 import { useTeam } from '@/hooks/useTeam';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
@@ -100,6 +102,12 @@ export const DevToolPanel: React.FC = () => {
     const toggle = useDevPanelStore((s) => s.toggle);
     const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
+    const darkMode = useThemeStore(darkModeSelector);
+
+    // Restore persisted token overrides on load and when the app theme changes, without opening the editor.
+    useEffect(() => {
+        syncPersistedOverridesToTheme(darkMode ? 'dark' : 'light');
+    }, [darkMode]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {

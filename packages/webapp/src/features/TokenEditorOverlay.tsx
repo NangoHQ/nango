@@ -11,9 +11,11 @@ import { darkModeSelector, useThemeStore } from '@/lib/theme';
 // The relative escape from webapp into design-system is intentional for this dev-only tool.
 import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { buildContrastIndex, deriveContrastRelevantVars } from './tokenContrast';
+import { EMPTY_BI, loadLinked, loadOverrides, loadRefOverrides, saveLinked, saveOverrides, saveRefOverrides } from './tokenEditorPersistence';
 import tokenUsageRaw from './tokenUsage.generated.json';
 
 import type { Band, ContrastScore } from './tokenContrast';
+import type { BiThemeOverrides, ThemeKey } from './tokenEditorPersistence';
 
 /** Precomputed { "--token": usageCount } snapshot (see scripts/generate-token-usage.mjs). Semantic tokens only. */
 const TOKEN_USAGE = tokenUsageRaw as Record<string, number>;
@@ -281,14 +283,7 @@ function getChainVars(entry: TokenEntry | null | undefined, linked: boolean, sem
     return [...new Set(vars)];
 }
 
-// --- Persistence ---
-
-type ThemeKey = 'light' | 'dark';
-interface BiThemeOverrides {
-    light: Record<string, string>;
-    dark: Record<string, string>;
-}
-const EMPTY_BI: BiThemeOverrides = { light: {}, dark: {} };
+// --- Persistence helpers ---
 
 /** Returns a shallow copy of `obj` excluding the given keys (avoids dynamic `delete`). */
 function omitKeys(obj: Record<string, string>, keys: string[]): Record<string, string> {
@@ -298,55 +293,6 @@ function omitKeys(obj: Record<string, string>, keys: string[]): Record<string, s
         if (!drop.has(k)) next[k] = v;
     }
     return next;
-}
-
-const STORAGE_KEY = 'nango-dev-token-overrides';
-
-function loadOverrides(): BiThemeOverrides {
-    try {
-        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
-        // Migrate old flat format (pre per-theme)
-        if (typeof raw === 'object' && ('light' in raw || 'dark' in raw)) return raw as BiThemeOverrides;
-        return { light: raw as Record<string, string>, dark: {} };
-    } catch {
-        return { ...EMPTY_BI };
-    }
-}
-
-function saveOverrides(o: BiThemeOverrides) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
-    } catch {
-        /* ignore storage errors */
-    }
-}
-
-// Which vars are linked is persisted alongside the overrides (shared across themes). Without this the
-// linked set resets on reload, so a persisted linked edit would be re-read as unlinked individual
-// overrides — a single Reset would then strand the cascade, and the diff/export would differ.
-const LINKED_STORAGE_KEY = 'nango-dev-token-linked';
-
-function loadLinked(): Set<string> {
-    try {
-        const raw = JSON.parse(localStorage.getItem(LINKED_STORAGE_KEY) ?? '[]');
-        return Array.isArray(raw) ? new Set(raw as string[]) : new Set();
-    } catch {
-        return new Set();
-    }
-}
-
-function saveLinked(linked: Set<string>) {
-    try {
-        localStorage.setItem(LINKED_STORAGE_KEY, JSON.stringify([...linked]));
-    } catch {
-        /* ignore storage errors */
-    }
-}
-
-function applyThemeOverrides(overrides: BiThemeOverrides, theme: ThemeKey) {
-    for (const [k, v] of Object.entries(overrides[theme])) {
-        document.documentElement.style.setProperty(k, v);
-    }
 }
 
 // --- Resolved-value snapshot ---
@@ -888,7 +834,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     // Per-theme color overrides: changes in light mode are separate from dark mode changes
     const [overridesPerTheme, setOverridesPerTheme] = useState<BiThemeOverrides>({ ...EMPTY_BI });
     // Per-theme ref reroutes (which primitive a semantic token points to, per theme)
-    const [refOverridesPerTheme, setRefOverridesPerTheme] = useState<BiThemeOverrides>({ ...EMPTY_BI });
+    const [refOverridesPerTheme, setRefOverridesPerTheme] = useState<BiThemeOverrides>(loadRefOverrides);
     // Captures the live CSS value at the moment a token was first overridden (per theme, for diff "from")
     const [originalsPerTheme, setOriginalsPerTheme] = useState<BiThemeOverrides>({ ...EMPTY_BI });
     // CSS vars linked to their primitive — shared across themes, persisted so a reload keeps linked
@@ -905,14 +851,12 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const linkedVarsRef = useRef(linkedVars);
     linkedVarsRef.current = linkedVars;
 
-    // Load persisted overrides on mount and apply the current theme's set
+    // Load persisted overrides on mount (DOM vars are restored earlier by DevToolPanel)
     useEffect(() => {
-        const saved = loadOverrides();
-        setOverridesPerTheme(saved);
-        applyThemeOverrides(saved, darkMode ? 'dark' : 'light');
+        setOverridesPerTheme(loadOverrides());
+        setRefOverridesPerTheme(loadRefOverrides());
         const id = requestAnimationFrame(() => setThemeSeq((n) => n + 1));
         return () => cancelAnimationFrame(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Swap DOM overrides when theme changes: remove outgoing theme's, apply incoming theme's
@@ -1006,7 +950,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
             for (const e of semEntries) {
                 if (refOverridesPerTheme[theme][e.cssVar]) {
                     result.push({ entry: e, theme });
-                } else if (themeOvr[e.cssVar] && (!linkedVars.has(e.cssVar) || !e.baseHex.startsWith('#'))) {
+                } else if (themeOvr[e.cssVar]) {
                     result.push({ entry: e, theme });
                 }
             }
@@ -1023,7 +967,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
             }
         }
         return result;
-    }, [overridesPerTheme, refOverridesPerTheme, linkedVars]);
+    }, [overridesPerTheme, refOverridesPerTheme]);
 
     const commit = useCallback(
         (cssVar: string, val: string) => {
@@ -1074,7 +1018,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const commitRef = useCallback(
         (cssVar: string, newRef: string) => {
             const theme: ThemeKey = darkMode ? 'dark' : 'light';
-            setRefOverridesPerTheme((prev) => ({ ...prev, [theme]: { ...prev[theme], [cssVar]: newRef } }));
             const directHex = resolveRef(newRef);
             const liveHex = directHex.startsWith('#')
                 ? directHex
@@ -1082,6 +1025,11 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                       .getPropertyValue('--' + newRef.slice(1, -1).split('.').map(toKebab).join('-'))
                       .trim();
             if (!liveHex.startsWith('#')) return;
+            setRefOverridesPerTheme((prev) => {
+                const next: BiThemeOverrides = { ...prev, [theme]: { ...prev[theme], [cssVar]: newRef } };
+                saveRefOverrides(next);
+                return next;
+            });
             setOriginalsPerTheme((prev) => {
                 if (cssVar in prev[theme]) return prev;
                 const before = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
@@ -1128,7 +1076,11 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                 saveLinked(n);
                 return n;
             });
-            setRefOverridesPerTheme((prev) => ({ ...prev, [theme]: omitKeys(prev[theme], [cssVar]) }));
+            setRefOverridesPerTheme((prev) => {
+                const next: BiThemeOverrides = { ...prev, [theme]: omitKeys(prev[theme], [cssVar]) };
+                saveRefOverrides(next);
+                return next;
+            });
         },
         [darkMode, linkedVars]
     );
@@ -1147,6 +1099,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
         setShowDiff(false);
         saveOverrides(empty);
         saveLinked(new Set());
+        saveRefOverrides(empty);
     }, [linkedVars]);
 
     const exportDiff = useCallback(() => {
