@@ -29,12 +29,7 @@ export interface ListLogOperationsResult {
     };
 }
 
-export class LogsDisabledError extends Error {
-    constructor() {
-        super('Nango logs are disabled');
-        this.name = 'LogsDisabledError';
-    }
-}
+export const logsDisabledErrorMessage = 'Nango logs are disabled';
 
 interface ListLogOperationsSearchParams extends ListLogOperationsParams {
     search: string;
@@ -43,7 +38,7 @@ interface ListLogOperationsSearchParams extends ListLogOperationsParams {
 export const logsOperationsService = {
     async listOperations(params: ListLogOperationsParams): Promise<Result<ListLogOperationsResult>> {
         if (!logsEnvs.NANGO_LOGS_ENABLED) {
-            return Err(new LogsDisabledError());
+            return Err(new Error(logsDisabledErrorMessage));
         }
 
         try {
@@ -83,33 +78,22 @@ async function listOperationPage(params: ListLogOperationsParams, page: { limit:
 }
 
 async function listOperationsWithMessageSearch(params: ListLogOperationsSearchParams): Promise<ListLogOperationsResult> {
-    const operations: OperationRow[] = [];
-    let cursor = params.cursor;
-    let nextCursor: string | null = null;
+    const rawOps = await listOperationPage(params, { limit: params.limit, cursor: params.cursor });
+    let operations = rawOps.items;
 
-    while (operations.length < params.limit) {
-        const rawOps = await listOperationPage(params, { limit: params.limit - operations.length, cursor });
-        nextCursor = rawOps.cursor;
-
-        if (rawOps.items.length > 0) {
-            const bucket = await modelMessages.searchForMessagesInsideOperations({ search: params.search, operationsIds: rawOps.items.map((op) => op.id) });
-            const matched = new Set(bucket.items.map((item) => item.key));
-            operations.push(...rawOps.items.filter((item) => matched.has(item.id)));
-        }
-
-        if (!rawOps.cursor || rawOps.items.length <= 0) {
-            break;
-        }
-        cursor = rawOps.cursor;
+    if (rawOps.items.length > 0) {
+        const bucket = await modelMessages.searchForMessagesInsideOperations({ search: params.search, operationsIds: rawOps.items.map((op) => op.id) });
+        const matched = new Set(bucket.items.map((item) => item.key));
+        operations = rawOps.items.filter((item) => matched.has(item.id));
     }
 
     return {
         operations,
         pagination: {
-            // Message search is applied after fetching operation pages because it queries the messages index.
-            // We only know how many matching operations were collected for this response without a cross-index query.
+            // Message search is applied to one fetched operations page because it queries the messages index.
+            // The limit bounds operations inspected, so this page can return fewer matches while still having a cursor.
             total: operations.length,
-            cursor: nextCursor
+            cursor: rawOps.cursor
         }
     };
 }

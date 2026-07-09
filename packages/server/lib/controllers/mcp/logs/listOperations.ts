@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
 
-import { LogsDisabledError, logsOperationsService } from '@nangohq/logs';
+import { logsDisabledErrorMessage, logsOperationsService } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
@@ -175,7 +175,8 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<ListLogOperation
     description: [
         'List Nango log operations.',
         'Log operations are top-level execution records for syncs, actions, auth, webhooks, proxy calls, and other Nango activity; each operation contains its related log messages.',
-        'Results are newest first and can be filtered by status, operation, integration, connection, script, date range, and message search.'
+        'Results are newest first and can be filtered by status, operation, integration, connection, script, date range, and message search.',
+        'When message search is used, limit is the maximum number of operations inspected for one call, so the response can contain fewer or zero matching operations while still returning a pagination cursor for the next page.'
     ].join(' '),
     inputSchema: listOperationsArgumentsSchema,
     outputSchema: listOperationsOutputSchema,
@@ -193,8 +194,8 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<ListLogOperation
         });
 
         return result.mapError((error) => {
-            if (error instanceof LogsDisabledError) {
-                return new PublicMcpError(error.message);
+            if (error.message === logsDisabledErrorMessage) {
+                return new PublicMcpError(logsDisabledErrorMessage);
             }
 
             return error;
