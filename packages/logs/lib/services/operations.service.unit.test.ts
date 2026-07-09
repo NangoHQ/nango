@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { envs as logsEnvs } from '../env.js';
 import * as modelMessages from '../models/messages.js';
 import * as modelOperations from '../models/operations.js';
-import { logsDisabledErrorMessage, logsOperationsService } from './operations.service.js';
+import { LogsDisabledError } from '../utils.js';
+import { logsOperationsService } from './operations.service.js';
 
 import type { ListLogOperationsParams } from './operations.service.js';
 import type { OperationRow } from '@nangohq/types';
@@ -20,7 +21,7 @@ describe('logsOperationsService', () => {
         vi.restoreAllMocks();
     });
 
-    it('returns an error when logs are disabled', async () => {
+    it('returns LogsDisabledError when logs are disabled', async () => {
         logsEnvs.NANGO_LOGS_ENABLED = false;
         const listOperationsSpy = vi.spyOn(modelOperations, 'listOperations');
 
@@ -30,7 +31,7 @@ describe('logsOperationsService', () => {
         if (result.isOk()) {
             throw new Error('expected listOperations to fail');
         }
-        expect(result.error).toStrictEqual(new Error(logsDisabledErrorMessage));
+        expect(result.error).toBeInstanceOf(LogsDisabledError);
         expect(listOperationsSpy).not.toHaveBeenCalled();
     });
 

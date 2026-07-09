@@ -3,6 +3,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { envs as logsEnvs } from '../env.js';
 import * as modelMessages from '../models/messages.js';
 import * as modelOperations from '../models/operations.js';
+import { LogsDisabledError } from '../utils.js';
 
 import type { OperationRow, SearchOperationsState, SearchOperationsType, SearchPeriod } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -29,8 +30,6 @@ export interface ListLogOperationsResult {
     };
 }
 
-export const logsDisabledErrorMessage = 'Nango logs are disabled';
-
 interface ListLogOperationsSearchParams extends ListLogOperationsParams {
     search: string;
 }
@@ -38,7 +37,7 @@ interface ListLogOperationsSearchParams extends ListLogOperationsParams {
 export const logsOperationsService = {
     async listOperations(params: ListLogOperationsParams): Promise<Result<ListLogOperationsResult>> {
         if (!logsEnvs.NANGO_LOGS_ENABLED) {
-            return Err(new Error(logsDisabledErrorMessage));
+            return Err(new LogsDisabledError());
         }
 
         try {

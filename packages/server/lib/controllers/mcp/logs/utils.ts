@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
 
-import { logsDisabledErrorMessage, envs as logsEnvs } from '@nangohq/logs';
+import { LogsDisabledError, envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { PublicMcpError } from '../utils.js';
@@ -21,7 +21,7 @@ export const periodSchema = z
 
 export function checkLogsEnabled(): Result<void> {
     if (!logsEnvs.NANGO_LOGS_ENABLED) {
-        return Err(new PublicMcpError(logsDisabledErrorMessage));
+        return Err(new PublicMcpError(new LogsDisabledError().message));
     }
 
     return Ok();
