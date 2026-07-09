@@ -34,12 +34,55 @@ Only **Full Access** team members can toggle the production flag. Once an enviro
 
 By default, the `prod` environment created with your account is already marked as production.
 
+## Engineering collaboration
+
+Use a **shared non-production environment** (usually `dev`) for day-to-day engineering work. The team shares integrations and the baseline function set. For local webhook testing, each engineer creates their own connections with a webhook URL override (see below).
+
+### Local webhooks on a shared environment
+
+Keep the environment webhook URL pointed at your shared app (or staging backend). To receive webhooks from Nango locally, create connections with a [per-connection `webhook_url` override](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/)).
+
+One convenient pattern is to read the override from an optional env var, so the same connect-session code works locally and when the var is unset. For example, set `NANGO_CONNECTION_WEBHOOK_URL` in your local `.env` to that URL and leave it unset elsewhere:
+
+```ts
+const webhookUrl = process.env.NANGO_CONNECTION_WEBHOOK_URL; // e.g. https://<you>.ngrok.app/webhooks-from-nango
+
+const session = await nango.createConnectSession({
+    allowed_integrations: ['<INTEGRATION-ID>'],
+    ...(webhookUrl && {
+        integrations_config_defaults: {
+            '<INTEGRATION-ID>': {
+                connection_config: { webhook_url: webhookUrl }
+            }
+        }
+    })
+});
+```
+
+When the var is set, new connections from that session route webhooks to your machine without changing the environment webhook URLs.
+
+### Local function deploys on a shared environment
+
+A full `nango deploy` reconciles every function in the environment. On a shared collaborative environment, that can overwrite teammates' deploys. Deploy only what you changed:
+
+```bash
+nango deploy --sync <name> <env>
+nango deploy --action <name> <env>
+nango deploy --integration <id> <env>   # all functions for one integration, including event functions
+```
+
+Reserve full deploys for environments where the repo is the sole source of truth (for example staging or prod). See the [CI/CD guide](/guides/functions/ci-cd).
+
+### One environment per engineer
+
+You can give each engineer their own environment for full isolation. That duplicates integrations, connections, and settings; adds more API keys to manage; and tends to cause config drift across environments over time. A shared `dev` environment avoids that overhead for most teams.
+
 ## Best practices
 
 **Mirror your application environments**
 
 We recommend creating Nango environments that match your application's deployment stages. For example:
-- Local development → dev environment
+- Development / local → dev environment
 - Staging → staging environment
 - Production → prod environment
 - Demo → demo environment
@@ -52,4 +95,5 @@ When you deploy [Functions](/guides/functions/functions-guide), you always targe
 
 - [API keys](/reference/backend/http-api/api-keys) - scope keys per environment.
 - [CI/CD](/guides/functions/ci-cd) - deploy functions safely across environments.
+- [Webhooks from Nango](/guides/platform/webhooks-from-nango) - environment and per-connection webhook URLs.
 - [Self-host Nango](/guides/platform/self-hosting) - plan environments for self-hosted deployments.

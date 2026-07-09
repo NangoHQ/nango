@@ -127,15 +127,8 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Give each engineer their own Nango environment. This prevents overwriting each other's deployed functions and lets each person configure webhooks independently, for example by pointing to a local ngrok tunnel.
-
-      Each engineer adds their environment's key to their local `.env`:
-
-      ```bash
-      NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-api-key>'
-      ```
-
-      Use a shared `dev` or `staging` environment as a stable baseline written to only by CI. See the [CI/CD guide](/guides/functions/ci-cd).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
     <Accordion title="For agents">
@@ -213,11 +206,13 @@ Local development is the default path for production integrations. Use it when y
     nango dryrun <function-name> '<CONNECTION-ID>' -e dev --metadata '{"accountRegion":"eu"}'
     ```
 
-    Deploy your functions:
+    Deploy the function you changed:
 
     ```bash
-    nango deploy
+    nango deploy --sync <function-name> dev
     ```
+
+    A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment (including from CI). See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
