@@ -46,7 +46,7 @@ export const logsOperationsService = {
                 return Ok(await listOperationsWithMessageSearch({ ...params, search: params.search }));
             }
 
-            const rawOps = await listOperationPage(params, { limit: params.limit, cursor: params.cursor });
+            const rawOps = await listOperationPage(params);
             return Ok({
                 operations: rawOps.items,
                 pagination: {
@@ -62,23 +62,23 @@ export const logsOperationsService = {
 
 type ListOperationPage = Awaited<ReturnType<typeof modelOperations.listOperations>>;
 
-async function listOperationPage(params: ListLogOperationsParams, page: { limit: number; cursor?: string | null | undefined }): Promise<ListOperationPage> {
+async function listOperationPage(params: ListLogOperationsParams): Promise<ListOperationPage> {
     return await modelOperations.listOperations({
         accountId: params.accountId,
         environmentId: params.environmentId,
-        limit: page.limit,
+        limit: params.limit,
         states: params.states,
         types: params.types,
         integrations: params.integrations,
         connections: params.connections,
         syncs: params.syncs,
         period: params.period,
-        cursor: page.cursor
+        cursor: params.cursor
     });
 }
 
 async function listOperationsWithMessageSearch(params: ListLogOperationsSearchParams): Promise<ListLogOperationsResult> {
-    const rawOps = await listOperationPage(params, { limit: params.limit, cursor: params.cursor });
+    const rawOps = await listOperationPage(params);
     let operations = rawOps.items;
 
     if (rawOps.items.length > 0) {
