@@ -1941,9 +1941,9 @@ class ProviderClient {
                 };
             }
 
-            throw new NangoError('microsoft_admin_token_request_error', response.data);
+            throw new NangoError('microsoft_admin_token_request_error', stringifyError({ response }));
         } catch (err: any) {
-            throw new NangoError('microsoft_admin_token_request_error', err.response?.data ?? err.message);
+            throw new NangoError('microsoft_admin_token_request_error', stringifyError(err));
         }
     }
 
