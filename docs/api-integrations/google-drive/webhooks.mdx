@@ -49,30 +49,37 @@ export default createOnEvent({
         const fileId = '<FILE_ID>'; // the file to watch
         const channelId = randomUUID();
         const expiration = Date.now() + 24 * 60 * 60 * 1000; // 24h in ms, Drive's max for files.watch
-        const webhookUrl = await nango.getWebhookURL();
 
-        const config: ProxyConfiguration = {
-            baseUrlOverride: 'https://www.googleapis.com/drive',
-            endpoint: `/v3/files/${fileId}/watch`,
-            data: {
-                id: channelId,
-                type: 'web_hook',
-                // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-drive (your integration settings page)
-                address: webhookUrl,
-                expiration: expiration,
-            },
-        };
+        try {
+            const webhookUrl = await nango.getWebhookURL();
 
-        const response = await nango.post(config);
+            const config: ProxyConfiguration = {
+                baseUrlOverride: 'https://www.googleapis.com/drive',
+                endpoint: `/v3/files/${fileId}/watch`,
+                data: {
+                    id: channelId,
+                    type: 'web_hook',
+                    // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-drive (your integration settings page)
+                    address: webhookUrl,
+                    expiration: expiration,
+                },
+            };
 
-        // Store the channel info so it can be used to stop notifications later (step 4), and
-        // register the resourceUri so Nango can route incoming notifications to this connection
-        // (see "Connection matching" below).
-        await nango.updateMetadata({
-            googleDriveChannelId: channelId,
-            googleDriveResourceId: response.data.resourceId,
-            googleCalendarWatchResourceUris: [response.data.resourceUri],
-        });
+            const response = await nango.post(config);
+
+            // Store the channel info so it can be used to stop notifications later (step 4), and
+            // register the resourceUri so Nango can route incoming notifications to this connection
+            // (see "Connection matching" below).
+            await nango.updateMetadata({
+                googleDriveChannelId: channelId,
+                googleDriveResourceId: response.data.resourceId,
+                googleCalendarWatchResourceUris: [response.data.resourceUri],
+            });
+        } catch (err) {
+            // Avoid blocking connection creation if channel creation fails.
+            await nango.log(`Failed to create Drive notification channel: ${String(err)}`, { level: 'error' });
+            return;
+        }
     }
 });
 ```
