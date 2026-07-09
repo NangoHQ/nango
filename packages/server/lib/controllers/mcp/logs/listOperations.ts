@@ -3,12 +3,26 @@ import * as z from 'zod/v4';
 import { modelMessages, modelOperations } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
+import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
 import { PublicMcpError } from '../utils.js';
 import { checkLogsEnabled, defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
 
-import type { ControlPlaneMcpTool } from '../controlPlaneTool.js';
-import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
-import type { DBEnvironment, DBTeam, OperationRow, SearchOperationsState, SearchOperationsType, SearchPeriod } from '@nangohq/types';
+import type {
+    DBEnvironment,
+    DBTeam,
+    OperationAction,
+    OperationAdmin,
+    OperationAuth,
+    OperationDeploy,
+    OperationOnEvents,
+    OperationProxy,
+    OperationRow,
+    OperationSync,
+    OperationWebhook,
+    SearchOperationsState,
+    SearchOperationsType,
+    SearchPeriod
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const defaultOperationsPeriodMs = 24 * 60 * 60 * 1000;
@@ -22,7 +36,7 @@ const actionOperationFilterSchema = z
     .object({
         type: z.literal('action'),
         actions: z
-            .array(z.enum(['run']))
+            .array(z.enum(['run'] satisfies OperationAction['action'][]))
             .min(1)
             .max(1)
             .optional()
@@ -33,7 +47,19 @@ const syncOperationFilterSchema = z
     .object({
         type: z.literal('sync'),
         actions: z
-            .array(z.enum(['pause', 'unpause', 'run', 'request_run', 'request_run_full', 'cancel', 'init', 'create_variant', 'delete_variant']))
+            .array(
+                z.enum([
+                    'pause',
+                    'unpause',
+                    'run',
+                    'request_run',
+                    'request_run_full',
+                    'cancel',
+                    'init',
+                    'create_variant',
+                    'delete_variant'
+                ] satisfies OperationSync['action'][])
+            )
             .min(1)
             .max(9)
             .optional()
@@ -44,7 +70,7 @@ const proxyOperationFilterSchema = z
     .object({
         type: z.literal('proxy'),
         actions: z
-            .array(z.enum(['call']))
+            .array(z.enum(['call'] satisfies OperationProxy['action'][]))
             .min(1)
             .max(1)
             .optional()
@@ -55,7 +81,7 @@ const eventsOperationFilterSchema = z
     .object({
         type: z.literal('events'),
         actions: z
-            .array(z.enum(['post_connection_creation', 'pre_connection_deletion', 'validate_connection']))
+            .array(z.enum(['post_connection_creation', 'pre_connection_deletion', 'validate_connection'] satisfies OperationOnEvents['action'][]))
             .min(1)
             .max(3)
             .optional()
@@ -66,7 +92,7 @@ const authOperationFilterSchema = z
     .object({
         type: z.literal('auth'),
         actions: z
-            .array(z.enum(['create_connection', 'refresh_token', 'post_connection', 'connection_test']))
+            .array(z.enum(['create_connection', 'refresh_token', 'post_connection', 'connection_test'] satisfies OperationAuth['action'][]))
             .min(1)
             .max(4)
             .optional()
@@ -77,7 +103,7 @@ const adminOperationFilterSchema = z
     .object({
         type: z.literal('admin'),
         actions: z
-            .array(z.enum(['impersonation']))
+            .array(z.enum(['impersonation'] satisfies OperationAdmin['action'][]))
             .min(1)
             .max(1)
             .optional()
@@ -88,7 +114,7 @@ const webhookOperationFilterSchema = z
     .object({
         type: z.literal('webhook'),
         actions: z
-            .array(z.enum(['incoming', 'forward', 'sync', 'connection_create', 'connection_refresh']))
+            .array(z.enum(['incoming', 'forward', 'sync', 'connection_create', 'connection_refresh'] satisfies OperationWebhook['action'][]))
             .min(1)
             .max(5)
             .optional()
@@ -99,7 +125,7 @@ const deployOperationFilterSchema = z
     .object({
         type: z.literal('deploy'),
         actions: z
-            .array(z.enum(['prebuilt', 'custom']))
+            .array(z.enum(['prebuilt', 'custom'] satisfies OperationDeploy['action'][]))
             .min(1)
             .max(2)
             .optional()
@@ -133,7 +159,7 @@ const listOperationsArgumentsSchema = z
 
 const listOperationsOutputSchema = z
     .object({
-        operations: z.array(z.object({}).passthrough()),
+        operations: z.array(z.looseObject({})),
         pagination: z
             .object({
                 total: z.number(),
@@ -153,15 +179,15 @@ interface ListOperationsResponse {
     };
 }
 
-export const logsListOperationsTool: ControlPlaneMcpTool<ListOperationsResponse> = {
+export const logsListOperationsTool = defineControlPlaneMcpTool<ListOperationsResponse>({
     name: 'logs_list_operations',
     description: [
         'List Nango log operations.',
         'Log operations are top-level execution records for syncs, actions, auth, webhooks, proxy calls, and other Nango activity; each operation contains its related log messages.',
         'Results are newest first and can be filtered by status, operation, integration, connection, script, date range, and message search.'
     ].join(' '),
-    inputSchema: listOperationsArgumentsSchema as unknown as AnySchema,
-    outputSchema: listOperationsOutputSchema as unknown as AnySchema,
+    inputSchema: listOperationsArgumentsSchema,
+    outputSchema: listOperationsOutputSchema,
     requiredScopes: [logsReadScope],
     async handler(args, { account, environment }) {
         const logsEnabled = checkLogsEnabled();
@@ -169,9 +195,9 @@ export const logsListOperationsTool: ControlPlaneMcpTool<ListOperationsResponse>
             return Err(logsEnabled.error);
         }
 
-        return await listOperations({ account, environment, args });
+        return listOperations({ account, environment, args });
     }
-};
+});
 
 function defaultOperationsPeriod(): SearchPeriod {
     const to = new Date();

@@ -5,6 +5,7 @@ import { logsListOperationsTool } from './logs/listOperations.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
 import type { ControlPlaneMcpTool } from './controlPlaneTool.js';
+import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const controlPlaneMcpTools: ControlPlaneMcpTool[] = [logsListOperationsTool];
@@ -24,10 +25,12 @@ export function createControlPlaneMcpServer(account: DBTeam, environment: DBEnvi
 
     const context = { account, environment, grantedScopes };
     for (const toolDefinition of controlPlaneMcpTools) {
+        // packages/server and the MCP SDK resolve different Zod versions. Schemas are runtime-compatible,
+        // but TypeScript cannot assign package-local Zod schemas to the SDK's AnySchema.
         const config = {
             description: toolDefinition.description,
-            inputSchema: toolDefinition.inputSchema,
-            ...(toolDefinition.outputSchema ? { outputSchema: toolDefinition.outputSchema } : {})
+            inputSchema: toolDefinition.inputSchema as unknown as AnySchema,
+            ...(toolDefinition.outputSchema ? { outputSchema: toolDefinition.outputSchema as unknown as AnySchema } : {})
         };
         const registeredTool = server.registerTool(toolDefinition.name, config, async (args: unknown) => {
             try {
