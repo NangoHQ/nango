@@ -79,6 +79,7 @@
         "posthog-js": "1.212.1",
         "radix-ui": "1.4.3",
         "react": "18.3.1",
+        "react-colorful": "5.7.0",
         "react-day-picker": "8.10.1",
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",
@@ -101,8 +102,5 @@
         "zod": "3.25.76",
         "zustand": "5.0.3"
     },
-    "proxy": "http://localhost:3003",
-    "dependencies": {
-        "react-colorful": "5.7.0"
-    }
+    "proxy": "http://localhost:3003"
 }
