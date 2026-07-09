@@ -337,6 +337,35 @@ describe('handleErrorResponse', () => {
         );
     });
 
+    it('should strip framing headers from upstream Axios error responses before sending buffered body', () => {
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn(),
+            set: vi.fn().mockReturnThis(),
+            writeHead: vi.fn()
+        } as unknown as Response;
+        const axiosError = {
+            isAxiosError: true,
+            response: {
+                status: 502,
+                headers: {
+                    'transfer-encoding': 'chunked',
+                    'content-length': '123',
+                    'content-type': 'application/json'
+                }
+            },
+            toJSON: () => ({ message: 'Bad Gateway', config: { method: 'GET' }, code: 'ERR_BAD_RESPONSE', status: 502 })
+        };
+
+        handleErrorResponse({ res, error: axiosError, requestConfig: { url: '/api' }, logCtx: mockLogCtx });
+
+        const headersArg = vi.mocked(res.set).mock.calls[0]![0] as Record<string, string>;
+        const headerKeys = Object.keys(headersArg).map((key) => key.toLowerCase());
+        expect(headerKeys).not.toContain('transfer-encoding');
+        expect(headerKeys).not.toContain('content-length');
+        expect(headersArg).toHaveProperty('content-type', 'application/json');
+    });
+
     it('should use status 500 and full errorObject (message, stack, code, status, url, method) when Axios error has no response.data and toJSON provides stack', () => {
         const res = {
             status: vi.fn().mockReturnThis(),
