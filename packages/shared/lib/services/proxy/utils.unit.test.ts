@@ -3,6 +3,8 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
+import { getProvider } from '@nangohq/providers';
+
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import {
     absoluteUrlFromRedirectRequestOptions,
@@ -2267,5 +2269,94 @@ describe('buildProxyBody', () => {
             connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
         });
         expect(result).toEqual({ serviceId: '101', auth: { key: 'my-secret-key' } });
+    });
+});
+
+describe('sage-member (real provider config)', () => {
+    const provider = getProvider('sage-member');
+
+    it('is defined in providers.yaml with the expected nested auth body', () => {
+        // Guards against providers.yaml drifting out of sync with the nested-body test scenarios below.
+        expect(provider).toMatchObject({
+            auth_mode: 'API_KEY',
+            proxy: {
+                base_url: 'https://www.promoplace.com/ws/ws.dll',
+                body: {
+                    auth: {
+                        acctId: '${connectionConfig.acctId}',
+                        loginId: '${connectionConfig.loginId}',
+                        key: '${apiKey}'
+                    }
+                }
+            }
+        });
+    });
+
+    const connection = getTestConnection({
+        provider_config_key: 'sage-member',
+        credentials: { type: 'API_KEY', apiKey: 'deadbeefdeadbeefdeadbeefdeadbeef' },
+        connection_config: { acctId: '4353478', loginId: 'TestUser' }
+    });
+
+    it('injects account credentials into the auth object', () => {
+        const config = getDefaultProxy({ providerConfigKey: 'sage-member', providerName: 'sage-member', provider: provider! });
+
+        const result = buildProxyBody({ config, connection });
+
+        expect(result).toEqual({
+            auth: { acctId: '4353478', loginId: 'TestUser', key: 'deadbeefdeadbeefdeadbeefdeadbeef' }
+        });
+    });
+
+    it('drops the injected auth entirely when connectionConfig is missing (no leaked ${...} placeholders)', () => {
+        const config = getDefaultProxy({ providerConfigKey: 'sage-member', providerName: 'sage-member', provider: provider! });
+
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                provider_config_key: 'sage-member',
+                credentials: { type: 'API_KEY', apiKey: 'deadbeefdeadbeefdeadbeefdeadbeef' },
+                connection_config: {}
+            })
+        });
+
+        expect(result).toEqual({ auth: { key: 'deadbeefdeadbeefdeadbeefdeadbeef' } });
+    });
+
+    it('builds the full axios request: merges caller-supplied JSON body with the injected auth object, no auth header added', () => {
+        const config = getDefaultProxy({
+            providerConfigKey: 'sage-member',
+            providerName: 'sage-member',
+            provider: provider!,
+            endpoint: '/ConnectAPI',
+            method: 'POST',
+            data: { serviceId: 101, apiVer: 130 }
+        });
+
+        const axiosConfig = getAxiosConfiguration({ proxyConfig: config, connection });
+
+        expect(axiosConfig.url).toBe('https://www.promoplace.com/ws/ws.dll/ConnectAPI');
+        expect(axiosConfig.data).toEqual({
+            serviceId: 101,
+            apiVer: 130,
+            auth: { acctId: '4353478', loginId: 'TestUser', key: 'deadbeefdeadbeefdeadbeefdeadbeef' }
+        });
+        // API_KEY has no dedicated header template for this provider, so no default authorization header is added —
+        // the key only ever travels inside the JSON body's `auth` object.
+        expect(axiosConfig.headers).toEqual({});
+    });
+
+    it('does not inject the body for GET requests (methodDataAllowed excludes GET)', () => {
+        const config = getDefaultProxy({
+            providerConfigKey: 'sage-member',
+            providerName: 'sage-member',
+            provider: provider!,
+            endpoint: '/ConnectAPI',
+            method: 'GET'
+        });
+
+        const axiosConfig = getAxiosConfiguration({ proxyConfig: config, connection });
+
+        expect(axiosConfig.data).toBeUndefined();
     });
 });

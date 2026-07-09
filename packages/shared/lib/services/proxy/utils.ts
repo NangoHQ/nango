@@ -567,18 +567,28 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     );
 }
 
+function appendInjectedEntry(append: (key: string, value: string) => void, key: string, value: string | Record<string, string>): void {
+    if (typeof value === 'string') {
+        append(key, value);
+        return;
+    }
+    for (const [nestedKey, nestedValue] of Object.entries(value)) {
+        append(`${key}[${nestedKey}]`, nestedValue);
+    }
+}
+
 function mergeInjectedBody(existing: unknown, injected: Record<string, string | Record<string, string>>): unknown {
     if (!existing) return injected;
     if (isPlainObject(existing)) return { ...existing, ...injected };
     if (existing instanceof FormData) {
         for (const [key, value] of Object.entries(injected)) {
-            if (typeof value === 'string') existing.append(key, value);
+            appendInjectedEntry((k, v) => existing.append(k, v), key, value);
         }
         return existing;
     }
     if (existing instanceof URLSearchParams) {
         for (const [key, value] of Object.entries(injected)) {
-            if (typeof value === 'string') existing.append(key, value);
+            appendInjectedEntry((k, v) => existing.append(k, v), key, value);
         }
         return existing;
     }
