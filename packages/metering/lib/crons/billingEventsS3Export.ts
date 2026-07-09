@@ -185,7 +185,7 @@ export async function exec(): Promise<void> {
                 return;
             }
             const day = yesterdayUTC();
-            const eventNameSuffix = cutoverActive() ? '' : (envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '');
+            const eventNameSuffix = cutoverActive() ? '' : '_s3';
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {

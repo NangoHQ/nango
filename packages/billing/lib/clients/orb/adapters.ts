@@ -33,9 +33,8 @@ export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Ev
         }
     }
 
-    const suffix = cutoverActive() ? (envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX ?? '') : '';
     return {
-        event_name: `${event.type}${suffix}`,
+        event_name: `${event.type}${cutoverActive() ? '_http' : ''}`,
         idempotency_key: idempotencyKey || uuidv7(),
         external_customer_id: accountId.toString(),
         timestamp: timestamp.toISOString(),
