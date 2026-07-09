@@ -1,0 +1,38 @@
+import { createAction } from 'nango';
+import * as z from 'zod';
+
+import { enqueuedTaskSchema, filterSchema } from '../lib/schemas.js';
+
+const inputSchema = z.object({
+    indexUid: z.string(),
+    ids: z
+        .array(z.union([z.string(), z.number()]))
+        .min(1)
+        .optional(),
+    filter: filterSchema.optional()
+});
+
+const action = createAction({
+    description: 'Delete documents from a Meilisearch index by ids or by filter (exactly one must be provided). Returns the enqueued task.',
+    version: '1.0.0',
+    endpoint: { method: 'POST', path: '/meilisearch/documents/delete', group: 'Documents' },
+    input: inputSchema,
+    output: enqueuedTaskSchema,
+
+    exec: async (nango, rawInput) => {
+        // Declared input schemas are not enforced at runtime; validate explicitly.
+        const { data: input } = await nango.zodValidateInput({ zodSchema: inputSchema, input: rawInput });
+        const hasIds = input.ids !== undefined;
+        const hasFilter = input.filter !== undefined;
+        if (hasIds === hasFilter) {
+            throw new nango.ActionError({ message: 'Provide exactly one of "ids" or "filter".' });
+        }
+
+        const res = hasIds
+            ? await nango.post({ endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents/delete-batch`, data: input.ids })
+            : await nango.post({ endpoint: `/indexes/${encodeURIComponent(input.indexUid)}/documents/delete`, data: { filter: input.filter } });
+        return res.data;
+    }
+});
+
+export default action;

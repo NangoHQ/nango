@@ -1,0 +1,61 @@
+---
+title: Meilisearch
+sidebarTitle: Meilisearch
+---
+
+import Overview from "/snippets/overview.mdx"
+
+<Overview />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❌ | Meilisearch is open source; Cloud has a free tier. |
+| Paid test account | ❌ | |
+| Partnership | ❌ | |
+| App review | ❌ | |
+| Security audit | ❌ | |
+
+## Connecting to Meilisearch
+
+Meilisearch uses API-key authentication. When creating a connection provide:
+
+- **Instance URL** — your Meilisearch host including scheme, without a trailing slash, e.g. `https://ms-xxxx.meilisearch.io` or `http://localhost:7700`.
+- **API Key** — a Meilisearch API key (not the master key). The Default Admin API Key works out of the box. A custom key must cover the actions you plan to use (`search`, `documents.*`, `tasks.get`, plus `version` for connection verification and `keys.get` for automatic tenant-token uid resolution).
+
+## Pre-built actions
+
+| Action | Description |
+| - | - |
+| `search-documents` | Search documents in an index. |
+| `get-documents` | Fetch documents from an index, optionally filtered. |
+| `add-documents` | Add or replace documents (batch). |
+| `update-documents` | Add or partially update documents (batch). |
+| `delete-documents` | Delete documents by ids or filter. |
+| `get-task` | Poll the status of an async write task. |
+| `generate-tenant-token` | Mint a scoped, signed tenant-token JWT carrying per-index ACL search rules. |
+
+## Tenant tokens & ACL
+
+`generate-tenant-token` signs an HS256 JWT with the connection's API key. The token carries `searchRules` (per-index filters) that scope what an end user can search; the signing key's ACL bounds the token. Example input:
+
+```json
+{
+  "searchRules": { "medical_records": { "filter": "patient_id = 42" } },
+  "expiresInSeconds": 3600
+}
+```
+
+Notes:
+
+- Tokens expire after **1 hour** by default. Set `expiresInSeconds` or `expiresAt` (epoch seconds) to change this; `expiresAt` takes precedence when both are provided.
+- A rule value can also be `null` (no restriction), e.g. `{ "searchRules": { "*": null } }`.
+- If the connection's key lacks the `keys.get` action, pass `apiKeyUid` explicitly (find it via `GET /keys` with an authorized key). Master keys cannot sign tenant tokens.
+
+## Useful links
+
+-   [Meilisearch API keys](https://www.meilisearch.com/docs/reference/api/keys)
+-   [Tenant tokens](https://www.meilisearch.com/docs/learn/security/basic_security)
+-   [Documents API](https://www.meilisearch.com/docs/reference/api/documents)
+
+<Note>Contribute improvements by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/meilisearch.mdx)</Note>
