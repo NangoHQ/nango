@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 874
+Provider count: 876
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -477,6 +477,8 @@ URL patterns:
 | `microsoft-admin` | Microsoft (Admin) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-admin.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-admin/connect.md) |  | communication, dev-tools, productivity, iam |
 | `microsoft-ads` | Microsoft Ads | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-ads.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | marketing |
 | `microsoft-business-central` | Microsoft Business Central | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/microsoft-business-central.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-business-central/connect.md) |  | erp |
+| `microsoft-dynamics-365-finance-and-operations` | Microsoft Dynamics 365 Finance and Operations | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/how-to-register-your-own-microsoft-dynamics-365-finance-and-operations-api-oauth-app.md) | erp |
+| `microsoft-dynamics-365-finance-and-operations-cc` | Microsoft Dynamics 365 Finance and Operations (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/connect.md) |  | erp |
 | `microsoft-entra-id` | Microsoft Entra ID | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-entra-id.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | iam |
 | `microsoft-excel` | Microsoft Excel | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-excel.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | productivity, analytics |
 | `microsoft-intune` | Microsoft Intune | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/microsoft-intune.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-intune/connect.md) |  | dev-tools |
