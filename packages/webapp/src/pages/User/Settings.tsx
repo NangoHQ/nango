@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet';
 
-import { FieldLabel, FieldSeparator, Input } from '@nangohq/design-system';
+import { FieldLabel, Input } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -74,20 +74,12 @@ export const UserSettings: React.FC = () => {
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>
-            <div className="grid max-w-[600px] grid-cols-[237px_1fr] items-center gap-x-6 gap-y-8">
+            <div className="grid max-w-[700px] grid-cols-[237px_1fr] items-center gap-x-6 gap-y-8">
                 <FieldLabel htmlFor="display-name">Display name</FieldLabel>
                 <EditableInput id="display-name" initialValue={user.name} onSave={onSaveDisplayName} validate={validateDisplayName} />
 
-                <div className="col-span-2">
-                    <FieldSeparator />
-                </div>
-
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input id="email" value={user.email} disabled readOnly />
-
-                <div className="col-span-2">
-                    <FieldSeparator />
-                </div>
 
                 <FieldLabel htmlFor="appearance">Appearance</FieldLabel>
                 <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
