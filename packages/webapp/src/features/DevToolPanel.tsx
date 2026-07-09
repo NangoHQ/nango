@@ -1,5 +1,5 @@
 import { BarChart3, ChevronRight, Palette, X } from 'lucide-react';
-import { Component, lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { create } from 'zustand';
 
 import { IconButton } from '@nangohq/design-system';
@@ -10,39 +10,11 @@ import { useTeam } from '@/hooks/useTeam';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
-
-import type { ReactNode } from 'react';
+import { SentryErrorBoundary } from '@/utils/sentry';
 
 // Lazy-loaded so the Token Editor — and its bundled tokens.json + usage snapshot — is code-split
 // out of the main bundle. It's a dev/admin-only tool, so the chunk is only fetched when opened.
 const TokenEditorContent = lazy(() => import('./TokenEditorOverlay').then((m) => ({ default: m.TokenEditorContent })));
-
-// Local boundary so a failed lazy chunk load stays contained to the dev panel (with a reload) rather
-// than bubbling to the app-level error boundary. React caches a rejected lazy import, so recovering
-// from a chunk failure needs a full reload, not just a re-render.
-class TokenEditorErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-    state = { failed: false };
-    static getDerivedStateFromError() {
-        return { failed: true };
-    }
-    componentDidCatch(error: unknown) {
-        // Log the real error so a runtime bug in the editor isn't silently reported as a chunk-load failure.
-        console.error('Token Editor failed to load or render:', error);
-    }
-    render() {
-        if (this.state.failed) {
-            return (
-                <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-text-muted">
-                    <span>The Token Editor failed to load. Check the console for details.</span>
-                    <button onClick={() => window.location.reload()} className="rounded border border-border-muted px-2 py-1 hover:text-text-default">
-                        Reload
-                    </button>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
 
 /**
  * True when the dev tool panel is available based on the current hostname:
@@ -176,11 +148,22 @@ export const DevToolPanel: React.FC = () => {
                     </div>
                 </>
             ) : (
-                <TokenEditorErrorBoundary>
+                // Scoped boundary so a failed lazy chunk (or a crash in the editor) stays contained to the
+                // panel and is reported to Sentry, instead of bubbling to the app-level boundary.
+                <SentryErrorBoundary
+                    fallback={
+                        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-text-muted">
+                            <span>The Token Editor failed to load.</span>
+                            <button onClick={() => window.location.reload()} className="rounded border border-border-muted px-2 py-1 hover:text-text-default">
+                                Reload
+                            </button>
+                        </div>
+                    }
+                >
                     <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-text-muted">Loading…</div>}>
                         <TokenEditorContent onBack={() => setView('home')} onClose={close} />
                     </Suspense>
-                </TokenEditorErrorBoundary>
+                </SentryErrorBoundary>
             )}
         </div>
     );
