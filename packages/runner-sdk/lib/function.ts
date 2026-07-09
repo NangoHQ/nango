@@ -278,6 +278,10 @@ export interface CreateFunctionResponse<
 /**
  * Create a function, a trigger-agnostic primitive with capabilities.
  *
+ * @experimental **Not production ready.**
+ * The function primitive is under active development.
+ * Its API may change or be removed without notice, do NOT USE it in production integrations.
+ *
  * @example
  * ```ts
  * export default createFunction({
