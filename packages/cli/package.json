@@ -20,6 +20,11 @@
             "types": "./dist/testMocks/utils.d.ts",
             "default": "./dist/testMocks/utils.js"
         },
+        "./experimental": {
+            "require": "./dist/sdkExperimental.js",
+            "types": "./dist/sdkExperimental.d.ts",
+            "default": "./dist/sdkExperimental.js"
+        },
         "./package.json": "./package.json"
     },
     "keywords": [],
