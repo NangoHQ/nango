@@ -8931,6 +8931,20 @@ google-calendar:
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
 
+google-calendar-mcp:
+    display_name: Google Calendar (MCP)
+    categories:
+        - popular
+        - productivity
+        - mcp
+    alias: google-calendar
+    proxy:
+        base_url: https://calendarmcp.googleapis.com/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/google-calendar-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar-mcp/how-to-register-your-own-google-calendar-mcp-api-oauth-app
+
 google-contacts:
     display_name: Google Contacts
     categories:

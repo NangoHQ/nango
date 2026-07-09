@@ -1222,6 +1222,7 @@
               "api-integrations/google-analytics",
               "api-integrations/google-bigquery",
               "api-integrations/google-calendar",
+              "api-integrations/google-calendar-mcp",
               "api-integrations/google-chat",
               "api-integrations/google-cloud-storage",
               "api-integrations/google-contacts",
