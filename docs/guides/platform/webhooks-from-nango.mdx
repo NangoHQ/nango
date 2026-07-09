@@ -39,15 +39,19 @@ Set `webhook_url` when creating a [connect session](/reference/backend/http-api/
 <Tabs>
   <Tab title="Node">
     ```ts
+    // Optional: set NANGO_CONNECTION_WEBHOOK_URL locally to your tunnel URL.
+    // Leave unset in shared/staging/prod so environment webhook URLs apply.
+    const webhookUrl = process.env.NANGO_CONNECTION_WEBHOOK_URL;
+
     const session = await nango.createConnectSession({
         allowed_integrations: ['<INTEGRATION-ID>'],
-        integrations_config_defaults: {
-            '<INTEGRATION-ID>': {
-                connection_config: {
-                    webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+        ...(webhookUrl && {
+            integrations_config_defaults: {
+                '<INTEGRATION-ID>': {
+                    connection_config: { webhook_url: webhookUrl }
                 }
             }
-        }
+        })
     });
     ```
   </Tab>
@@ -78,7 +82,7 @@ You can also set `webhook_url` from the **Create connection** flow in the Nango 
 </Note>
 
 <Tip>
-    **Local development:** create a connection with `webhook_url` pointing at your local tunnel (e.g. [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs.
+    **Local development:** set `NANGO_CONNECTION_WEBHOOK_URL` to your tunnel (e.g. [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) so new connections route webhooks to your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the full multiplayer pattern.
 </Tip>
 
 ## Verifying webhooks from Nango
