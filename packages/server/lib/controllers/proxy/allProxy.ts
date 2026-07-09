@@ -30,6 +30,7 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 import { capping } from '../../utils/usage.js';
 
+import type { ServerEgressCallsite } from '../../utils/egressTelemetry.js';
 import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -450,29 +451,17 @@ function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined 
     return ceIdx !== -1 && ceIdx + 1 < rawHeaders.length && Boolean(rawHeaders[ceIdx + 1]);
 }
 
+const callsiteByMethod: Record<string, ServerEgressCallsite> = {
+    GET: 'get_/proxy',
+    POST: 'post_/proxy',
+    PATCH: 'patch_/proxy',
+    PUT: 'put_/proxy',
+    DELETE: 'delete_/proxy'
+};
+
 function makeRecordEgressedBytes(req: Request, accountId: number, environmentId: number, environmentName: string, integrationId: string, connectionId: string) {
     return function (egressedBytes: number) {
-        let callsite: 'get_/proxy' | 'post_/proxy' | 'patch_/proxy' | 'put_/proxy' | 'delete_/proxy' | null = null;
-
-        switch (req.method) {
-            case 'GET':
-                callsite = 'get_/proxy';
-                break;
-            case 'POST':
-                callsite = 'post_/proxy';
-                break;
-            case 'PATCH':
-                callsite = 'patch_/proxy';
-                break;
-            case 'PUT':
-                callsite = 'put_/proxy';
-                break;
-            case 'DELETE':
-                callsite = 'delete_/proxy';
-                break;
-            default:
-                callsite = null;
-        }
+        const callsite: ServerEgressCallsite = callsiteByMethod[req.method] ?? 'unknown_/proxy';
 
         if (callsite !== null) {
             egressTelemetryRecorder.record({

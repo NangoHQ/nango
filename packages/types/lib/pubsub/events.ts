@@ -166,7 +166,8 @@ export type DataTransferCallsite =
     | 'patch_/proxy'
     | 'post_/proxy'
     | 'put_/proxy'
-    | 'delete_/proxy';
+    | 'delete_/proxy'
+    | 'unknown_/proxy';
 
 export type UsageDataTransferEvent = UsageEventBase<
     'usage.data_transfer',
