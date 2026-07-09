@@ -8,6 +8,15 @@ import { putOrbCustomerSchema } from './types.js';
 import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, Result, UsageMetric } from '@nangohq/types';
 import type Orb from 'orb-billing';
 
+// True once the S3-fed pipeline is authoritative for billing (see
+// BILLING_EVENTS_CUTOVER_AT in packages/utils). While this returns false,
+// HTTP-emitted events stay unsuffixed so customer billable metrics keep
+// matching them. Once it flips true, HTTP events pick up the "_http"
+// suffix and become the defensive shadow.
+function cutoverActive(): boolean {
+    return !!envs.BILLING_EVENTS_CUTOVER_AT && new Date() >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+}
+
 export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
     const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
 
@@ -24,8 +33,9 @@ export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Ev
         }
     }
 
+    const suffix = cutoverActive() ? (envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX ?? '') : '';
     return {
-        event_name: `${event.type}${envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX ?? ''}`,
+        event_name: `${event.type}${suffix}`,
         idempotency_key: idempotencyKey || uuidv7(),
         external_customer_id: accountId.toString(),
         timestamp: timestamp.toISOString(),

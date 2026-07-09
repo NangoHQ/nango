@@ -17,7 +17,16 @@ const cronMinute = envs.CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
-const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '';
+
+// True once the S3-fed pipeline is authoritative for billing (see
+// BILLING_EVENTS_CUTOVER_AT in packages/utils). While this returns false,
+// S3 events keep their pre-cutover suffix (e.g. "_shadow") so they don't
+// collide with the HTTP-fed canonical events. Once it flips true, S3
+// events land under the canonical (unsuffixed) name customer billable
+// metrics filter on.
+function cutoverActive(): boolean {
+    return !!envs.BILLING_EVENTS_CUTOVER_AT && new Date() >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+}
 
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
 // Cron fires hourly; lock should expire well before the next tick.
@@ -176,6 +185,7 @@ export async function exec(): Promise<void> {
                 return;
             }
             const day = yesterdayUTC();
+            const eventNameSuffix = cutoverActive() ? '' : (envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '');
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {

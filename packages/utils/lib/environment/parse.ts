@@ -349,11 +349,23 @@ export const ENVS = z.object({
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
+    // Temporary. Applied to S3-emitted Orb event_name only BEFORE the
+    // S3-fed cutover (i.e. while BILLING_EVENTS_CUTOVER_AT is unset or in
+    // the future). After the cutover, S3 events land unsuffixed under the
+    // canonical event names.
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
-    // Temporary. Appended to HTTP-fed Orb event_name during the S3-fed
-    // cutover so HTTP emissions remain queryable as a defensive backup.
-    // Remove once the HTTP emission path is retired.
+    // Temporary. Applied to HTTP-fed Orb event_name only AFTER the
+    // S3-fed cutover (i.e. once BILLING_EVENTS_CUTOVER_AT has passed) so
+    // HTTP emissions remain queryable as a defensive backup. Remove once
+    // the HTTP emission path is retired.
     BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX: z.string().optional(),
+    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
+    // authoritative for billing. Before this instant, S3 events are
+    // shadow (suffixed) and HTTP events are canonical (unsuffixed). At
+    // and after this instant, the two swap roles. Unset (or set to a
+    // future date) to defer or roll back the cutover. Remove once the
+    // HTTP emission path is retired.
+    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
 
     // ClickHouse

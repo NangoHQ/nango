@@ -68,14 +68,31 @@ describe('toOrbEvent', () => {
         expect(result.timestamp).toBe('2024-01-15T10:00:00.000Z');
     });
 
-    it('appends BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX to event_name when set', () => {
-        const original = envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX;
+    it('appends the HTTP suffix to event_name once the cutover has passed', () => {
+        const originalSuffix = envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX;
+        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
         try {
             (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = '_http';
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = '2000-01-01T00:00:00Z';
             const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
             expect(toOrbEvent(event).event_name).toBe('proxy_http');
         } finally {
-            (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = original;
+            (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = originalSuffix;
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
+        }
+    });
+
+    it('does not append the HTTP suffix before the cutover instant', () => {
+        const originalSuffix = envs.BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX;
+        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
+        try {
+            (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = '_http';
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = '9999-01-01T00:00:00Z';
+            const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
+            expect(toOrbEvent(event).event_name).toBe('proxy');
+        } finally {
+            (envs as any).BILLING_EVENTS_HTTP_EVENT_NAME_SUFFIX = originalSuffix;
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
         }
     });
 });
