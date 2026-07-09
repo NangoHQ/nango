@@ -60,7 +60,7 @@ describe('logsOperationsService', () => {
 
     it('filters operations by matching messages when search is provided', async () => {
         const operations = [makeOperation('op-1'), makeOperation('op-2'), makeOperation('op-3')];
-        vi.spyOn(modelOperations, 'listOperations').mockResolvedValue({ count: 10, items: operations, cursor: 'cursor-next' });
+        vi.spyOn(modelOperations, 'listOperations').mockResolvedValue({ count: 10, items: operations, cursor: null });
         const searchMessagesSpy = vi.spyOn(modelMessages, 'searchForMessagesInsideOperations').mockResolvedValue({ items: [{ key: 'op-2', doc_count: 2 }] });
 
         const result = await logsOperationsService.listOperations({ ...baseParams(), search: 'needle' });
@@ -74,7 +74,40 @@ describe('logsOperationsService', () => {
             operations: [operations[1]],
             pagination: {
                 total: 1,
-                cursor: 'cursor-next'
+                cursor: null
+            }
+        });
+    });
+
+    it('continues paging operations until message search fills the requested limit', async () => {
+        const op1 = makeOperation('op-1');
+        const op2 = makeOperation('op-2');
+        const op3 = makeOperation('op-3');
+        const listOperationsSpy = vi
+            .spyOn(modelOperations, 'listOperations')
+            .mockResolvedValueOnce({ count: 10, items: [op1, op2], cursor: 'cursor-page-2' })
+            .mockResolvedValueOnce({ count: 10, items: [op3], cursor: 'cursor-page-3' });
+        const searchMessagesSpy = vi
+            .spyOn(modelMessages, 'searchForMessagesInsideOperations')
+            .mockResolvedValueOnce({ items: [{ key: 'op-1', doc_count: 1 }] })
+            .mockResolvedValueOnce({ items: [{ key: 'op-3', doc_count: 1 }] });
+        const params = { ...baseParams(), limit: 2, search: 'needle' };
+
+        const result = await logsOperationsService.listOperations(params);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            throw result.error;
+        }
+        expect(listOperationsSpy).toHaveBeenNthCalledWith(1, { ...baseParams(), limit: 2 });
+        expect(listOperationsSpy).toHaveBeenNthCalledWith(2, { ...baseParams(), limit: 1, cursor: 'cursor-page-2' });
+        expect(searchMessagesSpy).toHaveBeenNthCalledWith(1, { search: 'needle', operationsIds: ['op-1', 'op-2'] });
+        expect(searchMessagesSpy).toHaveBeenNthCalledWith(2, { search: 'needle', operationsIds: ['op-3'] });
+        expect(result.value).toStrictEqual({
+            operations: [op1, op3],
+            pagination: {
+                total: 2,
+                cursor: 'cursor-page-3'
             }
         });
     });
@@ -97,6 +130,20 @@ describe('logsOperationsService', () => {
                 cursor: null
             }
         });
+    });
+
+    it('returns message search errors', async () => {
+        const error = new Error('message search failed');
+        vi.spyOn(modelOperations, 'listOperations').mockResolvedValue({ count: 1, items: [makeOperation('op-1')], cursor: null });
+        vi.spyOn(modelMessages, 'searchForMessagesInsideOperations').mockRejectedValue(error);
+
+        const result = await logsOperationsService.listOperations({ ...baseParams(), search: 'needle' });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isOk()) {
+            throw new Error('expected listOperations to fail');
+        }
+        expect(result.error).toBe(error);
     });
 
     it('returns model errors', async () => {
