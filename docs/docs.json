@@ -1129,6 +1129,7 @@
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
               "api-integrations/domo",
+              "api-integrations/dope-security",
               "api-integrations/drata",
               "api-integrations/cisco-duo-admin",
               "integrations/all/drchrono",
