@@ -461,20 +461,16 @@ const callsiteByMethod: Record<string, ServerEgressCallsite> = {
 
 function makeRecordEgressedBytes(req: Request, accountId: number, environmentId: number, environmentName: string, integrationId: string, connectionId: string) {
     return function (egressedBytes: number) {
-        const callsite: ServerEgressCallsite = callsiteByMethod[req.method] ?? 'unknown_/proxy';
-
-        if (callsite !== null) {
-            egressTelemetryRecorder.record({
-                accountId,
-                environmentId,
-                environmentName,
-                integrationId,
-                connectionId,
-                callsite,
-                egressedBytes,
-                count: 1
-            });
-        }
+        egressTelemetryRecorder.record({
+            accountId,
+            environmentId,
+            environmentName,
+            integrationId,
+            connectionId,
+            callsite: callsiteByMethod[req.method] ?? 'unknown_/proxy',
+            egressedBytes,
+            count: 1
+        });
     };
 }
 
