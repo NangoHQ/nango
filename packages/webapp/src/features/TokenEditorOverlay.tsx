@@ -1,5 +1,5 @@
 import { ArrowLeft, ChevronDown, ChevronUp, Contrast, Download, Hash, Link2, ListFilter, Moon, RotateCcw, Sun, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
 import { Button, Input } from '@nangohq/design-system';
@@ -7,6 +7,8 @@ import { Button, Input } from '@nangohq/design-system';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
+// Raw import avoids TypeScript OOM on the 3k-line JSON (same technique as design-system/tokens/types.ts).
+// The relative escape from webapp into design-system is intentional for this dev-only tool.
 import rawTokensStr from '../../../design-system/tokens/tokens.json?raw';
 import { buildContrastIndex, deriveContrastRelevantVars } from './tokenContrast';
 import tokenUsageRaw from './tokenUsage.generated.json';
@@ -15,10 +17,6 @@ import type { Band, ContrastScore } from './tokenContrast';
 
 /** Precomputed { "--token": usageCount } snapshot (see scripts/generate-token-usage.mjs). Semantic tokens only. */
 const TOKEN_USAGE = tokenUsageRaw as Record<string, number>;
-
-// Raw import avoids TypeScript OOM on the 3k-line JSON (same technique as design-system/tokens/types.ts)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — relative escape from webapp into design-system is intentional for this dev-only tool
 
 // --- Types ---
 
@@ -323,10 +321,53 @@ function saveOverrides(o: BiThemeOverrides) {
     }
 }
 
+// Which vars are linked is persisted alongside the overrides (shared across themes). Without this the
+// linked set resets on reload, so a persisted linked edit would be re-read as unlinked individual
+// overrides — a single Reset would then strand the cascade, and the diff/export would differ.
+const LINKED_STORAGE_KEY = 'nango-dev-token-linked';
+
+function loadLinked(): Set<string> {
+    try {
+        const raw = JSON.parse(localStorage.getItem(LINKED_STORAGE_KEY) ?? '[]');
+        return Array.isArray(raw) ? new Set(raw as string[]) : new Set();
+    } catch {
+        return new Set();
+    }
+}
+
+function saveLinked(linked: Set<string>) {
+    try {
+        localStorage.setItem(LINKED_STORAGE_KEY, JSON.stringify([...linked]));
+    } catch {
+        /* ignore storage errors */
+    }
+}
+
 function applyThemeOverrides(overrides: BiThemeOverrides, theme: ThemeKey) {
     for (const [k, v] of Object.entries(overrides[theme])) {
         document.documentElement.style.setProperty(k, v);
     }
+}
+
+// --- Resolved-value snapshot ---
+
+// Rows and picker items need each token's live hex, which means reading getComputedStyle. Rows
+// re-render on every search keystroke, so resolving per row per render forced hundreds of style
+// flushes per keystroke. Instead the editor takes ONE snapshot per (theme, override) change and
+// shares it via context, so a keystroke only re-filters — it never re-reads the DOM.
+const ResolvedValuesContext = createContext<Map<string, string>>(new Map());
+
+/** Snapshot the live computed value of every known token in a single style flush. */
+function snapshotResolvedValues(): Map<string, string> {
+    const cs = getComputedStyle(document.documentElement);
+    const map = new Map<string, string>();
+    for (const e of ALL_ENTRIES) map.set(e.cssVar, cs.getPropertyValue(e.cssVar).trim());
+    return map;
+}
+
+/** Live hex for a token from the shared snapshot, falling back to its JSON-derived default. */
+function useResolvedValue(cssVar: string, fallback: string): string {
+    return useContext(ResolvedValuesContext).get(cssVar) || fallback;
 }
 
 // --- Export ---
@@ -411,6 +452,7 @@ interface TokenPickerContentProps {
 function TokenPickerContent({ currentValue, excludeCssVar, primitiveOnly, onSelect }: TokenPickerContentProps) {
     const [search, setSearch] = useState('');
     const searchRef = useRef<HTMLInputElement>(null);
+    const resolved = useContext(ResolvedValuesContext);
     const q = search.toLowerCase();
 
     const filteredPrimitives = useMemo(
@@ -453,7 +495,7 @@ function TokenPickerContent({ currentValue, excludeCssVar, primitiveOnly, onSele
                         <p className="sticky top-0 bg-surface-panel-muted px-3 py-1 text-xs font-medium uppercase tracking-wider text-text-muted">Primitives</p>
                         {filteredPrimitives.map((e) => {
                             const ref = entryToRef(e);
-                            const hex = getComputedStyle(document.documentElement).getPropertyValue(e.cssVar).trim() || e.baseHex;
+                            const hex = resolved.get(e.cssVar) || e.baseHex;
                             return (
                                 <button
                                     key={e.cssVar}
@@ -472,7 +514,7 @@ function TokenPickerContent({ currentValue, excludeCssVar, primitiveOnly, onSele
                         <p className="sticky top-0 bg-surface-panel-muted px-3 py-1 text-xs font-medium uppercase tracking-wider text-text-muted">Semantic</p>
                         {filteredSemantics.map((e) => {
                             const ref = entryToRef(e);
-                            const hex = getComputedStyle(document.documentElement).getPropertyValue(e.cssVar).trim() || e.baseHex;
+                            const hex = resolved.get(e.cssVar) || e.baseHex;
                             return (
                                 <button
                                     key={e.cssVar}
@@ -605,7 +647,6 @@ interface RowProps {
     override: string | undefined;
     refOverride: string | undefined;
     linked: boolean;
-    themeSeq: number;
     onCommit: (cssVar: string, val: string) => void;
     onReset: (cssVar: string) => void;
     onToggleLink: (cssVar: string) => void;
@@ -704,24 +745,12 @@ function UsageBadge({ count }: { count: number }) {
     );
 }
 
-function TokenRow({
-    entry,
-    override,
-    refOverride,
-    linked,
-    themeSeq: _themeSeq,
-    onCommit,
-    onReset,
-    onToggleLink,
-    onPickRef,
-    showRef,
-    contrast,
-    usage
-}: RowProps) {
-    // Prefer the live CSS variable value over the JSON-derived baseHex, since some
-    // semantic tokens reference other semantic tokens (e.g. {state.hover}) whose
-    // resolved hex is only available in the computed style.
-    const liveDefault = getComputedStyle(document.documentElement).getPropertyValue(entry.cssVar).trim() || entry.baseHex;
+function TokenRow({ entry, override, refOverride, linked, onCommit, onReset, onToggleLink, onPickRef, showRef, contrast, usage }: RowProps) {
+    // Prefer the live CSS variable value over the JSON-derived baseHex, since some semantic tokens
+    // reference other semantic tokens (e.g. {state.hover}) whose resolved hex is only available in the
+    // computed style. Read from the shared snapshot (re-taken on theme/override change) rather than
+    // hitting getComputedStyle per row — that forced a style flush on every search keystroke.
+    const liveDefault = useResolvedValue(entry.cssVar, entry.baseHex);
     const current = override ?? liveDefault;
     const [hex, setHex] = useState(current);
     const isModified = !!override || !!refOverride;
@@ -862,8 +891,9 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const [refOverridesPerTheme, setRefOverridesPerTheme] = useState<BiThemeOverrides>({ ...EMPTY_BI });
     // Captures the live CSS value at the moment a token was first overridden (per theme, for diff "from")
     const [originalsPerTheme, setOriginalsPerTheme] = useState<BiThemeOverrides>({ ...EMPTY_BI });
-    // CSS vars explicitly unlinked from their primitive — shared across themes
-    const [linkedVars, setLinkedVars] = useState<Set<string>>(new Set());
+    // CSS vars linked to their primitive — shared across themes, persisted so a reload keeps linked
+    // edits linked (otherwise they'd be re-read as unlinked individual overrides).
+    const [linkedVars, setLinkedVars] = useState<Set<string>>(loadLinked);
     const [showDiff, setShowDiff] = useState(false);
     const [contrastOn, setContrastOn] = useState(false);
     const [usageOn, setUsageOn] = useState(false);
@@ -914,14 +944,20 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     const activeOverrides = overridesPerTheme[currentTheme];
     const activeRefOverrides = refOverridesPerTheme[currentTheme];
 
+    // One computed-style sweep per (theme, override) change, shared by every row and picker via
+    // context. themeSeq is bumped by rAF after the DOM vars settle, so this re-reads once they're live.
+    const resolvedValues = useMemo(
+        () => snapshotResolvedValues(),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [themeSeq, overridesPerTheme, refOverridesPerTheme, darkMode]
+    );
+
     // Contrast scores keyed by foreground token cssVar; rebuilt when resolved colours change.
     const contrastIndex = useMemo(() => {
         if (!contrastOn) return null;
-        const resolve = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+        const resolve = (v: string) => resolvedValues.get(v) ?? '';
         return buildContrastIndex({ resolve, isKnownToken: (v) => ENTRIES_BY_VAR.has(v), surfaces: SURFACE_VARS, allVars: SEMANTIC_VARS });
-        // resolved values change with edits/theme; themeSeq fires after the DOM vars settle
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [contrastOn, themeSeq, overridesPerTheme, refOverridesPerTheme, darkMode]);
+    }, [contrastOn, resolvedValues]);
 
     // Clear primitive filter when switching to primitive mode
     useEffect(() => {
@@ -1066,6 +1102,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
             const next = new Set(prev);
             if (next.has(cssVar)) next.delete(cssVar);
             else next.add(cssVar);
+            saveLinked(next);
             return next;
         });
     }, []);
@@ -1088,6 +1125,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
             setLinkedVars((prev) => {
                 const n = new Set(prev);
                 n.delete(cssVar);
+                saveLinked(n);
                 return n;
             });
             setRefOverridesPerTheme((prev) => ({ ...prev, [theme]: omitKeys(prev[theme], [cssVar]) }));
@@ -1108,6 +1146,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
         setRefOverridesPerTheme({ ...EMPTY_BI });
         setShowDiff(false);
         saveOverrides(empty);
+        saveLinked(new Set());
     }, [linkedVars]);
 
     const exportDiff = useCallback(() => {
@@ -1119,7 +1158,7 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
     }, [overridesPerTheme, linkedVars, refOverridesPerTheme]);
 
     return (
-        <>
+        <ResolvedValuesContext.Provider value={resolvedValues}>
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
                 <div className="flex items-center gap-1">
@@ -1233,7 +1272,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                                 onCommit={commit}
                                 onReset={reset}
                                 onToggleLink={toggleLink}
-                                themeSeq={themeSeq}
                                 onPickRef={commitRef}
                                 showRef={true}
                                 contrast={contrastIndex ? (contrastIndex.get(entry.cssVar) ?? []) : null}
@@ -1305,6 +1343,6 @@ export function TokenEditorContent({ onBack, onClose }: { onBack: () => void; on
                     </Button>
                 </div>
             </div>
-        </>
+        </ResolvedValuesContext.Provider>
     );
 }
