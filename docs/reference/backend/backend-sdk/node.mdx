@@ -857,6 +857,79 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ## Integration functions
 
+### List functions
+
+Returns the functions deployed to an integration, with pagination.
+
+```ts
+await nango.listFunctions({ uniqueKey: 'github' });
+```
+
+Filter by function type, name, or page:
+
+```ts
+await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'issue', page: 0, limit: 20 });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="uniqueKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="type" type="string">
+        Filter by function type: `sync`, `action`, or `on-event`.
+    </ResponseField>
+    <ResponseField name="search" type="string">
+        Case-insensitive filter on the function name.
+    </ResponseField>
+    <ResponseField name="page" type="number">
+        Page to return (starts at `0`, default `0`).
+    </ResponseField>
+    <ResponseField name="limit" type="number">
+        Results per page (1-100, default `20`).
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": [
+        {
+            "type": "action",
+            "name": "create-issue",
+            "description": "Create a GitHub issue",
+            "returns": ["GithubIssue"],
+            "json_schema": null,
+            "id": 42,
+            "enabled": true,
+            "last_deployed": "2024-03-28T14:00:00.000Z",
+            "source": "repo"
+        },
+        {
+            "type": "sync",
+            "name": "issues",
+            "returns": ["GithubIssue"],
+            "json_schema": null,
+            "runs": "every hour",
+            "auto_start": true,
+            "track_deletes": false,
+            "id": 43,
+            "enabled": true,
+            "last_deployed": "2024-03-28T14:00:00.000Z",
+            "source": "repo"
+        }
+    ],
+    "pagination": {
+        "total": 2,
+        "page": 0,
+        "limit": 20
+    }
+}
+```
+</Expandable>
 
 ### Get integration functions config
 

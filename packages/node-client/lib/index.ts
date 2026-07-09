@@ -32,6 +32,7 @@ import type {
     GetPublicConnections,
     GetPublicEnvironmentVariables,
     GetPublicIntegration,
+    GetPublicIntegrationFunctions,
     GetPublicListIntegrations,
     GetPublicProvider,
     GetPublicProviders,
@@ -241,6 +242,25 @@ export class Nango {
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/integrations/${providerConfigKey}`;
         return await this.http.delete(url, { headers: this.enrichHeaders({}) });
+    }
+
+    /**
+     * Lists the deployed functions of an integration
+     * @param params - Identifies the integration (`uniqueKey`)
+     * @param queries - Optional filters: `type`, `search`, `page`, `limit`
+     * @returns A promise that resolves with the deployed functions and pagination metadata
+     */
+    public async listFunctions(
+        params: GetPublicIntegrationFunctions['Params'],
+        queries?: GetPublicIntegrationFunctions['Querystring']
+    ): Promise<GetPublicIntegrationFunctions['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions`);
+        addQueryParams(url, queries as GetPublicIntegrationFunctions['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
     }
 
     /**
