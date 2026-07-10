@@ -2185,15 +2185,8 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Give each engineer their own Nango environment. This prevents overwriting each other's deployed functions and lets each person configure webhooks independently, for example by pointing to a local ngrok tunnel.
-
-      Each engineer adds their environment's key to their local `.env`:
-
-      ```bash
-      NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-api-key>'
-      ```
-
-      Use a shared `dev` or `staging` environment as a stable baseline written to only by CI. See the [CI/CD guide](/guides/functions/ci-cd).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
     <Accordion title="For agents">
@@ -2271,11 +2264,17 @@ Local development is the default path for production integrations. Use it when y
     nango dryrun <function-name> '<CONNECTION-ID>' -e dev --metadata '{"accountRegion":"eu"}'
     ```
 
-    Deploy your functions:
+    Deploy the function you changed:
 
     ```bash
-    nango deploy
+    nango deploy --sync <function-name> dev
+    # or
+    nango deploy --action <function-name> dev
+    # or
+    nango deploy --integration <integration-id> dev
     ```
+
+    A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
@@ -5949,12 +5948,58 @@ Only **Full Access** team members can toggle the production flag. Once an enviro
 
 By default, the `prod` environment created with your account is already marked as production.
 
+## Engineering collaboration
+
+Use a **shared non-production environment** (usually `dev`) for day-to-day engineering work. The team shares integrations and the baseline function set. For local webhook testing, each engineer creates their own connections with a webhook URL override (see below).
+
+### Local webhooks on a shared environment
+
+Keep the environment webhook URL pointed at your shared app (or staging backend). To receive webhooks from Nango locally, create connections with a [per-connection `webhook_url` override](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/)).
+
+One convenient pattern is to read the override from an optional env var, so the same connect-session code works locally and when the var is unset. For example, set `NANGO_CONNECTION_WEBHOOK_URL` in your local `.env` to that URL and leave it unset elsewhere:
+
+```ts
+const webhookUrl = process.env.NANGO_CONNECTION_WEBHOOK_URL; // e.g. https://<you>.ngrok.app/webhooks-from-nango
+
+const session = await nango.createConnectSession({
+    tags: {
+        end_user_id: '<END-USER-ID>'
+    },
+    allowed_integrations: ['<INTEGRATION-ID>'],
+    ...(webhookUrl && {
+        integrations_config_defaults: {
+            '<INTEGRATION-ID>': {
+                connection_config: { webhook_url: webhookUrl }
+            }
+        }
+    })
+});
+```
+
+When the var is set, new connections from that session route webhooks to your machine without changing the environment webhook URLs.
+
+### Local function deploys on a shared environment
+
+A full `nango deploy` reconciles every function in the environment. On a shared collaborative environment, that can overwrite teammates' deploys. Deploy only what you changed:
+
+```bash
+nango deploy --sync <name> <env>
+nango deploy --action <name> <env>
+nango deploy --integration <id> <env>   # all functions for one integration, including event functions
+```
+
+Reserve full deploys for environments where the repo is the sole source of truth (for example staging or prod). See the [CI/CD guide](/guides/functions/ci-cd).
+
+### One environment per engineer
+
+You can give each engineer their own environment for full isolation. You then need to recreate integrations, connections, and settings in each environment yourself; that also means more API keys to manage and config that tends to drift over time. A shared `dev` environment avoids that overhead for most teams.
+
 ## Best practices
 
 **Mirror your application environments**
 
 We recommend creating Nango environments that match your application's deployment stages. For example:
-- Local development → dev environment
+- Development / local → dev environment
 - Staging → staging environment
 - Production → prod environment
 - Demo → demo environment
@@ -5967,6 +6012,7 @@ When you deploy [Functions](/guides/functions/functions-guide), you always targe
 
 - [API keys](/reference/backend/http-api/api-keys) - scope keys per environment.
 - [CI/CD](/guides/functions/ci-cd) - deploy functions safely across environments.
+- [Webhooks from Nango](/guides/platform/webhooks-from-nango) - environment and per-connection webhook URLs.
 - [Self-host Nango](/guides/platform/self-hosting) - plan environments for self-hosted deployments.
 
 ## Limits
@@ -7017,7 +7063,7 @@ You can also set `webhook_url` from the **Create connection** flow in the Nango 
 </Note>
 
 <Tip>
-    **Local development:** create a connection with `webhook_url` pointing at your local tunnel (e.g. [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs.
+    **Local development:** create a connection with `webhook_url` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
 </Tip>
 
 ## Verifying webhooks from Nango
