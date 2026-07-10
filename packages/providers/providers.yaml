@@ -9731,6 +9731,34 @@ hackerrank-work:
             default_value: ''
             hidden: true
 
+haileyhr:
+    display_name: Hailey HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.${connectionConfig.environment}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/haileyhr
+    docs_connect: https://nango.dev/docs/api-integrations/haileyhr/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The Hailey HR environment to connect to.
+            enum:
+                - haileyhr.app
+                - demo.haileyhr.app
+            order: 1
+            doc_section: '#step-1-selecting-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The personal access token for your Hailey HR account.
+            doc_section: '#step-2-generating-your-personal-access-token'
+
 halo-psa:
     display_name: Halo PSA
     categories:
