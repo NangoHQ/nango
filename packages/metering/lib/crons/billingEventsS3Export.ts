@@ -204,7 +204,7 @@ export async function exec(): Promise<void> {
                             metric: metric.canonicalEventName,
                             success: 'true'
                         });
-                        metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS, writtenRows, {
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS, writtenRows, {
                             metric: metric.canonicalEventName
                         });
                     } catch (err) {
