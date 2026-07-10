@@ -16,13 +16,13 @@ Connect to ConnectSecure with Nango and make your first API request.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_. Enter your ConnectSecure pod Base URL, tenant, Client ID, and Client Secret. Nango verifies the credentials against your pod before creating the connection.
     </Step>
     <Step id="call-connectsecure-api" title="Call the ConnectSecure API">
-    Request a ConnectSecure access token. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Request a ConnectSecure access token. Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl -X POST "https://api.nango.dev/proxy/w/authorize" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Accept: application/json"
@@ -37,7 +37,7 @@ Connect to ConnectSecure with Nango and make your first API request.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<API-KEY>' });
 
         const res = await nango.post({
             endpoint: '/w/authorize',
