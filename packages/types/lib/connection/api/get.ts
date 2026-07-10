@@ -169,9 +169,29 @@ export type PatchPublicConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
+        webhook_url?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error'>;
+}>;
+
+export type PatchConnection = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+        env: string;
+    };
+    Body: {
+        end_user?: EndUserInput | undefined;
+        tags?: Tags | undefined;
+        webhook_url?: string | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error'>;
 }>;
 
 export type PostConnectionRefresh = Endpoint<{
