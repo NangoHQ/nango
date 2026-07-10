@@ -18158,7 +18158,6 @@ sap-business-one:
             title: Service Layer URL
             prefix: https://
             suffix: /Login
-            pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
             order: 1
             description: The base URL for your SAP Business One Service Layer
             doc_section: '#step-3-finding-your-service-layer-url'
