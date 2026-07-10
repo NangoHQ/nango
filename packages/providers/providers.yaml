@@ -9083,6 +9083,7 @@ google-drive:
         - popular
         - storage
     alias: google
+    webhook_routing_script: googleDriveWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
