@@ -10348,6 +10348,38 @@ icypeas:
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-1-finding-your-api-key'
 
+ids-fulfillment:
+    display_name: IDS Fulfillment
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.idsfulfillment.com
+        headers:
+            apikey: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/ids-fulfillment
+    docs_connect: https://nango.dev/docs/api-integrations/ids-fulfillment/connect
+    connection_config:
+        warehouse:
+            type: string
+            title: Warehouse
+            description: Your IDS Fulfillment warehouse code.
+            optional: true
+            doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+        customerNumber:
+            type: string
+            title: Customer Number
+            description: Your IDS Fulfillment customer number.
+            optional: true
+            doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your IDS Fulfillment API key.
+            example: f3a92c1b-****-****-****-7d84c6e21093
+            doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+
 itglue:
     display_name: IT Glue
     categories:
