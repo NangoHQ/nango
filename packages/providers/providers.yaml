@@ -13983,6 +13983,10 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.notion.com/
     docs: https://nango.dev/docs/api-integrations/notion-mcp
 
 notion-scim:
