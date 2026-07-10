@@ -5154,11 +5154,11 @@ connectsecure:
     auth_mode: BASIC
     proxy:
         base_url: ${connectionConfig.base_url}
+        headers:
+            accept: application/json
+            client-auth-token: '${base64(${connectionConfig.tenant}+${credentials.username}:${credentials.password})}'
         verification:
             method: POST
-            headers:
-                accept: application/json
-                Client-Auth-Token: '${base64(${connectionConfig.tenant}+${credentials.username}:${credentials.password})}'
             endpoints:
                 - /w/authorize
     docs: https://nango.dev/docs/api-integrations/connectsecure
