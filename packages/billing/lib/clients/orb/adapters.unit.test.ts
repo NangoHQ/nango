@@ -68,7 +68,7 @@ describe('toOrbEvent', () => {
         expect(result.timestamp).toBe('2024-01-15T10:00:00.000Z');
     });
 
-    it('appends the "_http" suffix to event_name once the cutover has passed', () => {
+    it('appends "_http" when the event timestamp is at or after the cutover', () => {
         const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
         try {
             (envs as any).BILLING_EVENTS_CUTOVER_AT = '2000-01-01T00:00:00Z';
@@ -79,12 +79,33 @@ describe('toOrbEvent', () => {
         }
     });
 
-    it('does not append the "_http" suffix before the cutover instant', () => {
+    it('does not append "_http" when the event timestamp is before the cutover', () => {
         const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
         try {
             (envs as any).BILLING_EVENTS_CUTOVER_AT = '9999-01-01T00:00:00Z';
             const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
             expect(toOrbEvent(event).event_name).toBe('proxy');
+        } finally {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
+        }
+    });
+
+    it('keys the suffix on each event timestamp independently — a batched pre-cutover event stays unsuffixed even when processed after cutover', () => {
+        // Same cutover instant, two events on either side of it: verifies the
+        // suffix is decided per-event, not from wall-clock at processing time.
+        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
+        try {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = '2024-06-01T00:00:00Z';
+            const beforeCutover: BillingEvent = {
+                type: 'proxy',
+                properties: { ...baseProperties, timestamp: new Date('2024-05-31T23:59:59.999Z') } as any
+            };
+            const atCutover: BillingEvent = {
+                type: 'proxy',
+                properties: { ...baseProperties, timestamp: new Date('2024-06-01T00:00:00.000Z') } as any
+            };
+            expect(toOrbEvent(beforeCutover).event_name).toBe('proxy');
+            expect(toOrbEvent(atCutover).event_name).toBe('proxy_http');
         } finally {
             (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
         }

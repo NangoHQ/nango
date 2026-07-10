@@ -18,14 +18,13 @@ const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
 
-// True once the S3-fed pipeline is authoritative for billing (see
-// BILLING_EVENTS_CUTOVER_AT in packages/utils). While this returns false,
-// S3 events keep their pre-cutover suffix (e.g. "_shadow") so they don't
-// collide with the HTTP-fed canonical events. Once it flips true, S3
-// events land under the canonical (unsuffixed) name customer billable
-// metrics filter on.
-function cutoverActive(): boolean {
-    return !!envs.BILLING_EVENTS_CUTOVER_AT && new Date() >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+// Keyed on the DATA DAY, not the wall clock. Matters at the seam: the
+// Aug 1 00:15 UTC firing exports July 31 data, and July 31 is still
+// pre-cutover — so those rows must ship as "_s3" shadow, not canonical.
+// See BILLING_EVENTS_CUTOVER_AT in packages/utils.
+function dayIsPostCutover(day: string): boolean {
+    if (!envs.BILLING_EVENTS_CUTOVER_AT) return false;
+    return new Date(`${day}T00:00:00Z`) >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
 }
 
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
@@ -185,7 +184,7 @@ export async function exec(): Promise<void> {
                 return;
             }
             const day = yesterdayUTC();
-            const eventNameSuffix = cutoverActive() ? '' : '_s3';
+            const eventNameSuffix = dayIsPostCutover(day) ? '' : '_s3';
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {

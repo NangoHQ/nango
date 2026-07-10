@@ -8,13 +8,12 @@ import { putOrbCustomerSchema } from './types.js';
 import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, Result, UsageMetric } from '@nangohq/types';
 import type Orb from 'orb-billing';
 
-// True once the S3-fed pipeline is authoritative for billing (see
-// BILLING_EVENTS_CUTOVER_AT in packages/utils). While this returns false,
-// HTTP-emitted events stay unsuffixed so customer billable metrics keep
-// matching them. Once it flips true, HTTP events pick up the "_http"
-// suffix and become the defensive shadow.
-function cutoverActive(): boolean {
-    return !!envs.BILLING_EVENTS_CUTOVER_AT && new Date() >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+// Keyed on the EVENT's timestamp, not the wall clock, so a batched or
+// late-emitted event whose logical time is pre-cutover ships under the
+// pre-cutover name and vice versa. See BILLING_EVENTS_CUTOVER_AT in
+// packages/utils.
+function cutoverAppliesTo(eventTimestamp: Date): boolean {
+    return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
 }
 
 export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
@@ -34,7 +33,7 @@ export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Ev
     }
 
     return {
-        event_name: `${event.type}${cutoverActive() ? '_http' : ''}`,
+        event_name: `${event.type}${cutoverAppliesTo(timestamp) ? '_http' : ''}`,
         idempotency_key: idempotencyKey || uuidv7(),
         external_customer_id: accountId.toString(),
         timestamp: timestamp.toISOString(),
