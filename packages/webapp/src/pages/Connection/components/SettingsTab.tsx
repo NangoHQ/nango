@@ -67,10 +67,7 @@ export const SettingsTab = () => {
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">
                             <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
-                            <InfoTooltip>
-                                Deliver this connection&apos;s webhooks to a different URL than the environment-wide webhook URL. Useful for routing a single
-                                connection&apos;s events to a development tunnel.
-                            </InfoTooltip>
+                            <InfoTooltip>Deliver this connection&apos;s webhooks to a different URL than the environment-wide webhook URL.</InfoTooltip>
                         </div>
                         <EditableInput
                             id="webhook_url_override"
