@@ -1443,9 +1443,9 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
   <Tab title="Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
-    
+
     api.post('/sessionToken', async (req, res) => {
       const { data } = await nango.createConnectSession({
         tags: {
@@ -1508,7 +1508,7 @@ Nango stores tags on the connection itself.
   <Tab title="Read with Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
     const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
@@ -2111,20 +2111,18 @@ Function templates are pre-built Nango functions for common provider operations.
 
 You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
 
-When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [clone it into a local functions project and customize it](#extend-a-template).
+When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
 
 <a id="extend-a-template"></a>
 #### Extend a template
 
-Use the CLI to clone template code into your local functions project:
+Use the CLI to pull a template's code into your local functions project from the public catalog:
 
 ```bash
-nango clone github
-nango clone github/actions
-nango clone github/actions/list-repos
+nango pull github list-repos --catalog
 ```
 
-You can clone an entire integration, a function-type folder, or a single function. After cloning, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
@@ -2315,6 +2313,17 @@ At a high level, the flow is:
 Resolve these endpoints against `NANGO_SERVER_URL`, or `https://api.nango.dev` by default. Send `Authorization: Bearer <NANGO-API-KEY>` and `Content-Type: application/json`. Scoped API keys need `environment:functions:compile` for compile, `environment:functions:dryrun` for dry run creation and polling, and `environment:deploy` for deployment.
 
 The Functions API is powerful, but it intentionally skips a local Git workflow. For production integrations that need code review, tests, ownership, and CI/CD, prefer [local development with the CLI](#build-locally-with-the-cli).
+
+<a id="take-ownership-of-a-deployed-function"></a>
+### Take ownership of a deployed function
+
+Pull the source of a function that is already deployed to an environment so you can manage it in your own repository:
+
+```bash
+nango pull github list-repos --env dev
+```
+
+This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 
@@ -6954,9 +6963,62 @@ To subscribe to Nango webhooks:
 4. Implement processing logic for each [webhook type](#types-of-nango-webhooks) from Nango you want to handle
     - Make sure your processing logic handles the webhooks you have enabled in the environment settings
 
-You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both.
+You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both. A single connection can [override these with its own URL](#override-webhook-urls-per-connection).
 
 To test webhooks locally, use a webhook forwarding service like [ngrok](https://dev.to/mmascioni/testing-and-debugging-webhooks-with-ngrok-4alp), or [webhook.site](https://webhook.site/).
+
+## Override webhook URLs per connection
+
+A single connection can override the environment's webhook URLs with its own `webhook_url`. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
+
+When a connection sets `webhook_url`, its webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
+
+Set `webhook_url` when creating a [connect session](/reference/backend/http-api/connect/sessions/create), under `integrations_config_defaults.<integration>.connection_config`:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    const session = await nango.createConnectSession({
+        allowed_integrations: ['<INTEGRATION-ID>'],
+        integrations_config_defaults: {
+            '<INTEGRATION-ID>': {
+                connection_config: {
+                    webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+                }
+            }
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "allowed_integrations": ["<INTEGRATION-ID>"],
+        "integrations_config_defaults": {
+          "<INTEGRATION-ID>": {
+            "connection_config": {
+              "webhook_url": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
+            }
+          }
+        }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+You can also set `webhook_url` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
+
+<Note>
+    `webhook_url` can only be set at connect-session creation time — the trusted actor that creates the session. The same key passed to `nango.auth()` `params` from the client is ignored.
+</Note>
+
+<Tip>
+    **Local development:** create a connection with `webhook_url` pointing at your local tunnel (e.g. [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs.
+</Tip>
 
 ## Verifying webhooks from Nango
 
@@ -6992,7 +7054,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
   <Tab title="JavaScript/TypeScript">
     ```typescript
     import crypto from 'crypto';
-    
+
     // From Environment Settings > Webhooks > Signing key
     const webhookSigningKey = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     const body = // raw request body as string
@@ -7003,7 +7065,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     ```python
     import hmac
     import hashlib
-    
+
     # From Environment Settings > Webhooks > Signing key
     webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     body = # raw request body as bytes
@@ -7015,18 +7077,18 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     import javax.crypto.Mac;
     import javax.crypto.spec.SecretKeySpec;
     import java.nio.charset.StandardCharsets;
-    
+
     public class Main {
         public static void main(String[] args) throws Exception {
             // From Environment Settings > Webhooks > Signing key
             String webhookSigningKey = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
             String body = // raw request body as string
-    
+
             Mac mac = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKey = new SecretKeySpec(webhookSigningKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKey);
             byte[] hashBytes = mac.doFinal(body.getBytes(StandardCharsets.UTF_8));
-            
+
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 hexString.append(String.format("%02x", b));
@@ -7039,17 +7101,17 @@ Verify the signature with the **webhook signing key** from **Environment Setting
   <Tab title="Ruby">
     ```ruby
     require 'openssl'
-    
+
     # From Environment Settings > Webhooks > Signing key
     webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    body = # raw request body 
+    body = # raw request body
     hash = OpenSSL::HMAC.hexdigest('SHA256', webhook_signing_key, body)
     ```
   </Tab>
   <Tab title="Go">
     ```go
     package main
-    
+
     import (
         "crypto/hmac"
         "crypto/sha256"
@@ -7057,12 +7119,12 @@ Verify the signature with the **webhook signing key** from **Environment Setting
         "io"
         "net/http"
     )
-    
+
     func main() {
         // From Environment Settings > Webhooks > Signing key
         webhookSigningKey := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         var body []byte // raw request body
-    
+
         h := hmac.New(sha256.New, []byte(webhookSigningKey))
         h.Write(body)
         hash := hex.EncodeToString(h.Sum(nil))
@@ -7073,9 +7135,9 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     ```rust
     use hmac::{Hmac, Mac};
     use sha2::Sha256;
-    
+
     type HmacSha256 = Hmac<Sha256>;
-    
+
     // From Environment Settings > Webhooks > Signing key
     let webhook_signing_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
     let body = // raw request body as string or bytes
@@ -7221,7 +7283,7 @@ const isFullSync = !checkpoints || checkpoints.from === null;
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and sync functions not executed for 60 days will have all records deleted.
 </Warning>
 
-By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
+By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be:
 ```json
 {
     "added": 0,
@@ -8798,6 +8860,9 @@ The **Default - Full access** key that comes with each environment already has a
 
 | Scope | Description |
 |-------|-------------|
+| `environment:functions:list` | List deployed functions |
+| `environment:functions:read` | Read a single deployed function |
+| `environment:functions:delete` | Delete a deployed function |
 | `environment:functions:compile` | Compile function source code |
 | `environment:functions:dryrun` | Dry run function source code |
 
@@ -9180,6 +9245,46 @@ Source: https://nango.dev/docs/reference/backend/http-api/connections/delete.md
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
+
+## List functions
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/list.md
+
+<Info>
+  Requires an API key with the `environment:functions:list` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the functions deployed to an integration.
+
+## Get a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/get.md
+
+<Info>
+  Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns a single deployed function.
+
+## Get a function's source code
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/code.md
+
+<Info>
+  Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the TypeScript source code of a function for a given integration.
+
+## Delete a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/delete.md
+
+<Info>
+  Requires an API key with the `environment:functions:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint.
 
 ## Compile a function
 
@@ -9733,6 +9838,12 @@ Source: https://nango.dev/docs/reference/backend/http-api/providers/get.md
 ```
 </ResponseExample>
 
+## List provider templates
+
+Source: https://nango.dev/docs/reference/backend/http-api/providers/templates.md
+
+Returns the template functions available in the catalog for a provider.
+
 ## List connections (deprecated)
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/list.md
@@ -10242,6 +10353,17 @@ const { data } = await nango.createConnectSession({
     }
     ```
     When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+
+    `connection_config` also accepts `webhook_url` to override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
+    ```js
+    integrations_config_defaults: {
+      '<INTEGRATION-ID>': {
+        connection_config: {
+          webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+        }
+      }
+    }
+    ```
   </ResponseField>
 
   <ResponseField name="overrides" type="object">
@@ -14236,6 +14358,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `google-drive` | Google Drive | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-drive.md) |  | [setup](https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app.md) | knowledge-base, popular, storage |
 | `google-forms` | Google Forms | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-forms.md) |  | [setup](https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app.md) | productivity |
 | `google-gemini` | Google Gemini | API_KEY | [docs](https://nango.dev/docs/api-integrations/google-gemini.md) | [connect](https://nango.dev/docs/api-integrations/google-gemini/connect.md) |  | productivity, dev-tools |
+| `google-health` | Google Health | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-health.md) |  | [setup](https://nango.dev/docs/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app.md) | sports |
 | `google-mail` | Gmail | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-mail.md) |  | [setup](https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app.md) | popular, productivity |
 | `google-maps` | Google Maps | API_KEY | [docs](https://nango.dev/docs/api-integrations/google-maps.md) | [connect](https://nango.dev/docs/api-integrations/google-maps/connect.md) |  | productivity |
 | `google-meet` | Google Meet | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-meet.md) |  | [setup](https://nango.dev/docs/api-integrations/google-meet/how-to-register-your-own-google-meet-api-oauth-app.md) | communication, productivity |

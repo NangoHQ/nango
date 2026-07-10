@@ -1,4 +1,4 @@
-import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
+import { configService, getGlobalClientMetadataDocumentUrl, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
@@ -97,9 +97,21 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
                 const mcpRegistration = await mcpClient.registerClientId({ provider, environment, team: account });
                 config.oauth_client_id = mcpRegistration.client_id;
                 config.oauth_client_secret = mcpRegistration.client_secret || '';
+            } else if (clientRegistration === 'cimd') {
+                const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
+                if (!cimdUrl) {
+                    res.status(400).send({
+                        error: {
+                            code: 'invalid_body',
+                            message: 'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
+                        }
+                    });
+                    return;
+                }
+                config.oauth_client_id = cimdUrl;
+                config.oauth_client_secret = '';
             }
             // static: client_id/secret come from body.auth
-            // metadata: not implemented (TODO)
         }
 
         const createdIntegration = await configService.createProviderConfig(config, provider);

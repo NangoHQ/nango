@@ -345,6 +345,17 @@ const { data } = await nango.createConnectSession({
     }
     ```
     When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+
+    `connection_config` also accepts `webhook_url` to override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
+    ```js
+    integrations_config_defaults: {
+      '<INTEGRATION-ID>': {
+        connection_config: {
+          webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+        }
+      }
+    }
+    ```
   </ResponseField>
 
   <ResponseField name="overrides" type="object">

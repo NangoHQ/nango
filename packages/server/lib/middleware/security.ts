@@ -37,9 +37,10 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.posthog.com',
                     'https://*.stripe.com',
                     'https://*.plain.com',
-                    'wss://*.plain.com'
+                    'wss://*.plain.com',
+                    'https://raw.githubusercontent.com'
                 ],
-                fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
+                fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com', 'https://*.stripe.com'],
                 imgSrc: [
                     "'self'",
@@ -68,7 +69,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://apis.google.com',
                     'https://*.posthog.com',
                     'https://www.youtube.com',
-                    'https://chat.cdn-plain.com'
+                    'https://*.cdn-plain.com'
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', hostPublic, hostApi],
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']
