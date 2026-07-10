@@ -192,11 +192,20 @@ export async function exec(): Promise<void> {
                         }
                         step = 'export';
                         logger.info(`Exporting ${eventName} for day=${day}`);
-                        await client.command({ query: exportSql({ metric, day, eventName, key }) });
-                        logger.info(`Exported ${eventName} for day=${day}`);
+                        // ClickHouse populates `written_rows` in the X-ClickHouse-Summary
+                        // response header once the multipart upload to S3 is complete
+                        // (INSERT INTO FUNCTION s3(...) is atomic — the object either
+                        // exists fully or not at all), so on the success path this row
+                        // count matches the line count in the S3 file exactly.
+                        const res = await client.command({ query: exportSql({ metric, day, eventName, key }) });
+                        const writtenRows = Number(res.summary?.written_rows ?? 0);
+                        logger.info(`Exported ${eventName} for day=${day} (rows=${writtenRows})`);
                         metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
                             metric: metric.canonicalEventName,
                             success: 'true'
+                        });
+                        metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS, writtenRows, {
+                            metric: metric.canonicalEventName
                         });
                     } catch (err) {
                         // Per-metric catch so a single failure (e.g. CH timeout on
