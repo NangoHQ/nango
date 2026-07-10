@@ -12,30 +12,32 @@ const route: WebhookHandler = async (nango, headers) => {
         ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] })
     };
 
-    const response =
-        resourceId && typeof resourceId === 'string'
-            ? await nango.executeScriptForWebhooks({
-                  ...baseArgs,
-                  connectionIdentifierValue: resourceId,
-                  propName: 'googleDriveWatchResourceId'
-              })
-            : { connectionIds: [] as string[], connectionMetadata: {} };
-
     // Fallback: same resourceUri match as the base `google` routing script, kept inline so existing
     // google-drive connections that were matched through the inherited googleWebhookRouting script
     // keep working unchanged.
-    const connectionIds =
-        response.connectionIds.length > 0
-            ? response.connectionIds
-            : typeof resourceUri === 'string'
-              ? (
-                    await nango.executeScriptForWebhooks({
-                        ...baseArgs,
-                        connectionIdentifierValue: resourceUri,
-                        propName: 'metadata.googleCalendarWatchResourceUris'
-                    })
-                ).connectionIds
-              : [];
+    const connectionIds = await (async () => {
+        if (resourceId && typeof resourceId === 'string') {
+            const { connectionIds } = await nango.executeScriptForWebhooks({
+                ...baseArgs,
+                connectionIdentifierValue: resourceId,
+                propName: 'googleDriveWatchResourceId'
+            });
+            if (connectionIds.length > 0) {
+                return connectionIds;
+            }
+        }
+
+        if (typeof resourceUri === 'string') {
+            const { connectionIds } = await nango.executeScriptForWebhooks({
+                ...baseArgs,
+                connectionIdentifierValue: resourceUri,
+                propName: 'metadata.googleCalendarWatchResourceUris'
+            });
+            return connectionIds;
+        }
+
+        return [];
+    })();
 
     return Ok({
         content: { status: 'success' },
