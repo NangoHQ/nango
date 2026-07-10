@@ -210,6 +210,10 @@ Local development is the default path for production integrations. Use it when y
 
     ```bash
     nango deploy --sync <function-name> dev
+    # or
+    nango deploy --action <function-name> dev
+    # or
+    nango deploy --integration <integration-id> dev
     ```
 
     A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).

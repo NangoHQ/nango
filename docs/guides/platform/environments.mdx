@@ -48,6 +48,9 @@ One convenient pattern is to read the override from an optional env var, so the 
 const webhookUrl = process.env.NANGO_CONNECTION_WEBHOOK_URL; // e.g. https://<you>.ngrok.app/webhooks-from-nango
 
 const session = await nango.createConnectSession({
+    tags: {
+        end_user_id: '<END-USER-ID>'
+    },
     allowed_integrations: ['<INTEGRATION-ID>'],
     ...(webhookUrl && {
         integrations_config_defaults: {
@@ -75,7 +78,7 @@ Reserve full deploys for environments where the repo is the sole source of truth
 
 ### One environment per engineer
 
-You can give each engineer their own environment for full isolation. That duplicates integrations, connections, and settings; adds more API keys to manage; and tends to cause config drift across environments over time. A shared `dev` environment avoids that overhead for most teams.
+You can give each engineer their own environment for full isolation. You then need to recreate integrations, connections, and settings in each environment yourself; that also means more API keys to manage and config that tends to drift over time. A shared `dev` environment avoids that overhead for most teams.
 
 ## Best practices
 
