@@ -868,6 +868,194 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ## Integration functions
 
+### List functions
+
+Returns the functions deployed to an integration, with pagination.
+
+```ts
+await nango.listFunctions({ uniqueKey: 'github' });
+```
+
+Filter by function type, name, or page:
+
+```ts
+await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'issue', page: 0, limit: 20 });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="uniqueKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="type" type="string">
+        Filter by function type: `sync`, `action`, or `on-event`.
+    </ResponseField>
+    <ResponseField name="search" type="string">
+        Case-insensitive filter on the function name.
+    </ResponseField>
+    <ResponseField name="page" type="number">
+        Page to return (starts at `0`, default `0`).
+    </ResponseField>
+    <ResponseField name="limit" type="number">
+        Results per page (1-100, default `20`).
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": [
+        {
+            "type": "action",
+            "name": "create-issue",
+            "description": "Create a GitHub issue",
+            "returns": ["GithubIssue"],
+            "json_schema": null,
+            "id": 42,
+            "enabled": true,
+            "last_deployed": "2024-03-28T14:00:00.000Z",
+            "source": "repo"
+        },
+        {
+            "type": "sync",
+            "name": "issues",
+            "returns": ["GithubIssue"],
+            "json_schema": null,
+            "runs": "every hour",
+            "auto_start": true,
+            "track_deletes": false,
+            "id": 43,
+            "enabled": true,
+            "last_deployed": "2024-03-28T14:00:00.000Z",
+            "source": "repo"
+        }
+    ],
+    "pagination": {
+        "total": 2,
+        "page": 0,
+        "limit": 20
+    }
+}
+```
+</Expandable>
+
+### Get a function
+
+Retrieves a deployed function of an integration.
+
+```ts
+await nango.getFunction({ uniqueKey: 'github', name: 'create-issue' });
+```
+
+Pass `type` to disambiguate when a sync and an action share the same name:
+
+```ts
+await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="uniqueKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+        The function name.
+    </ResponseField>
+    <ResponseField name="type" type="string">
+        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": {
+        "type": "action",
+        "name": "create-issue",
+        "description": "Create a GitHub issue",
+        "returns": ["GithubIssue"],
+        "json_schema": null,
+        "id": 42,
+        "enabled": true,
+        "last_deployed": "2024-03-28T14:00:00.000Z",
+        "source": "repo"
+    }
+}
+```
+</Expandable>
+
+### Get function code
+
+Retrieves the source code of a deployed function.
+
+```ts
+await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="uniqueKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+        The function name.
+    </ResponseField>
+    <ResponseField name="type" type="string">
+        Disambiguates when functions share a name: `sync`, `action`, or `on-event`.
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "type": "action",
+    "code": "export default createAction({ /* ... */ });"
+}
+```
+</Expandable>
+
+### Delete a function
+
+Deletes a deployed function of an integration. The `type` is required.
+
+```ts
+await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="uniqueKey" type="string" required>
+        The integration ID.
+    </ResponseField>
+    <ResponseField name="name" type="string" required>
+        The function name.
+    </ResponseField>
+    <ResponseField name="type" type="string" required>
+        The function type: `sync` or `action`.
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": {
+        "success": true
+    }
+}
+```
+</Expandable>
 
 ### Get integration functions config
 
@@ -2105,6 +2293,40 @@ await nango.getProvider({ provider: <NAME> })
         },
         "docs": "https://nango.dev/docs/api-integrations/posthog"
     }
+}
+```
+</Expandable>
+
+### Get provider templates
+
+Returns the function templates available for a provider.
+
+```js
+await nango.getProviderTemplates({ provider: <NAME> })
+```
+
+**Parameters**
+
+<Expandable>
+    <ResponseField name="provider" type="string" required>
+        The provider name.
+    </ResponseField>
+</Expandable>
+
+**Example Response**
+
+<Expandable>
+```json
+{
+    "data": [
+        {
+            "type": "action",
+            "name": "create-issue",
+            "description": "Create a GitHub issue",
+            "returns": ["GithubIssue"],
+            "json_schema": null
+        }
+    ]
 }
 ```
 </Expandable>
