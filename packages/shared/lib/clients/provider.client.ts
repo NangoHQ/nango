@@ -1943,6 +1943,9 @@ class ProviderClient {
 
             throw new NangoError('microsoft_admin_token_request_error', stringifyError({ response }));
         } catch (err: any) {
+            if (err instanceof NangoError) {
+                throw err;
+            }
             throw new NangoError('microsoft_admin_token_request_error', stringifyError(err));
         }
     }
