@@ -9,13 +9,13 @@ description: 'Integrate your application with the Microsoft Dynamics 365 Finance
 Connect to Microsoft Dynamics 365 Finance and Operations with Nango and see data flow in 2 minutes.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft Dynamics 365 Finance and Operations_.
     </Step>
-    <Step title="Authorize Microsoft Dynamics 365 Finance and Operations">
+    <Step id="authorize-dynamics-365-finance-and-operations" title="Authorize Microsoft Dynamics 365 Finance and Operations">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Tenant ID** and **Environment URL**, and log in to Microsoft Dynamics 365 Finance and Operations. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Microsoft Dynamics 365 Finance and Operations API">
+    <Step id="call-the-api" title="Call the Microsoft Dynamics 365 Finance and Operations API">
     Let's make your first request to the Microsoft Dynamics 365 Finance and Operations OData API (list the data entities available in the environment). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -55,7 +55,7 @@ Connect to Microsoft Dynamics 365 Finance and Operations with Nango and see data
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-in-app" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.

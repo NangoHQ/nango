@@ -6225,6 +6225,14 @@ microsoft-ads:
 microsoft-business-central:
     - https://api.businesscentral.dynamics.com/.default
 
+# source: Azure Portal API permissions picker for "Dynamics ERP" (Microsoft.ERP)
+microsoft-dynamics-365-finance-and-operations:
+    - .default
+    - AX.FullAccess
+    - CustomService.FullAccess
+    - mcp.tools
+    - Odata.FullAccess
+
 # source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Entra ID uses standard Microsoft Graph permissions)
 microsoft-entra-id:
     - .default
