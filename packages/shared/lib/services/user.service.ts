@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
+import { ENVS, Err, normalizeEmail, Ok, parseEnvs } from '@nangohq/utils';
 
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -95,7 +95,11 @@ class UserService {
     }
 
     async getUserByEmail(email: string): Promise<DBUser | null> {
-        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ email: email }).first();
+        const result = await db.knex
+            .select('*')
+            .from<DBUser>(`_nango_users`)
+            .whereRaw('lower(email) = ?', [normalizeEmail(email)])
+            .first();
 
         return result || null;
     }
@@ -127,7 +131,7 @@ class UserService {
         const result: Pick<DBUser, 'id'>[] = await db.knex
             .from<DBUser>('_nango_users')
             .insert({
-                email,
+                email: normalizeEmail(email),
                 name,
                 hashed_password,
                 salt,
