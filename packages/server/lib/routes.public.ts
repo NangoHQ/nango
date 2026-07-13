@@ -20,6 +20,7 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import { getClientMetadata } from './controllers/clientMetadata/environmentUuid/getClientMetadata.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -51,7 +52,7 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getMcp, postMcp } from './controllers/mcp/mcp.js';
+import { getConnectionToolsMcp, postConnectionToolsMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
@@ -166,6 +167,7 @@ publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(cookieParser(), oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(getClientMetadata);
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);
@@ -288,8 +290,8 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, withScope('envir
 
 // MCP
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
-publicAPI.route('/mcp').post(apiAuth, withScope('environment:mcp'), postMcp);
-publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getMcp);
+publicAPI.route('/mcp').post(apiAuth, withScope('environment:mcp'), postConnectionToolsMcp);
+publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getConnectionToolsMcp);
 
 // Scripts config
 publicAPI.use('/scripts', jsonContentTypeMiddleware);

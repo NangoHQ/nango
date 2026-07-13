@@ -676,6 +676,16 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Follow Up Boss token refresh failed.';
                 break;
 
+            case 'client_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Failed to fetch client credentials token: ${JSON.stringify(this.payload)}`;
+                break;
+
+            case 'microsoft_admin_token_request_error':
+                this.status = 400;
+                this.message = `Microsoft admin token request failed: ${JSON.stringify(this.payload)}`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

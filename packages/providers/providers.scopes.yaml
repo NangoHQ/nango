@@ -3584,6 +3584,24 @@ google-forms:
     - openid
     - profile
 
+# source: https://developers.google.com/health/scopes
+google-health:
+    - https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly
+    - https://www.googleapis.com/auth/googlehealth.activity_and_fitness.writeonly
+    - https://www.googleapis.com/auth/googlehealth.ecg.readonly
+    - https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly
+    - https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.writeonly
+    - https://www.googleapis.com/auth/googlehealth.irn.readonly
+    - https://www.googleapis.com/auth/googlehealth.location.readonly
+    - https://www.googleapis.com/auth/googlehealth.nutrition.readonly
+    - https://www.googleapis.com/auth/googlehealth.nutrition.writeonly
+    - https://www.googleapis.com/auth/googlehealth.profile.readonly
+    - https://www.googleapis.com/auth/googlehealth.profile.writeonly
+    - https://www.googleapis.com/auth/googlehealth.settings.readonly
+    - https://www.googleapis.com/auth/googlehealth.settings.writeonly
+    - https://www.googleapis.com/auth/googlehealth.sleep.readonly
+    - https://www.googleapis.com/auth/googlehealth.sleep.writeonly
+
 # source: https://developers.google.com/identity/protocols/oauth2/scopes (Gmail API scopes)
 google-mail:
     - https://mail.google.com/
@@ -6224,6 +6242,14 @@ microsoft-ads:
 # source: providers.yaml base_url (Microsoft client credentials resource scope pattern)
 microsoft-business-central:
     - https://api.businesscentral.dynamics.com/.default
+
+# source: Azure Portal API permissions picker for "Dynamics ERP" (Microsoft.ERP)
+microsoft-dynamics-365-finance-and-operations:
+    - .default
+    - AX.FullAccess
+    - CustomService.FullAccess
+    - mcp.tools
+    - Odata.FullAccess
 
 # source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Entra ID uses standard Microsoft Graph permissions)
 microsoft-entra-id:

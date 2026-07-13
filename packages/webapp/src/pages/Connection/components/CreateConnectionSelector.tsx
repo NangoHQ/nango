@@ -324,7 +324,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         {(allowed) => (
                                             <Button
                                                 onClick={onClickConnectUI}
-                                                size="lg"
+                                                size="md"
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
                                             >
                                                 Authorize
@@ -344,7 +344,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                                         {(allowed) => (
                                             <Button
                                                 onClick={onClickShareConnectionLink}
-                                                size="lg"
+                                                size="md"
                                                 variant="ghost"
                                                 loading={isShareLinkLoading}
                                                 disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
