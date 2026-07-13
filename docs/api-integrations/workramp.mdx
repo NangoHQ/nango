@@ -18,9 +18,6 @@ Connect to WorkRamp with Nango and see data flow in 2 minutes.
     <Step title="Call the WorkRamp API">
     Let's make your first request to the WorkRamp API (get the first user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
-    <Note>
-      WorkRamp rate-limits the `/v1/users` endpoint. Always pass `limit=1` when you only need a single user, and paginate with `limit`/`page` (batches of up to 100, no more than 10 requests per 60 seconds) when fetching many.
-    </Note>
     <Tabs>
         <Tab title="cURL">
 
@@ -68,7 +65,7 @@ Connect to WorkRamp with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-## 📚 WorkRamp Integration Guides
+## 📚 WorkRamp integration guides
 
 Nango-maintained guides for common use cases.
 
@@ -84,5 +81,9 @@ Enable them in your dashboard. Extend and customize to fit your needs.
 import PreBuiltUseCases from "/snippets/generated/workramp/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
+
+## API gotchas
+
+- WorkRamp enforces an account-wide rate limit (3,000 requests/hour, with bursts up to 13,000/hour — see [WorkRamp's API docs](https://developers.workramp.com/reference/getting-started)).
 
 ---
