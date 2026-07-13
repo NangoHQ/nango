@@ -1,0 +1,88 @@
+---
+title: 'WorkRamp'
+sidebarTitle: 'WorkRamp'
+description: 'Integrate your application with the WorkRamp API'
+---
+
+## 🚀 Quickstart
+
+Connect to WorkRamp with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _WorkRamp_.
+    </Step>
+    <Step title="Authorize WorkRamp">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then select your hostname and enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the WorkRamp API">
+    Let's make your first request to the WorkRamp API (get the first user). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    <Note>
+      WorkRamp rate-limits the `/v1/users` endpoint. Always pass `limit=1` when you only need a single user, and paginate with `limit`/`page` (batches of up to 100, no more than 10 requests per 60 seconds) when fetching many.
+    </Note>
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/users?limit=1" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/users',
+            params: {
+                limit: 1
+            },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 WorkRamp Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my WorkRamp account?](/api-integrations/workramp/connect)
+  Connect your WorkRamp account using the Connect UI
+
+Official docs: [WorkRamp API Documentation](https://developers.workramp.com/reference/getting-started)
+
+## 🧩 Pre-built syncs & actions for WorkRamp
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/workramp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

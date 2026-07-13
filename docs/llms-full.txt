@@ -14754,6 +14754,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `workday-refresh-token` | Workday (Refresh Token Auth) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/workday-refresh-token.md) | [connect](https://nango.dev/docs/api-integrations/workday-refresh-token/connect.md) |  | hr |
 | `workos` | WorkOS | API_KEY | [docs](https://nango.dev/docs/api-integrations/workos.md) | [connect](https://nango.dev/docs/api-integrations/workos/connect.md) |  | productivity, iam |
 | `workpath` | Workpath | API_KEY | [docs](https://nango.dev/docs/api-integrations/workpath.md) | [connect](https://nango.dev/docs/api-integrations/workpath/connect.md) |  | productivity |
+| `workramp` | WorkRamp | API_KEY | [docs](https://nango.dev/docs/api-integrations/workramp.md) | [connect](https://nango.dev/docs/api-integrations/workramp/connect.md) |  | hr |
 | `wrike` | Wrike | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wrike.md) |  |  | productivity |
 | `xai` | xAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/xai.md) | [connect](https://nango.dev/docs/integrations/all/xai/connect.md) |  | productivity, dev-tools |
 | `xero` | Xero | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/xero.md) |  | [setup](https://nango.dev/docs/api-integrations/xero/how-to-register-your-own-xero-api-oauth-app.md) | accounting, popular |

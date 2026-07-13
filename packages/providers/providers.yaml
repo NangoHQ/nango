@@ -23130,6 +23130,39 @@ workpath:
             description: Your Workpath API Token.
             doc_section: '#step-1-getting-your-api-token'
 
+workramp:
+    display_name: WorkRamp
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users?limit=1
+    docs: https://nango.dev/docs/api-integrations/workramp
+    docs_connect: https://nango.dev/docs/api-integrations/workramp/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The WorkRamp hostname to connect to.
+            enum:
+                - app.workramp.com
+                - app.eu.workramp.com
+            order: 1
+            doc_section: '#step-1-selecting-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your WorkRamp account
+            secret: true
+            doc_section: '#step-2-generating-your-api-key'
+
 wrike:
     display_name: Wrike
     categories:
