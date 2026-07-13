@@ -73,9 +73,6 @@ const docsPath = path.join(__dirname, '../../../docs/integrations/all');
 const updatedDocsPath = path.join(__dirname, '../../../docs/api-integrations');
 const svgPath = path.join(__dirname, '../../../packages/webapp/public/images/template-logos');
 
-// Providers whose connection_config fields are intentionally not yet wired into any request
-const CONNECTION_CONFIG_NOT_REQUIRED_EXEMPTIONS = ['ids-fulfillment'];
-
 // store a global flag so we don't stop at first error
 let error = false;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
@@ -220,13 +217,7 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
                 }
             }
         }
-    } else if (
-        provider.connection_config &&
-        !provider.alias &&
-        provider.auth_mode !== 'MCP_OAUTH2_GENERIC' &&
-        provider.auth_mode !== 'AWS_SIGV4' &&
-        !CONNECTION_CONFIG_NOT_REQUIRED_EXEMPTIONS.includes(providerKey)
-    ) {
+    } else if (provider.connection_config && !provider.alias && provider.auth_mode !== 'MCP_OAUTH2_GENERIC' && provider.auth_mode !== 'AWS_SIGV4') {
         // MCP_OAUTH2_GENERIC uses connection_config programmatically for dynamic discovery, not via YAML interpolation
         console.error(chalk.red('error'), chalk.blue(providerKey), `"connection_config" is defined but not required`);
         error = true;

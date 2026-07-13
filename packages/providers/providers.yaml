@@ -10357,6 +10357,9 @@ ids-fulfillment:
         base_url: https://api.idsfulfillment.com
         headers:
             apikey: ${apiKey}
+        connection_config:
+            warehouse: ${connectionConfig.warehouse}
+            customerNumber: ${connectionConfig.customerNumber}
     docs: https://nango.dev/docs/api-integrations/ids-fulfillment
     docs_connect: https://nango.dev/docs/api-integrations/ids-fulfillment/connect
     connection_config:
