@@ -32,7 +32,15 @@ const DEFAULT_DATABASE = 'usage';
 
 export interface MetricSpec {
     /** Canonical Orb event_name; the suffix is appended at SQL gen time. */
-    canonicalEventName: string;
+    canonicalEventName:
+        | 'proxy'
+        | 'function_executions'
+        | 'data_transfer'
+        | 'webhook_forwards'
+        | 'billable_actions'
+        | 'monthly_active_records'
+        | 'records'
+        | 'billable_connections_v2';
     /**
      * SQL fragment that produces rows shaped:
      *   account_id, day, properties
@@ -141,6 +149,46 @@ export const METRICS: MetricSpec[] = [
             )
             GROUP BY account_id, day
         `
+    },
+    {
+        canonicalEventName: 'data_transfer',
+        // We only bill for egress traffic that can be labeled as DTO.
+        // `count` here is the sum of all egressing bytes matching the where clause;
+        // the per-package-x-callsite-pair properties break that total down into its individual contributors.
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map(
+                    'count',                     toFloat64(SUM(egressed_bytes)),
+                    'server.get_/records',       toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'get_/records')),
+                    'server.get_/proxy',         toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'get_/proxy')),
+                    'server.post_/proxy',        toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'post_/proxy')),
+                    'server.patch_/proxy',       toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'patch_/proxy')),
+                    'server.put_/proxy',         toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'put_/proxy')),
+                    'server.delete_/proxy',      toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'delete_/proxy')),
+                    'server.unknown_/proxy',     toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'unknown_/proxy')),
+                    'server.proxy',              toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'proxy')),
+                    'server.webhook_forward',    toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'webhook_forward')),
+                    'runner.proxy',              toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'proxy')),
+                    'runner.uncontrolled_fetch', toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'uncontrolled_fetch'))
+                ) AS properties
+            FROM ${database}.daily_data_transfer
+            WHERE day = toDate('${day}')
+              AND (package, callsite) IN (
+                  ('server', 'get_/records'),
+                  ('server', 'get_/proxy'),
+                  ('server', 'proxy'),
+                  ('server', 'post_/proxy'),
+                  ('server', 'patch_/proxy'),
+                  ('server', 'put_/proxy'),
+                  ('server', 'delete_/proxy'),
+                  ('server', 'unknown_/proxy'),
+                  ('server', 'webhook_forward'),
+                  ('runner', 'proxy'),
+                  ('runner', 'uncontrolled_fetch')
+              )
+            GROUP BY account_id, day
+        `
     }
 ];
 
@@ -166,6 +214,15 @@ export function billingEventsS3ExportCron(): void {
     });
 }
 
+function addEventNameSuffix(eventName: MetricSpec['canonicalEventName']): string {
+    if (eventName == 'data_transfer') {
+        // data_transfer is a new event and thus doesn't need the suffix to support live traffic cutoff.
+        return eventName;
+    }
+
+    return `${eventName}${eventNameSuffix}`;
+}
+
 export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.billingEventsS3Export', async () => {
         logger.info(`Starting`);
@@ -179,7 +236,7 @@ export async function exec(): Promise<void> {
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {
-                    const eventName = `${metric.canonicalEventName}${eventNameSuffix}`;
+                    const eventName = addEventNameSuffix(metric.canonicalEventName);
                     const key = objectKey({ day, eventName });
                     const start = process.hrtime.bigint();
                     // Tracks which step is in flight so a catch can tag the failure
@@ -192,11 +249,20 @@ export async function exec(): Promise<void> {
                         }
                         step = 'export';
                         logger.info(`Exporting ${eventName} for day=${day}`);
-                        await client.command({ query: exportSql({ metric, day, eventName, key }) });
-                        logger.info(`Exported ${eventName} for day=${day}`);
+                        // ClickHouse populates `written_rows` in the X-ClickHouse-Summary
+                        // response header once the multipart upload to S3 is complete
+                        // (INSERT INTO FUNCTION s3(...) is atomic — the object either
+                        // exists fully or not at all), so on the success path this row
+                        // count matches the line count in the S3 file exactly.
+                        const res = await client.command({ query: exportSql({ metric, day, eventName, key }) });
+                        const writtenRows = Number(res.summary?.written_rows ?? 0);
+                        logger.info(`Exported ${eventName} for day=${day} (rows=${writtenRows})`);
                         metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
                             metric: metric.canonicalEventName,
                             success: 'true'
+                        });
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS, writtenRows, {
+                            metric: metric.canonicalEventName
                         });
                     } catch (err) {
                         // Per-metric catch so a single failure (e.g. CH timeout on

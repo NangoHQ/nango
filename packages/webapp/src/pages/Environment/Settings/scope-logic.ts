@@ -62,6 +62,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
             { value: 'environment:records:write', label: 'write' }
         ]
     },
+    { group: 'Logs', items: [{ value: 'environment:logs:read', label: 'read' }] },
     { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
     { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },

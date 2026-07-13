@@ -50,7 +50,8 @@ export enum LocalStorageKeys {
     AccountId = 'nango_account_id',
     LastEnvironment = 'nango_last_environment',
     Playground = 'nango_playground',
-    Theme = 'nango_theme'
+    Theme = 'nango_theme',
+    RecordsDocsBannerDismissed = 'nango_records_docs_banner_dismissed'
 }
 
 /**
@@ -68,7 +69,8 @@ const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.AccountId]: 'session',
     [LocalStorageKeys.LastEnvironment]: 'session',
     [LocalStorageKeys.Playground]: 'session',
-    [LocalStorageKeys.Theme]: 'preference'
+    [LocalStorageKeys.Theme]: 'preference',
+    [LocalStorageKeys.RecordsDocsBannerDismissed]: 'preference'
 };
 
 const storage = new LocalStorage();

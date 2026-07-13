@@ -1,0 +1,85 @@
+---
+title: 'Hailey HR'
+sidebarTitle: 'Hailey HR'
+description: 'Integrate your application with the Hailey HR API'
+---
+
+## 🚀 Quickstart
+
+Connect to Hailey HR with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hailey HR_.
+
+    <Note>
+      Hailey HR requires an environment for authentication. You'll need to select whether you're connecting to production (`haileyhr.app`) or the demo/sandbox (`demo.haileyhr.app`) when creating connections.
+    </Note>
+    </Step>
+    <Step title="Authorize Hailey HR">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then select your environment and enter your Hailey HR personal access token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Hailey HR API">
+    Let's make your first request to the Hailey HR API (get your company data). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/Company" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/Company',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Hailey HR Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Hailey HR account?](/api-integrations/haileyhr/connect)
+  Connect your Hailey HR account using the Connect UI
+
+Official docs: [Hailey HR API docs](https://api.haileyhr.app/docs/)
+
+## 🧩 Pre-built syncs & actions for Hailey HR
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/haileyhr/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
