@@ -2,6 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLocalStorage } from 'react-use';
 
 import { Button, buttonVariants } from '@nangohq/design-system';
 
@@ -25,6 +26,7 @@ import { cn, formatDateToUSFormat } from '@/utils/utils';
 import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
 
 const RECORDS_DOCS_URL = 'https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync';
+const RECORDS_DOCS_BANNER_DISMISSED_KEY = 'nango_records_docs_banner_dismissed';
 const RECORDS_PAGE_SIZE = 20;
 const RECORD_ROW_HEIGHT_PX = 44;
 const RECORD_HEADER_HEIGHT_PX = 44;
@@ -35,7 +37,7 @@ export const RecordsTab = () => {
     const navigate = useNavigate();
     const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
-    const [isDocsBannerVisible, setIsDocsBannerVisible] = useState(true);
+    const [isDocsBannerDismissed, setIsDocsBannerDismissed] = useLocalStorage(RECORDS_DOCS_BANNER_DISMISSED_KEY, false);
 
     const {
         data: models,
@@ -59,7 +61,7 @@ export const RecordsTab = () => {
 
                 {!modelsError && !isModelsLoading && models && models.length > 0 && (
                     <>
-                        {isDocsBannerVisible && <RecordsDocsBanner onClose={() => setIsDocsBannerVisible(false)} />}
+                        {!isDocsBannerDismissed && <RecordsDocsBanner onClose={() => setIsDocsBannerDismissed(true)} />}
                         <RecordModelsTable models={models} onSelect={handleSelectModel} />
                     </>
                 )}
