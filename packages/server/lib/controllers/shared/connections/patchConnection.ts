@@ -2,6 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, linkConnection, updateConnectionTags, upsertEndUser } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
 
 import { connectionTagsSchema, endUserSchema, webhookUrlSchema } from '../../../helpers/validation.js';
 
@@ -53,19 +54,20 @@ export async function handlePatchConnection({
     const mergedTags = { ...endUserTags, ...body.tags };
 
     if (body.end_user) {
-        await db.knex.transaction(async (trx) => {
+        const endUserTxRes = await db.knex.transaction(async (trx) => {
             const endUserRes = await upsertEndUser(trx, { account, environment, connection, endUser: EndUserMapper.apiToEndUser(body.end_user!) });
             if (endUserRes.isErr()) {
-                res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
-                return;
+                return Err('Failed to update end user');
             }
 
             if (!connection.end_user_id) {
                 await linkConnection(trx, { endUserId: endUserRes.value.id, connection });
             }
+
+            return Ok(undefined);
         });
-        // If the transaction callback sent a response, stop.
-        if (res.headersSent) {
+        if (endUserTxRes.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: endUserTxRes.error.message } });
             return;
         }
     }
@@ -82,7 +84,7 @@ export async function handlePatchConnection({
     }
 
     if (typeof body.webhook_url === 'string') {
-        if (body.webhook_url.trim() === '') {
+        if (body.webhook_url === '') {
             await connectionService.unsetConnectionConfigAttributes(connection, ['webhook_url']);
         } else {
             await connectionService.updateConnectionConfig(connection, { webhook_url: body.webhook_url });
