@@ -61,7 +61,7 @@ describe('audit middleware (private API)', () => {
             resource: 'connection',
             action: 'deleted',
             outcome: 'success',
-            actor: { type: 'user', display: user.email },
+            actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'connection', id: connection.connection_id }]
         });
     });
@@ -90,7 +90,7 @@ describe('audit middleware (private API)', () => {
             action: 'role_changed',
             outcome: 'success',
             environmentId: null,
-            actor: { type: 'user', display: user.email },
+            actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'member', id: String(targetUser.id) }],
             metadata: { toRole: 'production_support' }
         });
@@ -121,7 +121,7 @@ describe('audit middleware (private API)', () => {
             action: 'role_changed',
             outcome: 'denied',
             environmentId: null,
-            actor: { type: 'user', display: user.email },
+            actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'member', id: String(targetUser.id) }]
         });
     });

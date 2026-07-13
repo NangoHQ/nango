@@ -62,7 +62,7 @@ describe('audit middleware (public API)', () => {
             outcome: 'success',
             accountId: account.id,
             environmentId: env.id,
-            actor: { type: 'api_key' },
+            actor: { type: 'api_key', id: String(apiKey.id) },
             targets: [{ type: 'connection', id: connection.connection_id }]
         });
     });
