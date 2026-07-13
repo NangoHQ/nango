@@ -11650,6 +11650,30 @@ leadfeeder:
             pattern: '^[a-f0-9]{40}$'
             doc_section: '#step-1-obtain-your-api-key'
 
+leapsome:
+    display_name: Leapsome
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://api.leapsome.com/v1/token?secret=${credentials.secret}
+    token_headers:
+        accept: application/json
+    token_response:
+        token: token
+        token_expiration: expiresIn
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.leapsome.com
+    docs: https://nango.dev/docs/api-integrations/leapsome
+    docs_connect: https://nango.dev/docs/api-integrations/leapsome/connect
+    credentials:
+        secret:
+            type: string
+            title: API Secret
+            description: The API Secret from your Leapsome admin page.
+            doc_section: '#step-1-getting-your-api-secret'
+
 lessonly:
     display_name: Lessonly
     categories:
