@@ -4,7 +4,16 @@ import useSWR from 'swr';
 import { APIError, apiFetch, swrFetcher } from '../utils/api';
 
 import type { SWRError } from '../utils/api';
-import type { DeleteConnection, GetConnection, GetConnections, GetConnectionsCount, PostConnectionRefresh } from '@nangohq/types';
+import type {
+    DeleteConnection,
+    GetConnection,
+    GetConnections,
+    GetConnectionsCount,
+    PatchConnection,
+    PatchConnectionConfig,
+    PostConnectionMetadata,
+    PostConnectionRefresh
+} from '@nangohq/types';
 import type { Cache, useSWRConfig } from 'swr';
 
 export function useConnections(queries: Omit<GetConnections['Querystring'], 'page'>) {
@@ -155,6 +164,102 @@ export function useDeleteConnection() {
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ['connections'] });
+        }
+    });
+}
+
+export function usePatchConnectionTags() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: PatchConnection['Reply'] },
+        APIError,
+        { params: PatchConnection['Params']; query: PatchConnection['Querystring']; body: PatchConnection['Body'] }
+    >({
+        mutationFn: async ({ params, query, body }) => {
+            const queryString = new URLSearchParams({
+                env: query.env,
+                provider_config_key: query.provider_config_key
+            }).toString();
+            const res = await apiFetch(`/api/v1/connections/${encodeURIComponent(params.connectionId)}?${queryString}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
+
+            const json = (await res.json()) as PatchConnection['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return { res, json };
+        },
+        onSuccess: async (_, { params, query }) => {
+            await queryClient.invalidateQueries({
+                queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
+            });
+        }
+    });
+}
+
+export function usePostConnectionMetadata() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: PostConnectionMetadata['Reply'] },
+        APIError,
+        { params: PostConnectionMetadata['Params']; query: PostConnectionMetadata['Querystring']; body: PostConnectionMetadata['Body'] }
+    >({
+        mutationFn: async ({ params, query, body }) => {
+            const queryString = new URLSearchParams({
+                env: query.env,
+                provider_config_key: query.provider_config_key
+            }).toString();
+            const res = await apiFetch(`/api/v1/connections/${encodeURIComponent(params.connectionId)}/metadata?${queryString}`, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+
+            const json = (await res.json()) as PostConnectionMetadata['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return { res, json };
+        },
+        onSuccess: async (_, { params, query }) => {
+            await queryClient.invalidateQueries({
+                queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
+            });
+        }
+    });
+}
+
+export function usePatchConnectionConfig() {
+    const queryClient = useQueryClient();
+    return useMutation<
+        { res: Response; json: PatchConnectionConfig['Reply'] },
+        APIError,
+        { params: PatchConnectionConfig['Params']; query: PatchConnectionConfig['Querystring']; body: PatchConnectionConfig['Body'] }
+    >({
+        mutationFn: async ({ params, query, body }) => {
+            const queryString = new URLSearchParams({
+                env: query.env,
+                provider_config_key: query.provider_config_key
+            }).toString();
+            const res = await apiFetch(`/api/v1/connections/${encodeURIComponent(params.connectionId)}/config?${queryString}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
+
+            const json = (await res.json()) as PatchConnectionConfig['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return { res, json };
+        },
+        onSuccess: async (_, { params, query }) => {
+            await queryClient.invalidateQueries({
+                queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
+            });
         }
     });
 }
