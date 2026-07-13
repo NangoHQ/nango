@@ -61,7 +61,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Script',
         minSize: 150,
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.syncConfigName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.syncConfigName || '-'}</div>;
         }
     },
     {
@@ -72,7 +72,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
             isGrow: true
         },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.connectionName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.connectionName || '-'}</div>;
         }
     },
     {
