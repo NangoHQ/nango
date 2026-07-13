@@ -6,10 +6,10 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { createMcpServerForConnection } from './server.js';
+import { createConnectionToolsMcpServer } from './connectionToolsServer.js';
 
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
-import type { GetMcp, PostMcp } from '@nangohq/types';
+import type { GetConnectionToolsMcp, PostConnectionToolsMcp } from '@nangohq/types';
 
 export const validationHeaders = z
     .object({
@@ -18,7 +18,7 @@ export const validationHeaders = z
     })
     .strict();
 
-export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
+export const postConnectionToolsMcp = asyncWrapper<PostConnectionToolsMcp>(async (req, res) => {
     const valHeaders = validationHeaders.safeParse({ 'connection-id': req.get('connection-id'), 'provider-config-key': req.get('provider-config-key') });
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
@@ -26,7 +26,7 @@ export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
     }
 
     const { environment, account } = res.locals;
-    const headers: PostMcp['Headers'] = valHeaders.data;
+    const headers: PostConnectionToolsMcp['Headers'] = valHeaders.data;
 
     const connectionId = headers['connection-id'];
     const providerConfigKey = headers['provider-config-key'];
@@ -40,7 +40,7 @@ export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
         return;
     }
 
-    const result = await createMcpServerForConnection(account, environment, connection, providerConfigKey);
+    const result = await createConnectionToolsMcpServer(account, environment, connection, providerConfigKey);
     if (result.isErr()) {
         res.status(500).send({ error: { code: 'Internal server error', message: result.error.message } });
         return;
@@ -60,7 +60,7 @@ export const postMcp = asyncWrapper<PostMcp>(async (req, res) => {
 });
 
 // We have to be explicit about not supporting SSE
-export const getMcp = asyncWrapper<GetMcp>((_, res) => {
+export const getConnectionToolsMcp = asyncWrapper<GetConnectionToolsMcp>((_, res) => {
     res.writeHead(405).end(
         JSON.stringify({
             jsonrpc: '2.0',

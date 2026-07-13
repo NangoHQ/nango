@@ -24,6 +24,11 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
+    it('should parse the control-plane MCP server URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_CONTROL_PLANE_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
+        expect(res.NANGO_CONTROL_PLANE_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
+    });
+
     it('should parse E2B sandbox metric settings', () => {
         const res = parseEnvs(ENVS, {
             E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',
