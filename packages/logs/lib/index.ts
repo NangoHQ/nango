@@ -9,6 +9,6 @@ export * from './services/operations.service.js';
 export * from './otlp/otlp.js';
 export { OtlpSpan } from './otlp/otlpSpan.js';
 export { defaultOperationExpiration, envs } from './env.js';
-export { LogsDisabledError, LogsNotFoundError, ResponseError, destroy, isLogsDisabledError, isLogsNotFoundError, throwLogsDisabled } from './utils.js';
+export { LogsDisabledError, LogsNotFoundError, ResponseError, destroy, isLogsDisabledError, isLogsNotFoundError } from './utils.js';
 export * from './formatters.js';
 export * from './transport.js';

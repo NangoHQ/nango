@@ -30,10 +30,6 @@ export interface ListLogOperationsResult {
     };
 }
 
-interface ListLogOperationsSearchParams extends ListLogOperationsParams {
-    search: string;
-}
-
 export const logsOperationsService = {
     async listOperations(params: ListLogOperationsParams): Promise<Result<ListLogOperationsResult>> {
         if (!logsEnvs.NANGO_LOGS_ENABLED) {
@@ -41,15 +37,21 @@ export const logsOperationsService = {
         }
 
         try {
-            if (params.search) {
-                return Ok(await listOperationsWithMessageSearch({ ...params, search: params.search }));
+            const rawOps = await listOperationPage(params);
+            let operations = rawOps.items;
+
+            if (params.search && rawOps.items.length > 0) {
+                const bucket = await modelMessages.searchForMessagesInsideOperations({ search: params.search, operationsIds: rawOps.items.map((op) => op.id) });
+                const matched = new Set(bucket.items.map((item) => item.key));
+                operations = rawOps.items.filter((item) => matched.has(item.id));
             }
 
-            const rawOps = await listOperationPage(params);
             return Ok({
-                operations: rawOps.items,
+                operations,
                 pagination: {
-                    total: rawOps.count,
+                    // Message search is applied to one fetched operations page because it queries the messages index.
+                    // The limit bounds operations inspected, so this page can return fewer matches while still having a cursor.
+                    total: params.search ? operations.length : rawOps.count,
                     cursor: rawOps.cursor
                 }
             });
@@ -62,7 +64,7 @@ export const logsOperationsService = {
 type ListOperationPage = Awaited<ReturnType<typeof modelOperations.listOperations>>;
 
 async function listOperationPage(params: ListLogOperationsParams): Promise<ListOperationPage> {
-    return await modelOperations.listOperations({
+    return modelOperations.listOperations({
         accountId: params.accountId,
         environmentId: params.environmentId,
         limit: params.limit,
@@ -74,25 +76,4 @@ async function listOperationPage(params: ListLogOperationsParams): Promise<ListO
         period: params.period,
         cursor: params.cursor
     });
-}
-
-async function listOperationsWithMessageSearch(params: ListLogOperationsSearchParams): Promise<ListLogOperationsResult> {
-    const rawOps = await listOperationPage(params);
-    let operations = rawOps.items;
-
-    if (rawOps.items.length > 0) {
-        const bucket = await modelMessages.searchForMessagesInsideOperations({ search: params.search, operationsIds: rawOps.items.map((op) => op.id) });
-        const matched = new Set(bucket.items.map((item) => item.key));
-        operations = rawOps.items.filter((item) => matched.has(item.id));
-    }
-
-    return {
-        operations,
-        pagination: {
-            // Message search is applied to one fetched operations page because it queries the messages index.
-            // The limit bounds operations inspected, so this page can return fewer matches while still having a cursor.
-            total: operations.length,
-            cursor: rawOps.cursor
-        }
-    };
 }
