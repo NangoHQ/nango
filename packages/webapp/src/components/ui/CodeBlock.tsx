@@ -31,6 +31,8 @@ export type CodeBlockProps = {
     onSave?: (code: string) => Promise<unknown>;
     validate?: (code: string) => string | null;
     hintText?: string;
+    /** When false, the save button does not show a loading state (e.g. when saving launches a confirmation dialog instead of issuing a network request) Default true. */
+    showLoadingOnSave?: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
 const highlight = {
@@ -53,13 +55,14 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     onSave,
     validate,
     hintText,
+    showLoadingOnSave = true,
     ...props
 }) => {
     const darkMode = useThemeStore(darkModeSelector);
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(code);
-    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const isEditable = Boolean(onSave);
@@ -130,7 +133,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             }
         }
 
-        setLoading(true);
+        setSaving(true);
         setError(null);
 
         try {
@@ -139,7 +142,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         } catch {
             setEditing(true);
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
 
@@ -196,10 +199,17 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     )}
                     {editing && (
                         <>
-                            <IconButton variant="ghost" size="2xs" label="Cancel" onClick={onCancelClicked} disabled={loading}>
+                            <IconButton variant="ghost" size="2xs" label="Cancel" onClick={onCancelClicked} disabled={saving}>
                                 <X className="size-3.5" />
                             </IconButton>
-                            <IconButton variant="ghost" size="2xs" label="Save" onClick={onSaveClicked} disabled={loading || !!error} loading={loading}>
+                            <IconButton
+                                variant="ghost"
+                                size="2xs"
+                                label="Save"
+                                onClick={onSaveClicked}
+                                disabled={saving || !!error}
+                                loading={showLoadingOnSave && saving}
+                            >
                                 <Check className="size-3.5" />
                             </IconButton>
                         </>

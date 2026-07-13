@@ -57,6 +57,7 @@ const EditableJsonSection = ({
                     code={json}
                     canEdit={canEdit}
                     validate={validateJsonString}
+                    showLoadingOnSave={false}
                     onSave={async (value) => {
                         const parsed = parseJsonObject(value);
 
