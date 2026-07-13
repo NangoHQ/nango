@@ -65,4 +65,23 @@ describe(`PATCH ${endpoint}`, () => {
         isError(res.json);
         expect(res.res.status).toBe(404);
     });
+
+    it('should reject body without connection_config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { connectionId: conn.connection_id },
+            query: { provider_config_key: 'github' },
+            // @ts-expect-error — intentionally omit required body field
+            body: {}
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toMatchObject({ error: { code: 'invalid_body' } });
+    });
 });

@@ -2,14 +2,14 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionConfigParamsSchema, connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { handleReplaceConnectionConfig } from '../../../shared/connections/replaceConnectionConfig.js';
 
 import type { PatchConnectionConfig } from '@nangohq/types';
 
 const schemaBody = z.strictObject({
-    connection_config: connectionConfigParamsSchema
+    connection_config: z.looseObject({})
 });
 
 const validationQuery = z
@@ -51,6 +51,6 @@ export const patchConnectionConfig = asyncWrapper<PatchConnectionConfig>(async (
         environment,
         connectionId: valParams.data.connectionId,
         providerConfigKey: valQuery.data.provider_config_key,
-        connectionConfig: valBody.data.connection_config ?? {}
+        connectionConfig: valBody.data.connection_config
     });
 });
