@@ -35,7 +35,6 @@ You can automate creating the channel for new connections with a [post-connectio
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
 import { randomUUID } from 'crypto';
-import z from 'zod';
 
 export default createOnEvent({
     event: 'post-connection-creation',
@@ -113,7 +112,6 @@ You can use a Nango sync with a suitable frequency (e.g. every day, given the 7-
 ```typescript
 import { createSync, ProxyConfiguration } from 'nango';
 import { randomUUID } from 'crypto';
-import z from 'zod';
 
 export default createSync({
     description: 'Renew the Google Drive changes.watch channel before it expires',
@@ -169,7 +167,7 @@ export default createSync({
         }
 
         // Update stored channel info for use in stop notifications (step 4) and connection matching
-        await nango.updateMetadata({
+        await nango.updateConnectionConfig({
             googleDriveChannelId: channelId,
             googleDriveWatchResourceIds: [response.data.resourceId],
             ...(driveId && { googleDriveWatchDriveId: driveId }),
