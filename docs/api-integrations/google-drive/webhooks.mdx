@@ -1,0 +1,306 @@
+---
+title: 'How to setup webhooks with Google Drive on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to set up Google Drive webhooks with notification channels and Nango'
+---
+
+This guide shows you how to receive real-time Google Drive webhooks in Nango using [push notifications](https://developers.google.com/workspace/drive/api/guides/push). You configure a webhook URL directly with the Drive API — no Google Cloud Pub/Sub required.
+
+## How it works
+
+The Google Drive API supports two kinds of notification channels:
+
+- **`files.watch`** — watches a single file for changes. Use this when you only care about specific files.
+- **`changes.watch`** — watches every change across the user's Drive. Use this for a general-purpose "what changed" feed.
+
+The flow is the same for both:
+
+1. You call the `watch` endpoint, passing your Nango webhook URL as the channel `address`.
+2. Google creates a notification channel and sends an initial `sync` message to your URL.
+3. When the watched resource changes, Google sends a notification to Nango.
+4. Nango matches the notification to the correct connection and forwards it to your app.
+
+Unlike Google Calendar's primary calendar, Drive has no built-in identifier Nango can derive automatically — you must store the channel's resource identifier in connection metadata yourself. See [Connection matching](#connection-matching) for the supported mechanism and its current limits.
+
+## Setup
+
+### 1. Get your webhook URL
+
+Copy the webhook URL from your Google Drive integration page in the Nango dashboard, under the **Webhook URL** section. This is the HTTPS URL you will use as the channel `address` when creating notification channels.
+
+### 2. Create a notification channel (watch a resource)
+
+You can automate creating the channel for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler). The example below watches a specific file with `files.watch`, which is the mechanism Nango can currently route back to a connection (see [Connection matching](#connection-matching)):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+import { randomUUID } from 'crypto';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Create a Google Drive notification channel for a watched file',
+    metadata: z.object({
+        googleDriveChannelId: z.string().optional(),
+        googleDriveResourceId: z.string().optional(),
+        googleCalendarWatchResourceUris: z.array(z.string()).optional(),
+    }),
+    exec: async (nango) => {
+        const fileId = '<FILE_ID>'; // the file to watch
+        const channelId = randomUUID();
+        const expiration = Date.now() + 24 * 60 * 60 * 1000; // 24h in ms, Drive's max for files.watch
+
+        try {
+            const webhookUrl = await nango.getWebhookURL();
+
+            const config: ProxyConfiguration = {
+                baseUrlOverride: 'https://www.googleapis.com/drive',
+                endpoint: `/v3/files/${fileId}/watch`,
+                data: {
+                    id: channelId,
+                    type: 'web_hook',
+                    // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-drive (your integration settings page)
+                    address: webhookUrl,
+                    expiration: expiration,
+                },
+            };
+
+            const response = await nango.post(config);
+
+            // Store the channel info so it can be used to stop notifications later (step 4), and
+            // register the resourceUri so Nango can route incoming notifications to this connection
+            // (see "Connection matching" below).
+            await nango.updateMetadata({
+                googleDriveChannelId: channelId,
+                googleDriveResourceId: response.data.resourceId,
+                googleCalendarWatchResourceUris: [response.data.resourceUri],
+            });
+        } catch (err) {
+            // Avoid blocking connection creation if channel creation fails.
+            await nango.log(`Failed to create Drive notification channel: ${String(err)}`, { level: 'error' });
+            return;
+        }
+    }
+});
+```
+
+To watch every change across the Drive instead of a single file, call `changes.watch` the same way (see the [API reference](https://developers.google.com/workspace/drive/api/reference/rest/v3/changes/watch) for the required `pageToken`). Note the current limitation in [Connection matching](#connection-matching): `changes.watch`'s resource URI is identical for every connection, so Nango can't yet route those notifications to a specific connection through self-service metadata.
+
+Replace:
+
+- **&lt;FILE_ID&gt;** — The file to watch.
+- **address** — Your Nango webhook URL from the dashboard.
+- **id** — A unique string (e.g. UUID) identifying this channel; max 64 characters. It is echoed in `X-Goog-Channel-ID` on every notification.
+- **expiration** — (Optional) Unix timestamp in **milliseconds** when the channel should stop sending notifications. Drive's own maximum is 24 hours for `files.watch` and 7 days for `changes.watch`; if you request longer, Google caps it. If omitted, the default is 1 hour after the current time.
+
+See the [API reference](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/watch) for the exact request shape.
+
+### 3. Renew the notification channel
+
+Google does **not** renew channels automatically. When a channel is close to its expiration, you must create a new channel by calling the `watch` endpoint again with a **new** unique `id`. After the new channel is created successfully, stop the old channel so only one remains active. See [Renew notification channels](https://developers.google.com/workspace/drive/api/guides/push#renew-notification-channels).
+
+You can use a Nango sync with a suitable frequency (e.g. every few hours, given the 24-hour maximum for `files.watch`) to renew the watch before it expires:
+
+```typescript
+import { createSync, ProxyConfiguration } from 'nango';
+import { randomUUID } from 'crypto';
+import z from 'zod';
+
+export default createSync({
+    description: 'Renew the Google Drive files.watch channel before it expires',
+    models: {},
+    metadata: z.object({
+        googleDriveChannelId: z.string().optional(),
+        googleDriveResourceId: z.string().optional(),
+        googleCalendarWatchResourceUris: z.array(z.string()).optional(),
+    }),
+    endpoints: [{ method: 'GET', path: '/google-drive/watch-renewal' }],
+    syncType: 'full',
+    frequency: '12h',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const oldChannelId = metadata['googleDriveChannelId'];
+        const oldResourceId = metadata['googleDriveResourceId'];
+
+        const fileId = '<FILE_ID>';
+        const channelId = randomUUID();
+        const expiration = Date.now() + 24 * 60 * 60 * 1000; // 24h in ms
+        const webhookUrl = await nango.getWebhookURL();
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/drive',
+            endpoint: `/v3/files/${fileId}/watch`,
+            data: {
+                id: channelId,
+                type: 'web_hook',
+                address: webhookUrl,
+                expiration: expiration,
+            },
+        };
+
+        const response = await nango.post(config);
+
+        // Stop the old channel only after the new one was successful
+        if (response.status === 200 && oldChannelId && oldResourceId) {
+            try {
+                await nango.post({
+                    baseUrlOverride: 'https://www.googleapis.com/drive',
+                    endpoint: '/v3/channels/stop',
+                    data: { id: oldChannelId, resourceId: oldResourceId },
+                });
+            } catch (err) {
+                await nango.log(`Failed to stop previous channel: ${String(err)}`, { level: 'error' });
+            }
+        }
+
+        // Update stored channel info for use in stop notifications (step 4) and connection matching
+        await nango.updateMetadata({
+            googleDriveChannelId: channelId,
+            googleDriveResourceId: response.data.resourceId,
+            googleCalendarWatchResourceUris: [response.data.resourceUri],
+        });
+    }
+});
+```
+
+### 4. Stop notifications on connection deletion
+
+If a connection is deleted in Nango but the channel remains active, Google may continue sending notifications until the channel expires. To stop notifications immediately for a deleted connection, call `channels.stop` before deletion.
+
+You can automate this with a `pre-connection-deletion` lifecycle event. This uses the `googleDriveChannelId` and `googleDriveResourceId` stored in metadata during channel creation (step 2) and renewal (step 3):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Stop Google Drive notification channel before connection deletion',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const channelId = metadata['googleDriveChannelId'];
+        const resourceId = metadata['googleDriveResourceId'];
+
+        if (!channelId || !resourceId) {
+            return;
+        }
+
+        const config: ProxyConfiguration = {
+            baseUrlOverride: 'https://www.googleapis.com/drive',
+            endpoint: '/v3/channels/stop',
+            data: {
+                id: channelId,
+                resourceId
+            }
+        };
+
+        try {
+            await nango.post(config);
+        } catch (err) {
+            // Avoid blocking connection deletion if stop fails.
+            await nango.log(`Failed to stop Drive channel: ${String(err)}`, { level: 'error' });
+        }
+    }
+});
+```
+
+### 5. Handle forwarded webhooks
+
+When a Drive notification arrives, Nango matches it to the correct connection and forwards it to your system. Notification messages have **no body**; Google sends only HTTP headers. Nango forwards those headers in the payload. Example structure:
+
+```json
+{
+  "from": "google-drive",
+  "providerConfigKey": "google-drive",
+  "type": "forward",
+  "payload": {
+    "x-goog-channel-id": "01234567-89ab-cdef-0123456789ab",
+    "x-goog-resource-id": "ret08u3rv24htgh289g",
+    "x-goog-resource-uri": "https://www.googleapis.com/drive/v3/files/o3hgv1538sdjfh",
+    "x-goog-resource-state": "update",
+    "x-goog-changed": "content",
+    "x-goog-message-number": "10"
+  },
+  "connectionId": "connection-123"
+}
+```
+
+Relevant headers (see [Google's documentation](https://developers.google.com/workspace/drive/api/guides/push#interpret-the-notification-message-format)):
+
+| Header | Description |
+|--------|-------------|
+| `x-goog-resource-state` | `sync` = channel created; for `files.watch`: `add`, `remove`, `update`, `trash`, `untrash`; for `changes.watch`: `change`. |
+| `x-goog-resource-uri` | The watched resource. Nango matches on this — see [Connection matching](#connection-matching). |
+| `x-goog-resource-id` | Stable identifier for the watched resource, unique per channel. |
+| `x-goog-channel-id` | The channel `id` you sent when creating the channel. |
+| `x-goog-message-number` | Incrementing message number for this channel. |
+
+Notifications do **not** include the changed files themselves — call `files.get` on the watched file (for `files.watch`) or `changes.list` (for `changes.watch`) to fetch what changed. After receiving the webhook, trigger your sync or API calls for that connection:
+
+```bash
+curl -X POST "https://api.nango.dev/sync/trigger" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sync_mode": "incremental",
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "google-drive",
+    "syncs": ["documents"]
+  }'
+```
+
+With webhooks driving real-time updates, you can run syncs less often (e.g. `1d` or `1h`) as a safety net for missed notifications.
+
+<Note>
+If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`. For Google Drive, subscribe to `'*'` and use the forwarded headers (e.g. `x-goog-resource-state`, `x-goog-resource-uri`) to decide what to fetch.
+
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+</Note>
+
+## Connection matching
+
+Google Drive has no equivalent to Google Calendar's primary-calendar auto-matching, so you must always register the watched resource yourself. Nango matches incoming Drive notifications the same way it matches Google Calendar's: by resource URI, against **`metadata.googleCalendarWatchResourceUris`**.
+
+- The value must be a JSON **`string[]`**. Store the **`X-Goog-Resource-URI` string exactly as Google sends it**: same encoding, path, and query string.
+
+```bash
+curl -X PATCH "https://api.nango.dev/connection/metadata" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "google-drive",
+    "metadata": {
+      "googleCalendarWatchResourceUris": [
+        "https://www.googleapis.com/drive/v3/files/file-id-1",
+        "https://www.googleapis.com/drive/v3/files/file-id-2"
+      ]
+    }
+  }'
+```
+
+If you use the post-connection-creation script from [step 2](#2-create-a-notification-channel-watch-a-resource), this is already handled for you via `nango.updateMetadata()`.
+
+To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
+
+<Warning>
+**`changes.watch` is not yet self-service routable.** Its resource URI (`https://www.googleapis.com/drive/v3/changes`) is identical for every connection, so it can't be matched through `googleCalendarWatchResourceUris`. Nango's routing has an internal, connection-config-based matching path reserved for this case, but it isn't yet customer-configurable. Until then, use `files.watch` on the specific files you need to monitor.
+</Warning>
+
+**Duplicates:** If more than one connection lists the **same** URI in `googleCalendarWatchResourceUris`, **every** matching connection is included. Nango forwards the webhook **once per matching connection**, with the appropriate `connectionId`.
+
+<Warning>
+If Nango cannot match the incoming webhook to a connection, the webhook will still be forwarded but won't include a `connectionId` in the payload.
+</Warning>
+
+## Rollback strategy
+
+To stop webhooks:
+
+1. Call `channels/stop` for each channel you created (using the channel `id` and `resourceId`), or
+2. Let the channel expire by not renewing it.
+
+Re-enable notifications by creating a new channel with a new `id` and your Nango webhook URL as `address`.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---
