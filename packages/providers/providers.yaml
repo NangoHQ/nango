@@ -20971,6 +20971,33 @@ timely:
         base_url: https://api.timelyapp.com
     docs: https://nango.dev/docs/integrations/all/timely
 
+timetastic:
+    display_name: Timetastic
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.timetastic.co.uk/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /users
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/timetastic
+    docs_connect: https://nango.dev/docs/api-integrations/timetastic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Timetastic account.
+            format: uuid
+            example: 6a6b202d-6aee-4a62-a2f1-************
+            doc_section: '#step-1-generate-your-api-key'
+
 thrivecart-oauth:
     display_name: ThriveCart (OAuth)
     categories:

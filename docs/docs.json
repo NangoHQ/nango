@@ -1620,6 +1620,7 @@
               "api-integrations/theirstack",
               "api-integrations/thomson-reuters-legal-tracker",
               "api-integrations/thomson-reuters-legal-tracker-tr-account",
+              "api-integrations/timetastic",
               "api-integrations/timify",
               "api-integrations/toggl",
               "api-integrations/torii",
