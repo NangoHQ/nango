@@ -38,7 +38,11 @@ function resolveActor(locals: RequestLocals): AuditActor {
         // Functions currently call the API with a secret key too, distinguished only by the
         // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
         // Every secret-key caller is classified as api_key until functions get their own tokens.
-        return { type: 'api_key', id: locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key' };
+        return {
+            type: 'api_key',
+            id: locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key',
+            ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
+        };
     }
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
