@@ -27,6 +27,7 @@ import type {
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization
 } from './auth/http.api.js';
+import type { PostCliTelemetry } from './cli/api.js';
 import type { GetPublicClientMetadata } from './clientMetadata/http.api.js';
 import type {
     DeleteConnectSession,
@@ -155,6 +156,7 @@ export type PublicApiEndpoints =
     | PatchPublicPruneRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
+    | PostCliTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
     | PostPublicQuickstartIntegration

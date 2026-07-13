@@ -3,6 +3,7 @@ export interface GlobalOptions {
     debug: boolean;
     interactive: boolean;
     dependencyUpdate: boolean;
+    telemetry?: boolean;
 }
 
 export type ENV = 'local' | 'cloud';
