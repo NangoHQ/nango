@@ -12179,6 +12179,32 @@ mailjet:
             example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
+mandrill:
+    display_name: Mandrill
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mandrillapp.com/api
+        body:
+            key: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /1.3/users/ping
+            headers:
+                content-type: application/json
+    docs: https://nango.dev/docs/api-integrations/mandrill
+    docs_connect: https://nango.dev/docs/api-integrations/mandrill/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The Mandrill API key for your Mailchimp Transactional account.
+            pattern: '^md-[A-Za-z0-9_-]+$'
+            example: md-fNel34e***************
+            doc_section: '#step-1-generate-your-api-key'
+
 mcp-generic:
     display_name: MCP Server OAuth2 (Generic)
     categories:
