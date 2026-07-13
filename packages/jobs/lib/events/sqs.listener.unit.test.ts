@@ -2,6 +2,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { SqsEventListener } from './sqs.listener.js';
+
 const mockSend = vi.fn();
 const mockDestroy = vi.fn();
 
@@ -53,8 +55,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
         report: vi.fn()
     };
 });
-
-import { SqsEventListener } from './sqs.listener.js';
 
 const queueUrl = 'https://sqs.us-west-2.amazonaws.com/123456789/test-queue';
 

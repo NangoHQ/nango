@@ -2,11 +2,10 @@ import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { Check, CheckIcon, ChevronsUpDown, Minus, Search, X, XIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { Button, IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
-import { Popover, PopoverContent, PopoverTrigger } from './Popover';
 import { cn } from '@/utils/utils';
+import { Popover, PopoverContent, PopoverTrigger } from './Popover';
 
 export interface ComboboxChildOption<TValue extends string = string> {
     value: TValue;
@@ -229,8 +228,13 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             loading={props.loading}
             disabled={disabled || options.length === 0}
             variant="ghost"
-            size="xl"
-            className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
+            size="md"
+            className={cn(
+                'border-ds-hairline border-border-interactive',
+                isDirty && 'bg-state-pressed',
+                open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
+                className
+            )}
         >
             {props.label}{' '}
             {props.selected.length > 0 && (
@@ -367,16 +371,20 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 )}
                 {showSearch && (
                     <div className="w-full border-b border-border-muted" onKeyDown={(e) => e.stopPropagation()}>
-                        <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
+                        <InputGroup
+                            size="auto"
+                            className="flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5"
+                        >
                             <InputGroupAddon className="p-0 pr-2">
                                 <Search className="size-4 text-text-muted" />
                             </InputGroupAddon>
                             <InputGroupInput
+                                size="auto"
                                 type="text"
                                 placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="h-auto p-0 text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                                className="text-body-medium-regular text-text-muted placeholder:text-text-muted"
                             />
                         </InputGroup>
                     </div>
@@ -400,6 +408,37 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 {footer && <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div>}
             </PopoverContent>
         </Popover>
+    );
+}
+
+interface SingleSelectFilterProps<T extends string> {
+    value: T | null;
+    onChange: (value: T | null) => void;
+    options: ComboboxOption<T>[];
+    /** Trigger text when nothing is selected. */
+    placeholderLabel: string;
+    /** Trigger text when a value is selected. */
+    selectedLabel: string;
+    dropdownTitle?: string;
+}
+
+/**
+ * A single-value filter that reuses the multi-select trigger (pill + count badge + clear).
+ * Picking an option replaces the current value rather than accumulating.
+ */
+export function SingleSelectFilter<T extends string>({ value, onChange, options, placeholderLabel, selectedLabel, dropdownTitle }: SingleSelectFilterProps<T>) {
+    return (
+        <ComboboxSelect<T>
+            allowMultiple
+            label={value ? selectedLabel : placeholderLabel}
+            dropdownTitle={dropdownTitle}
+            options={options}
+            selected={value ? [value] : []}
+            onSelectedChange={(next) => onChange(next.find((v) => v !== value) ?? null)}
+            onClearAll={() => onChange(null)}
+            reorderOnSelect={false}
+            showSearch={false}
+        />
     );
 }
 

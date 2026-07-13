@@ -2,20 +2,20 @@ import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { FieldLabel } from '@nangohq/design-system';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { Label } from '@/components/ui/Label';
 import { Spinner } from '@/components/ui/Spinner';
 import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();
@@ -94,7 +94,7 @@ export const DeprecatedSettings: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="hmac_key">HMAC key</Label>
+                        <FieldLabel htmlFor="hmac_key">HMAC key</FieldLabel>
                         <EditableInput
                             id="hmac_key"
                             placeholder="*****"

@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 

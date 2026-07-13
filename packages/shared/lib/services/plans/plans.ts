@@ -1,9 +1,9 @@
 import ms from 'ms';
 
-import { Err, Ok, flagHasPlan } from '@nangohq/utils';
+import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
+import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -327,7 +327,9 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                     xl: 4,
                     '2xl': 5,
                     '3xl': 6,
-                    '4xl': 7
+                    '4xl': 7,
+                    '5xl': 8,
+                    '6xl': 9
                 };
                 const currentIndex = sizeIndex[currentPlan[key]];
                 const newIndex = sizeIndex[newPlanDefinition.flags[key]];

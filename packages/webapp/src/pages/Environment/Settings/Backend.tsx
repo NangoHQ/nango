@@ -1,20 +1,19 @@
-import { IconExternalLink } from '@tabler/icons-react';
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const BackendSettings: React.FC = () => {
     const { toast } = useToast();
@@ -47,7 +46,7 @@ export const BackendSettings: React.FC = () => {
                                 target="_blank"
                                 to="https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional"
                             >
-                                <IconExternalLink stroke={1} size={18} />
+                                <ExternalLink strokeWidth={1} size={18} />
                             </Link>
                         </div>
                     </>

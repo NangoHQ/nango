@@ -26,13 +26,23 @@ export const ENVS = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    NANGO_CONTROL_PLANE_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
+    NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(16 * 1024),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    SERVER_EGRESS_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().default(1_000),
+    SERVER_EGRESS_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
+    SERVER_EGRESS_TELEMETRY_MAX_QUEUE_SIZE: z.coerce.number().int().positive().default(100_000),
     NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: z.stringbool().optional().default(true),
     NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: z
         .string()
@@ -61,6 +71,36 @@ export const ENVS = z.object({
                 return z.NEVER;
             }
         }),
+    // Outbound URL policy (JSON), consumed by @nangohq/egress.
+    NANGO_OUTBOUND_URL_POLICY: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in NANGO_OUTBOUND_URL_POLICY`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z
+                .object({
+                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
+                    denylist: z.array(z.string()).optional(),
+                    allowlist: z.array(z.string()).optional(),
+                    blockPrivateIps: z.boolean().optional(),
+                    blockLinkLocal: z.boolean().optional(),
+                    maxRedirects: z.number().int().nonnegative().optional()
+                })
+                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
+                // being silently dropped and weakening the intended SSRF restrictions.
+                .strict()
+                .optional()
+        ),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -91,6 +131,8 @@ export const ENVS = z.object({
     // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
     // snapshot it.
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
+    // Triggers the count of files in BILLING_EVENTS_S3_DLQ_BUCKET (must also be set). -1 disables.
+    CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Metering
     METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
@@ -120,10 +162,12 @@ export const ENVS = z.object({
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
+    NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
 
     // Orchestrator
     ORCHESTRATOR_SERVICE_URL: z.url().optional(),
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
+    NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     ORCHESTRATOR_DATABASE_URL: z.url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
@@ -150,6 +194,7 @@ export const ENVS = z.object({
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
+    NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
     JOBS_PROCESSOR_CONFIG: z
@@ -217,10 +262,11 @@ export const ENVS = z.object({
         .default([]),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
+    NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().default(1),
-    RUNNER_CONFLICT_RESOLUTION_MODE: z.enum(['IN_MEMORY', 'REDIS']).default('IN_MEMORY'),
+    RUNNER_CONFLICT_RESOLUTION_MODE: z.enum(['IN_MEMORY', 'DISTRIBUTED']).default('IN_MEMORY'),
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
@@ -308,6 +354,9 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
+    // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
+    // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
+    BILLING_EVENTS_S3_DLQ_BUCKET: z.string().optional(),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
@@ -324,23 +373,10 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // Gate that *permits* the per-request `source` override on
-    // `getBillingUsage` (dashboard path). When OFF (prod default), the
-    // `source` query param is ignored and the dashboard always uses Orb;
-    // when ON (dev), the param is honoured, letting individual sessions
-    // flip via localStorage('nango.billingUsageSource') without a redeploy.
-    // The flag does NOT change the default — even when on, missing override
-    // → Orb. Capping is unaffected (no override mechanism there).
+    // Dev-only override: allows the `source` query param on `getBillingUsage`
+    // to pin a request to Orb for parity checks. Default is ClickHouse; when
+    // OFF (prod default), the `source` param is ignored.
     FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
-
-    // Shadow dashboard read against ClickHouse to compare totals vs Orb. Only
-    // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
-    // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
-    FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
-    FLAG_BILLING_USAGE_CAPPING_SHADOW_CLICKHOUSE_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
-    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
-    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
-    FLAG_CAPPING_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS
@@ -654,7 +690,6 @@ export const ENVS = z.object({
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
     AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
     AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
-    AGENTCORE_REGION: z.string().min(1).optional(),
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),

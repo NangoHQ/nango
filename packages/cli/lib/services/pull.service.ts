@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 
-import { GitHubNotFoundError, collectDependencies, fetchFileContent } from '../utils/githubTemplates.js';
+import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
+import { collectDependencies, fetchFileContent, GitHubNotFoundError, localizeIntegrationPath, resolveIntegrationFolder } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
-import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 
 import type { ScriptTypeLiteral } from '@nangohq/types';
 
@@ -68,7 +68,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
         if (type) {
             url.searchParams.set('type', type);
         }
-        printDebug(`Fetching deployed function from ${url}`, debug);
+        printDebug(`Fetching deployed function from ${url.href}`, debug);
 
         const res = await fetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
         const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
@@ -144,11 +144,15 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
     try {
         const contentCache = new Map<string, string>();
 
+        // Symlinked integrations are fetched from their target folder;
+        // files are written back under `integrationId` (the requested name) below.
+        const { folder: remoteFolder } = await resolveIntegrationFolder(integrationId, debug);
+
         const foldersToProbe: ('syncs' | 'actions' | 'on-events')[] = type ? [scriptTypeToFolder[type]] : ['syncs', 'actions', 'on-events'];
 
         const probeResults = await Promise.allSettled(
             foldersToProbe.map(async (folder) => {
-                const candidatePath = `${integrationId}/${folder}/${name}.ts`;
+                const candidatePath = `${remoteFolder}/${folder}/${name}.ts`;
                 const content = await fetchFileContent(candidatePath, debug);
                 return { folder, candidatePath, content };
             })
@@ -186,7 +190,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
 
         const initialFiles: { relativePath: string; isScript: boolean }[] = [{ relativePath: match.candidatePath, isScript: true }];
 
-        const mdPath = `${integrationId}/${match.folder}/${name}.md`;
+        const mdPath = `${remoteFolder}/${match.folder}/${name}.md`;
         try {
             const mdContent = await fetchFileContent(mdPath, debug);
             contentCache.set(mdPath, mdContent);
@@ -199,7 +203,14 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
             printDebug(`No companion documentation found for ${mdPath}`, debug);
         }
 
-        const files = await collectDependencies(initialFiles, integrationId, debug, contentCache);
+        const remoteFiles = await collectDependencies(initialFiles, remoteFolder, debug, contentCache);
+
+        // Keep the remote path for cache lookups; write under the requested name.
+        const files = remoteFiles.map((file) => ({
+            ...file,
+            remotePath: file.relativePath,
+            relativePath: localizeIntegrationPath(file.relativePath, remoteFolder, integrationId)
+        }));
 
         const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug, interactive);
         if (!proceed) {
@@ -213,7 +224,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
                 continue;
             }
 
-            const content = contentCache.get(file.relativePath)!;
+            const content = contentCache.get(file.remotePath)!;
 
             const localPath = path.join(fullPath, file.relativePath);
             await fs.promises.mkdir(path.dirname(localPath), { recursive: true });

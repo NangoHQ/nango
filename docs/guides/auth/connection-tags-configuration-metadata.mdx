@@ -46,9 +46,9 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
   <Tab title="Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
-    
+
     api.post('/sessionToken', async (req, res) => {
       const { data } = await nango.createConnectSession({
         tags: {
@@ -111,7 +111,7 @@ Nango stores tags on the connection itself.
   <Tab title="Read with Node">
     ```ts
     import { Nango } from '@nangohq/node';
-    
+
     const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
     const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 

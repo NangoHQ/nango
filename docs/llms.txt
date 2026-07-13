@@ -85,6 +85,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Connections: Set connection metadata](https://nango.dev/docs/reference/backend/http-api/connections/set-metadata.md)
 - [Backend: HTTP API: Connections: Edit connection metadata](https://nango.dev/docs/reference/backend/http-api/connections/update-metadata.md)
 - [Backend: HTTP API: Connections: Delete a connection](https://nango.dev/docs/reference/backend/http-api/connections/delete.md)
+- [Backend: HTTP API: Functions: List functions](https://nango.dev/docs/reference/backend/http-api/functions/list.md)
+- [Backend: HTTP API: Functions: Get a function](https://nango.dev/docs/reference/backend/http-api/functions/get.md)
+- [Backend: HTTP API: Functions: Get a function's source code](https://nango.dev/docs/reference/backend/http-api/functions/code.md)
+- [Backend: HTTP API: Functions: Delete a function](https://nango.dev/docs/reference/backend/http-api/functions/delete.md)
 - [Backend: HTTP API: Functions: Compile a function](https://nango.dev/docs/reference/backend/http-api/functions/compile.md)
 - [Backend: HTTP API: Functions: Dry run a function](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md)
 - [Backend: HTTP API: Functions: Get dry run results](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md)
@@ -108,6 +112,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Proxy: Proxy - DELETE requests](https://nango.dev/docs/reference/backend/http-api/proxy/delete.md)
 - [Backend: HTTP API: Providers: List all providers](https://nango.dev/docs/reference/backend/http-api/providers/list.md)
 - [Backend: HTTP API: Providers: Get a provider](https://nango.dev/docs/reference/backend/http-api/providers/get.md)
+- [Backend: HTTP API: Providers: List provider templates](https://nango.dev/docs/reference/backend/http-api/providers/templates.md)
 - [Backend: HTTP API: Deprecated: List connections (deprecated)](https://nango.dev/docs/reference/backend/http-api/connection/list.md)
 - [Backend: HTTP API: Deprecated: Get connection & credentials (deprecated)](https://nango.dev/docs/reference/backend/http-api/connection/get.md)
 - [Backend: HTTP API: Deprecated: Import a connection (deprecated)](https://nango.dev/docs/reference/backend/http-api/connection/post.md)
@@ -134,7 +139,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 862 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 878 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

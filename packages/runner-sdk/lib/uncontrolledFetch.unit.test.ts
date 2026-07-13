@@ -107,10 +107,12 @@ describe('uncontrolledFetch', () => {
     });
 
     it('honors NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false by ignoring custom denylist env', async () => {
-        const customOnlyHost = 'https://custom-deny-only.invalid/path';
+        // Use a resolvable host so the only thing under test is the custom denylist, not DNS resolution
+        // (outbound validation fails closed on resolution failures).
+        const customOnlyHost = 'https://example.com/path';
 
         vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'true');
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['custom-deny-only.invalid']));
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['example.com']));
         const fetchMockEnabled = vi.fn().mockResolvedValue(new Response('ok'));
         vi.stubGlobal('fetch', fetchMockEnabled as any);
 
@@ -125,7 +127,7 @@ describe('uncontrolledFetch', () => {
         vi.resetModules();
         vi.unstubAllEnvs();
         vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'false');
-        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['custom-deny-only.invalid']));
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', JSON.stringify(['example.com']));
         const fetchMockDisabled = vi.fn().mockResolvedValue(new Response('ok'));
         vi.stubGlobal('fetch', fetchMockDisabled as any);
 
@@ -133,6 +135,21 @@ describe('uncontrolledFetch', () => {
 
         await expect(actionDisabled.uncontrolledFetch({ url: new URL(customOnlyHost) })).resolves.toBeDefined();
         expect(fetchMockDisabled).toHaveBeenCalled();
+    });
+
+    it('fails closed when DNS resolution fails during validation', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        // A non-resolvable hostname must be rejected rather than allowed through to fetch, because the
+        // native fetch performs its own DNS resolution and could still reach a blocked/private IP.
+        await expect(action.uncontrolledFetch({ url: new URL('https://does-not-resolve.invalid/secret') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 
     it('blocks a redirect hop to a denylisted host', async () => {
@@ -153,17 +170,87 @@ describe('uncontrolledFetch', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it('blocks an initial request to a loopback IP literal', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('http://127.0.0.1/secret') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('blocks an initial request to a private RFC1918 IP literal', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('http://10.0.0.1/secret') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('blocks a redirect hop to a cloud metadata IP literal', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'http://169.254.169.254/latest/meta-data/' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('https://example.com/start') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'url_not_allowed' }
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('honors maxRedirects from the outbound policy', async () => {
+        vi.stubEnv('NANGO_OUTBOUND_URL_POLICY', JSON.stringify({ maxRedirects: 1 }));
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'https://example.org/next' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('https://example.com/start') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'too_many_redirects' }
+        });
+        // Initial request + one followed redirect, then capped by the policy's maxRedirects.
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns the 3XX response (does not follow or throw) when maxRedirects is 0', async () => {
+        vi.stubEnv('NANGO_OUTBOUND_URL_POLICY', JSON.stringify({ maxRedirects: 0 }));
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'https://example.org/next' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        // Matches axios/proxy behavior: maxRedirects=0 means "don't follow", so the 3XX is returned as-is.
+        const res = await action.uncontrolledFetch({ url: new URL('https://example.com/start') });
+        expect(res.status).toBe(302);
+        expect(res.headers.get('Location')).toBe('https://example.org/next');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('strips sensitive headers when redirecting to a different origin', async () => {
         const fetchMock = vi
             .fn()
-            .mockResolvedValueOnce(new Response(null, { status: 302, headers: { Location: 'https://b.example/next' } }))
+            .mockResolvedValueOnce(new Response(null, { status: 302, headers: { Location: 'https://example.org/next' } }))
             .mockResolvedValueOnce(new Response('ok', { status: 200 }));
         vi.stubGlobal('fetch', fetchMock as any);
 
         const { action } = await makeActionInstance();
 
+        // Two distinct, resolvable origins: outbound validation fails closed on DNS resolution failures,
+        // so reserved non-resolving placeholder domains can't be used here.
         const res = await action.uncontrolledFetch({
-            url: new URL('https://a.example/start'),
+            url: new URL('https://example.com/start'),
             headers: { Authorization: 'Bearer secret', 'X-Test': '1' }
         });
 

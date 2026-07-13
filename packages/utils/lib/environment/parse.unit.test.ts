@@ -24,6 +24,11 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
+    it('should parse the control-plane MCP server URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_CONTROL_PLANE_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
+        expect(res.NANGO_CONTROL_PLANE_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
+    });
+
     it('should parse E2B sandbox metric settings', () => {
         const res = parseEnvs(ENVS, {
             E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',
@@ -41,18 +46,15 @@ describe('parse', () => {
     it('should parse AgentCore sandbox settings', () => {
         const res = parseEnvs(ENVS, {
             AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
-            AGENTCORE_RUNTIME_QUALIFIER: 'dev',
-            AGENTCORE_REGION: 'us-east-1'
+            AGENTCORE_RUNTIME_QUALIFIER: 'dev'
         });
         expect(res.AGENTCORE_RUNTIME_ARN).toBe('arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime');
         expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('dev');
-        expect(res.AGENTCORE_REGION).toBe('us-east-1');
     });
 
     it('should default the AgentCore runtime qualifier', () => {
         const res = parseEnvs(ENVS, {
-            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime',
-            AGENTCORE_REGION: 'us-east-1'
+            AGENTCORE_RUNTIME_ARN: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-runtime'
         });
         expect(res.AGENTCORE_RUNTIME_QUALIFIER).toBe('DEFAULT');
     });
@@ -160,6 +162,37 @@ describe('parse', () => {
                 { groupKeyPattern: 'on-event', maxConcurrency: 50 }
             ]
         });
+    });
+
+    it('should default NANGO_OUTBOUND_URL_POLICY to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ mode: 'allowlist', allowlist: ['.hubspot.com'], blockPrivateIps: true, maxRedirects: 3 })
+        });
+        expect(res.NANGO_OUTBOUND_URL_POLICY).toEqual({ mode: 'allowlist', allowlist: ['.hubspot.com'], blockPrivateIps: true, maxRedirects: 3 });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY');
+    });
+
+    it('should throw on an invalid NANGO_OUTBOUND_URL_POLICY shape', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ mode: 'bogus' }) });
+        }).toThrow();
+    });
+
+    it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY (typos fail fast)', () => {
+        expect(() => {
+            // `blockPrivateIp` (missing trailing s) must not be silently dropped.
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ blockPrivateIp: false }) });
+        }).toThrow();
     });
 
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {

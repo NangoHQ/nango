@@ -5,9 +5,9 @@ import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
 
+import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
 import { CompileError } from './utils.js';
-import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 
 const exec = promisify(execCb);
 
@@ -22,16 +22,6 @@ describe('bundleFile', () => {
         const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/valid/github/actions/createIssue.js'), projectRootPath: fixturesPath });
         const value = result.unwrap();
         expect(value).toMatchSnapshot();
-    });
-
-    it('should synthesize the implicit http trigger when bundling a createWebhook', async () => {
-        const result = await bundleFile({ entryPoint: path.join(fixturesPath, 'zero/cases/webhook.js'), projectRootPath: fixturesPath });
-        const value = result.unwrap();
-        // createWebhook is stripped at compile time, so the http trigger must be reproduced in the output.
-        expect(value).toContain('type: "function"');
-        expect(value).toContain('triggers: [');
-        expect(value).toContain('type: "http"');
-        expect(value).toContain('name: "contacts-updated"');
     });
 });
 

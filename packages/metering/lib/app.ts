@@ -1,11 +1,14 @@
 import './tracer.js';
+
 import * as cron from 'node-cron';
 
 import { billing } from '@nangohq/billing';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
 import { initSentry, once, report } from '@nangohq/utils';
 
+import { billingEventsS3DLQMonitorCron } from './crons/billingEventsS3DLQMonitor.js';
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
 import { exportUsageCron } from './crons/usage.js';
 import { e2bSandboxesDaemon } from './daemons/e2b-sandboxes.daemon.js';
@@ -26,6 +29,8 @@ try {
     });
 
     initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
+
+    await initializeFeatureFlags();
 
     // PubSub
     const pubsubTransport = new DefaultTransport();
@@ -57,6 +62,7 @@ try {
     // Crons
     exportUsageCron();
     billingEventsS3ExportCron();
+    billingEventsS3DLQMonitorCron();
     const e2bSandboxesDaemonHandle = e2bSandboxesDaemon();
 
     // Graceful shutdown
@@ -74,6 +80,7 @@ try {
         if (clickhouseShutdown.isErr()) {
             logger.error('Error shutting down Clickhouse ingestion', clickhouseShutdown.error);
         }
+        await destroyFeatureFlags();
         cron.getTasks().forEach((task) => task.stop());
         process.exit();
     });

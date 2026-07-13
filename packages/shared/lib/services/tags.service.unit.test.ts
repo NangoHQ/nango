@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { updateConnectionTags } from './tags.service.js';
 import { getTestConnection } from '../seeders/connection.seeder.js';
+import { updateConnectionTags } from './tags.service.js';
 
 import type { DBConnection } from '@nangohq/types';
 import type { Knex } from 'knex';

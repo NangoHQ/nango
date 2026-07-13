@@ -6,16 +6,16 @@ import utc from 'dayjs/plugin/utc.js';
 import tracer from 'dd-trace';
 import knex from 'knex';
 
-import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
+import { cancellableDaemon, Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
 import {
     DEFAULT_RECORDS_LIMIT,
+    RECORD_COUNTS_TABLE,
     RECORDS_DATA_TABLE,
     RECORDS_ROUTING_TABLE,
     RECORDS_SEEN_MAX_IDS_PER_ROW,
     RECORDS_SEEN_TABLE,
-    RECORDS_TABLE,
-    RECORD_COUNTS_TABLE
+    RECORDS_TABLE
 } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';

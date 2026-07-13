@@ -2,7 +2,6 @@ import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom';
 
-import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, TabsList, TabsTrigger, tabsTriggerClassName } from '@/components/ui/Tabs';
@@ -12,6 +11,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
 
 import type { GetConnection, GetIntegration } from '@nangohq/types';
 
@@ -128,6 +128,7 @@ export const ConnectionShow = () => {
                             className={tabsTriggerClassName}
                             onClick={() => {
                                 openPlaygroundWithContext({
+                                    source: 'connection',
                                     integration: integrationData.integration.unique_key,
                                     connection: connectionResponse.connection.connection_id
                                 });

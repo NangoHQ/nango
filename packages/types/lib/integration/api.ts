@@ -1,9 +1,9 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
-import type { IntegrationConfig } from './db.js';
-import type { AuthModeType, AuthModes } from '../auth/api.js';
+import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
+import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
@@ -128,6 +128,24 @@ export type GetPublicFunctionCode = Endpoint<{
     Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
+export type GetFunctionCode = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName/code';
+    Params: {
+        providerConfigKey: string;
+        functionName: string;
+    };
+    Querystring: {
+        env: string;
+        type?: ScriptTypeLiteral | undefined;
+    };
+    Success: {
+        type: ScriptTypeLiteral;
+        code: string;
+    };
+    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
+}>;
+
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
@@ -242,6 +260,8 @@ export type GetIntegration = Endpoint<{
         data: {
             integration: ApiIntegration;
             template: Provider;
+            // Canonical templates-repo folder when the provider symlinks to another (e.g. `quickbooks-sandbox` → `quickbooks`); null otherwise.
+            symLinkTargetName: string | null;
             meta: {
                 connectionsCount: number;
                 webhookUrl: string | null;

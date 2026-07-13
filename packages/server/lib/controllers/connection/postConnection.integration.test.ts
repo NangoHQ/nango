@@ -230,6 +230,51 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should reject a webhook_url override pointing to nango.dev', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                connection_config: { webhook_url: 'https://api.nango.dev/hook' }
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
+                        path: ['connection_config', 'webhook_url']
+                    }
+                ]
+            }
+        });
+    });
+
+    it('should store a valid webhook_url override in connection_config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                connection_config: { webhook_url: 'https://example.com/webhooks-from-nango' }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.connection_config).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
+    });
+
     it('should import oauth2 connection with config_override', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');

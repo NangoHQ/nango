@@ -1,29 +1,32 @@
+import tracer from 'dd-trace';
+
 import db from '@nangohq/database';
-import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
+import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
     accountService,
     configService,
+    connectionService,
     customerKeyService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw,
+    LogActionEnum,
+    NangoError,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
@@ -51,7 +54,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        const accountContext = await tracer.trace('action.prepare.accountContext', async () =>
+            accountService.getAccountContext({ environmentId: task.connection.environment_id })
+        );
         if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
@@ -60,17 +65,23 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         const plan = accountContext.plan;
         tagTraceUser({ ...accountContext });
 
-        providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
+        providerConfig = await tracer.trace('action.prepare.providerConfig', async () =>
+            configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id)
+        );
         if (providerConfig === null) {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        syncConfig = await getSyncConfigRaw({
-            environmentId: providerConfig.environment_id,
-            config_id: providerConfig.id!,
-            name: task.actionName,
-            isAction: true
-        });
+        const providerConfigEnvironmentId = providerConfig.environment_id;
+        const providerConfigId = providerConfig.id!;
+        syncConfig = await tracer.trace('action.prepare.syncConfig', async () =>
+            getSyncConfigRaw({
+                environmentId: providerConfigEnvironmentId,
+                config_id: providerConfigId,
+                name: task.actionName,
+                isAction: true
+            })
+        );
         if (!syncConfig) {
             throw new Error(`Action not found: ${task.id}`);
         }
@@ -78,7 +89,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             throw new Error(`Action is disabled: ${task.id}`);
         }
 
-        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        const getEndUser = await tracer.trace('action.prepare.endUser', async () => getEndUserByConnectionId(db.knex, { connectionId: task.connection.id }));
         if (getEndUser.isOk()) {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
@@ -98,7 +109,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         });
 
         // capping
-        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms');
+        const cappingStatus = await tracer.trace('action.prepare.cappingExecutions', async () =>
+            capping.getStatus(plan, 'function_executions', 'function_compute_gbms')
+        );
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
             void logCtx.error(message, { cappingStatus });
@@ -106,7 +119,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
         // Function logs capping is just informational - it does not block syncs from running
         // nango.log() will still work, but logs won't be persisted
-        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        const cappingFunctionLogsStatus = await tracer.trace('action.prepare.cappingLogs', async () => capping.getStatus(plan, 'function_logs'));
         if (cappingFunctionLogsStatus.isCapped) {
             const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
             void logCtx.warn(message, { cappingFunctionLogsStatus });
@@ -123,10 +136,12 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         if (cappingFunctionLogsStatus.isCapped) {
             sdkLogger = { level: 'off' };
         } else {
-            sdkLogger = await environmentService.getSdkLogger(environment.id);
+            sdkLogger = await tracer.trace('action.prepare.sdkLogger', async () => environmentService.getSdkLogger(accountContext.environment.id));
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
+        const defaultSecret = await tracer.trace('action.prepare.defaultSecret', async () =>
+            secretService.getDefaultSecretForEnv(db.readOnly, accountContext.environment)
+        );
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -545,10 +560,16 @@ async function sendWebhookIfNeeded({
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }
+        const connectionConfig = await connectionService.getConnectionConfig({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            environment_id: environment.id
+        });
         await sendAsyncActionWebhook({
             secret: webhookSigningKey.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
+            connectionConfig,
             payload: {
                 id: task.retryKey,
                 statusUrl: `/action/${task.retryKey}`

@@ -68,7 +68,7 @@ paths:
     /providers/{provider}/templates:
         get:
             summary: List provider templates
-            description: Returns the template functions available in the catalog for a provider. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the template functions available in the catalog for a provider. Requires a valid API key (no specific scope).
             parameters:
                 - name: provider
                   in: path
@@ -94,8 +94,6 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
-                '403':
-                    $ref: '#/components/responses/Forbidden'
     /integrations:
         get:
             summary: List integrations
@@ -143,8 +141,20 @@ paths:
                                 display_name:
                                     type: string
                                     description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
+                                integration_config:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Provider-specific configuration for providers that declare an
+                                        `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
+                                        Keys and required fields depend on the provider; values are validated against
+                                        the provider schema.
 
             responses:
                 '200':
@@ -266,8 +276,19 @@ paths:
                                 display_name:
                                     type: string
                                     description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks received for this integration.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
+                                integration_config:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Provider-specific configuration for providers that declare an
+                                        `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
+                                        Only the fields you pass are updated.
             responses:
                 '200':
                     description: Successfully updated an integration
@@ -502,7 +523,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}/code:
         get:
             summary: Get a function's source code
-            description: Returns the TypeScript source code of a function for a given integration.
+            description: Returns the TypeScript source code of a function for a given integration. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -545,6 +566,8 @@ paths:
                     $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
                 '409':
@@ -1743,7 +1766,10 @@ paths:
         post:
             operationId: createFunctionDeployment
             summary: Create a function deployment
-            description: Deploys TypeScript function source code to an existing integration.
+            description: |
+                Deploys a function to an existing integration. Use `type: function` to deploy submitted TypeScript
+                source code, or `type: template` to deploy a template from the provider catalog. Requires an API key with the
+                `environment:deploy` scope.
             requestBody:
                 required: true
                 content:
@@ -1751,12 +1777,29 @@ paths:
                         schema:
                             $ref: '#/components/schemas/FunctionDeploymentRequest'
             responses:
-                '200':
-                    description: Successfully deployed the function.
+                '202':
+                    description: |
+                        Deployment record. `status` may be any of `waiting`, `running`, `success`, or `failed`. If it is not
+                        `success`, poll `GET /functions/deployments/{id}` for the final status and details.
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/FunctionDeployResponse'
+                                $ref: '#/components/schemas/FunctionDeploymentResponse'
+                '409':
+                    description: The template is already deployed, or the template name is ambiguous and `function_type` is required.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [template_already_deployed, ambiguous_function]
+                                            message:
+                                                type: string
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -3427,6 +3470,16 @@ components:
                             description: Optional error payload.
 
         FunctionDeploymentRequest:
+            oneOf:
+                - $ref: '#/components/schemas/FunctionDeploymentCodeRequest'
+                - $ref: '#/components/schemas/FunctionDeploymentTemplateRequest'
+            discriminator:
+                propertyName: type
+                mapping:
+                    function: '#/components/schemas/FunctionDeploymentCodeRequest'
+                    template: '#/components/schemas/FunctionDeploymentTemplateRequest'
+
+        FunctionDeploymentCodeRequest:
             type: object
             additionalProperties: false
             required:
@@ -3439,7 +3492,7 @@ components:
                 type:
                     type: string
                     enum: [function]
-                    description: Deploy a submitted function.
+                    description: Deploy submitted function source code.
                 integration_id:
                     type: string
                     description: The integration ID (unique_key) that you created in Nango.
@@ -3458,6 +3511,45 @@ components:
                 allow_destructive:
                     type: boolean
                     description: Allow overwriting an existing standalone function with the same name.
+
+        FunctionDeploymentTemplateRequest:
+            type: object
+            additionalProperties: false
+            required:
+                - type
+                - integration_id
+                - template
+            properties:
+                type:
+                    type: string
+                    enum: [template]
+                    description: Deploy a template from the provider catalog onto the integration.
+                integration_id:
+                    type: string
+                    description: The integration ID (unique_key) that you created in Nango.
+                template:
+                    type: string
+                    description: The template name to deploy, as listed by `GET /providers/{provider}/templates`.
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+
+        FunctionDeploymentResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - id
+                - status
+                - created_at
+            properties:
+                id:
+                    type: string
+                status:
+                    type: string
+                    enum: [waiting, running, success, failed]
+                    description: The status of the function deployment. Poll `GET /functions/deployments/{id}` to get the final status.
+                created_at:
+                    type: string
+                    format: date-time
 
         FunctionDeployResponse:
             type: object
@@ -3875,6 +3967,9 @@ components:
                                     oauth_client_secret_override:
                                         type: string
                                         description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
+                                    webhook_url:
+                                        type: string
+                                        description: Override the environment's webhook URLs for connections created with this session. When set, webhooks for the connection are sent only to this URL (the environment's primary and secondary URLs are bypassed).
                 overrides:
                     type: object
                     additionalProperties:

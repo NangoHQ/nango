@@ -6,23 +6,25 @@ import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     accountService,
     configService,
     connectionService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     extractValueByPath,
     genericMcpClient,
     getConnectionConfig,
     getConnectionMetadata,
+    getGlobalClientMetadataDocumentUrl,
     getProvider,
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
+    LogActionEnum,
     makeUrl,
     oauth2Client,
     providerClientManager,
@@ -319,6 +321,7 @@ class OAuthController {
                     res,
                     connectionConfig,
                     callbackUrl,
+                    environment,
                     logCtx
                 });
                 return;
@@ -503,7 +506,7 @@ class OAuthController {
                 void logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errRes(res, 'oauth2_cc_error');
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -591,7 +594,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey!, connection_config: connectionConfig },
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
@@ -951,13 +954,34 @@ class OAuthController {
                 code_challenge_method: 'S256'
             };
 
-            const authorizationUri = simpleOAuthClient.authorizeURL({
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(scopeSeparator) : '';
+            const encodedScopes = config.oauth_scopes
+                ? config.oauth_scopes
+                      .split(',')
+                      .map((s) => encodeURIComponent(s.trim()))
+                      .join(scopeSeparator)
+                : '';
+
+            let authorizationUri = simpleOAuthClient.authorizeURL({
                 client_id: config.oauth_client_id,
                 redirect_uri: callbackUrl,
-                scope: config.oauth_scopes || '',
+                scope: scopes,
                 state: session.id,
                 ...authParams
             });
+
+            if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                const url = new URL(authorizationUri);
+                const queryParams = new URLSearchParams(url.search);
+                queryParams.delete('scope');
+                let newQuery = queryParams.toString();
+                if (encodedScopes) {
+                    newQuery = newQuery ? `${newQuery}&scope=${encodedScopes}` : `scope=${encodedScopes}`;
+                }
+                url.search = newQuery;
+                authorizationUri = url.toString();
+            }
 
             void logCtx.info('Redirecting', {
                 authorizationUri,
@@ -966,7 +990,7 @@ class OAuthController {
                 allAuthParams: authParams,
                 connectionConfig,
                 grantType: provider.token_params?.['grant_type'] as string,
-                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+                scopes
             });
 
             res.cookie(`oauth2-${session.id}`, '1', {
@@ -994,6 +1018,7 @@ class OAuthController {
         res,
         connectionConfig,
         callbackUrl,
+        environment,
         logCtx
     }: {
         provider: ProviderMcpOAuth2Generic;
@@ -1003,6 +1028,7 @@ class OAuthController {
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
+        environment: DBEnvironment;
         logCtx: LogContext;
     }) {
         const channel = session.webSocketClientId;
@@ -1042,7 +1068,12 @@ class OAuthController {
             };
 
             let clientInformation: OAuthClientInformation;
-            if (metadata.registration_endpoint) {
+            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
+            const clientIdMethod = genericMcpClient.chooseMcpClientIdMethod(metadata, cimdUrl);
+            metrics.increment(metrics.Types.MCP_CLIENT_ID_METHOD, 1, { method: clientIdMethod, provider: config.provider });
+            if (clientIdMethod === 'cimd' && cimdUrl) {
+                clientInformation = { client_id: cimdUrl };
+            } else if (clientIdMethod === 'dcr') {
                 clientInformation = await registerClient(mcpServerUrl, {
                     metadata,
                     clientMetadata
@@ -1066,7 +1097,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
@@ -1232,6 +1263,8 @@ class OAuthController {
                         present: 'true'
                     });
                 } else {
+                    // Flag off (default) => keep current behaviour (measure only); on => reject below.
+                    const enforced = await getFlags().isOAuthStateCookieEnforced(account.uuid);
                     // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
                     // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
                     // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
@@ -1239,6 +1272,7 @@ class OAuthController {
                     metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
                         account_id: account.id,
                         present: 'false',
+                        enforced: String(enforced),
                         auth_mode: session.authMode,
                         provider: config.provider,
                         sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
@@ -1249,6 +1283,14 @@ class OAuthController {
                         has_any_cookie: String(Boolean(req.get('cookie'))),
                         req_secure: String(req.secure)
                     });
+
+                    if (enforced) {
+                        const error = WSErrBuilder.MissingStateCookie();
+                        void logCtx.error('Rejecting OAuth callback: state cookie missing', { providerConfigKey, connectionId });
+                        await logCtx.failed();
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                        return;
+                    }
                 }
             }
 
@@ -1489,7 +1531,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1573,7 +1615,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1700,7 +1742,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -1990,7 +2032,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2169,7 +2211,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2330,7 +2372,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2499,7 +2541,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,

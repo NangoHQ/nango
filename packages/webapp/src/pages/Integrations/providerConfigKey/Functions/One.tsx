@@ -1,30 +1,29 @@
 import { Download, ExternalLink, Info, Trash2 } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
-import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { FunctionSwitch } from '../../components/FunctionSwitch';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { LineSnippet } from '@/components/ui/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { useDeleteIntegrationFunction, useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useGetIntegrationFunction, useGetIntegrationFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -32,8 +31,16 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { buildPullCommand, functionRepoPath, isSyncOrAction } from '@/utils/scripts';
+import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
+import { FunctionSwitch } from '../../components/FunctionSwitch';
+import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
+import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 
+import type { FunctionType } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+const FUNCTION_TYPES = new Set<FunctionType>(['sync', 'action', 'on-event']);
 
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
@@ -45,16 +52,24 @@ export const FunctionsOne: React.FC = () => {
     const debugMode = useStore((state) => state.debugMode);
     const { data: integrationResponse, isLoading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const integrationData = integrationResponse?.data;
-    const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
-    const flowsData = flowsResponse?.data;
 
-    const func = flowsData?.flows.find((flow) => flow.name === functionName);
+    const [searchParams] = useSearchParams();
+    const typeParam = searchParams.get('type');
+    const typeFilter: FunctionType | undefined = typeParam && FUNCTION_TYPES.has(typeParam as FunctionType) ? (typeParam as FunctionType) : undefined;
+
+    const { data: functionResponse, isLoading: functionLoading } = useGetIntegrationFunction({
+        env,
+        providerConfigKey: providerConfigKey!,
+        name: functionName!,
+        type: typeFilter
+    });
+    const func = functionResponse?.data;
 
     const functionType = func?.type === 'sync' ? 'sync' : 'action';
     const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, providerConfigKey!, functionName!, functionType);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
-        if (!func || !func.input || !func.json_schema) {
+        if (!func || func.type === 'on-event' || !func.input || !func.json_schema) {
             return null;
         }
         const { input, json_schema } = func;
@@ -67,7 +82,7 @@ export const FunctionsOne: React.FC = () => {
     }, [func]);
 
     const outputSchemas: { name: string; schema: JSONSchema7 }[] | null = useMemo(() => {
-        if (!func || !func.returns || !func.json_schema) {
+        if (!func || func.type === 'on-event' || !func.returns || !func.json_schema) {
             return null;
         }
         const { returns, json_schema } = func;
@@ -86,7 +101,19 @@ export const FunctionsOne: React.FC = () => {
 
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
-    const isLoading = integrationLoading || flowsLoading;
+    const {
+        data: codeData,
+        isLoading: codeLoading,
+        error: codeError
+    } = useGetIntegrationFunctionCode({
+        env,
+        providerConfigKey: providerConfigKey!,
+        name: functionName!,
+        type: func?.type,
+        enabled: Boolean(func)
+    });
+
+    const isLoading = integrationLoading || functionLoading;
 
     const downloadCode = useCallback(async () => {
         if (!func || !func.enabled || !func.id) {
@@ -155,8 +182,8 @@ export const FunctionsOne: React.FC = () => {
         return <PageNotFound />;
     }
 
-    const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
-    const gitUrl = `${githubRepo}/tree/main/integrations/${gitDir}.ts`;
+    const repoProvider = integrationData.symLinkTargetName ?? integrationData.integration.provider;
+    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: repoProvider, name: func.name, type: func.type })}`;
 
     return (
         <DashboardLayout>
@@ -191,6 +218,7 @@ export const FunctionsOne: React.FC = () => {
                                     disabled={!func.enabled}
                                     onClick={() => {
                                         openPlaygroundWithContext({
+                                            source: 'function',
                                             integration: integrationData.integration.unique_key,
                                             functionName: func.name,
                                             functionType: func.type as 'action' | 'sync'
@@ -200,7 +228,7 @@ export const FunctionsOne: React.FC = () => {
                                     Playground <ExternalLink />
                                 </Button>
                             </ConditionalTooltip>
-                            {func.source !== 'repo' && (func.type === 'sync' || func.type === 'action') && (
+                            {func.source !== 'repo' && isSyncOrAction(func) && (
                                 <IconButton
                                     variant="ghost"
                                     size="2xs"
@@ -222,7 +250,7 @@ export const FunctionsOne: React.FC = () => {
                                     <Trash2 />
                                 </IconButton>
                             )}
-                            <FunctionSwitch flow={func} integration={integrationData.integration} />
+                            {isSyncOrAction(func) && <FunctionSwitch flow={func} integration={integrationData.integration} />}
                         </div>
                     </div>
 
@@ -233,44 +261,45 @@ export const FunctionsOne: React.FC = () => {
                             <span>{func.type}</span>
                         </KeyValueBadge>
                         <KeyValueBadge label="Source code">{func.source === 'repo' ? 'your repo' : 'Nango'}</KeyValueBadge>
-                        {func.sync_type && (
-                            <KeyValueBadge label="Sync type">
-                                <span>{func.sync_type}</span>
-                            </KeyValueBadge>
-                        )}
-                        {func.runs && (
+                        {func.type === 'sync' && func.runs && (
                             <KeyValueBadge label="Frequency">
                                 <span>{func.runs}</span>
                             </KeyValueBadge>
                         )}
-                        {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
-                        {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
-                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
+                        {func.type === 'sync' && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
+                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes.join(', ')}</KeyValueBadge>}
                     </div>
                 </CardHeader>
 
-                {func.source === 'catalog' && (
-                    <CardSubheader>
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-text-strong text-body-medium-semi">Customize this template</span>
-                                <Link
-                                    to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
-                                    target="_blank"
-                                    className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
-                                >
-                                    Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                                </Link>
-                            </div>
-                            <div className="inline-flex gap-3">
-                                <LineSnippet snippet={`nango clone ${gitDir}`} />
-                                <ButtonLink to={gitUrl} target="_blank" variant="outline" size="xl">
+                <CardSubheader>
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-text-strong text-body-medium-semi">Customize this function</span>
+                            <Link
+                                to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                                target="_blank"
+                                className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
+                            >
+                                Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                            </Link>
+                        </div>
+                        <div className="inline-flex gap-3">
+                            <LineSnippet
+                                snippet={buildPullCommand({
+                                    integration: integrationData.integration.unique_key,
+                                    name: func.name,
+                                    type: func.type,
+                                    source: { env }
+                                })}
+                            />
+                            {func.source === 'catalog' && (
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="md">
                                     View code <ExternalLink />
                                 </ButtonLink>
-                            </div>
+                            )}
                         </div>
-                    </CardSubheader>
-                )}
+                    </div>
+                </CardSubheader>
 
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
@@ -278,6 +307,7 @@ export const FunctionsOne: React.FC = () => {
                             <TabsList className="w-fit gap-0">
                                 <TabsTrigger value="input">Input</TabsTrigger>
                                 <TabsTrigger value="output">Output</TabsTrigger>
+                                <TabsTrigger value="code">Code</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
                                 <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
@@ -326,6 +356,19 @@ export const FunctionsOne: React.FC = () => {
                                 <EmptyCard>
                                     <span className="text-text-secondary text-body-medium-regular">No outputs.</span>
                                 </EmptyCard>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="code" className="flex flex-col gap-4">
+                            {codeLoading ? (
+                                <div className="flex items-center justify-center h-96">
+                                    <Spinner className="size-5 text-text-muted" />
+                                </div>
+                            ) : codeError || !codeData ? (
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">Failed to load source code.</span>
+                                </EmptyCard>
+                            ) : (
+                                <CodeBlock title={`${func.name}.ts`} language="typescript" code={codeData.code} />
                             )}
                         </TabsContent>
                     </Tabs>

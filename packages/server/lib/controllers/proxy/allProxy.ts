@@ -1,21 +1,23 @@
-import { PassThrough } from 'node:stream';
+import { finished, PassThrough } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
 
-import { LogContextOrigin, OtlpSpan, logContextGetter } from '@nangohq/logs';
+import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    ProxyError,
-    ProxyRequest,
     configService,
     connectionService,
     enforceProxyOutboundUrlPolicy,
     errorManager,
+    ErrorSourceEnum,
+    findOutboundUrlError,
     getProvider,
     getProxyConfiguration,
+    getServerOutboundUrlPolicy,
+    LogActionEnum,
     makeDataTransferEvent,
+    ProxyError,
+    ProxyRequest,
     pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
@@ -25,8 +27,10 @@ import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 import { capping } from '../../utils/usage.js';
 
+import type { ServerEgressCallsite } from '../../utils/egressTelemetry.js';
 import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -286,6 +290,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 },
                 internalConfig
             }).unwrap(),
+            outboundPolicy: getServerOutboundUrlPolicy(),
             logger: (msg) => {
                 void logCtx?.log(msg);
             },
@@ -326,20 +331,33 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                         connectionId: connection.connection_id,
                         integrationId: providerConfigKey,
                         environmentId: environment.id,
-                        meteredBytes,
-                        environmentName: environment.name
+                        environmentName: environment.name,
+                        meteredBytes
                     })
                 );
             }
         });
 
         let success = false;
+        const recordEgressedBytes = makeRecordEgressedBytes(req, account.id, environment.id, environment.name, providerConfigKey, connection.connection_id);
+
         try {
             const responseStream = (await proxy.request()).unwrap();
-            await handleResponse({ res, responseStream, logCtx });
+            await handleResponse({
+                res,
+                responseStream,
+                logCtx,
+                onEgressedBytes: recordEgressedBytes
+            });
             success = true;
         } catch (err) {
-            handleErrorResponse({ res, error: err, requestConfig: proxy.axiosConfig, logCtx });
+            handleErrorResponse({
+                res,
+                error: err,
+                requestConfig: proxy.axiosConfig,
+                logCtx,
+                onEgressedBytes: recordEgressedBytes
+            });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
         }
@@ -433,7 +451,40 @@ function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined 
     return ceIdx !== -1 && ceIdx + 1 < rawHeaders.length && Boolean(rawHeaders[ceIdx + 1]);
 }
 
-export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
+const callsiteByMethod: Record<string, ServerEgressCallsite> = {
+    GET: 'get_/proxy',
+    POST: 'post_/proxy',
+    PATCH: 'patch_/proxy',
+    PUT: 'put_/proxy',
+    DELETE: 'delete_/proxy'
+};
+
+function makeRecordEgressedBytes(req: Request, accountId: number, environmentId: number, environmentName: string, integrationId: string, connectionId: string) {
+    return function (egressedBytes: number) {
+        egressTelemetryRecorder.record({
+            accountId,
+            environmentId,
+            environmentName,
+            integrationId,
+            connectionId,
+            callsite: callsiteByMethod[req.method] ?? 'unknown_/proxy',
+            egressedBytes,
+            count: 1
+        });
+    };
+}
+
+export async function handleResponse({
+    res,
+    responseStream,
+    logCtx,
+    onEgressedBytes
+}: {
+    res: Response;
+    responseStream: AxiosResponse;
+    logCtx: LogContext;
+    onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
+}) {
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
 
@@ -446,7 +497,15 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             // axios decompressed the response, so the `content-length` header is no longer valid
             delete passthroughHeaders['content-length'];
         }
+        let egressedBytes = 0;
         const passThroughStream = new PassThrough();
+        passThroughStream.on('data', (chunk: Buffer) => {
+            egressedBytes += chunk.length;
+        });
+        const cleanup = finished(res, () => {
+            onEgressedBytes?.(egressedBytes);
+            cleanup();
+        });
         responseStream.data.pipe(passThroughStream);
         passThroughStream.pipe(res);
         res.writeHead(responseStream.status, passthroughHeaders);
@@ -471,6 +530,7 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
 
         if (responseStream.status === 204) {
             res.status(204).end();
+            onEgressedBytes?.(0);
             metrics.increment(metrics.Types.PROXY_SUCCESS);
             await logCtx.success();
             return;
@@ -485,6 +545,7 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
 
         try {
             res.send(Buffer.concat(responseData));
+            onEgressedBytes?.(responseLen);
         } catch (err) {
             void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
@@ -518,36 +579,61 @@ export function handleErrorResponse({
     res,
     error,
     requestConfig,
-    logCtx
+    logCtx,
+    onEgressedBytes
 }: {
     res: Response;
     error: unknown;
     requestConfig?: AxiosRequestConfig | undefined;
     logCtx: LogContext;
+    onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
 }) {
+    const countBytes = (body: Record<string, unknown>): number => {
+        return Buffer.byteLength(JSON.stringify(body));
+    };
+
     const proxyErr = proxyErrorFromErrorChain(error);
     if (proxyErr?.code === 'proxy_redirect_to_denied_host') {
         void logCtx.error('Proxy redirect denied by denylist', { error: proxyErr });
-        res.status(400).send({
+        const body = {
             error: {
                 code: 'base_url_override_not_allowed',
                 message: 'This base URL override is not allowed by server configuration.'
             }
-        });
+        };
+        res.status(400).send(body);
+        onEgressedBytes?.(countBytes(body));
+        return;
+    }
+
+    const outboundErr = findOutboundUrlError(error);
+    if (outboundErr) {
+        void logCtx.error('Proxy outbound URL denied by policy', { error: outboundErr });
+        const body = {
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This outbound URL is not allowed by server configuration.'
+            }
+        };
+        res.status(400).send(body);
+        onEgressedBytes?.(countBytes(body));
         return;
     }
 
     if (!isAxiosError(error)) {
         if (error instanceof ProxyError) {
             void logCtx.error('Unknown error', { error });
-            res.status(400).send({
+            const body = {
                 error: { code: error.code, message: error.message }
-            });
+            };
+            res.status(400).send(body);
+            onEgressedBytes?.(countBytes(body));
             return;
         }
 
         void logCtx.error('Unknown error', { error });
         res.status(500).send();
+        onEgressedBytes?.(0);
         return;
     }
 
@@ -566,6 +652,7 @@ export function handleErrorResponse({
         const responseHeaders = error.response?.headers || {};
 
         res.status(responseStatus).set(responseHeaders).send(errorObject);
+        onEgressedBytes?.(countBytes(errorObject));
 
         return;
     }
@@ -579,9 +666,11 @@ export function handleErrorResponse({
         errorStream.on('error', (err) => {
             void logCtx.error('Error reading upstream error stream', { error: err });
             res.status(500).send();
+            onEgressedBytes?.(0);
         });
         errorStream.on('end', () => {
-            const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
+            const buffer = chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0);
+            const data = buffer.toString();
             let parsedBody: string | Record<string, string> = data;
             const contentTypeHeader = error.response?.headers?.['content-type'];
             const contentType =
@@ -595,10 +684,12 @@ export function handleErrorResponse({
             }
 
             const responseStatus = error.response?.status || 500;
-            const responseHeaders = error.response?.headers || {};
+            const responseHeaders = { ...error.response?.headers };
+            delete (responseHeaders as Record<string, unknown>)['transfer-encoding'];
             void logCtx.error('Failed with this body', { body: parsedBody });
 
             res.status(responseStatus).set(responseHeaders).send(data);
+            onEgressedBytes?.(buffer.length);
         });
     }
 }

@@ -2,9 +2,9 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { handleListIntegrationFunctions } from './helpers.js';
 import { envSchema, functionListQueryFields } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import { handleListIntegrationFunctions } from '../../../../shared/integrations/functions/listFunctions.js';
 import { validationParams } from '../getIntegration.js';
 
 import type { GetIntegrationFunctions } from '@nangohq/types';

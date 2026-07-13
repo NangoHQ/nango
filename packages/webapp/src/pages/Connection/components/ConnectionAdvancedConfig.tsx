@@ -2,16 +2,17 @@ import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
+import { Input } from '@nangohq/design-system';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { KeyValueInput } from '../../../components/patterns/KeyValueInput';
 import { ScopesInput } from '../../../components/patterns/ScopesInput';
 import { BinaryToggle } from '../../../components/ui/BinaryToggle';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/Form';
 import { InfoTooltip } from '../../../components/ui/InfoTooltip';
-import { Input } from '../../../components/ui/Input';
 import { Separator } from '../../../components/ui/Separator';
 import { StyledLink } from '../../../components/ui/StyledLink';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 
 import type { ConnectionFormData } from '../Create';
 
@@ -182,128 +183,25 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                             />
                         </div>
 
-                        {(isOauth2 || showDocsOverrideField) && (
-                            <>
-                                <Separator className="bg-border-muted" />
+                        <>
+                            <Separator className="bg-border-muted" />
 
-                                <div className="flex flex-col gap-5">
-                                    <h3 className="text-body-small-medium uppercase text-text-secondary">Overrides</h3>
-                                    {isOauth2 && (
-                                        <>
-                                            <FormField
-                                                control={control}
-                                                name="overrideAuthParams"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabelWithTooltip
-                                                            tooltip={
-                                                                <p>
-                                                                    Query params passed to the OAuth flow (for OAuth2 only)
-                                                                    <br />
-                                                                    <StyledLink
-                                                                        to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params"
-                                                                        type="external"
-                                                                        size="sm"
-                                                                        icon
-                                                                    >
-                                                                        Documentation
-                                                                    </StyledLink>
-                                                                </p>
-                                                            }
-                                                        >
-                                                            Override authorization parameters
-                                                        </FormLabelWithTooltip>
-                                                        <KeyValueInput
-                                                            initialValues={field.value}
-                                                            onChange={field.onChange}
-                                                            placeholderKey="Param Name"
-                                                            placeholderValue="Param Value"
-                                                        />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={control}
-                                                name="overrideDevAppCredentials"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabelWithTooltip
-                                                            tooltip={
-                                                                <p>
-                                                                    Allow end users to provide their own OAuth client ID and secret.
-                                                                    <br />
-                                                                    <StyledLink
-                                                                        to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override"
-                                                                        type="external"
-                                                                        size="sm"
-                                                                        icon
-                                                                    >
-                                                                        Documentation
-                                                                    </StyledLink>
-                                                                </p>
-                                                            }
-                                                        >
-                                                            Override developer app credentials
-                                                        </FormLabelWithTooltip>
-                                                        <BinaryToggle
-                                                            value={field.value}
-                                                            onChange={field.onChange}
-                                                            offLabel="No override"
-                                                            onLabel="End-user provided"
-                                                            offTooltip="Use the OAuth credentials configured in the integration settings"
-                                                            onTooltip="End users will provide their own OAuth client ID and secret"
-                                                        />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={control}
-                                                name="overrideOauthScopes"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabelWithTooltip
-                                                            tooltip={
-                                                                <p>
-                                                                    Override oauth scopes
-                                                                    <br />
-                                                                    <StyledLink
-                                                                        to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override"
-                                                                        type="external"
-                                                                        size="sm"
-                                                                        icon
-                                                                    >
-                                                                        Documentation
-                                                                    </StyledLink>
-                                                                </p>
-                                                            }
-                                                        >
-                                                            Override OAuth scopes
-                                                        </FormLabelWithTooltip>
-                                                        <ScopesInput
-                                                            scopesString={field.value}
-                                                            onChange={(newScopes) => {
-                                                                field.onChange(newScopes);
-                                                                return Promise.resolve();
-                                                            }}
-                                                        />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </>
-                                    )}
-                                    {showDocsOverrideField && (
+                            <div className="flex flex-col gap-5">
+                                <h3 className="text-body-small-medium uppercase text-text-secondary">Overrides</h3>
+                                {isOauth2 && (
+                                    <>
                                         <FormField
                                             control={control}
-                                            name="overrideDocUrl"
+                                            name="overrideAuthParams"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabelWithTooltip
                                                         tooltip={
                                                             <p>
-                                                                Override the documentation URL we show on the Connect UI for this connection.
+                                                                Query params passed to the OAuth flow (for OAuth2 only)
                                                                 <br />
                                                                 <StyledLink
-                                                                    to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-overrides-additional-properties-docs-connect"
+                                                                    to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params"
                                                                     type="external"
                                                                     size="sm"
                                                                     icon
@@ -313,19 +211,142 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             </p>
                                                         }
                                                     >
-                                                        Override end-user documentation URL
+                                                        Override authorization parameters
                                                     </FormLabelWithTooltip>
-                                                    <FormControl>
-                                                        <Input placeholder="https://example.com/docs" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
+                                                    <KeyValueInput
+                                                        initialValues={field.value}
+                                                        onChange={field.onChange}
+                                                        placeholderKey="Param Name"
+                                                        placeholderValue="Param Value"
+                                                    />
                                                 </FormItem>
                                             )}
                                         />
+                                        <FormField
+                                            control={control}
+                                            name="overrideDevAppCredentials"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabelWithTooltip
+                                                        tooltip={
+                                                            <p>
+                                                                Allow end users to provide their own OAuth client ID and secret.
+                                                                <br />
+                                                                <StyledLink
+                                                                    to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override"
+                                                                    type="external"
+                                                                    size="sm"
+                                                                    icon
+                                                                >
+                                                                    Documentation
+                                                                </StyledLink>
+                                                            </p>
+                                                        }
+                                                    >
+                                                        Override developer app credentials
+                                                    </FormLabelWithTooltip>
+                                                    <BinaryToggle
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        offLabel="No override"
+                                                        onLabel="End-user provided"
+                                                        offTooltip="Use the OAuth credentials configured in the integration settings"
+                                                        onTooltip="End users will provide their own OAuth client ID and secret"
+                                                    />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={control}
+                                            name="overrideOauthScopes"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabelWithTooltip
+                                                        tooltip={
+                                                            <p>
+                                                                Override oauth scopes
+                                                                <br />
+                                                                <StyledLink
+                                                                    to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override"
+                                                                    type="external"
+                                                                    size="sm"
+                                                                    icon
+                                                                >
+                                                                    Documentation
+                                                                </StyledLink>
+                                                            </p>
+                                                        }
+                                                    >
+                                                        Override OAuth scopes
+                                                    </FormLabelWithTooltip>
+                                                    <ScopesInput
+                                                        scopesString={field.value}
+                                                        onChange={(newScopes) => {
+                                                            field.onChange(newScopes);
+                                                            return Promise.resolve();
+                                                        }}
+                                                    />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </>
+                                )}
+                                <FormField
+                                    control={control}
+                                    name="overrideWebhookUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelWithTooltip
+                                                tooltip={
+                                                    <p>
+                                                        Deliver this connection&apos;s webhooks to a different URL than the environment-wide webhook URL. Useful
+                                                        for routing a single connection&apos;s events to a development tunnel.
+                                                    </p>
+                                                }
+                                            >
+                                                Override webhook URL
+                                            </FormLabelWithTooltip>
+                                            <FormControl>
+                                                <Input placeholder="https://example.com/webhooks-from-nango" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )}
-                                </div>
-                            </>
-                        )}
+                                />
+                                {showDocsOverrideField && (
+                                    <FormField
+                                        control={control}
+                                        name="overrideDocUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabelWithTooltip
+                                                    tooltip={
+                                                        <p>
+                                                            Override the documentation URL we show on the Connect UI for this connection.
+                                                            <br />
+                                                            <StyledLink
+                                                                to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-overrides-additional-properties-docs-connect"
+                                                                type="external"
+                                                                size="sm"
+                                                                icon
+                                                            >
+                                                                Documentation
+                                                            </StyledLink>
+                                                        </p>
+                                                    }
+                                                >
+                                                    Override end-user documentation URL
+                                                </FormLabelWithTooltip>
+                                                <FormControl>
+                                                    <Input placeholder="https://example.com/docs" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
+                            </div>
+                        </>
                     </CardContent>
                 </CollapsibleContent>
             </Collapsible>

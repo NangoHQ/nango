@@ -3,8 +3,9 @@ import { gzipSync } from 'node:zlib';
 
 import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
 import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import tracer from 'dd-trace';
 
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { setAbortFlag } from '../execution/operations/abort.js';
@@ -173,9 +174,17 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         routingContext?: RoutingContext | undefined;
     }): Promise<Result<boolean>> {
         try {
-            const func = await this.getFunction({ nangoProps: params.nangoProps, routingContext: params.routingContext });
+            const func = await tracer.trace('lambda.getFunction', async () =>
+                this.getFunction({ nangoProps: params.nangoProps, routingContext: params.routingContext })
+            );
 
-            const payload = await this.preparePayload(params);
+            const payload = await tracer.trace('lambda.preparePayload', async (span) => {
+                const result = await this.preparePayload(params);
+                if (result.isErr()) {
+                    span?.setTag('error', result.error);
+                }
+                return result;
+            });
             if (payload.isErr()) {
                 return Err(new Error(`Failed to prepare payload`, { cause: payload.error }));
             }
@@ -188,7 +197,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                     TenantId: getLambdaTenantId(params.nangoProps)
                 })
             });
-            await client.send(command);
+            await tracer.trace('lambda.invoke', async () => client.send(command));
             return Ok(true);
         } catch (err) {
             logger.error('Lambda was unable to execute the function', err);
@@ -197,7 +206,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     async cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
-        const result = await setAbortFlag(params.taskId);
+        const result = await setAbortFlag({ taskId: params.taskId, environmentId: params.nangoProps.environmentId });
         if (result.isErr()) {
             return Err(new Error(`Error setting abort flag for task: ${params.taskId}`, { cause: result.error }));
         }

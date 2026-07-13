@@ -1,22 +1,24 @@
 import tracer from 'dd-trace';
+import ddtags from 'dd-trace/ext/tags.js';
 import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
-import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
-import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
-import { NangoError, deserializeNangoError } from '../utils/error.js';
+import { deserializeNangoError, NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, Sync } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
     ExecuteActionProps,
@@ -140,6 +142,9 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
+            if (await getFlags().shouldKeepActionTrace(connection.environment_id)) {
+                span.setTag(ddtags.MANUAL_KEEP, true);
+            }
             let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;

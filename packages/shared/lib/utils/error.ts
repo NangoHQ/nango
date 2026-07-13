@@ -409,6 +409,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
                 break;
 
+            case 'template_already_deployed':
+                this.status = 409;
+                this.message = 'This template is already deployed on the integration.';
+                break;
+
             case 'missing_required_fields_on_deploy':
                 this.status = 400;
                 this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
@@ -669,6 +674,16 @@ export class NangoError extends NangoInternalError {
             case 'followupboss_refresh_token_request_error':
                 this.status = 500;
                 this.message = 'Follow Up Boss token refresh failed.';
+                break;
+
+            case 'client_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Failed to fetch client credentials token: ${JSON.stringify(this.payload)}`;
+                break;
+
+            case 'microsoft_admin_token_request_error':
+                this.status = 400;
+                this.message = `Microsoft admin token request failed: ${JSON.stringify(this.payload)}`;
                 break;
 
             default:

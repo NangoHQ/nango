@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -396,7 +395,7 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
-                    const params = { ...(values['params'] || {}) };
+                    const params = { ...values['params'] };
                     if (provider.auth_mode === 'AWS_SIGV4') {
                         params['external_id'] = awsExternalId;
                     }
@@ -470,10 +469,14 @@ export const Go: React.FC = () => {
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
-                                <IconCircleCheckFilled className="w-full h-full text-green-600" />
+                                <div className="w-full h-full rounded-full bg-green-600 flex items-center justify-center">
+                                    <Check aria-hidden="true" className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-text-primary">{t('go.success')}</h2>
+                        <h2 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
+                            {t('go.success')}
+                        </h2>
                         <p className="text-center text-text-secondary">
                             {t('go.successMessage', { provider: provider.display_name })}
                             {isAuthLink ? ` ${t('go.closeTab')}` : ''}
@@ -498,15 +501,21 @@ export const Go: React.FC = () => {
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
-                                <IconCircleXFilled className="w-full h-full text-red-700" />
+                                <div className="w-full h-full rounded-full bg-red-700 flex items-center justify-center">
+                                    <X aria-hidden="true" className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-text-primary">{t('go.connectionFailed')}</h2>
+                        <h2 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
+                            {t('go.connectionFailed')}
+                        </h2>
                         <p className="text-text-secondary text-center">{t('go.connectionErrorGeneric')}</p>
 
                         {error && (
                             <div className="w-full rounded-md border border-subtle bg-elevated overflow-hidden">
                                 <button
+                                    aria-controls="error-details-panel"
+                                    aria-expanded={showErrorDetails}
                                     className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary hover:bg-muted/50 transition-colors cursor-pointer"
                                     type="button"
                                     onClick={() => setShowErrorDetails((v) => !v)}
@@ -519,7 +528,7 @@ export const Go: React.FC = () => {
                                     )}
                                 </button>
                                 {showErrorDetails && (
-                                    <div className="border-t border-subtle px-4 py-3 bg-muted/30">
+                                    <div className="border-t border-subtle px-4 py-3 bg-muted/30" id="error-details-panel">
                                         <pre className="text-xs font-mono text-red-600 whitespace-pre-wrap break-all overflow-x-hidden">
                                             {compactErrorDisplay(error)}
                                         </pre>
@@ -571,7 +580,9 @@ export const Go: React.FC = () => {
                     <div className="w-16 h-16 p-2 rounded-sm bg-white border border-subtle">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
+                    <h1 className="font-semibold text-center text-lg text-text-primary" id="connect-ui-title">
+                        {t('go.linkAccount', { provider: displayName })}
+                    </h1>
                 </div>
 
                 {/* Only on first connect: the customer puts this in their IAM trust policy. On reconnect the
@@ -589,14 +600,22 @@ export const Go: React.FC = () => {
                 )}
 
                 {error && (
-                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                    <p
+                        aria-live="assertive"
+                        className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700"
+                        role="alert"
+                    >
                         <TriangleAlert className="w-5 h-5" />
                         {compactErrorDisplay(error)}
                     </p>
                 )}
 
                 {!error && shouldAutoTrigger && !form.formState.isValid && (
-                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                    <p
+                        aria-live="assertive"
+                        className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700"
+                        role="alert"
+                    >
                         <TriangleAlert className="w-5 h-5" />
                         {t('go.invalidPreconfigured')}
                     </p>
@@ -660,6 +679,9 @@ export const Go: React.FC = () => {
                                                                 )}
                                                                 {docsConnectUrl && (
                                                                     <Link
+                                                                        aria-label={t('go.fieldDocumentation', {
+                                                                            field: labelOverride || definition?.title || base?.title || key
+                                                                        })}
                                                                         target="_blank"
                                                                         to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
@@ -675,6 +697,7 @@ export const Go: React.FC = () => {
                                                         <FormControl>
                                                             {definition?.enum && definition.enum.length > 0 ? (
                                                                 <CustomSelect
+                                                                    aria-required={!isOptional}
                                                                     name={field.name}
                                                                     optional={isOptional}
                                                                     options={definition.enum}
@@ -684,6 +707,7 @@ export const Go: React.FC = () => {
                                                                 />
                                                             ) : (
                                                                 <CustomInput
+                                                                    aria-required={!isOptional}
                                                                     placeholder={labelOverride ? '' : definition?.example || definition?.title || base?.example}
                                                                     prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}

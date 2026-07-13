@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.70.7",
+    "version": "0.70.9",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -9,10 +9,11 @@
     "scripts": {
         "create:migration": "cd packages/database/lib && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
         "undo:migration": "cd packages/database/lib && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
-        "prettier-format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
-        "prettier-watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
-        "lint": "eslint . ",
-        "lint:fix": "eslint . --fix",
+        "format": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --write",
+        "format:check": "prettier --config .prettierrc \"./**/*.{ts,tsx}\" --check",
+        "format:watch": "onchange './**/*.{ts,tsx}' -- prettier --write {{changed}}",
+        "lint": "oxlint -c .oxlintrc.json",
+        "lint:fix": "oxlint -c .oxlintrc.json --fix",
         "ts-build": "tsc -b tsconfig.build.json",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
@@ -26,6 +27,7 @@
         "persist:dev:watch": "npm run dev -w @nangohq/nango-persist",
         "orchestrator:dev:watch": "npm run dev -w @nangohq/nango-orchestrator",
         "metering:dev:watch": "npm run dev -w @nangohq/nango-metering",
+        "seed:clickhouse": "tsx -r dotenv/config scripts/seed-clickhouse.ts dotenv_config_path=.env",
         "webapp:dev:watch": "cd ./packages/webapp && npm run dev",
         "connect-ui:dev:watch": "cd ./packages/connect-ui && npm run dev",
         "connect-ui:build": "npm run -w @nangohq/connect-ui build",
@@ -60,35 +62,28 @@
         "changelog:integrations": "tsx scripts/pre-built-integrations-changelog.ts"
     },
     "devDependencies": {
-        "@eslint/js": "9.28.0",
+        "@ianvs/prettier-plugin-sort-imports": "4.7.1",
         "@testcontainers/elasticsearch": "12.0.2",
         "@testcontainers/postgresql": "12.0.2",
         "@types/node": "22.15.29",
-        "@typescript-eslint/eslint-plugin": "8.38.0",
-        "@typescript-eslint/parser": "8.38.0",
         "concurrently": "9.2.0",
-        "eslint": "9.39.3",
-        "eslint-config-prettier": "10.1.5",
-        "eslint-plugin-import": "2.32.0",
-        "eslint-plugin-prettier": "5.4.1",
-        "eslint-plugin-react": "7.37.5",
-        "eslint-plugin-react-hooks": "5.2.0",
-        "eslint-plugin-unicorn": "60.0.0",
-        "globals": "15.14.0",
         "husky": "8.0.3",
         "lint-staged": "15.5.1",
         "onchange": "7.1.0",
+        "oxlint": "1.70.0",
+        "oxlint-tsgolint": "0.23.0",
         "prettier": "3.6.2",
+        "@redocly/cli": "2.34.0",
         "rimraf": "6.1.3",
         "testcontainers": "12.0.2",
         "tsx": "4.22.4",
         "typescript": "5.8.3",
-        "typescript-eslint": "8.38.0",
         "vitest": "4.1.9"
     },
     "lint-staged": {
-        "*.{js,jsx,ts,tsx,cjs}": [
-            "eslint --fix --quiet"
+        "*.{js,jsx,ts,tsx,cjs,mjs}": [
+            "oxlint -c .oxlintrc.json --fix",
+            "prettier --config .prettierrc --write"
         ],
         "*.{html,css,json,yaml}": [
             "prettier --write"
@@ -103,6 +98,9 @@
         "js-cookie": "3.0.8",
         "tmp": "0.2.7",
         "protobufjs": "7.6.4",
-        "esbuild": "0.28.1"
+        "esbuild": "0.28.1",
+        "@elastic/transport": {
+            "undici": "6.27.0"
+        }
     }
 }

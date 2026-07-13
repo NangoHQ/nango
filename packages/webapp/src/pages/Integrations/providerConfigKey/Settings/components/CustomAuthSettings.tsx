@@ -1,19 +1,19 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { AppPrivateKeyInput } from './AppPrivateKeyInput';
+import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
-import { Label } from '@/components/ui/Label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud.js';
+import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -74,7 +74,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
         <div className="flex flex-col gap-10">
             {/* Callback URL */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="callback_url">Callback URL</Label>
+                <FieldLabel htmlFor="callback_url">Callback URL</FieldLabel>
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
@@ -86,7 +86,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
             {/* App ID */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="app_id">App ID</Label>
+                    <FieldLabel htmlFor="app_id">App ID</FieldLabel>
                     <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
                 </div>
                 <EditableInput initialValue={integration.custom?.app_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
@@ -95,7 +95,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
             {/* App Public Link */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="app_link">App Public Link</Label>
+                    <FieldLabel htmlFor="app_link">App Public Link</FieldLabel>
                     <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
                 </div>
                 <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
@@ -103,7 +103,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
 
             {/* Client ID */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_id">Client ID</Label>
+                <FieldLabel htmlFor="client_id">Client ID</FieldLabel>
                 <>
                     <EditableInput
                         initialValue={integration.oauth_client_id || ''}
@@ -124,7 +124,7 @@ export const CustomAuthSettings: React.FC<{ data: GetIntegration['Success']['dat
 
             {/* Client Secret */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_secret">Client Secret</Label>
+                <FieldLabel htmlFor="client_secret">Client Secret</FieldLabel>
                 <EditableInput
                     secret
                     initialValue={integration.oauth_client_secret || ''}

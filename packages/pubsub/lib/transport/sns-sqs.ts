@@ -2,11 +2,11 @@ import { PublishBatchCommand, PublishCommand, SNSClient } from '@aws-sdk/client-
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
-import { Err, Ok, chunk, getLogger, report, runWithConcurrencyLimit } from '@nangohq/utils';
+import { chunk, Err, getLogger, Ok, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { PublishFailure } from './transport.js';
 import { serde } from '../utils/serde.js';
+import { PublishFailure } from './transport.js';
 
 import type { PublishBatchProps, PublishBatchResult, SubscribeProps, Transport } from './transport.js';
 import type { BatchResultErrorEntry, PublishBatchRequestEntry } from '@aws-sdk/client-sns';

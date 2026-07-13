@@ -84,7 +84,43 @@ describe('Clickhouse', () => {
                 genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
                 genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } }),
                 genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
-                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } })
+                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } }),
+                // data_transfer
+                // day 0: 3 events × 1000 bytes via runner = 3000 bytes
+                ...genEventsN({
+                    n: 3,
+                    date: dayFromNow(),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    attributes: { egressedBytes: 1000, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
+                    value: 1000
+                }),
+                // day 1: 2 events × 500 bytes via server = 1000 bytes
+                ...genEventsN({
+                    n: 2,
+                    date: dayFromNow(1),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    attributes: { egressedBytes: 0, ingressedBytes: 500, package: 'server', callsite: 'proxy' },
+                    value: 500
+                }),
+                // different account (must be excluded)
+                ...genEventsN({
+                    n: 5,
+                    date: dayFromNow(),
+                    type: 'usage.data_transfer',
+                    accountId: 999,
+                    attributes: { egressedBytes: 100, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
+                    value: 100
+                }),
+                // out of timeframe (must be excluded)
+                genEvent({
+                    date: dayFromNow(-1),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    value: 999,
+                    attributes: { egressedBytes: 999, ingressedBytes: 0, package: 'server', callsite: 'proxy' }
+                })
             ]);
             await clickhouse.flush(); // force flush to make sure all events are ingested before we query
         });
@@ -237,6 +273,42 @@ describe('Clickhouse', () => {
                                 { day: dayFromNow(), value: 6 },
                                 { day: dayFromNow(1), value: 3 }
                             ]
+                        }
+                    ]
+                });
+            });
+
+            it('data_transfer, no dimension', async () => {
+                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'none', timeframe: { start, end } });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'data_transfer',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), value: 3000 },
+                                { day: dayFromNow(1), value: 1000 }
+                            ]
+                        }
+                    ]
+                });
+            });
+
+            it('data_transfer broken down by package', async () => {
+                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'package', timeframe: { start, end } });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'data_transfer',
+                    series: [
+                        {
+                            dimension: 'package',
+                            dimensionValue: 'runner',
+                            days: [{ day: dayFromNow(), value: 3000 }]
+                        },
+                        {
+                            dimension: 'package',
+                            dimensionValue: 'server',
+                            days: [{ day: dayFromNow(1), value: 1000 }]
                         }
                     ]
                 });
@@ -456,30 +528,34 @@ describe('Clickhouse', () => {
         });
 
         describe('getTopDimensionValues', () => {
-            it('returns top dimension values ordered by SUM(value) DESC', async () => {
+            it('returns dimension values ordered by SUM(value) DESC', async () => {
                 // records fixture: integrationId=a → 1000+1100+1100=3200; b → 500+500=1000.
                 const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.unwrap()).toStrictEqual({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
-                    values: ['a', 'b']
+                    values: ['a', 'b'],
+                    // Two values < one full page → no next page.
+                    hasMore: false
                 });
             });
 
-            it('honours limit (clamped to TOP_N_BREAKDOWN_CAP upstream)', async () => {
+            it('filters by case-insensitive substring search', async () => {
                 const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
                     timeframe: { start, end },
-                    limit: 1
+                    page: 0,
+                    // Uppercase term still matches the lowercase 'a' (and not 'b').
+                    search: 'A'
                 });
                 expect(res.unwrap().values).toEqual(['a']);
             });
@@ -491,7 +567,7 @@ describe('Clickhouse', () => {
                     metric: 'proxy',
                     dimension: 'success',
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 const values = res.unwrap().values;
                 expect(values).toEqual(['true', 'false']);
@@ -504,7 +580,7 @@ describe('Clickhouse', () => {
                     metric: 'connections',
                     dimension: 'model' as any,
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.isErr()).toBe(true);
             });
@@ -515,7 +591,7 @@ describe('Clickhouse', () => {
                     metric: 'records',
                     dimension: 'none' as any,
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.isErr()).toBe(true);
             });
@@ -526,7 +602,7 @@ describe('Clickhouse', () => {
                     metric: 'records',
                     dimension: 'integration_id',
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.unwrap().values).toEqual([]);
             });
@@ -899,15 +975,17 @@ function genEventsN({
     date,
     type,
     accountId,
+    value,
     attributes = {}
 }: {
     n: number;
     date: Date;
     type: ClickhouseRawUsageEvent['type'];
     accountId: ClickhouseRawUsageEvent['account_id'];
+    value?: number;
     attributes?: Partial<ClickhouseRawUsageEvent['attributes']>;
 }): ClickhouseRawUsageEvent[] {
-    return Array.from({ length: n }).map((_) => genEvent({ date, type, accountId, attributes }));
+    return Array.from({ length: n }).map((_) => genEvent({ date, type, accountId, ...(value !== undefined ? { value } : {}), attributes }));
 }
 
 function genEvent({
@@ -1007,6 +1085,23 @@ function genEvent({
                 attributes: {
                     ...baseAttributes,
                     batchId: rnd.uuid(),
+                    ...attributes
+                }
+            };
+
+        case 'usage.data_transfer':
+            return {
+                ts: date.getTime(),
+                type,
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+                value,
+                attributes: {
+                    ...baseAttributes,
+                    egressedBytes: 0,
+                    ingressedBytes: 0,
+                    package: 'runner',
+                    callsite: 'proxy',
                     ...attributes
                 }
             };

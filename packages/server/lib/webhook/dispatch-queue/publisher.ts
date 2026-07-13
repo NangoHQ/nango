@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 
 import { chunk, metrics, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
-import type { SQSClient, SendMessageBatchCommandOutput, SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs';
+import type { SendMessageBatchCommandOutput, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
 
 const SQS_BATCH_MAX_ENTRIES = 10;

@@ -6,12 +6,11 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import GoogleButton from '@/components/patterns/GoogleButton';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSigninAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -61,7 +60,11 @@ export const Signin: React.FC = () => {
 
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            email: '',
+            password: ''
+        },
+        mode: 'onSubmit'
     });
 
     const onSubmitForm = async (data: SigninFormData) => {
@@ -159,7 +162,7 @@ export const Signin: React.FC = () => {
                                     render={({ field, fieldState }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <InputGroup className="h-11">
+                                                <InputGroup>
                                                     <InputGroupInput placeholder="Email" autoComplete="email" {...field} aria-invalid={!!fieldState.error} />
                                                 </InputGroup>
                                             </FormControl>
@@ -175,7 +178,7 @@ export const Signin: React.FC = () => {
                                         render={({ field, fieldState }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <InputGroup className="h-11">
+                                                    <InputGroup>
                                                         <InputGroupInput
                                                             placeholder="Password"
                                                             type="password"
@@ -197,7 +200,7 @@ export const Signin: React.FC = () => {
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="lg" loading={isPending}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>

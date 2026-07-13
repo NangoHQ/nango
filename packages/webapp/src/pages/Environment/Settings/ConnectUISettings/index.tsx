@@ -3,10 +3,8 @@ import { Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
 
-import { ConnectUIPreview } from './components/ConnectUIPreview';
-import SettingsContent from '../components/SettingsContent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
@@ -21,7 +19,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
-import { cn } from '@/utils/utils';
+import SettingsContent from '../components/SettingsContent';
+import { ConnectUIPreview } from './components/ConnectUIPreview';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { Theme } from '@nangohq/types';
@@ -32,51 +31,25 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
     <>
         <form.Field name="theme.light.primary">
             {(field: any) => (
-                <div className="w-full flex flex-col gap-2">
-                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
+                <Field>
+                    <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                         Primary (Light theme)
-                    </label>
-                    <div className="flex items-center">
-                        <div className="w-full flex flex-col gap-1">
-                            <ColorInput
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                onBlur={field.handleBlur}
-                                disabled={disabled}
-                            />
-                            {!field.state.meta.isValid && (
-                                <em role="alert" className="text-body-small-regular text-status-danger-text">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                    </FieldLabel>
+                    <ColorInput value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} disabled={disabled} />
+                    {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
+                </Field>
             )}
         </form.Field>
 
         <form.Field name="theme.dark.primary">
             {(field: any) => (
-                <div className="w-full flex flex-col gap-2">
-                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
+                <Field>
+                    <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                         Primary (Dark theme)
-                    </label>
-                    <div className="flex items-center">
-                        <div className="w-full flex flex-col gap-1">
-                            <ColorInput
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                onBlur={field.handleBlur}
-                                disabled={disabled}
-                            />
-                            {!field.state.meta.isValid && (
-                                <em role="alert" className="text-sm text-status-danger-text">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                    </FieldLabel>
+                    <ColorInput value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} disabled={disabled} />
+                    {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
+                </Field>
             )}
         </form.Field>
     </>
@@ -85,21 +58,19 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
 const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled, form }) => (
     <form.Field name="showWatermark">
         {(field: any) => (
-            <div className="flex gap-5 items-center">
-                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-muted' : '')}>
+            <Field orientation="horizontal" className="gap-5">
+                <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                     Show &quot;Secured by Nango&quot;
-                </label>
-                <div className="flex items-center">
-                    <Switch
-                        id={field.name}
-                        name={field.name}
-                        checked={field.state.value}
-                        onCheckedChange={(checked) => field.handleChange(checked)}
-                        onBlur={field.handleBlur}
-                        disabled={disabled}
-                    />
-                </div>
-            </div>
+                </FieldLabel>
+                <Switch
+                    id={field.name}
+                    name={field.name}
+                    checked={field.state.value}
+                    onCheckedChange={(checked) => field.handleChange(checked)}
+                    onBlur={field.handleBlur}
+                    disabled={disabled}
+                />
+            </Field>
         )}
     </form.Field>
 );
@@ -162,8 +133,8 @@ export const ConnectUISettings = () => {
                     <div className="flex flex-col gap-6">
                         <form.Field name="defaultTheme">
                             {(field) => (
-                                <div className="w-full flex flex-col gap-2 justify-between">
-                                    <label htmlFor={field.name} className="text-body-medium-medium flex items-center gap-2">
+                                <Field>
+                                    <FieldLabel htmlFor={field.name}>
                                         Default theme
                                         <InfoTooltip icon={<Info />} side="right">
                                             <p>
@@ -178,20 +149,18 @@ export const ConnectUISettings = () => {
                                                 </StyledLink>
                                             </p>
                                         </InfoTooltip>
-                                    </label>
-                                    <div className="flex">
-                                        <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
-                                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                                <SelectValue placeholder="Default theme" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="system">System</SelectItem>
-                                                <SelectItem value="light">Light</SelectItem>
-                                                <SelectItem value="dark">Dark</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
+                                    </FieldLabel>
+                                    <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
+                                        <SelectTrigger id={field.name} className="w-full text-sm px-2.5 gap-2">
+                                            <SelectValue placeholder="Default theme" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="system">System</SelectItem>
+                                            <SelectItem value="light">Light</SelectItem>
+                                            <SelectItem value="dark">Dark</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Field>
                             )}
                         </form.Field>
 

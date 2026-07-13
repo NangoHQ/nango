@@ -10,24 +10,25 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
+import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
+import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
+import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
+import { SyncsTab as ConnectionSyncsTab } from '@/pages/Connection/components/SyncsTab';
 import { ConnectionCreate } from '@/pages/Connection/Create';
 import { ConnectionCreateLegacy } from '@/pages/Connection/CreateLegacy';
 import { ConnectionList } from '@/pages/Connection/List';
 import { ConnectionShow } from '@/pages/Connection/Show';
 import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
-import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
-import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
-import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
-import { SyncsTab as ConnectionSyncsTab } from '@/pages/Connection/components/SyncsTab';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from '@/pages/GettingStarted/Show';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
-import { IntegrationsList } from '@/pages/Integrations/Show';
 import { FunctionsOne } from '@/pages/Integrations/providerConfigKey/Functions/One';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
+import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
+import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
@@ -217,6 +218,11 @@ export const router = sentryCreateBrowserRouter([
                                         handle: {
                                             breadcrumb: (params) => params.functionName || 'Function'
                                         } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: 'templates',
+                                        element: <Templates />,
+                                        handle: { breadcrumb: 'Templates' } as BreadcrumbHandle
                                     },
                                     {
                                         path: '*',

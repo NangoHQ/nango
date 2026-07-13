@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { FunctionError, deploySandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { deploySandboxTimeoutMs, FunctionError, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';

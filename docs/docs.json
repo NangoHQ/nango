@@ -83,6 +83,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/google-gemini",
+      "destination": "/api-integrations/google-gemini"
+    },
+    {
+      "source": "/integrations/all/google-gemini/connect",
+      "destination": "/api-integrations/google-gemini/connect"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -798,6 +806,10 @@
                       {
                         "group": "Functions",
                         "pages": [
+                          "reference/backend/http-api/functions/list",
+                          "reference/backend/http-api/functions/get",
+                          "reference/backend/http-api/functions/code",
+                          "reference/backend/http-api/functions/delete",
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
@@ -840,7 +852,8 @@
                         "group": "Providers",
                         "pages": [
                           "reference/backend/http-api/providers/list",
-                          "reference/backend/http-api/providers/get"
+                          "reference/backend/http-api/providers/get",
+                          "reference/backend/http-api/providers/templates"
                         ]
                       },
                       {
@@ -906,6 +919,7 @@
               "api-integrations/8x8",
               "api-integrations/absorb-lms",
               "api-integrations/accelo",
+              "api-integrations/acumatica",
               "api-integrations/adobe-commerce",
               "integrations/all/acuity-scheduling",
               "integrations/all/active-campaign",
@@ -921,6 +935,7 @@
               "integrations/all/adp-workforce-now-next-gen",
               "integrations/all/adyen",
               "api-integrations/adyntel",
+              "api-integrations/ahrefs",
               "integrations/all/affinity",
               "integrations/all/affinity-v2",
               "api-integrations/agiloft",
@@ -955,6 +970,7 @@
               "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
+              "api-integrations/aspire",
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
@@ -1004,6 +1020,7 @@
               "api-integrations/bird",
               "api-integrations/buffer",
               "integrations/all/boldsign",
+              "api-integrations/boondmanager",
               "integrations/all/booking-com",
               "api-integrations/box",
               "integrations/all/braintree",
@@ -1104,6 +1121,7 @@
               "api-integrations/demodesk",
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
+              "api-integrations/dialpad-wfm",
               "api-integrations/diffbot",
               "integrations/all/digitalocean",
               "api-integrations/digits",
@@ -1144,6 +1162,7 @@
               "integrations/all/epic-games",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
+              "api-integrations/everflow",
               "api-integrations/etsy",
               "integrations/all/exa",
               "integrations/all/exact-online",
@@ -1189,7 +1208,7 @@
               "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
-              "integrations/all/google-gemini",
+              "api-integrations/google-gemini",
               "integrations/all/gebruder-weiss",
               "integrations/all/gem",
               "integrations/all/gerrit",
@@ -1215,6 +1234,7 @@
               "api-integrations/google-docs",
               "api-integrations/google-drive",
               "api-integrations/google-forms",
+              "api-integrations/google-health",
               "api-integrations/google-mail",
               "api-integrations/google-maps",
               "api-integrations/google-meet",
@@ -1279,9 +1299,11 @@
               "api-integrations/intercom",
               "integrations/all/intuit",
               "integrations/all/ironclad",
+              "api-integrations/ironclad-cc",
               "integrations/all/itglue",
               "integrations/all/jamf",
               "integrations/all/jamf-basic",
+              "api-integrations/jamie",
               "integrations/all/jazzhr",
               "api-integrations/jiminny",
               "api-integrations/jira",
@@ -1301,6 +1323,7 @@
               "integrations/all/kintone",
               "integrations/all/kintone-user-api",
               "integrations/all/keeper-scim",
+              "api-integrations/konnektive",
               "api-integrations/knowbe4",
               "integrations/all/klaviyo",
               "integrations/all/klaviyo-oauth",
@@ -1368,6 +1391,7 @@
               "api-integrations/maxio",
               "integrations/all/microsoft-tenant-specific",
               "api-integrations/microsoft-oauth2-cc",
+              "api-integrations/microsoft-oauth2-cc-cert",
               "integrations/all/microsoft-admin",
               "integrations/all/mimecast",
               "integrations/all/mindbody",
@@ -1394,6 +1418,7 @@
               "integrations/all/namely-pat",
               "api-integrations/nerdio",
               "integrations/all/netsuite",
+              "api-integrations/netsuite-client-credentials",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
               "api-integrations/nexthink",
@@ -1535,7 +1560,9 @@
               "integrations/all/sage-hr",
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
+              "api-integrations/sage-intacct-cc",
               "integrations/all/sage-people",
+              "api-integrations/sap-ariba",
               "api-integrations/salesforce",
               "api-integrations/salesforce-cc",
               "api-integrations/salesforce-jwt",
@@ -1640,6 +1667,7 @@
               "api-integrations/supabase-mcp",
               "api-integrations/supabase-mcp-oauth",
               "api-integrations/superhuman-mcp",
+              "api-integrations/surecontact",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
@@ -1723,6 +1751,7 @@
               "integrations/all/workable-oauth",
               "api-integrations/workday-adaptive-planning",
               "api-integrations/workday-adaptive-planning-basic",
+              "api-integrations/workday-cc",
               "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "api-integrations/workday-oauth",

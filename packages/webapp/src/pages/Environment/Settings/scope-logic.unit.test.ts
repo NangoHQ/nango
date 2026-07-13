@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
     ALL_INDIVIDUAL_SCOPES,
-    SCOPE_GROUPS,
     allGroupScopes,
     expandScopes,
     groupWildcard,
     isScopeSelected,
+    SCOPE_GROUPS,
     toggleCredential,
     toggleGroup,
     toggleScope

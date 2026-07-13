@@ -1,45 +1,46 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
+import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
+    connectionService,
     createSyncJob,
     customerKeyService,
     environmentService,
     errorManager,
     errorNotificationService,
+    ErrorSourceEnum,
     externalWebhookService,
     getApiUrl,
-    getById as getSyncById,
     getEndUserByConnectionId,
     getLastSyncDate,
+    getById as getSyncById,
     getSyncConfigRaw,
     getSyncJobByRunId,
+    LogActionEnum,
+    NangoError,
     secretService,
     setLastSyncDate,
+    SyncJobsType,
+    SyncStatus,
     updateSyncJobResult,
     updateSyncJobStatus
 } from '@nangohq/shared';
-import { Err, Ok, getFrequencyMs, tagTraceUser } from '@nangohq/utils';
+import { Err, getFrequencyMs, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, orchestratorClient, slackService } from '../clients.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
+import { getRunnerFlags } from '../utils/flags.js';
+import { pubsub } from '../utils/pubsub.js';
 import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
-import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
-import { pubsub } from '../utils/pubsub.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
@@ -345,6 +346,7 @@ export async function handleSyncSuccess({
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
+        const connectionConfig = webhookSettings ? await connectionService.getConnectionConfig(connection) : null;
         const webhookSigningSecret = webhookSettings
             ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
                   if (r.isErr()) throw r.error;
@@ -467,6 +469,7 @@ export async function handleSyncSuccess({
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
                                 webhookSettings,
+                                connectionConfig,
                                 model,
                                 now: nangoProps.startedAt,
                                 success: true,
@@ -717,7 +720,11 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
         }
         const { account: team, environment } = accountAndEnv;
 
-        const abortedScript = await abortTaskWithId({ taskId: task.abortedTask.id, teamId: team.id });
+        const abortedScript = await abortTaskWithId({
+            taskId: task.abortedTask.id,
+            teamId: team.id,
+            environmentId: task.connection.environment_id
+        });
         if (abortedScript.isErr()) {
             logger.error(`failed to abort script for task ${task.abortedTask.id}`, abortedScript.error);
         }
@@ -923,6 +930,7 @@ async function onFailure({
 
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
+        const connectionConfig = webhookSettings ? await connectionService.getConnectionConfig(connection) : null;
 
         if (team && syncConfig && providerConfig && webhookSettings) {
             const span = tracer.startSpan('jobs.sync.webhook', {
@@ -950,6 +958,7 @@ async function onFailure({
                         environment: environment,
                         secret: webhookSigningKey.value,
                         webhookSettings,
+                        connectionConfig,
                         model: models.join(','),
                         success: false,
                         error: {

@@ -1,0 +1,46 @@
+---
+title: Konnektive - How do I link my account?
+sidebarTitle: Konnektive
+---
+
+# Overview
+
+To authenticate with Konnektive, you need:
+1. **API Login ID** — Your Konnektive API user login ID.
+2. **API Password** — Your Konnektive API user password.
+
+This guide will walk you through finding your API credentials in Konnektive.
+
+### Prerequisites
+
+- An active Konnektive account with administrator access.
+
+<a id="step-1-find-your-api-credentials"></a>
+### Step 1: Find your API credentials
+
+1. Log in to your Konnektive account.
+2. Go to **Admin** > **Users** and click **Add User** (or open an existing API user).
+
+<img src="/api-integrations/konnektive/create_api.avif"/>
+
+3. Set **Access Level** to **Api User**, then choose a **Username** and **Password**.
+   - The password can't contain an `&` character.
+4. Under **IP Whitelist**, add the IP address that will call the Konnektive API. See [Nango's public IP addresses](/guides/platform/security#ip-allowlist) if Nango's proxy will be making the calls.
+<img src="/api-integrations/konnektive/ip_address.png"/>
+
+5. Under **Access Details**, grant only the endpoints this API user needs — access to query endpoints lets it pull data out of your CRM, so scope it to what your integration actually uses. Create separate API users for different services that need API access.
+6. Save the user, then note its **Username** and **Password** — these are your API Login ID and password.
+
+API users can't log into the Konnektive CRM UI; they can only make API calls.
+
+### Step 2: Enter credentials in the Connect UI
+
+Once you have your API Login ID and password:
+1. Open the form where you need to authenticate with Konnektive.
+2. Enter your **API Login ID** and **API Password** in the corresponding fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/konnektive/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Konnektive.

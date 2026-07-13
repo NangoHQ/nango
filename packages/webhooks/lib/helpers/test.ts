@@ -8,10 +8,12 @@ export class TestWebhookServer {
     private server: http.Server | null = null;
     public readonly primaryUrl: string;
     public readonly secondaryUrl: string;
+    public readonly overrideUrl: string;
 
     constructor(private readonly port: number) {
         this.primaryUrl = `http://localhost:${port}/webhook`;
         this.secondaryUrl = `http://localhost:${port}/webhook-secondary`;
+        this.overrideUrl = `http://localhost:${port}/webhook-override`;
     }
 
     async start(): Promise<void> {

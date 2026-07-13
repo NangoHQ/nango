@@ -14,14 +14,11 @@ export {
     COUNTER_METRICS,
     FILTER_PARAM_TYPE_FOR_DIM,
     TOP_N_BREAKDOWN_CAP,
-    TOP_N_BREAKDOWN_DEFAULT
+    TOP_N_BREAKDOWN_DEFAULT,
+    TOP_N_BREAKDOWN_PAGE_SIZE
 } from './clickhouse/clickhouse.query.js';
 export { clickhouseClient } from './clickhouse/config.js';
 export { migrate } from './clickhouse/migrate.js';
-export { shouldUseClickhouseFor } from './usage.js';
-// Test-only: integration tests in other packages need to mutate the
-// usage-side `envs` singleton (different from the server-side one).
-export { envs as envsForTests } from './env.js';
 
 export async function getUsageTracker(redisUrl: string | undefined): Promise<IUsageTracker> {
     if (redisUrl) {

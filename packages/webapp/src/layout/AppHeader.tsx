@@ -1,10 +1,11 @@
-import { BookOpen, Box, LifeBuoy, Moon, Sun } from 'lucide-react';
+import { BookOpen, Box, MessageSquareMore as HelpIcon, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
 
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { trackPlaygroundOpened } from '@/features/Playground/analytics';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -28,7 +29,17 @@ export const AppHeader: React.FC = () => {
             <div className="flex justify-end gap-2">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
-                        <Button variant="outline" size="md" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
+                        <Button
+                            variant="outline"
+                            size="md"
+                            disabled={!allowed}
+                            onClick={() => {
+                                if (!playgroundOpen) {
+                                    trackPlaygroundOpened('header');
+                                }
+                                setPlaygroundOpen(!playgroundOpen);
+                            }}
+                        >
                             <Box />
                             Playground
                         </Button>
@@ -39,10 +50,13 @@ export const AppHeader: React.FC = () => {
                         <BookOpen />
                     </a>
                 </IconButton>
-                <IconButton asChild variant="outline" size="md" label="Help">
-                    <a href="https://nango.dev/slack" target="_blank" rel="noreferrer">
-                        <LifeBuoy />
-                    </a>
+                <IconButton
+                    variant="outline"
+                    size="md"
+                    label="Help"
+                    onClick={() => (window.Plain ? window.Plain.open() : window.open('https://nango.dev/slack', '_blank', 'noopener,noreferrer'))}
+                >
+                    <HelpIcon />
                 </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>
                     {darkMode ? <Sun /> : <Moon />}

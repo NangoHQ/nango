@@ -1,11 +1,12 @@
 import { EyeIcon, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
 
-import { CopyButton } from '../ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupTextarea } from '../ui/InputGroup';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { CopyButton } from '../ui/CopyButton';
+
+import type { InputProps } from '@nangohq/design-system';
 
 interface SecretTextAreaProps extends Omit<React.ComponentProps<'textarea'>, 'onChange'> {
     copy?: boolean;
@@ -41,7 +42,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
                 />
             ) : (
                 <InputGroupInput
-                    {...(props as React.ComponentProps<'input'>)}
+                    {...(props as unknown as InputProps)}
                     value={canRead ? (value as string) : '•'.repeat(32)}
                     defaultValue={canRead ? (defaultValue as string) : undefined}
                     type="password"

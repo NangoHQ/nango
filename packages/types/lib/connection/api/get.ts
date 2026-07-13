@@ -16,7 +16,10 @@ import type { ReplaceInObject } from '../../utils.js';
 import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
-export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
+export type ApiConnectionSimple = Pick<
+    Merge<DBConnection, ApiTimestamps>,
+    'id' | 'config_id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'
+> & {
     provider: string;
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;

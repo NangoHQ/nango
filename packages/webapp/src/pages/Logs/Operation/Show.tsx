@@ -1,20 +1,19 @@
 import { Prism } from '@mantine/prism';
-import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
-import { ExternalLink } from 'lucide-react';
+import { Calendar, Clock, ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
 
-import { OperationTag } from '../components/OperationTag';
-import { ProviderTag } from '../components/ProviderTag';
-import { Logs } from './components/Logs';
-import { useGetOperation } from '../../../hooks/useLogs';
-import { useStore } from '../../../store';
-import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
-import { StatusTag } from '../components/StatusTag';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { useGetOperation } from '../../../hooks/useLogs';
+import { useStore } from '../../../store';
+import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
+import { OperationTag } from '../components/OperationTag';
+import { ProviderTag } from '../components/ProviderTag';
+import { StatusTag } from '../components/StatusTag';
+import { Logs } from './components/Logs';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -109,12 +108,12 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                     </div>
                     <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
-                        <IconClockHour4 stroke={1} size={18} />
+                        <Clock strokeWidth={1} size={18} />
                         <div className="text-text-muted text-s pt-px font-code">{duration}</div>
                     </div>
                     <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
-                        <IconCalendar stroke={1} size={18} />
+                        <Calendar strokeWidth={1} size={18} />
                         <div className="text-text-muted text-s pt-px font-code">{createdAt}</div>
                     </div>
                 </div>

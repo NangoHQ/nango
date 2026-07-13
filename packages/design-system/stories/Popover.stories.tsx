@@ -1,5 +1,5 @@
-import { Button } from '../src/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

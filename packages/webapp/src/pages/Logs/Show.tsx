@@ -2,11 +2,11 @@ import { useQueryState } from 'nuqs';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { OperationDrawer } from './components/OperationDrawer';
-import { SearchAllOperations } from './components/SearchAllOperations';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
+import { OperationDrawer } from './components/OperationDrawer';
+import { SearchAllOperations } from './components/SearchAllOperations';
 
 export const LogsShow: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -19,7 +19,7 @@ export const LogsShow: React.FC = () => {
 
     if (!globalEnv.features.logs) {
         return (
-            <DashboardLayout fullWidth title="Logs" className="p-6">
+            <DashboardLayout fullWidth title="Logs">
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
@@ -38,7 +38,7 @@ export const LogsShow: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Logs" className="p-6 h-full">
+        <DashboardLayout fullWidth title="Logs" className="h-full">
             <Helmet>
                 <title>Logs - Nango</title>
             </Helmet>

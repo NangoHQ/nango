@@ -1,13 +1,22 @@
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
-const logger = getLogger('webhooks.forward');
-
-import { deliver, shouldSend } from './utils.js';
+import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
-import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
+import type {
+    ConnectionConfig,
+    DBAPISecret,
+    DBEnvironment,
+    DBExternalWebhook,
+    DBTeam,
+    IntegrationConfig,
+    NangoForwardWebhookBody,
+    Result
+} from '@nangohq/types';
+
+const logger = getLogger('webhooks.forward');
 
 export const forwardWebhook = async ({
     integration,
@@ -16,6 +25,7 @@ export const forwardWebhook = async ({
     secret,
     webhookSettings,
     connectionIds,
+    connectionConfigByConnectionId,
     payload,
     webhookOriginalHeaders,
     logContextGetter,
@@ -27,6 +37,7 @@ export const forwardWebhook = async ({
     secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
+    connectionConfigByConnectionId: Map<string, Pick<ConnectionConfig, 'webhook_url'>>;
     payload: Record<string, any> | null;
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
@@ -41,9 +52,6 @@ export const forwardWebhook = async ({
     };
 
     if (!webhookSettings) {
-        return Ok({ results: [] });
-    }
-    if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
         return Ok({ results: [] });
     }
     if (!integration.forward_webhooks) {
@@ -67,12 +75,18 @@ export const forwardWebhook = async ({
         payload: payload
     };
 
-    const webhooks = [
-        { url: webhookSettings.primary_url, type: 'webhook url' },
-        { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
-    ].filter((webhook) => webhook.url) as { url: string; type: string }[];
+    const toWebhooks = (settings: DBExternalWebhook): { url: string; type: string }[] =>
+        [
+            { url: settings.primary_url, type: 'webhook url' },
+            { url: settings.secondary_url, type: 'secondary webhook url' }
+        ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
     if (!connectionIds || connectionIds.length === 0) {
+        if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
+            await logCtx.success();
+            return Ok({ results: [] });
+        }
+        const webhooks = toWebhooks(webhookSettings);
         const deliverBytes: MeteredBytes = { sent: 0, received: 0 };
         const result = await deliver({
             webhooks,
@@ -102,6 +116,14 @@ export const forwardWebhook = async ({
     let success = true;
     const results: { connectionId: string; success: boolean }[] = [];
     for (const connectionId of connectionIds) {
+        // Resolve the per-connection webhook URL override (if any) so a connection's forwarded webhooks
+        // honor it, just like its sync/auth/action webhooks.
+        const settings = resolveWebhookSettings(webhookSettings, connectionConfigByConnectionId.get(connectionId) ?? null);
+        if (!shouldSend({ success: true, type: 'forward', webhookSettings: settings })) {
+            continue;
+        }
+        const webhooks = toWebhooks(settings);
+
         const deliverBytes: MeteredBytes = { sent: 0, received: 0 };
         const result = await deliver({
             webhooks,

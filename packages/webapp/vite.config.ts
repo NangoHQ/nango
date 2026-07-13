@@ -31,9 +31,18 @@ function apiEnvProxyPlugin(apiUrl: string): Plugin {
                 const addr = server.httpServer?.address();
                 const port = addr && typeof addr === 'object' ? addr.port : DEV_PORT;
                 const origin = `http://localhost:${port}`;
-                const body = await fetch(`${apiUrl}/env.js`).then((r) => r.text());
-                res.setHeader('Content-Type', 'text/javascript');
-                res.end(body.replace(/"apiUrl": "[^"]*"/, `"apiUrl": "${origin}"`));
+                try {
+                    const body = await fetch(`${apiUrl}/env.js`).then((r) => r.text());
+                    res.setHeader('Content-Type', 'text/javascript');
+                    res.end(body.replace(/"apiUrl": "[^"]*"/, `"apiUrl": "${origin}"`));
+                } catch {
+                    // The backend may not be listening yet (e.g. it boots slower than Vite).
+                    // Respond with a retryable error instead of letting the rejection crash Vite.
+                    console.warn(`[nango] ${apiUrl}/env.js not reachable yet, returning 503 (the browser will retry)`);
+                    res.statusCode = 503;
+                    res.setHeader('Retry-After', '1');
+                    res.end('// backend not ready');
+                }
             });
         }
     };
@@ -87,10 +96,7 @@ export default defineConfig(() => {
         plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin],
         resolve: {
             alias: {
-                '@': path.resolve(__dirname, './src'),
-                // https://github.com/tabler/tabler-icons/issues/1233
-                // /esm/icons/index.mjs only exports the icons statically, so no separate chunks are created
-                '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
+                '@': path.resolve(__dirname, './src')
             }
         },
         server: { port: DEV_PORT, proxy },

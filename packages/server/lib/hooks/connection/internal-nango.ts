@@ -1,4 +1,4 @@
-import { ProxyRequest, configService, connectionService, getProxyConfiguration, makeDataTransferEvent, pubsub } from '@nangohq/shared';
+import { configService, connectionService, getProxyConfiguration, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';

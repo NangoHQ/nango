@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { BREAKDOWN_DIMENSIONS, DIMENSION_LABELS, formatDimensionValue, metricsSupportingDimension } from './usageBreakdown.js';
+import {
+    BREAKDOWN_DIMENSIONS,
+    DIMENSION_LABELS,
+    formatDimensionValue,
+    isSearchableDimension,
+    metricsSupportingDimension,
+    parseFilterParam,
+    resolveBreakdownDimension
+} from './usageBreakdown.js';
 
 import type { AnyBreakdownDimension } from './usageBreakdown.js';
 
@@ -47,5 +55,75 @@ describe('dimension config integrity', () => {
         for (const dim of referenced) {
             expect(DIMENSION_LABELS[dim], `missing label for "${dim}"`).toBeTruthy();
         }
+    });
+});
+
+describe('parseFilterParam', () => {
+    const allowed = BREAKDOWN_DIMENSIONS.function_executions;
+
+    it('parses <dimension>:<value>', () => {
+        expect(parseFilterParam('environment_id:105', allowed)).toEqual({ dimension: 'environment_id', value: '105' });
+    });
+
+    it('splits on the first colon so a value containing colons survives', () => {
+        expect(parseFilterParam('connection_id:https://example.com:8080', allowed)).toEqual({
+            dimension: 'connection_id',
+            value: 'https://example.com:8080'
+        });
+    });
+
+    it('returns null for malformed input', () => {
+        expect(parseFilterParam('', allowed)).toBeNull();
+        expect(parseFilterParam('no-colon', allowed)).toBeNull();
+        expect(parseFilterParam(':leading-colon', allowed)).toBeNull(); // empty dimension
+        expect(parseFilterParam('success:', allowed)).toBeNull(); // empty value
+    });
+
+    it('returns null for a dimension the metric does not support', () => {
+        // function_executions has no `model` dimension — e.g. a stale deep-link.
+        expect(parseFilterParam('model:gpt-4o', allowed)).toBeNull();
+    });
+});
+
+describe('isSearchableDimension', () => {
+    it('is false for small, fully-listed enum dimensions (no search box)', () => {
+        for (const dim of ['environment_id', 'success', 'function_type', 'package', 'callsite'] as const) {
+            expect(isSearchableDimension(dim), `${dim} should not be searchable`).toBe(false);
+        }
+    });
+
+    it('is true for open, high-cardinality id/name dimensions', () => {
+        for (const dim of ['integration_id', 'connection_id', 'model', 'function_name'] as const) {
+            expect(isSearchableDimension(dim), `${dim} should be searchable`).toBe(true);
+        }
+    });
+
+    it('classifies every dimension referenced by any metric', () => {
+        // Guards against a new dimension silently defaulting to "searchable" without a deliberate choice.
+        const referenced = new Set<AnyBreakdownDimension>(Object.values(BREAKDOWN_DIMENSIONS).flat());
+        const open = new Set<AnyBreakdownDimension>(['integration_id', 'connection_id', 'model', 'function_name']);
+        const closed = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
+        for (const dim of referenced) {
+            expect(open.has(dim) || closed.has(dim), `unclassified dimension "${dim}"`).toBe(true);
+            expect(isSearchableDimension(dim)).toBe(open.has(dim));
+        }
+    });
+});
+
+describe('resolveBreakdownDimension', () => {
+    it('keeps the group when there is no filter', () => {
+        expect(resolveBreakdownDimension('integration_id', null)).toBe('integration_id');
+    });
+
+    it('keeps the group when the filter targets a different dimension', () => {
+        expect(resolveBreakdownDimension('integration_id', { dimension: 'success' })).toBe('integration_id');
+    });
+
+    it('drops the group when the filter targets the same dimension (filter wins)', () => {
+        expect(resolveBreakdownDimension('integration_id', { dimension: 'integration_id' })).toBeNull();
+    });
+
+    it('returns null when there is no group', () => {
+        expect(resolveBreakdownDimension(null, { dimension: 'integration_id' })).toBeNull();
     });
 });

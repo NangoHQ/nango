@@ -5,19 +5,18 @@ import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
-import { RoleSelect } from './RoleSelect';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { usePostInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
 import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { RoleSelect } from './RoleSelect';
 
 const inviteSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -66,7 +65,7 @@ export const AddTeamMemberButton = () => {
             <PermissionGate condition={canManageTeam}>
                 {(allowed) => (
                     <DialogTrigger asChild>
-                        <Button size="xl" disabled={!allowed}>
+                        <Button size="md" disabled={!allowed}>
                             <Plus /> Add Team Member
                         </Button>
                     </DialogTrigger>

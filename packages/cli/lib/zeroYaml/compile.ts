@@ -7,13 +7,13 @@ import { build } from 'esbuild';
 import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
-import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { parseIntegrationDefinitions } from './definitions.js';
-import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 import { generateNangoJson } from '../services/model.service.js';
+import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
+import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
 import type { Feature, Result } from '@nangohq/types';
@@ -462,9 +462,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const allowedExports = {
         createAction: { type: 'action', varName: 'action' },
         createSync: { type: 'sync', varName: 'sync' },
-        createOnEvent: { type: 'onEvent', varName: 'onEvent' },
-        createFunction: { type: 'function', varName: 'fn' },
-        createWebhook: { type: 'function', varName: 'webhook' }
+        createOnEvent: { type: 'onEvent', varName: 'onEvent' }
     } as const satisfies Record<string, { type: string; varName: string }>;
 
     type AllowedExportName = keyof typeof allowedExports;
@@ -503,36 +501,6 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     return {
         bag,
         plugin: ({ types: t }: { types: typeof babel.types }): babel.PluginObj<any> => {
-            // Properties that `createWebhook()` lifts into its implicit `http` trigger at runtime.
-            // Keep in sync with `createWebhook()` in runner-sdk/lib/scripts.ts.
-            const webhookTriggerFields = new Set(['name', 'scope', 'ingressChallenge', 'ingressValidation', 'debounce']);
-
-            /**
-             * `createWebhook()` is sugar for a function with a single implicit `http` trigger.
-             * The wrapper call is stripped at compile time (see nangoPlugin docblock), so we must
-             * reproduce that trigger synthesis here — otherwise the http trigger is silently dropped
-             * and the compiled function ends up with no triggers at all.
-             */
-            function buildWebhookObject(arg: babel.types.ObjectExpression): babel.types.ObjectExpression {
-                const triggerProps: babel.types.ObjectExpression['properties'] = [t.objectProperty(t.identifier('type'), t.stringLiteral('http'))];
-                const topProps: babel.types.ObjectExpression['properties'] = [];
-                for (const prop of arg.properties) {
-                    if (t.isObjectProperty(prop) && !prop.computed && t.isIdentifier(prop.key) && webhookTriggerFields.has(prop.key.name)) {
-                        triggerProps.push(prop);
-                        if (prop.key.name === 'name') {
-                            topProps.push(t.objectProperty(t.identifier('name'), t.cloneNode(prop.value)));
-                        }
-                    } else {
-                        topProps.push(prop);
-                    }
-                }
-                return t.objectExpression([
-                    t.objectProperty(t.identifier('type'), t.stringLiteral('function')),
-                    ...topProps,
-                    t.objectProperty(t.identifier('triggers'), t.arrayExpression([t.objectExpression(triggerProps)]))
-                ]);
-            }
-
             return {
                 visitor: {
                     ImportDeclaration(path) {
@@ -753,18 +721,11 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             const mapping = allowedExports[calleeName];
                             const varName = mapping.varName;
 
-                            let newValue: babel.types.ObjectExpression;
-                            if (calleeName === 'createWebhook') {
-                                // createWebhook does more than tag a type: it synthesizes the implicit http trigger.
-                                newValue = buildWebhookObject(arg);
-                            } else {
-                                // Inject type property
-                                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
-                                newValue = arg;
-                            }
-                            // Insert: export const <varName> = <newValue>;
+                            // Inject type property
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
+                            // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
-                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]),
+                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
                                 []
                             );
                             // Insert: export default <varName>;
@@ -791,17 +752,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            let newInit: babel.types.ObjectExpression;
-                            if (calleeName === 'createWebhook') {
-                                // createWebhook does more than tag a type: it synthesizes the implicit http trigger.
-                                newInit = buildWebhookObject(arg);
-                            } else {
-                                // Inject type property (mutate the object literal)
-                                arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
-                                newInit = arg;
-                            }
+                            // Inject type property (mutate the object literal)
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
                             // Replace the variable's initializer with the object literal
-                            binding.path.get('init').replaceWith(newInit);
+                            binding.path.get('init').replaceWith(arg);
                             return;
                         } else {
                             throw new CompileError('nango_unsupported_export', lineNumber, badExportCompilerError);

@@ -1,8 +1,8 @@
-import { IconChevronRight } from '@tabler/icons-react';
+import { ChevronRight } from 'lucide-react';
 
+import { Tag } from '@/components/ui/Tag';
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../utils/utils';
 import { LevelTag } from '../components/LevelTag';
-import { Tag } from '@/components/ui/Tag';
 
 import type { SearchMessagesData } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -67,7 +67,7 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
             }
             return (
                 <div className="-ml-2">
-                    <IconChevronRight stroke={1} size={18} />
+                    <ChevronRight strokeWidth={1} size={18} />
                 </div>
             );
         }

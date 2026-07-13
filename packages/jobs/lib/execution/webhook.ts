@@ -3,11 +3,9 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import {
-    NangoError,
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
+    connectionService,
     createSyncJob,
     customerKeyService,
     environmentService,
@@ -16,18 +14,21 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
+    NangoError,
     secretService,
+    SyncJobsType,
+    SyncStatus,
     updateSyncJobStatus
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
@@ -285,6 +286,12 @@ export async function handleWebhookSuccess({
             throw webhookSigningKey.error;
         }
 
+        const connectionConfig = await connectionService.getConnectionConfig({
+            connection_id: nangoProps.connectionId,
+            provider_config_key: nangoProps.providerConfigKey,
+            environment_id: nangoProps.environmentId
+        });
+
         for (const model of nangoProps.syncConfig.models || []) {
             const span = tracer.startSpan('jobs.webhook.webhook', {
                 tags: {
@@ -310,6 +317,7 @@ export async function handleWebhookSuccess({
                         environment: environment,
                         secret: webhookSigningKey.value,
                         webhookSettings,
+                        connectionConfig,
                         syncConfig: nangoProps.syncConfig,
                         syncVariant: nangoProps.syncVariant || 'base',
                         providerConfig,
@@ -481,12 +489,15 @@ async function onFailure({
                             throw webhookSigningKey.error;
                         }
 
+                        const connectionConfig = await connectionService.getConnectionConfig(connection);
+
                         const res = await sendSyncWebhook({
                             account: team,
                             environment,
                             secret: webhookSigningKey.value,
                             connection: connection,
                             webhookSettings,
+                            connectionConfig,
                             syncConfig,
                             syncVariant,
                             providerConfig,

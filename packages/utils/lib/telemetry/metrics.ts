@@ -128,6 +128,7 @@ export enum Types {
     EGRESS_BYTES = 'nango.server.egress.bytes',
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
+    MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
 
     E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
 
@@ -143,19 +144,19 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT = 'nango.billing.usage.clickhouse.s3_export.file.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT = 'nango.billing.usage.clickhouse.s3_export.run.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
-    BILLING_USAGE_SHADOW_DIVERGENCE = 'nango.billing.usage.shadow.divergence',
-    BILLING_USAGE_SHADOW_ONE_SIDED = 'nango.billing.usage.shadow.one_sided',
-    BILLING_USAGE_SHADOW_DURATION_MS = 'nango.billing.usage.shadow.duration_ms',
-    BILLING_USAGE_CAPPING_SHADOW_DIVERGENCE = 'nango.billing.usage.capping.shadow.divergence',
-    BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED = 'nango.billing.usage.capping.shadow.one_sided',
-    BILLING_USAGE_CAPPING_SHADOW_DURATION_MS = 'nango.billing.usage.capping.shadow.duration_ms',
-    BILLING_USAGE_CAPPING_CH_CACHE = 'nango.billing.usage.capping.ch.cache',
+    BILLING_USAGE_TRACKER_CALLS = 'nango.billing.usage.tracker.calls',
+    BILLING_EVENTS_S3_DLQ_FILES = 'nango.billing.events.s3.dlq.files',
+    BILLING_EVENTS_S3_DLQ_MONITOR_RUN_RESULT = 'nango.billing.events.s3.dlq.monitor.run.result',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
-    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie'
+    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
+
+    FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
+    FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',
+    FEATURE_FLAGS_EVALUATED = 'nango.feature_flags.evaluated'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

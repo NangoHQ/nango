@@ -1,14 +1,13 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, Input } from '@nangohq/design-system';
 
-import { countryCodes } from '../invoicingConstants';
-import { OptionalTag } from './InvoicingDetailsForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
-import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { countryCodes } from '../invoicingConstants';
+import { OptionalTag } from './InvoicingDetailsForm';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 

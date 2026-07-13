@@ -307,6 +307,59 @@ acuity-scheduling:
         base_url: https://acuityscheduling.com/api/v1
     docs: https://nango.dev/docs/integrations/all/acuity-scheduling
 
+acumatica:
+    display_name: Acumatica
+    categories:
+        - erp
+        - accounting
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instanceUrl}/identity/connect/token
+    token_params:
+        grant_type: password
+        username: ${connectionConfig.username}
+        password: ${connectionConfig.password}
+    proxy:
+        base_url: https://${connectionConfig.instanceUrl}
+    docs: https://nango.dev/docs/api-integrations/acumatica
+    docs_connect: https://nango.dev/docs/api-integrations/acumatica/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/acumatica/connect
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The hostname of your Acumatica ERP instance.
+            pattern: '^[A-Za-z0-9.-]+(?::\d+)?(?:/[A-Za-z0-9._-]+)*$'
+            example: mycompany.acumatica.com
+            prefix: https://
+            doc_section: '#step-6-identify-your-instance-url'
+            order: 1
+        username:
+            type: string
+            title: Username
+            description: The username of an Acumatica ERP user.
+            doc_section: '#step-7-enter-credentials-in-the-connect-ui'
+            order: 2
+        password:
+            type: string
+            title: Password
+            description: The password for the specified Acumatica ERP username.
+            secret: true
+            doc_section: '#step-7-enter-credentials-in-the-connect-ui'
+            order: 3
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID assigned to your application, including the tenant suffix.
+            example: 88358B02-A48D-A50E-F710-39C1636C30F6@MyTenant
+            doc_section: '#step-5-save-to-activate'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret created for your application in Acumatica ERP.
+            secret: true
+            doc_section: '#step-3-add-a-client-secret'
+
 addepar:
     display_name: Addepar (OAuth)
     categories:
@@ -628,6 +681,24 @@ adyntel:
             format: email
             example: you@company.com
             doc_section: '#step-2-find-your-email-address'
+
+ahrefs:
+    display_name: Ahrefs
+    categories:
+        - marketing
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://app.ahrefs.com/web/oauth/authorize
+    token_url: https://ahrefs.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    body_format: form
+    proxy:
+        base_url: https://api.ahrefs.com
+    docs: https://nango.dev/docs/api-integrations/ahrefs
+    setup_guide_url: https://nango.dev/docs/api-integrations/ahrefs/how-to-register-your-own-ahrefs-api-oauth-app
 
 affinity:
     display_name: Affinity (v1)
@@ -1708,6 +1779,57 @@ ashby:
             default_value: ''
             hidden: true
 
+aspire:
+    display_name: Aspire
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.domain}/Authorization
+    refresh_url: https://${connectionConfig.domain}/Authorization/RefreshToken
+    token_params:
+        ClientId: ${credentials.clientId}
+        Secret: ${credentials.secret}
+    refresh_token_params:
+        RefreshToken: ${refresh_token}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: Token
+        refresh_token: RefreshToken
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/aspire
+    docs_connect: https://nango.dev/docs/api-integrations/aspire/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Aspire API environment to connect to.
+            order: 1
+            format: hostname
+            enum:
+                - cloudsandbox-api.youraspire.com
+                - cloud-api.youraspire.com
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID generated for your Aspire application.
+            format: uuid
+            example: 3f2a91c6-****-****-****-6d5e8a2b7c34
+            doc_section: '#step-2-generate-your-client-id-and-secret'
+        secret:
+            type: string
+            title: Secret
+            description: The Secret generated alongside the Client ID.
+            secret: true
+            pattern: '^[a-zA-Z0-9]{32}$'
+            example: 7hLp************************nHa5
+            doc_section: '#step-2-generate-your-client-id-and-secret'
+
 atlas-so:
     display_name: Atlas.so
     categories:
@@ -1959,6 +2081,8 @@ attio-mcp:
     token_url: https://app.attio.com/oidc/token
     registration_url: https://app.attio.com/oauth/register
     scope_separator: '+'
+    authorization_url_skip_encode:
+        - scopes
     authorization_params:
         response_type: code
         resource: https://mcp.attio.com/mcp
@@ -2077,6 +2201,7 @@ auvik:
             enum:
                 - us1
                 - us2
+                - us6
                 - eu1
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
@@ -3226,6 +3351,18 @@ boldsign:
     proxy:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
+
+boondmanager:
+    display_name: BoondManager
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://ui.boondmanager.com/api/oauth2/authorize
+    token_url: https://ui.boondmanager.com/api/oauth2/token
+    proxy:
+        base_url: https://ui.boondmanager.com/api
+    docs: https://nango.dev/docs/api-integrations/boondmanager
+    setup_guide_url: https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app
 
 box:
     display_name: Box
@@ -5862,6 +5999,25 @@ dialpad-sandbox:
         base_url: https://sandbox.dialpad.com
     docs: https://nango.dev/docs/integrations/all/dialpad-sandbox
 
+dialpad-wfm:
+    display_name: Dialpad WFM
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.teamsurfboard.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/dialpad-wfm
+    docs_connect: https://nango.dev/docs/api-integrations/dialpad-wfm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The access token for your account.
+            secret: true
+            doc_section: '#step-1-obtain-your-access-token'
+
 diffbot:
     display_name: Diffbot
     categories:
@@ -6942,6 +7098,35 @@ eventbrite:
         base_url: https://www.eventbriteapi.com
     docs: https://nango.dev/docs/integrations/all/eventbrite
 
+everflow:
+    display_name: Everflow
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.eflow.team
+        headers:
+            x-eflow-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/everflow
+    docs_connect: https://nango.dev/docs/api-integrations/everflow/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Everflow API subdomain.
+            enum:
+                - api
+                - api-eu
+            order: 1
+            doc_section: '#step-2-find-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Everflow account.
+            doc_section: '#step-1-generate-your-api-key'
+
 etsy:
     display_name: Etsy
     categories:
@@ -7823,7 +8008,7 @@ freshsales:
             title: API Key
             description: The API key for your Freshsales account
             example: 4oBqA_AzM_G3xbW3TJGvrA
-            pattern: '[A-Za-z0-9_]{22}'
+            pattern: '[A-Za-z0-9_-]+'
             doc_section: '#step-1-finding-your-freshsales-api-key'
 
 freshservice:
@@ -8085,16 +8270,16 @@ google-gemini:
                 content-type: application/json
             endpoints:
                 - /v1/models
-    docs: https://nango.dev/docs/integrations/all/google-gemini
-    docs_connect: https://nango.dev/docs/integrations/all/google-gemini/connect
+    docs: https://nango.dev/docs/api-integrations/google-gemini
+    docs_connect: https://nango.dev/docs/api-integrations/google-gemini/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Gemini account
             doc_section: '#step-1-generating-your-api-key'
-            example: 'AIzaSy**********RRtUK5V*********ZFFc64w****AI'
-            pattern: '^[0-9A-Za-z_-]+$'
+            example: 'AQ.Ab8RN6I5RF**********-0Fe3mTuqX3**'
+            pattern: '^[0-9A-Za-z_.\-]+$'
 
 gem:
     display_name: Gem
@@ -8898,6 +9083,7 @@ google-drive:
         - popular
         - storage
     alias: google
+    webhook_routing_script: googleDriveWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
@@ -8910,6 +9096,16 @@ google-forms:
         base_url: https://forms.googleapis.com
     docs: https://nango.dev/docs/api-integrations/google-forms
     setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
+
+google-health:
+    display_name: Google Health
+    categories:
+        - sports
+    alias: google
+    proxy:
+        base_url: https://health.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-health
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app
 
 google-tasks:
     display_name: Google Tasks
@@ -10314,6 +10510,39 @@ ironclad:
                 - eu1
             doc_section: '#step-1-finding-your-subdomain'
 
+ironclad-cc:
+    display_name: Ironclad (Client Credentials)
+    categories:
+        - legal
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ironcladapp.com
+        headers:
+            x-as-user-email: ${connectionConfig.userEmail}
+    docs: https://nango.dev/docs/api-integrations/ironclad-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ironclad-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Ironclad environment subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
+            order: 1
+        userEmail:
+            type: string
+            title: User Email
+            description: The email of the Ironclad user on whose behalf API requests are made.
+            example: user@yourcompany.com
+            format: email
+            order: 2
+
 jamf:
     display_name: Jamf Pro (Client Credentials)
     categories:
@@ -10372,6 +10601,26 @@ jamf-basic:
             title: Password
             description: Your Jamf Pro password
             secret: true
+
+jamie:
+    display_name: Jamie
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://beta-api.meetjamie.ai
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/jamie
+    docs_connect: https://nango.dev/docs/api-integrations/jamie/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Jamie workspace or personal API key.
+            example: jk_your_api_key
+            pattern: '^jk_[a-zA-Z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-key'
 
 jazzhr:
     display_name: JazzHR
@@ -10965,6 +11214,32 @@ kintone-user-api:
             example: urdzw8p24agp
             order: 1
             pattern: '^[a-z0-9_-]+$'
+
+konnektive:
+    display_name: Konnektive
+    categories:
+        - crm
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.konnektive.com
+        query:
+            loginId: ${credentials.username}
+            password: ${credentials.password}
+    docs: https://nango.dev/docs/api-integrations/konnektive
+    docs_connect: https://nango.dev/docs/api-integrations/konnektive/connect
+    credentials:
+        username:
+            type: string
+            title: API Login ID
+            description: Your Konnektive API Login ID.
+            doc_section: '#step-1-find-your-api-credentials'
+        password:
+            type: string
+            title: API Password
+            description: Your Konnektive API password.
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
 
 knowbe4:
     display_name: KnowBe4
@@ -12381,6 +12656,86 @@ microsoft-oauth2-cc:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-oauth2-cc-cert:
+    display_name: Microsoft (Client Credentials - Certificate)
+    auth_mode: TWO_STEP
+    categories:
+        - communication
+        - dev-tools
+        - productivity
+    body_format: form
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        scope: ${connectionConfig.oauth_scopes}
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: PS256
+            x5t#S256: ${credentials.certificateThumbprint}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://graph.microsoft.com
+    docs: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc-cert/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses Microsoft services.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        oauth_scopes:
+            type: string
+            title: Scope
+            description: The resource scope to request access for.
+            example: https://graph.microsoft.com/.default
+            doc_section: '#step-5-granting-api-permissions'
+            order: 2
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The application (client) ID assigned to your app in Azure.
+            format: uuid
+            example: 11112222-bbbb-3333-cccc-4444dddd5555
+            doc_section: '#step-2-registering-your-application-and-finding-your-client-id'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) matching the certificate uploaded to your Azure app registration.
+            example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----"
+            secret: true
+            doc_section: '#step-3-generating-a-certificate-and-uploading-it-to-azure'
+        certificateThumbprint:
+            type: string
+            title: Certificate Thumbprint (x5t#S256)
+            description: The base64url-encoded SHA-256 thumbprint of your certificate.
+            example: rCnkMH5GKJI03tRpdjBh8OG2U8I
+            doc_section: '#step-4-computing-the-certificate-thumbprint-x5t'
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 microsoft-intune:
     display_name: Microsoft Intune
     categories:
@@ -13051,7 +13406,6 @@ modmed:
             title: API Key
             description: Your API key (x-api-key)
             secret: true
-            format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-request-access-to-modmed-sandbox'
 
@@ -13277,6 +13631,67 @@ netsuite-tba:
         - popular
     docs: https://nango.dev/docs/api-integrations/netsuite-tba
     setup_guide_url: https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango
+
+netsuite-client-credentials:
+    alias: netsuite
+    display_name: NetSuite (Client Credentials)
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 3600
+        header:
+            alg: RS256
+            kid: ${credentials.certificateId}
+        payload:
+            iss: ${credentials.clientId}
+            aud: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/api-integrations/netsuite-client-credentials
+    docs_connect: https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your NetSuite integration record.
+            example: 1c343a716c1d****************************976dde7d8e3e2
+        certificateId:
+            type: string
+            title: Certificate ID
+            description: The ID of the certificate registered in your NetSuite integration.
+            example: HRril7Vwkk********************eWT2Fgks
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your NetSuite Account ID (e.g. 1234567 or 1234567_SB1 for sandbox).
+            example: '1234567'
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) used to sign the JWT assertion.
+            example: "-----BEGIN RSA PRIVATE KEY-----\nMIIEow...\n-----END RSA PRIVATE KEY-----"
 
 next-cloud-ocs:
     display_name: Next Cloud OCS
@@ -13568,6 +13983,10 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.notion.com/
     docs: https://nango.dev/docs/api-integrations/notion-mcp
 
 notion-scim:
@@ -16372,7 +16791,7 @@ recruitcrm:
         - ats
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.recruitcrm.com
+        base_url: https://api.recruitcrm.io
         headers:
             authorization: Bearer ${apiKey}
         verification:
@@ -16380,7 +16799,7 @@ recruitcrm:
             headers:
                 content-type: application/json
             endpoints:
-                - /api/v1/users/search
+                - /v1/candidates/search
     docs: https://nango.dev/docs/integrations/all/recruitcrm
     docs_connect: https://nango.dev/docs/integrations/all/recruitcrm/connect
     credentials:
@@ -17171,6 +17590,52 @@ sage-intacct-oauth:
         base_url: https://api.intacct.com/ia/api
     docs: https://nango.dev/docs/integrations/all/sage-intacct-oauth
 
+sage-intacct-cc:
+    display_name: Sage Intacct (Client Credentials)
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://api.intacct.com/ia/api/v1/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        username: ${credentials.username}
+        session_id: ${credentials.sessionId}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.intacct.com/ia/api
+    docs: https://nango.dev/docs/api-integrations/sage-intacct-cc
+    docs_connect: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Sage Intacct application Client ID.
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Sage Intacct application Client Secret.
+            secret: true
+        username:
+            type: string
+            title: Username
+            description: The Web Services user ID in userId@companyId|entityId format. Required if not using Session ID.
+            example: Admin@MyCompany|Central Region
+            optional: true
+        sessionId:
+            type: string
+            title: Session ID
+            description: A valid UI or API session ID. Required if not using Username.
+            secret: true
+            optional: true
+
 sage-intacct:
     display_name: Sage Intacct
     categories:
@@ -17263,6 +17728,55 @@ sage-people:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+
+sap-ariba:
+    display_name: SAP Ariba
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ariba.com/v2/oauth/token
+    token_params:
+        grant_type: openapi_2lo
+    token_request_auth_method: basic
+    body_format: form
+    proxy:
+        base_url: https://open${connectionConfig.subdomain}.ariba.com
+        headers:
+            apikey: ${connectionConfig.apiKey}
+            x-ariba-network-id: ${connectionConfig.anid}
+        retry:
+            after:
+                - retry-after
+    docs: https://nango.dev/docs/api-integrations/sap-ariba
+    docs_connect: https://nango.dev/docs/api-integrations/sap-ariba/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your SAP Ariba API subdomain.
+            example: api-eu
+            default_value: api
+            enum:
+                - api
+                - api-eu
+                - api.au.cloud
+            doc_section: '#step-1-select-your-subdomain'
+            order: 1
+        apiKey:
+            type: string
+            title: Application Key (API Key)
+            description: Your SAP Ariba application's API Key.
+            secret: true
+            doc_section: '#step-2-get-your-api-key'
+            order: 2
+        anid:
+            type: string
+            title: Ariba Network ID (ANID)
+            description: Your SAP Ariba Network ID.
+            example: AN01234567890
+            pattern: '^AN[0-9]+$'
+            doc_section: '#step-3-find-your-anid'
+            order: 3
 
 salesforce:
     display_name: Salesforce
@@ -17686,7 +18200,7 @@ sap-business-one:
         - erp
     body_format: json
     auth_mode: TWO_STEP
-    token_url: https://${connectionConfig.domain}/login
+    token_url: https://${connectionConfig.domain}/Login
     token_params:
         CompanyDB: ${connectionConfig.companyDb}
         UserName: ${credentials.userName}
@@ -17710,8 +18224,7 @@ sap-business-one:
             type: string
             title: Service Layer URL
             prefix: https://
-            suffix: /login
-            pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
+            suffix: /Login
             order: 1
             description: The base URL for your SAP Business One Service Layer
             doc_section: '#step-3-finding-your-service-layer-url'
@@ -19827,6 +20340,29 @@ superhuman-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/superhuman-mcp
 
+surecontact:
+    display_name: SureContact
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.surecontact.com
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/surecontact
+    docs_connect: https://nango.dev/docs/api-integrations/surecontact/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your SureContact API key.
+            example: jWkZ3QYFe7**********************************************qlp
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-create-an-api-key'
+
 survey-monkey:
     display_name: SurveyMonkey
     categories:
@@ -20103,7 +20639,7 @@ tanium:
         verification:
             method: GET
             endpoints:
-                - /v2/session/info
+                - /v2/session/current
     docs: https://nango.dev/docs/api-integrations/tanium
     docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
     credentials:
@@ -20116,8 +20652,8 @@ tanium:
         hostname:
             type: string
             title: Hostname
-            description: Your Tanium Cloud hostname.
-            example: acme.cloud.tanium.com
+            description: Your Tanium Cloud API hostname.
+            example: acme-api.cloud.tanium.com
             format: hostname
             prefix: https://
             doc_section: '#step-2-find-your-hostname'
@@ -22633,6 +23169,57 @@ workday-refresh-token:
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
 
+workday-cc:
+    display_name: Workday (Client Credentials)
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenDomain}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: client_credentials
+        tenant_alias: ${connectionConfig.tenant}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        authorization: ID ${base64(${credentials.clientId}:${credentials.clientSecret})}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.tokenDomain}/ccx/api
+    docs: https://nango.dev/docs/api-integrations/workday-cc
+    docs_connect: https://nango.dev/docs/api-integrations/workday-cc/connect
+    connection_config:
+        tokenDomain:
+            type: string
+            title: Token Domain
+            description: The hostname of your Workday tenant.
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-finding-your-token-domain'
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant name of your Workday account.
+            example: mytenant
+            order: 2
+            doc_section: '#step-3-finding-your-tenant'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Workday API Client ID.
+            doc_section: '#step-5-register-an-api-client'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Workday API Client Secret.
+            secret: true
+            doc_section: '#step-5-register-an-api-client'
+
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning
     categories:
@@ -22907,6 +23494,8 @@ youcanbook-me:
     auth_mode: BASIC
     proxy:
         base_url: https://api.youcanbook.me
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
         verification:
             method: GET
             endpoints:
@@ -22920,7 +23509,7 @@ youcanbook-me:
             description: Your YouCanBookMe Account ID.
             format: uuid
             example: 78c3430e-21f5-483b-8e26-84cd6dabf7a6
-            doc_section: '#step-1-finding-your-account-id'
+            doc_section: '#step-1-finding-your-account-id-and-api-key'
         password:
             type: string
             title: API Key
@@ -22928,7 +23517,14 @@ youcanbook-me:
             pattern: '^ak_[A-Za-z0-9_-]+$'
             example: ak_xxxxxxxxxxxxxxxxxxxxx
             secret: true
-            doc_section: '#step-2-finding-your-api-key'
+            doc_section: '#step-1-finding-your-account-id-and-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your YouCanBookMe booking page.
+            example: mycompany
+            doc_section: '#step-2-finding-your-subdomain'
 
 yandex:
     display_name: Yandex

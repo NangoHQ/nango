@@ -2,12 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import connectionService from './connection.service.js';
 import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import { errorNotificationService } from './notification/error.service.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+import connectionService from './connection.service.js';
+import { errorNotificationService } from './notification/error.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Metadata } from '@nangohq/types';
@@ -141,6 +141,98 @@ describe('Connection service integration tests', () => {
             expect(second.response!.metadata).not.toHaveProperty('onlyInConfig');
             expect((second.response!.connection_config as Record<string, unknown>)['onlyInConfig']).toBe('updated');
             expect((second.response!.connection_config as Record<string, unknown>)['extraConfig']).toBe('y');
+        });
+    });
+
+    describe('getConnectionConfigByConnectionIds', () => {
+        it('returns connection_config keyed by connection_id for the requested ids', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `batch-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+
+            const withOverride = await createConnectionSeed({
+                env,
+                provider: config.unique_key,
+                connectionId: `batch-a-${Math.random().toString(36).slice(2, 10)}`,
+                connectionConfig: { webhook_url: 'https://override.example.com/hook' }
+            });
+            const withoutOverride = await createConnectionSeed({
+                env,
+                provider: config.unique_key,
+                connectionId: `batch-b-${Math.random().toString(36).slice(2, 10)}`,
+                connectionConfig: {}
+            });
+
+            const result = await connectionService.getConnectionConfigByConnectionIds({
+                connectionIds: [withOverride.connection_id, withoutOverride.connection_id],
+                provider_config_key: config.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(2);
+            expect(result.get(withOverride.connection_id)).toEqual({ webhook_url: 'https://override.example.com/hook' });
+            expect(result.get(withoutOverride.connection_id)).toEqual({});
+        });
+
+        it('omits connection ids that do not exist', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `batch-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+            const existing = await createConnectionSeed({
+                env,
+                provider: config.unique_key,
+                connectionId: `batch-c-${Math.random().toString(36).slice(2, 10)}`,
+                connectionConfig: { webhook_url: 'https://override.example.com/hook' }
+            });
+
+            const result = await connectionService.getConnectionConfigByConnectionIds({
+                connectionIds: [existing.connection_id, 'does-not-exist'],
+                provider_config_key: config.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(1);
+            expect(result.has('does-not-exist')).toBe(false);
+            expect(result.get(existing.connection_id)).toEqual({ webhook_url: 'https://override.example.com/hook' });
+        });
+
+        it('does not return a connection sharing the id under a different integration', async () => {
+            const env = await createEnvironmentSeed();
+            const configA = (await createConfigSeed(env, `batch-a-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+            const configB = (await createConfigSeed(env, `batch-b-${Math.random().toString(36).slice(2, 10)}`, 'notion')) as ProviderConfig;
+
+            const inA = await createConnectionSeed({
+                env,
+                provider: configA.unique_key,
+                connectionId: `shared-${Math.random().toString(36).slice(2, 10)}`,
+                connectionConfig: { webhook_url: 'https://a.example.com/hook' }
+            });
+            await createConnectionSeed({
+                env,
+                provider: configB.unique_key,
+                connectionId: inA.connection_id,
+                connectionConfig: { webhook_url: 'https://b.example.com/hook' }
+            });
+
+            const result = await connectionService.getConnectionConfigByConnectionIds({
+                connectionIds: [inA.connection_id],
+                provider_config_key: configA.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(1);
+            expect(result.get(inA.connection_id)).toEqual({ webhook_url: 'https://a.example.com/hook' });
+        });
+
+        it('returns an empty map when no connection ids are requested', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `batch-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+
+            const result = await connectionService.getConnectionConfigByConnectionIds({
+                connectionIds: [],
+                provider_config_key: config.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(0);
         });
     });
 

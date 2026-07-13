@@ -1,12 +1,10 @@
+import { format } from 'date-fns';
 import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
-import { Dot } from '../../../../components/ui/Dot.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -20,6 +18,9 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
+import { Dot } from '../../../../components/ui/Dot.js';
+import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 
 import type { PlanDefinitionList } from '../types.js';
 import type { StripeError } from '@/utils/stripe.js';
@@ -38,11 +39,16 @@ export const Plans: React.FC = () => {
     }, [paymentMethods]);
 
     const futurePlan = useMemo(() => {
-        if (!currentPlan?.orb_future_plan) {
+        if (!currentPlan?.orb_future_plan || !currentPlan.orb_future_plan_at) {
             return null;
         }
 
-        return plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
+        const plan = plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
+        if (!plan) {
+            return null;
+        }
+
+        return { plan, futurePlanAt: format(new Date(currentPlan.orb_future_plan_at), 'yyyy-MM-dd') };
     }, [currentPlan, plansList]);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
@@ -75,11 +81,11 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        if (futurePlan?.code !== 'free') {
-            return `Your ${plans?.activePlan.title} subscription will switch to Starter at the end of the month.`;
+        if (futurePlan.plan?.code === 'free') {
+            return `Your ${plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.`;
         }
 
-        return `Your ${plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.`;
+        return `Your ${plans?.activePlan.title} subscription will switch to ${futurePlan.plan?.title} on ${futurePlan.futurePlanAt}.`;
     }, [futurePlan, plans?.activePlan.title]);
 
     return (

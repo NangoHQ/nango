@@ -1,8 +1,47 @@
+import { URL } from 'url';
+
 import * as z from 'zod';
 
-import { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
+import {
+    connectionTagsKeySchema,
+    connectionTagsSchema,
+    getServerOutboundUrlPolicy,
+    isOutboundUrlAllowed,
+    TAG_MAX_COUNT,
+    validateCaseInsensitiveTagKeys
+} from '@nangohq/shared';
+
+import { envs } from '../env.js';
 
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
+
+/**
+ * Validates a webhook URL: must be a valid URL (or empty), cannot point to Nango's own domain,
+ * and cannot resolve to a blocked host (loopback, private, link-local, metadata, ...).
+ */
+export const webhookUrlSchema = z
+    .union([z.url(), z.literal('')])
+    .optional()
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            const hostname = new URL(url).hostname.replace(/\.+$/, '');
+            return hostname !== 'nango.dev' && !hostname.endsWith('.nango.dev');
+        },
+        { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
+    )
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            return isOutboundUrlAllowed(url, getServerOutboundUrlPolicy());
+        },
+        { message: 'This webhook URL is not allowed.' }
+    );
+
+// Connection params come from untrusted clients. `webhook_url` is intentionally NOT accepted here: it is a
+// privileged routing directive set only by the backend via the connect session (see postSessions). Any
+// client-supplied `webhook_url` is stripped in getConnectionConfig.
+export const connectionConfigParamsSchema = z.looseObject({}).optional();
 
 export const providerSchema = z
     .string()
@@ -113,8 +152,8 @@ export const sharedCredentialsSchema = z
     .strict();
 
 export const connectionCredentialsOauth2Schema = z.strictObject({
-    access_token: z.string().min(1).max(4096),
-    refresh_token: z.string().min(1).max(4096).optional(),
+    access_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH),
+    refresh_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).optional(),
     expires_at: z.coerce.date().optional(),
     config_override: z
         .strictObject({

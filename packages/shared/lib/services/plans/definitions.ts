@@ -110,7 +110,7 @@ export const growthV1Plan: PlanDefinition = {
         has_webhooks_script: true,
         has_webhooks_forward: true,
         has_rbac: true,
-        can_override_docs_connect_url: false,
+        can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
         lambda_tenant_isolation: true
@@ -177,11 +177,50 @@ export const enterprisePlan: PlanDefinition = {
         has_webhooks_script: true,
         has_webhooks_forward: true,
         has_rbac: true,
-        can_override_docs_connect_url: false,
+        can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
         lambda_tenant_isolation: true
     }
+};
+
+export const enterpriseCloudHostedPlan: PlanDefinition = {
+    code: 'enterprise-cloud-hosted',
+    title: 'Enterprise (cloud-hosted)',
+    description: 'For custom needs.',
+    prevPlan: [],
+    nextPlan: [],
+    canChange: false,
+    hidden: true,
+    basePrice: 5_000,
+    flags: {
+        ...growthV2Plan.flags,
+        api_rate_limit_size: '2xl'
+    }
+};
+
+export const freeUncappedPlan: PlanDefinition = {
+    code: 'free-uncapped',
+    title: 'Free (uncapped)',
+    description: 'For custom needs.',
+    prevPlan: [],
+    nextPlan: [],
+    canChange: false,
+    hidden: true,
+    basePrice: 0,
+    flags: growthV2Plan.flags
+};
+
+export const startupDealPlan: PlanDefinition = {
+    code: 'startup-deal',
+    title: 'Startup deal',
+    description: 'For YC deals.',
+    prevPlan: [],
+    nextPlan: [],
+    canChange: false,
+    hidden: true,
+    basePrice: 0,
+    flags: growthV2Plan.flags
 };
 
 // Old plans
@@ -304,6 +343,7 @@ export const growthLegacyPlan: PlanDefinition = {
 
 export const plansList: PlanDefinition[] = [
     freePlan,
+    freeUncappedPlan,
 
     // V2 plans
     starterV2Plan,
@@ -313,7 +353,12 @@ export const plansList: PlanDefinition[] = [
     starterV1Plan,
     growthV1Plan,
 
+    // Enterprise plans
     enterprisePlan,
+    enterpriseCloudHostedPlan,
+
+    // YC deal plans
+    startupDealPlan,
 
     // Old plans
     starterLegacyPlan,
@@ -343,7 +388,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'starter-v2': {
             free: true,
@@ -354,7 +402,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'growth-v2': {
             free: true,
@@ -365,7 +416,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         starter: {
             free: true,
@@ -376,7 +430,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         growth: {
             free: true,
@@ -387,7 +444,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         enterprise: {
             free: true,
@@ -398,7 +458,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': true,
-            'growth-legacy': true
+            'growth-legacy': true,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'starter-legacy': {
             free: true,
@@ -409,7 +472,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'growth-legacy': {
             free: true,
@@ -420,7 +486,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'scale-legacy': {
             free: true,
@@ -431,6 +500,66 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
+            'growth-legacy': true,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
+        },
+        'enterprise-cloud-hosted': {
+            // any movement from this plan should be treated as a downgrade, meaning
+            // the new plan's flags will be adopted and any overrides from the current
+            // plan will be dropped.
+            free: true,
+            'starter-v2': true,
+            'growth-v2': true,
+            enterprise: true,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': true,
+            'startup-deal': true,
+            // deprecated plans: the transition shouldn't matter as it won't happen
+            starter: true,
+            growth: true,
+            'starter-legacy': true,
+            'scale-legacy': true,
+            'growth-legacy': true
+        },
+        'free-uncapped': {
+            // any movement from this plan should be treated as a downgrade, meaning
+            // the new plan's flags will be adopted and any overrides from the current
+            // plan will be dropped.
+            free: true,
+            'starter-v2': true,
+            'growth-v2': true,
+            enterprise: true,
+            'enterprise-cloud-hosted': true,
+            'free-uncapped': false,
+            'startup-deal': true,
+            // deprecated plans: the transition shouldn't matter as it won't happen
+            starter: true,
+            growth: true,
+            'starter-legacy': true,
+            'scale-legacy': true,
+            'growth-legacy': true
+        },
+        'startup-deal': {
+            // at the end of the startup deal, accounts are scheduled for migration
+            // to the growth-v2 plan. To accommodate the unlikely scenario of migrations
+            // into enterprise plans, we treat these transitions as NOT downgrades.
+            // Any other transitions are unexpected and are treated as a downgrade,
+            // meaning the new plan's flags will be adopted and any overrides from
+            // the current plan will be dropped.
+            free: true,
+            'starter-v2': true,
+            'growth-v2': false,
+            enterprise: false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': true,
+            'startup-deal': false,
+            // deprecated plans: the transition shouldn't matter as it won't happen
+            starter: true,
+            growth: true,
+            'starter-legacy': true,
+            'scale-legacy': true,
             'growth-legacy': true
         }
     } satisfies Record<PlanDefinition['code'], Record<PlanDefinition['code'], boolean>>;

@@ -6,15 +6,13 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
-import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -22,6 +20,8 @@ import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { AuthBadge } from './components/AuthBadge';
+import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
 
@@ -40,6 +40,7 @@ export const IntegrationsList = () => {
     const initialIntegrations = useMemo(() => {
         return data?.data ?? null;
     }, [data?.data]);
+    const integrationsCount = initialIntegrations?.length ?? 0;
 
     useEffect(() => {
         if (initialIntegrations) {
@@ -101,25 +102,33 @@ export const IntegrationsList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Integrations" className="flex flex-col gap-3">
             <Helmet>
                 <title>Integrations - Nango</title>
             </Helmet>
             <header className="flex items-center gap-3">
-                <InputGroup className="h-10 flex-1">
-                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
+                <InputGroup className="flex-1">
+                    <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} />
                     <InputGroupAddon>
                         <Search />
                     </InputGroupAddon>
                 </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
-                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
+                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="md">
                             Set up new integration
                         </ButtonLink>
                     )}
                 </PermissionGate>
             </header>
+
+            {!isPending && data?.data && data.data.length > 0 && (
+                <div className="flex items-center justify-end">
+                    <span className="text-text-muted text-body-small-regular">
+                        {integrationsCount} {integrationsCount === 1 ? 'integration' : 'integrations'}
+                    </span>
+                </div>
+            )}
 
             <AutoIdlingBanner />
 
@@ -138,7 +147,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration
                             </ButtonLink>
                         )}
@@ -152,7 +161,7 @@ export const IntegrationsList = () => {
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
-                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="xl">
+                            <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration
                             </ButtonLink>
                         )}

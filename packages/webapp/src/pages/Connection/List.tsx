@@ -7,9 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
-import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -17,7 +16,6 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -30,10 +28,13 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
+import { ConnectionCount } from './components/ConnectionCount';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
+import type { ApiConnectionSimple, ApiIntegrationList, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
+
+type ConnectionRow = ApiConnectionSimple & { integration?: ApiIntegrationList };
 
 type StatusFilterValue = 'ok' | 'error' | 'auth_error' | 'sync_error' | 'paused';
 const validStatusFilterValues = new Set<string>(['ok', 'error', 'auth_error', 'sync_error', 'paused']);
@@ -55,7 +56,7 @@ const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const parseStatusFilters = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
-const columns: ColumnDef<ApiConnectionSimple>[] = [
+const columns: ColumnDef<ConnectionRow>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',
@@ -82,12 +83,12 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         header: 'Integration',
         size: 100,
         cell: ({ row }) => {
-            const { provider } = row.original;
+            const { provider, integration } = row.original;
 
             return (
                 <div className="flex gap-1.5 items-center">
-                    <IntegrationLogo provider={row.original.provider} className="size-8 bg-transparent" />
-                    <span className="text-body-small-semi text-text-strong">{provider}</span>
+                    <IntegrationLogo provider={provider} className="size-8 bg-transparent" />
+                    <span className="text-body-small-semi text-text-strong">{integration?.unique_key ?? provider}</span>
                 </div>
             );
         }
@@ -215,13 +216,18 @@ export const ConnectionList = () => {
         withError
     });
 
-    const connections = useMemo(() => {
-        return connectionsData?.pages.flatMap((page) => page.data) || [];
-    }, [connectionsData]);
+    const connectionsWithIntegrations = useMemo(() => {
+        const connections = connectionsData?.pages.flatMap((page) => page.data) || [];
+
+        return connections.map((connection) => ({
+            ...connection,
+            integration: listIntegrationData?.data?.find((integration) => integration.id === connection.config_id)
+        }));
+    }, [connectionsData, listIntegrationData?.data]);
 
     const displayedConnections = useMemo(() => {
-        if (selectedStatusFilters.length === 0) return connections;
-        return connections.filter((conn) =>
+        if (selectedStatusFilters.length === 0) return connectionsWithIntegrations;
+        return connectionsWithIntegrations.filter((conn) =>
             selectedStatusFilters.some((filter) => {
                 switch (filter) {
                     case 'ok':
@@ -237,7 +243,7 @@ export const ConnectionList = () => {
                 }
             })
         );
-    }, [connections, selectedStatusFilters]);
+    }, [connectionsWithIntegrations, selectedStatusFilters]);
 
     useEffect(() => {
         if (selectedStatusFilters.length > 0 && displayedConnections.length === 0 && hasNextPage && !isFetchingNextPage) {
@@ -251,7 +257,6 @@ export const ConnectionList = () => {
     const hasConnections = connectionCount > 0;
     const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
     const showEmptyStateWithFilters = !loading && !isFetchingNextPage && connectionCount === 0 && hasFiltered && !hasNextPage;
-
     const coreRowModel = useMemo(() => getCoreRowModel(), []);
     const table = useReactTable({
         data: displayedConnections,
@@ -286,19 +291,16 @@ export const ConnectionList = () => {
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
                         <>
-                            {/* Connection count */}
-                            <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="h-10">
+                                <InputGroup className="flex-1">
                                     <InputGroupInput
-                                        className="pr-2.5"
                                         type="text"
                                         placeholder="Search connections"
                                         value={search || ''}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
-                                    <InputGroupAddon className="pl-2.5">
+                                    <InputGroupAddon>
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
@@ -343,11 +345,16 @@ export const ConnectionList = () => {
                                 />
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
-                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                        <ButtonLink to={`/${env}/connections/create`} size="md" disabled={!allowed} className="ml-auto">
                                             Add test connection
                                         </ButtonLink>
                                     )}
                                 </PermissionGate>
+                            </div>
+
+                            {/* Connection count */}
+                            <div className="flex items-center justify-end">
+                                <ConnectionCount />
                             </div>
 
                             {/* Table */}
@@ -433,7 +440,7 @@ export const ConnectionList = () => {
                                 </StyledLink>
                                 , or manually here.
                             </p>
-                            <ButtonLink to={`/${env}/connections/create`} size="xl">
+                            <ButtonLink to={`/${env}/connections/create`} size="lg">
                                 Add test connection
                             </ButtonLink>
                         </div>

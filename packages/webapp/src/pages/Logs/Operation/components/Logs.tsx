@@ -1,24 +1,25 @@
-import { IconArrowLeft, IconX, IconZoom } from '@tabler/icons-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { addMinutes } from 'date-fns';
+import { ArrowLeft, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce, useInterval, useMount } from 'react-use';
 
-import { LogRow } from './LogRow';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
+
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 import { useStore } from '../../../../store';
 import { apiFetch } from '../../../../utils/api';
 import { calculateTableSizing } from '../../../../utils/table';
 import { formatQuantity } from '../../../../utils/utils';
-import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { PeriodSelector } from '@/components/patterns/PeriodSelector';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
-import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Spinner } from '@/components/ui/Spinner';
+import { ShowMessage } from '../Message/Show';
+import { LogRow } from './LogRow';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
@@ -209,9 +210,9 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </div>
             </div>
             <header className="flex gap-2 items-center">
-                <InputGroup className="grow border-border-muted">
+                <InputGroup className="grow">
                     <InputGroupAddon>
-                        <IconZoom stroke={1} size={18} />
+                        <Search />
                     </InputGroupAddon>
                     <InputGroupInput value={search} placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} />
                     {search && (
@@ -225,7 +226,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                     setSearch('');
                                 }}
                             >
-                                <IconX stroke={1} size={16} />
+                                <X />
                             </InputGroupButton>
                         </InputGroupAddon>
                     )}
@@ -308,7 +309,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                 title="Close"
                                 className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-text-strong focus:text-text-strong"
                             >
-                                <IconArrowLeft stroke={1} size={24} />
+                                <ArrowLeft strokeWidth={1} size={24} />
                             </SheetClose>
                         </div>
                         {message && <ShowMessage message={message} />}

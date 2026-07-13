@@ -21,7 +21,6 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
           "version": "",
         },
       ],
-      "functions": [],
       "onEventScripts": {
         "post-connection-creation": [],
         "pre-connection-deletion": [],
@@ -224,7 +223,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "version": "",
         },
       ],
-      "functions": [],
       "onEventScripts": {
         "post-connection-creation": [],
         "pre-connection-deletion": [],

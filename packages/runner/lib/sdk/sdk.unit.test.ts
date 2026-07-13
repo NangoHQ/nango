@@ -7,9 +7,9 @@ import { ExecutionAbortedSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { MapLocks } from './locks.js';
-import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 import { PersistClient } from '../clients/persist.js';
+import { MapLocks } from './locks.js';
+import { createFunctionFacade, NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
@@ -836,5 +836,246 @@ describe('proxy 401 invalid credentials', () => {
         expect(httpSpy).toHaveBeenCalledTimes(2);
         expect(getConnectionMock).toHaveBeenCalledTimes(2);
         expectInvalidCredentialsInLogs(persistClient, false);
+    });
+});
+
+describe('createFunctionFacade', () => {
+    const blockedProperties = ['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey'] as const;
+
+    beforeEach(async () => {
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        nodeClient.prototype.getConnection = vi.fn().mockResolvedValue({ credentials: {} });
+        nodeClient.prototype.setMetadata = vi.fn().mockResolvedValue({});
+        nodeClient.prototype.getIntegration = vi.fn().mockResolvedValue({ data: { provider: 'github' } });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockResolvedValue({
+            status: 200,
+            statusText: 'OK',
+            data: {},
+            headers: {},
+            config: {} as never
+        } as AxiosResponse);
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    function buildActionFacade() {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+        const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks });
+        return { facade: createFunctionFacade(runner), persistClient };
+    }
+
+    function buildSyncFacade() {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+        persistClient.postRecords = vi.fn().mockResolvedValue({ result: Ok({ nextMerging: { strategy: 'override' } }), bytesSent: 0 });
+        const runner = new NangoSyncRunner({ ...nangoProps }, { persistClient, locks });
+        return { facade: createFunctionFacade(runner), persistClient };
+    }
+
+    describe('blocks access to internal properties', () => {
+        for (const prop of blockedProperties) {
+            it(`throws when reading "${prop}"`, () => {
+                const { facade } = buildActionFacade();
+                expect(() => (facade as any)[prop]).toThrowError(/is not allowed/);
+            });
+        }
+
+        it('blocks reaching the raw Axios instance via nango.http', () => {
+            const { facade } = buildActionFacade();
+            // Accessing `.nango` throws before `.http` can be reached
+            expect(() => (facade as any).nango.http).toThrowError(/is not allowed/);
+        });
+
+        it('cannot recover the node client via getOwnPropertyDescriptor', () => {
+            const { facade } = buildActionFacade();
+            expect(Object.getOwnPropertyDescriptor(facade, 'nango')).toBeUndefined();
+        });
+
+        it('hides blocked properties from "in", Object.keys and ownKeys', () => {
+            const { facade } = buildActionFacade();
+            for (const prop of blockedProperties) {
+                expect(prop in facade).toBe(false);
+            }
+            expect(Object.keys(facade)).not.toContain('nango');
+            expect(Reflect.ownKeys(facade)).not.toContain('nango');
+        });
+
+        it('throws when writing to a blocked property', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).nango = {};
+            }).toThrowError(/is not allowed/);
+        });
+
+        it('blocks access on the sync runner facade too', () => {
+            const { facade } = buildSyncFacade();
+            expect(() => (facade as any).nango).toThrowError(/is not allowed/);
+        });
+    });
+
+    describe('protects execution-control fields (abort/kill)', () => {
+        it('throws when reading abortSignal or lifecycle', () => {
+            const { facade } = buildActionFacade();
+            expect(() => (facade as any).abortSignal).toThrowError(/is not allowed/);
+            expect(() => (facade as any).lifecycle).toThrowError(/is not allowed/);
+        });
+
+        it('throws when overwriting abortSignal or lifecycle', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).abortSignal = { aborted: false };
+            }).toThrowError(/is not allowed/);
+            expect(() => {
+                (facade as any).lifecycle = undefined;
+            }).toThrowError(/is not allowed/);
+        });
+
+        it('cannot disable abort enforcement by overwriting abortSignal through the facade', async () => {
+            const ac = new AbortController();
+            const persistClient = new PersistClient({ secretKey: '***' });
+            persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+            const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action', abortSignal: ac.signal }, { persistClient, locks });
+            const facade = createFunctionFacade(runner);
+            ac.abort();
+
+            // Attempt to neutralize the abort signal via the facade — must be rejected
+            expect(() => {
+                (facade as any).abortSignal = { aborted: false };
+            }).toThrowError(/is not allowed/);
+
+            // The real signal is untouched, so SDK calls still honor the abort
+            expect(runner.abortSignal?.aborted).toBe(true);
+            await expect(facade.log('hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
+        });
+    });
+
+    describe('blocks injected-accessor receiver escapes', () => {
+        it('blocks a getter installed via defineProperty from leaking the raw client', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'x', { get: () => (facade as any).nango, configurable: true });
+            // The injected getter runs with `this` = the facade, so reaching `.nango` re-enters the trap
+            expect(() => (facade as any).x).toThrowError(/is not allowed/);
+        });
+
+        it('blocks a getter that returns `this.nango`', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'x', {
+                get() {
+                    return (this as any).nango;
+                },
+                configurable: true
+            });
+            expect(() => (facade as any).x).toThrowError(/is not allowed/);
+        });
+
+        it('does not let a setter capture the raw runner instance', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'capture', {
+                set(v: any) {
+                    v.stolen = this;
+                },
+                configurable: true
+            });
+            const box: any = {};
+            (facade as any).capture = box;
+            // `this` inside the setter must be the facade, never the raw runner
+            expect(box.stolen).toBe(facade);
+            expect(() => box.stolen.nango).toThrowError(/is not allowed/);
+        });
+
+        it('blocks a getter installed via __defineGetter__', () => {
+            const { facade } = buildActionFacade();
+            (facade as any).__defineGetter__('y', function (this: any) {
+                return this.nango;
+            });
+            expect(() => (facade as any).y).toThrowError(/is not allowed/);
+        });
+
+        it('still allows normal data-property writes and reads through the facade', () => {
+            const { facade } = buildActionFacade();
+            (facade as any).customField = 42;
+            expect((facade as any).customField).toBe(42);
+        });
+    });
+
+    describe('blocks prototype-chain escape hatches', () => {
+        it('hides the real runner prototype via getPrototypeOf', () => {
+            const { facade } = buildActionFacade();
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+            expect(Reflect.getPrototypeOf(facade)).toBeNull();
+        });
+
+        it('throws when reading __proto__ or constructor', () => {
+            const { facade } = buildActionFacade();
+            expect(() => (facade as any).__proto__).toThrowError(/is not allowed/);
+            expect(() => (facade as any).constructor).toThrowError(/is not allowed/);
+        });
+
+        it('throws when re-parenting the runner', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).__proto__ = {};
+            }).toThrowError(/is not allowed/);
+            expect(() => Object.setPrototypeOf(facade, {})).toThrowError(/is not allowed/);
+        });
+
+        it('cannot pollute the shared class prototype through the facade', () => {
+            const { facade } = buildActionFacade();
+            const original = NangoActionRunner.prototype.proxy;
+
+            // getPrototypeOf returns null, so there is no reachable prototype object to mutate
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+
+            // and the real shared prototype is left untouched
+            expect(NangoActionRunner.prototype.proxy).toBe(original);
+        });
+
+        it('hides prototype escape hatches on the sync runner facade too', () => {
+            const { facade } = buildSyncFacade();
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+            expect(() => (facade as any).constructor).toThrowError(/is not allowed/);
+        });
+    });
+
+    describe('still exposes the public SDK surface', () => {
+        it('reads non-blocked properties', () => {
+            const { facade } = buildActionFacade();
+            expect(facade.connectionId).toBe(nangoProps.connectionId);
+            expect(facade.providerConfigKey).toBe(nangoProps.providerConfigKey);
+        });
+
+        it('runs proxy() through the facade', async () => {
+            const { facade } = buildActionFacade();
+            const res = await facade.proxy({ endpoint: '/issues' });
+            expect(res.status).toBe(200);
+        });
+
+        it('runs getConnection() through the facade', async () => {
+            const { facade } = buildActionFacade();
+            await expect(facade.getConnection()).resolves.toBeDefined();
+        });
+
+        it('runs log() through the facade', async () => {
+            const { facade, persistClient } = buildActionFacade();
+            await facade.log('hello');
+            expect(persistClient.postLog).toHaveBeenCalledOnce();
+        });
+
+        it('runs borrowed methods (proxy, log, batchSave) on the sync runner facade', async () => {
+            const { facade, persistClient } = buildSyncFacade();
+            const res = await facade.proxy({ endpoint: '/issues' });
+            expect(res.status).toBe(200);
+
+            // proxy() can emit its own HTTP log, so reset before asserting log() specifically
+            vi.mocked(persistClient.postLog).mockClear();
+            await facade.log('hello');
+            expect(persistClient.postLog).toHaveBeenCalledOnce();
+
+            await expect(facade.batchSave([{ id: '1' }], 'SomeModel')).resolves.toBe(true);
+            expect(persistClient.postRecords).toHaveBeenCalledOnce();
+        });
     });
 });

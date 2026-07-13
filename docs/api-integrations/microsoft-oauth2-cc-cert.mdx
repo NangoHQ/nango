@@ -1,0 +1,81 @@
+---
+title: 'Microsoft (Client Credentials - Certificate)'
+sidebarTitle: 'Microsoft (Client Credentials - Certificate)'
+description: 'Integrate your application with the Microsoft API using Client Credentials and certificate-based authentication'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft (Client Credentials - Certificate) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft (Client Credentials - Certificate)_.
+    </Step>
+    <Step id="connect-microsoft-oauth2-cc-cert-account" title="Authorize Microsoft (Client Credentials - Certificate)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Tenant ID**, **Scope**, **Client ID**, **Private Key**, and **Certificate Thumbprint**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-microsoft-api" title="Call the Microsoft API">
+    Let's make your first request to the Microsoft Graph API (list users in the organization). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1.0/users" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1.0/users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Microsoft (Client Credentials - Certificate) Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/microsoft-oauth2-cc-cert/connect)
+Connect your Microsoft account using certificate-based client credentials (Tenant ID, Client ID, Private Key, Certificate Thumbprint)
+
+Official docs: [Microsoft identity platform — client credentials with certificates](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow#second-case-access-token-request-with-a-certificate)
+
+## 🧩 Pre-built syncs & actions for Microsoft (Client Credentials - Certificate)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-oauth2-cc-cert/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

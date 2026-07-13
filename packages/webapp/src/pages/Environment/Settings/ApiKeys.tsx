@@ -1,36 +1,34 @@
-import { IconExternalLink, IconEye, IconEyeOff, IconKey } from '@tabler/icons-react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, IconButton } from '@nangohq/design-system';
+import { Button, IconButton, Input } from '@nangohq/design-system';
 
-import SettingsContent from './components/SettingsContent';
-import {
-    SCOPE_GROUPS,
-    allGroupScopes,
-    groupWildcard,
-    isScopeSelected,
-    toggleCredential as toggleCredentialFn,
-    toggleGroup as toggleGroupFn,
-    toggleScope as toggleScopeFn
-} from './scope-logic';
-import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
-import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
+import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import SettingsContent from './components/SettingsContent';
+import {
+    allGroupScopes,
+    groupWildcard,
+    isScopeSelected,
+    SCOPE_GROUPS,
+    toggleCredential as toggleCredentialFn,
+    toggleGroup as toggleGroupFn,
+    toggleScope as toggleScopeFn
+} from './scope-logic';
 
-import type { ScopeGroup } from './scope-logic';
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
+import type { ScopeGroup } from './scope-logic';
 
 function formatRelativeTime(dateStr: string | null): string {
     if (!dateStr) return 'Never';
@@ -124,7 +122,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                             rel="noopener noreferrer"
                             className="text-text-muted hover:text-text-strong"
                         >
-                            <IconExternalLink stroke={1} size={14} />
+                            <ExternalLink strokeWidth={1} size={14} />
                         </a>
                     </div>
                 )}
@@ -275,7 +273,7 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="primary" disabled={disabled}>
-                    <IconKey stroke={1} size={16} />
+                    <Key strokeWidth={1} size={16} />
                     Create new API key
                 </Button>
             </DialogTrigger>
@@ -380,7 +378,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                                     onClick={() => setSecretRevealed((r) => !r)}
                                     className="text-text-muted hover:text-text-strong h-7 w-7"
                                 >
-                                    {secretRevealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
+                                    {secretRevealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
                                 </IconButton>
                                 <CopyButton text={apiKey.secret} />
                             </div>
@@ -453,7 +451,7 @@ const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ se
                                 onClick={() => setRevealed((r) => !r)}
                                 className="text-text-muted hover:text-text-strong h-7 w-7"
                             >
-                                {revealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
+                                {revealed ? <EyeOff strokeWidth={1} size={16} /> : <Eye strokeWidth={1} size={16} />}
                             </IconButton>
                             <CopyButton text={secretKey} />
                         </div>

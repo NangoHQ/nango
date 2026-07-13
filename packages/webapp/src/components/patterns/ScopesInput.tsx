@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
+import { cn } from '@/utils/utils';
 import { Badge } from '../ui/Badge.js';
 import {
     Combobox,
@@ -17,7 +18,6 @@ import {
 } from '../ui/Combobox.js';
 import { CopyButton } from '../ui/CopyButton.js';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip.js';
-import { cn } from '@/utils/utils';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;
@@ -119,7 +119,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     if (isSharedCredentials || readOnly) {
         return (
-            <div className="flex flex-wrap items-center gap-1.5 min-h-9 rounded border border-border-muted bg-surface-canvas px-2 py-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 min-h-8 rounded border border-border-muted bg-surface-canvas px-2 py-1.5">
                 {scopes.map((scope) => (
                     <span
                         key={scope}
@@ -177,7 +177,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                 open={hasAvailableScopesDropdown ? dropdownOpen : false}
                 onOpenChange={setDropdownOpen}
             >
-                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1 min-h-9')}>
+                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1 min-h-8')}>
                     {scopes.length > 0 && (
                         <ComboboxValue>
                             {scopes.map((scope) => (

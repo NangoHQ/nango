@@ -10,12 +10,13 @@ import { WebSocketServer } from 'ws';
 
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
-import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
+import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { NANGO_VERSION, flags, getLogger, initSentry, once, report } from '@nangohq/utils';
+import { flags, getLogger, initSentry, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
@@ -29,6 +30,7 @@ import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import { tasks } from './tasks/index.js';
+import { egressTelemetryRecorder } from './utils/egressTelemetry.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
@@ -108,6 +110,8 @@ if (pubsubConnect.isErr()) {
     logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
 }
 
+await initializeFeatureFlags();
+
 const port = getServerPort();
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
@@ -133,7 +137,9 @@ const close = once(() => {
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        await destroyFeatureFlags();
         await billing.shutdown();
+        await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
 
         logger.close();

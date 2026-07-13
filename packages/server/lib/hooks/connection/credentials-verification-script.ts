@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { ProxyRequest, getProvider, getProxyConfiguration, makeDataTransferEvent, pubsub } from '@nangohq/shared';
+import { getProvider, getProxyConfiguration, getServerOutboundUrlPolicy, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
 
 import * as verificationscriptHandlers from './index.js';
 
@@ -108,6 +108,7 @@ async function execute(
                         // TODO: log something here?
                     },
                     proxyConfig,
+                    outboundPolicy: getServerOutboundUrlPolicy(),
                     getConnection: () => {
                         return connection;
                     },

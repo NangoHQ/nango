@@ -1,12 +1,12 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
+import { errorManager, SyncCommand, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { normalizeSyncParams } from './helpers.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
+import { normalizeSyncParams } from './helpers.js';
 
 import type { PostPublicTrigger } from '@nangohq/types';
 

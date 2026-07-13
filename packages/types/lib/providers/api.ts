@@ -1,6 +1,6 @@
 import type { Endpoint } from '../api.js';
-import type { Provider, SimplifiedJSONSchema } from './provider.js';
 import type { AuthModeType } from '../auth/api.js';
+import type { McpOAuth2ClientRegistration, Provider, SimplifiedJSONSchema } from './provider.js';
 
 export type GetPublicProviders = Endpoint<{
     Method: 'GET';
@@ -33,7 +33,7 @@ export interface ApiProviderListItem {
     docs_connect?: string | undefined;
     preConfigured: boolean;
     preConfiguredScopes: string[];
-    clientRegistration?: 'dynamic' | 'static' | 'metadata';
+    clientRegistration?: McpOAuth2ClientRegistration;
     integration_config?: Record<string, SimplifiedJSONSchema> | undefined;
 }
 

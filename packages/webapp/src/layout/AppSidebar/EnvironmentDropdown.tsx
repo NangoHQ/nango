@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
@@ -19,6 +17,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
+import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
+import { NavigationItem, navigationItemVariants } from './NavigationItem.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -73,7 +73,7 @@ export const EnvironmentDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="flex h-14 w-full cursor-pointer flex-row items-center justify-between border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
+                    <DropdownMenuTrigger className="focus-inset flex h-14 w-full cursor-pointer flex-row items-center justify-between border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="flex size-8 shrink-0 items-center justify-center rounded-[2px] border-[0.5px] border-border-default bg-surface-overlay">
                                 <LogoInverted className="size-5 text-text-strong" />

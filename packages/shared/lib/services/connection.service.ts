@@ -6,9 +6,8 @@ import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
 import * as awsSigV4Client from '../auth/aws-sigv4.js';
@@ -19,14 +18,6 @@ import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import {
-    DEFAULT_INFINITE_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    REFRESH_MARGIN_MS,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
-import syncManager from './sync/manager.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
@@ -44,6 +35,15 @@ import {
     stripCredential,
     stripStepResponse
 } from '../utils/utils.js';
+import configService from './config.service.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    getExpiresAtFromCredentials,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS
+} from './connections/utils.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
@@ -538,6 +538,33 @@ class ConnectionService {
         }
 
         return result[0].connection_config;
+    }
+
+    public async getConnectionConfigByConnectionIds({
+        connectionIds,
+        provider_config_key,
+        environment_id
+    }: {
+        connectionIds: string[];
+        provider_config_key: string;
+        environment_id: number;
+    }): Promise<Map<string, ConnectionConfig>> {
+        const configByConnectionId = new Map<string, ConnectionConfig>();
+        if (connectionIds.length === 0) {
+            return configByConnectionId;
+        }
+
+        const result = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .select('connection_id', 'connection_config')
+            .whereIn('connection_id', connectionIds)
+            .where({ provider_config_key, environment_id, deleted: false });
+
+        for (const row of result) {
+            configByConnectionId.set(row.connection_id, row.connection_config);
+        }
+
+        return configByConnectionId;
     }
 
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
@@ -1369,7 +1396,8 @@ class ConnectionService {
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
         if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
-            const error = new NangoError('client_credentials_fetch_error');
+            const errorPayload = fetchRes.isOk() ? stringifyError({ response: { data: fetchRes.value.body } }) : stringifyError(fetchRes.error);
+            const error = new NangoError('client_credentials_fetch_error', errorPayload);
             return { success: false, error, response: null };
         }
 
@@ -1405,34 +1433,33 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        if (provider.assertion && (refreshToken === false || refreshToken === undefined)) {
+        // Regenerate the assertion on initial auth or when no refresh_token exists and when the assertion expires.
+        if (provider.assertion && (refreshToken === false || refreshToken === undefined || !dynamicCredentials['refresh_token'])) {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
             const assertionType = provider.assertion.type;
-            const create =
-                assertionType === 'jwt'
-                    ? assertionClient.generateJwtAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      })
-                    : assertionClient.generateSamlAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      });
+            const existingAssertion = credentials['assertion'] as string | undefined;
+            const assertionArgs = { provider, dynamicCredentials: credentials, connectionConfig, ...(assertionOption && { assertionOption }) };
 
-            if (create.isErr()) {
-                console.log(create.error);
-                return { success: false, error: create.error, response: null };
+            let create;
+            if (assertionType === 'jwt') {
+                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                    create = assertionClient.generateJwtAssertion(assertionArgs);
+                }
+            } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {
+                create = assertionClient.generateSamlAssertion(assertionArgs);
             }
 
-            credentials['assertion'] = create.value;
+            if (create) {
+                if (create.isErr()) {
+                    return { success: false, error: create.error, response: null };
+                }
 
-            Object.assign(dynamicCredentials, credentials);
+                credentials['assertion'] = create.value;
+
+                Object.assign(dynamicCredentials, credentials);
+            }
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1509,7 +1536,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status < 200 || response.status >= 300) {
+            if (response.status !== 200 && response.status !== 201) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
