@@ -985,6 +985,28 @@ autodesk:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/autodesk
 
+autosana:
+    display_name: Autosana
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://backend.autosana.ai/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/suites
+    docs: https://nango.dev/docs/api-integrations/autosana
+    docs_connect: https://nango.dev/docs/api-integrations/autosana/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your organization's Autosana API key.
+            doc_section: '#step-1-getting-your-api-key'
+
 autotask:
     display_name: AutoTask
     categories:
