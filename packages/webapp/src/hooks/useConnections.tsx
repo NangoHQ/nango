@@ -193,9 +193,12 @@ export function usePatchConnectionTags() {
             return { res, json };
         },
         onSuccess: async (_, { params, query }) => {
-            await queryClient.invalidateQueries({
-                queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
-            });
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ['connection', params.connectionId, query.env, query.provider_config_key]
+                }),
+                queryClient.invalidateQueries({ queryKey: ['connections'] })
+            ]);
         }
     });
 }
