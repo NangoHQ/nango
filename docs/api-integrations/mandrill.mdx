@@ -9,19 +9,19 @@ description: 'Integrate your application with the Mandrill (Mailchimp Transactio
 Connect to Mandrill with Nango and see data flow in 2 minutes. Mandrill authenticates with a static API key sent in the JSON body of every request, so Nango adds it automatically — you don't need to pass it yourself.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Mandrill_.
     </Step>
-    <Step title="Connect your Mandrill account">
+    <Step id="connect-mandrill-account" title="Connect your Mandrill account">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your API key, then save.
     </Step>
-    <Step title="Call the Mandrill API">
+    <Step id="call-mandrill-api" title="Call the Mandrill API">
     Let's make your first request to the Mandrill API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/users/ping" \
+            curl "https://api.nango.dev/proxy/1.3/users/ping" \
               -X POST \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
@@ -41,7 +41,7 @@ Connect to Mandrill with Nango and see data flow in 2 minutes. Mandrill authenti
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/users/ping',
+            endpoint: '/1.3/users/ping',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -56,7 +56,7 @@ Connect to Mandrill with Nango and see data flow in 2 minutes. Mandrill authenti
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-in-app" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
 
         To obtain an API key, follow the setup guide linked below.
@@ -65,7 +65,7 @@ Connect to Mandrill with Nango and see data flow in 2 minutes. Mandrill authenti
 
 ## 📚 Mandrill integration guides
 
-Nango maintained guides for common use cases.
+Nango-maintained guides for common use cases.
 
 - [How to connect your Mandrill account](/api-integrations/mandrill/connect)  
 Generate an API key in Mandrill and connect it to Nango
