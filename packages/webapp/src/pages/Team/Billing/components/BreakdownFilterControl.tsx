@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useApiGetBillingUsageTopDimensionValues, useApiPrefetchBillingUsageTopDimensionValues } from '@/hooks/usePlan';
 import { cn } from '@/utils/utils';
-import { allowsFreeTextFilter, DIMENSION_LABELS, FILTER_VALUES_TOP_N, formatDimensionValue } from '../usageBreakdown';
+import { DIMENSION_LABELS, formatDimensionValue, isSearchableDimension } from '../usageBreakdown';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { FilterSelectGroupData } from '@/components/patterns/FilterSelect';
@@ -86,34 +86,42 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
 
     const filterGroups = dimensions.map((d) => ({ value: d, label: DIMENSION_LABELS[d] }));
 
-    // Warm every dimension's values when the menu opens so each value pane shows instantly.
-    const prefetchValues = useApiPrefetchBillingUsageTopDimensionValues(env, metric, timeframe, FILTER_VALUES_TOP_N);
+    // Warm every filterable dimension's first page when the menu opens, so each value pane shows instantly.
+    const prefetchValues = useApiPrefetchBillingUsageTopDimensionValues(env, metric, timeframe);
 
-    // Loads one dimension's values for a FilterSelect value pane. Called only from that pane, which
-    // mounts (and remounts) when a dimension opens — so it fetches lazily, kept instant by the prefetch.
-    const useGroupData = (dimension: string): FilterSelectGroupData => {
+    // Loads one dimension's values for the FilterSelect value pane (mounted per open group, so it
+    // fetches lazily; the prefetch above keeps the first page instant). `search` (debounced by the
+    // pane) hits ClickHouse so any value is reachable, and pages load on scroll. Closed dimensions
+    // like environment_id aren't searchable, so they just get their small set back unfiltered.
+    const useGroupData = (dimension: string, { search }: { search: string }): FilterSelectGroupData => {
         const dim = dimension as AnyBreakdownDimension;
-        const query = useApiGetBillingUsageTopDimensionValues(env, metric, dim, timeframe, FILTER_VALUES_TOP_N, { enabled: true });
-        const options = (query.data?.data.values ?? []).map((v) => ({ value: v.id, label: formatDimensionValue(dim, v.label) }));
-        return { options, isLoading: query.isLoading, isError: query.isError };
+        const query = useApiGetBillingUsageTopDimensionValues(env, metric, dim, timeframe, search, { enabled: true });
+        const options = (query.data?.pages.flatMap((p) => p.data.values) ?? []).map((v) => ({ value: v.id, label: formatDimensionValue(dim, v.label) }));
+        return {
+            options,
+            isLoading: query.isLoading,
+            isError: query.isError,
+            isFetching: query.isFetching,
+            hasNextPage: query.hasNextPage,
+            isFetchingNextPage: query.isFetchingNextPage,
+            fetchNextPage: query.fetchNextPage
+        };
     };
 
-    // environment_id filters store the env id, so resolve it to a name via top-dimension-values
-    // (other dimensions store their own label). `null` = name not resolved yet → show a skeleton
-    // rather than flash the raw id; fall back to the id if it's outside the fetched top-N.
+    // Active-filter chip label. `top-dimension-values` is the id→label source for environment_id
+    // (e.g. 105 → "dev"); slug dims have id === label. `null` means the env name hasn't resolved
+    // yet — render a skeleton rather than flash the raw id, then show the name (or the id, if it's
+    // outside the fetched set).
     const filterNeedsLabel = filter?.dimension === 'environment_id';
-    const envLabelQuery = useApiGetBillingUsageTopDimensionValues(env, metric, filterNeedsLabel ? 'environment_id' : null, timeframe, FILTER_VALUES_TOP_N, {
+    const filterLabelQuery = useApiGetBillingUsageTopDimensionValues(env, metric, filterNeedsLabel ? 'environment_id' : null, timeframe, '', {
         enabled: filterNeedsLabel
     });
-    let filterLabel: string | null = '';
-    if (filter) {
-        if (!filterNeedsLabel) {
-            filterLabel = filter.value;
-        } else if (envLabelQuery.data) {
-            filterLabel = envLabelQuery.data.data.values.find((v) => v.id === filter.value)?.label ?? filter.value;
-        } else {
-            filterLabel = null;
-        }
+    const filterLabelValues = filterLabelQuery.data?.pages.flatMap((p) => p.data.values) ?? null;
+    // Non-env dimensions already store a readable value. For environment_id, resolve the id to the
+    // env name once loaded; `null` means it's still loading, which renders a skeleton in the chip.
+    let filterLabel: string | null = filter ? filter.value : '';
+    if (filter && filterNeedsLabel) {
+        filterLabel = filterLabelValues ? (filterLabelValues.find((v) => v.id === filter.value)?.label ?? filter.value) : null;
     }
 
     const filterTriggerButton = (
@@ -190,7 +198,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     useGroupData={useGroupData}
                     selectedValueFor={(g) => (filter?.dimension === g ? filter.value : null)}
                     onSelect={(g, value) => onApplyFilter(g as AnyBreakdownDimension, value)}
-                    allowCreate={(g) => allowsFreeTextFilter(g as AnyBreakdownDimension)}
+                    searchable={(g) => isSearchableDimension(g as AnyBreakdownDimension)}
                 />
             </SlotTrigger>
         </div>

@@ -53,20 +53,18 @@ Function templates are pre-built Nango functions for common provider operations.
 
 You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
 
-When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [clone it into a local functions project and customize it](#extend-a-template).
+When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
 
 <a id="extend-a-template"></a>
 #### Extend a template
 
-Use the CLI to clone template code into your local functions project:
+Use the CLI to pull a template's code into your local functions project from the public catalog:
 
 ```bash
-nango clone github
-nango clone github/actions
-nango clone github/actions/list-repos
+nango pull github list-repos --catalog
 ```
 
-You can clone an entire integration, a function-type folder, or a single function. After cloning, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+`nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
   Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
@@ -129,15 +127,8 @@ Local development is the default path for production integrations. Use it when y
     </Note>
 
     <Accordion title="Team setup">
-      Give each engineer their own Nango environment. This prevents overwriting each other's deployed functions and lets each person configure webhooks independently, for example by pointing to a local ngrok tunnel.
-
-      Each engineer adds their environment's key to their local `.env`:
-
-      ```bash
-      NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-api-key>'
-      ```
-
-      Use a shared `dev` or `staging` environment as a stable baseline written to only by CI. See the [CI/CD guide](/guides/functions/ci-cd).
+      Use a shared environment (usually `dev`) for day-to-day collaboration. Create personal test connections with [per-connection webhook URL overrides](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection) pointing at your local webhook endpoint, and deploy functions granularly (`nango deploy --sync` / `--action` / `--integration`) so teammates don't overwrite each other. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
+      Use CI to do full deploys across stable environments (like `staging` or `prod`). See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
     <Accordion title="For agents">
@@ -215,11 +206,17 @@ Local development is the default path for production integrations. Use it when y
     nango dryrun <function-name> '<CONNECTION-ID>' -e dev --metadata '{"accountRegion":"eu"}'
     ```
 
-    Deploy your functions:
+    Deploy the function you changed:
 
     ```bash
-    nango deploy
+    nango deploy --sync <function-name> dev
+    # or
+    nango deploy --action <function-name> dev
+    # or
+    nango deploy --integration <integration-id> dev
     ```
+
+    A bare `nango deploy` reconciles every function in the environment and can overwrite teammates' work on a shared collaborative environment. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration).
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
@@ -257,6 +254,17 @@ At a high level, the flow is:
 Resolve these endpoints against `NANGO_SERVER_URL`, or `https://api.nango.dev` by default. Send `Authorization: Bearer <NANGO-API-KEY>` and `Content-Type: application/json`. Scoped API keys need `environment:functions:compile` for compile, `environment:functions:dryrun` for dry run creation and polling, and `environment:deploy` for deployment.
 
 The Functions API is powerful, but it intentionally skips a local Git workflow. For production integrations that need code review, tests, ownership, and CI/CD, prefer [local development with the CLI](#build-locally-with-the-cli).
+
+<a id="take-ownership-of-a-deployed-function"></a>
+### Take ownership of a deployed function
+
+Pull the source of a function that is already deployed to an environment so you can manage it in your own repository:
+
+```bash
+nango pull github list-repos --env dev
+```
+
+This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 

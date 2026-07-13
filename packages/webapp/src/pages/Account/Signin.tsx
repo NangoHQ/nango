@@ -60,7 +60,11 @@ export const Signin: React.FC = () => {
 
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            email: '',
+            password: ''
+        },
+        mode: 'onSubmit'
     });
 
     const onSubmitForm = async (data: SigninFormData) => {
@@ -196,7 +200,7 @@ export const Signin: React.FC = () => {
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="lg" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="lg" loading={isPending}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>
