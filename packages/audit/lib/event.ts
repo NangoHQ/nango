@@ -1,6 +1,6 @@
 // `id` and `recordedAt` are stamped downstream by ingestion, not by the caller.
 
-export type AuditActorType = 'user' | 'api_key' | 'function' | 'system';
+export type AuditActorType = 'user' | 'api_key' | 'system';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditTargetType = 'connection' | 'member';
 

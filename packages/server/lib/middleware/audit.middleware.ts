@@ -30,17 +30,15 @@ export type AuditSpec<TEndpoint extends Endpoint<any> = Endpoint<any>> =
           metadata?: (req: AuditRequest<TEndpoint>) => MemberRoleChangedMetadata | undefined;
       });
 
-function resolveActor(req: Request, locals: RequestLocals): AuditActor {
+function resolveActor(locals: RequestLocals): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
     if (locals.authType === 'secretKey') {
-        // The runner sets `Nango-Is-Script` when executing customer function code; without it a
-        // secret key is an external/user caller. env-var/legacy secret keys carry no apiKeyId.
-        // NOTE: this header is an interim signal — it will be replaced when functions authenticate
-        // with their own tokens, at which point the actor is derived from the token, not a header.
-        const type = req.get('Nango-Is-Script') === 'true' ? 'function' : 'api_key';
-        return { type, id: locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key' };
+        // Functions currently call the API with a secret key too, distinguished only by the
+        // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
+        // Every secret-key caller is classified as api_key until functions get their own tokens.
+        return { type: 'api_key', id: locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key' };
     }
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
@@ -87,7 +85,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
             occurredAt,
             accountId: account.id,
             environmentId: spec.accountScoped ? null : (environment?.id ?? null),
-            actor: resolveActor(req, locals),
+            actor: resolveActor(locals),
             resource: spec.resource,
             action: spec.action,
             targets: target ? [target] : [],
