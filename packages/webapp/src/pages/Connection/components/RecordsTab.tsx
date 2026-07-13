@@ -21,12 +21,12 @@ import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTab
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
+import { LocalStorageKeys } from '@/utils/local-storage';
 import { cn, formatDateToUSFormat } from '@/utils/utils';
 
 import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
 
 const RECORDS_DOCS_URL = 'https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync';
-const RECORDS_DOCS_BANNER_DISMISSED_KEY = 'nango_records_docs_banner_dismissed';
 const RECORDS_PAGE_SIZE = 20;
 const RECORD_ROW_HEIGHT_PX = 44;
 const RECORD_HEADER_HEIGHT_PX = 44;
@@ -37,7 +37,7 @@ export const RecordsTab = () => {
     const navigate = useNavigate();
     const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
-    const [isDocsBannerDismissed, setIsDocsBannerDismissed] = useLocalStorage(RECORDS_DOCS_BANNER_DISMISSED_KEY, false);
+    const [isDocsBannerDismissed, setIsDocsBannerDismissed] = useLocalStorage(LocalStorageKeys.RecordsDocsBannerDismissed, false);
 
     const {
         data: models,
