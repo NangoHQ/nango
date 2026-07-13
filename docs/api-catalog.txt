@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 875
+Provider count: 876
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -68,6 +68,7 @@ URL patterns:
 | `asana-mcp` | Asana (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/asana-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/asana-mcp/how-to-register-your-own-asana-mcp-oauth-app.md) | productivity, ticketing, mcp |
 | `asana-scim` | Asana (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/asana-scim.md) | [connect](https://nango.dev/docs/integrations/all/asana-scim/connect.md) |  | productivity, ticketing |
 | `ashby` | Ashby | BASIC | [docs](https://nango.dev/docs/integrations/all/ashby.md) | [connect](https://nango.dev/docs/integrations/all/ashby/connect.md) |  | ats, popular |
+| `aspire` | Aspire | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/aspire.md) | [connect](https://nango.dev/docs/api-integrations/aspire/connect.md) |  | erp |
 | `atlas-so` | Atlas.so | API_KEY | [docs](https://nango.dev/docs/integrations/all/atlas-so.md) |  |  | support |
 | `atlassian` | Atlassian | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/atlassian.md) |  |  | dev-tools |
 | `atlassian-admin` | Atlassian Cloud Admin | API_KEY | [docs](https://nango.dev/docs/integrations/all/atlassian-admin.md) | [connect](https://nango.dev/docs/integrations/all/atlassian-admin/connect.md) |  | dev-tools |
@@ -333,6 +334,7 @@ URL patterns:
 | `google-drive` | Google Drive | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-drive.md) |  | [setup](https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app.md) | knowledge-base, popular, storage |
 | `google-forms` | Google Forms | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-forms.md) |  | [setup](https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app.md) | productivity |
 | `google-gemini` | Google Gemini | API_KEY | [docs](https://nango.dev/docs/api-integrations/google-gemini.md) | [connect](https://nango.dev/docs/api-integrations/google-gemini/connect.md) |  | productivity, dev-tools |
+| `google-health` | Google Health | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-health.md) |  | [setup](https://nango.dev/docs/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app.md) | sports |
 | `google-mail` | Gmail | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-mail.md) |  | [setup](https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app.md) | popular, productivity |
 | `google-maps` | Google Maps | API_KEY | [docs](https://nango.dev/docs/api-integrations/google-maps.md) | [connect](https://nango.dev/docs/api-integrations/google-maps/connect.md) |  | productivity |
 | `google-meet` | Google Meet | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-meet.md) |  | [setup](https://nango.dev/docs/api-integrations/google-meet/how-to-register-your-own-google-meet-api-oauth-app.md) | communication, productivity |

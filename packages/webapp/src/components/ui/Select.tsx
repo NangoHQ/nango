@@ -29,8 +29,8 @@ function SelectTrigger({ className, children, size = 'default', onFocus, ...prop
         <SelectPrimitive.Trigger
             data-slot="select-trigger"
             className={cn(
-                "flex w-fit items-center justify-between gap-1.5 rounded px-1.5 py-0.5 bg-surface-overlay border-ds-hairline border-border-interactive text-text-secondary hover:bg-state-hover focus-visible:border-border-interactive-hover data-[placeholder]:text-text-muted [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
-                size === 'sm' ? 'h-7 text-s' : 'h-9 text-sm',
+                "flex w-fit items-center justify-between gap-1.5 rounded-ds-xs px-1.5 py-0.5 bg-surface-overlay border-ds-hairline border-border-interactive text-text-secondary hover:bg-state-hover focus-visible:border-border-interactive-hover data-[placeholder]:text-text-muted [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
+                size === 'sm' ? 'h-7 text-s' : 'h-8 text-sm',
                 className
             )}
             onFocus={(e) => {
@@ -64,7 +64,7 @@ function SelectContent({ className, children, position = 'popper', ...props }: R
             <SelectPrimitive.Content
                 data-slot="select-content"
                 className={cn(
-                    'bg-surface-overlay text-text-secondary border border-border-muted rounded data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto',
+                    'bg-surface-overlay text-text-secondary border-ds-hairline border-border-input-hover rounded-ds-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto',
                     position === 'popper' &&
                         'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
                     className
