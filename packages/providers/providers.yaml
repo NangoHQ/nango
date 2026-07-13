@@ -21009,6 +21009,28 @@ thrivecart-api-key:
             example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
             pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
 
+trading-economics:
+    display_name: Trading Economics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tradingeconomics.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /country/mexico
+    docs: https://nango.dev/docs/api-integrations/trading-economics
+    docs_connect: https://nango.dev/docs/api-integrations/trading-economics/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Trading Economics developer account.
+            doc_section: '#step-1-getting-your-api-key'
+
 trakstar-hire:
     display_name: Trakstar Hire
     categories:
