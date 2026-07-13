@@ -76,6 +76,7 @@ import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.j
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { auditConnectionDeleted } from './middleware/audit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
@@ -233,7 +234,7 @@ publicAPI
 // @deprecated
 publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 // @deprecated
-publicAPI.route('/connection/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connection/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
@@ -259,7 +260,7 @@ publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(apiAuth, withScope('environment:connections:update'), patchPublicConnection);
-publicAPI.route('/connections/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connections/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);

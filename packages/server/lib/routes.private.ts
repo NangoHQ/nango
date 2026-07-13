@@ -109,6 +109,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { auditConnectionDeleted, auditMemberRoleChanged } from './middleware/audit.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -190,7 +191,7 @@ web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearA
 web.route('/team').get(webAuth, getTeam);
 web.route('/team').put(webAuth, can(p.canManageTeam), putTeam);
 web.route('/team/users/:id').delete(webAuth, can(p.canRemoveTeamMember), deleteTeamUser);
-web.route('/team/users/:id').patch(webAuth, can(p.canUpdateTeamMember), patchTeamUser);
+web.route('/team/users/:id').patch(webAuth, auditMemberRoleChanged, can(p.canUpdateTeamMember), patchTeamUser);
 
 // Invitations
 web.route('/invite').post(webAuth, can(p.canInviteMember), postInvite);
@@ -272,7 +273,12 @@ web.route('/connections/:connectionId/records/models').get(
 );
 web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
-web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
+web.route('/connections/:connectionId').delete(
+    webAuth,
+    auditConnectionDeleted,
+    can({ action: 'delete', resource: 'connection', scopedBy: envScope }),
+    deleteConnection
+);
 web.route('/connections/admin/:connectionId').delete(
     webAuth,
     can({ action: 'update', resource: 'environment', scopedBy: envScope }),

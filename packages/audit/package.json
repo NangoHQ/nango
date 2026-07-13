@@ -1,0 +1,26 @@
+{
+    "name": "@nangohq/audit",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.js",
+    "private": true,
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/audit"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils"
+    },
+    "devDependencies": {
+        "rimraf": "6.1.3",
+        "vitest": "4.1.9"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

@@ -40,6 +40,16 @@ export function buildFlags(client: FeatureFlagsClient) {
                 },
                 true
             );
+        },
+        /**
+         * Whether audit logging is enabled for this account. **Temporary** rollout
+         * safeguard: gated per-account so we can enable specific test accounts first,
+         * then ramp. To be replaced by a plan-based entitlement (opt-in via account
+         * plans) once audit logging is productized. Default `false`.
+         */
+        isAuditLoggingEnabled(accountUuid: string) {
+            // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
+            return client.isEnabled('audit-logging', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
