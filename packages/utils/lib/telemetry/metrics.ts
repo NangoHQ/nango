@@ -154,8 +154,6 @@ export enum Types {
 
     AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
 
-    AUDIT_EVENT_RECORDED = 'nango.audit.event.recorded',
-
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',
     FEATURE_FLAGS_EVALUATED = 'nango.feature_flags.evaluated'

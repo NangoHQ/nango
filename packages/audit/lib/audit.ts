@@ -1,4 +1,4 @@
-import { getLogger, metrics } from '@nangohq/utils';
+import { getLogger } from '@nangohq/utils';
 
 import { DropSink } from './sink.js';
 
@@ -10,19 +10,13 @@ const logger = getLogger('Audit');
 export class Audit {
     constructor(private readonly sink: AuditSink) {}
 
-    // Fire-and-forget: never throws into the caller.
+    // Fire-and-forget: never throws into the caller. Recorded/failed counters are deferred to the
+    // real sink at publish time (cf. the ClickHouse batcher, which meters on flush, not enqueue).
     record(event: AuditEvent): void {
-        let success = 'true';
         try {
             this.sink.record(event);
         } catch (err) {
-            success = 'false';
             logger.error(`failed to record audit event`, err);
-        }
-        try {
-            metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { success, resource: event.resource, action: event.action });
-        } catch {
-            // metrics are best-effort; never let them break the fire-and-forget contract
         }
     }
 }
