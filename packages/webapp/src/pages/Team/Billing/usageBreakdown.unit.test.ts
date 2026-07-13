@@ -4,6 +4,7 @@ import {
     BREAKDOWN_DIMENSIONS,
     DIMENSION_LABELS,
     formatDimensionValue,
+    isSearchableDimension,
     metricsSupportingDimension,
     parseFilterParam,
     resolveBreakdownDimension
@@ -81,6 +82,31 @@ describe('parseFilterParam', () => {
     it('returns null for a dimension the metric does not support', () => {
         // function_executions has no `model` dimension — e.g. a stale deep-link.
         expect(parseFilterParam('model:gpt-4o', allowed)).toBeNull();
+    });
+});
+
+describe('isSearchableDimension', () => {
+    it('is false for small, fully-listed enum dimensions (no search box)', () => {
+        for (const dim of ['environment_id', 'success', 'function_type', 'package', 'callsite'] as const) {
+            expect(isSearchableDimension(dim), `${dim} should not be searchable`).toBe(false);
+        }
+    });
+
+    it('is true for open, high-cardinality id/name dimensions', () => {
+        for (const dim of ['integration_id', 'connection_id', 'model', 'function_name'] as const) {
+            expect(isSearchableDimension(dim), `${dim} should be searchable`).toBe(true);
+        }
+    });
+
+    it('classifies every dimension referenced by any metric', () => {
+        // Guards against a new dimension silently defaulting to "searchable" without a deliberate choice.
+        const referenced = new Set<AnyBreakdownDimension>(Object.values(BREAKDOWN_DIMENSIONS).flat());
+        const open = new Set<AnyBreakdownDimension>(['integration_id', 'connection_id', 'model', 'function_name']);
+        const closed = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
+        for (const dim of referenced) {
+            expect(open.has(dim) || closed.has(dim), `unclassified dimension "${dim}"`).toBe(true);
+            expect(isSearchableDimension(dim)).toBe(open.has(dim));
+        }
     });
 });
 

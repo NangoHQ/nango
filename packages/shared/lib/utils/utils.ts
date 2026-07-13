@@ -62,7 +62,7 @@ export function getOrchestratorUrl() {
     return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
 }
 
-export function isValidHttpUrl(str: string) {
+export function isValidUrl(str: string) {
     try {
         new URL(str);
         return true;
@@ -171,6 +171,22 @@ export function getGlobalOAuthCallbackUrl() {
 export function getGlobalWebhookReceiveUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/webhook';
+}
+
+/**
+ * Public URL of the per-integration OAuth Client ID Metadata Document (CIMD).
+ * The URL is used as the OAuth client_id and must match the hosted document's
+ * client_id byte-for-byte, so this helper is the single source of that string.
+ * Returns null when NANGO_SERVER_URL is unset or not https: the authorization
+ * server fetches this URL server-side, so the redirectmeto local-dev fallback
+ * cannot work and callers must fall back to dynamic client registration.
+ */
+export function getGlobalClientMetadataDocumentUrl(environmentUuid: string, providerConfigKey: string): string | null {
+    const baseUrl = process.env['NANGO_SERVER_URL'];
+    if (!baseUrl || !baseUrl.startsWith('https://')) {
+        return null;
+    }
+    return `${baseUrl.replace(/\/+$/, '')}/oauth/client-metadata/${environmentUuid}/${encodeURIComponent(providerConfigKey)}`;
 }
 
 /**
