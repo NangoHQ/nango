@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 876
+Provider count: 877
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -517,6 +517,7 @@ URL patterns:
 | `netsuite-tba` | NetSuite (TBA) | TBA | [docs](https://nango.dev/docs/api-integrations/netsuite-tba.md) |  | [setup](https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango.md) | accounting, erp, popular |
 | `next-cloud-ocs` | Next Cloud OCS | BASIC | [docs](https://nango.dev/docs/integrations/all/next-cloud-ocs.md) | [connect](https://nango.dev/docs/integrations/all/next-cloud-ocs/connect.md) |  | storage, productivity |
 | `nexthink` | Nexthink | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nexthink.md) | [connect](https://nango.dev/docs/api-integrations/nexthink/connect.md) |  | analytics |
+| `ninety-io` | Ninety.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/ninety-io.md) | [connect](https://nango.dev/docs/api-integrations/ninety-io/connect.md) |  | productivity |
 | `ninjaone-rmm` | NinjaOne RMM | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ninjaone-rmm.md) | [connect](https://nango.dev/docs/integrations/all/ninjaone-rmm/connect.md) |  | support |
 | `ninjaone-rmm-oauth2` | NinjaOne RMM (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app.md) | support |
 | `ninjaone-saas-backup` | NinjaOne SaaS Backup | API_KEY | [docs](https://nango.dev/docs/api-integrations/ninjaone-saas-backup.md) | [connect](https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect.md) |  | storage, productivity |

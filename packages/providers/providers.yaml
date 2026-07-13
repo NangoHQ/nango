@@ -13758,6 +13758,30 @@ nexthink:
             order: 2
             doc_section: '#step-1-locate-your-instance-name-and-region'
 
+ninety-io:
+    display_name: Ninety.io
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.public.ninety.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/teams
+    docs: https://nango.dev/docs/api-integrations/ninety-io
+    docs_connect: https://nango.dev/docs/api-integrations/ninety-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            example: pat_189b**********************************4c11
+            pattern: '^pat_[a-f0-9]{64}$'
+            description: Your Ninety.io Personal Access Token.
+            doc_section: '#step-1-generate-a-personal-access-token'
+
 ninjaone-rmm:
     display_name: NinjaOne RMM
     categories:

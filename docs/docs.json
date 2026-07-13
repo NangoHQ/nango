@@ -1411,6 +1411,7 @@
               "integrations/all/mural",
               "api-integrations/nable-ncentral",
               "integrations/all/nationbuilder",
+              "api-integrations/ninety-io",
               "integrations/all/ninjaone-rmm",
               "api-integrations/ninjaone-rmm-oauth2",
               "api-integrations/ninjaone-saas-backup",
