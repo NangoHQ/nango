@@ -1,8 +1,18 @@
+import * as z from 'zod';
+
 import { configService, connectionService } from '@nangohq/shared';
+
+import { webhookUrlSchema } from '../../../helpers/validation.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
 import type { ConnectionConfig, DBEnvironment, PatchConnectionConfig } from '@nangohq/types';
 import type { Response } from 'express';
+
+export const replaceConnectionConfigBodySchema = z.strictObject({
+    connection_config: z.looseObject({
+        webhook_url: webhookUrlSchema
+    })
+});
 
 export async function handleReplaceConnectionConfig({
     res,

@@ -84,4 +84,41 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.res.status).toBe(400);
         expect(res.json).toMatchObject({ error: { code: 'invalid_body' } });
     });
+
+    it('should reject webhook_url pointing to nango.dev', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { connectionId: conn.connection_id },
+            query: { provider_config_key: 'github' },
+            body: { connection_config: { webhook_url: 'https://api.nango.dev/hook' } }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toMatchObject({ error: { code: 'invalid_body' } });
+    });
+
+    it('should accept a valid webhook_url in connection_config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { connectionId: conn.connection_id },
+            query: { provider_config_key: 'github' },
+            body: { connection_config: { webhook_url: 'https://example.com/webhooks-from-nango' } }
+        });
+
+        isSuccess(res.json);
+
+        const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
+        expect(updatedConn?.connection_config).toMatchObject({ webhook_url: 'https://example.com/webhooks-from-nango' });
+    });
 });

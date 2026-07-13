@@ -4,13 +4,9 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handleReplaceConnectionConfig } from '../../../shared/connections/replaceConnectionConfig.js';
+import { handleReplaceConnectionConfig, replaceConnectionConfigBodySchema } from '../../../shared/connections/replaceConnectionConfig.js';
 
 import type { PatchPublicConnectionConfig } from '@nangohq/types';
-
-const schemaBody = z.strictObject({
-    connection_config: z.looseObject({})
-});
 
 const queryStringValidation = z.strictObject({
     provider_config_key: providerConfigKeySchema
@@ -27,7 +23,7 @@ export const patchPublicConnectionConfig = asyncWrapper<PatchPublicConnectionCon
         return;
     }
 
-    const valBody = schemaBody.safeParse(req.body);
+    const valBody = replaceConnectionConfigBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
