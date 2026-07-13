@@ -7,7 +7,8 @@ import { StatusTag } from './components/StatusTag';
 
 import type { FilterOption } from '../../components/patterns/FilterMultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { Column, ColumnDef } from '@tanstack/react-table';
+import type { CSSProperties } from 'react';
 
 export const columns: ColumnDef<SearchOperationsData>[] = [
     {
@@ -51,7 +52,12 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'integrationId',
         header: 'Integration',
-        minSize: 200,
+        // Width is computed from the widest visible value (see computeLogsColumnSizing). It may shrink and
+        // truncate when the row runs out of room, before the Connection column does.
+        minSize: 120,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
             return <ProviderTag msg={row.original} />;
         }
@@ -59,7 +65,10 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'syncConfigId',
         header: 'Script',
-        minSize: 150,
+        minSize: 80,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
             return <div className="truncate font-code text-s min-w-0">{row.original.syncConfigName || '-'}</div>;
         }
@@ -67,7 +76,9 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        size: 'auto' as unknown as number,
+        // Grows to absorb any leftover space (so short values leave no gap) and never shrinks, so the
+        // connection ID is the last thing to get truncated.
+        minSize: 120,
         meta: {
             isGrow: true
         },
@@ -88,6 +99,49 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         }
     }
 ];
+
+// ProviderTag = logo (16px) + gap (6px); every cell has px-3 horizontal padding (24px total).
+const INTEGRATION_LOGO_WIDTH = 22;
+const CELL_HORIZONTAL_PADDING = 24;
+const FALLBACK_CHAR_WIDTH = 7.2;
+
+/**
+ * Sizes the variable-width columns (Integration, Script, Connection) to fit their widest value.
+ * The values are rendered in a monospace font, so a single measured character width scales linearly.
+ * getSize() clamps the result to each column's minSize, so short values never fall below the header width.
+ */
+export function computeLogsColumnSizing(rows: SearchOperationsData[], charWidth: number): Record<string, number> {
+    const width = charWidth || FALLBACK_CHAR_WIDTH;
+    const maxChars = (get: (row: SearchOperationsData) => string | null | undefined) => rows.reduce((max, row) => Math.max(max, (get(row) || '').length), 0);
+
+    return {
+        integrationId: Math.ceil(maxChars((row) => row.integrationName) * width) + INTEGRATION_LOGO_WIDTH + CELL_HORIZONTAL_PADDING,
+        syncConfigId: Math.ceil(maxChars((row) => row.syncConfigName) * width) + CELL_HORIZONTAL_PADDING,
+        connectionId: Math.ceil(maxChars((row) => row.connectionName) * width) + CELL_HORIZONTAL_PADDING
+    };
+}
+
+/**
+ * Flex layout for a table cell/header. Every column sits at its content width (flex-basis), so nothing
+ * truncates while it fits. The Connection column grows to absorb leftover space (short values leave no gap).
+ * When the row is too narrow, `canShrink` columns give up space first (high shrink factor) down to their
+ * minSize; only once they are fully shrunk does the grow column start to shrink, so the Connection ID is the
+ * last thing to be truncated. Fixed columns never shrink.
+ */
+const SHRINK_FIRST = 1000;
+const SHRINK_LAST = 1;
+
+export function getLogsColumnStyle(column: Column<SearchOperationsData, unknown>): CSSProperties {
+    const size = column.getSize();
+    const meta = column.columnDef.meta;
+    const flexible = meta?.canShrink || meta?.isGrow;
+    return {
+        flexBasis: size,
+        flexGrow: meta?.isGrow ? 1 : 0,
+        flexShrink: meta?.canShrink ? SHRINK_FIRST : meta?.isGrow ? SHRINK_LAST : 0,
+        minWidth: flexible ? (column.columnDef.minSize ?? 0) : size
+    };
+}
 
 export const defaultLimit = 25;
 export const refreshInterval = 2_500;
