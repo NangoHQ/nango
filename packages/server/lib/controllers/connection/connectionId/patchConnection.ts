@@ -2,16 +2,11 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { handlePatchConnection } from '../../shared/connections/patchConnection.js';
+import { handlePatchConnection, patchConnectionBodySchema } from '../../shared/connections/patchConnection.js';
 
 import type { PatchPublicConnection } from '@nangohq/types';
-
-const schemaBody = z.strictObject({
-    end_user: endUserSchema.optional(),
-    tags: connectionTagsSchema.optional()
-});
 
 const queryStringValidation = z.strictObject({
     provider_config_key: providerConfigKeySchema
@@ -28,7 +23,7 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
         return;
     }
 
-    const valBody = schemaBody.safeParse(req.body);
+    const valBody = patchConnectionBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
@@ -41,13 +36,15 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
     }
 
     const { environment, account } = res.locals;
+    const queryParams: PatchPublicConnection['Querystring'] = queryParamValues.data;
+    const params: PatchPublicConnection['Params'] = paramValue.data;
 
     await handlePatchConnection({
         res,
-        environment,
         account,
-        connectionId: paramValue.data.connectionId,
-        providerConfigKey: queryParamValues.data.provider_config_key,
+        environment,
+        connectionId: params.connectionId,
+        providerConfigKey: queryParams.provider_config_key,
         body: valBody.data
     });
 });

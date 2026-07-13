@@ -169,9 +169,10 @@ export type PatchPublicConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
+        webhook_url?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
 }>;
 
 export type PatchPublicConnectionConfig = Endpoint<{
@@ -197,15 +198,16 @@ export type PatchConnection = Endpoint<{
         connectionId: string;
     };
     Querystring: {
-        env: string;
         provider_config_key: string;
+        env: string;
     };
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
+        webhook_url?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
 }>;
 
 export type PatchConnectionConfig = Endpoint<{

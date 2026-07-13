@@ -2,57 +2,50 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, connectionTagsSchema, endUserSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handlePatchConnection } from '../../../shared/connections/patchConnection.js';
+import { handlePatchConnection, patchConnectionBodySchema } from '../../../shared/connections/patchConnection.js';
 
 import type { PatchConnection } from '@nangohq/types';
 
-const schemaBody = z.strictObject({
-    end_user: endUserSchema.optional(),
-    tags: connectionTagsSchema.optional()
+const queryStringValidation = z.strictObject({
+    provider_config_key: providerConfigKeySchema,
+    env: envSchema
 });
 
-const validationQuery = z
-    .object({
-        provider_config_key: providerConfigKeySchema,
-        env: envSchema
-    })
-    .strict();
-
-const validationParams = z
-    .object({
-        connectionId: connectionIdSchema
-    })
-    .strict();
+const paramValidation = z.strictObject({
+    connectionId: connectionIdSchema
+});
 
 export const patchConnection = asyncWrapper<PatchConnection>(async (req, res) => {
-    const valQuery = validationQuery.safeParse(req.query);
-    if (!valQuery.success) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
+    const queryParamValues = queryStringValidation.safeParse(req.query);
+    if (!queryParamValues.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });
         return;
     }
 
-    const valParams = validationParams.safeParse(req.params);
-    if (!valParams.success) {
-        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
-        return;
-    }
-
-    const valBody = schemaBody.safeParse(req.body);
+    const valBody = patchConnectionBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
     }
 
+    const paramValue = paramValidation.safeParse(req.params);
+    if (!paramValue.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramValue.error) } });
+        return;
+    }
+
     const { environment, account } = res.locals;
+    const queryParams: PatchConnection['Querystring'] = queryParamValues.data;
+    const params: PatchConnection['Params'] = paramValue.data;
 
     await handlePatchConnection({
         res,
-        environment,
         account,
-        connectionId: valParams.data.connectionId,
-        providerConfigKey: valQuery.data.provider_config_key,
+        environment,
+        connectionId: params.connectionId,
+        providerConfigKey: queryParams.provider_config_key,
         body: valBody.data
     });
 });
