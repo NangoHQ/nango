@@ -1378,6 +1378,8 @@
               "api-integrations/microsoft",
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
+              "api-integrations/microsoft-dynamics-365-finance-and-operations",
+              "api-integrations/microsoft-dynamics-365-finance-and-operations-cc",
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
               "api-integrations/microsoft-planner",
