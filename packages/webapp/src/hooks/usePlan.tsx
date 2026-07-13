@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
@@ -17,6 +17,7 @@ import type {
     PutBillingInvoicingDetails,
     UsageMetric
 } from '@nangohq/types';
+import type { InfiniteData, QueryKey } from '@tanstack/react-query';
 
 export async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']> {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, { method: 'GET' });
@@ -206,25 +207,30 @@ export const GetBillingUsageTopDimensionValuesQueryKey = ['plans', 'billing-usag
 // reopening (or prefetching) the filter popover serves the cache instead of refetching.
 const TOP_DIMENSION_VALUES_STALE_TIME = 5 * 60 * 1000;
 
-function topDimensionValuesQueryKey(timeframe: { start: string; end: string } | undefined, metric: UsageMetric, dimension: string | null, limit: number) {
-    return [...GetBillingUsageTopDimensionValuesQueryKey, timeframe, metric, dimension, limit];
+// `search` is part of the key so each search term caches independently; `page`
+// is the infinite-query page param, not the key.
+function topDimensionValuesQueryKey(timeframe: { start: string; end: string } | undefined, metric: UsageMetric, dimension: string | null, search: string) {
+    return [...GetBillingUsageTopDimensionValuesQueryKey, timeframe, metric, dimension, search];
 }
 
-function fetchTopDimensionValues(
+function fetchTopDimensionValuesPage(
     env: string,
     metric: UsageMetric,
     dimension: string | null,
     timeframe: { start: string; end: string } | undefined,
-    limit: number
+    search: string
 ) {
-    return async (): Promise<GetBillingUsageTopDimensionValues['Success']> => {
-        const params = new URLSearchParams({ env, metric, limit: String(limit) });
+    return async ({ pageParam = 0 }: { pageParam?: number }): Promise<GetBillingUsageTopDimensionValues['Success']> => {
+        const params = new URLSearchParams({ env, metric, page: String(pageParam) });
         if (timeframe) {
             params.append('from', timeframe.start);
             params.append('to', timeframe.end);
         }
         if (dimension) {
             params.append('dimension', dimension);
+        }
+        if (search) {
+            params.append('search', search);
         }
 
         const res = await apiFetch(`/api/v1/plans/billing-usage/top-dimension-values?${params.toString()}`, { method: 'GET' });
@@ -239,10 +245,10 @@ function fetchTopDimensionValues(
 }
 
 /**
- * Top-N seen values for a (metric, dimension) over a timeframe, ranked by usage.
- * Backs the filter typeahead so a value can be picked even when it isn't a
- * visible breakdown slice (the long tail still needs free-text, since values
- * below the cap never appear here). Lazy — only fires when `enabled` and a
+ * Seen values for a (metric, dimension) over a timeframe, ranked by usage and
+ * paged so ANY value is reachable — `search` narrows to matching values across
+ * the customer's full set (server-side), and pages load incrementally past the
+ * first. Backs the filter value picker. Lazy — only fires when `enabled` and a
  * dimension is set.
  */
 export function useApiGetBillingUsageTopDimensionValues<M extends UsageMetric>(
@@ -250,41 +256,48 @@ export function useApiGetBillingUsageTopDimensionValues<M extends UsageMetric>(
     metric: M,
     dimension: BreakdownDimensions[M] | null,
     timeframe: { start: string; end: string } | undefined,
-    limit: number,
+    search: string,
     options?: { enabled?: boolean }
 ) {
-    return useQuery<GetBillingUsageTopDimensionValues['Success'], APIError>({
+    return useInfiniteQuery<
+        GetBillingUsageTopDimensionValues['Success'],
+        APIError,
+        InfiniteData<GetBillingUsageTopDimensionValues['Success']>,
+        QueryKey,
+        number
+    >({
         enabled: Boolean(env) && Boolean(timeframe) && Boolean(dimension) && (options?.enabled ?? true),
         staleTime: TOP_DIMENSION_VALUES_STALE_TIME,
-        queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, limit),
-        queryFn: fetchTopDimensionValues(env, metric, dimension, timeframe, limit)
+        queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, search),
+        queryFn: fetchTopDimensionValuesPage(env, metric, dimension, timeframe, search),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => (lastPage.data.pagination.hasMore ? lastPage.data.pagination.page + 1 : undefined),
+        // Keep showing the previous pages while a new search term's first page loads, so the
+        // input doesn't unmount mid-keystroke and lose focus (see useGetIntegrationFunctions).
+        placeholderData: keepPreviousData
     });
 }
 
 /**
- * Returns a callback that warms the top-values cache for a set of dimensions. Call it when the
- * filter popover opens so picking a dimension shows its values instantly instead of spinning
- * through a fetch. No-ops per dimension while the cached values are still fresh.
+ * Returns a callback that warms the value cache (first page, no search) for a set of dimensions.
+ * Call it when the filter popover opens so picking a dimension shows its values instantly instead
+ * of spinning through a fetch. No-ops per dimension while the cached values are still fresh.
  */
-export function useApiPrefetchBillingUsageTopDimensionValues(
-    env: string,
-    metric: UsageMetric,
-    timeframe: { start: string; end: string } | undefined,
-    limit: number
-) {
+export function useApiPrefetchBillingUsageTopDimensionValues(env: string, metric: UsageMetric, timeframe: { start: string; end: string } | undefined) {
     const queryClient = useQueryClient();
     return useCallback(
         (dimensions: readonly string[]) => {
             if (!env || !timeframe) return;
             for (const dimension of dimensions) {
-                void queryClient.prefetchQuery({
+                void queryClient.prefetchInfiniteQuery({
                     staleTime: TOP_DIMENSION_VALUES_STALE_TIME,
-                    queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, limit),
-                    queryFn: fetchTopDimensionValues(env, metric, dimension, timeframe, limit)
+                    queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, ''),
+                    queryFn: fetchTopDimensionValuesPage(env, metric, dimension, timeframe, ''),
+                    initialPageParam: 0
                 });
             }
         },
-        [queryClient, env, metric, timeframe, limit]
+        [queryClient, env, metric, timeframe]
     );
 }
 

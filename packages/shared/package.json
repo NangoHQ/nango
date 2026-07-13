@@ -23,7 +23,7 @@
         "@babel/traverse": "7.28.0",
         "@babel/types": "7.28.2",
         "@hapi/boom": "10.0.1",
-        "@modelcontextprotocol/sdk": "1.26.0",
+        "@modelcontextprotocol/sdk": "1.29.0",
         "@nangohq/database": "file:../database",
         "@nangohq/egress": "file:../egress",
         "@nangohq/feature-flags": "file:../feature-flags",

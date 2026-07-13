@@ -15,7 +15,7 @@ import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result
 import type { Span } from 'dd-trace';
 import type { JSONSchema7 } from 'json-schema';
 
-export async function createMcpServerForConnection(
+export async function createConnectionToolsMcpServer(
     account: DBTeam,
     environment: DBEnvironment,
     connection: DBConnectionDecrypted,
@@ -23,7 +23,7 @@ export async function createMcpServerForConnection(
 ): Promise<Result<Server>> {
     const server = new Server(
         {
-            name: 'Nango MCP server',
+            name: 'Nango Connection Tools MCP server',
             version: '1.0.0'
         },
         {

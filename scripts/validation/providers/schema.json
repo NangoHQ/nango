@@ -506,7 +506,7 @@
                 },
                 "client_registration": {
                     "type": "string",
-                    "enum": ["dynamic", "static", "metadata"]
+                    "enum": ["dynamic", "static", "cimd"]
                 },
                 "request_params": {
                     "type": "object",
