@@ -17993,6 +17993,37 @@ salesmsg-oauth2:
     docs: https://nango.dev/docs/api-integrations/salesmsg-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app
 
+sanity-mcp:
+    display_name: Sanity (MCP)
+    categories:
+        - cms
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.sanity.io/authorize
+    token_url: https://mcp.sanity.io/token
+    registration_url: https://mcp.sanity.io/register
+    default_scopes:
+        - global
+    authorization_params:
+        response_type: code
+        resource: https://mcp.sanity.io
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.sanity.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/sanity-mcp
+
 sap-fieldglass:
     display_name: SAP Fieldglass
     categories:
