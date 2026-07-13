@@ -1,0 +1,39 @@
+---
+title: Humaans.io - How do I link my account?
+sidebarTitle: Humaans.io
+---
+
+# Overview
+
+To authenticate with Humaans.io, you will need:
+1. **API Access Token** - A token that grants secure access to the Humaans.io API, scoped to the permissions you select when creating it.
+
+This guide will walk you through generating your **API Access Token** in Humaans.io.
+
+### Prerequisites:
+
+- You must have a Humaans.io account with a role that can create API access tokens (Owner, Admin, Finance, or Tech).
+
+### Instructions:
+
+#### Step 1: Generating your API access token
+
+1. Log in to your Humaans.io account.
+2. Click the arrows next to your name in the top left corner, then click **API access tokens**.
+3. Click **Generate new token**.
+4. Enter a name for your token, then select the [scopes](https://docs.humaans.io/api/#scopes) it needs (e.g. `public:read`, `private:read`, `private:write`, `compensations:read`, `compensations:write`, `documents:read`, `documents:write`, `webhooks:manage`).
+5. Click the **Click to copy** button next to your new token to copy it. Humaans.io only shows the token once, so store it securely.
+
+<Note>
+  The token inherits the permissions of the role of the user who created it, in addition to the selected scopes. For example, a token created by a `user` role can only ever access that user's own profile, even with `private:read` selected.
+</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Access Token**:
+
+1. Open the form where you need to authenticate with Humaans.io.
+2. Enter your **API Access Token** in the field provided.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Humaans.io.

@@ -6420,6 +6420,35 @@ domo:
             description: The Client secret of your API client
             doc_section: '#step-1-creating-your-api-client'
 
+dope-security:
+    display_name: dope.security
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.flightdeck.dope.security/v1/partner/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.flightdeck.dope.security
+    docs: https://nango.dev/docs/api-integrations/dope-security
+    docs_connect: https://nango.dev/docs/api-integrations/dope-security/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Flightdeck API Client ID from the dope console.
+            example: c7d53292******************b560e2
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-creating-api-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Flightdeck API Client Secret from the dope console.
+            secret: true
+            example: 7SBGztUm*****************************jfYlMM
+            doc_section: '#step-1-creating-api-client-credentials'
+
 dropbox:
     display_name: Dropbox
     categories:
@@ -8983,6 +9012,20 @@ google-calendar:
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
 
+google-calendar-mcp:
+    display_name: Google Calendar (MCP)
+    categories:
+        - popular
+        - productivity
+        - mcp
+    alias: google-calendar
+    proxy:
+        base_url: https://calendarmcp.googleapis.com/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/google-calendar-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar-mcp/how-to-register-your-own-google-calendar-mcp-api-oauth-app
+
 google-contacts:
     display_name: Google Contacts
     categories:
@@ -10171,6 +10214,26 @@ hover:
     proxy:
         base_url: https://api.hover.to
     docs: https://nango.dev/docs/integrations/all/hover
+
+humaans-io:
+    display_name: Humaans.io
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.humaans.io/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/humaans-io
+    docs_connect: https://nango.dev/docs/api-integrations/humaans-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Access Token
+            description: The API access token for your Humaans.io account
+            secret: true
+            example: P9IAs9**********************9oVR
+            pattern: '^[A-Za-z0-9]{32}$'
 
 huntress:
     display_name: Huntress
@@ -12872,6 +12935,78 @@ microsoft-business-central:
             example: production
             pattern: '^[a-zA-Z0-9-_]+$'
             doc_section: '#step-2-finding-your-enrivonment-name'
+            order: 2
+
+microsoft-dynamics-365-finance-and-operations:
+    display_name: Microsoft Dynamics 365 Finance and Operations
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/authorize
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/token
+    authorization_params:
+        response_type: code
+        resource: https://${connectionConfig.environmentUrl}
+    token_params:
+        grant_type: authorization_code
+        resource: https://${connectionConfig.environmentUrl}
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://${connectionConfig.environmentUrl}
+    proxy:
+        base_url: https://${connectionConfig.environmentUrl}
+    docs: https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations/how-to-register-your-own-microsoft-dynamics-365-finance-and-operations-api-oauth-app
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses the Finance and Operations Microsoft services.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        environmentUrl:
+            type: string
+            title: Environment URL
+            description: The domain of your Finance and Operations environment.
+            example: mycompany.operations.dynamics.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-environment-url'
+            order: 2
+
+microsoft-dynamics-365-finance-and-operations-cc:
+    display_name: Microsoft Dynamics 365 Finance and Operations (Client Credentials)
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        scope: https://${connectionConfig.environmentUrl}/.default
+    proxy:
+        base_url: https://${connectionConfig.environmentUrl}
+    docs: https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization that uses the Finance and Operations Microsoft services.
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        environmentUrl:
+            type: string
+            title: Environment URL
+            description: The domain of your Finance and Operations environment.
+            example: mycompany.operations.dynamics.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-environment-url'
             order: 2
 
 microsoft-ads:
