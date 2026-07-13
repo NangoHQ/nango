@@ -20,7 +20,7 @@ interface AuditSpecBase<TEndpoint extends Endpoint<any>> {
 }
 
 export type AuditSpec<TEndpoint extends Endpoint<any> = Endpoint<any>> =
-    | (AuditSpecBase<TEndpoint> & { resource: 'connection'; action: 'deleted' })
+    | (AuditSpecBase<TEndpoint> & { resource: 'connection'; action: 'deleted'; metadata?: never })
     | (AuditSpecBase<TEndpoint> & {
           resource: 'member';
           action: 'role_changed';
@@ -79,7 +79,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
             return;
         }
         const target = spec.target?.(req);
-        const metadata = 'metadata' in spec ? spec.metadata?.(req) : undefined;
+        const metadata = spec.metadata?.(req);
         // Cast is plumbing: AuditSpec already type-checks against the AuditEvent variants, but TS
         // can't narrow the spread back to one.
         const event = {
