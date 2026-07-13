@@ -1,15 +1,13 @@
-import { BarChart3, ChevronRight, Palette, X } from 'lucide-react';
+import { ChevronRight, Palette, X } from 'lucide-react';
 import { lazy, Suspense, useEffect } from 'react';
 import { create } from 'zustand';
 
 import { IconButton } from '@nangohq/design-system';
 
-import { Switch } from '@/components/ui/Switch';
 import { syncPersistedOverridesToTheme } from '@/features/tokenEditorPersistence';
 import { useTeam } from '@/hooks/useTeam';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
-import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { SentryErrorBoundary } from '@/utils/sentry';
 
 // Lazy-loaded so the Token Editor — and its bundled tokens.json + usage snapshot — is code-split
@@ -72,8 +70,6 @@ export const DevToolPanel: React.FC = () => {
     const setOpen = useDevPanelStore((s) => s.setOpen);
     const setView = useDevPanelStore((s) => s.setView);
     const toggle = useDevPanelStore((s) => s.toggle);
-    const usageBreakdown = useFeatureFlagsStore((s) => s.usageBreakdown);
-    const setFlag = useFeatureFlagsStore((s) => s.setFlag);
     const darkMode = useThemeStore(darkModeSelector);
 
     // Restore persisted token overrides on load and when the app theme changes, without opening the editor.
@@ -113,18 +109,7 @@ export const DevToolPanel: React.FC = () => {
 
                     {/* Body */}
                     <div className="flex-1 overflow-y-auto p-4">
-                        <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-muted">Feature Flags</p>
-                        <ul className="space-y-1">
-                            <li className="flex items-center justify-between rounded px-2 py-1.5">
-                                <div className="flex items-center gap-2.5">
-                                    <BarChart3 className="size-4 shrink-0 text-text-muted" />
-                                    <span className="text-sm text-text-default">Usage breakdown</span>
-                                </div>
-                                <Switch checked={usageBreakdown} onCheckedChange={(v) => setFlag('usageBreakdown', v)} />
-                            </li>
-                        </ul>
-
-                        <p className="mb-3 mt-6 text-xs font-medium uppercase tracking-wider text-text-muted">Tools</p>
+                        <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-muted">Tools</p>
                         <ul className="space-y-1">
                             <li>
                                 <button
