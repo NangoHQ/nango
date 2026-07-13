@@ -1,6 +1,6 @@
 import { audit } from '@nangohq/audit';
 import { getFlags } from '@nangohq/feature-flags';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, MemberRoleChangedMetadata } from '@nangohq/audit';
@@ -68,6 +68,8 @@ function outcomeFromStatus(status: number): AuditOutcome {
 }
 
 async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void> {
+    // Stamp occurredAt now, before the async flag check, so it reflects the response — not flag latency.
+    const occurredAt = new Date().toISOString();
     try {
         const locals = res.locals as RequestLocals;
         const { account, environment } = locals;
@@ -82,7 +84,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
         // Cast is plumbing: AuditSpec already type-checks against the AuditEvent variants, but TS
         // can't narrow the spread back to one.
         const event = {
-            occurredAt: new Date().toISOString(),
+            occurredAt,
             accountId: account.id,
             environmentId: spec.accountScoped ? null : (environment?.id ?? null),
             actor: resolveActor(req, locals),
@@ -96,6 +98,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
         audit.record(event);
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
+        metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { success: 'false', resource: spec.resource, action: spec.action });
     }
 }
 

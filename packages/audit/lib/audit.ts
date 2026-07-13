@@ -12,12 +12,17 @@ export class Audit {
 
     // Fire-and-forget: never throws into the caller.
     record(event: AuditEvent): void {
+        let success = 'true';
         try {
             this.sink.record(event);
-            metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { success: 'true', resource: event.resource, action: event.action });
         } catch (err) {
-            metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { success: 'false', resource: event.resource, action: event.action });
+            success = 'false';
             logger.error(`failed to record audit event`, err);
+        }
+        try {
+            metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { success, resource: event.resource, action: event.action });
+        } catch {
+            // metrics are best-effort; never let them break the fire-and-forget contract
         }
     }
 }
