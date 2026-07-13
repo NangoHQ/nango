@@ -8,6 +8,11 @@ export type { AvgUsageMetric, CounterUsageMetric, DimensionFor } from '@nangohq/
 export const TOP_N_BREAKDOWN_DEFAULT = 10;
 export const TOP_N_BREAKDOWN_CAP = 25;
 
+// Page size for the filter value picker's `getTopDimensionValues` paging.
+// Kept distinct from `TOP_N_BREAKDOWN_CAP` (same value today) so the chart's
+// top-N + 'rest' cap and the picker's page size can diverge independently.
+export const TOP_N_BREAKDOWN_PAGE_SIZE = 25;
+
 // `satisfies Record<…, true>` on the set object forces an entry per metric;
 // projecting via `Object.keys` gives the runtime array. Adding a new metric
 // to `CounterUsageMetric` / `AvgUsageMetric` without updating the set fails
@@ -137,16 +142,21 @@ export function rankingQuantityForMetric(metric: UsageMetric): string {
     return quantityForMetric(metric);
 }
 
-// Top-N seen dimension values for (metric, dimension) over a timeframe.
-// Returns a flat string list; the filter UI uses this to populate dropdowns.
+// Seen dimension values for (metric, dimension) over a timeframe, ordered by
+// volume DESC. Returns a flat string list; the filter UI uses this to populate
+// dropdowns. Supports server-side substring `search` and offset `page` paging
+// so values below the first page are reachable.
 export type GetTopDimensionValuesQuery = {
     [M in UsageMetric]: {
         accountId: number;
         metric: M;
         dimension: BreakdownDimensions[M];
         timeframe: { start: Date; end: Date };
-        // Number of values to return. Clamped server-side to TOP_N_BREAKDOWN_CAP.
-        limit: number;
+        // Case-insensitive substring match on the dimension value (literal,
+        // not a LIKE pattern). Empty/undefined → no filter.
+        search?: string | undefined;
+        // Zero-based page index; page size is TOP_N_BREAKDOWN_PAGE_SIZE.
+        page: number;
     };
 }[UsageMetric];
 
@@ -155,6 +165,9 @@ export interface GetTopDimensionValuesResult {
     metric: UsageMetric;
     dimension: string;
     values: string[];
+    // Page-full heuristic: this page returned a full TOP_N_BREAKDOWN_PAGE_SIZE
+    // of values, so there may be another page.
+    hasMore: boolean;
 }
 
 export function quantityForMetric(metric: CounterUsageMetric): string {

@@ -328,7 +328,7 @@ acumatica:
             type: string
             title: Instance URL
             description: The hostname of your Acumatica ERP instance.
-            format: hostname
+            pattern: '^[A-Za-z0-9.-]+(?::\d+)?(?:/[A-Za-z0-9._-]+)*$'
             example: mycompany.acumatica.com
             prefix: https://
             doc_section: '#step-6-identify-your-instance-url'
@@ -1778,6 +1778,57 @@ ashby:
             description: ''
             default_value: ''
             hidden: true
+
+aspire:
+    display_name: Aspire
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.domain}/Authorization
+    refresh_url: https://${connectionConfig.domain}/Authorization/RefreshToken
+    token_params:
+        ClientId: ${credentials.clientId}
+        Secret: ${credentials.secret}
+    refresh_token_params:
+        RefreshToken: ${refresh_token}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: Token
+        refresh_token: RefreshToken
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/aspire
+    docs_connect: https://nango.dev/docs/api-integrations/aspire/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Aspire API environment to connect to.
+            order: 1
+            format: hostname
+            enum:
+                - cloudsandbox-api.youraspire.com
+                - cloud-api.youraspire.com
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID generated for your Aspire application.
+            format: uuid
+            example: 3f2a91c6-****-****-****-6d5e8a2b7c34
+            doc_section: '#step-2-generate-your-client-id-and-secret'
+        secret:
+            type: string
+            title: Secret
+            description: The Secret generated alongside the Client ID.
+            secret: true
+            pattern: '^[a-zA-Z0-9]{32}$'
+            example: 7hLp************************nHa5
+            doc_section: '#step-2-generate-your-client-id-and-secret'
 
 atlas-so:
     display_name: Atlas.so
@@ -6369,6 +6420,35 @@ domo:
             description: The Client secret of your API client
             doc_section: '#step-1-creating-your-api-client'
 
+dope-security:
+    display_name: dope.security
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.flightdeck.dope.security/v1/partner/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.flightdeck.dope.security
+    docs: https://nango.dev/docs/api-integrations/dope-security
+    docs_connect: https://nango.dev/docs/api-integrations/dope-security/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Flightdeck API Client ID from the dope console.
+            example: c7d53292******************b560e2
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-creating-api-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Flightdeck API Client Secret from the dope console.
+            secret: true
+            example: 7SBGztUm*****************************jfYlMM
+            doc_section: '#step-1-creating-api-client-credentials'
+
 dropbox:
     display_name: Dropbox
     categories:
@@ -9032,6 +9112,7 @@ google-drive:
         - popular
         - storage
     alias: google
+    webhook_routing_script: googleDriveWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
@@ -9044,6 +9125,16 @@ google-forms:
         base_url: https://forms.googleapis.com
     docs: https://nango.dev/docs/api-integrations/google-forms
     setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
+
+google-health:
+    display_name: Google Health
+    categories:
+        - sports
+    alias: google
+    proxy:
+        base_url: https://health.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-health
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app
 
 google-tasks:
     display_name: Google Tasks
@@ -9730,6 +9821,34 @@ hackerrank-work:
             description: ''
             default_value: ''
             hidden: true
+
+haileyhr:
+    display_name: Hailey HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.${connectionConfig.environment}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/haileyhr
+    docs_connect: https://nango.dev/docs/api-integrations/haileyhr/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The Hailey HR environment to connect to.
+            enum:
+                - haileyhr.app
+                - demo.haileyhr.app
+            order: 1
+            doc_section: '#step-1-selecting-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The personal access token for your Hailey HR account.
+            doc_section: '#step-2-generating-your-personal-access-token'
 
 halo-psa:
     display_name: Halo PSA
@@ -13696,6 +13815,30 @@ nexthink:
             order: 2
             doc_section: '#step-1-locate-your-instance-name-and-region'
 
+ninety-io:
+    display_name: Ninety.io
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.public.ninety.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/teams
+    docs: https://nango.dev/docs/api-integrations/ninety-io
+    docs_connect: https://nango.dev/docs/api-integrations/ninety-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            example: pat_189b**********************************4c11
+            pattern: '^pat_[a-f0-9]{64}$'
+            description: Your Ninety.io Personal Access Token.
+            doc_section: '#step-1-generate-a-personal-access-token'
+
 ninjaone-rmm:
     display_name: NinjaOne RMM
     categories:
@@ -13921,6 +14064,10 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.notion.com/
     docs: https://nango.dev/docs/api-integrations/notion-mcp
 
 notion-scim:
@@ -18190,7 +18337,6 @@ sap-business-one:
             title: Service Layer URL
             prefix: https://
             suffix: /Login
-            pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
             order: 1
             description: The base URL for your SAP Business One Service Layer
             doc_section: '#step-3-finding-your-service-layer-url'
