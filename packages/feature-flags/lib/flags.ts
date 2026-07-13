@@ -40,6 +40,13 @@ export function buildFlags(client: FeatureFlagsClient) {
                 },
                 true
             );
+        },
+        /**
+         * Whether proxy responses forward all provider headers (minus hop-by-hop / CORS)
+         * instead of the buffered-path allowlist. Default `false`.
+         */
+        shouldForwardAllProxyResponseHeaders(accountUuid: string) {
+            return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
