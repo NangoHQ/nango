@@ -3,9 +3,9 @@ import { Err, Ok } from '@nangohq/utils';
 import { envs as logsEnvs } from '../env.js';
 import * as modelMessages from '../models/messages.js';
 import * as modelOperations from '../models/operations.js';
-import { LogsDisabledError } from '../utils.js';
+import { LogsDisabledError, LogsNotFoundError } from '../utils.js';
 
-import type { OperationRow, SearchOperationsState, SearchOperationsType, SearchPeriod } from '@nangohq/types';
+import type { MessageRow, OperationRow, SearchOperationsState, SearchOperationsType, SearchPeriod } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface ListLogOperationsParams {
@@ -24,6 +24,27 @@ export interface ListLogOperationsParams {
 
 export interface ListLogOperationsResult {
     operations: OperationRow[];
+    pagination: {
+        total: number;
+        cursor: string | null;
+    };
+}
+
+export interface GetLogOperationParams {
+    accountId: number;
+    environmentId: number;
+    operationId: string;
+    messages: {
+        limit: number;
+        cursor?: string | null | undefined;
+        search?: string | undefined;
+        period?: SearchPeriod | undefined;
+    };
+}
+
+export interface GetLogOperationResult {
+    operation: OperationRow;
+    messages: MessageRow[];
     pagination: {
         total: number;
         cursor: string | null;
@@ -53,6 +74,38 @@ export const logsOperationsService = {
                     // The limit bounds operations inspected, so this page can return fewer matches while still having a cursor.
                     total: params.search ? operations.length : rawOps.count,
                     cursor: rawOps.cursor
+                }
+            });
+        } catch (err) {
+            return Err(err);
+        }
+    },
+
+    async getOperation(params: GetLogOperationParams): Promise<Result<GetLogOperationResult>> {
+        if (!logsEnvs.NANGO_LOGS_ENABLED) {
+            return Err(new LogsDisabledError());
+        }
+
+        try {
+            const operation = await modelOperations.getOperation({ id: params.operationId });
+            if (operation.accountId !== params.accountId || operation.environmentId !== params.environmentId) {
+                return Err(new LogsNotFoundError());
+            }
+
+            const rawMessages = await modelMessages.listMessages({
+                parentId: params.operationId,
+                limit: params.messages.limit,
+                search: params.messages.search,
+                cursorAfter: params.messages.cursor,
+                period: params.messages.period
+            });
+
+            return Ok({
+                operation,
+                messages: rawMessages.items,
+                pagination: {
+                    total: rawMessages.count,
+                    cursor: rawMessages.cursorAfter
                 }
             });
         } catch (err) {

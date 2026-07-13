@@ -3,11 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { envs as logsEnvs } from '../env.js';
 import * as modelMessages from '../models/messages.js';
 import * as modelOperations from '../models/operations.js';
-import { LogsDisabledError } from '../utils.js';
+import { LogsDisabledError, LogsNotFoundError } from '../utils.js';
 import { logsOperationsService } from './operations.service.js';
 
-import type { ListLogOperationsParams } from './operations.service.js';
-import type { OperationRow } from '@nangohq/types';
+import type { GetLogOperationParams, ListLogOperationsParams } from './operations.service.js';
+import type { MessageRow, OperationRow } from '@nangohq/types';
 
 describe('logsOperationsService', () => {
     const previousLogsEnabled = logsEnvs.NANGO_LOGS_ENABLED;
@@ -151,6 +151,86 @@ describe('logsOperationsService', () => {
         }
         expect(result.error).toBe(error);
     });
+
+    it('returns LogsDisabledError when getting an operation and logs are disabled', async () => {
+        logsEnvs.NANGO_LOGS_ENABLED = false;
+        const getOperationSpy = vi.spyOn(modelOperations, 'getOperation');
+
+        const result = await logsOperationsService.getOperation(baseGetParams());
+
+        expect(result.isErr()).toBe(true);
+        if (result.isOk()) {
+            throw new Error('expected getOperation to fail');
+        }
+        expect(result.error).toBeInstanceOf(LogsDisabledError);
+        expect(getOperationSpy).not.toHaveBeenCalled();
+    });
+
+    it('gets one operation with messages', async () => {
+        const operation = makeOperation('op-1');
+        const messages = [makeMessage('msg-1', operation.id)];
+        const rawMessages = {
+            count: 1,
+            items: messages,
+            cursorAfter: 'cursor-after',
+            cursorBefore: 'cursor-before'
+        } satisfies Awaited<ReturnType<typeof modelMessages.listMessages>>;
+        const getOperationSpy = vi.spyOn(modelOperations, 'getOperation').mockResolvedValue(operation);
+        const listMessagesSpy = vi.spyOn(modelMessages, 'listMessages').mockResolvedValue(rawMessages);
+        const params = baseGetParams();
+
+        const result = await logsOperationsService.getOperation(params);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            throw result.error;
+        }
+        expect(getOperationSpy).toHaveBeenCalledWith({ id: params.operationId });
+        expect(listMessagesSpy).toHaveBeenCalledWith({
+            parentId: params.operationId,
+            limit: params.messages.limit,
+            search: params.messages.search,
+            cursorAfter: params.messages.cursor,
+            period: params.messages.period
+        });
+        expect(result.value).toStrictEqual({
+            operation,
+            messages,
+            pagination: {
+                total: rawMessages.count,
+                cursor: rawMessages.cursorAfter
+            }
+        });
+    });
+
+    it('returns LogsNotFoundError when the operation belongs to another environment', async () => {
+        vi.spyOn(modelOperations, 'getOperation').mockResolvedValue({ ...makeOperation('op-1'), environmentId: 999 });
+        const listMessagesSpy = vi.spyOn(modelMessages, 'listMessages');
+
+        const result = await logsOperationsService.getOperation(baseGetParams());
+
+        expect(result.isErr()).toBe(true);
+        if (result.isOk()) {
+            throw new Error('expected getOperation to fail');
+        }
+        expect(result.error).toBeInstanceOf(LogsNotFoundError);
+        expect(listMessagesSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns LogsNotFoundError when the operation does not exist', async () => {
+        const error = new LogsNotFoundError();
+        vi.spyOn(modelOperations, 'getOperation').mockRejectedValue(error);
+        const listMessagesSpy = vi.spyOn(modelMessages, 'listMessages');
+
+        const result = await logsOperationsService.getOperation(baseGetParams());
+
+        expect(result.isErr()).toBe(true);
+        if (result.isOk()) {
+            throw new Error('expected getOperation to fail');
+        }
+        expect(result.error).toBe(error);
+        expect(listMessagesSpy).not.toHaveBeenCalled();
+    });
 });
 
 function baseParams(): ListLogOperationsParams {
@@ -167,6 +247,23 @@ function baseParams(): ListLogOperationsParams {
         period: {
             from: '2026-01-01T00:00:00.000Z',
             to: '2026-01-02T00:00:00.000Z'
+        }
+    };
+}
+
+function baseGetParams(): GetLogOperationParams {
+    return {
+        accountId: 1,
+        environmentId: 2,
+        operationId: 'op-1',
+        messages: {
+            limit: 10,
+            cursor: 'cursor-in',
+            search: 'needle',
+            period: {
+                from: '2026-01-01T00:00:00.000Z',
+                to: '2026-01-02T00:00:00.000Z'
+            }
         }
     };
 }
@@ -189,5 +286,18 @@ function makeOperation(id: string): OperationRow {
         startedAt: '2026-01-01T00:00:00.000Z',
         endedAt: '2026-01-01T00:01:00.000Z',
         expiresAt: '2026-01-08T00:00:00.000Z'
+    };
+}
+
+function makeMessage(id: string, parentId: string): MessageRow {
+    return {
+        id,
+        source: 'user',
+        level: 'info',
+        type: 'log',
+        message: `Message ${id}`,
+        parentId,
+        accountId: 1,
+        createdAt: '2026-01-01T00:00:00.000Z'
     };
 }
