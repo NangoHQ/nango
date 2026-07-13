@@ -75,6 +75,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         if (!el) {
             return;
         }
+        el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
     }, []);
 
