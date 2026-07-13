@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 874
+Provider count: 875
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -817,6 +817,7 @@ URL patterns:
 | `valley` | Valley (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/valley.md) | [connect](https://nango.dev/docs/integrations/all/valley/connect.md) |  | marketing |
 | `valley-api-key` | Valley (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/valley-api-key.md) | [connect](https://nango.dev/docs/integrations/all/valley-api-key/connect.md) |  | marketing |
 | `vanta` | Vanta | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/vanta.md) | [connect](https://nango.dev/docs/api-integrations/vanta/connect.md) |  | dev-tools |
+| `veed` | VEED (via fal.ai) | API_KEY | [docs](https://nango.dev/docs/api-integrations/veed.md) | [connect](https://nango.dev/docs/api-integrations/veed/connect.md) |  | video, dev-tools |
 | `veeva-vault` | Veeva Vault | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/veeva-vault.md) | [connect](https://nango.dev/docs/api-integrations/veeva-vault/connect.md) |  | crm |
 | `vercel` | Vercel | API_KEY | [docs](https://nango.dev/docs/api-integrations/vercel.md) | [connect](https://nango.dev/docs/api-integrations/vercel/connect.md) |  | dev-tools |
 | `vercel-mcp` | Vercel (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/vercel-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/vercel-mcp/how-to-register-your-own-vercel-mcp-oauth-app.md) | dev-tools, mcp |
