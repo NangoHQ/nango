@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
 
-import { isLogsDisabledError, logsOperationsService } from '@nangohq/logs';
+import { LogsDisabledError, logsOperationsService } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
@@ -194,7 +194,7 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<ListLogOperation
         });
 
         return result.mapError((error) => {
-            if (isLogsDisabledError(error)) {
+            if (error instanceof LogsDisabledError) {
                 return new PublicMcpError(error.message);
             }
 

@@ -54,10 +54,6 @@ export function isLogsNotFoundError(err: unknown): boolean {
     return false;
 }
 
-export function isLogsDisabledError(err: unknown): boolean {
-    return err instanceof LogsDisabledError;
-}
-
 export function throwLogsNotFound(): never {
     throw new LogsNotFoundError();
 }
