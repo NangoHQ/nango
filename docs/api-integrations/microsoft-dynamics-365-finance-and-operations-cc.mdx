@@ -1,0 +1,86 @@
+---
+title: 'Microsoft Dynamics 365 Finance and Operations (Client Credentials)'
+sidebarTitle: 'Microsoft Dynamics 365 F&O (Client Credentials)'
+description: 'Integrate your application with the Microsoft Dynamics 365 Finance and Operations API using Client Credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft Dynamics 365 Finance and Operations (Client Credentials) with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft Dynamics 365 Finance and Operations (Client Credentials)_.
+    </Step>
+    <Step id="authorize-dynamics-365-finance-and-operations-cc" title="Authorize Microsoft Dynamics 365 Finance and Operations (Client Credentials)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Tenant ID**, **Environment URL**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the Microsoft Dynamics 365 Finance and Operations API">
+    Let's make your first request to the Microsoft Dynamics 365 Finance and Operations OData API (list the data entities available in the environment). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/data" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/data',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the [connect guide](/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/connect) linked below.
+    </Step>
+</Steps>
+
+## 📚 Microsoft Dynamics 365 Finance and Operations (Client Credentials) Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/connect)
+Find your Tenant ID, Environment URL, Client ID, and Client Secret to connect Microsoft Dynamics 365 Finance and Operations
+
+Official docs: [Service endpoints overview](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page)
+
+## 🧩 Pre-built syncs & actions for Microsoft Dynamics 365 Finance and Operations (Client Credentials)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-dynamics-365-finance-and-operations-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- You don't need to set a `scope` yourself — Nango generates it from the **Environment URL** you provide when connecting, and uses that same URL as the API base URL.
+
+---
