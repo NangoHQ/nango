@@ -28,6 +28,7 @@ import { postConnectSessionsReconnect } from './controllers/connect/postReconnec
 import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
 import connectionController from './controllers/connection.controller.js';
+import { patchPublicConnectionConfig } from './controllers/connection/connectionId/config/patchConnectionConfig.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
@@ -258,6 +259,7 @@ publicAPI.route('/connections/metadata').patch(apiAuth, withScope('environment:c
 publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
+publicAPI.route('/connections/:connectionId/config').patch(apiAuth, withScope('environment:connections:update'), patchPublicConnectionConfig);
 publicAPI.route('/connections/:connectionId').patch(apiAuth, withScope('environment:connections:update'), patchPublicConnection);
 publicAPI.route('/connections/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
 

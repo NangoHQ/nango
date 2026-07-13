@@ -2,15 +2,14 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { handlePatchConnection } from '../../shared/connections/patchConnection.js';
+import { connectionConfigParamsSchema, connectionIdSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { handleReplaceConnectionConfig } from '../../../shared/connections/replaceConnectionConfig.js';
 
-import type { PatchPublicConnection } from '@nangohq/types';
+import type { PatchPublicConnectionConfig } from '@nangohq/types';
 
 const schemaBody = z.strictObject({
-    end_user: endUserSchema.optional(),
-    tags: connectionTagsSchema.optional()
+    connection_config: connectionConfigParamsSchema
 });
 
 const queryStringValidation = z.strictObject({
@@ -21,7 +20,7 @@ const paramValidation = z.strictObject({
     connectionId: connectionIdSchema
 });
 
-export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (req, res) => {
+export const patchPublicConnectionConfig = asyncWrapper<PatchPublicConnectionConfig>(async (req, res) => {
     const queryParamValues = queryStringValidation.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });
@@ -40,14 +39,13 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment } = res.locals;
 
-    await handlePatchConnection({
+    await handleReplaceConnectionConfig({
         res,
         environment,
-        account,
         connectionId: paramValue.data.connectionId,
         providerConfigKey: queryParamValues.data.provider_config_key,
-        body: valBody.data
+        connectionConfig: valBody.data.connection_config ?? {}
     });
 });
