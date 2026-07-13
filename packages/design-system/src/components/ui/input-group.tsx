@@ -25,8 +25,8 @@ const inputGroupVariants = cva(
         // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
         'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-interactive-hover',
 
-        // Disabled — dedicated tokens (matches Input), no opacity.
-        'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
+        // Disabled — keep the interactive border (matches Input); only the bg switches to the disabled token, no opacity.
+        'has-[[data-slot=input-group-control]:disabled]:border-border-interactive has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
         // Error state.
         'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]'
