@@ -872,6 +872,14 @@
                     ]
                   },
                   {
+                    "group": "Control Plane MCP (Beta)",
+                    "icon": "/images/mcp.svg",
+                    "pages": [
+                      "reference/backend/control-plane-mcp/overview",
+                      "reference/backend/control-plane-mcp/logs"
+                    ]
+                  },
+                  {
                     "group": "Backend SDK",
                     "icon": "cubes",
                     "pages": [
