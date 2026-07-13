@@ -10,8 +10,7 @@ const logger = getLogger('Audit');
 export class Audit {
     constructor(private readonly sink: AuditSink) {}
 
-    // Fire-and-forget: never throws into the caller. Recorded/failed counters are deferred to the
-    // real sink at publish time (cf. the ClickHouse batcher, which meters on flush, not enqueue).
+    // Fire-and-forget: never throws into the caller.
     record(event: AuditEvent): void {
         try {
             this.sink.record(event);

@@ -9,9 +9,6 @@ import type { Request, RequestHandler, Response } from 'express';
 
 const logger = getLogger('Audit');
 
-// Request typed to a specific endpoint's contract (params/body/query), mirroring asyncWrapper.
-// The extractors below read from it, so renaming/removing a field in the endpoint type breaks
-// the spec at compile time — the runtime integration tests are the second line of defence.
 type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>;
 
 // Everything is derived from the request so the event can be emitted for any outcome —
@@ -104,7 +101,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
 }
 
 // Place AFTER auth and BEFORE authorization so it captures every outcome — including 403 denials
-// that never reach the controller. Fire-and-forget on response finish.
+// that never reach the controller.
 export function auditable<TEndpoint extends Endpoint<any>>(spec: AuditSpec<TEndpoint>): RequestHandler {
     return (req, res, next) => {
         res.on('finish', () => {
@@ -115,7 +112,6 @@ export function auditable<TEndpoint extends Endpoint<any>>(spec: AuditSpec<TEndp
 }
 
 // Per-route wiring is manual: new connection-delete routes (e.g. the admin delete) must opt in.
-// Bound to both delete-connection endpoints so `connectionId` is checked against their contracts.
 export const auditConnectionDeleted = auditable<DeletePublicConnection | DeleteConnection>({
     resource: 'connection',
     action: 'deleted',
