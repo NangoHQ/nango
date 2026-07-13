@@ -171,7 +171,58 @@ export type PatchPublicConnection = Endpoint<{
         tags?: Tags | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
+}>;
+
+export type PatchPublicConnectionConfig = Endpoint<{
+    Method: 'PATCH';
+    Path: '/connections/:connectionId/config';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+    };
+    Body: {
+        connection_config: ConnectionConfig;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
+}>;
+
+export type PatchConnection = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Body: {
+        end_user?: EndUserInput | undefined;
+        tags?: Tags | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
+}>;
+
+export type PatchConnectionConfig = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/connections/:connectionId/config';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Body: {
+        connection_config: ConnectionConfig;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
 }>;
 
 export type PostConnectionRefresh = Endpoint<{

@@ -43,11 +43,14 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
+    PatchConnection,
+    PatchConnectionConfig,
     PatchPublicConnection,
+    PatchPublicConnectionConfig,
     PostConnectionRefresh,
     PostPublicConnection
 } from './connection/api/get.js';
-import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { PostConnectionMetadata, SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
 import type {
@@ -161,6 +164,7 @@ export type PublicApiEndpoints =
     | PostPublicAwsSigV4Authorization
     | PostPublicConnection
     | PatchPublicConnection
+    | PatchPublicConnectionConfig
     | PostPublicSyncStart
     | PostPublicSyncPause
     | GetPublicSyncStatus
@@ -220,6 +224,9 @@ export type PrivateApiEndpoints =
     | GetConnections
     | GetConnectionsCount
     | GetConnection
+    | PatchConnection
+    | PostConnectionMetadata
+    | PatchConnectionConfig
     | GetConnectionRecordModels
     | GetConnectionRecords
     | GetInvite
