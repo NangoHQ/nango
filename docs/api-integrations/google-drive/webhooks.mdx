@@ -39,6 +39,11 @@ import { randomUUID } from 'crypto';
 export default createOnEvent({
     event: 'post-connection-creation',
     description: 'Create a Google Drive notification channel for the whole Drive',
+    metadata: z.object({
+        googleDriveChannelId: z.string().optional(),
+        googleDriveWatchResourceIds: z.array(z.string()).optional(),
+        googleDriveWatchDriveId: z.string().optional(),
+    }),
     exec: async (nango) => {
         const driveId = undefined; // set to a shared drive ID to watch that drive instead of "My Drive"
         const channelId = randomUUID();
@@ -72,9 +77,9 @@ export default createOnEvent({
             // Store the channel info so it can be used to stop notifications later (step 4) and to
             // route incoming notifications to this connection (see "Connection matching" below).
             // Persisting driveId ensures the renewal sync (step 3) keeps watching the same shared drive.
-            await nango.updateConnectionConfig({
+            await nango.updateMetadata({
                 googleDriveChannelId: channelId,
-                googleDriveWatchResourceId: response.data.resourceId,
+                googleDriveWatchResourceIds: [response.data.resourceId],
                 ...(driveId && { googleDriveWatchDriveId: driveId }),
             });
         } catch (err) {
@@ -111,14 +116,18 @@ import { randomUUID } from 'crypto';
 export default createSync({
     description: 'Renew the Google Drive changes.watch channel before it expires',
     models: {},
-    endpoints: [{ method: 'GET', path: '/google-drive/watch-renewal' }],
+    metadata: z.object({
+        googleDriveChannelId: z.string().optional(),
+        googleDriveWatchResourceIds: z.array(z.string()).optional(),
+        googleDriveWatchDriveId: z.string().optional(),
+    }),
     syncType: 'full',
     frequency: '1d',
     exec: async (nango) => {
-        const connection = await nango.getConnection();
-        const oldChannelId = connection.connection_config['googleDriveChannelId'];
-        const oldResourceId = connection.connection_config['googleDriveWatchResourceId'];
-        const driveId = connection.connection_config['googleDriveWatchDriveId']; // undefined when watching "My Drive"
+        const metadata = await nango.getMetadata();
+        const oldChannelId = metadata['googleDriveChannelId'];
+        const oldResourceId = metadata['googleDriveWatchResourceIds']?.[0];
+        const driveId = metadata['googleDriveWatchDriveId']; // undefined when watching "My Drive"
 
         const channelId = randomUUID();
         const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
@@ -160,7 +169,7 @@ export default createSync({
         // Update stored channel info for use in stop notifications (step 4) and connection matching
         await nango.updateConnectionConfig({
             googleDriveChannelId: channelId,
-            googleDriveWatchResourceId: response.data.resourceId,
+            googleDriveWatchResourceIds: [response.data.resourceId],
             ...(driveId && { googleDriveWatchDriveId: driveId }),
         });
     }
@@ -171,7 +180,7 @@ export default createSync({
 
 If a connection is deleted in Nango but the channel remains active, Google may continue sending notifications until the channel expires. To stop notifications immediately for a deleted connection, call `channels.stop` before deletion.
 
-You can automate this with a `pre-connection-deletion` lifecycle event. This uses the `googleDriveChannelId` and `googleDriveWatchResourceId` stored in `connection_config` during channel creation (step 2) and renewal (step 3):
+You can automate this with a `pre-connection-deletion` lifecycle event. This uses the `googleDriveChannelId` and `googleDriveWatchResourceIds` stored in metadata during channel creation (step 2) and renewal (step 3):
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
@@ -180,9 +189,9 @@ export default createOnEvent({
     event: 'pre-connection-deletion',
     description: 'Stop Google Drive notification channel before connection deletion',
     exec: async (nango) => {
-        const connection = await nango.getConnection();
-        const channelId = connection.connection_config['googleDriveChannelId'];
-        const resourceId = connection.connection_config['googleDriveWatchResourceId'];
+        const metadata = await nango.getMetadata();
+        const channelId = metadata['googleDriveChannelId'];
+        const resourceId = metadata['googleDriveWatchResourceIds']?.[0];
 
         if (!channelId || !resourceId) {
             return;
@@ -261,15 +270,14 @@ See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
 
 ## Connection matching
 
-Google Drive has no built-in identifier Nango can derive automatically, so you must always register the watched resource yourself. Nango matches incoming Drive notifications by resource ID, against **`connection_config.googleDriveWatchResourceId`** — the value you store via `nango.updateConnectionConfig()` in your post-connection-creation script (step 2) and renewal sync (step 3).
+Google Drive has no built-in identifier Nango can derive automatically, so you must always register the watched resource yourself. Nango matches incoming Drive notifications by resource ID, against **`metadata.googleDriveWatchResourceIds`** — the value you store via `nango.updateMetadata()` in your post-connection-creation script (step 2) and renewal sync (step 3).
 
-- The value must match the **`X-Goog-Resource-ID` string exactly as Google sends it**.
-- Update `connection_config` from your own Nango functions via `nango.updateConnectionConfig()`.
-- This supports **one watched resource per connection**, which is exactly what watching the whole Drive (or one shared drive) per connection needs.
+- The value must be a JSON **`string[]`**. Store the **`X-Goog-Resource-ID` string exactly as Google sends it**.
+- Update metadata from your own Nango functions via `nango.updateMetadata()`, or manually via the [update metadata API](/reference/api/connection/update-metadata).
 
 If you use the post-connection-creation script from [step 2](#2-create-a-notification-channel-watch-the-drive), this is already handled for you.
 
-**Duplicates:** If more than one connection stores the **same** value in `googleDriveWatchResourceId` (e.g. two connections watching the same shared drive), **every** matching connection is included. Nango forwards the webhook **once per matching connection**, with the appropriate `connectionId`.
+**Duplicates:** If more than one connection stores the **same** value in `googleDriveWatchResourceIds` (e.g. two connections watching the same shared drive), **every** matching connection is included. Nango forwards the webhook **once per matching connection**, with the appropriate `connectionId`.
 
 <Warning>
 If Nango cannot match the incoming webhook to a connection, the webhook will still be forwarded but won't include a `connectionId` in the payload.
