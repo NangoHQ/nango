@@ -4,7 +4,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { deletableFunctionTypeSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
-import { handleDeleteIntegrationFunction } from './helpers.js';
+import { handleDeleteIntegrationFunction } from '../../../../shared/integrations/functions/deleteFunction.js';
 
 import type { DeleteIntegrationFunction } from '@nangohq/types';
 
