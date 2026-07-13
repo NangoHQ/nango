@@ -806,6 +806,10 @@
                       {
                         "group": "Functions",
                         "pages": [
+                          "reference/backend/http-api/functions/list",
+                          "reference/backend/http-api/functions/get",
+                          "reference/backend/http-api/functions/code",
+                          "reference/backend/http-api/functions/delete",
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
@@ -848,7 +852,8 @@
                         "group": "Providers",
                         "pages": [
                           "reference/backend/http-api/providers/list",
-                          "reference/backend/http-api/providers/get"
+                          "reference/backend/http-api/providers/get",
+                          "reference/backend/http-api/providers/templates"
                         ]
                       },
                       {
@@ -965,6 +970,7 @@
               "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
+              "api-integrations/aspire",
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
@@ -1130,6 +1136,7 @@
               "integrations/all/docusign-sandbox",
               "integrations/all/docuware",
               "api-integrations/domo",
+              "api-integrations/dope-security",
               "api-integrations/drata",
               "api-integrations/cisco-duo-admin",
               "integrations/all/drchrono",
@@ -1229,6 +1236,7 @@
               "api-integrations/google-docs",
               "api-integrations/google-drive",
               "api-integrations/google-forms",
+              "api-integrations/google-health",
               "api-integrations/google-mail",
               "api-integrations/google-maps",
               "api-integrations/google-meet",
@@ -1266,6 +1274,7 @@
               "integrations/all/gusto",
               "integrations/all/gusto-demo",
               "integrations/all/hackerrank-work",
+              "api-integrations/haileyhr",
               "api-integrations/halo-psa",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
@@ -1405,6 +1414,7 @@
               "integrations/all/mural",
               "api-integrations/nable-ncentral",
               "integrations/all/nationbuilder",
+              "api-integrations/ninety-io",
               "integrations/all/ninjaone-rmm",
               "api-integrations/ninjaone-rmm-oauth2",
               "api-integrations/ninjaone-saas-backup",

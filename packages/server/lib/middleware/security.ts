@@ -37,7 +37,8 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.posthog.com',
                     'https://*.stripe.com',
                     'https://*.plain.com',
-                    'wss://*.plain.com'
+                    'wss://*.plain.com',
+                    'https://raw.githubusercontent.com'
                 ],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com', 'https://*.stripe.com'],

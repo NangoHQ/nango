@@ -22,8 +22,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 'focus:border-[var(--focus-ring-default)] focus:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
                 // Invalid
                 'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
-                // Disabled — dedicated tokens, no opacity
-                'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
+                // Disabled — keep the interactive border, only the bg + text switch to the disabled tokens; no opacity
+                'disabled:cursor-not-allowed disabled:border-border-interactive disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
                 className
             )}
             {...props}

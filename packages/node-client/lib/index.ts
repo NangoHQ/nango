@@ -27,14 +27,19 @@ import type {
     BillCredentials,
     CredentialsCommon,
     CustomCredentials,
+    DeletePublicIntegrationFunction,
     DeleteSyncVariant,
     GetPublicConnection,
     GetPublicConnections,
     GetPublicEnvironmentVariables,
+    GetPublicFunctionCode,
     GetPublicIntegration,
+    GetPublicIntegrationFunction,
+    GetPublicIntegrationFunctions,
     GetPublicListIntegrations,
     GetPublicProvider,
     GetPublicProviders,
+    GetPublicProviderTemplates,
     InstallPluginCredentials,
     JwtCredentials,
     NangoRecord,
@@ -179,6 +184,16 @@ export class Nango {
     }
 
     /**
+     * Returns the function templates available for a provider
+     * @param params - Identifies the provider (`provider`)
+     * @returns A promise that resolves with the provider's function templates
+     */
+    public async getProviderTemplates(params: GetPublicProviderTemplates['Params']): Promise<GetPublicProviderTemplates['Success']> {
+        const response = await this.http.get(`${this.serverUrl}/providers/${params.provider}/templates`, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    /**
      * =======
      * INTEGRATIONS
      *      LIST
@@ -241,6 +256,82 @@ export class Nango {
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/integrations/${providerConfigKey}`;
         return await this.http.delete(url, { headers: this.enrichHeaders({}) });
+    }
+
+    /**
+     * Lists the deployed functions of an integration
+     * @param params - Identifies the integration (`uniqueKey`)
+     * @param queries - Optional filters: `type`, `search`, `page`, `limit`
+     * @returns A promise that resolves with the deployed functions and pagination metadata
+     */
+    public async listFunctions(
+        params: GetPublicIntegrationFunctions['Params'],
+        queries?: GetPublicIntegrationFunctions['Querystring']
+    ): Promise<GetPublicIntegrationFunctions['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions`);
+        addQueryParams(url, queries as GetPublicIntegrationFunctions['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Retrieves a deployed function of an integration
+     * @param params - Identifies the function (`uniqueKey`, `name`)
+     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @returns A promise that resolves with the deployed function
+     */
+    public async getFunction(
+        params: GetPublicIntegrationFunction['Params'],
+        queries?: GetPublicIntegrationFunction['Querystring']
+    ): Promise<GetPublicIntegrationFunction['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions/${params.name}`);
+        addQueryParams(url, queries as GetPublicIntegrationFunction['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Retrieves the source code of a deployed function
+     * @param params - Identifies the function (`uniqueKey`, `name`)
+     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @returns A promise that resolves with the function type and code
+     */
+    public async getFunctionCode(
+        params: GetPublicFunctionCode['Params'],
+        queries?: GetPublicFunctionCode['Querystring']
+    ): Promise<GetPublicFunctionCode['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions/${params.name}/code`);
+        addQueryParams(url, queries as GetPublicFunctionCode['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Deletes a deployed function of an integration
+     * @param params - Identifies the function (`uniqueKey`, `name`)
+     * @param queries - The function `type` (required)
+     * @returns A promise that resolves with the deletion result
+     */
+    public async deleteFunction(
+        params: DeletePublicIntegrationFunction['Params'],
+        queries: DeletePublicIntegrationFunction['Querystring']
+    ): Promise<DeletePublicIntegrationFunction['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions/${params.name}`);
+        addQueryParams(url, queries as DeletePublicIntegrationFunction['Querystring']);
+
+        const response = await this.http.delete(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
     }
 
     /**

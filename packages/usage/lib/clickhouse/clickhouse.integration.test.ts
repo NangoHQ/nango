@@ -528,30 +528,34 @@ describe('Clickhouse', () => {
         });
 
         describe('getTopDimensionValues', () => {
-            it('returns top dimension values ordered by SUM(value) DESC', async () => {
+            it('returns dimension values ordered by SUM(value) DESC', async () => {
                 // records fixture: integrationId=a → 1000+1100+1100=3200; b → 500+500=1000.
                 const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.unwrap()).toStrictEqual({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
-                    values: ['a', 'b']
+                    values: ['a', 'b'],
+                    // Two values < one full page → no next page.
+                    hasMore: false
                 });
             });
 
-            it('honours limit (clamped to TOP_N_BREAKDOWN_CAP upstream)', async () => {
+            it('filters by case-insensitive substring search', async () => {
                 const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
                     timeframe: { start, end },
-                    limit: 1
+                    page: 0,
+                    // Uppercase term still matches the lowercase 'a' (and not 'b').
+                    search: 'A'
                 });
                 expect(res.unwrap().values).toEqual(['a']);
             });
@@ -563,7 +567,7 @@ describe('Clickhouse', () => {
                     metric: 'proxy',
                     dimension: 'success',
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 const values = res.unwrap().values;
                 expect(values).toEqual(['true', 'false']);
@@ -576,7 +580,7 @@ describe('Clickhouse', () => {
                     metric: 'connections',
                     dimension: 'model' as any,
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.isErr()).toBe(true);
             });
@@ -587,7 +591,7 @@ describe('Clickhouse', () => {
                     metric: 'records',
                     dimension: 'none' as any,
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.isErr()).toBe(true);
             });
@@ -598,7 +602,7 @@ describe('Clickhouse', () => {
                     metric: 'records',
                     dimension: 'integration_id',
                     timeframe: { start, end },
-                    limit: 10
+                    page: 0
                 });
                 expect(res.unwrap().values).toEqual([]);
             });
