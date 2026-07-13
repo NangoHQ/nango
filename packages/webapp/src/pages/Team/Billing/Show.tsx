@@ -7,11 +7,13 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
+import { track } from '@/utils/analytics';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
+import { useBreakdownEnabled } from './useBreakdownEnabled';
 
 export const TeamBilling: React.FC = () => {
     const [activeTab, setActiveTab] = useHashNavigation('usage');
@@ -24,11 +26,22 @@ export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
 
+    const breakdownEnabled = useBreakdownEnabled();
+
     useEffect(() => {
         if (!canManageBilling && activeTab === 'payment-and-invoices') {
             setActiveTab('usage');
         }
     }, [canManageBilling, activeTab, setActiveTab]);
+
+    // Track a usage-page view whenever the Usage tab becomes active (initial load or tab switch).
+    useEffect(() => {
+        if (isUsageTab) {
+            track('web:usage:viewed', { breakdown_enabled: breakdownEnabled });
+        }
+        // Keyed on tab activation only — re-firing when breakdownEnabled resolves would double-count.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isUsageTab]);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but the billing
     // content is capped and left-aligned: the usage charts have a fixed height, so unbounded width
