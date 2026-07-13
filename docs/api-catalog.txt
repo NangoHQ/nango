@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 874
+Provider count: 875
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -433,6 +433,7 @@ URL patterns:
 | `lattice` | Lattice | API_KEY | [docs](https://nango.dev/docs/integrations/all/lattice.md) | [connect](https://nango.dev/docs/integrations/all/lattice/connect.md) |  | hr |
 | `leadfeeder` | Leadfeeder | API_KEY | [docs](https://nango.dev/docs/api-integrations/leadfeeder.md) | [connect](https://nango.dev/docs/api-integrations/leadfeeder/connect.md) |  | marketing, crm |
 | `leadmagic` | LeadMagic | API_KEY | [docs](https://nango.dev/docs/integrations/all/leadmagic.md) | [connect](https://nango.dev/docs/integrations/all/leadmagic/connect.md) |  | marketing, crm |
+| `leapsome` | Leapsome | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/leapsome.md) | [connect](https://nango.dev/docs/api-integrations/leapsome/connect.md) |  | hr |
 | `lemlist` | lemlist | BASIC | [docs](https://nango.dev/docs/integrations/all/lemlist.md) | [connect](https://nango.dev/docs/integrations/all/lemlist/connect.md) |  | marketing, communication |
 | `lessonly` | Lessonly | BASIC | [docs](https://nango.dev/docs/integrations/all/lessonly.md) |  |  | productivity |
 | `lever` | Lever (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/lever.md) |  |  | ats |
