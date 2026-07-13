@@ -7,8 +7,10 @@ import { seeders, updatePlan, userService } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
+import type { MockInstance } from 'vitest';
+
 let api: Awaited<ReturnType<typeof runServer>>;
-let auditSpy: ReturnType<typeof vi.spyOn<typeof audit, 'record'>>;
+let auditSpy: MockInstance<typeof audit.record>;
 
 // Sets up an account + env + a connection under provider_config_key 'algolia'.
 async function seedConnection() {

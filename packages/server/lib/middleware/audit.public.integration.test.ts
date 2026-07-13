@@ -6,9 +6,11 @@ import { seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer } from '../utils/tests.js';
 
+import type { MockInstance } from 'vitest';
+
 let api: Awaited<ReturnType<typeof runServer>>;
-let auditSpy: ReturnType<typeof vi.spyOn<typeof audit, 'record'>>;
-let flagSpy: ReturnType<typeof vi.spyOn<ReturnType<typeof featureFlags.getFlags>, 'isAuditLoggingEnabled'>>;
+let auditSpy: MockInstance<typeof audit.record>;
+let flagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isAuditLoggingEnabled']>;
 
 // Sets up an account + env + a connection under provider_config_key 'algolia'.
 async function seedConnection() {
