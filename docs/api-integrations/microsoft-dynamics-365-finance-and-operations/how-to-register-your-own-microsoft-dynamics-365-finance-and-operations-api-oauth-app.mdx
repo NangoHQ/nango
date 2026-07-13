@@ -1,0 +1,48 @@
+---
+title: 'How to register your own Microsoft Dynamics 365 Finance and Operations OAuth app'
+sidebarTitle: 'Microsoft Dynamics 365 F&O Setup'
+description: 'Register an OAuth app with Microsoft Entra ID and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Microsoft Entra ID to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Microsoft Dynamics 365 Finance and Operations environment.
+
+<Steps>
+  <Step id="create-accounts" title="Create a Microsoft account and Azure account">
+    If you don't already have them, sign up for a [Microsoft account](https://account.microsoft.com/account) and an [Azure account](https://azure.microsoft.com/free).
+  </Step>
+  <Step id="register-application" title="Register an application in Microsoft Entra ID">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as at least an Application Developer.
+    2. If you have access to multiple tenants, use the Settings icon in the top menu to switch to the tenant that hosts your Finance and Operations environment.
+    3. From the search bar, search for **App registrations** and select it, then choose **New registration**.
+    4. Enter a meaningful name for your application, for example "Nango Integration", and click **Register**.
+  </Step>
+  <Step id="note-client-id" title="Note your application (client) ID">
+    After registration, you'll be taken to the application's Overview page. Record the **Application (client) ID**.
+  </Step>
+  <Step id="add-redirect-uri" title="Add a redirect URI">
+    1. In the left sidebar, select **Authentication**.
+    2. Under **Platform configurations**, select **Add a platform**, then select **Web**.
+    3. Enter `https://api.nango.dev/oauth/callback` as the Redirect URI, then click **Configure**.
+  </Step>
+  <Step id="add-api-permissions" title="Add API permissions">
+    1. In the left sidebar, select **API permissions**, then click **Add a permission**.
+    2. Select **APIs my organization uses**, and search for **Dynamics ERP**. If it doesn't show up in the picker, search for the full name exactly as written above.
+    3. Under **Delegated permissions**, select the permissions you require.
+    4. Click **Add permissions**, then click **Grant admin consent** if you have permission to do so.
+  </Step>
+  <Step id="create-client-secret" title="Create a client secret">
+    1. In the left sidebar, select **Certificates & secrets**.
+    2. Under **Client secrets**, click **New client secret**.
+    3. Enter a description and an expiration period, then click **Add**.
+    4. **Important**: Copy the secret value immediately — you won't be able to see it again after you leave this page.
+  </Step>
+  <Step id="next-steps" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+## API gotchas
+
+For more details, see [Development and administration for finance and operations apps - Service endpoints overview](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page#authentication).
+
+---
