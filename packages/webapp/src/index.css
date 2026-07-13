@@ -76,6 +76,14 @@
     }
 }
 
+/* Inset variant of focus-default, for full-bleed elements where an outset ring would clip against a container edge. */
+@utility focus-inset {
+    @variant focus-visible {
+        outline: none;
+        box-shadow: inset 0 0 0 2px var(--color-focus-ring-default);
+    }
+}
+
 @utility focus-error {
     @variant focus {
         outline: none;

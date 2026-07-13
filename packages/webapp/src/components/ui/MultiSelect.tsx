@@ -133,7 +133,7 @@ export function MultiSelect<T extends string = string>({
                     loading={loading}
                     disabled={options.length === 0}
                     variant="ghost"
-                    size="lg"
+                    size="md"
                     className={cn(
                         'border-ds-hairline border-border-interactive',
                         isDirty && 'bg-state-pressed',

@@ -45,7 +45,7 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
                 {(allowed) => (
                     <Button
                         variant="danger"
-                        size="lg"
+                        size="md"
                         loading={isPending}
                         disabled={!allowed}
                         onClick={() =>

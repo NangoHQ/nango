@@ -24,7 +24,10 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export default function ResetPassword() {
     const form = useForm<ResetPasswordFormData>({
         resolver: zodResolver(resetPasswordSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            password: ''
+        },
+        mode: 'onSubmit'
     });
     const { mutateAsync: resetPassword, isPending } = useResetPasswordAPI();
 
@@ -77,7 +80,7 @@ export default function ResetPassword() {
                         render={() => <Password placeholder="New password" autoFocus autoComplete="new-password" />}
                     />
 
-                    <Button type="submit" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
+                    <Button type="submit" size={'lg'} loading={isPending}>
                         Reset password
                     </Button>
                 </form>

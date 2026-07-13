@@ -41,6 +41,7 @@
     --ds-color-brand-500: #00b2e3;
     --ds-color-brand-600: #009cc8;
     --ds-color-brand-700: #0089b0;
+    --ds-color-brand-750: #007ca0;
     --ds-color-brand-800: #016886;
     --ds-color-brand-900: #02485d;
     --ds-color-brand-950: #013747;
@@ -54,6 +55,7 @@
     --ds-color-info-500: #00b2e3;
     --ds-color-info-600: #009cc8;
     --ds-color-info-700: #0089b0;
+    --ds-color-info-750: #007ca0;
     --ds-color-info-800: #016886;
     --ds-color-info-900: #02485d;
     --ds-color-info-950: #013747;
@@ -300,9 +302,9 @@
     --border-danger-hover: #eb2d2d;
     --border-disabled: #ebebeb;
     --border-inverse: #ffffff33;
-    --interactive-primary: #016886;
-    --interactive-primary-hover: #02485d;
-    --interactive-primary-active: #013747;
+    --interactive-primary: #007ca0;
+    --interactive-primary-hover: #016886;
+    --interactive-primary-active: #02485d;
     --interactive-danger: #e81818;
     --interactive-danger-hover: #a11313;
     --interactive-danger-active: #5a0f0f;
@@ -313,7 +315,7 @@
     --interactive-outline-hover: #0000000f;
     --interactive-outline-active: #0000001a;
     --interactive-disabled: #f5f5f5;
-    --interactive-selected-fill: #016886;
+    --interactive-selected-fill: #007ca0;
     --state-hover: #0000000f;
     --state-pressed: #0000001a;
     --state-selected: #ebebeb;
@@ -403,7 +405,7 @@
     --text-disabled: #626366;
     --text-inverse: #000000;
     --text-on-accent: #ffffff;
-    --text-on-brand: #18191b;
+    --text-on-brand: #ffffff;
     --text-brand: #66d6f0;
     --text-link: #66d6f0;
     --text-link-hover: #a3e6f6;
@@ -424,9 +426,9 @@
     --border-danger-hover: #f27474;
     --border-disabled: #ffffff0f;
     --border-inverse: #00000033;
-    --interactive-primary: #00b2e3;
-    --interactive-primary-hover: #33c4e9;
-    --interactive-primary-active: #009cc8;
+    --interactive-primary: #007ca0;
+    --interactive-primary-hover: #016886;
+    --interactive-primary-active: #02485d;
     --interactive-danger: #e81818;
     --interactive-danger-hover: #eb2d2d;
     --interactive-danger-active: #a11313;
@@ -437,7 +439,7 @@
     --interactive-outline-hover: #ffffff14;
     --interactive-outline-active: #ffffff1f;
     --interactive-disabled: #18191b;
-    --interactive-selected-fill: #00b2e3;
+    --interactive-selected-fill: #007ca0;
     --state-hover: #ffffff14;
     --state-pressed: #ffffff1f;
     --state-selected: #2a2b2f;

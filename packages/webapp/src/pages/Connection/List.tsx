@@ -345,7 +345,7 @@ export const ConnectionList = () => {
                                 />
                                 <PermissionGate condition={canCreateTestConnection}>
                                     {(allowed) => (
-                                        <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed} className="ml-auto">
+                                        <ButtonLink to={`/${env}/connections/create`} size="md" disabled={!allowed} className="ml-auto">
                                             Add test connection
                                         </ButtonLink>
                                     )}

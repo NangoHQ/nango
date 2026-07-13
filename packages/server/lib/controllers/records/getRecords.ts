@@ -114,7 +114,6 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
             environmentName: environment.name,
             integrationId: headers['provider-config-key'],
             connectionId: connection.connection_id,
-            package: 'server',
             callsite: 'get_/records',
             egressedBytes: responseSize,
             count: 1
