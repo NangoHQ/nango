@@ -26,6 +26,7 @@ import type {
     InternalProxyConfiguration,
     OAuth2ClientCredentials,
     ProviderOAuth1,
+    ProxyBodyValue,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -509,7 +510,7 @@ export function buildProxyBody({
 }: {
     config: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
-}): Record<string, string | Record<string, string>> | null {
+}): Record<string, ProxyBodyValue> | null {
     if (!config.provider?.proxy?.body) {
         return null;
     }
@@ -520,36 +521,33 @@ export function buildProxyBody({
         ...(connection.credentials as unknown as Record<string, string>)
     };
 
-    const interpolateLeaf = (value: string): string | null => {
-        const interpolated = interpolateIfNeeded(value, replacers);
-        return interpolated.includes('${') ? null : interpolated;
-    };
-
-    const body: Record<string, string | Record<string, string>> = {};
-    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+    // Recurses through arbitrarily nested proxy.body maps, interpolating string leaves and dropping
+    // (at any depth) any leaf whose placeholder didn't resolve, and any object left empty as a result.
+    const buildValue = (value: unknown): ProxyBodyValue | null => {
         if (typeof value === 'string') {
-            const interpolated = interpolateLeaf(value);
-            if (interpolated !== null) {
-                body[key] = interpolated;
-            }
-            continue;
+            const interpolated = interpolateIfNeeded(value, replacers);
+            return interpolated.includes('${') ? null : interpolated;
         }
 
         if (!isPlainObject(value)) {
-            continue;
+            return null;
         }
-        const nested: Record<string, string> = {};
+
+        const nested: Record<string, ProxyBodyValue> = {};
         for (const [nestedKey, nestedValue] of Object.entries(value)) {
-            if (typeof nestedValue !== 'string') {
-                continue;
-            }
-            const interpolated = interpolateLeaf(nestedValue);
-            if (interpolated !== null) {
-                nested[nestedKey] = interpolated;
+            const built = buildValue(nestedValue);
+            if (built !== null) {
+                nested[nestedKey] = built;
             }
         }
-        if (Object.keys(nested).length > 0) {
-            body[key] = nested;
+        return Object.keys(nested).length > 0 ? nested : null;
+    };
+
+    const body: Record<string, ProxyBodyValue> = {};
+    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+        const built = buildValue(value);
+        if (built !== null) {
+            body[key] = built;
         }
     }
 
@@ -567,17 +565,17 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     );
 }
 
-function appendInjectedEntry(append: (key: string, value: string) => void, key: string, value: string | Record<string, string>): void {
+function appendInjectedEntry(append: (key: string, value: string) => void, key: string, value: ProxyBodyValue): void {
     if (typeof value === 'string') {
         append(key, value);
         return;
     }
     for (const [nestedKey, nestedValue] of Object.entries(value)) {
-        append(`${key}[${nestedKey}]`, nestedValue);
+        appendInjectedEntry(append, `${key}[${nestedKey}]`, nestedValue);
     }
 }
 
-function mergeInjectedBody(existing: unknown, injected: Record<string, string | Record<string, string>>): unknown {
+function mergeInjectedBody(existing: unknown, injected: Record<string, ProxyBodyValue>): unknown {
     if (!existing) return injected;
     if (isPlainObject(existing)) return { ...existing, ...injected };
     if (existing instanceof FormData) {
