@@ -19,8 +19,8 @@ export const inputVariants = cva(
         'focus:border-[var(--focus-ring-default)] focus:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
         // Invalid
         'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
-        // Disabled — dedicated tokens, no opacity (Figma state/selectedMuted bg, border/disabled, text/disabled)
-        'disabled:cursor-not-allowed disabled:border-border-disabled disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
+        // Disabled — keep the interactive border (Figma), only the bg + text switch to the disabled tokens; no opacity
+        'disabled:cursor-not-allowed disabled:border-border-interactive disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
         // File-input affordance
         'file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-text-strong file:text-ds-md file:font-ds-medium'
     ],

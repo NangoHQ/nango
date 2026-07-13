@@ -22,7 +22,10 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function Signin() {
     const form = useForm<ForgotPasswordFormData>({
         resolver: zodResolver(forgotPasswordSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            email: ''
+        },
+        mode: 'onSubmit'
     });
 
     const { toast } = useToast();
@@ -80,7 +83,7 @@ export default function Signin() {
                             )}
                         />
 
-                        <Button type="submit" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size={'lg'} loading={isPending}>
                             Send password reset email
                         </Button>
                     </form>

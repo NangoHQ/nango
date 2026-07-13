@@ -3,6 +3,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { Spinner } from '@/components/ui/Spinner';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { cn } from '@/utils/utils';
 
 /**
@@ -39,6 +40,17 @@ export interface FilterSelectGroupData {
     options: FilterSelectOption[];
     isLoading: boolean;
     isError: boolean;
+    // A background fetch is in flight while previous results stay shown (e.g. a debounced search
+    // refetch keeping prior data). Drives an inline spinner in the search box so typing has visible
+    // feedback. Distinct from `isLoading` (first load, blank list) — leave unset for sync data.
+    isFetching?: boolean;
+    // Optional incremental paging for long value lists. When `fetchNextPage` is
+    // provided, the value pane loads the next page as it nears the bottom on
+    // scroll (and shows a spinner while `isFetchingNextPage`). Consumers that
+    // return their whole set at once leave these unset.
+    hasNextPage?: boolean;
+    isFetchingNextPage?: boolean;
+    fetchNextPage?: () => void;
 }
 
 /** A value-pane row: a real option, or the synthetic free-text "create" row appended after matches. */
@@ -52,8 +64,13 @@ interface FilterSelectProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     groups: readonly FilterSelectGroup[];
-    /** Hook the value pane calls to load a group's options (mounts per open group). */
-    useGroupData: (group: string) => FilterSelectGroupData;
+    /**
+     * Hook the value pane calls to load a group's options (mounts per open group).
+     * Receives the pane's debounced `search` term so the consumer can filter the
+     * full set server-side; consumers that filter client-side can ignore it (the
+     * pane still narrows the loaded list by the live input).
+     */
+    useGroupData: (group: string, opts: { search: string }) => FilterSelectGroupData;
     /** The currently-applied value for a group, if any — drives the check next to the group. */
     selectedValueFor?: (group: string) => string | null;
     onSelect: (group: string, value: string) => void;
@@ -62,6 +79,13 @@ interface FilterSelectProps {
      * Pass a predicate to decide per group — e.g. off for groups whose values are a fixed, fully-listed set.
      */
     allowCreate?: boolean | ((group: string) => boolean);
+    /**
+     * Whether a group's value pane shows a search box. Off for closed, fully-listed sets (e.g.
+     * Status, Environment) where the short list needs no filtering. Pass a predicate to decide per
+     * group. Defaults to true. Independent of `allowCreate` — a list can be searchable without
+     * accepting typed-but-unlisted values (e.g. when search already covers the full set).
+     */
+    searchable?: boolean | ((group: string) => boolean);
     searchPlaceholder?: string;
     /** Called when a group's pane opens — e.g. to prefetch. */
     onOpenGroup?: (group: string) => void;
@@ -91,9 +115,10 @@ const ValueRow: React.FC<{ item: PaneItem }> = ({ item }) =>
 const FilterValuePane: React.FC<{
     anchor: React.RefObject<HTMLElement | null>;
     group: string;
-    useGroupData: (group: string) => FilterSelectGroupData;
+    useGroupData: (group: string, opts: { search: string }) => FilterSelectGroupData;
     selectedValue: string | null;
     allowCreate: boolean;
+    searchable: boolean;
     searchPlaceholder: string;
     /** Focus the search on mount — true only when the pane was opened via keyboard. */
     autoFocus: boolean;
@@ -102,10 +127,27 @@ const FilterValuePane: React.FC<{
     onBack: () => void;
     /** Esc: close the whole filter. */
     onCloseAll: () => void;
-}> = ({ anchor, group, useGroupData, selectedValue, allowCreate, searchPlaceholder, autoFocus, onSelect, onBack, onCloseAll }) => {
+}> = ({ anchor, group, useGroupData, selectedValue, allowCreate, searchable, searchPlaceholder, autoFocus, onSelect, onBack, onCloseAll }) => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const { options, isLoading, isError } = useGroupData(group);
     const [inputValue, setInputValue] = useState('');
+    // Debounce the typed term before handing it to the consumer's data hook so a
+    // server-backed `useGroupData` isn't re-queried on every keystroke; the pane's
+    // own Base UI filtering still narrows the loaded list instantly as you type.
+    const debouncedSearch = useDebouncedValue(inputValue.trim(), 300);
+    const { options, isLoading, isError, isFetching, hasNextPage, isFetchingNextPage, fetchNextPage } = useGroupData(group, { search: debouncedSearch });
+
+    // Spinner in the search box while a search is pending — the debounce window (input ahead of the
+    // queried term) then the fetch — but not the first load or next-page (they have their own).
+    const searchPending = inputValue.trim() !== debouncedSearch;
+    const searching = searchable && !isLoading && (searchPending || (Boolean(isFetching) && !isFetchingNextPage));
+
+    // Page when the list nears the bottom. A scroll-position check beats an IntersectionObserver
+    // sentinel here: in this short, portalled overflow pane a viewport-rooted observer never fires.
+    const onListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        if (!fetchNextPage || isFetchingNextPage || !hasNextPage) return;
+        const el = e.currentTarget;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 120) fetchNextPage();
+    };
 
     // Focus the search only when opened via keyboard. On hover-open we defer to the popup's
     // onPointerEnter, so moving the cursor across the group list can't reset a filtered list.
@@ -126,10 +168,9 @@ const FilterValuePane: React.FC<{
     const items: PaneItem[] = showCreate ? [...matches, { value: trimmed, label: trimmed, isCreate: true }] : matches;
     const selectedOption = options.find((o) => o.value === selectedValue) ?? null;
 
-    // Groups that take no free text (a fixed, fully-listed set like Status or Environment) need no
-    // search box — just their short list. The input stays mounted but visually hidden so the
-    // combobox keeps driving keyboard navigation (arrows, Enter, ←/Esc) the same way.
-    const searchable = allowCreate;
+    // When `searchable` is false (a fixed, fully-listed set like Status or Environment) the pane
+    // shows just the short list. The input stays mounted but visually hidden (below) so the combobox
+    // keeps driving keyboard navigation (arrows, Enter, ←/Esc) the same way.
 
     return (
         <Combobox.Root
@@ -159,7 +200,7 @@ const FilterValuePane: React.FC<{
                         // leaves, so the search isn't held focused once you've moved off the pane.
                         onPointerEnter={() => inputRef.current?.focus()}
                         onPointerLeave={() => inputRef.current?.blur()}
-                        className="flex w-fit min-w-[14rem] max-w-[32rem] flex-col rounded border border-border-muted bg-surface-overlay p-1 text-text-secondary shadow-md outline-hidden"
+                        className="relative flex w-fit min-w-[14rem] max-w-[32rem] flex-col rounded border border-border-muted bg-surface-overlay p-1 text-text-secondary shadow-md outline-hidden"
                     >
                         <Combobox.Input
                             ref={inputRef}
@@ -179,11 +220,17 @@ const FilterValuePane: React.FC<{
                             }}
                             className={cn(
                                 searchable
-                                    ? 'mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas px-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted'
+                                    ? 'mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas pr-8 pl-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted'
                                     : 'sr-only'
                             )}
                         />
-                        <Combobox.List className="max-h-[50vh] overflow-y-auto">
+                        {/* Search spinner, overlaid at the input's right (the popup is the positioning context). */}
+                        {searching && (
+                            <span className="pointer-events-none absolute top-1 right-2.5 flex h-8 items-center">
+                                <Spinner className="size-3.5 text-text-muted" />
+                            </span>
+                        )}
+                        <Combobox.List className="max-h-[50vh] overflow-y-auto" onScroll={onListScroll}>
                             {isLoading ? (
                                 <div className="flex justify-center py-3">
                                     <Spinner />
@@ -193,9 +240,17 @@ const FilterValuePane: React.FC<{
                                     <Combobox.Collection>
                                         {(item: PaneItem) => <ValueRow key={item.isCreate ? '__create' : item.value} item={item} />}
                                     </Combobox.Collection>
-                                    {!hasMatches && !showCreate && (
+                                    {/* Hold off on "No values" while a search is pending — the loaded list may not
+                                        match the term being typed yet, and flashing it before results land reads as
+                                        "nothing found". */}
+                                    {!hasMatches && !showCreate && !searching && (
                                         <div className="px-2 py-3 text-center text-text-muted text-body-small-regular">
                                             {isError ? 'Failed to load values' : 'No values'}
+                                        </div>
+                                    )}
+                                    {isFetchingNextPage && (
+                                        <div className="flex justify-center py-2">
+                                            <Spinner />
                                         </div>
                                     )}
                                 </>
@@ -262,6 +317,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
     selectedValueFor,
     onSelect,
     allowCreate = false,
+    searchable = true,
     searchPlaceholder = 'Search…',
     onOpenGroup
 }) => {
@@ -345,6 +401,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
                                 useGroupData={useGroupData}
                                 selectedValue={selectedValueFor?.(openGroup) ?? null}
                                 allowCreate={typeof allowCreate === 'function' ? allowCreate(openGroup) : allowCreate}
+                                searchable={typeof searchable === 'function' ? searchable(openGroup) : searchable}
                                 searchPlaceholder={searchPlaceholder}
                                 autoFocus={openViaKeyboard}
                                 onSelect={(value) => {

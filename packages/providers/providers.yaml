@@ -328,7 +328,7 @@ acumatica:
             type: string
             title: Instance URL
             description: The hostname of your Acumatica ERP instance.
-            format: hostname
+            pattern: '^[A-Za-z0-9.-]+(?::\d+)?(?:/[A-Za-z0-9._-]+)*$'
             example: mycompany.acumatica.com
             prefix: https://
             doc_section: '#step-6-identify-your-instance-url'
@@ -1778,6 +1778,57 @@ ashby:
             description: ''
             default_value: ''
             hidden: true
+
+aspire:
+    display_name: Aspire
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.domain}/Authorization
+    refresh_url: https://${connectionConfig.domain}/Authorization/RefreshToken
+    token_params:
+        ClientId: ${credentials.clientId}
+        Secret: ${credentials.secret}
+    refresh_token_params:
+        RefreshToken: ${refresh_token}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: Token
+        refresh_token: RefreshToken
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/aspire
+    docs_connect: https://nango.dev/docs/api-integrations/aspire/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Aspire API environment to connect to.
+            order: 1
+            format: hostname
+            enum:
+                - cloudsandbox-api.youraspire.com
+                - cloud-api.youraspire.com
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID generated for your Aspire application.
+            format: uuid
+            example: 3f2a91c6-****-****-****-6d5e8a2b7c34
+            doc_section: '#step-2-generate-your-client-id-and-secret'
+        secret:
+            type: string
+            title: Secret
+            description: The Secret generated alongside the Client ID.
+            secret: true
+            pattern: '^[a-zA-Z0-9]{32}$'
+            example: 7hLp************************nHa5
+            doc_section: '#step-2-generate-your-client-id-and-secret'
 
 atlas-so:
     display_name: Atlas.so
@@ -9032,6 +9083,7 @@ google-drive:
         - popular
         - storage
     alias: google
+    webhook_routing_script: googleDriveWebhookRouting
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
@@ -9044,6 +9096,16 @@ google-forms:
         base_url: https://forms.googleapis.com
     docs: https://nango.dev/docs/api-integrations/google-forms
     setup_guide_url: https://nango.dev/docs/api-integrations/google-forms/how-to-register-your-own-google-forms-api-oauth-app
+
+google-health:
+    display_name: Google Health
+    categories:
+        - sports
+    alias: google
+    proxy:
+        base_url: https://health.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-health
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app
 
 google-tasks:
     display_name: Google Tasks
@@ -13949,6 +14011,10 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.notion.com/
     docs: https://nango.dev/docs/api-integrations/notion-mcp
 
 notion-scim:
@@ -18187,7 +18253,6 @@ sap-business-one:
             title: Service Layer URL
             prefix: https://
             suffix: /Login
-            pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
             order: 1
             description: The base URL for your SAP Business One Service Layer
             doc_section: '#step-3-finding-your-service-layer-url'

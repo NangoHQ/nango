@@ -806,6 +806,10 @@
                       {
                         "group": "Functions",
                         "pages": [
+                          "reference/backend/http-api/functions/list",
+                          "reference/backend/http-api/functions/get",
+                          "reference/backend/http-api/functions/code",
+                          "reference/backend/http-api/functions/delete",
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
@@ -848,7 +852,8 @@
                         "group": "Providers",
                         "pages": [
                           "reference/backend/http-api/providers/list",
-                          "reference/backend/http-api/providers/get"
+                          "reference/backend/http-api/providers/get",
+                          "reference/backend/http-api/providers/templates"
                         ]
                       },
                       {
@@ -965,6 +970,7 @@
               "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
+              "api-integrations/aspire",
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
@@ -1228,6 +1234,7 @@
               "api-integrations/google-docs",
               "api-integrations/google-drive",
               "api-integrations/google-forms",
+              "api-integrations/google-health",
               "api-integrations/google-mail",
               "api-integrations/google-maps",
               "api-integrations/google-meet",
