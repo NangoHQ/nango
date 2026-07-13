@@ -8,7 +8,7 @@ import type { UsageMetric } from '@nangohq/types';
  * checked at compile time and every tracked event is listed in one place.
  *
  * Usage-page events are the first entries. Existing loose events (useAnalyticsTrack, the Playground
- * module) aren't in the map yet and can migrate here incrementally.
+ * module) aren't in the map yet and can migrate here incrementally (tracked in NAN-6241).
  *
  * Property values must be PostHog-serializable primitives (string | number | boolean).
  */

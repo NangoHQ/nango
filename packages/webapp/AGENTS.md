@@ -45,3 +45,29 @@ src/
 ### Filename convention
 
 All React component files in the webapp use **PascalCase** (`Button.tsx`, `DropdownMenu.tsx`, `ConnectionList.tsx`). This applies across all directories.
+
+## Product analytics (PostHog)
+
+Events are sent to PostHog. Use the **typed catalog** for anything new.
+
+### Adding an event
+
+1. Declare it in the catalog — `utils/analyticsEvents.ts` — as a key on the `AnalyticsEvents` interface, mapping the event name to its property shape. An event with no properties uses `Record<string, never>`.
+2. Fire it with the generic `track()` from `utils/analytics.tsx`: `track('web:usage:grouped', { metric, dimension })`. The event name and properties are checked against the catalog at compile time.
+
+`track()` uses the `posthog` singleton, so it works in components and in plain modules alike — no hook needed.
+
+### Conventions
+
+- **Event names**: `web:<area>:<action>`, colon-delimited (e.g. `web:usage:filtered`, `web:playground:run:clicked`).
+- **Property values** must be PostHog-serializable primitives (`string | number | boolean`) — the catalog types enforce this.
+- **Privacy**: never send identifying free-form values (connection IDs, environment names, emails). Send low-cardinality slugs — e.g. a filter's *dimension*, not its value. PostHog init also sets `mask_personal_data_properties`, but keep events clean at the source.
+
+### Legacy paths (being migrated)
+
+Two older, untyped paths still exist and should **not** be used for new events:
+
+- `useAnalyticsTrack()` (`utils/analytics.tsx`) — a hook that accepts any string with no property typing.
+- The per-feature `track()` helper in `features/Playground/analytics.ts`.
+
+Migrating both onto the catalog is tracked in NAN-6241. `useAnalyticsIdentify()` / `useAnalyticsReset()` (user identify/reset on login/logout) stay as they are.
