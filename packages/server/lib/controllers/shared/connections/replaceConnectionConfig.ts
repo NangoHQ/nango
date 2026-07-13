@@ -19,7 +19,7 @@ export async function handleReplaceConnectionConfig({
 }): Promise<void> {
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
-        res.status(400).send({ error: { code: 'unknown_provider_config', message: 'Provider does not exists' } });
+        res.status(400).send({ error: { code: 'unknown_provider_config', message: 'Provider does not exist' } });
         return;
     }
 
