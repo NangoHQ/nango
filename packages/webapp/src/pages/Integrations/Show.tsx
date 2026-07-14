@@ -115,7 +115,7 @@ export const IntegrationsList = () => {
                 </InputGroup>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
-                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
+                        <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="md">
                             Set up new integration
                         </ButtonLink>
                     )}

@@ -1,6 +1,6 @@
 import type { ApiError, Endpoint } from '../api.js';
 
-export type PostMcp = Endpoint<{
+export type PostConnectionToolsMcp = Endpoint<{
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;
@@ -12,7 +12,20 @@ export type PostMcp = Endpoint<{
     Error: ApiError<'missing_connection_id' | 'unknown_connection'>;
 }>;
 
-export type GetMcp = Endpoint<{
+export type GetConnectionToolsMcp = Endpoint<{
+    Method: 'GET';
+    Path: '/mcp';
+    Success: Record<string, unknown>;
+}>;
+
+export type PostControlPlaneMcp = Endpoint<{
+    Method: 'POST';
+    Path: '/mcp';
+    Body: Record<string, unknown>;
+    Success: Record<string, unknown>;
+}>;
+
+export type GetControlPlaneMcp = Endpoint<{
     Method: 'GET';
     Path: '/mcp';
     Success: Record<string, unknown>;

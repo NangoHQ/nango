@@ -60,6 +60,7 @@ export type * from './deploy/api.js';
 export type * from './deploy/index.js';
 export type * from './deploy/incomingFlow.js';
 export type * from './endpoints/db.js';
+export type * from './cli/api.js';
 export type * from './connect/api.js';
 export type * from './connect/session.js';
 export type * from './endUser/index.js';
@@ -84,6 +85,7 @@ export type * from './environment/variable/api.js';
 export type * from './webhooks/api.js';
 export type * from './webhooks/dispatch.js';
 export type * from './webhooks/http.api.js';
+export type * from './clientMetadata/http.api.js';
 export type * from './flow/http.api.js';
 export type * from './flow/index.js';
 
