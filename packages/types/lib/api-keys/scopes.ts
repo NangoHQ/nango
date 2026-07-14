@@ -41,6 +41,8 @@ export const API_KEY_SCOPES = [
     'environment:records:read',
     'environment:records:write',
     'environment:records:*',
+    // Logs
+    'environment:logs:read',
     // Actions
     'environment:actions:execute',
     'environment:actions:*',

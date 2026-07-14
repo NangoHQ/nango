@@ -26,8 +26,8 @@ describe('getConnectionConfig', () => {
         expect(utils.getConnectionConfig({ subdomain: 'acme', count: 5, flag: true })).toEqual({ subdomain: 'acme' });
     });
 
-    // webhook_url is a privileged routing directive: it must only be settable by the backend via the
-    // connect session, never by an untrusted client passing it as a connection param. Stripping it here
+    // webhook_url is a privileged routing directive: it must only be settable by trusted actors (connect session, public API, dashboard),
+    // never by an untrusted client passing it as a connection param. Stripping it here
     // closes every client-param entry point (auth endpoints + OAuth) in one place.
     it('strips webhook_url so an untrusted client cannot route webhooks', () => {
         expect(utils.getConnectionConfig({ subdomain: 'acme', webhook_url: 'https://attacker.example.com/hook' })).toEqual({ subdomain: 'acme' });
