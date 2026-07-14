@@ -7,13 +7,12 @@ import type { UsageMetric } from '@nangohq/types';
  * `track` (utils/analytics.tsx) is typed against this map, so event names and properties are
  * checked at compile time and every tracked event is listed in one place.
  *
- * Usage-page events are the first entries. Existing loose events (useAnalyticsTrack, the Playground
- * module) aren't in the map yet and can migrate here incrementally (tracked in NAN-6241).
+ * Usage-page events are the first entries; add new events here as they're introduced.
  *
  * Property values must be PostHog-serializable primitives (string | number | boolean).
  */
 export interface AnalyticsEvents {
-    'web:usage:viewed': { breakdown_enabled: boolean };
+    'web:usage:viewed': Record<string, never>;
     'web:usage:month_changed': { direction: 'previous' | 'next' };
     'web:usage:grouped': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:group_cleared': { metric: UsageMetric };
