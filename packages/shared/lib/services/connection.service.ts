@@ -2086,15 +2086,6 @@ class ConnectionService {
     async hardDelete(id: number): Promise<number> {
         return await db.knex.from<DBConnection>('_nango_connections').where('id', id).delete();
     }
-
-    async trackExecution(id: number): Promise<Result<void>> {
-        try {
-            await db.knex.from('_nango_connections').where({ id, deleted_at: null }).update({ last_execution_at: db.knex.fn.now() });
-            return Ok(undefined);
-        } catch (err: unknown) {
-            return Err(new NangoError('failed_to_track_execution', { id, error: err }));
-        }
-    }
 }
 
 export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {
