@@ -1,18 +1,12 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, linkConnection, updateConnectionTags, upsertEndUser } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { handlePatchConnection, patchConnectionBodySchema } from '../../shared/connections/patchConnection.js';
 
 import type { PatchPublicConnection } from '@nangohq/types';
-
-const schemaBody = z.strictObject({
-    end_user: endUserSchema.optional(),
-    tags: connectionTagsSchema.optional()
-});
 
 const queryStringValidation = z.strictObject({
     provider_config_key: providerConfigKeySchema
@@ -29,7 +23,7 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
         return;
     }
 
-    const valBody = schemaBody.safeParse(req.body);
+    const valBody = patchConnectionBodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
         return;
@@ -42,53 +36,15 @@ export const patchPublicConnection = asyncWrapper<PatchPublicConnection>(async (
     }
 
     const { environment, account } = res.locals;
-
     const queryParams: PatchPublicConnection['Querystring'] = queryParamValues.data;
     const params: PatchPublicConnection['Params'] = paramValue.data;
-    const body: PatchPublicConnection['Body'] = valBody.data;
 
-    const integration = await configService.getProviderConfig(queryParams.provider_config_key, environment.id);
-    if (!integration) {
-        res.status(400).send({ error: { code: 'unknown_provider_config', message: 'Provider does not exists' } });
-        return;
-    }
-
-    const connectionRes = await connectionService.getConnection(params.connectionId, queryParams.provider_config_key, environment.id);
-    if (connectionRes.error || !connectionRes.response) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
-        return;
-    }
-
-    const connection = connectionRes.response;
-
-    // Generate tags from end_user (similar to postSessions.ts and postReconnect.ts)
-    const endUserTags = body.end_user ? buildTagsFromEndUser(body.end_user, null) : {};
-    const mergedTags = { ...endUserTags, ...body.tags };
-
-    if (body.end_user) {
-        await db.knex.transaction(async (trx) => {
-            const endUserRes = await upsertEndUser(trx, { account, environment, connection, endUser: EndUserMapper.apiToEndUser(body.end_user!) });
-            if (endUserRes.isErr()) {
-                res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
-                return;
-            }
-
-            if (!connection.end_user_id) {
-                await linkConnection(trx, { endUserId: endUserRes.value.id, connection });
-            }
-        });
-    }
-
-    if (body.end_user || body.tags !== undefined) {
-        const tagsRes = await updateConnectionTags(db.knex, {
-            connection,
-            tags: mergedTags
-        });
-        if (tagsRes.isErr()) {
-            res.status(400).send({ error: { code: 'invalid_body', message: tagsRes.error.message } });
-            return;
-        }
-    }
-
-    res.status(200).send({ success: true });
+    await handlePatchConnection({
+        res,
+        account,
+        environment,
+        connectionId: params.connectionId,
+        providerConfigKey: queryParams.provider_config_key,
+        body: valBody.data
+    });
 });

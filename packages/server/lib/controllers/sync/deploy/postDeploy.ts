@@ -4,6 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, productTracking, startTrial } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { getCliContext } from '../../../middleware/cliVersionCheck.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
@@ -30,6 +31,17 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
 
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
+
+    const { cliVersion, deviceId } = getCliContext(req);
+    const trackingProperties: Record<string, string | number | boolean> = {
+        'cli-version': cliVersion || 'unknown',
+        source: body.source ?? 'repo',
+        'flow-count': body.flowConfigs.length
+    };
+
+    if (deviceId) {
+        productTracking.alias({ deviceId, team: account });
+    }
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
@@ -75,6 +87,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         }
 
         if (!success || !syncConfigDeployResult) {
+            productTracking.track({ name: 'deploy:error', team: account, eventProperties: { ...trackingProperties, 'error-code': error?.type || 'unknown' } });
             errorManager.errResFromNangoErr(res, error);
             return;
         }
@@ -93,6 +106,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
                 onFunctionDeleted: ({ syncConfigId, models }) => startFunctionDeletion({ syncConfigId, environmentId: environment.id, models })
             });
             if (!success) {
+                productTracking.track({ name: 'deploy:error', team: account, eventProperties: { ...trackingProperties, 'error-code': 'reconcile_failed' } });
                 res.status(500).send({
                     error: {
                         code: 'server_error',
@@ -103,7 +117,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
             }
         }
 
-        productTracking.track({ name: 'deploy:success', team: account });
+        productTracking.track({ name: 'deploy:success', team: account, eventProperties: trackingProperties });
 
         res.send(syncConfigDeployResult.result);
     } finally {
