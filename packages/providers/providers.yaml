@@ -3963,8 +3963,8 @@ callrail:
             type: string
             title: API Key
             description: The API key for your Callrail account
-            pattern: '^[a-f0-9]{32}$'
-            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            pattern: '^(ctrk_)?[a-f0-9]{32,}$'
+            example: 'ctrk_1234567890abcdef1234567890abcdef1234567890ab'
             doc_section: '#step-1-finding-your-api-key'
     docs: https://nango.dev/docs/integrations/all/callrail
 
