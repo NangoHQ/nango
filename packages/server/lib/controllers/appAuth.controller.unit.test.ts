@@ -110,14 +110,14 @@ describe('AppAuthController.connect', () => {
                 connectSession: {
                     tags: {},
                     endUser: null,
-                    overrides: { 'github-app': { webhook_url: 'https://override.example.com/hook' } }
+                    webhookUrlOverride: 'https://override.example.com/hook'
                 }
             })
         );
         mockUpsertConnection.mockResolvedValue([{ connection: { id: 1, connection_id: 'conn-1', provider_config_key: 'github-app' }, operation: 'creation' }]);
     });
 
-    it('stores the connect session webhook URL override under overrides (not connection_config)', async () => {
+    it('stores the connect session webhook URL override as webhook_url_override (not connection_config)', async () => {
         const req = {
             query: { installation_id: 'install-1', state: 'session-id' }
         } as unknown as Request;
@@ -128,7 +128,7 @@ describe('AppAuthController.connect', () => {
 
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({
-                overrides: { webhook_url: 'https://override.example.com/hook' },
+                webhookUrlOverride: 'https://override.example.com/hook',
                 connectionConfig: expect.objectContaining({
                     installation_id: 'install-1',
                     app_id: 'app-123',
@@ -155,7 +155,7 @@ describe('AppAuthController.connect', () => {
         expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
             expect.objectContaining({
                 connection: expect.objectContaining({
-                    overrides: { webhook_url: 'https://override.example.com/hook' }
+                    webhook_url_override: 'https://override.example.com/hook'
                 })
             }),
             expect.anything()

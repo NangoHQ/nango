@@ -18,7 +18,7 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveConnectionOverrides } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -79,7 +79,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     const queryString: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
-    const overrides = resolveConnectionOverrides({ connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -166,7 +166,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
             providerConfigKey,
             credentials: credentialsRes.value,
             connectionConfig,
-            overrides,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -241,7 +241,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'BILL',

@@ -202,7 +202,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_config: {},
-            overrides: null,
+            webhook_url_override: null,
             connection_id: expect.any(String),
             created_at: expect.toBeIsoDate(),
             credentials: {
@@ -240,7 +240,7 @@ describe(`POST ${endpoint}`, () => {
             body: {
                 provider_config_key: 'github',
                 credentials: { type: 'OAUTH2', access_token: '123' },
-                overrides: { webhook_url: 'https://api.nango.dev/hook' }
+                webhook_url_override: 'https://api.nango.dev/hook'
             }
         });
 
@@ -252,14 +252,14 @@ describe(`POST ${endpoint}`, () => {
                     {
                         code: 'custom',
                         message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
-                        path: ['overrides', 'webhook_url']
+                        path: ['webhook_url_override']
                     }
                 ]
             }
         });
     });
 
-    it('should store a valid webhook_url override under overrides (not connection_config)', async () => {
+    it('should store a valid webhook_url_override (not in connection_config)', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
@@ -268,12 +268,12 @@ describe(`POST ${endpoint}`, () => {
             body: {
                 provider_config_key: 'github',
                 credentials: { type: 'OAUTH2', access_token: '123' },
-                overrides: { webhook_url: 'https://example.com/webhooks-from-nango' }
+                webhook_url_override: 'https://example.com/webhooks-from-nango'
             }
         });
 
         isSuccess(res.json);
-        expect(res.json.overrides).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
+        expect(res.json.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
         expect(res.json.connection_config).toStrictEqual({});
     });
 
@@ -297,7 +297,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_config: {},
-            overrides: null,
+            webhook_url_override: null,
             connection_id: expect.any(String),
             created_at: expect.toBeIsoDate(),
             credentials: {

@@ -560,7 +560,7 @@ async function sendWebhookIfNeeded({
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
         }
-        const overrides = await connectionService.getConnectionOverrides({
+        const webhookUrlOverride = await connectionService.getWebhookUrlOverride({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             environment_id: environment.id
@@ -569,7 +569,7 @@ async function sendWebhookIfNeeded({
             secret: webhookSigningKey.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
-            overrides,
+            webhookUrlOverride,
             payload: {
                 id: task.retryKey,
                 statusUrl: `/action/${task.retryKey}`

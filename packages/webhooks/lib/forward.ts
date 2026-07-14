@@ -5,16 +5,7 @@ import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
-import type {
-    ConnectionOverrides,
-    DBAPISecret,
-    DBEnvironment,
-    DBExternalWebhook,
-    DBTeam,
-    IntegrationConfig,
-    NangoForwardWebhookBody,
-    Result
-} from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
 
 const logger = getLogger('webhooks.forward');
 
@@ -25,7 +16,7 @@ export const forwardWebhook = async ({
     secret,
     webhookSettings,
     connectionIds,
-    connectionOverridesByConnectionId,
+    webhookUrlOverrideByConnectionId,
     payload,
     webhookOriginalHeaders,
     logContextGetter,
@@ -37,7 +28,7 @@ export const forwardWebhook = async ({
     secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
-    connectionOverridesByConnectionId: Map<string, ConnectionOverrides>;
+    webhookUrlOverrideByConnectionId: Map<string, string>;
     payload: Record<string, any> | null;
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
@@ -118,7 +109,7 @@ export const forwardWebhook = async ({
     for (const connectionId of connectionIds) {
         // Resolve the per-connection webhook URL override (if any) so a connection's forwarded webhooks
         // honor it, just like its sync/auth/action webhooks.
-        const settings = resolveWebhookSettings(webhookSettings, connectionOverridesByConnectionId.get(connectionId) ?? null);
+        const settings = resolveWebhookSettings(webhookSettings, webhookUrlOverrideByConnectionId.get(connectionId) ?? null);
         if (!shouldSend({ success: true, type: 'forward', webhookSettings: settings })) {
             continue;
         }

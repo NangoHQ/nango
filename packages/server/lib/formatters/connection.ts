@@ -46,7 +46,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted, options?:
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         connection_config: connection.connection_config,
-        overrides: connection.overrides,
+        webhook_url_override: connection.webhook_url_override,
         credentials: options?.includeCredentials ? connection.credentials : redactCredentials(connection.credentials),
         metadata: connection.metadata,
         tags: connection.tags,
@@ -108,7 +108,7 @@ export function connectionFullToPublicApi({
         tags: data.tags,
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
-        overrides: data.overrides ?? null,
+        webhook_url_override: data.webhook_url_override ?? null,
         created_at: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at),
         updated_at: data.updated_at instanceof Date ? data.updated_at.toISOString() : String(data.updated_at),
         last_fetched_at: data.last_fetched_at

@@ -152,11 +152,11 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             overrides: integration
                 ? {
                       [integration.unique_key]: {
-                          docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined,
-                          webhook_url: webhookUrl
+                          docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
                       }
                   }
-                : undefined
+                : undefined,
+            webhook_url_override: webhookUrl
         });
     }, [
         integration,

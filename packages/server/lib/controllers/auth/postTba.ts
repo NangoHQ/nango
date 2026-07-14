@@ -13,7 +13,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveConnectionOverrides } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -74,7 +74,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     const queryString = queryStringVal.data satisfies PostPublicTbaAuthorization['Querystring'];
     const { providerConfigKey } = paramVal.data satisfies PostPublicTbaAuthorization['Params'];
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
-    const overrides = resolveConnectionOverrides({ connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -197,7 +197,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
                 oauth_client_id: config.oauth_client_id,
                 oauth_client_secret: config.oauth_client_secret
             },
-            overrides,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -272,7 +272,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'TBA',

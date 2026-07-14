@@ -188,6 +188,14 @@ class ConnectionController {
                 return;
             }
 
+            // webhook_url is a per-connection override, not provider connection_config. Pull it out here so it is
+            // stored in webhook_url_override and never lands in connection_config.
+            const rawWebhookUrlOverride = connection_config?.webhook_url;
+            const webhookUrlOverride = typeof rawWebhookUrlOverride === 'string' && rawWebhookUrlOverride.trim() !== '' ? rawWebhookUrlOverride : null;
+            if (connection_config && 'webhook_url' in connection_config) {
+                delete connection_config.webhook_url;
+            }
+
             const integration = await configService.getProviderConfig(provider_config_key, environment.id);
             if (!integration) {
                 const error = new NangoError('unknown_provider_config', { providerConfigKey: provider_config_key, environmentName: environment.name });
@@ -297,6 +305,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig,
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -360,6 +369,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig,
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -409,6 +419,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -452,6 +463,7 @@ class ConnectionController {
                     environment,
                     credentials,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     connectionCreatedHook: connCreatedHook
                 });
 
@@ -493,6 +505,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     credentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -540,6 +553,7 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     parsedRawCredentials: credentialsRes.value,
                     connectionConfig,
+                    webhookUrlOverride,
                     environmentId: environment.id,
                     metadata
                 });
@@ -590,6 +604,7 @@ class ConnectionController {
                         oauth_client_id: config.oauth_client_id,
                         oauth_client_secret: config.oauth_client_secret
                     },
+                    webhookUrlOverride,
                     metadata,
                     config,
                     environment
@@ -605,7 +620,8 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     environment,
                     metadata,
-                    connectionConfig: { ...connection_config }
+                    connectionConfig: { ...connection_config },
+                    webhookUrlOverride
                 });
 
                 if (imported) {

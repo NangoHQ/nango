@@ -114,7 +114,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -140,7 +140,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -166,7 +166,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -191,7 +191,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -216,7 +216,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -241,7 +241,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -266,7 +266,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -296,7 +296,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -335,7 +335,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: { webhook_url: overrideUrl },
+            webhookUrlOverride: overrideUrl,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -362,7 +362,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -391,7 +391,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -422,7 +422,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,
@@ -446,7 +446,7 @@ describe('Webhooks: sync notification tests', () => {
         await sendSync({
             account,
             connection,
-            overrides: null,
+            webhookUrlOverride: null,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
             providerConfig,

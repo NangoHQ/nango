@@ -30,24 +30,18 @@ To test webhooks locally, use a webhook forwarding service like [ngrok](https://
 
 ## Override webhook URLs per connection
 
-A single connection can override the environment's webhook URLs with its own `webhook_url`. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
+A single connection can override the environment's webhook URLs with its own URL. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
 
-When a connection sets `webhook_url`, its webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
+When this override is set, the connection's webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
 
-Set `webhook_url` when creating a [connect session](/reference/backend/http-api/connect/sessions/create), under `integrations_config_defaults.<integration>.connection_config`:
+Set `webhook_url_override` when creating a [connect session](/reference/backend/http-api/connect/sessions/create). It applies to the connection created by that session:
 
 <Tabs>
   <Tab title="Node">
     ```ts
     const session = await nango.createConnectSession({
         allowed_integrations: ['<INTEGRATION-ID>'],
-        integrations_config_defaults: {
-            '<INTEGRATION-ID>': {
-                connection_config: {
-                    webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
-                }
-            }
-        }
+        webhook_url_override: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
     });
     ```
   </Tab>
@@ -59,26 +53,20 @@ Set `webhook_url` when creating a [connect session](/reference/backend/http-api/
       --header 'Content-Type: application/json' \
       --data '{
         "allowed_integrations": ["<INTEGRATION-ID>"],
-        "integrations_config_defaults": {
-          "<INTEGRATION-ID>": {
-            "connection_config": {
-              "webhook_url": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
-            }
-          }
-        }
+        "webhook_url_override": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
       }'
     ```
   </Tab>
 </Tabs>
 
-You can also set `webhook_url` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
+You can also set `webhook_url_override` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
 
 <Note>
-    `webhook_url` can only be set at connect-session creation time — the trusted actor that creates the session. The same key passed to `nango.auth()` `params` from the client is ignored.
+    `webhook_url_override` is set by the trusted backend that creates the connect session. A `webhook_url` passed to `nango.auth()` `params` from the client is ignored.
 </Note>
 
 <Tip>
-    **Local development:** create a connection with `webhook_url` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
+    **Local development:** create a connection with `webhook_url_override` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
 </Tip>
 
 ## Verifying webhooks from Nango

@@ -286,7 +286,7 @@ export async function handleWebhookSuccess({
             throw webhookSigningKey.error;
         }
 
-        const overrides = await connectionService.getConnectionOverrides({
+        const webhookUrlOverride = await connectionService.getWebhookUrlOverride({
             connection_id: nangoProps.connectionId,
             provider_config_key: nangoProps.providerConfigKey,
             environment_id: nangoProps.environmentId
@@ -317,7 +317,7 @@ export async function handleWebhookSuccess({
                         environment: environment,
                         secret: webhookSigningKey.value,
                         webhookSettings,
-                        overrides,
+                        webhookUrlOverride,
                         syncConfig: nangoProps.syncConfig,
                         syncVariant: nangoProps.syncVariant || 'base',
                         providerConfig,
@@ -489,7 +489,7 @@ async function onFailure({
                             throw webhookSigningKey.error;
                         }
 
-                        const overrides = await connectionService.getConnectionOverrides(connection);
+                        const webhookUrlOverride = await connectionService.getWebhookUrlOverride(connection);
 
                         const res = await sendSyncWebhook({
                             account: team,
@@ -497,7 +497,7 @@ async function onFailure({
                             secret: webhookSigningKey.value,
                             connection: connection,
                             webhookSettings,
-                            overrides,
+                            webhookUrlOverride,
                             syncConfig,
                             syncVariant,
                             providerConfig,

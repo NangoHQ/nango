@@ -67,10 +67,10 @@ describe(`GET ${endpoint}`, () => {
             environmentId: env.id
         });
         expect(connection?.connection_config).toStrictEqual({});
-        expect(connection?.overrides).toBeNull();
+        expect(connection?.webhook_url_override).toBeNull();
     });
 
-    it('rejects a nango.dev webhook_url set as a connect session override', async () => {
+    it('rejects a nango.dev webhook_url_override set on the connect session', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
@@ -80,7 +80,7 @@ describe(`GET ${endpoint}`, () => {
             body: {
                 end_user: { id: '1', email: 'john@example.com' },
                 allowed_integrations: ['unauthenticated'],
-                overrides: { unauthenticated: { webhook_url: 'https://api.nango.dev/hook' } }
+                webhook_url_override: 'https://api.nango.dev/hook'
             }
         });
 
@@ -92,14 +92,14 @@ describe(`GET ${endpoint}`, () => {
                     {
                         code: 'custom',
                         message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
-                        path: ['overrides', 'unauthenticated', 'webhook_url']
+                        path: ['webhook_url_override']
                     }
                 ]
             }
         });
     });
 
-    it('applies a webhook_url override set as a connect session override (stored under overrides, not connection_config)', async () => {
+    it('applies a webhook_url_override set on the connect session (not in connection_config)', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
@@ -109,7 +109,7 @@ describe(`GET ${endpoint}`, () => {
             body: {
                 end_user: { id: '1', email: 'john@example.com' },
                 allowed_integrations: ['unauthenticated'],
-                overrides: { unauthenticated: { webhook_url: 'https://example.com/webhooks-from-nango' } }
+                webhook_url_override: 'https://example.com/webhooks-from-nango'
             }
         });
         isSuccess(resSession.json);
@@ -127,7 +127,7 @@ describe(`GET ${endpoint}`, () => {
             environmentId: env.id
         });
         expect(connection?.connection_config).toStrictEqual({});
-        expect(connection?.overrides).toStrictEqual({ webhook_url: 'https://example.com/webhooks-from-nango' });
+        expect(connection?.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
     });
 
     it('should not be allowed to connect to an integration if disallowed by sessionToken', async () => {

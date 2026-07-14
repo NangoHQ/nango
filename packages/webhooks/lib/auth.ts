@@ -38,7 +38,7 @@ export async function sendAuth({
     providerConfig,
     account
 }: {
-    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'overrides'>>); // Either a true connection or a fake one
+    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'webhook_url_override'>>); // Either a true connection or a fake one
     environment: DBEnvironment;
     secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
@@ -54,7 +54,7 @@ export async function sendAuth({
         return;
     }
 
-    const settings = resolveWebhookSettings(webhookSettings, 'overrides' in connection ? connection.overrides : null);
+    const settings = resolveWebhookSettings(webhookSettings, 'webhook_url_override' in connection ? connection.webhook_url_override : null);
 
     if (operation === 'unknown') {
         return;

@@ -62,7 +62,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should not send a forward webhook if the webhook url is not present', async () => {
         await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -90,7 +90,7 @@ describe('Webhooks: forward notification tests', () => {
 
         await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -110,7 +110,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should not send a forward webhook if forward_webhooks is false', async () => {
         await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -134,7 +134,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should send a forward webhook to the secondary url if the primary is not present', async () => {
         await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -159,7 +159,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should deliver to both webhook urls in a single deliver call when both are present', async () => {
         await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -184,7 +184,7 @@ describe('Webhooks: forward notification tests', () => {
     it('Should call deliver once per connection when connectionIds are present', async () => {
         await forwardWebhook({
             connectionIds: ['1', '2'],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: {
                 name: 'dev',
@@ -214,7 +214,7 @@ describe('Webhooks: forward notification tests', () => {
         let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -235,7 +235,7 @@ describe('Webhooks: forward notification tests', () => {
         let called = false;
         const result = await forwardWebhook({
             connectionIds: [],
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -258,7 +258,7 @@ describe('Webhooks: forward notification tests', () => {
         const calls: { connectionId: string; sent: number }[] = [];
         const result = await forwardWebhook({
             connectionIds,
-            connectionOverridesByConnectionId: new Map(),
+            webhookUrlOverrideByConnectionId: new Map(),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,
@@ -285,7 +285,7 @@ describe('Webhooks: forward notification tests', () => {
         const overrideUrl = 'https://override.example.com/hook';
         await forwardWebhook({
             connectionIds: ['conn1'],
-            connectionOverridesByConnectionId: new Map([['conn1', { webhook_url: overrideUrl }]]),
+            webhookUrlOverrideByConnectionId: new Map([['conn1', overrideUrl]]),
             account,
             environment: { name: 'dev', id: 1 } as DBEnvironment,
             secret,

@@ -59,6 +59,7 @@ describe(`PATCH ${route}`, () => {
         expect(res.json).toStrictEqual({ success: true });
 
         const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
-        expect(updatedConn?.connection_config).toMatchObject({ webhook_url: 'https://example.com/webhooks-from-nango' });
+        expect(updatedConn?.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
+        expect(updatedConn?.connection_config).not.toHaveProperty('webhook_url');
     });
 });

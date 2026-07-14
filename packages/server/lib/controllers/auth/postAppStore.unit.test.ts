@@ -105,11 +105,11 @@ describe('postPublicAppStoreAuthorization', () => {
         operationId: null,
         connectionId: null,
         allowedIntegrations: null,
-        overrides: { appstore: { webhook_url: 'https://override.example.com/hook' } }
+        webhookUrlOverride: 'https://override.example.com/hook'
     };
     const sessionTokenQuery = { connect_session_token: `nango_connect_session_${'a'.repeat(64)}` };
 
-    it('stores the per-connection webhook URL override under overrides (not connection_config)', async () => {
+    it('stores the per-connection webhook URL override as webhook_url_override (not connection_config)', async () => {
         const req = {
             body: { privateKeyId: 'key-id', privateKey: 'private-key', issuerId: 'issuer-id' },
             query: sessionTokenQuery,
@@ -135,7 +135,7 @@ describe('postPublicAppStoreAuthorization', () => {
 
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({
-                overrides: { webhook_url: 'https://override.example.com/hook' },
+                webhookUrlOverride: 'https://override.example.com/hook',
                 connectionConfig: expect.objectContaining({ privateKeyId: 'key-id', issuerId: 'issuer-id' })
             })
         );
@@ -186,7 +186,7 @@ describe('postPublicAppStoreAuthorization', () => {
         expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
             expect.objectContaining({
                 connection: expect.objectContaining({
-                    overrides: { webhook_url: 'https://override.example.com/hook' }
+                    webhook_url_override: 'https://override.example.com/hook'
                 })
             }),
             expect.anything()

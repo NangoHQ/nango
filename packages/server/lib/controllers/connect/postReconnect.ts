@@ -21,6 +21,7 @@ const bodySchema = z
         organization: originalBodySchema.shape.organization,
         integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
         overrides: originalBodySchema.shape.overrides.optional(),
+        webhook_url_override: originalBodySchema.shape.webhook_url_override,
         tags: originalBodySchema.shape.tags
     })
     .strict();
@@ -125,6 +126,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                 : null,
             operationId: logCtx.id,
             overrides: body.overrides || null,
+            webhookUrlOverride: body.webhook_url_override || null,
             tags
         });
         if (createConnectSession.isErr()) {

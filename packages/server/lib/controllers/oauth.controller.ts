@@ -42,7 +42,7 @@ import {
 } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionOverrides } from '../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveWebhookUrlOverride } from '../utils/auth.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
 import {
@@ -223,7 +223,7 @@ class OAuthController {
                 id: uuid.v1(),
                 connectSessionId: connectSession ? connectSession.id : null,
                 connectionConfig,
-                overrides: resolveConnectionOverrides({ connectSession: isConnectSession ? connectSession : undefined, providerConfigKey: config.unique_key }),
+                webhookUrlOverride: resolveWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined }),
                 environmentId,
                 webSocketClientId: wsClientId,
                 activityLogId: logCtx.id,
@@ -368,10 +368,7 @@ class OAuthController {
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
         // Hoisted so both the upsert and the failure hook honor the session-set per-connection overrides.
-        const overrides = resolveConnectionOverrides({
-            connectSession: isConnectSession ? connectSession : undefined,
-            providerConfigKey: providerConfigKey ?? ''
-        });
+        const webhookUrlOverride = resolveWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined });
 
         if (!body.client_id) {
             errorManager.errRes(res, 'missing_client_id');
@@ -526,7 +523,7 @@ class OAuthController {
                 providerConfigKey,
                 parsedRawCredentials: credentials,
                 connectionConfig,
-                overrides,
+                webhookUrlOverride,
                 environmentId: environment.id,
                 tags: connectSession?.tags
             });
@@ -601,7 +598,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey!, overrides },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey!, webhook_url_override: webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
@@ -1414,7 +1411,7 @@ class OAuthController {
             logCtx,
             connCreatedHook,
             tags,
-            session.overrides
+            session.webhookUrlOverride
         );
 
         if (connectionResponse.isErr()) {
@@ -1539,7 +1536,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1623,7 +1620,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1750,7 +1747,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -1878,7 +1875,7 @@ class OAuthController {
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig,
-                overrides: session.overrides,
+                webhookUrlOverride: session.webhookUrlOverride,
                 environmentId: session.environmentId,
                 tags
             });
@@ -1986,7 +1983,7 @@ class OAuthController {
                     logCtx,
                     connCreatedHook,
                     connectSession?.connectSession.tags || {},
-                    session.overrides
+                    session.webhookUrlOverride
                 );
                 if (createRes.isErr()) {
                     let responseData = null;
@@ -2042,7 +2039,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2107,7 +2104,7 @@ class OAuthController {
             providerConfigKey,
             parsedRawCredentials: credentials,
             connectionConfig,
-            overrides: session.overrides,
+            webhookUrlOverride: session.webhookUrlOverride,
             environmentId: session.environmentId
         });
 
@@ -2222,7 +2219,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2283,7 +2280,7 @@ class OAuthController {
                     providerConfigKey,
                     parsedRawCredentials: parsedAccessTokenResult,
                     connectionConfig,
-                    overrides: session.overrides,
+                    webhookUrlOverride: session.webhookUrlOverride,
                     environmentId: environment.id,
                     tags
                 });
@@ -2384,7 +2381,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2486,7 +2483,7 @@ class OAuthController {
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig: session.connectionConfig,
-                overrides: session.overrides,
+                webhookUrlOverride: session.webhookUrlOverride,
                 environmentId: session.environmentId,
                 tags
             });
@@ -2554,7 +2551,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides: session.overrides },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,

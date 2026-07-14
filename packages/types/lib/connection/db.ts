@@ -15,10 +15,6 @@ export interface ConnectionConfig {
     authorization_params?: Record<string, string> | undefined;
 }
 
-export interface ConnectionOverrides {
-    webhook_url?: string | undefined;
-}
-
 export interface DBConnection extends TimestampsAndDeletedCorrect {
     id: number;
     config_id: number;
@@ -30,7 +26,11 @@ export interface DBConnection extends TimestampsAndDeletedCorrect {
     provider_config_key: string;
     connection_id: string;
     connection_config: ConnectionConfig;
-    overrides: ConnectionOverrides | null;
+    /**
+     * Backend-set override of the environment's webhook URLs for this connection. Distinct from `connection_config`,
+     * which holds end-user-supplied, provider-declared inputs (see providers.yaml). Only sourced from the connect session.
+     */
+    webhook_url_override: string | null;
     environment_id: number;
     metadata: Metadata | null;
     credentials: { encrypted_credentials?: string };
@@ -62,7 +62,7 @@ export interface FailedConnectionError {
 }
 
 export interface RecentlyFailedConnection {
-    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'overrides'>>);
+    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'webhook_url_override'>>);
     auth_mode: AuthModeType;
     error?: FailedConnectionError;
     operation: AuthOperationType;

@@ -46,11 +46,11 @@ export const bodySchema = z
             .record(
                 providerConfigKeySchema,
                 z.object({
-                    docs_connect: z.string().optional(),
-                    webhook_url: webhookUrlSchema
+                    docs_connect: z.string().optional()
                 })
             )
             .optional(),
+        webhook_url_override: webhookUrlSchema,
         tags: connectionTagsSchema.optional()
     })
     .strict();
@@ -212,6 +212,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 : null,
             operationId: logCtx.id,
             overrides: body.overrides || null,
+            webhookUrlOverride: body.webhook_url_override || null,
             endUser,
             tags
         });

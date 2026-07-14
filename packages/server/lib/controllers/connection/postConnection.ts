@@ -42,11 +42,7 @@ const schemaBody = z.strictObject({
             oauth_scopes_override: z.string().array().optional()
         })
         .optional(),
-    overrides: z
-        .object({
-            webhook_url: webhookUrlSchema
-        })
-        .optional(),
+    webhook_url_override: webhookUrlSchema,
     connection_id: z.string().optional(),
     credentials: z.discriminatedUnion('type', [
         z
@@ -114,7 +110,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
 
     const { environment, account, plan } = res.locals;
     const body: PostPublicConnection['Body'] = valBody.data;
-    const overrides = body.overrides ?? null;
+    const webhookUrlOverride = body.webhook_url_override ?? null;
 
     const integration = await configService.getProviderConfig(body.provider_config_key, environment.id);
     if (!integration) {
@@ -194,7 +190,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 metadata: body.metadata || {},
                 environment,
                 connectionConfig: body.connection_config || {},
-                overrides,
+                webhookUrlOverride,
                 parsedRawCredentials: { ...body.credentials, raw: body.credentials },
                 connectionCreatedHook: connCreatedHook,
                 tags: mergedTags
@@ -235,7 +231,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 credentials: body.credentials,
                 connectionConfig,
-                overrides,
+                webhookUrlOverride,
                 connectionCreatedHook: connCreatedHook,
                 tags: mergedTags
             });
@@ -271,7 +267,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
-                overrides,
+                webhookUrlOverride,
                 environmentId: environment.id,
                 metadata: body.metadata || {},
                 tags: mergedTags
@@ -310,7 +306,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
-                overrides,
+                webhookUrlOverride,
                 environmentId: environment.id,
                 metadata: body.metadata || {},
                 tags: mergedTags
@@ -361,7 +357,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
                 },
-                overrides,
+                webhookUrlOverride,
                 metadata: body.metadata || {},
                 config: integration,
                 environment,
@@ -381,7 +377,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 metadata: body.metadata || {},
                 connectionConfig: body.connection_config || {},
-                overrides,
+                webhookUrlOverride,
                 tags: mergedTags
             });
 

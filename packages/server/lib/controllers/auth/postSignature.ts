@@ -22,7 +22,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveConnectionOverrides } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -82,7 +82,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
     const queryString: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
-    const overrides = resolveConnectionOverrides({ connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -181,7 +181,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             providerConfigKey,
             credentials,
             connectionConfig,
-            overrides,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -256,7 +256,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'SIGNATURE',

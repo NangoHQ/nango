@@ -3,7 +3,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import type { RequestLocals } from './express.js';
 import type { LogContext } from '@nangohq/logs';
-import type { ApiError, ConnectionConfig, ConnectionOverrides, ConnectSession, IntegrationConfig } from '@nangohq/types';
+import type { ApiError, ConnectionConfig, ConnectSession, IntegrationConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
 /**
@@ -28,18 +28,12 @@ export function resolveConnectionConfig({
     return connectionConfig;
 }
 
-export function resolveConnectionOverrides({
-    connectSession,
-    providerConfigKey
-}: {
-    connectSession: ConnectSession | undefined;
-    providerConfigKey: string;
-}): ConnectionOverrides | null {
-    const webhookUrl = connectSession?.overrides?.[providerConfigKey]?.webhook_url;
+export function resolveWebhookUrlOverride({ connectSession }: { connectSession: ConnectSession | undefined }): string | null {
+    const webhookUrl = connectSession?.webhookUrlOverride;
     if (typeof webhookUrl !== 'string' || webhookUrl.trim() === '') {
         return null;
     }
-    return { webhook_url: webhookUrl };
+    return webhookUrl;
 }
 
 export async function isIntegrationAllowed({

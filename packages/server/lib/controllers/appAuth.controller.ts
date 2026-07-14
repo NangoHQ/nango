@@ -7,12 +7,12 @@ import publisher from '../clients/publisher.client.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { resolveConnectionConfig, resolveConnectionOverrides } from '../utils/auth.js';
+import { resolveConnectionConfig, resolveWebhookUrlOverride } from '../utils/auth.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
-import type { ConnectionConfig, ConnectionOverrides, ProviderGithubApp } from '@nangohq/types';
+import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
@@ -55,7 +55,7 @@ class AppAuthController {
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
         // Hoisted so the failure hook in the catch can also honor a per-connection webhook URL override.
         let resolvedConnectionConfig: ConnectionConfig = {};
-        let resolvedOverrides: ConnectionOverrides | null = null;
+        let resolvedWebhookUrlOverride: string | null = null;
 
         try {
             if (!providerConfigKey) {
@@ -160,10 +160,10 @@ class AppAuthController {
 
             const tags = connectSession?.connectSession.tags;
 
-            // Apply the connect session's connection_config defaults (e.g. a per-connection webhook URL override).
+            // Apply the connect session's connection_config defaults and webhook URL override.
             // Done after credential creation so it can't interfere with the GitHub App JWT generation above.
             resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
-            resolvedOverrides = resolveConnectionOverrides({ connectSession: connectSession?.connectSession, providerConfigKey });
+            resolvedWebhookUrlOverride = resolveWebhookUrlOverride({ connectSession: connectSession?.connectSession });
             Object.assign(connectionConfig, resolvedConnectionConfig);
 
             const [updatedConnection] = await connectionService.upsertConnection({
@@ -171,7 +171,7 @@ class AppAuthController {
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig,
-                overrides: resolvedOverrides,
+                webhookUrlOverride: resolvedWebhookUrlOverride,
                 environmentId: environment.id,
                 tags
             });
@@ -228,7 +228,11 @@ class AppAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey, overrides: resolvedOverrides },
+                    connection: {
+                        connection_id: receivedConnectionId,
+                        provider_config_key: providerConfigKey,
+                        webhook_url_override: resolvedWebhookUrlOverride
+                    },
                     environment,
                     account,
                     auth_mode: 'APP',

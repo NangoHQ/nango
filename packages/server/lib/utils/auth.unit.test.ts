@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveConnectionConfig, resolveConnectionOverrides } from './auth.js';
+import { resolveConnectionConfig, resolveWebhookUrlOverride } from './auth.js';
 
 import type { ConnectSession } from '@nangohq/types';
 
@@ -15,6 +15,7 @@ function connectSessionWith(connectionConfig: Record<string, unknown> | undefine
         allowedIntegrations: null,
         integrationsConfigDefaults: connectionConfig ? { [integrationKey]: { connectionConfig } } : null,
         overrides: null,
+        webhookUrlOverride: null,
         endUser: null,
         tags: {},
         createdAt: new Date(),
@@ -22,7 +23,7 @@ function connectSessionWith(connectionConfig: Record<string, unknown> | undefine
     };
 }
 
-function connectSessionWithOverrides(overrides: Record<string, unknown> | undefined, integrationKey = 'github'): ConnectSession {
+function connectSessionWithWebhookOverride(webhookUrlOverride: string | null): ConnectSession {
     return {
         id: 1,
         endUserId: null,
@@ -32,7 +33,8 @@ function connectSessionWithOverrides(overrides: Record<string, unknown> | undefi
         operationId: null,
         allowedIntegrations: null,
         integrationsConfigDefaults: null,
-        overrides: overrides ? { [integrationKey]: overrides } : null,
+        overrides: null,
+        webhookUrlOverride,
         endUser: null,
         tags: {},
         createdAt: new Date(),
@@ -103,23 +105,21 @@ describe('resolveConnectionConfig', () => {
     });
 });
 
-describe('resolveConnectionOverrides', () => {
+describe('resolveWebhookUrlOverride', () => {
     it('returns null when there is no connect session', () => {
-        expect(resolveConnectionOverrides({ connectSession: undefined, providerConfigKey: 'github' })).toBeNull();
+        expect(resolveWebhookUrlOverride({ connectSession: undefined })).toBeNull();
     });
 
-    it('returns null when the session has no override for the integration', () => {
-        const connectSession = connectSessionWithOverrides({ webhook_url: 'https://backend.example.com/hook' }, 'github');
-        expect(resolveConnectionOverrides({ connectSession, providerConfigKey: 'slack' })).toBeNull();
+    it('returns null when the session has no webhook_url override', () => {
+        expect(resolveWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride(null) })).toBeNull();
     });
 
-    it('returns the webhook_url override set on the session for the integration', () => {
-        const connectSession = connectSessionWithOverrides({ webhook_url: 'https://backend.example.com/hook' }, 'github');
-        expect(resolveConnectionOverrides({ connectSession, providerConfigKey: 'github' })).toEqual({ webhook_url: 'https://backend.example.com/hook' });
+    it('returns the session-level webhook_url override', () => {
+        const connectSession = connectSessionWithWebhookOverride('https://backend.example.com/hook');
+        expect(resolveWebhookUrlOverride({ connectSession })).toBe('https://backend.example.com/hook');
     });
 
-    it('treats a blank webhook_url as no override', () => {
-        const connectSession = connectSessionWithOverrides({ webhook_url: '   ' }, 'github');
-        expect(resolveConnectionOverrides({ connectSession, providerConfigKey: 'github' })).toBeNull();
+    it('treats a blank webhook_url override as no override', () => {
+        expect(resolveWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride('   ') })).toBeNull();
     });
 });

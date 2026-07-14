@@ -13,7 +13,7 @@ import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MaybeStampedEvent } from '@nangohq/pubsub';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionOverrides, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Webhook.Manager');
@@ -119,13 +119,13 @@ export async function routeWebhook({
             : '';
 
         // Fetch the matched connections' overrides so forwardWebhook can honor a per-connection webhook URL override.
-        const connectionOverridesByConnectionId = webhookSettings
-            ? await connectionService.getConnectionOverridesByConnectionIds({
+        const webhookUrlOverrideByConnectionId = webhookSettings
+            ? await connectionService.getWebhookUrlOverridesByConnectionIds({
                   connectionIds,
                   provider_config_key: integration.unique_key,
                   environment_id: environment.id
               })
-            : new Map<string, ConnectionOverrides>();
+            : new Map<string, string>();
 
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
@@ -139,7 +139,7 @@ export async function routeWebhook({
             secret: webhookSigningSecret,
             webhookSettings,
             connectionIds,
-            connectionOverridesByConnectionId,
+            webhookUrlOverrideByConnectionId,
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
             logContextGetter,

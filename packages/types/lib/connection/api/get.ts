@@ -13,7 +13,7 @@ import type { Tags } from '../../db.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
 import type { ReplaceInObject } from '../../utils.js';
-import type { ConnectionConfig, ConnectionOverrides, DBConnection, DBConnectionDecrypted } from '../db.js';
+import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiConnectionSimple = Pick<
@@ -87,7 +87,7 @@ export type PostPublicConnection = Endpoint<{
         provider_config_key: string;
         metadata?: Record<string, unknown> | undefined;
         connection_config?: ConnectionConfig | undefined;
-        overrides?: ConnectionOverrides | undefined;
+        webhook_url_override?: string | undefined;
         credentials:
             | Omit<OAuth2Credentials, 'raw'>
             | Omit<OAuth2ClientCredentials, 'raw'>
@@ -130,7 +130,7 @@ export type GetConnection = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config' | 'overrides'> & {
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config' | 'webhook_url_override'> & {
     provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created_at: string;
     updated_at: string;

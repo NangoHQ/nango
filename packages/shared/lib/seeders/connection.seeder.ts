@@ -37,6 +37,7 @@ export const createConnectionSeed = async ({
     connectionId,
     rawCredentials,
     connectionConfig,
+    webhook_url_override,
     tags,
     ...rest
 }: {
@@ -48,14 +49,18 @@ export const createConnectionSeed = async ({
     connectionConfig?: ConnectionConfig;
     tags?: Tags;
 } & Partial<
-    Omit<DBConnectionDecrypted, 'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id' | 'tags'>
->): Promise<DBConnection> => {
+    Omit<
+        DBConnectionDecrypted,
+        'id' | 'end_user_id' | 'connection_id' | 'provider_config_key' | 'connection_config' | 'environment_id' | 'tags' | 'webhook_url_override'
+    >
+> & { webhook_url_override?: string | null }): Promise<DBConnection> => {
     const name = connectionId ? connectionId : Math.random().toString(36).substring(7);
     const result = await connectionService.upsertConnection({
         connectionId: name,
         providerConfigKey: provider,
         parsedRawCredentials: rawCredentials || ({} as AllAuthCredentials),
         connectionConfig: connectionConfig || {},
+        webhookUrlOverride: webhook_url_override ?? null,
         environmentId: env.id,
         tags: tags || {},
         ...rest
@@ -85,7 +90,7 @@ export function getTestConnection(override?: Partial<DBConnectionDecrypted>): DB
         provider_config_key: 'freshteam',
         updated_at: new Date(),
         connection_config: {},
-        overrides: null,
+        webhook_url_override: null,
         config_id: 1,
         credentials_iv: null,
         credentials_tag: null,
