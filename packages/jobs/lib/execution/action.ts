@@ -16,6 +16,7 @@ import {
     getSyncConfigRaw,
     LogActionEnum,
     NangoError,
+    pubsub,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -24,7 +25,6 @@ import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 import { bigQueryClient, slackService } from '../clients.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { pubsub } from '../utils/pubsub.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 

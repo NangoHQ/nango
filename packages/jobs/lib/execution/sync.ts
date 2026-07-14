@@ -22,6 +22,7 @@ import {
     getSyncJobByRunId,
     LogActionEnum,
     NangoError,
+    pubsub,
     secretService,
     setLastSyncDate,
     SyncJobsType,
@@ -37,7 +38,6 @@ import { envs } from '../env.js';
 import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { pubsub } from '../utils/pubsub.js';
 import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';

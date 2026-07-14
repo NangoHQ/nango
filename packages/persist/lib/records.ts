@@ -2,11 +2,10 @@ import tracer from 'dd-trace';
 
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { connectionService, errorManager, ErrorSourceEnum, getSyncConfigByJobId, LogActionEnum, updateSyncJobResult } from '@nangohq/shared';
+import { connectionService, errorManager, ErrorSourceEnum, getSyncConfigByJobId, LogActionEnum, pubsub, updateSyncJobResult } from '@nangohq/shared';
 import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { logger } from './logger.js';
-import { pubsub } from './pubsub.js';
 
 import type { FormattedRecord, UnencryptedRecordData, UpsertSummary } from '@nangohq/records';
 import type { DBEnvironment, DBPlan, MergingStrategy } from '@nangohq/types';

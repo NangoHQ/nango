@@ -15,6 +15,7 @@ import {
     getSync,
     getSyncConfigRaw,
     NangoError,
+    pubsub,
     secretService,
     SyncJobsType,
     SyncStatus,
@@ -26,7 +27,6 @@ import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 import { bigQueryClient } from '../clients.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { pubsub } from '../utils/pubsub.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 

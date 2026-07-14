@@ -5,12 +5,12 @@ import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } 
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
+import { pubsub } from '@nangohq/shared';
 import { getLogger, initSentry, once, report } from '@nangohq/utils';
 
 import { autoDeletingDaemon } from './daemons/autodeleting.daemon.js';
 import { autoPruningDaemon } from './daemons/autopruning.daemon.js';
 import { envs } from './env.js';
-import { pubsub } from './pubsub.js';
 import { server } from './server.js';
 
 import type { Server } from 'node:http';
