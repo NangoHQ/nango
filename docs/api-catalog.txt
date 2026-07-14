@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 893
+Provider count: 894
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -887,6 +887,7 @@ URL patterns:
 | `zendesk-api-key` | Zendesk (API Token) | BASIC | [docs](https://nango.dev/docs/api-integrations/zendesk-api-key.md) | [connect](https://nango.dev/docs/api-integrations/zendesk-api-key/connect.md) |  | support, ticketing |
 | `zendesk-sell` | Zendesk Sell | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zendesk-sell.md) |  |  | crm |
 | `zenefits` | Zenefits | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zenefits.md) |  |  | hr |
+| `zero` | Zero | API_KEY | [docs](https://nango.dev/docs/api-integrations/zero.md) | [connect](https://nango.dev/docs/api-integrations/zero/connect.md) |  | crm |
 | `zigpoll` | Zigpoll | API_KEY | [docs](https://nango.dev/docs/api-integrations/zigpoll.md) | [connect](https://nango.dev/docs/api-integrations/zigpoll/connect.md) |  | marketing |
 | `zoho` | Zoho | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zoho.md) | [connect](https://nango.dev/docs/integrations/all/zoho/connect.md) |  | accounting |
 | `zoho-bigin` | Zoho Bigin | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zoho-bigin.md) | [connect](https://nango.dev/docs/integrations/all/zoho-bigin/connect.md) |  | crm |

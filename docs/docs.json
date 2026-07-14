@@ -1788,6 +1788,7 @@
               "api-integrations/zendesk-api-key",
               "integrations/all/zendesk-sell",
               "integrations/all/zenefits",
+              "api-integrations/zero",
               "api-integrations/zigpoll",
               "integrations/all/zoho",
               "integrations/all/zoho-bigin",
