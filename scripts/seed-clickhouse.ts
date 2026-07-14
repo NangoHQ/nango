@@ -163,21 +163,17 @@ function daysAgo(ts: number): number {
     return Math.round((todayMidnightUTC - ts) / 86_400_000);
 }
 
-function connectionProgress(ts: number, seedDays: number): number {
-    const window = Math.max(1, seedDays - 1);
-    return Math.max(0, Math.min(1, 1 - daysAgo(ts) / window));
-}
-
-// Linear ramp from (fullCount / monthlyGrowth) at the oldest seeded day to fullCount
-// today. Avoids integer plateaus on small pools and skips the ±15% random noise that
-// was flattening the connections chart.
-function reportedConnectionCount(integrationId: string, fullCount: number, ts: number, seedDays: number): number {
+// Connections compound at the integration's monthly rate — the same trend shape as flow
+// metrics: fullCount today, and fullCount / growth^(months ago) further back. So each
+// 30-day span (e.g. one dashboard month view) climbs by the full 10–20%, independent of
+// how many days were seeded. No random noise — connections grow smoothly, so the chart
+// shows a clean climb rather than wiggling, and small pools avoid integer plateaus.
+function reportedConnectionCount(integrationId: string, fullCount: number, ts: number): number {
     if (fullCount === 0) {
         return 0;
     }
     const monthlyGrowth = connectionMonthlyGrowth(integrationId);
-    const startCount = fullCount / monthlyGrowth;
-    const exact = startCount + (fullCount - startCount) * connectionProgress(ts, seedDays);
+    const exact = fullCount * monthlyGrowth ** (-daysAgo(ts) / DAYS_PER_MONTH);
     return Math.max(1, Math.round(exact));
 }
 
@@ -224,9 +220,9 @@ function connectionPool(environmentId: number, integrationId: string, isProducti
     return connections;
 }
 
-function connectionsFor(environmentId: number, integrationId: string, isProduction: boolean, ts: number, seedDays: number): string[] {
+function connectionsFor(environmentId: number, integrationId: string, isProduction: boolean, ts: number): string[] {
     const pool = connectionPool(environmentId, integrationId, isProduction);
-    return pool.slice(0, reportedConnectionCount(integrationId, pool.length, ts, seedDays));
+    return pool.slice(0, reportedConnectionCount(integrationId, pool.length, ts));
 }
 
 function event(
@@ -252,8 +248,7 @@ function generateForEnvDay(
     isProduction: boolean,
     ts: number,
     batchId: string,
-    trafficMonthlyGrowth: number,
-    seedDays: number
+    trafficMonthlyGrowth: number
 ): ClickhouseRawUsageEvent[] {
     const events: ClickhouseRawUsageEvent[] = [];
     const dayScale = trafficScale(ts, trafficMonthlyGrowth);
@@ -266,7 +261,7 @@ function generateForEnvDay(
         if (pool.length === 0) {
             continue; // dev doesn't actively use every integration
         }
-        const connections = connectionsFor(environmentId, integration.id, isProduction, ts, seedDays);
+        const connections = connectionsFor(environmentId, integration.id, isProduction, ts);
         if (connections.length === 0) {
             continue;
         }
@@ -359,7 +354,7 @@ function generateForEnvDay(
         // connections — AVG metric. value = this integration's active connection count.
         // Shares the day's batchId so the headline is the daily total, not a per-row average.
         events.push(
-            event('usage.connections', accountId, ts, reportedConnectionCount(integration.id, pool.length, ts, seedDays), {
+            event('usage.connections', accountId, ts, reportedConnectionCount(integration.id, pool.length, ts), {
                 ...base,
                 batchId
             })
@@ -486,7 +481,7 @@ async function main() {
         for (const env of environments) {
             const events: ClickhouseRawUsageEvent[] = [];
             for (const [offset, batchId] of dayBatchIds.entries()) {
-                events.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId, trafficMonthlyGrowth, days));
+                events.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId, trafficMonthlyGrowth));
             }
             // Flush each chunk before generating the next. The whole generate loop is
             // synchronous and never yields, so the batcher's auto-flush can't run mid-loop;
