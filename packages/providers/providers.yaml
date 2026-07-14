@@ -985,6 +985,28 @@ autodesk:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/autodesk
 
+autosana:
+    display_name: Autosana
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://backend.autosana.ai/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/suites
+    docs: https://nango.dev/docs/api-integrations/autosana
+    docs_connect: https://nango.dev/docs/api-integrations/autosana/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your organization's Autosana API key.
+            doc_section: '#step-1-getting-your-api-key'
+
 autotask:
     display_name: AutoTask
     categories:
@@ -11628,6 +11650,30 @@ leadfeeder:
             pattern: '^[a-f0-9]{40}$'
             doc_section: '#step-1-obtain-your-api-key'
 
+leapsome:
+    display_name: Leapsome
+    categories:
+        - hr
+    auth_mode: TWO_STEP
+    token_request_method: GET
+    token_url: https://api.leapsome.com/v1/token?secret=${credentials.secret}
+    token_headers:
+        accept: application/json
+    token_response:
+        token: token
+        token_expiration: expiresIn
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://api.leapsome.com
+    docs: https://nango.dev/docs/api-integrations/leapsome
+    docs_connect: https://nango.dev/docs/api-integrations/leapsome/connect
+    credentials:
+        secret:
+            type: string
+            title: API Secret
+            description: The API Secret from your Leapsome admin page.
+            doc_section: '#step-1-getting-your-api-secret'
+
 lessonly:
     display_name: Lessonly
     categories:
@@ -18246,6 +18292,37 @@ salesmsg-oauth2:
     docs: https://nango.dev/docs/api-integrations/salesmsg-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app
 
+sanity-mcp:
+    display_name: Sanity (MCP)
+    categories:
+        - cms
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.sanity.io/authorize
+    token_url: https://mcp.sanity.io/token
+    registration_url: https://mcp.sanity.io/register
+    default_scopes:
+        - global
+    authorization_params:
+        response_type: code
+        resource: https://mcp.sanity.io
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.sanity.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/sanity-mcp
+
 sap-fieldglass:
     display_name: SAP Fieldglass
     categories:
@@ -21288,6 +21365,28 @@ thrivecart-api-key:
             example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
             pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
 
+trading-economics:
+    display_name: Trading Economics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.tradingeconomics.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /country/mexico
+    docs: https://nango.dev/docs/api-integrations/trading-economics
+    docs_connect: https://nango.dev/docs/api-integrations/trading-economics/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Trading Economics developer account.
+            doc_section: '#step-1-getting-your-api-key'
+
 trakstar-hire:
     display_name: Trakstar Hire
     categories:
@@ -23435,6 +23534,39 @@ workpath:
             title: API Token
             description: Your Workpath API Token.
             doc_section: '#step-1-getting-your-api-token'
+
+workramp:
+    display_name: WorkRamp
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users?limit=1
+    docs: https://nango.dev/docs/api-integrations/workramp
+    docs_connect: https://nango.dev/docs/api-integrations/workramp/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The WorkRamp hostname to connect to.
+            enum:
+                - app.workramp.com
+                - app.eu.workramp.com
+            order: 1
+            doc_section: '#step-1-selecting-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your WorkRamp account
+            secret: true
+            doc_section: '#step-2-generating-your-api-key'
 
 wrike:
     display_name: Wrike

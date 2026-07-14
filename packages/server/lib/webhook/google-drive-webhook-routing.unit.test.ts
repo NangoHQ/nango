@@ -11,7 +11,7 @@ const EXAMPLE_RESOURCE_ID = 'ret08u3rv24htgh289g';
 const EXAMPLE_RESOURCE_URI = 'https://www.googleapis.com/drive/v3/changes';
 
 describe('googleDriveWebhookRouting', () => {
-    it('matches connection_config.googleDriveWatchResourceId via x-goog-resource-id', async () => {
+    it('matches metadata.googleDriveWatchResourceIds via x-goog-resource-id', async () => {
         const integration = getTestConfig({ provider: 'google-drive' });
 
         const mock = vi.fn().mockResolvedValueOnce({ connectionIds: ['conn-1'], connectionMetadata: {} });
@@ -36,7 +36,7 @@ describe('googleDriveWebhookRouting', () => {
         expect(mock).toHaveBeenCalledTimes(1);
         expect(mock).toHaveBeenCalledWith(
             expect.objectContaining({
-                propName: 'googleDriveWatchResourceId',
+                propName: 'metadata.googleDriveWatchResourceIds',
                 connectionIdentifierValue: EXAMPLE_RESOURCE_ID,
                 webhookTypeValue: 'change'
             })
@@ -47,12 +47,12 @@ describe('googleDriveWebhookRouting', () => {
         }
     });
 
-    it('falls back to the legacy resourceUri match when no connection_config match is found', async () => {
+    it('falls back to the legacy resourceUri match when no resourceIds match is found', async () => {
         const integration = getTestConfig({ provider: 'google-drive' });
 
         const mock = vi
             .fn()
-            .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} }) // connection_config lookup misses
+            .mockResolvedValueOnce({ connectionIds: [], connectionMetadata: {} }) // resourceIds lookup misses
             .mockResolvedValueOnce({ connectionIds: ['conn-legacy'], connectionMetadata: {} }); // googleWebhookRouting hits
 
         const nangoMock = new InternalNango({
@@ -76,7 +76,7 @@ describe('googleDriveWebhookRouting', () => {
         expect(mock).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
-                propName: 'googleDriveWatchResourceId',
+                propName: 'metadata.googleDriveWatchResourceIds',
                 connectionIdentifierValue: EXAMPLE_RESOURCE_ID
             })
         );
