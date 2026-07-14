@@ -21,7 +21,7 @@ Connect to MillionVerifier with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/api/v3/credits" \
+            curl "https://api.nango.dev/proxy/v3/credits" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to MillionVerifier with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/api/v3/credits',
+            endpoint: '/v3/credits',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
