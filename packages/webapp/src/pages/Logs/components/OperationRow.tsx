@@ -1,5 +1,7 @@
 import { flexRender } from '@tanstack/react-table';
 
+import { getLogsColumnStyle } from '../column-sizing';
+
 import type { SearchOperationsData } from '@nangohq/types';
 import type { Row } from '@tanstack/react-table';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
@@ -24,7 +26,7 @@ export const OperationRow: React.FC<{
             }}
         >
             {row.getVisibleCells().map((cell) => (
-                <td className="flex items-center px-3 py-2.5 align-middle" style={{ width: cell.column.getSize() }} key={cell.id}>
+                <td className="flex items-center px-3 py-2.5 align-middle overflow-hidden" style={getLogsColumnStyle(cell.column)} key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
             ))}
