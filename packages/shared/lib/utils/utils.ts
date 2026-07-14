@@ -513,7 +513,7 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
 
 // Connection config keys a client is not allowed to supply: they are privileged and only set by the backend.
 const CLIENT_FORBIDDEN_CONNECTION_CONFIG_KEYS = new Set([
-    // `webhook_url` routes a connection's webhooks, so it is only honored from the backend-set connect session.
+    // `webhook_url` routes a connection's webhooks, so it is only honored from trusted actors (connect session, public API, dashboard).
     'webhook_url'
 ]);
 

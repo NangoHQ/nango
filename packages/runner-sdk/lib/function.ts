@@ -4,6 +4,7 @@ import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type {
     AllAuthCredentials,
     EnvironmentVariable,
+    FunctionCapabilities,
     GetPublicConnection,
     GetPublicIntegration,
     HTTP_METHOD,
@@ -215,14 +216,6 @@ export type Requires =
     // Connection-less: no connection context, can only `searchConnections` and `invoke`.
     | { connection: false; outbound?: false; invoke?: boolean };
 
-// Runtime mirror of the declared capabilities, derived from `data`/`requires`.
-export interface FunctionCapabilities {
-    useRecords: boolean;
-    useCheckpoints: boolean;
-    useMetadata: boolean;
-    useOutbound: boolean;
-    useInvoke: boolean;
-}
 export interface CreateFunctionProps<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
     TInput extends z.ZodTypeAny = z.ZodVoid,
@@ -305,15 +298,22 @@ export function createFunction<
 >(
     params: CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires>
 ): CreateFunctionResponse<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
+    return { type: 'function', ...params, capabilities: deriveFunctionCapabilities(params) };
+}
+
+// Derives the runtime capabilities from function definition
+export function deriveFunctionCapabilities(params: {
+    data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
+    requires?: Requires | undefined;
+}): FunctionCapabilities {
     const models = params.data?.models;
     // A connection-less function has no connection to proxy through, so outbound is always off.
     const connectionLess = params.requires?.connection === false;
-    const capabilities: FunctionCapabilities = {
-        useRecords: !!models && Object.keys(models).length > 0,
-        useCheckpoints: !!params.data?.checkpoint,
-        useMetadata: !!params.data?.metadata,
-        useOutbound: !connectionLess && params.requires?.outbound !== false,
-        useInvoke: params.requires?.invoke === true
+    return {
+        usesRecords: !!models && Object.keys(models).length > 0,
+        usesCheckpoints: !!params.data?.checkpoint,
+        usesMetadata: !!params.data?.metadata,
+        usesOutbound: !connectionLess && params.requires?.outbound !== false,
+        usesInvoke: params.requires?.invoke === true
     };
-    return { type: 'function', ...params, capabilities };
 }
