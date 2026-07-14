@@ -15,12 +15,12 @@ This guide walks you through generating the employee token within Tripletex.
 
 ### Prerequisites
 
-- A Tripletex production account (`tripletex.no`). For testing, use the [Tripletex (Sandbox)](/api-integrations/tripletex-sandbox/connect) integration instead.
+- A Tripletex account. Nango supports both the production environment (`tripletex.no`) and the sandbox (`api-test.tripletex.tech`); you choose which one to connect to in Step 3.
 - The consumer token and the integration's application name, both supplied by the developer.
 
 ### Instructions
 
-<Note>These steps are identical to the [Tripletex (Sandbox)](/api-integrations/tripletex-sandbox/connect) flow — only the environment differs. Run them in your production tenant at `tripletex.no`, and note that the production consumer token comes from a Tripletex-registered partner application rather than a free test account.</Note>
+<Note>The steps are identical for both environments — only the host differs. Generate the tokens inside the tenant you plan to connect (production at `tripletex.no` or the sandbox at `api-test.tripletex.tech`), then select that same environment in Step 3. The production consumer token comes from a Tripletex-registered partner application rather than a free test account.</Note>
 
 <a id="step-1-obtain-the-consumer-token"></a>
 #### Step 1: Obtain the consumer token
@@ -60,18 +60,28 @@ The consumer token is shared once across all customers of an integration. The de
 
 9. Tripletex shows the generated employee token in a one-time popup. **Copy it immediately** — it cannot be recovered. If you misplace it, generate a new one (which invalidates the old one).
 
-<a id="step-3-set-the-proxy-company-id"></a>
-#### Step 3: Set the proxy company ID
+<a id="step-3-select-your-environment"></a>
+#### Step 3: Select your environment
+
+Pick the Tripletex host you want to connect to from the **Environment** dropdown:
+
+- **`tripletex.no`** — production.
+- **`api-test.tripletex.tech`** — sandbox / test accounts.
+
+Both the session-token exchange and every subsequent API call are routed to the host you choose here, so it must match the tenant where your consumer and employee tokens were issued.
+
+<a id="step-4-set-the-proxy-company-id"></a>
+#### Step 4: Set the proxy company ID
 
 Leave this at `0` unless the integration developer specifically told you otherwise. A non-zero value is only required for accountant-token flows where one token spans multiple client tenants.
 
-<a id="step-4-enter-credentials-in-the-connect-ui"></a>
-#### Step 4: Enter credentials in the Connect UI
+<a id="step-5-enter-credentials-in-the-connect-ui"></a>
+#### Step 5: Enter credentials in the Connect UI
 
-Once you have your **Consumer Token**, **Employee Token**, and **Proxy Company ID**:
+Once you have your **Consumer Token**, **Employee Token**, **Environment**, and **Proxy Company ID**:
 
 1. Open the form where you need to authenticate with Tripletex.
-2. Enter your **Consumer Token**, **Employee Token**, and **Proxy Company ID** in their respective fields.
+2. Enter your **Consumer Token** and **Employee Token**, select your **Environment**, and set the **Proxy Company ID** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/tripletex/form.png" style={{maxWidth: "450px" }}/>

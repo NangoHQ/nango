@@ -21516,7 +21516,7 @@ tripletex:
     categories:
         - accounting
     auth_mode: TWO_STEP
-    token_url: https://tripletex.no/v2/token/session/:create
+    token_url: https://${connectionConfig.baseUrl}/v2/token/session/:create
     token_headers:
         accept: application/json
         content-type: application/json
@@ -21528,7 +21528,7 @@ tripletex:
         token: value.token
     token_expires_in_ms: 432000000
     proxy:
-        base_url: https://tripletex.no
+        base_url: https://${connectionConfig.baseUrl}
         headers:
             authorization: Basic ${base64(${connectionConfig.proxyCompanyId}:${credentials.token})}
         retry:
@@ -21545,7 +21545,7 @@ tripletex:
         consumerToken:
             type: string
             title: Consumer Token
-            description: The production consumer token issued by Tripletex.
+            description: The consumer token issued by Tripletex.
             secret: true
             example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
             pattern: '^eyJ[A-Za-z0-9+/=]+$'
@@ -21559,6 +21559,17 @@ tripletex:
             pattern: '^eyJ[A-Za-z0-9+/=]+$'
             doc_section: '#step-2-generate-an-employee-token'
     connection_config:
+        baseUrl:
+            type: string
+            title: Environment
+            description: The Tripletex environment to connect to.
+            format: hostname
+            enum:
+                - tripletex.no
+                - api-test.tripletex.tech
+            default_value: tripletex.no
+            order: 1
+            doc_section: '#step-3-select-your-environment'
         proxyCompanyId:
             type: string
             title: Proxy Company ID
@@ -21566,66 +21577,8 @@ tripletex:
             default_value: '0'
             pattern: '^[0-9]+$'
             example: '0'
-            order: 1
-            doc_section: '#step-3-set-the-proxy-company-id'
-
-tripletex-sandbox:
-    display_name: Tripletex (Sandbox)
-    categories:
-        - accounting
-    auth_mode: TWO_STEP
-    token_url: https://api-test.tripletex.tech/v2/token/session/:create
-    token_headers:
-        accept: application/json
-        content-type: application/json
-    token_params:
-        consumerToken: ${credentials.consumerToken}
-        employeeToken: ${credentials.employeeToken}
-        expirationDate: ${now+7:days:YYYY-MM-DD}
-    token_response:
-        token: value.token
-    token_expires_in_ms: 432000000
-    proxy:
-        base_url: https://api-test.tripletex.tech
-        headers:
-            authorization: Basic ${base64(${connectionConfig.proxyCompanyId}:${credentials.token})}
-        retry:
-            after:
-                - 'x-rate-limit-reset'
-        paginate:
-            type: offset
-            offset_name_in_request: from
-            limit_name_in_request: count
-            offset_start_value: 0
-    docs: https://nango.dev/docs/api-integrations/tripletex-sandbox
-    docs_connect: https://nango.dev/docs/api-integrations/tripletex-sandbox/connect
-    credentials:
-        consumerToken:
-            type: string
-            title: Consumer Token
-            description: The test consumer token issued by Tripletex.
-            secret: true
-            example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
-            pattern: '^eyJ[A-Za-z0-9+/=]+$'
-            doc_section: '#step-1-obtain-the-consumer-token'
-        employeeToken:
-            type: string
-            title: Employee Token
-            description: The employee token the end user generates in their Tripletex tenant.
-            secret: true
-            example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
-            pattern: '^eyJ[A-Za-z0-9+/=]+$'
-            doc_section: '#step-2-generate-an-employee-token'
-    connection_config:
-        proxyCompanyId:
-            type: string
-            title: Proxy Company ID
-            description: HTTP Basic-auth username. Use 0 for own-company access. Use a numeric client company ID only for accountant-token flows.
-            default_value: '0'
-            pattern: '^[0-9]+$'
-            example: '0'
-            order: 1
-            doc_section: '#step-3-set-the-proxy-company-id'
+            order: 2
+            doc_section: '#step-4-set-the-proxy-company-id'
 
 trello:
     display_name: Trello
