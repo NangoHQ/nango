@@ -1,10 +1,19 @@
 import { audit } from '@nangohq/audit';
 import { getFlags } from '@nangohq/feature-flags';
 import { userService } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, ConnectionDeletedMetadata, MemberRoleChangedMetadata } from '@nangohq/audit';
+import type {
+    AuditActor,
+    AuditContext,
+    AuditEvent,
+    AuditOutcome,
+    AuditTarget,
+    AuditTargetType,
+    ConnectionDeletedMetadata,
+    MemberRoleChangedMetadata
+} from '@nangohq/audit';
 import type { DeleteConnection, DeletePublicConnection, Endpoint, PatchTeamUser } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -71,6 +80,19 @@ function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
+// Resolve a target's display via a best-effort async lookup. Fails open: on error the event still
+// emits (display stays unset) and the failure is surfaced to logs + metrics. Low-RPS events only —
+// never call this on a hot path (see get-credentials, which derives everything from the request).
+async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<string | undefined>): Promise<string | undefined> {
+    try {
+        return await lookup();
+    } catch (err) {
+        logger.warning(`audit: failed to resolve ${target} display`, err);
+        metrics.increment(metrics.Types.AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED, 1, { target });
+        return undefined;
+    }
+}
+
 async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void> {
     // Stamp occurredAt now, before the async flag check, so it reflects the response — not flag latency.
     const occurredAt = new Date().toISOString();
@@ -131,20 +153,14 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     resource: 'member',
     action: 'role_changed',
     accountScoped: true,
-    // The affected member isn't on the request, so resolve their email for display via a best-effort
-    // lookup — acceptable only because member changes are low-RPS (never add a lookup like this to a hot path).
+    // The affected member is on the request only as an id; resolve their email, scoped to the caller's
+    // account so a bad/cross-account id can't leak another account's email.
     target: async (req, locals) => {
-        const target: AuditTarget = { type: 'member', id: String(req.params.id) };
-        try {
+        const display = await resolveDisplay('member', async () => {
             const user = await userService.getUserById(Number(req.params.id));
-            // Scope to the caller's account so a bad/cross-account id can't leak another account's email.
-            if (user && user.account_id === locals.account?.id) {
-                target.display = user.email;
-            }
-        } catch {
-            // best-effort: still emit the event if the display lookup fails
-        }
-        return target;
+            return user && user.account_id === locals.account?.id ? user.email : undefined;
+        });
+        return { type: 'member', id: String(req.params.id), ...(display ? { display } : {}) };
     },
     metadata: (req) => {
         const role = req.body?.role;
