@@ -95,9 +95,7 @@ export type PostSignin = Endpoint<{
         password: string;
     };
     Error: ApiError<'email_not_verified'> | ApiError<'user_suspended'> | ApiError<'unauthorized'>;
-    Success: {
-        user: ApiUser;
-    };
+    Success: { user: ApiUser } | { data: { mfaRequired: true } };
 }>;
 
 export type PostLogout = Endpoint<{

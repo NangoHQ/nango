@@ -73,6 +73,10 @@ export const Signin: React.FC = () => {
             const res = await signinMutation({ email: data.email, password: data.password });
 
             if (res.status === 200) {
+                if (!('user' in res.json)) {
+                    navigate('/signin/mfa');
+                    return;
+                }
                 const user: ApiUser = res.json.user;
                 signin(user);
                 navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');

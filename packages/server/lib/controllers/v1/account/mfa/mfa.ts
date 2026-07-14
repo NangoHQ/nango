@@ -4,16 +4,29 @@ import { getFlags } from '@nangohq/feature-flags';
 import { MFAError, mfaService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { userToAPI } from '../../../../formatters/user.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { verifyPendingMfaLogin } from './login.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
-import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFARecoveryCodes } from '@nangohq/types';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from '@nangohq/types';
 import type { Request, Response } from 'express';
 
 const codeValidation = z
     .object({
         code: z.string().regex(/^\d{6}$/)
     })
+    .strict();
+
+const loginValidation = z
+    .object({
+        code: z
+            .string()
+            .regex(/^\d{6}$/)
+            .optional(),
+        recoveryCode: z.string().min(1).max(255).optional()
+    })
+    .refine((value) => Boolean(value.code) !== Boolean(value.recoveryCode))
     .strict();
 
 function validateQuery(req: Request, res: Response): boolean {
@@ -184,4 +197,22 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
         throw disabled.error;
     }
     res.status(200).send({ success: true });
+});
+
+export const postMFALoginVerification = asyncWrapper<PostMFALoginVerification>(async (req, res) => {
+    if (!validateQuery(req, res)) {
+        return;
+    }
+    const val = loginValidation.safeParse(req.body);
+    if (!val.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+        return;
+    }
+
+    const verified = await verifyPendingMfaLogin(req, val.data.code || '', val.data.recoveryCode);
+    if (!verified) {
+        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
+        return;
+    }
+    res.status(200).send({ data: { user: userToAPI(verified.user), url: verified.returnTo } });
 });
