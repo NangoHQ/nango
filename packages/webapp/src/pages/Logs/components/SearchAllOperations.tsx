@@ -185,13 +185,26 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     // from character counts, so this lets us size columns to their content without measuring every cell.
     const [charWidth, setCharWidth] = useState(0);
     useLayoutEffect(() => {
-        const probe = document.createElement('span');
-        probe.className = 'font-code text-s';
-        probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;top:-9999px;left:-9999px';
-        probe.textContent = '0'.repeat(20);
-        document.body.appendChild(probe);
-        setCharWidth(probe.getBoundingClientRect().width / 20);
-        probe.remove();
+        let cancelled = false;
+        const measure = () => {
+            const probe = document.createElement('span');
+            probe.className = 'font-code text-s';
+            probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;top:-9999px;left:-9999px';
+            probe.textContent = '0'.repeat(20);
+            document.body.appendChild(probe);
+            const width = probe.getBoundingClientRect().width / 20;
+            probe.remove();
+            if (!cancelled) {
+                setCharWidth(width);
+            }
+        };
+        // Measure now so columns get a width immediately, then again once web fonts finish loading: the
+        // first pass may hit the fallback font (Geist Mono is imported async) and under-size the columns.
+        measure();
+        void document.fonts?.ready.then(measure);
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     // Size the variable columns to fit their widest value. Flexbox (see getLogsColumnStyle) then handles
