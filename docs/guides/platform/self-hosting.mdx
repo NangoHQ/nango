@@ -220,6 +220,10 @@ Nango rewrites the built asset paths to match on startup, so no rebuild is neede
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
+<Note>
+If you serve Connect UI's static files from your own host instead of the bundled Docker image, run `npm run -w @nangohq/connect-ui set-base-path` (with `NANGO_PUBLIC_CONNECT_URL` set) against the built `dist` before uploading. The built assets contain a placeholder base until this step runs.
+</Note>
+
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
 ### Persistent storage
