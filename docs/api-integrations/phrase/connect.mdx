@@ -1,0 +1,53 @@
+---
+title: 'Phrase - How do I link my account?'
+sidebarTitle: 'Phrase'
+---
+
+# Overview
+
+To authenticate with Phrase, you need:
+
+1. **Access Token** - An OAuth access token that grants Nango permission to interact with the Phrase API on your behalf.
+2. **Hostname** - The API hostname your Phrase account is hosted on (`api.phrase.com` for EU, or `api.us.app.phrase.com` for US).
+
+This guide walks you through generating an access token and finding your hostname in Phrase.
+
+### Prerequisites
+
+- An active Phrase (Phrase Strings / Phrase Platform) account.
+
+### Instructions
+
+#### Step 1: Generate an access token
+
+1. Log in to Phrase and go to the [Access tokens](https://eu.phrase.com/idm-ui/settings/access-tokens) page.
+2. Click **+ Generate token**, give it a name, select the services and scopes you need, then click **Generate token**.
+
+<img src="/api-integrations/phrase/dashboard.png"/>
+
+<img src="/api-integrations/phrase/apikey.png"/>
+
+
+3. Copy the generated token.
+
+#### Step 2: Determine your hostname
+
+Phrase is hosted in two data centers. Use the hostname for the one your account was created in:
+
+- `api.phrase.com` — EU data center (default).
+- `api.us.app.phrase.com` — US data center.
+
+If you're unsure which one applies, check the base URL you use to log in to Phrase in your browser.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Access Token** and **Hostname**:
+
+1. Open the form where you need to authenticate with Phrase.
+2. Enter your **Access Token** in the field provided.
+3. Select your **Hostname**.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/phrase/fom.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Phrase.
