@@ -81,7 +81,7 @@ export const ShowIntegration: React.FC = () => {
                     </div>
                     <PermissionGate condition={canCreateTestConnection} asChild>
                         {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg" disabled={!allowed}>
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
                                 Add test connection
                             </ButtonLink>
                         )}
@@ -91,7 +91,7 @@ export const ShowIntegration: React.FC = () => {
                     value={activeTab}
                     onValueChange={(value) => {
                         if (value === 'playground') {
-                            openPlaygroundWithContext({ integration: integration.integration.unique_key });
+                            openPlaygroundWithContext({ source: 'integration', integration: integration.integration.unique_key });
                         } else {
                             setActiveTab(value);
                         }

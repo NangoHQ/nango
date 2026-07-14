@@ -24,9 +24,62 @@ To subscribe to Nango webhooks:
 4. Implement processing logic for each [webhook type](#types-of-nango-webhooks) from Nango you want to handle
     - Make sure your processing logic handles the webhooks you have enabled in the environment settings
 
-You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both.
+You can configure up to two webhook URLs per environment. Nango webhooks will be sent to both. A single connection can [override these with its own URL](#override-webhook-urls-per-connection).
 
 To test webhooks locally, use a webhook forwarding service like [ngrok](https://dev.to/mmascioni/testing-and-debugging-webhooks-with-ngrok-4alp), or [webhook.site](https://webhook.site/).
+
+## Override webhook URLs per connection
+
+A single connection can override the environment's webhook URLs with its own `webhook_url`. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
+
+When a connection sets `webhook_url`, its webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
+
+Set `webhook_url` when creating a [connect session](/reference/backend/http-api/connect/sessions/create), under `integrations_config_defaults.<integration>.connection_config`:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    const session = await nango.createConnectSession({
+        allowed_integrations: ['<INTEGRATION-ID>'],
+        integrations_config_defaults: {
+            '<INTEGRATION-ID>': {
+                connection_config: {
+                    webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
+                }
+            }
+        }
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/connect/sessions \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "allowed_integrations": ["<INTEGRATION-ID>"],
+        "integrations_config_defaults": {
+          "<INTEGRATION-ID>": {
+            "connection_config": {
+              "webhook_url": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
+            }
+          }
+        }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+You can also set `webhook_url` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
+
+<Note>
+    `webhook_url` can only be set at connect-session creation time — the trusted actor that creates the session. The same key passed to `nango.auth()` `params` from the client is ignored.
+</Note>
+
+<Tip>
+    **Local development:** create a connection with `webhook_url` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
+</Tip>
 
 ## Verifying webhooks from Nango
 
@@ -62,7 +115,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
   <Tab title="JavaScript/TypeScript">
     ```typescript
     import crypto from 'crypto';
-    
+
     // From Environment Settings > Webhooks > Signing key
     const webhookSigningKey = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
     const body = // raw request body as string
@@ -73,7 +126,7 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     ```python
     import hmac
     import hashlib
-    
+
     # From Environment Settings > Webhooks > Signing key
     webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     body = # raw request body as bytes
@@ -85,18 +138,18 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     import javax.crypto.Mac;
     import javax.crypto.spec.SecretKeySpec;
     import java.nio.charset.StandardCharsets;
-    
+
     public class Main {
         public static void main(String[] args) throws Exception {
             // From Environment Settings > Webhooks > Signing key
             String webhookSigningKey = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
             String body = // raw request body as string
-    
+
             Mac mac = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKey = new SecretKeySpec(webhookSigningKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKey);
             byte[] hashBytes = mac.doFinal(body.getBytes(StandardCharsets.UTF_8));
-            
+
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 hexString.append(String.format("%02x", b));
@@ -109,17 +162,17 @@ Verify the signature with the **webhook signing key** from **Environment Setting
   <Tab title="Ruby">
     ```ruby
     require 'openssl'
-    
+
     # From Environment Settings > Webhooks > Signing key
     webhook_signing_key = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    body = # raw request body 
+    body = # raw request body
     hash = OpenSSL::HMAC.hexdigest('SHA256', webhook_signing_key, body)
     ```
   </Tab>
   <Tab title="Go">
     ```go
     package main
-    
+
     import (
         "crypto/hmac"
         "crypto/sha256"
@@ -127,12 +180,12 @@ Verify the signature with the **webhook signing key** from **Environment Setting
         "io"
         "net/http"
     )
-    
+
     func main() {
         // From Environment Settings > Webhooks > Signing key
         webhookSigningKey := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         var body []byte // raw request body
-    
+
         h := hmac.New(sha256.New, []byte(webhookSigningKey))
         h.Write(body)
         hash := hex.EncodeToString(h.Sum(nil))
@@ -143,9 +196,9 @@ Verify the signature with the **webhook signing key** from **Environment Setting
     ```rust
     use hmac::{Hmac, Mac};
     use sha2::Sha256;
-    
+
     type HmacSha256 = Hmac<Sha256>;
-    
+
     // From Environment Settings > Webhooks > Signing key
     let webhook_signing_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
     let body = // raw request body as string or bytes
@@ -257,24 +310,41 @@ Payload received following a successful sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED — use checkpoints instead
     "success": true,
     "modifiedAfter": "<timestamp>",
     "responseResults": {
         "added": number,
         "updated": number,
         "deleted": number
+    },
+    // checkpoints itself may be missing or null if the sync doesn't use checkpoints —
+    // always guard against that before reading `from`/`to`.
+    "checkpoints": {
+        "from": { "<key>": "<string | number | boolean>" }, // or null if no prior checkpoint
+        "to": { "<key>": "<string | number | boolean>" } // or null if the sync didn't save one
     }
 }
 ```
 
 `modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/functions/syncs/records-cache#cursors-and-sync-progress).
 
+**Distinguishing full vs incremental syncs:** use `checkpoints` instead of the deprecated `syncType` field. `checkpoints.from`/`checkpoints.to` are checkpoint objects (`Record<string, string | number | boolean>`) as saved by the sync function via `saveCheckpoint()` — not strings — and either can be `null`. The `checkpoints` field itself can also be missing or `null`, so guard against that before reading nested fields:
+
+```javascript
+const { checkpoints } = payload;
+const isFullSync = !checkpoints || checkpoints.from === null;
+```
+
+- `checkpoints` is missing/`null`, or `checkpoints.from === null` — the run started with no prior state. This happens on the first run, after a manual reset, or when the sync explicitly cleared its checkpoint. Treat this as a full sync and overwrite your data.
+- `checkpoints.from` is a non-null checkpoint object — the run continued from a previously saved checkpoint. This is an incremental sync; merge the new records into your existing data.
+- **Webhook-triggered runs** (deprecated `syncType: "WEBHOOK"`): always treat these as incremental merges, regardless of `checkpoints.from`. A webhook-triggered run processes a single incoming external event on top of already-synced data — it never represents a full resync.
+
 <Warning>
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and sync functions not executed for 60 days will have all records deleted.
 </Warning>
 
-By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be: 
+By default, Nango sends a webhook even if no modified data was detected in the last sync execution (referred as an "empty" sync), but this is configurable in your _Environment Settings_. In case of an empty sync, the `responseResults` would be:
 ```json
 {
     "added": 0,
@@ -292,14 +362,19 @@ Payload received following a failed sync execution:
     "providerConfigKey": "<your-integration-id>",
     "syncName": "<your-sync-script-name>",
     "model": "<your-model-name>",
-    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED
-    "success": true,
+    "syncType": "INCREMENTAL | INITIAL | WEBHOOK", // DEPRECATED — use checkpoints instead
+    "success": false,
     "error": {
         "type": "<string>",
         "description": "<string>"
     },
     "startedAt": "<timestamp>",
-    "failedAt": "<timestamp>"
+    "failedAt": "<timestamp>",
+    // checkpoints itself may be missing or null — see the note above.
+    "checkpoints": {
+        "from": { "<key>": "<string | number | boolean>" }, // or null
+        "to": { "<key>": "<string | number | boolean>" } // or null
+    }
 }
 ```
 

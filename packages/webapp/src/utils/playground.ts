@@ -1,8 +1,11 @@
+import { trackPlaygroundOpened } from '@/features/Playground/analytics';
 import { usePlaygroundStore } from '@/store/playground';
 
+import type { PlaygroundOpenSource } from '@/features/Playground/analytics';
 import type { PlaygroundFunctionType, PlaygroundState } from '@/store/playground';
 
 export interface PlaygroundContextOverride {
+    source: PlaygroundOpenSource;
     integration?: string | null;
     connection?: string | null;
     functionName?: string | null;
@@ -32,4 +35,6 @@ export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
     };
 
     usePlaygroundStore.getState().setState(next);
+
+    trackPlaygroundOpened(override.source);
 }
