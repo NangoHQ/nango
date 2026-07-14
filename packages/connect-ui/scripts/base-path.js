@@ -30,6 +30,8 @@ export function resolveBasePath(env) {
     if (!raw) {
         raw = '/';
     }
+    // A base path is only a pathname; drop any query/fragment if one was passed by mistake.
+    raw = raw.split(/[?#]/)[0];
     // Collapse into a single leading and trailing slash regardless of how it was provided.
     return `/${raw}/`.replace(/\/+/g, '/');
 }

@@ -37,7 +37,12 @@ async function main() {
         if (!content.includes(BASE_PATH_PLACEHOLDER)) {
             continue;
         }
-        await writeFile(file, content.replaceAll(BASE_PATH_PLACEHOLDER, basePath));
+        // Function replacer so a `$` in the base path is inserted literally, not read as a
+        // replacement pattern ($&, $1, ...).
+        await writeFile(
+            file,
+            content.replaceAll(BASE_PATH_PLACEHOLDER, () => basePath)
+        );
         changed++;
     }
 
