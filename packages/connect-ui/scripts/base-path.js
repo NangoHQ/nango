@@ -33,5 +33,14 @@ export function resolveBasePath(env) {
     // A base path is only a pathname; drop any query/fragment if one was passed by mistake.
     raw = raw.split(/[?#]/)[0];
     // Collapse into a single leading and trailing slash regardless of how it was provided.
-    return `/${raw}/`.replace(/\/+/g, '/');
+    const normalized = `/${raw}/`.replace(/\/+/g, '/');
+
+    // The base path is written verbatim into the built HTML/CSS/JS. Reject anything outside a safe
+    // URL-path character set so a malformed value fails loudly here instead of emitting broken —
+    // or unsafe (e.g. HTML/JS metacharacters) — asset URLs.
+    if (!/^\/[A-Za-z0-9._~:@%+/-]*$/.test(normalized)) {
+        throw new Error(`Invalid Connect UI base path "${normalized}". Allowed characters: letters, digits, and -._~:@%+/`);
+    }
+
+    return normalized;
 }

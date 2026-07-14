@@ -68,4 +68,8 @@ describe('resolveBasePath', () => {
     it('drops a query or fragment mistakenly passed in the override', () => {
         expect(resolveBasePath({ NANGO_CONNECT_UI_BASE_PATH: '/nango/connect?foo=bar#baz' })).toBe('/nango/connect/');
     });
+
+    it('rejects a base path with unsafe characters', () => {
+        expect(() => resolveBasePath({ NANGO_CONNECT_UI_BASE_PATH: '/a"><script>alert(1)</script>' })).toThrow(/Invalid Connect UI base path/);
+    });
 });
