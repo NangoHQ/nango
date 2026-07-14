@@ -1,0 +1,85 @@
+---
+title: 'MillionVerifier'
+sidebarTitle: 'MillionVerifier'
+description: 'Integrate your application with the MillionVerifier API'
+---
+
+## Quickstart
+
+Connect to MillionVerifier with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _MillionVerifier_.
+    </Step>
+    <Step id="authorize-millionverifier" title="Authorize MillionVerifier">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the MillionVerifier API">
+    Let's make your first request to the MillionVerifier API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v3/credits" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v3/credits',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+<Note>
+This integration covers MillionVerifier's Single API (real-time email verification and credit balance), which shares one base URL and API key query parameter. The Bulk API runs on a separate host (`bulkapi.millionverifier.com`) with its own `key` query parameter and isn't covered by this integration.
+</Note>
+
+## MillionVerifier integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/millionverifier/connect)
+Connect your MillionVerifier account using the Connect UI
+
+Official docs: [MillionVerifier API documentation](https://developer.millionverifier.com)
+
+
+## Pre-built syncs & actions for MillionVerifier
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/millionverifier/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

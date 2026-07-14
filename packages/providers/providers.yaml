@@ -13001,6 +13001,30 @@ maxio:
             order: 1
             doc_section: '#step-1-finding-your-hostname'
 
+millionverifier:
+    display_name: MillionVerifier
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.millionverifier.com/api/
+        query:
+            api: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/credits
+    docs: https://nango.dev/docs/api-integrations/millionverifier
+    docs_connect: https://nango.dev/docs/api-integrations/millionverifier/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your MillionVerifier API key.
+            example: oUo8*****************kJTr
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 mindbody:
     display_name: Mindbody
     categories:

@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 878
+Provider count: 879
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -493,6 +493,7 @@ URL patterns:
 | `microsoft-teams-bot` | Microsoft Teams Bot | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-teams-bot.md) | [connect](https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect.md) | [setup](https://nango.dev/docs/api-integrations/microsoft-teams-bot/how-to-register-your-own-microsoft-teams-bot-oauth-app.md) | communication |
 | `microsoft-tenant-specific` | Microsoft (Tenant) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-tenant-specific.md) |  |  | erp |
 | `microsoft-word` | Microsoft Word | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft-word.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft-word/how-to-register-your-own-microsoft-word-api-oauth-app.md) | productivity |
+| `millionverifier` | MillionVerifier | API_KEY | [docs](https://nango.dev/docs/api-integrations/millionverifier.md) | [connect](https://nango.dev/docs/api-integrations/millionverifier/connect.md) |  | marketing |
 | `mimecast` | Mimecast | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/mimecast.md) | [connect](https://nango.dev/docs/integrations/all/mimecast/connect.md) |  | communication |
 | `mindbody` | Mindbody | API_KEY | [docs](https://nango.dev/docs/integrations/all/mindbody.md) | [connect](https://nango.dev/docs/integrations/all/mindbody/connect.md) |  | productivity |
 | `minimax` | MiniMax | API_KEY | [docs](https://nango.dev/docs/integrations/all/minimax.md) | [connect](https://nango.dev/docs/integrations/all/minimax/connect.md) |  | productivity, dev-tools |

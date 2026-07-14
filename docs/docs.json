@@ -1395,6 +1395,7 @@
               "api-integrations/microsoft-oauth2-cc-cert",
               "integrations/all/microsoft-admin",
               "integrations/all/mimecast",
+              "api-integrations/millionverifier",
               "integrations/all/mindbody",
               "integrations/all/minimax",
               "integrations/all/mip-cloud",
