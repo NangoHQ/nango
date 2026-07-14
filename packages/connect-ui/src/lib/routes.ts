@@ -31,4 +31,10 @@ export const goRouter = createRoute({
 
 export const routeTree = rootRoute.addChildren([indexRoute, integrationsRoute, goRouter]);
 
-export const router = createRouter({ routeTree });
+// `import.meta.env.BASE_URL` is the base path Connect UI is served under. It's baked in at build
+// time and rewritten at container start (scripts/set-base-path.js), so routing works under a
+// non-root path. TanStack Router wants the basepath without a trailing slash; root stays default.
+const baseUrl = import.meta.env.BASE_URL;
+const basepath = baseUrl === '/' ? undefined : baseUrl.replace(/\/$/, '');
+
+export const router = createRouter({ routeTree, basepath });
