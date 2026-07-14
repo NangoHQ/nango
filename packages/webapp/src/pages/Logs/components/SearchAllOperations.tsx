@@ -15,7 +15,8 @@ import { queryClient, useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
-import { columns, computeLogsColumnSizing, defaultLimit, getLogsColumnStyle, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
+import { computeLogsColumnSizing, getLogsColumnStyle } from '../columnSizing';
+import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
 import { OperationRow } from './OperationRow';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
 
@@ -183,38 +184,11 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     // Measure the width of a single monospace character in the cell font, once. Column widths are derived
     // from character counts, so this lets us size columns to their content without measuring every cell.
-    const [charWidth, setCharWidth] = useState(0);
-    useLayoutEffect(() => {
-        let cancelled = false;
-        const measure = () => {
-            const probe = document.createElement('span');
-            probe.className = 'font-code text-s';
-            probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;top:-9999px;left:-9999px';
-            probe.textContent = '0'.repeat(20);
-            document.body.appendChild(probe);
-            const width = probe.getBoundingClientRect().width / 20;
-            probe.remove();
-            if (!cancelled) {
-                setCharWidth(width);
-            }
-        };
-        // Measure now so columns get a width immediately, then again once web fonts finish loading: the
-        // first pass may hit the fallback font (Geist Mono is imported async) and under-size the columns.
-        measure();
-        void document.fonts?.ready.then(measure);
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
     // Size the variable columns to fit their widest value. Flexbox (see getLogsColumnStyle) then handles
     // filling leftover space and shrinking/truncating when the row is too narrow, so no width math here.
     useLayoutEffect(() => {
-        if (!charWidth) {
-            return;
-        }
-        table.setColumnSizing(computeLogsColumnSizing(flatData, charWidth));
-    }, [table, flatData, charWidth]);
+        table.setColumnSizing(computeLogsColumnSizing(flatData));
+    }, [table, flatData]);
 
     // --- Infinite scroll
     const totalFetched = flatData.length;

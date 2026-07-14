@@ -1,6 +1,6 @@
 import { flexRender } from '@tanstack/react-table';
 
-import { getLogsColumnStyle } from '../constants';
+import { getLogsColumnStyle } from '../columnSizing';
 
 import type { SearchOperationsData } from '@nangohq/types';
 import type { Row } from '@tanstack/react-table';
