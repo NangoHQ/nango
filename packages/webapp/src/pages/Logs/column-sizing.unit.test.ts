@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeLogsColumnSizing, getLogsColumnStyle } from './columnSizing.js';
+import { computeLogsColumnSizing, getLogsColumnStyle } from './column-sizing.js';
 
 import type { SearchOperationsData } from '@nangohq/types';
 import type { Column } from '@tanstack/react-table';
 
-// Keep in sync with columnSizing.ts. Duplicated here so the expected widths below read as plain arithmetic.
+// Keep in sync with column-sizing.ts. Duplicated here so the expected widths below read as plain arithmetic.
 const CHAR = 7.6;
 const LOGO = 22;
 const PAD = 24;

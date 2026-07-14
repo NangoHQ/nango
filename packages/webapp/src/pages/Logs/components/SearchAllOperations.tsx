@@ -15,7 +15,7 @@ import { queryClient, useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
-import { computeLogsColumnSizing, getLogsColumnStyle } from '../columnSizing';
+import { computeLogsColumnSizing, getLogsColumnStyle } from '../column-sizing';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
 import { OperationRow } from './OperationRow';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
