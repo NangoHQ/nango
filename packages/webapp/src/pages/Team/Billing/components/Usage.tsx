@@ -7,7 +7,6 @@ import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { UsageChartCard } from './UsageChartCard';
 
@@ -39,12 +38,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    // Pin the whole dashboard to ClickHouse when breakdown is active so headline
-    // totals match the per-panel breakdowns (which always query ClickHouse).
-    const breakdownEnabled = useBreakdownEnabled();
-    const source = breakdownEnabled ? 'clickhouse' : undefined;
-
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source);
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe);
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 

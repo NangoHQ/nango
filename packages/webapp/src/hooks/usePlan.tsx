@@ -101,18 +101,15 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, source?: 'clickhouse' | 'orb') {
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: [...GetBillingUsageQueryKey, timeframe, source],
+        queryKey: [...GetBillingUsageQueryKey, timeframe],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
-            }
-            if (source) {
-                params.append('source', source);
             }
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
@@ -141,9 +138,7 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
  *  - filter + breakdown (different dims) → the breakdown computed within the
  *    filtered slice, plus a filtered `total` so the headline matches the series.
  *
- * These are ClickHouse-only features, so the request forces `source=clickhouse`
- * (honoured under the dev gate). The caller keeps using `useApiGetBillingUsage`
- * for the unfiltered page-load totals.
+ * The caller keeps using `useApiGetBillingUsage` for the unfiltered page-load totals.
  */
 export function useApiGetBillingUsageDetail<M extends UsageMetric>(
     env: string,
@@ -175,9 +170,6 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
             }
-            // breakdown / filter only exist on the ClickHouse path; force the
-            // source so it resolves under the dev gate (FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE).
-            params.append('source', 'clickhouse');
             params.append('metrics', metric);
             if (dimension) {
                 params.append(`breakdown[${metric}]`, dimension);

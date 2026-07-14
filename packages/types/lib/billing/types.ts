@@ -99,26 +99,18 @@ export interface GetBillingUsageOpts {
         group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
     };
     /**
-     * Dev-only escape hatch: pins the request to Orb for parity checks.
-     * Honoured only when `FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled;
-     * ignored everywhere else. Default is ClickHouse.
-     */
-    source?: 'clickhouse' | 'orb';
-    /**
-     * Per-metric dimension breakdown spec. Honoured only on the CH path
+     * Per-metric dimension breakdown spec, applied to CH-backed metrics
      * (records / connections via `getDailySumAndBatches`, counters via
-     * `getDailyCounter`); the Orb client ignores it. Each metric's
-     * `BillingUsageMetric` gains a `breakdown` array of up to `top + 1`
-     * series (top-N dimension values + a single 'rest' aggregating the
-     * long tail). Top defaults to 10 and is clamped server-side to
-     * the CH cap.
+     * `getDailyCounter`). Each metric's `BillingUsageMetric` gains a
+     * `breakdown` array of up to `top + 1` series (top-N dimension
+     * values + a single 'rest' aggregating the long tail). Top defaults
+     * to 10 and is clamped server-side to the CH cap.
      */
     breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
     top?: number;
     /**
      * Subset of metrics to populate in the response. When set, only those
-     * metrics are fanned out (CH path) and returned. Omitted → all 7.
-     * Ignored on the Orb path.
+     * metrics are fanned out and returned. Omitted → all 7.
      */
     metrics?: UsageMetric[];
     /**
@@ -126,8 +118,7 @@ export interface GetBillingUsageOpts {
      * where the given dimension equals the given value. Composes with
      * `breakdown[<metric>]` on the same metric when the dimensions differ
      * (drill-in: filter to one value, re-break-down by another); controllers
-     * reject only the same-dimension pairing. CH path only; the Orb client
-     * ignores it.
+     * reject only the same-dimension pairing.
      */
     filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
 }

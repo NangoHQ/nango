@@ -87,23 +87,15 @@ const querySchema = z
         env: z.string(),
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional(),
-        // Per-request dashboard backend override. Webapp picks it up from
-        // localStorage('nango.billingUsageSource') and forwards. Honoured
-        // server-side only when FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev
-        // gate). Without the gate, this is ignored and the dashboard stays
-        // on Orb.
-        source: z.enum(['clickhouse', 'orb']).optional(),
         // Repeated-key array (`?metrics=records&metrics=connections`) —
         // scopes the response to just those metrics. Empty / unset → all 7
         // (page-load shape). Used by the drilldown UI to fetch just the
-        // metric the user opened. Honoured only on the CH path; Orb path
-        // ignores it for now. Preprocess wraps the single-value case
+        // metric the user opened. Preprocess wraps the single-value case
         // (`?metrics=records` → string) into an array so the enum check
         // applies uniformly.
         metrics: z.preprocess((v) => (typeof v === 'string' ? [v] : v), z.array(z.enum(ALL_METRICS)).nonempty().optional()),
         // Per-metric breakdown spec, Express qs parses `breakdown[<metric>]=<dim>`
-        // into `{ <metric>: <dim>, … }`. Honoured only on the CH path; the
-        // Orb client ignores it silently for now.
+        // into `{ <metric>: <dim>, … }`.
         breakdown: breakdownSchema,
         // Top-N for breakdown. Capped at TOP_N_BREAKDOWN_CAP at the schema level
         // so requests exceeding it 400 rather than silently clamping — the SQL
@@ -116,7 +108,7 @@ const querySchema = z
         // rows. The one rejected case is filtering and breaking down by the SAME
         // dim (e.g. filter `integration_id:hubspot` + breakdown `integration_id`):
         // that produces a single-value "breakdown" — just the filter restated — so
-        // the refine below 400s it. CH path only.
+        // the refine below 400s it.
         filter: filterSchema
     })
     .refine(
@@ -201,7 +193,6 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
     const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, account.id, {
         granularity: 'day',
         ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {}),
-        ...(query.source ? { source: query.source } : {}),
         ...(query.metrics ? { metrics: query.metrics } : {}),
         ...(query.breakdown ? { breakdown: query.breakdown } : {}),
         ...(query.top ? { top: query.top } : {}),
