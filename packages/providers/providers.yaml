@@ -5153,7 +5153,7 @@ connectsecure:
         - other
     auth_mode: BASIC
     proxy:
-        base_url: ${connectionConfig.base_url}
+        base_url: https://${connectionConfig.base_url}
         headers:
             accept: application/json
             client-auth-token: '${base64(${connectionConfig.tenant}+${credentials.username}:${credentials.password})}'
@@ -5166,11 +5166,10 @@ connectsecure:
     connection_config:
         base_url:
             type: string
-            title: Base URL
-            description: The URL of your ConnectSecure pod
-            example: https://pod123.myconnectsecure.com
-            format: uri
-            pattern: '^https://[A-Za-z0-9-]+\.myconnectsecure\.com/?$'
+            title: Pod Host
+            description: The hostname of your ConnectSecure pod
+            example: pod123.myconnectsecure.com
+            pattern: '^[A-Za-z0-9-]+\.myconnectsecure\.com$'
             order: 1
             doc_section: '#step-1-gather-your-connection-details'
         tenant:
