@@ -5147,6 +5147,52 @@ copper-api-key:
             description: Email address of the user who generated the token
     docs: https://nango.dev/docs/integrations/all/copper-api-key
 
+connectsecure:
+    display_name: ConnectSecure
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.base_url}
+        headers:
+            accept: application/json
+            client-auth-token: '${base64(${connectionConfig.tenant}+${credentials.username}:${credentials.password})}'
+        verification:
+            method: POST
+            endpoints:
+                - /w/authorize
+    docs: https://nango.dev/docs/api-integrations/connectsecure
+    docs_connect: https://nango.dev/docs/api-integrations/connectsecure/connect
+    connection_config:
+        base_url:
+            type: string
+            title: Pod Host
+            description: The hostname of your ConnectSecure pod
+            example: pod123.myconnectsecure.com
+            pattern: '^[A-Za-z0-9-]+\.myconnectsecure\.com$'
+            order: 1
+            doc_section: '#step-1-gather-your-connection-details'
+        tenant:
+            type: string
+            title: Tenant
+            description: Your ConnectSecure tenant identifier
+            example: example-tenant
+            pattern: '^[A-Za-z0-9_-]+$'
+            order: 2
+            doc_section: '#step-1-gather-your-connection-details'
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your ConnectSecure API client ID
+            doc_section: '#step-1-gather-your-connection-details'
+        password:
+            type: string
+            title: Client Secret
+            description: Your ConnectSecure API client secret
+            secret: true
+            doc_section: '#step-1-gather-your-connection-details'
+
 connectwise-psa:
     display_name: ConnectWise PSA
     categories:
