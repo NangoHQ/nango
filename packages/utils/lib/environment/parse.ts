@@ -352,7 +352,14 @@ export const ENVS = z.object({
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
+    // authoritative for billing. Before this instant, S3 events ship as
+    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
+    // and after this instant, the two swap roles — HTTP events pick up
+    // the "_http" suffix and S3 events become canonical. Unset (or set
+    // to a future date) to defer or roll back the cutover. Remove once
+    // the HTTP emission path is retired.
+    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
     // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
     // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
