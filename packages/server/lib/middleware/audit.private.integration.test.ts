@@ -92,7 +92,7 @@ describe('audit middleware (private API)', () => {
             outcome: 'success',
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'member', id: String(targetUser.id) }],
+            targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }],
             metadata: { toRole: 'production_support' }
         });
     });
@@ -123,7 +123,7 @@ describe('audit middleware (private API)', () => {
             outcome: 'denied',
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'member', id: String(targetUser.id) }]
+            targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
         });
     });
 });

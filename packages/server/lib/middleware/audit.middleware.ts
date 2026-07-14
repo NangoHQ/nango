@@ -1,5 +1,6 @@
 import { audit } from '@nangohq/audit';
 import { getFlags } from '@nangohq/feature-flags';
+import { userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -14,7 +15,7 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 // Everything is derived from the request so the event can be emitted for any outcome —
 // including permission denials, where the controller never runs.
 interface AuditSpecBase<TEndpoint extends Endpoint<any>> {
-    target?: (req: AuditRequest<TEndpoint>) => AuditTarget | undefined;
+    target?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => AuditTarget | undefined | Promise<AuditTarget | undefined>;
     // Emit a null environment even when the request carries one: these events aren't env-specific.
     accountScoped?: boolean;
 }
@@ -82,7 +83,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
         if (!(await getFlags().isAuditLoggingEnabled(account.uuid))) {
             return;
         }
-        const target = spec.target?.(req);
+        const target = await spec.target?.(req, locals);
         const metadata = spec.metadata?.(req);
         // Cast is plumbing: AuditSpec already type-checks against the AuditEvent variants, but TS
         // can't narrow the spread back to one.
@@ -130,8 +131,21 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     resource: 'member',
     action: 'role_changed',
     accountScoped: true,
-    // req.params.id is typed `number` by the contract but is a raw string here — the controller coerces its own copy.
-    target: (req) => ({ type: 'member', id: String(req.params.id) }),
+    // The affected member isn't on the request, so resolve their email for display via a best-effort
+    // lookup — acceptable only because member changes are low-RPS (never add a lookup like this to a hot path).
+    target: async (req, locals) => {
+        const target: AuditTarget = { type: 'member', id: String(req.params.id) };
+        try {
+            const user = await userService.getUserById(Number(req.params.id));
+            // Scope to the caller's account so a bad/cross-account id can't leak another account's email.
+            if (user && user.account_id === locals.account?.id) {
+                target.display = user.email;
+            }
+        } catch {
+            // best-effort: still emit the event if the display lookup fails
+        }
+        return target;
+    },
     metadata: (req) => {
         const role = req.body?.role;
         return typeof role === 'string' ? { toRole: role } : undefined;
