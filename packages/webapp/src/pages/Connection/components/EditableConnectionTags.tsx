@@ -8,7 +8,7 @@ import { Button } from '@nangohq/design-system';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
-import { usePatchConnectionTags } from '@/hooks/useConnections';
+import { usePatchConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
@@ -25,7 +25,7 @@ export const EditableConnectionTags = ({ connectionId, providerConfigKey, tags }
     const { can } = usePermissions();
     const canEditConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
-    const { mutateAsync: patchConnectionTags, isPending } = usePatchConnectionTags();
+    const { mutateAsync: patchConnectionTags, isPending } = usePatchConnection();
 
     const [edit, setEdit] = useState(false);
     const [localTags, setLocalTags] = useState<Tags>(tags);

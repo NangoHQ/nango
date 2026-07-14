@@ -175,22 +175,6 @@ export type PatchPublicConnection = Endpoint<{
     Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
 }>;
 
-export type PatchPublicConnectionConfig = Endpoint<{
-    Method: 'PATCH';
-    Path: '/connections/:connectionId/config';
-    Params: {
-        connectionId: string;
-    };
-    Querystring: {
-        provider_config_key: string;
-    };
-    Body: {
-        connection_config: ConnectionConfig;
-    };
-    Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
-}>;
-
 export type PatchConnection = Endpoint<{
     Method: 'PATCH';
     Path: '/api/v1/connections/:connectionId';
@@ -208,23 +192,6 @@ export type PatchConnection = Endpoint<{
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
-}>;
-
-export type PatchConnectionConfig = Endpoint<{
-    Method: 'PATCH';
-    Path: '/api/v1/connections/:connectionId/config';
-    Params: {
-        connectionId: string;
-    };
-    Querystring: {
-        env: string;
-        provider_config_key: string;
-    };
-    Body: {
-        connection_config: ConnectionConfig;
-    };
-    Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
 }>;
 
 export type PostConnectionRefresh = Endpoint<{

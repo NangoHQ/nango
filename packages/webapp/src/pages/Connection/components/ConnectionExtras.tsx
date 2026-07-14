@@ -6,7 +6,7 @@ import { FieldLabel } from '@nangohq/design-system';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { usePatchConnectionConfig, usePostConnectionMetadata } from '@/hooks/useConnections';
+import { usePostConnectionMetadata } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
@@ -112,7 +112,6 @@ export const ConnectionExtras = ({
     const canEditConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const { mutateAsync: postConnectionMetadata } = usePostConnectionMetadata();
-    const { mutateAsync: patchConnectionConfig } = usePatchConnectionConfig();
 
     const configJson = JSON.stringify(config || {}, null, 4);
     const metadataJson = JSON.stringify(metadata || {}, null, 4);
@@ -128,24 +127,15 @@ export const ConnectionExtras = ({
                 </div>
             )}
 
-            <EditableJsonSection
-                title="Connection configuration"
-                json={configJson}
-                canEdit={canEditConnection}
-                tooLarge={configJson.length >= JSON_DISPLAY_LIMIT}
-                confirmBeforeSave={{
-                    title: 'Update connection configuration?',
-                    description:
-                        'Incorrect configuration can break this connection. Existing configuration will be overwritten. Are you sure you want to save these changes?'
-                }}
-                onSave={async (connectionConfig) => {
-                    await patchConnectionConfig({
-                        params: { connectionId },
-                        query: { env, provider_config_key: providerConfigKey },
-                        body: { connection_config: connectionConfig }
-                    });
-                }}
-            />
+            <div className="flex flex-col gap-2">
+                <FieldLabel>Connection configuration</FieldLabel>
+                <CodeBlock
+                    language="json"
+                    displayLanguage="JSON"
+                    icon={<Braces />}
+                    code={configJson.length < JSON_DISPLAY_LIMIT ? configJson : 'Connection config too large to display'}
+                />
+            </div>
 
             <EditableJsonSection
                 title="Connection metadata"

@@ -7,10 +7,10 @@ import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequir
 
 import type { DBConnection } from '@nangohq/types';
 
-const route = '/api/v1/connections/:connectionId';
+const route = '/api/v1/connections/:connectionId/metadata';
 let api: Awaited<ReturnType<typeof runServer>>;
 
-describe(`PATCH ${route}`, () => {
+describe(`POST ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
     });
@@ -20,10 +20,10 @@ describe(`PATCH ${route}`, () => {
 
     it('should be protected', async () => {
         const res = await api.fetch(route, {
-            method: 'PATCH',
+            method: 'POST',
             params: { connectionId: 'test' },
             query: { env: 'dev', provider_config_key: 'github' },
-            body: {}
+            body: { metadata: {} }
         });
 
         shouldBeProtected(res);
@@ -32,27 +32,27 @@ describe(`PATCH ${route}`, () => {
     it('should require query env', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            method: 'PATCH',
+            method: 'POST',
             token: apiKey.secret,
             params: { connectionId: 'test' },
             query: { provider_config_key: 'github' } as any,
-            body: {}
+            body: { metadata: {} }
         });
 
         shouldRequireQueryEnv(res);
     });
 
-    it('should update tags', async () => {
+    it('should replace metadata', async () => {
         const { env, user } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
         const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
-            method: 'PATCH',
+            method: 'POST',
             query: { env: env.name, provider_config_key: 'github' },
             params: { connectionId: conn.connection_id },
-            body: { tags: { projectId: '123' } },
+            body: { metadata: { region: 'us-east' } },
             session
         });
 
@@ -60,26 +60,6 @@ describe(`PATCH ${route}`, () => {
         expect(res.json).toStrictEqual({ success: true });
 
         const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
-        expect(updatedConn?.tags).toStrictEqual({ projectid: '123' });
-    });
-
-    it('should update webhook_url', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
-        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
-
-        const res = await api.fetch(route, {
-            method: 'PATCH',
-            token: apiKey.secret,
-            params: { connectionId: conn.connection_id },
-            query: { env: env.name, provider_config_key: 'github' },
-            body: { webhook_url: 'https://example.com/webhooks-from-nango' }
-        });
-
-        isSuccess(res.json);
-        expect(res.json).toStrictEqual({ success: true });
-
-        const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
-        expect(updatedConn?.connection_config).toMatchObject({ webhook_url: 'https://example.com/webhooks-from-nango' });
+        expect(updatedConn?.metadata).toStrictEqual({ region: 'us-east' });
     });
 });

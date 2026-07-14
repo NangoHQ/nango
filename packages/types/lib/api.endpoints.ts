@@ -45,9 +45,7 @@ import type {
     GetPublicConnection,
     GetPublicConnections,
     PatchConnection,
-    PatchConnectionConfig,
     PatchPublicConnection,
-    PatchPublicConnectionConfig,
     PostConnectionRefresh,
     PostPublicConnection
 } from './connection/api/get.js';
@@ -166,7 +164,6 @@ export type PublicApiEndpoints =
     | PostPublicAwsSigV4Authorization
     | PostPublicConnection
     | PatchPublicConnection
-    | PatchPublicConnectionConfig
     | PostPublicSyncStart
     | PostPublicSyncPause
     | GetPublicSyncStatus
@@ -228,7 +225,6 @@ export type PrivateApiEndpoints =
     | GetConnection
     | PatchConnection
     | PostConnectionMetadata
-    | PatchConnectionConfig
     | GetConnectionRecordModels
     | GetConnectionRecords
     | GetInvite
