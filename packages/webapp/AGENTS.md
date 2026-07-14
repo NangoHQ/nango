@@ -60,7 +60,7 @@ Events are sent to PostHog. Use the **typed catalog** for anything new.
 ### Conventions
 
 - **Event names**: `web:<area>:<action>`, colon-delimited (e.g. `web:usage:filtered`, `web:playground:run:clicked`).
-- **Property values** must be PostHog-serializable primitives (`string | number | boolean`) — the catalog types enforce this.
+- **Property values** should be PostHog-serializable primitives (`string | number | boolean`). This is a convention, not enforced by the types — don't declare nested objects or arrays in the catalog; they don't map cleanly to PostHog properties.
 - **Privacy**: never send identifying free-form values (connection IDs, environment names, emails). Send low-cardinality slugs — e.g. a filter's *dimension*, not its value. PostHog init also sets `mask_personal_data_properties`, but keep events clean at the source.
 
 ### Legacy paths (being migrated)
