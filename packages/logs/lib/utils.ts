@@ -34,6 +34,13 @@ export class LogsNotFoundError extends Error {
     }
 }
 
+export class LogsDisabledError extends Error {
+    constructor() {
+        super('Nango logs are disabled');
+        this.name = 'LogsDisabledError';
+    }
+}
+
 export function isLogsNotFoundError(err: unknown): boolean {
     if (err instanceof LogsNotFoundError) {
         return true;

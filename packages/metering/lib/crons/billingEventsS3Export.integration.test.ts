@@ -82,9 +82,8 @@ function gen({
             case 'usage.records':
                 return { type, attrs: { ...baseAttributes, model: 'test', syncId: 'test', ...attributes } };
             case 'usage.connections':
-                return { type, attrs: { ...baseAttributes, ...attributes } };
             case 'usage.data_transfer':
-                return { type, attrs: { ...baseAttributes, direction: 'egress', package: 'runner', callsite: 'test', ...attributes } };
+                return { type, attrs: { ...baseAttributes, ...attributes } };
             default:
                 throw new Error(`unsupported event type ${type satisfies never}`);
         }
@@ -176,6 +175,38 @@ const connectionsFixtures: ClickhouseRawUsageEvent[] = [
     gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 15, attributes: { integrationId: 'b', batchId: connectionsBatch2 } })
 ];
 
+function data_transfer_gen({
+    day,
+    package: pkg,
+    callsite,
+    egressedBytes,
+    ingressedBytes = 0
+}: {
+    day: string;
+    package: string;
+    callsite: string;
+    egressedBytes: number;
+    ingressedBytes?: number;
+}): ClickhouseRawUsageEvent {
+    return gen({ day, type: 'usage.data_transfer', accountId: 1, attributes: { package: pkg, callsite, egressedBytes, ingressedBytes } });
+}
+
+//   (runner, proxy)   egress=1000  → included
+//   (server, proxy)   egress=500   → included
+//   (server, webhook_forward) egress=250 → included
+//   (runner, uncontrolled_fetch) egress=0, ingress=7777 → included pair but egress-only, contributes 0
+//   (server, unlisted)  egress=9999 → excluded (not a billable pair)
+//   (runner, proxy) on otherDay egress=100000 → excluded by WHERE day
+// → count (total egress) = 1000+500+250+0 = 1750.
+const dataTransferFixtures: ClickhouseRawUsageEvent[] = [
+    data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'proxy', egressedBytes: 1000 }),
+    data_transfer_gen({ day: targetDay, package: 'server', callsite: 'proxy', egressedBytes: 500 }),
+    data_transfer_gen({ day: targetDay, package: 'server', callsite: 'webhook_forward', egressedBytes: 250 }),
+    data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'uncontrolled_fetch', egressedBytes: 0, ingressedBytes: 7777 }),
+    data_transfer_gen({ day: targetDay, package: 'server', callsite: 'unlisted', egressedBytes: 9999 }),
+    data_transfer_gen({ day: otherDay, package: 'runner', callsite: 'proxy', egressedBytes: 100000 })
+];
+
 // ---------- tests ----------
 
 describe('billingEventsS3Export', () => {
@@ -194,7 +225,8 @@ describe('billingEventsS3Export', () => {
             ...billableActionsFixtures,
             ...marFixtures,
             ...recordsFixtures,
-            ...connectionsFixtures
+            ...connectionsFixtures,
+            ...dataTransferFixtures
         ]);
         await clickhouse.flush();
     });
@@ -295,6 +327,31 @@ describe('billingEventsS3Export', () => {
             const rows = await runQuery('billable_connections_v2', 'billable_connections_v2_test');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 25 });
+        });
+    });
+
+    // Egress-only, restricted to billable (package, callsite) pairs. `count` is the
+    // total egress across included pairs; each pair also gets its own property.
+    // (server, unlisted)=9999 is excluded; (runner, uncontrolled_fetch) is egress-0
+    // so contributes 0; otherDay row is excluded by WHERE day.
+    describe('data_transfer', () => {
+        it('sums egressed_bytes over billable pairs with per-pair breakdown', async () => {
+            const rows = await runQuery('data_transfer', 'data_transfer_test');
+            expect(rows).toHaveLength(1);
+            expect(rows[0]!.properties).toEqual({
+                count: 1750,
+                'server.get_/records': 0,
+                'runner.proxy': 1000,
+                'server.get_/proxy': 0,
+                'server.proxy': 500,
+                'server.post_/proxy': 0,
+                'runner.uncontrolled_fetch': 0,
+                'server.patch_/proxy': 0,
+                'server.put_/proxy': 0,
+                'server.delete_/proxy': 0,
+                'server.unknown_/proxy': 0,
+                'server.webhook_forward': 250
+            });
         });
     });
 

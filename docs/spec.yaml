@@ -1335,6 +1335,12 @@ paths:
                             properties:
                                 tags:
                                     $ref: '#/components/schemas/Tags'
+                                webhook_url:
+                                    type: string
+                                    description: >
+                                        Override the environment's webhook URLs for this connection.
+                                        When set, this connection's webhooks are sent only to this URL.
+                                        Pass an empty string to clear the override.
                                 end_user:
                                     allOf:
                                         - $ref: '#/components/schemas/EndUser'
@@ -3967,6 +3973,9 @@ components:
                                     oauth_client_secret_override:
                                         type: string
                                         description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
+                                    webhook_url:
+                                        type: string
+                                        description: Override the environment's webhook URLs for connections created with this session. When set, webhooks for the connection are sent only to this URL (the environment's primary and secondary URLs are bypassed).
                 overrides:
                     type: object
                     additionalProperties:
