@@ -15156,6 +15156,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `wordpress-mcp` | WordPress.com (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/wordpress-mcp.md) |  |  | cms, mcp |
 | `workable` | Workable (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/workable.md) | [connect](https://nango.dev/docs/integrations/all/workable/connect.md) |  | ats |
 | `workable-oauth` | Workable (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/workable-oauth.md) |  |  | ats |
+| `workato` | Workato | API_KEY | [docs](https://nango.dev/docs/api-integrations/workato.md) | [connect](https://nango.dev/docs/api-integrations/workato/connect.md) |  | productivity |
 | `workday` | Workday | BASIC | [docs](https://nango.dev/docs/integrations/all/workday.md) | [connect](https://nango.dev/docs/integrations/all/workday/connect.md) |  | hr, popular |
 | `workday-adaptive-planning` | Workday Adaptive Planning | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/workday-adaptive-planning.md) | [connect](https://nango.dev/docs/api-integrations/workday-adaptive-planning/connect.md) |  | accounting |
 | `workday-adaptive-planning-basic` | Workday Adaptive Planning (Basic Auth) | BASIC | [docs](https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic.md) | [connect](https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic/connect.md) |  | accounting |

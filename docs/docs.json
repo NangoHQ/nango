@@ -1764,6 +1764,7 @@
               "api-integrations/wordpress-mcp",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
+              "api-integrations/workato",
               "api-integrations/workday-adaptive-planning",
               "api-integrations/workday-adaptive-planning-basic",
               "api-integrations/workday-cc",
