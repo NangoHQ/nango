@@ -1157,6 +1157,7 @@
               "integrations/all/elevio",
               "integrations/all/emarsys",
               "integrations/all/emarsys-oauth",
+              "api-integrations/embat",
               "integrations/all/employment-hero",
               "integrations/all/entrata",
               "integrations/all/envoy",
