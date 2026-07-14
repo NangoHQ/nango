@@ -35,7 +35,8 @@ export interface MemberRoleChangedMetadata {
 interface AuditEventCommon {
     occurredAt: string;
     accountId: number;
-    environmentId: number | null;
+    // null for account-scoped events (e.g. member changes) that aren't tied to an environment.
+    environment: { id: number; display: string } | null;
     actor: AuditActor;
     via?: AuditActor[];
     targets: AuditTarget[];

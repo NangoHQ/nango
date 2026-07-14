@@ -15,7 +15,7 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 // including permission denials, where the controller never runs.
 interface AuditSpecBase<TEndpoint extends Endpoint<any>> {
     target?: (req: AuditRequest<TEndpoint>) => AuditTarget | undefined;
-    // Emit a null environmentId even when the request carries one: these events aren't env-specific.
+    // Emit a null environment even when the request carries one: these events aren't env-specific.
     accountScoped?: boolean;
 }
 
@@ -89,7 +89,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
         const event = {
             occurredAt,
             accountId: account.id,
-            environmentId: spec.accountScoped ? null : (environment?.id ?? null),
+            environment: spec.accountScoped || !environment ? null : { id: environment.id, display: environment.name },
             actor: resolveActor(locals),
             resource: spec.resource,
             action: spec.action,

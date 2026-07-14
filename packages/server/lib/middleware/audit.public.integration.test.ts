@@ -61,7 +61,7 @@ describe('audit middleware (public API)', () => {
             action: 'deleted',
             outcome: 'success',
             accountId: account.id,
-            environmentId: env.id,
+            environment: { id: env.id, display: env.name },
             actor: { type: 'api_key', id: String(apiKey.id), display: apiKey.display_name },
             targets: [{ type: 'connection', id: connection.connection_id }],
             metadata: { providerConfigKey: 'algolia' }

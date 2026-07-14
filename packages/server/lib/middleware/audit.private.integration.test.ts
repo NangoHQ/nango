@@ -90,7 +90,7 @@ describe('audit middleware (private API)', () => {
             resource: 'member',
             action: 'role_changed',
             outcome: 'success',
-            environmentId: null,
+            environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'member', id: String(targetUser.id) }],
             metadata: { toRole: 'production_support' }
@@ -121,7 +121,7 @@ describe('audit middleware (private API)', () => {
             resource: 'member',
             action: 'role_changed',
             outcome: 'denied',
-            environmentId: null,
+            environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'member', id: String(targetUser.id) }]
         });
