@@ -1,0 +1,82 @@
+---
+title: 'Workato - How do I link my account?'
+sidebarTitle: 'Workato'
+---
+
+# Overview
+
+To authenticate with Workato, you need:
+
+1. **Data center hostname** - The Workato hostname matching the data center your workspace runs on.
+2. **API Token** - A token issued to an API client, used to authorize requests to the Developer API.
+
+This guide walks you through finding your data center hostname and generating your **API Token** in Workato.
+
+### Prerequisites
+
+- A pricing plan/contract that includes the Developer API.
+- One of the following, to create or edit API clients:
+  - You are signed in with the root email address of the workspace.
+  - You have the Environment admin role or the legacy Admin collaborator role.
+  - You have a custom role with the Client and access profiles privilege.
+
+### Instructions
+
+#### Step 1: Finding your data center hostname
+
+Enter the hostname that matches the data center your Workato workspace runs on:
+
+| Data center | Hostname |
+|---|---|
+| US (Enterprise) | `www.workato.com` |
+| EU | `app.eu.workato.com` |
+| JP | `app.jp.workato.com` |
+| SG | `app.sg.workato.com` |
+| AU | `app.au.workato.com` |
+| IL | `app.il.workato.com` |
+| CN | `app.workatoapp.cn` |
+| KR | `app.kr.workato.com` |
+| Self-service (Free, Pro, Developer Sandbox) | `app.trial.workato.com` |
+
+<Note>
+  Virtual Private Workato (VPW) customers run on their own private instance and should enter their own instance hostname instead of one from the table above — refer to your private documentation for the correct value.
+</Note>
+
+#### Step 2: Generating your API token
+
+You must create a client role before creating an API client — the role determines which endpoints the API client can access.
+
+1. Sign in to your Workato account and go to **Workspace Admin**.
+2. Select **API clients** > **Client roles** > **Add client role**.
+
+<img src="/api-integrations/workato/new_role.png"/>
+
+3. Name the role (e.g. "Recipe Operator") and select the endpoints it needs under each section, then save. You can edit the role's endpoints later if needed.
+
+<img src="/api-integrations/workato/role.png"/>
+
+4. Back in **API clients**, select **Create API client**.
+
+<img src="/api-integrations/workato/client.png"/>
+
+5. Name the client (e.g. "Sales and Marketing - Recipe Operator") and assign the client role you created.
+6. If your workspace has environments enabled, select the environment the client is allowed to access.
+7. Select the projects the client is allowed to access — this scopes all project-bound assets, including connections, recipes, folders, lookup tables, properties, and API Platform collections and clients.
+8. Optionally, restrict the client to specific IP ranges.
+9. Generate the **API token** and store it securely (e.g. in AWS Secrets Manager) — it cannot be retrieved again once you leave the page.
+
+<Warning>
+API clients for Embedded partners with access to embedded APIs can access all customer workspaces and projects.
+</Warning>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Data center hostname** and **API token**:
+
+1. Open the form where you need to authenticate with Workato.
+2. Enter your **Data center hostname** and *API Token** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/workato/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Workato.
