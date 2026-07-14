@@ -139,7 +139,7 @@ jobs:
               # Connect UI is built with a placeholder base; this rewrites it to the real base path
               # before upload. No base env is set here, so it resolves to "/" (served at the origin
               # root, e.g. connect.nango.dev).
-              run: node packages/connect-ui/scripts/set-base-path.js
+              run: npm run -w @nangohq/connect-ui set-base-path
             - name: configure aws credentials
               if: inputs.stage != 'replit'
               uses: aws-actions/configure-aws-credentials@v4
