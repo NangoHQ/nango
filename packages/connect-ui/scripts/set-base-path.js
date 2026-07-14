@@ -1,10 +1,17 @@
 // Rewrites Connect UI's placeholder base path (baked in at build time) to the base path this
-// deployment serves it under, so the built assets resolve relative to a non-root path.
+// deployment serves it under, so the built assets and router resolve relative to it.
 //
-// Run once before serving the static bundle. The container entrypoint runs it automatically;
-// operators who serve `dist/` from their own static hosting run it themselves before uploading.
-// The base path is derived from the environment (see resolveBasePath) and defaults to "/", so
-// this is a no-op for root deployments.
+// This MUST run once after `vite build` and before the bundle is served — the built assets are
+// unusable until it does (they still contain the placeholder). It runs in two places today:
+//   - the container entrypoint (packages/server/entrypoint.sh), before serving; and
+//   - the connect_ui deploy workflow, before uploading to static hosting (e.g. connect.nango.dev).
+//
+// The base path comes from the environment (see resolveBasePath) and defaults to "/". Even a root
+// deployment runs the replacement — it just rewrites the placeholder to "/", not a no-op.
+//
+// TODO(NAN-6242): confirm no self-hoster is already serving Connect UI from their own static
+// hosting. If any are, they must add this rewrite step to their deploy before upgrading, and we
+// should document it (the docs don't yet mention static hosting for Connect UI).
 
 /* eslint-disable no-console -- startup CLI script; console output is the intended interface */
 

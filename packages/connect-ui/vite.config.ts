@@ -11,9 +11,10 @@ import type { UserConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
-    // Build under a placeholder base so the bundle can be served from a non-root path without
-    // rebuilding: the container entrypoint rewrites it at startup (see scripts/set-base-path.js).
-    // The dev server stays at root.
+    // Build under a placeholder base so the same bundle can be served from any base path without
+    // rebuilding. scripts/set-base-path.js MUST rewrite the placeholder to the real base before the
+    // bundle is served (from the container entrypoint or the connect_ui deploy workflow) — until it
+    // runs, the built assets are unusable. The dev server stays at root.
     base: command === 'build' ? BASE_PATH_PLACEHOLDER : '/',
     plugins: [react(), svgr(), tailwindcss()] as UserConfig['plugins'],
     resolve: {
