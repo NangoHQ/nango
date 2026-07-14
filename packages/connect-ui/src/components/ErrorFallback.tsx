@@ -4,7 +4,10 @@ import { APIError } from '@/lib/api';
 import { telemetry } from '@/lib/telemetry';
 import { HeaderButtons } from './HeaderButtons';
 
-const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
+const ErrorMsg: React.FC<{ error?: unknown; message?: string }> = ({ error, message }) => {
+    if (message) {
+        return <div className="p-4 text-error text-center">{message}</div>;
+    }
     if (error instanceof APIError) {
         if (error.details.res.status === 401) {
             return <div className="p-4 text-error text-center">Your session has expired, please refresh the modal</div>;
@@ -13,7 +16,7 @@ const ErrorMsg: React.FC<{ error?: unknown }> = ({ error }) => {
     return <div className="p-4 text-error text-center">An error occurred. Please refresh your page or contact our support.</div>;
 };
 
-export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
+export const ErrorFallback: React.FC<{ error?: unknown; message?: string }> = ({ error, message }) => {
     useMount(() => {
         telemetry('view:unknown_error');
     });
@@ -21,7 +24,7 @@ export const ErrorFallback: React.FC<{ error?: unknown }> = ({ error }) => {
         <div className="h-full w-full">
             <HeaderButtons />
             <div className="relative h-full flex flex-col justify-center">
-                <ErrorMsg error={error} />
+                <ErrorMsg error={error} message={message} />
             </div>
         </div>
     );
