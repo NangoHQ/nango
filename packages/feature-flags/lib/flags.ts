@@ -19,6 +19,9 @@ export function buildFlags(client: FeatureFlagsClient) {
             // accountUuid is exposed as a property so strategies can allow/exclude specific accounts.
             return client.isEnabled('oauth-state-cookie-enforcement', { targetingKey: accountUuid, accountUuid }, false);
         },
+        isMFAEnabled(accountUuid: string) {
+            return client.isEnabled('mfa', { targetingKey: accountUuid, accountUuid }, false);
+        },
         /**
          * Sets Datadog manual.keep on action execution traces for this environment,
          * raising ingestion priority during stall investigations. Default `false`.
