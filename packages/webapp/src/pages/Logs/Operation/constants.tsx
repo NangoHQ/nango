@@ -51,7 +51,7 @@ export const columns: ColumnDef<SearchMessagesData>[] = [
         header: 'Additional Info',
         size: 'auto' as unknown as number,
         meta: {
-            isGrow: true
+            canGrow: true
         },
         cell: ({ row }) => {
             return <div className="truncate">{row.original.message}</div>;

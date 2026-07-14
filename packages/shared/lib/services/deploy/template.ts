@@ -45,7 +45,7 @@ export async function deployTemplate({
 
     const remoteBasePathConfig = `${remoteBasePath}/config/${integration.id}`;
 
-    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, 'catalog');
+    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, integration, 'catalog');
     if (exists) {
         return Err(new NangoError('template_already_deployed'));
     }

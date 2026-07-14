@@ -7,7 +7,7 @@ import { build } from 'esbuild';
 import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
-import { generateNangoJson } from '../services/model.service.js';
+import { generateFunctionsJson, generateNangoJson } from '../services/model.service.js';
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
@@ -103,14 +103,23 @@ export async function compileAllFunctions({
                 if (sync.track_deletes) {
                     console.warn(
                         chalk.yellow(
-                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.trackDeletesStart()' and 'nango.trackDeletesEnd()' in your sync function to automatically detect deletions.`
+                            `Warning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.trackDeletesStart()' and 'nango.trackDeletesEnd()' in your sync function to automatically detect deletions.`
                         )
                     );
                 }
             }
         }
 
+        if (def.value.functions.length > 0) {
+            console.warn(
+                chalk.yellow(
+                    `Warning: createFunction is experimental and not production ready. Do NOT use it in production, its API may change or be removed without notice.`
+                )
+            );
+        }
+
         generateNangoJson({ parsed: def.value, fullPath, debug });
+        generateFunctionsJson({ functions: def.value.functions, fullPath, debug });
 
         spinner.succeed();
     } catch (err) {
@@ -462,7 +471,8 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const allowedExports = {
         createAction: { type: 'action', varName: 'action' },
         createSync: { type: 'sync', varName: 'sync' },
-        createOnEvent: { type: 'onEvent', varName: 'onEvent' }
+        createOnEvent: { type: 'onEvent', varName: 'onEvent' },
+        createFunction: { type: 'function', varName: 'func' }
     } as const satisfies Record<string, { type: string; varName: string }>;
 
     type AllowedExportName = keyof typeof allowedExports;
