@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "test": "vitest"
+        "test": "vitest",
+        "tokens:usage": "node scripts/generate-token-usage.mjs"
     },
     "browserslist": {
         "production": [
@@ -78,6 +79,7 @@
         "posthog-js": "1.212.1",
         "radix-ui": "1.4.3",
         "react": "18.3.1",
+        "react-colorful": "5.7.0",
         "react-day-picker": "8.10.1",
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",

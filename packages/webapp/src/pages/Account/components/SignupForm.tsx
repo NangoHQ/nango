@@ -35,7 +35,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
             email: invitation?.email || '',
             password: ''
         },
-        mode: 'onTouched'
+        mode: 'onSubmit'
     });
 
     const navigate = useNavigate();
@@ -175,7 +175,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                         <FormField control={form.control} name="password" render={() => <Password autoComplete="new-password" />} />
 
-                        <Button type="submit" size="lg" loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size="lg" loading={isPending}>
                             {isPending ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </form>

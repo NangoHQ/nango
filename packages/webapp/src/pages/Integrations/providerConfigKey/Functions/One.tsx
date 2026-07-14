@@ -293,7 +293,7 @@ export const FunctionsOne: React.FC = () => {
                                 })}
                             />
                             {func.source === 'catalog' && (
-                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="md">
                                     View code <ExternalLink />
                                 </ButtonLink>
                             )}

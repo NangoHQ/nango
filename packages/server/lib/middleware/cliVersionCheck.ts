@@ -8,6 +8,23 @@ import type { NextFunction, Request, Response } from 'express';
 const logger = getLogger('CliVersionCheck');
 
 const VERSION_REGEX = /nango-cli\/([0-9.]+)/;
+
+export function getCliContext(req: Request): { cliVersion?: string; deviceId?: string } {
+    const context: { cliVersion?: string; deviceId?: string } = {};
+
+    const match = req.headers['user-agent']?.match(VERSION_REGEX);
+    if (match?.[1]) {
+        context.cliVersion = match[1];
+    }
+
+    const deviceId = req.headers['nango-cli-device-id'];
+    if (typeof deviceId === 'string' && deviceId) {
+        context.deviceId = deviceId;
+    }
+
+    return context;
+}
+
 export function cliMinVersion(minVersion: string) {
     return (req: Request, res: Response, next: NextFunction) => {
         const userAgent = req.headers['user-agent'];

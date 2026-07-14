@@ -144,7 +144,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button type="button" size="lg">
+                                <Button type="button" size="md">
                                     <Plus /> Add
                                 </Button>
                             </DropdownMenuTrigger>
