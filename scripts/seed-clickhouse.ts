@@ -268,8 +268,10 @@ function generateForEnvDay(
         const base = { environmentId, integrationId: integration.id };
 
         for (const connectionId of connections) {
-            // Skip a fraction of connections on the quietest days only.
-            if (dayScale < 0.45 && chance(0.2)) {
+            // Skip a fraction of connections on the quietest days only. dayScale bottoms out
+            // around 0.49 over the default 60-day window (deep-weekend, low-jitter, oldest days),
+            // so 0.55 catches just that tail; a lower threshold like 0.45 never fires.
+            if (dayScale < 0.55 && chance(0.2)) {
                 continue;
             }
 
