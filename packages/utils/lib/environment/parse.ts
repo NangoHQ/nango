@@ -534,6 +534,9 @@ export const ENVS = z.object({
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
+    // Deploy
+    DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
+
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
     NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
