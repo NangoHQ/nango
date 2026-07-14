@@ -222,13 +222,12 @@ export function billingEventsS3ExportCron(): void {
     });
 }
 
-function addEventNameSuffix(eventName: MetricSpec['canonicalEventName']): string {
-    if (eventName == 'data_transfer') {
+function addEventNameSuffix(eventName: MetricSpec['canonicalEventName'], day: string): string {
+    if (eventName === 'data_transfer') {
         // data_transfer is a new event and thus doesn't need the suffix to support live traffic cutoff.
         return eventName;
     }
-
-    return `${eventName}${eventNameSuffix}`;
+    return `${eventName}${dayIsPostCutover(day) ? '' : '_s3'}`;
 }
 
 export async function exec(): Promise<void> {
@@ -241,11 +240,10 @@ export async function exec(): Promise<void> {
                 return;
             }
             const day = yesterdayUTC();
-            const eventNameSuffix = dayIsPostCutover(day) ? '' : '_s3';
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {
-                    const eventName = addEventNameSuffix(metric.canonicalEventName);
+                    const eventName = addEventNameSuffix(metric.canonicalEventName, day);
                     const key = objectKey({ day, eventName });
                     const start = process.hrtime.bigint();
                     // Tracks which step is in flight so a catch can tag the failure
