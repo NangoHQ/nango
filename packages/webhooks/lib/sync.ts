@@ -9,8 +9,8 @@ import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type {
     CheckpointRange,
-    ConnectionConfig,
     ConnectionJobs,
+    ConnectionOverrides,
     DBAPISecret,
     DBEnvironment,
     DBExternalWebhook,
@@ -34,7 +34,7 @@ export const sendSync = async ({
     account,
     providerConfig,
     webhookSettings,
-    connectionConfig,
+    overrides,
     syncConfig,
     syncVariant,
     model,
@@ -51,7 +51,7 @@ export const sendSync = async ({
     account: Pick<DBTeam, 'id' | 'name'>;
     providerConfig: IntegrationConfig;
     webhookSettings: DBExternalWebhook | null;
-    connectionConfig: Pick<ConnectionConfig, 'webhook_url'> | null;
+    overrides: ConnectionOverrides | null;
     syncConfig: Pick<DBSyncConfig, 'id' | 'sync_name' | 'version'>;
     syncVariant: string;
     model: string;
@@ -66,7 +66,7 @@ export const sendSync = async ({
         return Ok(undefined);
     }
 
-    const settings = resolveWebhookSettings(webhookSettings, connectionConfig);
+    const settings = resolveWebhookSettings(webhookSettings, overrides);
 
     if (!shouldSend({ success, type: 'sync', webhookSettings: settings })) {
         return Ok(undefined);

@@ -35,8 +35,7 @@ export const bodySchema = z
                         authorization_params: z.record(z.string(), z.string()).optional(),
                         connection_config: z
                             .looseObject({
-                                oauth_scopes_override: z.string().optional(),
-                                webhook_url: webhookUrlSchema
+                                oauth_scopes_override: z.string().optional()
                             })
                             .optional()
                     })
@@ -47,7 +46,8 @@ export const bodySchema = z
             .record(
                 providerConfigKeySchema,
                 z.object({
-                    docs_connect: z.string().optional()
+                    docs_connect: z.string().optional(),
+                    webhook_url: webhookUrlSchema
                 })
             )
             .optional(),

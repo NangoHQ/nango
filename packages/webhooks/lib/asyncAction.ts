@@ -3,14 +3,14 @@ import { metrics } from '@nangohq/utils';
 import { deliver, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { AsyncActionResponse, ConnectionConfig, DBAPISecret, DBExternalWebhook, NangoAsyncActionWebhookBody } from '@nangohq/types';
+import type { AsyncActionResponse, ConnectionOverrides, DBAPISecret, DBExternalWebhook, NangoAsyncActionWebhookBody } from '@nangohq/types';
 
 export const sendAsyncActionWebhook = async ({
     secret,
     connectionId,
     providerConfigKey,
     webhookSettings,
-    connectionConfig,
+    overrides,
     payload,
     logCtx
 }: {
@@ -18,7 +18,7 @@ export const sendAsyncActionWebhook = async ({
     connectionId: string;
     providerConfigKey: string;
     webhookSettings: DBExternalWebhook | null;
-    connectionConfig: Pick<ConnectionConfig, 'webhook_url'> | null;
+    overrides: ConnectionOverrides | null;
     payload: AsyncActionResponse;
     logCtx: LogContext;
 }): Promise<void> => {
@@ -26,7 +26,7 @@ export const sendAsyncActionWebhook = async ({
         return;
     }
 
-    const settings = resolveWebhookSettings(webhookSettings, connectionConfig);
+    const settings = resolveWebhookSettings(webhookSettings, overrides);
 
     if (!shouldSend({ success: true, type: 'async_action', webhookSettings: settings })) {
         return;

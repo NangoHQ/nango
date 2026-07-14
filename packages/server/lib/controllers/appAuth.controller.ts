@@ -7,12 +7,12 @@ import publisher from '../clients/publisher.client.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { resolveConnectionConfig } from '../utils/auth.js';
+import { resolveConnectionConfig, resolveConnectionOverrides } from '../utils/auth.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
-import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
+import type { ConnectionConfig, ConnectionOverrides, ProviderGithubApp } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
@@ -55,6 +55,7 @@ class AppAuthController {
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
         // Hoisted so the failure hook in the catch can also honor a per-connection webhook URL override.
         let resolvedConnectionConfig: ConnectionConfig = {};
+        let resolvedOverrides: ConnectionOverrides | null = null;
 
         try {
             if (!providerConfigKey) {
@@ -162,6 +163,7 @@ class AppAuthController {
             // Apply the connect session's connection_config defaults (e.g. a per-connection webhook URL override).
             // Done after credential creation so it can't interfere with the GitHub App JWT generation above.
             resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
+            resolvedOverrides = resolveConnectionOverrides({ connectSession: connectSession?.connectSession, providerConfigKey });
             Object.assign(connectionConfig, resolvedConnectionConfig);
 
             const [updatedConnection] = await connectionService.upsertConnection({
@@ -169,6 +171,7 @@ class AppAuthController {
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig,
+                overrides: resolvedOverrides,
                 environmentId: environment.id,
                 tags
             });
@@ -225,7 +228,7 @@ class AppAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey, connection_config: resolvedConnectionConfig },
+                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey, overrides: resolvedOverrides },
                     environment,
                     account,
                     auth_mode: 'APP',

@@ -108,6 +108,7 @@ async function handleCreateWebhook(nango: InternalNango, body: SentryOauthWebhoo
             id: '',
             connectSessionId: null,
             connectionConfig,
+            overrides: null,
             environmentId: nango.environment.id,
             webSocketClientId: undefined,
             activityLogId: activityLogId,

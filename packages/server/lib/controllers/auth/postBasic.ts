@@ -19,7 +19,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveConnectionOverrides } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -70,6 +70,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
     const queryString: PostPublicBasicAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBasicAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    const overrides = resolveConnectionOverrides({ connectSession, providerConfigKey });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -162,6 +163,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             providerConfigKey,
             credentials,
             connectionConfig,
+            overrides,
             metadata: {},
             config,
             environment,
@@ -237,7 +239,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         if (logCtx) {
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides },
                     environment,
                     account,
                     auth_mode: 'BASIC',

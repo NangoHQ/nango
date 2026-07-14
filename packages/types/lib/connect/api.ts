@@ -14,7 +14,6 @@ export interface ConnectSessionInput {
                       | {
                             [key: string]: unknown;
                             oauth_scopes_override?: string | undefined;
-                            webhook_url?: string | undefined;
                         }
                       | undefined;
               }
@@ -28,7 +27,7 @@ export interface ConnectSessionInput {
           }
         | undefined;
     tags?: Record<string, string> | undefined;
-    overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
+    overrides?: Record<string, { docs_connect?: string | undefined; webhook_url?: string | undefined }> | undefined;
 }
 
 export interface EndUserInput {

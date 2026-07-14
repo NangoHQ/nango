@@ -13,6 +13,9 @@ export interface ConnectionConfig {
     oauth_scopes_override?: string[] | undefined;
     oauth_scopes?: string | undefined;
     authorization_params?: Record<string, string> | undefined;
+}
+
+export interface ConnectionOverrides {
     webhook_url?: string | undefined;
 }
 
@@ -27,6 +30,7 @@ export interface DBConnection extends TimestampsAndDeletedCorrect {
     provider_config_key: string;
     connection_id: string;
     connection_config: ConnectionConfig;
+    overrides: ConnectionOverrides | null;
     environment_id: number;
     metadata: Metadata | null;
     credentials: { encrypted_credentials?: string };
@@ -58,7 +62,7 @@ export interface FailedConnectionError {
 }
 
 export interface RecentlyFailedConnection {
-    connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'connection_config'>;
+    connection: DBConnection | (Pick<DBConnection, 'connection_id' | 'provider_config_key'> & Partial<Pick<DBConnection, 'overrides'>>);
     auth_mode: AuthModeType;
     error?: FailedConnectionError;
     operation: AuthOperationType;

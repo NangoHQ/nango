@@ -101,17 +101,15 @@ describe('postPublicAppStoreAuthorization', () => {
         mockValidateConnection.mockResolvedValue(Ok({ tested: true }));
     });
 
-    // The override is only honored from the backend-set connect session default, never from client params,
-    // and is resolved by the real resolveConnectionConfig (not mocked).
     const connectSessionWithOverride = {
         operationId: null,
         connectionId: null,
         allowedIntegrations: null,
-        integrationsConfigDefaults: { appstore: { connectionConfig: { webhook_url: 'https://override.example.com/hook' } } }
+        overrides: { appstore: { webhook_url: 'https://override.example.com/hook' } }
     };
     const sessionTokenQuery = { connect_session_token: `nango_connect_session_${'a'.repeat(64)}` };
 
-    it('stores the resolved per-connection webhook URL override alongside the App Store connection config', async () => {
+    it('stores the per-connection webhook URL override under overrides (not connection_config)', async () => {
         const req = {
             body: { privateKeyId: 'key-id', privateKey: 'private-key', issuerId: 'issuer-id' },
             query: sessionTokenQuery,
@@ -137,12 +135,12 @@ describe('postPublicAppStoreAuthorization', () => {
 
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({
-                connectionConfig: expect.objectContaining({
-                    webhook_url: 'https://override.example.com/hook',
-                    privateKeyId: 'key-id',
-                    issuerId: 'issuer-id'
-                })
+                overrides: { webhook_url: 'https://override.example.com/hook' },
+                connectionConfig: expect.objectContaining({ privateKeyId: 'key-id', issuerId: 'issuer-id' })
             })
+        );
+        expect(mockUpsertConnection).toHaveBeenCalledWith(
+            expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
         );
     });
 
@@ -188,7 +186,7 @@ describe('postPublicAppStoreAuthorization', () => {
         expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
             expect.objectContaining({
                 connection: expect.objectContaining({
-                    connection_config: expect.objectContaining({ webhook_url: 'https://override.example.com/hook' })
+                    overrides: { webhook_url: 'https://override.example.com/hook' }
                 })
             }),
             expect.anything()

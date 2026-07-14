@@ -31,4 +31,5 @@ export interface ConnectSessionIntegrationConfigDefaults {
 
 export interface ConnectSessionOverrides {
     docs_connect?: string | undefined;
+    webhook_url?: string | undefined;
 }

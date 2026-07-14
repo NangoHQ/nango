@@ -19,7 +19,7 @@ import {
     testConnectionCredentials
 } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveConnectionOverrides } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -72,6 +72,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
     const queryString: PostPublicApiKeyAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicApiKeyAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    const overrides = resolveConnectionOverrides({ connectSession, providerConfigKey });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -163,6 +164,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
             providerConfigKey,
             credentials,
             connectionConfig,
+            overrides,
             metadata: {},
             config,
             environment,
@@ -238,7 +240,7 @@ export const postPublicApiKeyAuthorization = asyncWrapper<PostPublicApiKeyAuthor
         if (logCtx) {
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, overrides },
                     environment,
                     account,
                     auth_mode: 'API_KEY',

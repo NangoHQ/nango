@@ -47,6 +47,7 @@ async function execute(
         connection_id: connectionId,
         credentials,
         connection_config: connectionConfig,
+        overrides: null,
         environment_id: config.environment_id,
         created_at: new Date(),
         updated_at: new Date(),

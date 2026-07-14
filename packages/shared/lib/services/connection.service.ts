@@ -64,6 +64,7 @@ import type {
     CombinedOauth2AppCredentials,
     ConnectionConfig,
     ConnectionInternal,
+    ConnectionOverrides,
     ConnectionUpsertResponse,
     DBConnection,
     DBConnectionAsJSONRow,
@@ -108,6 +109,7 @@ class ConnectionService {
         providerConfigKey,
         parsedRawCredentials,
         connectionConfig,
+        overrides,
         environmentId,
         metadata,
         tags
@@ -116,6 +118,7 @@ class ConnectionService {
         providerConfigKey: string;
         parsedRawCredentials: AllAuthCredentials;
         connectionConfig?: ConnectionConfig;
+        overrides?: ConnectionOverrides | null | undefined;
         environmentId: number;
         metadata?: Metadata | null;
         tags?: Tags | undefined;
@@ -130,6 +133,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig || storedConnection.connection_config,
+                overrides: overrides !== undefined ? overrides : (storedConnection.overrides ?? null),
                 environment_id: environmentId,
                 config_id: config_id as number,
                 metadata: metadata || storedConnection.metadata || null,
@@ -156,6 +160,7 @@ class ConnectionService {
             config_id: config_id as number,
             credentials: parsedRawCredentials,
             connection_config: connectionConfig || {},
+            overrides: overrides ?? null,
             environment_id: environmentId,
             metadata: metadata || null,
             created_at: new Date(),
@@ -181,6 +186,7 @@ class ConnectionService {
         providerConfigKey,
         credentials,
         connectionConfig,
+        overrides,
         metadata,
         config,
         environment,
@@ -198,6 +204,7 @@ class ConnectionService {
             | SignatureCredentials
             | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
+        overrides?: ConnectionOverrides | null | undefined;
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
@@ -212,6 +219,7 @@ class ConnectionService {
                 config_id: config.id as number,
                 credentials,
                 connection_config: connectionConfig || {},
+                overrides: overrides ?? exists?.overrides ?? null,
                 environment_id: environment.id,
                 metadata: metadata || null,
                 created_at: new Date(),
@@ -240,6 +248,7 @@ class ConnectionService {
                     credentials_iv: encryptedConnection.credentials_iv,
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
+                    overrides: encryptedConnection.overrides,
                     environment_id: encryptedConnection.environment_id,
                     metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
@@ -261,6 +270,7 @@ class ConnectionService {
         providerConfigKey,
         metadata,
         connectionConfig,
+        overrides,
         environment,
         tags
     }: {
@@ -268,6 +278,7 @@ class ConnectionService {
         providerConfigKey: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        overrides?: ConnectionOverrides | null | undefined;
         environment: DBEnvironment;
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
@@ -285,6 +296,7 @@ class ConnectionService {
                     config_id: config_id as number,
                     updated_at: new Date(),
                     connection_config: connectionConfig || storedConnection.connection_config,
+                    overrides: overrides !== undefined ? overrides : (storedConnection.overrides ?? null),
                     metadata: metadata || storedConnection.metadata || null,
                     credentials_expires_at: expiresAt,
                     last_refresh_success: new Date(),
@@ -304,6 +316,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: connectionConfig || {},
+                overrides: overrides ?? null,
                 metadata: metadata || {},
                 environment_id: environment.id,
                 config_id: config_id!,
@@ -325,6 +338,7 @@ class ConnectionService {
         environment,
         metadata = null,
         connectionConfig = {},
+        overrides,
         parsedRawCredentials,
         connectionCreatedHook,
         tags
@@ -334,6 +348,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        overrides?: ConnectionOverrides | null | undefined;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -343,6 +358,7 @@ class ConnectionService {
             providerConfigKey,
             parsedRawCredentials,
             connectionConfig,
+            overrides,
             environmentId: environment.id,
             metadata,
             tags
@@ -361,6 +377,7 @@ class ConnectionService {
         metadata = null,
         environment,
         connectionConfig = {},
+        overrides,
         credentials,
         connectionCreatedHook,
         tags
@@ -370,6 +387,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        overrides?: ConnectionOverrides | null | undefined;
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -386,6 +404,7 @@ class ConnectionService {
             providerConfigKey,
             credentials,
             connectionConfig,
+            overrides,
             metadata,
             config,
             environment,
@@ -540,7 +559,20 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
-    public async getConnectionConfigByConnectionIds({
+    public async getConnectionOverrides(
+        connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>
+    ): Promise<ConnectionOverrides | null> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('overrides').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        return result[0]?.overrides ?? null;
+    }
+
+    public async getConnectionOverridesByConnectionIds({
         connectionIds,
         provider_config_key,
         environment_id
@@ -548,23 +580,25 @@ class ConnectionService {
         connectionIds: string[];
         provider_config_key: string;
         environment_id: number;
-    }): Promise<Map<string, ConnectionConfig>> {
-        const configByConnectionId = new Map<string, ConnectionConfig>();
+    }): Promise<Map<string, ConnectionOverrides>> {
+        const overridesByConnectionId = new Map<string, ConnectionOverrides>();
         if (connectionIds.length === 0) {
-            return configByConnectionId;
+            return overridesByConnectionId;
         }
 
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
-            .select('connection_id', 'connection_config')
+            .select('connection_id', 'overrides')
             .whereIn('connection_id', connectionIds)
             .where({ provider_config_key, environment_id, deleted: false });
 
         for (const row of result) {
-            configByConnectionId.set(row.connection_id, row.connection_config);
+            if (row.overrides) {
+                overridesByConnectionId.set(row.connection_id, row.overrides);
+            }
         }
 
-        return configByConnectionId;
+        return overridesByConnectionId;
     }
 
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
@@ -1154,7 +1188,8 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
-        tags?: Tags
+        tags?: Tags,
+        overrides?: ConnectionOverrides | null | undefined
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
@@ -1173,6 +1208,7 @@ class ConnectionService {
             providerConfigKey: integration.unique_key,
             parsedRawCredentials: create.value,
             connectionConfig,
+            overrides,
             environmentId: integration.environment_id,
             tags
         });

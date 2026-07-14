@@ -346,7 +346,7 @@ export async function handleSyncSuccess({
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
-        const connectionConfig = webhookSettings ? await connectionService.getConnectionConfig(connection) : null;
+        const overrides = webhookSettings ? await connectionService.getConnectionOverrides(connection) : null;
         const webhookSigningSecret = webhookSettings
             ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
                   if (r.isErr()) throw r.error;
@@ -469,7 +469,7 @@ export async function handleSyncSuccess({
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
                                 webhookSettings,
-                                connectionConfig,
+                                overrides,
                                 model,
                                 now: nangoProps.startedAt,
                                 success: true,
@@ -930,7 +930,7 @@ async function onFailure({
 
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
-        const connectionConfig = webhookSettings ? await connectionService.getConnectionConfig(connection) : null;
+        const overrides = webhookSettings ? await connectionService.getConnectionOverrides(connection) : null;
 
         if (team && syncConfig && providerConfig && webhookSettings) {
             const span = tracer.startSpan('jobs.sync.webhook', {
@@ -958,7 +958,7 @@ async function onFailure({
                         environment: environment,
                         secret: webhookSigningKey.value,
                         webhookSettings,
-                        connectionConfig,
+                        overrides,
                         model: models.join(','),
                         success: false,
                         error: {

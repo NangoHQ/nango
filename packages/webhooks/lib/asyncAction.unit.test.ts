@@ -53,7 +53,7 @@ describe('AsyncAction webhooks', () => {
             connectionId: '123',
             secret,
             providerConfigKey: 'some-provider',
-            connectionConfig: null,
+            overrides: null,
             webhookSettings: {
                 ...webhookSettings,
                 on_async_action_completion: false
@@ -73,7 +73,7 @@ describe('AsyncAction webhooks', () => {
             connectionId: '123',
             secret,
             providerConfigKey: 'some-provider',
-            connectionConfig: null,
+            overrides: null,
             webhookSettings: {
                 ...webhookSettings,
                 on_async_action_completion: true
@@ -111,7 +111,7 @@ describe('AsyncAction webhooks', () => {
             connectionId: '123',
             secret,
             providerConfigKey: 'some-provider',
-            connectionConfig: { webhook_url: overrideUrl },
+            overrides: { webhook_url: overrideUrl },
             webhookSettings,
             payload: { id: '00000000-0000-0000-0000-000000000000', statusUrl: '/action/00000000-0000-0000-0000-000000000000' },
             logCtx

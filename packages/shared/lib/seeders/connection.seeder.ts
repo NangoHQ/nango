@@ -85,6 +85,7 @@ export function getTestConnection(override?: Partial<DBConnectionDecrypted>): DB
         provider_config_key: 'freshteam',
         updated_at: new Date(),
         connection_config: {},
+        overrides: null,
         config_id: 1,
         credentials_iv: null,
         credentials_tag: null,

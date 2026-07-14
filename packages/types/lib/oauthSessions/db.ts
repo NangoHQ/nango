@@ -1,4 +1,5 @@
 import type { AuthModeType } from '../auth/api.js';
+import type { ConnectionOverrides } from '../connection/db.js';
 import type { Timestamps } from '../db.js';
 
 export interface DBOAuthSession extends Timestamps {
@@ -10,6 +11,7 @@ export interface DBOAuthSession extends Timestamps {
     authMode: AuthModeType;
     connect_session_id: number | null;
     connection_config: Record<string, string>;
+    overrides: ConnectionOverrides | null;
     environment_id: number;
     web_socket_client_id: string | undefined;
     activity_log_id: string;
@@ -30,6 +32,7 @@ export interface OAuthSession {
     authMode: AuthModeType;
     connectSessionId: number | null;
     connectionConfig: Record<string, string>;
+    overrides: ConnectionOverrides | null;
     environmentId: number;
     webSocketClientId: string | undefined;
     activityLogId: string;

@@ -19,7 +19,7 @@ import { envs } from './envs.js';
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { LogContext } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
-import type { ConnectionConfig, DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
+import type { ConnectionOverrides, DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
@@ -196,11 +196,8 @@ export const shouldSend = ({
  * The environment secondary URL is dropped so the connection's webhooks are not also delivered to the
  * shared endpoint.
  */
-export function resolveWebhookSettings(
-    webhookSettings: DBExternalWebhook,
-    connectionConfig: Pick<ConnectionConfig, 'webhook_url'> | null | undefined
-): DBExternalWebhook {
-    const primary = connectionConfig?.webhook_url;
+export function resolveWebhookSettings(webhookSettings: DBExternalWebhook, overrides: ConnectionOverrides | null | undefined): DBExternalWebhook {
+    const primary = overrides?.webhook_url;
     if (typeof primary !== 'string' || primary.trim() === '') {
         return webhookSettings;
     }
