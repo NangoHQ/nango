@@ -51,7 +51,12 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'integrationId',
         header: 'Integration',
-        minSize: 200,
+        // Width is computed from the widest visible value (see computeLogsColumnSizing). It may shrink and
+        // truncate when the row runs out of room, before the Connection column does.
+        minSize: 120,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
             return <ProviderTag msg={row.original} />;
         }
@@ -59,20 +64,25 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'syncConfigId',
         header: 'Script',
-        minSize: 150,
+        minSize: 80,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.syncConfigName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.syncConfigName || '-'}</div>;
         }
     },
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        size: 'auto' as unknown as number,
+        // Grows to absorb any leftover space (so short values leave no gap) and only gives up space once the
+        // shrinkable columns are exhausted, so the connection ID is the last thing to get truncated.
+        minSize: 120,
         meta: {
-            isGrow: true
+            canGrow: true
         },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.connectionName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.connectionName || '-'}</div>;
         }
     },
     {

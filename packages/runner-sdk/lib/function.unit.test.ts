@@ -40,11 +40,11 @@ describe('createFunction', () => {
 
             expect(fn.type).toBe('function');
             expect(fn.capabilities).toStrictEqual({
-                useRecords: true,
-                useCheckpoints: true,
-                useMetadata: true,
-                useOutbound: true,
-                useInvoke: false
+                usesRecords: true,
+                usesCheckpoints: true,
+                usesMetadata: true,
+                usesOutbound: true,
+                usesInvoke: false
             });
         });
 
@@ -89,11 +89,11 @@ describe('createFunction', () => {
             });
 
             expect(fn.capabilities).toStrictEqual({
-                useRecords: true,
-                useCheckpoints: false,
-                useMetadata: false,
-                useOutbound: true,
-                useInvoke: false
+                usesRecords: true,
+                usesCheckpoints: false,
+                usesMetadata: false,
+                usesOutbound: true,
+                usesInvoke: false
             });
         });
 
@@ -133,8 +133,8 @@ describe('createFunction', () => {
                 }
             });
 
-            expect(fn.capabilities.useRecords).toBe(false);
-            expect(fn.capabilities.useOutbound).toBe(true);
+            expect(fn.capabilities.usesRecords).toBe(false);
+            expect(fn.capabilities.usesOutbound).toBe(true);
         });
     });
 
@@ -150,7 +150,7 @@ describe('createFunction', () => {
                 }
             });
 
-            expect(fn.capabilities.useRecords).toBe(false);
+            expect(fn.capabilities.usesRecords).toBe(false);
         });
     });
 
@@ -180,11 +180,11 @@ describe('createFunction', () => {
             });
 
             expect(fn.capabilities).toStrictEqual({
-                useRecords: false,
-                useCheckpoints: false,
-                useMetadata: false,
-                useOutbound: false,
-                useInvoke: true
+                usesRecords: false,
+                usesCheckpoints: false,
+                usesMetadata: false,
+                usesOutbound: false,
+                usesInvoke: true
             });
         });
 
