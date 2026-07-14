@@ -50,14 +50,13 @@ export enum LocalStorageKeys {
     AccountId = 'nango_account_id',
     LastEnvironment = 'nango_last_environment',
     Playground = 'nango_playground',
-    FeatureFlags = 'nango_feature_flags',
     Theme = 'nango_theme'
 }
 
 /**
  * Categorizes each key for logout: 'session' keys are cleared, 'preference'
- * keys (theme, feature flags) survive. The Record type forces every key to be
- * classified, so a new one can't accidentally skip this decision.
+ * keys (theme) survive. The Record type forces every key to be classified,
+ * so a new one can't accidentally skip this decision.
  *
  * Playground lives in sessionStorage, so clearing it here is a no-op; logout
  * resets it separately via resetPlayground() (see useSignout).
@@ -69,7 +68,6 @@ const KEY_CATEGORY: Record<LocalStorageKeys, 'session' | 'preference'> = {
     [LocalStorageKeys.AccountId]: 'session',
     [LocalStorageKeys.LastEnvironment]: 'session',
     [LocalStorageKeys.Playground]: 'session',
-    [LocalStorageKeys.FeatureFlags]: 'preference',
     [LocalStorageKeys.Theme]: 'preference'
 };
 
