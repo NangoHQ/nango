@@ -5,7 +5,6 @@ import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
-import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
 import { Clickhouse } from './clickhouse/clickhouse.js';
 import { AVG_METRICS, COUNTER_METRICS } from './clickhouse/clickhouse.query.js';
@@ -119,12 +118,10 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
-    public billingClient: UsageBillingClient;
     private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
-        this.billingClient = new UsageBillingClient(redis);
     }
 
     private getClickhouse(): Clickhouse {
