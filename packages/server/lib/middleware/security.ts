@@ -40,11 +40,12 @@ export function securityMiddlewares(): RequestHandler[] {
                     'wss://*.plain.com',
                     'https://raw.githubusercontent.com'
                 ],
-                fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
+                fontSrc: ["'self'", 'data:', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com', 'https://*.stripe.com'],
                 imgSrc: [
                     "'self'",
                     'data:',
+                    'blob:',
                     hostPublic,
                     hostApi,
                     'https://*.google-analytics.com',
