@@ -1766,6 +1766,7 @@
               "api-integrations/workday-oauth",
               "api-integrations/workos",
               "api-integrations/workpath",
+              "api-integrations/workramp",
               "integrations/all/wrike",
               "integrations/all/xai",
               "api-integrations/xero",
