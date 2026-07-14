@@ -1296,6 +1296,7 @@
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
               "integrations/all/icypeas",
+              "api-integrations/ids-fulfillment",
               "integrations/all/incident-io",
               "integrations/all/insightly",
               "api-integrations/instagram",
