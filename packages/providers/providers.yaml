@@ -6801,6 +6801,40 @@ emarsys-oauth:
     docs: https://nango.dev/docs/integrations/all/emarsys-oauth
     docs_connect: https://nango.dev/docs/integrations/all/emarsys-oauth/connect
 
+embat:
+    display_name: Embat
+    categories:
+        - accounting
+        - banking
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.embat.io/authentication/token
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: idToken
+    proxy:
+        base_url: https://api.embat.io
+    docs: https://nango.dev/docs/api-integrations/embat
+    docs_connect: https://nango.dev/docs/api-integrations/embat/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            format: email
+            description: The email address of your Embat service user.
+            doc_section: '#step-1-get-your-service-user-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Embat service user.
+            secret: true
+            doc_section: '#step-1-get-your-service-user-credentials'
+
 employment-hero:
     display_name: Employment Hero
     categories:
@@ -13695,6 +13729,36 @@ mural:
     proxy:
         base_url: https://app.mural.co
     docs: https://nango.dev/docs/integrations/all/mural
+
+n8n:
+    display_name: n8n
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api
+        headers:
+            x-n8n-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/n8n
+    docs_connect: https://nango.dev/docs/api-integrations/n8n/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your n8n instance's base URL.
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
+            example: https://your-instance.app.n8n.cloud
+            order: 1
+            suffix: /api
+            doc_section: '#step-1-finding-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your n8n API key.
+            doc_section: '#step-2-generating-your-api-key'
 
 nable-ncentral:
     display_name: N-able N-central
@@ -23534,6 +23598,35 @@ workday-cc:
             secret: true
             doc_section: '#step-5-register-an-api-client'
 
+workato:
+    display_name: Workato
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/workato
+    docs_connect: https://nango.dev/docs/api-integrations/workato/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Data center hostname
+            description: The hostname of the data center your account is hosted in.
+            format: hostname
+            prefix: https://
+            example: www.workato.com
+            order: 1
+            suffix: /api
+            doc_section: '#step-1-finding-your-data-center-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated for your Workato API client.
+            doc_section: '#step-2-generating-your-api-token'
+
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning
     categories:
@@ -24076,6 +24169,28 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
     docs: https://nango.dev/docs/integrations/all/zenefits
+
+zero:
+    display_name: Zero
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.zero.inc
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/workspaces
+    docs: https://nango.dev/docs/api-integrations/zero
+    docs_connect: https://nango.dev/docs/api-integrations/zero/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key generated from your Zero account.
+            doc_section: '#step-1-generate-an-api-key'
 
 zigpoll:
     display_name: Zigpoll
