@@ -1371,6 +1371,7 @@
               "api-integrations/mailjet",
               "integrations/all/make",
               "integrations/all/malwarebytes",
+              "api-integrations/mandrill",
               "integrations/all/manatal",
               "integrations/all/marketo",
               "api-integrations/mattermost",
