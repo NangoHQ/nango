@@ -2,6 +2,7 @@ import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { NangoError } from '../../../utils/error.js';
 import { resolveLocalFileName } from '../../../utils/utils.js';
 import configService from '../../config.service.js';
@@ -14,6 +15,7 @@ import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
+import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     CleanedIncomingFlowConfig,
@@ -39,6 +41,7 @@ const nameOfType = 'sync/action';
 
 type FlowParsed = CleanedIncomingFlowConfig;
 type FlowWithoutScript = Omit<FlowParsed, 'fileBody'>;
+type CompiledDeployInfo = { idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert };
 
 interface SyncConfigResult {
     result: SyncDeploymentResult[];
@@ -105,44 +108,70 @@ export async function deploy({
     const flowsWithoutScript: FlowWithoutScript[] = [];
     const idsToMarkAsInactive: number[] = [];
     const syncConfigs: DBSyncConfigInsert[] = [];
-    for (const flow of flows) {
-        const { fileBody: _fileBody, ...rest } = flow;
-        flowsWithoutScript.push({ ...rest });
 
-        const { success, error, response } = await compileDeployInfo({
-            flow,
-            aggregatedJsonSchema,
-            env,
-            environment_id: environment.id,
-            account,
-            debug: Boolean(debug),
-            logCtx,
-            orchestrator,
-            sdkVersion,
-            source
-        });
-
-        if (!success || !response) {
-            void logCtx.error(`Failed to deploy script "${flow.syncName}"`, { error });
-            await logCtx.failed();
-            return { success, error, response: null };
+    const providerConfigsByKey = new Map<string, ProviderConfig>();
+    if (flows.length > 0) {
+        const providerConfigs = await configService.listProviderConfigs(db.readOnly, environment.id);
+        for (const providerConfig of providerConfigs) {
+            providerConfigsByKey.set(providerConfig.unique_key, providerConfig);
         }
+    }
 
-        idsToMarkAsInactive.push(...response.idsToMarkAsInactive);
-        syncConfigs.push(response.syncConfig);
-        const deployResult: SyncDeploymentResult = {
-            name: flow.syncName,
-            models: flow.models,
-            version: response.syncConfig.version,
-            providerConfigKey: flow.providerConfigKey,
-            type: flow.type
-        };
+    for (let i = 0; i < flows.length; i += envs.DEPLOY_BATCH_SIZE) {
+        const batch = flows.slice(i, i + envs.DEPLOY_BATCH_SIZE);
+        const batchResults = await Promise.all(
+            batch.map((flow) => {
+                const providerConfig = providerConfigsByKey.get(flow.providerConfigKey);
+                if (!providerConfig) {
+                    const error = new NangoError('unknown_provider_config', { providerConfigKey: flow.providerConfigKey });
+                    void logCtx.error(error.message);
+                    return Promise.resolve<ServiceResponse<CompiledDeployInfo>>({ success: false, error, response: null });
+                }
 
-        if (response.syncConfig.version) {
-            deployResult.version = response.syncConfig.version;
+                return compileDeployInfo({
+                    flow,
+                    providerConfig,
+                    aggregatedJsonSchema,
+                    env,
+                    environment_id: environment.id,
+                    account,
+                    debug: Boolean(debug),
+                    logCtx,
+                    orchestrator,
+                    sdkVersion,
+                    source
+                });
+            })
+        );
+
+        for (const [batchIndex, flow] of batch.entries()) {
+            const { fileBody: _fileBody, ...rest } = flow;
+            flowsWithoutScript.push({ ...rest });
+
+            const { success, error, response } = batchResults[batchIndex]!;
+
+            if (!success || !response) {
+                void logCtx.error(`Failed to deploy script "${flow.syncName}"`, { error });
+                await logCtx.failed();
+                return { success, error, response: null };
+            }
+
+            idsToMarkAsInactive.push(...response.idsToMarkAsInactive);
+            syncConfigs.push(response.syncConfig);
+            const deployResult: SyncDeploymentResult = {
+                name: flow.syncName,
+                models: flow.models,
+                version: response.syncConfig.version,
+                providerConfigKey: flow.providerConfigKey,
+                type: flow.type
+            };
+
+            if (response.syncConfig.version) {
+                deployResult.version = response.syncConfig.version;
+            }
+
+            deployResults.push(deployResult);
         }
-
-        deployResults.push(deployResult);
     }
 
     if (syncConfigs.length === 0) {
@@ -218,6 +247,7 @@ export async function deploy({
 
 async function compileDeployInfo({
     flow,
+    providerConfig,
     aggregatedJsonSchema,
     env,
     environment_id,
@@ -229,6 +259,7 @@ async function compileDeployInfo({
     source
 }: {
     flow: FlowParsed;
+    providerConfig: ProviderConfig;
     /** @deprecated */
     aggregatedJsonSchema?: JSONSchema7 | undefined;
     env: string;
@@ -239,7 +270,7 @@ async function compileDeployInfo({
     orchestrator: Orchestrator;
     sdkVersion: string | undefined;
     source: FunctionSource;
-}): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert }>> {
+}): Promise<ServiceResponse<CompiledDeployInfo>> {
     const {
         syncName,
         providerConfigKey,
@@ -253,16 +284,8 @@ async function compileDeployInfo({
         attributes = {},
         metadata = {}
     } = flow;
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
-    if (!config) {
-        const error = new NangoError('unknown_provider_config', { providerConfigKey });
-        void logCtx.error(error.message);
-
-        return { success: false, error, response: null };
-    }
-
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, source);
+    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfig, source);
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
@@ -304,7 +327,7 @@ async function compileDeployInfo({
     // select all active rows, not just .first(), so any duplicates left by prior races are also cleaned up.
     const activeConfigs = await db.knex
         .from<DBSyncConfig>(TABLE)
-        .where({ environment_id, sync_name: syncName, nango_config_id: config.id as number, type, active: true, deleted: false })
+        .where({ environment_id, sync_name: syncName, nango_config_id: providerConfig.id!, type, active: true, deleted: false })
         .select('id', 'enabled')
         .orderBy('created_at', 'desc');
     const idsToMarkAsInactive: number[] = activeConfigs.map((c) => c.id);
@@ -332,7 +355,7 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${targetVersion}.js`;
+    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${providerConfig.id}/${syncName}-v${targetVersion}.js`;
     const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
     const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
     // If no previous file location, we consider the file changed no matter what the content is.
@@ -347,7 +370,7 @@ async function compileDeployInfo({
 
     if (typeof fileBody === 'object' && fileBody.ts) {
         const tsFile = fileBody.ts;
-        const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`;
+        const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${providerConfig.id}/${syncName}.ts`;
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
@@ -411,7 +434,7 @@ async function compileDeployInfo({
             syncConfig: {
                 source,
                 environment_id,
-                nango_config_id: config.id as number,
+                nango_config_id: providerConfig.id!,
                 sync_name: syncName,
                 type,
                 models,

@@ -14687,6 +14687,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `humaans-io` | Humaans.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/humaans-io.md) | [connect](https://nango.dev/docs/api-integrations/humaans-io/connect.md) |  | hr |
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
 | `icypeas` | Icypeas | API_KEY | [docs](https://nango.dev/docs/integrations/all/icypeas.md) | [connect](https://nango.dev/docs/integrations/all/icypeas/connect.md) |  | marketing, crm |
+| `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
 | `immybot` | ImmyBot | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/immybot.md) | [connect](https://nango.dev/docs/api-integrations/immybot/connect.md) |  | dev-tools, support |
 | `incident-io` | Incident.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/incident-io.md) | [connect](https://nango.dev/docs/integrations/all/incident-io/connect.md) |  | ticketing |
 | `insightly` | Insightly | BASIC | [docs](https://nango.dev/docs/integrations/all/insightly.md) |  |  | crm |
@@ -14764,6 +14765,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `make` | Make | API_KEY | [docs](https://nango.dev/docs/integrations/all/make.md) | [connect](https://nango.dev/docs/integrations/all/make/connect.md) |  | productivity |
 | `malwarebytes` | Malwarebytes | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/malwarebytes.md) | [connect](https://nango.dev/docs/integrations/all/malwarebytes/connect.md) |  | other |
 | `manatal` | Manatal | API_KEY | [docs](https://nango.dev/docs/integrations/all/manatal.md) | [connect](https://nango.dev/docs/integrations/all/manatal/connect.md) |  | crm, hr, ats |
+| `mandrill` | Mandrill | API_KEY | [docs](https://nango.dev/docs/api-integrations/mandrill.md) | [connect](https://nango.dev/docs/api-integrations/mandrill/connect.md) |  | marketing |
 | `marketo` | Marketo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/marketo.md) | [connect](https://nango.dev/docs/integrations/all/marketo/connect.md) |  | marketing |
 | `mattermost` | Mattermost | API_KEY | [docs](https://nango.dev/docs/api-integrations/mattermost.md) | [connect](https://nango.dev/docs/api-integrations/mattermost/connect.md) |  | communication |
 | `maximizer` | Maximizer (Cloud) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/maximizer.md) | [connect](https://nango.dev/docs/api-integrations/maximizer/connect.md) | [setup](https://nango.dev/docs/api-integrations/maximizer/how-to-register-your-own-maximizer-oauth-app.md) | crm |
@@ -14880,6 +14882,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `personio` | Personio (v1) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/personio.md) | [connect](https://nango.dev/docs/integrations/all/personio/connect.md) |  | hr |
 | `personio-recruiting` | Personio Recruiting | API_KEY | [docs](https://nango.dev/docs/integrations/all/personio-recruiting.md) |  |  | hr, ats |
 | `personio-v2` | Personio (v2) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/personio-v2.md) |  |  | hr |
+| `phrase` | Phrase | API_KEY | [docs](https://nango.dev/docs/api-integrations/phrase.md) | [connect](https://nango.dev/docs/api-integrations/phrase/connect.md) |  | dev-tools |
 | `pingboard` | Pingboard | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/pingboard.md) |  |  | productivity |
 | `pingone` | PingOne | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/pingone.md) | [connect](https://nango.dev/docs/integrations/all/pingone/connect.md) |  | dev-tools, iam |
 | `pingone-cc` | PingOne (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/pingone-cc.md) | [connect](https://nango.dev/docs/integrations/all/pingone-cc/connect.md) |  | dev-tools, iam |
@@ -14972,6 +14975,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `salesloft` | Salesloft | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/salesloft.md) |  |  | marketing |
 | `salesmsg` | Salesmsg (PAT) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/salesmsg.md) | [connect](https://nango.dev/docs/api-integrations/salesmsg/connect.md) |  | communication, marketing |
 | `salesmsg-oauth2` | Salesmsg (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/salesmsg-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app.md) | communication, marketing |
+| `sanity-mcp` | Sanity (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sanity-mcp.md) |  |  | cms, mcp |
 | `sap-ariba` | SAP Ariba | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/sap-ariba.md) | [connect](https://nango.dev/docs/api-integrations/sap-ariba/connect.md) |  | erp |
 | `sap-business-one` | SAP Business One | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/sap-business-one.md) | [connect](https://nango.dev/docs/integrations/all/sap-business-one/connect.md) |  | erp |
 | `sap-concur` | SAP Concur | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sap-concur.md) | [connect](https://nango.dev/docs/integrations/all/sap-concur/connect.md) |  | erp |
@@ -15081,6 +15085,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `tiktok-ads` | TikTok Ads | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tiktok-ads.md) |  |  | social |
 | `tiktok-personal` | TikTok Personal | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tiktok-personal.md) |  |  | social |
 | `timely` | Timely | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/timely.md) |  |  | productivity |
+| `timetastic` | Timetastic | API_KEY | [docs](https://nango.dev/docs/api-integrations/timetastic.md) | [connect](https://nango.dev/docs/api-integrations/timetastic/connect.md) |  | hr |
 | `timify` | Timify | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/timify.md) | [connect](https://nango.dev/docs/api-integrations/timify/connect.md) |  | productivity |
 | `tldv` | tl;dv | API_KEY | [docs](https://nango.dev/docs/integrations/all/tldv.md) | [connect](https://nango.dev/docs/integrations/all/tldv/connect.md) |  | productivity |
 | `toast` | Toast | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/toast.md) | [connect](https://nango.dev/docs/api-integrations/toast/connect.md) |  | erp |
