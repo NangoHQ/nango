@@ -29,7 +29,7 @@ export const TeamBilling: React.FC = () => {
     const canManageBilling = can(permissions.canManageBilling);
 
     const breakdownEnabled = useBreakdownEnabled();
-    const { isLoading: metaLoading } = useMeta();
+    const { isFetching: metaFetching } = useMeta();
 
     useEffect(() => {
         if (!canManageBilling && activeTab === 'payment-and-invoices') {
@@ -44,21 +44,23 @@ export const TeamBilling: React.FC = () => {
     const location = useLocation();
     const onUsageTab = (location.hash ? location.hash.slice(1) : 'usage') === 'usage';
 
-    // Fire one usage-page view per activation, but only once meta has resolved: breakdown_enabled comes
-    // from /api/v1/meta (via useBreakdownEnabled) and reads false while it loads, which would mis-tag
-    // the view for ClickHouse-rollout accounts. The ref resets on leaving the tab so returning re-tracks.
+    // Fire one usage-page view per activation, but only once meta has settled: breakdown_enabled comes
+    // from /api/v1/meta (via useBreakdownEnabled), which reads false while it loads and can be stale
+    // during a background refetch — either would mis-tag the view for ClickHouse-rollout accounts. Gate
+    // on isFetching so an in-flight refetch settles first. The ref resets on leaving the tab so
+    // returning re-tracks.
     const viewTrackedRef = useRef(false);
     useEffect(() => {
         if (!onUsageTab) {
             viewTrackedRef.current = false;
             return;
         }
-        if (metaLoading || viewTrackedRef.current) {
+        if (metaFetching || viewTrackedRef.current) {
             return;
         }
         viewTrackedRef.current = true;
         track('web:usage:viewed', { breakdown_enabled: breakdownEnabled });
-    }, [onUsageTab, metaLoading, breakdownEnabled]);
+    }, [onUsageTab, metaFetching, breakdownEnabled]);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but the billing
     // content is capped and left-aligned: the usage charts have a fixed height, so unbounded width
