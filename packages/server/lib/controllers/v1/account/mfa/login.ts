@@ -32,7 +32,7 @@ export async function verifyPendingMfaLogin(req: Request, code: string, recovery
         return null;
     }
     const verified = recoveryCode ? await mfaService.consumeRecoveryCode(user.id, recoveryCode) : await mfaService.verifyTotp(user.id, code);
-    if (!verified) {
+    if (verified.isErr() || !verified.value) {
         return null;
     }
 

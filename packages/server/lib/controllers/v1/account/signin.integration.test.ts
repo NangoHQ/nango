@@ -1,10 +1,14 @@
 import * as OTPAuth from 'otpauth';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer } from '../../../utils/tests.js';
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ isMFAEnabled: () => Promise.resolve(true) })
+}));
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -91,7 +95,7 @@ describe(`POST ${signinRoute}`, () => {
         const { email, password } = await signupUser({ emailVerified: true });
         const user = await userService.getUserByEmail(email);
         expect(user).toBeTruthy();
-        const enrollment = await mfaService.startEnrollment(user!.id, email);
+        const enrollment = (await mfaService.startEnrollment(user!.id, email)).unwrap();
         const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
         await mfaService.activateEnrollment(user!.id, totp.generate());
 

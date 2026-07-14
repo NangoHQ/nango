@@ -1,9 +1,13 @@
 import * as OTPAuth from 'otpauth';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, isSuccess, runServer } from '../../../../utils/tests.js';
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ isMFAEnabled: () => Promise.resolve(true) })
+}));
 
 const mfaRoute = '/api/v1/account/mfa';
 
