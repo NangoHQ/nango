@@ -6801,6 +6801,40 @@ emarsys-oauth:
     docs: https://nango.dev/docs/integrations/all/emarsys-oauth
     docs_connect: https://nango.dev/docs/integrations/all/emarsys-oauth/connect
 
+embat:
+    display_name: Embat
+    categories:
+        - accounting
+        - banking
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.embat.io/authentication/token
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: idToken
+    proxy:
+        base_url: https://api.embat.io
+    docs: https://nango.dev/docs/api-integrations/embat
+    docs_connect: https://nango.dev/docs/api-integrations/embat/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            format: email
+            description: The email address of your Embat service user.
+            doc_section: '#step-1-get-your-service-user-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Embat service user.
+            secret: true
+            doc_section: '#step-1-get-your-service-user-credentials'
+
 employment-hero:
     display_name: Employment Hero
     categories:
