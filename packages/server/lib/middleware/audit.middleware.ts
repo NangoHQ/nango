@@ -153,12 +153,15 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     resource: 'member',
     action: 'role_changed',
     accountScoped: true,
-    // The affected member is on the request only as an id; resolve their email, scoped to the caller's
-    // account so a bad/cross-account id can't leak another account's email.
+    // The affected member is on the request only as an id; resolve their email via an account-scoped
+    // lookup so a bad/cross-account id can't leak another account's email.
     target: async (req, locals) => {
         const display = await resolveDisplay('member', async () => {
-            const user = await userService.getUserById(Number(req.params.id));
-            return user && user.account_id === locals.account?.id ? user.email : undefined;
+            if (!locals.account) {
+                return undefined;
+            }
+            const user = await userService.getUserByIdAndAccountId(Number(req.params.id), locals.account.id);
+            return user?.email;
         });
         return { type: 'member', id: String(req.params.id), ...(display ? { display } : {}) };
     },

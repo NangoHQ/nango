@@ -126,4 +126,32 @@ describe('audit middleware (private API)', () => {
             targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
         });
     });
+
+    it('does not leak a cross-account member email into the target display', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const other = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        // Target a member that belongs to a DIFFERENT account. The controller rejects it, but the point
+        // is that the audit event must not carry the other account's email in the target display.
+        const res = await api.fetch('/api/v1/team/users/:id', {
+            method: 'PATCH',
+            session,
+            query: { env: 'dev' },
+            params: { id: other.user.id },
+            body: { role: 'administrator' }
+        });
+
+        expect(res.res.status).toBe(400);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        const event = auditSpy.mock.calls[0]?.[0];
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'role_changed',
+            targets: [{ type: 'member', id: String(other.user.id) }]
+        });
+        expect(event?.targets[0]).not.toHaveProperty('display');
+    });
 });
