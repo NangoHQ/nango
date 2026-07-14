@@ -1491,6 +1491,7 @@
               "integrations/all/personio",
               "integrations/all/personio-recruiting",
               "integrations/all/personio-v2",
+              "api-integrations/phrase",
               "integrations/all/pingboard",
               "integrations/all/pinterest",
               "integrations/all/pingone",

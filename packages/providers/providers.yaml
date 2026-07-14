@@ -15706,6 +15706,35 @@ personio-recruiting:
             title: API Key
             description: The API key for your Pingboard account
 
+phrase:
+    display_name: Phrase
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/phrase
+    docs_connect: https://nango.dev/docs/api-integrations/phrase/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The API hostname for your Phrase data center.
+            doc_section: '#step-2-determine-your-hostname'
+            enum:
+                - api.phrase.com
+                - api.us.app.phrase.com
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The OAuth Access Token from your Phrase account.
+            example: 'aVdNWDZR****************************************************dDdN'
+            pattern: '^[A-Za-z0-9]{64}$'
+            doc_section: '#step-1-generate-an-access-token'
+
 pingboard:
     display_name: Pingboard
     categories:
