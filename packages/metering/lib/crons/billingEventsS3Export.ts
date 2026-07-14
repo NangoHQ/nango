@@ -17,7 +17,15 @@ const cronMinute = envs.CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
-const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '';
+
+// Keyed on the DATA DAY, not the wall clock. Matters at the seam: the
+// Aug 1 00:15 UTC firing exports July 31 data, and July 31 is still
+// pre-cutover — so those rows must ship as "_s3" shadow, not canonical.
+// See BILLING_EVENTS_CUTOVER_AT in packages/utils.
+function dayIsPostCutover(day: string): boolean {
+    if (!envs.BILLING_EVENTS_CUTOVER_AT) return false;
+    return new Date(`${day}T00:00:00Z`) >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+}
 
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
 // Cron fires hourly; lock should expire well before the next tick.
@@ -214,13 +222,12 @@ export function billingEventsS3ExportCron(): void {
     });
 }
 
-function addEventNameSuffix(eventName: MetricSpec['canonicalEventName']): string {
-    if (eventName == 'data_transfer') {
+function addEventNameSuffix(eventName: MetricSpec['canonicalEventName'], day: string): string {
+    if (eventName === 'data_transfer') {
         // data_transfer is a new event and thus doesn't need the suffix to support live traffic cutoff.
         return eventName;
     }
-
-    return `${eventName}${eventNameSuffix}`;
+    return `${eventName}${dayIsPostCutover(day) ? '' : '_s3'}`;
 }
 
 export async function exec(): Promise<void> {
@@ -236,7 +243,7 @@ export async function exec(): Promise<void> {
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {
-                    const eventName = addEventNameSuffix(metric.canonicalEventName);
+                    const eventName = addEventNameSuffix(metric.canonicalEventName, day);
                     const key = objectKey({ day, eventName });
                     const start = process.hrtime.bigint();
                     // Tracks which step is in flight so a catch can tag the failure
