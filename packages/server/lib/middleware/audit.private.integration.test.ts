@@ -62,7 +62,8 @@ describe('audit middleware (private API)', () => {
             action: 'deleted',
             outcome: 'success',
             actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'connection', id: connection.connection_id }]
+            targets: [{ type: 'connection', id: connection.connection_id }],
+            metadata: { providerConfigKey: 'algolia' }
         });
     });
 

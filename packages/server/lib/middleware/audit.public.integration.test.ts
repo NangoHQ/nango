@@ -63,7 +63,8 @@ describe('audit middleware (public API)', () => {
             accountId: account.id,
             environmentId: env.id,
             actor: { type: 'api_key', id: String(apiKey.id), display: apiKey.display_name },
-            targets: [{ type: 'connection', id: connection.connection_id }]
+            targets: [{ type: 'connection', id: connection.connection_id }],
+            metadata: { providerConfigKey: 'algolia' }
         });
     });
 

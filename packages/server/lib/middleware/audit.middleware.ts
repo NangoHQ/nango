@@ -3,7 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { getLogger } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, MemberRoleChangedMetadata } from '@nangohq/audit';
+import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, ConnectionDeletedMetadata, MemberRoleChangedMetadata } from '@nangohq/audit';
 import type { DeleteConnection, DeletePublicConnection, Endpoint, PatchTeamUser } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -20,7 +20,11 @@ interface AuditSpecBase<TEndpoint extends Endpoint<any>> {
 }
 
 export type AuditSpec<TEndpoint extends Endpoint<any> = Endpoint<any>> =
-    | (AuditSpecBase<TEndpoint> & { resource: 'connection'; action: 'deleted'; metadata?: never })
+    | (AuditSpecBase<TEndpoint> & {
+          resource: 'connection';
+          action: 'deleted';
+          metadata?: (req: AuditRequest<TEndpoint>) => ConnectionDeletedMetadata | undefined;
+      })
     | (AuditSpecBase<TEndpoint> & {
           resource: 'member';
           action: 'role_changed';
@@ -115,7 +119,11 @@ export function auditable<TEndpoint extends Endpoint<any>>(spec: AuditSpec<TEndp
 export const auditConnectionDeleted = auditable<DeletePublicConnection | DeleteConnection>({
     resource: 'connection',
     action: 'deleted',
-    target: (req) => ({ type: 'connection', id: req.params.connectionId })
+    target: (req) => ({ type: 'connection', id: req.params.connectionId }),
+    metadata: (req) => {
+        const key = req.query.provider_config_key;
+        return typeof key === 'string' ? { providerConfigKey: key } : undefined;
+    }
 });
 
 export const auditMemberRoleChanged = auditable<PatchTeamUser>({

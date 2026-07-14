@@ -21,6 +21,11 @@ export interface AuditContext {
     userAgent?: string;
 }
 
+export interface ConnectionDeletedMetadata {
+    // Qualifies the target: connection_id is unique only per (provider config key, environment).
+    providerConfigKey: string;
+}
+
 export interface MemberRoleChangedMetadata {
     // Optional: capturing it needs pre-update state a route-level emit may not have.
     fromRole?: string;
@@ -39,7 +44,7 @@ interface AuditEventCommon {
 }
 
 export type AuditEvent =
-    | (AuditEventCommon & { resource: 'connection'; action: 'deleted' })
+    | (AuditEventCommon & { resource: 'connection'; action: 'deleted'; metadata?: ConnectionDeletedMetadata })
     | (AuditEventCommon & { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata });
 
 export type AuditResource = AuditEvent['resource'];
