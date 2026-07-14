@@ -1,0 +1,94 @@
+---
+title: 'VEED (via fal.ai)'
+sidebarTitle: 'VEED (via fal.ai)'
+description: 'Integrate your application with the VEED AI video API, hosted on fal.ai'
+---
+
+## 🚀 Quickstart
+
+Connect to VEED with Nango and see data flow in 2 minutes. VEED's AI video models (Fabric 1.0, Subtitles, Lip Sync, Green Screen, Background Removal) are hosted on fal.ai's queue infrastructure and authenticated with a fal.ai API key.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _VEED (via fal.ai)_.
+    </Step>
+    <Step title="Connect your VEED account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your fal.ai API key, then save.
+    </Step>
+    <Step title="Call the VEED API">
+    Let's submit your first request to the VEED Fabric 1.0 model (lip sync). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/fabric-1.0" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              --data '{
+                "image_url": "https://v3.fal.media/files/koala/NLVPfOI4XL1cWT2PmmqT3_Hope.png",
+                "audio_url": "https://v3.fal.media/files/elephant/Oz_g4AwQvXtXpUHL3Pa7u_Hope.mp3",
+                "resolution": "720p"
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/fabric-1.0',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                image_url: 'https://v3.fal.media/files/koala/NLVPfOI4XL1cWT2PmmqT3_Hope.png',
+                audio_url: 'https://v3.fal.media/files/elephant/Oz_g4AwQvXtXpUHL3Pa7u_Hope.mp3',
+                resolution: '720p'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    This queues the job and returns a `request_id`. Poll `/requests/{request_id}/status` and fetch `/requests/{request_id}` through the same proxy once it completes.
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain an API key, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 VEED integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to connect your VEED account](/api-integrations/veed/connect)  
+Generate a fal.ai API key and connect it to Nango
+
+Official docs: [VEED on fal.ai](https://fal.ai/models/veed)
+
+## 🧩 Pre-built syncs & actions for VEED
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/veed/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

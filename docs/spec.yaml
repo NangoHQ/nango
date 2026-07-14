@@ -1335,6 +1335,12 @@ paths:
                             properties:
                                 tags:
                                     $ref: '#/components/schemas/Tags'
+                                webhook_url:
+                                    type: string
+                                    description: >
+                                        Override the environment's webhook URLs for this connection.
+                                        When set, this connection's webhooks are sent only to this URL.
+                                        Pass an empty string to clear the override.
                                 end_user:
                                     allOf:
                                         - $ref: '#/components/schemas/EndUser'
