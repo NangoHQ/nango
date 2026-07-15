@@ -55,6 +55,48 @@ export function formatDimensionValue(dimension: AnyBreakdownDimension, value: st
     return value;
 }
 
+/**
+ * Parse a `${metric}.filter` URL value (`<dimension>:<value>`) into its parts. Splits on the
+ * FIRST ':' to mirror the backend, so a value containing ':' (e.g. a URL) survives intact.
+ * Returns null for malformed input, or for a dimension the metric doesn't support (e.g. a stale
+ * deep-link from before the dimension list changed).
+ */
+export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDimension[]): { dimension: AnyBreakdownDimension; value: string } | null {
+    const colon = raw.indexOf(':');
+    const hasDimensionAndValue = colon > 0 && colon < raw.length - 1;
+    if (!hasDimensionAndValue) return null;
+
+    const dimension = raw.slice(0, colon) as AnyBreakdownDimension;
+    if (!allowed.includes(dimension)) return null;
+
+    return { dimension, value: raw.slice(colon + 1) };
+}
+
+/**
+ * Dimensions whose values are a small, fully-listed, closed set, so their Filter value pane shows
+ * no search box: `environment_id` (a handful of envs), `success` (true/false), `function_type`
+ * (sync/action/webhook/…), and data-transfer `package` / `callsite` (a fixed handful each). The
+ * rest are open, high-cardinality id/name dimensions where server-side search earns its place.
+ */
+const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
+
+/** Whether the Filter value pane shows a search box for this dimension. */
+export function isSearchableDimension(dimension: AnyBreakdownDimension): boolean {
+    return !ENUMERATED_DIMENSIONS.has(dimension);
+}
+
+/**
+ * The breakdown dimension actually sent to the query. Group and filter may target the same
+ * dimension — the backend rejects that degenerate split, so the filter wins and the grouping is
+ * dropped from the query. (The grouping stays in the URL, so clearing the filter restores it.)
+ */
+export function resolveBreakdownDimension(
+    group: AnyBreakdownDimension | null,
+    filter: { dimension: AnyBreakdownDimension } | null
+): AnyBreakdownDimension | null {
+    return group && filter && group === filter.dimension ? null : group;
+}
+
 /** Top-N dimension values requested per breakdown; the long tail collapses into a single 'rest' bucket. */
 export const DEFAULT_TOP_N = 10;
 

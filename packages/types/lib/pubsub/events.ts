@@ -160,7 +160,14 @@ export type DataTransferCallsite =
     | 'proxy'
     | 'uncontrolled_fetch'
     | 'persist_logs'
-    | 'persist_records';
+    | 'persist_records'
+    | 'get_/records'
+    | 'get_/proxy'
+    | 'patch_/proxy'
+    | 'post_/proxy'
+    | 'put_/proxy'
+    | 'delete_/proxy'
+    | 'unknown_/proxy';
 
 export type UsageDataTransferEvent = UsageEventBase<
     'usage.data_transfer',

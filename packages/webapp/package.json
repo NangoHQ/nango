@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "test": "vitest"
+        "test": "vitest",
+        "tokens:usage": "node scripts/generate-token-usage.mjs"
     },
     "browserslist": {
         "production": [
@@ -28,7 +29,7 @@
         "@mantine/prism": "5.10.5",
         "@nangohq/authz": "file:../authz",
         "@nangohq/design-system": "file:../design-system",
-        "@nangohq/frontend": "0.70.9",
+        "@nangohq/frontend": "0.71.0",
         "@nangohq/types": "file:../types",
         "@radix-ui/react-accordion": "1.2.2",
         "@radix-ui/react-avatar": "1.1.2",
@@ -37,7 +38,6 @@
         "@radix-ui/react-dialog": "1.1.15",
         "@radix-ui/react-dropdown-menu": "2.1.16",
         "@radix-ui/react-hover-card": "1.1.15",
-        "@radix-ui/react-label": "2.1.1",
         "@radix-ui/react-popover": "1.1.15",
         "@radix-ui/react-progress": "1.1.1",
         "@radix-ui/react-scroll-area": "1.2.2",
@@ -51,7 +51,6 @@
         "@sentry/react": "8.52.1",
         "@stripe/react-stripe-js": "3.7.0",
         "@stripe/stripe-js": "7.3.1",
-        "@tabler/icons-react": "3.21.0",
         "@tailwindcss/forms": "0.5.10",
         "@tailwindcss/vite": "4.3.1",
         "@tanstack/react-form": "1.19.3",
@@ -80,6 +79,7 @@
         "posthog-js": "1.212.1",
         "radix-ui": "1.4.3",
         "react": "18.3.1",
+        "react-colorful": "5.7.0",
         "react-day-picker": "8.10.1",
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",

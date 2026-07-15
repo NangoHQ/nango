@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -38,11 +39,16 @@ export const Plans: React.FC = () => {
     }, [paymentMethods]);
 
     const futurePlan = useMemo(() => {
-        if (!currentPlan?.orb_future_plan) {
+        if (!currentPlan?.orb_future_plan || !currentPlan.orb_future_plan_at) {
             return null;
         }
 
-        return plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
+        const plan = plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
+        if (!plan) {
+            return null;
+        }
+
+        return { plan, futurePlanAt: format(new Date(currentPlan.orb_future_plan_at), 'yyyy-MM-dd') };
     }, [currentPlan, plansList]);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
@@ -75,11 +81,11 @@ export const Plans: React.FC = () => {
             return null;
         }
 
-        if (futurePlan?.code !== 'free') {
-            return `Your ${plans?.activePlan.title} subscription will switch to Starter at the end of the month.`;
+        if (futurePlan.plan?.code === 'free') {
+            return `Your ${plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.`;
         }
 
-        return `Your ${plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.`;
+        return `Your ${plans?.activePlan.title} subscription will switch to ${futurePlan.plan?.title} on ${futurePlan.futurePlanAt}.`;
     }, [futurePlan, plans?.activePlan.title]);
 
     return (

@@ -2,28 +2,24 @@ import crypto from 'crypto';
 
 import { isAxiosError } from 'axios';
 
+import {
+    absoluteUrlFromRedirectRequestOptions,
+    createRedirectValidator,
+    getSafeHttpAgents,
+    isOutboundUrlAllowed,
+    resolvePolicyForServer
+} from '@nangohq/egress';
 import { getRedis } from '@nangohq/kvstore';
 import { createMeteringTransport } from '@nangohq/shared';
-import {
-    axiosInstance as axios,
-    Err,
-    getLogger,
-    isBaseUrlOverrideDenied,
-    networkError,
-    normalizeDenylist,
-    Ok,
-    redactHeaders,
-    retryFlexible,
-    stringifyStable,
-    userAgent
-} from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, networkError, Ok, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';
 
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { LogContext } from '@nangohq/logs';
 import type { MeteredBytes } from '@nangohq/shared';
-import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
+import type { ConnectionConfig, DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
 
@@ -31,7 +27,42 @@ const logger = getLogger('webhooks.utils');
 
 export const RETRY_ATTEMPTS = envs.NANGO_WEBHOOK_RETRY_ATTEMPTS;
 
-const webhookUrlDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
+export type WebhookAgents = ReturnType<typeof getSafeHttpAgents>;
+
+export interface WebhookOutbound {
+    policy: OutboundUrlPolicy;
+    agents: WebhookAgents;
+    validateRedirect: (options: Record<string, unknown>) => void;
+}
+
+/** Build a {@link WebhookOutbound} from a policy and its agents, wiring the redirect validator to the policy. */
+export function createWebhookOutbound({ policy, agents }: { policy: OutboundUrlPolicy; agents: WebhookAgents }): WebhookOutbound {
+    const redirectValidator = createRedirectValidator(policy);
+    return {
+        policy,
+        agents,
+        // Validate each redirect target (scheme + hostname denylist) before follow-redirects follows it.
+        validateRedirect: (options) => {
+            const absolute = absoluteUrlFromRedirectRequestOptions(options);
+            if (absolute) {
+                redirectValidator(absolute);
+            }
+        }
+    };
+}
+
+let defaultWebhookOutbound: WebhookOutbound | undefined;
+
+function getDefaultWebhookOutbound(): WebhookOutbound {
+    if (!defaultWebhookOutbound) {
+        const policy = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+            outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY
+        });
+        defaultWebhookOutbound = createWebhookOutbound({ policy, agents: getSafeHttpAgents(policy) });
+    }
+    return defaultWebhookOutbound;
+}
 
 export const NON_FORWARDABLE_HEADERS = [
     'host',
@@ -160,6 +191,27 @@ export const shouldSend = ({
     return true;
 };
 
+/**
+ * Overrides the environment webhook URL with the connection's webhook URL override if set.
+ * The environment secondary URL is dropped so the connection's webhooks are not also delivered to the
+ * shared endpoint.
+ */
+export function resolveWebhookSettings(
+    webhookSettings: DBExternalWebhook,
+    connectionConfig: Pick<ConnectionConfig, 'webhook_url'> | null | undefined
+): DBExternalWebhook {
+    const primary = connectionConfig?.webhook_url;
+    if (typeof primary !== 'string' || primary.trim() === '') {
+        return webhookSettings;
+    }
+
+    return {
+        ...webhookSettings,
+        primary_url: primary,
+        secondary_url: null
+    };
+}
+
 export const deliver = async ({
     webhooks,
     body,
@@ -168,7 +220,8 @@ export const deliver = async ({
     secret,
     endingMessage = '',
     incomingHeaders,
-    onBytes
+    onBytes,
+    outbound = getDefaultWebhookOutbound()
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
@@ -178,13 +231,14 @@ export const deliver = async ({
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
     onBytes?: (bytes: MeteredBytes) => void;
+    outbound?: WebhookOutbound;
 }): Promise<Result<void>> => {
     let success = true;
 
     for (const webhook of webhooks) {
         const { url, type } = webhook;
 
-        if (isBaseUrlOverrideDenied(url, webhookUrlDenylist)) {
+        if (!isOutboundUrlAllowed(url, outbound.policy)) {
             void logCtx?.warn(`Skipping webhook delivery to denied URL (${type})`);
             continue;
         }
@@ -219,12 +273,23 @@ export const deliver = async ({
                     const result = await circuitBreaker.execute(url, async () => {
                         const createdAt = new Date();
                         const attemptBytes: MeteredBytes = { sent: 0, received: 0 };
-                        const transport = createMeteringTransport((hop) => {
-                            attemptBytes.sent += hop.sent;
-                            attemptBytes.received += hop.received;
+                        const transport = createMeteringTransport({
+                            onBytes: (hop) => {
+                                attemptBytes.sent += hop.sent;
+                                attemptBytes.received += hop.received;
+                            },
+                            beforeRedirect: outbound.validateRedirect,
+                            maxRedirects: outbound.policy.maxRedirects
                         });
                         try {
-                            const res = await axios.post(url, bodyString.value, { headers, timeout: envs.NANGO_WEBHOOK_TIMEOUT_MS, transport });
+                            const res = await axios.post(url, bodyString.value, {
+                                headers,
+                                timeout: envs.NANGO_WEBHOOK_TIMEOUT_MS,
+                                transport,
+                                httpAgent: outbound.agents.httpAgent,
+                                httpsAgent: outbound.agents.httpsAgent,
+                                maxRedirects: outbound.policy.maxRedirects
+                            });
 
                             void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res), context: 'webhook', createdAt });
                             if (res.status >= 200 && res.status < 300) {

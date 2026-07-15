@@ -102,6 +102,93 @@ describe('Persist API', () => {
         expect(await response.json()).toStrictEqual({ error: { code: 'request_too_large', message: 'Entity too large' } });
     });
 
+    describe('runner coordination', () => {
+        const taskId = 'coordination-test-task';
+        const syncId = 'coordination-test-sync';
+        const lockOwner = 'test-owner';
+        const lockKey = 'test-lock-key';
+
+        it('should set and get abort flag', async () => {
+            const putResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/task/${taskId}/abort`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${mockSecretKey}` }
+            });
+            expect(putResponse.status).toEqual(204);
+
+            const getResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/task/${taskId}/abort`, {
+                headers: { Authorization: `Bearer ${mockSecretKey}` }
+            });
+            expect(getResponse.status).toEqual(200);
+            expect(await getResponse.json()).toEqual({ aborted: true });
+        });
+
+        it('should acquire and release sync conflict lock', async () => {
+            const acquireResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
+                method: 'PUT',
+                body: JSON.stringify({ scriptType: 'sync', syncId, ttlMs: 60_000 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(acquireResponse.status).toEqual(204);
+
+            const conflictResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
+                method: 'PUT',
+                body: JSON.stringify({ scriptType: 'sync', syncId, ttlMs: 60_000 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(conflictResponse.status).toEqual(409);
+            expect(await conflictResponse.json()).toStrictEqual({
+                error: { code: 'sync_conflict', message: 'Conflicting sync detected' }
+            });
+
+            const releaseResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
+                method: 'DELETE',
+                body: JSON.stringify({ scriptType: 'sync', syncId }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(releaseResponse.status).toEqual(204);
+        });
+
+        it('should acquire, check, and release SDK locks', async () => {
+            const acquireResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/locks/try-acquire`, {
+                method: 'POST',
+                body: JSON.stringify({ owner: lockOwner, key: lockKey, ttlMs: 60_000 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(acquireResponse.status).toEqual(200);
+            expect(await acquireResponse.json()).toEqual({ acquired: true });
+
+            const hasLockResponse = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/runner/locks?owner=${encodeURIComponent(lockOwner)}&key=${encodeURIComponent(lockKey)}`,
+                { headers: { Authorization: `Bearer ${mockSecretKey}` } }
+            );
+            expect(hasLockResponse.status).toEqual(200);
+            expect(await hasLockResponse.json()).toEqual({ hasLock: true });
+
+            const releaseResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/locks/release`, {
+                method: 'POST',
+                body: JSON.stringify({ owner: lockOwner, key: lockKey }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(releaseResponse.status).toEqual(200);
+            expect(await releaseResponse.json()).toEqual({ released: true });
+        });
+    });
+
     describe('save records', () => {
         it('should error if no records', async () => {
             const response = await fetch(

@@ -260,7 +260,6 @@ class Lambda {
                 PERSIST_SERVICE_URL: envs.LAMBDA_PERSIST_SERVICE_URL || '',
                 JOBS_SERVICE_URL: envs.LAMBDA_JOBS_SERVICE_URL || '',
                 PROVIDERS_URL: envs.LAMBDA_PROVIDERS_URL || '',
-                NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '',
                 NANGO_TELEMETRY_SDK: String(envs.NANGO_TELEMETRY_SDK),
                 DD_ENV: envs.DD_ENV || '',
                 DD_SITE: envs.DD_SITE || '',
@@ -272,6 +271,7 @@ class Lambda {
                 ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
                     ? { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }
                     : {}),
+                ...(envs.NANGO_OUTBOUND_URL_POLICY ? { NANGO_OUTBOUND_URL_POLICY: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) } : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
                 ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }

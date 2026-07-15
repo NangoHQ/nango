@@ -10,6 +10,7 @@ import { getAxiosConfiguration, ProxyError } from './utils.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
 import type { RetryReason } from './utils.js';
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, IntegrationConfigForProxy, MaybePromise, MessageRowInsert } from '@nangohq/types';
 import type { Result, RetryAttemptArgument } from '@nangohq/utils';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -23,6 +24,7 @@ interface Props {
     onBytes?: (bytes: MeteredBytes) => MaybePromise<void>;
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
+    outboundPolicy?: OutboundUrlPolicy | undefined;
 }
 
 /**
@@ -71,6 +73,11 @@ export class ProxyRequest {
      */
     integrationConfig?: IntegrationConfigForProxy | undefined;
 
+    /**
+     * Outbound URL SSRF policy applied to every request attempt (incl. redirect hops).
+     */
+    outboundPolicy?: Props['outboundPolicy'];
+
     constructor(props: Props) {
         this.config = props.proxyConfig;
         this.logger = props.logger;
@@ -78,6 +85,7 @@ export class ProxyRequest {
         this.onBytes = props.onBytes;
         this.getConnection = props.getConnection;
         this.getIntegrationConfig = props.getIntegrationConfig;
+        this.outboundPolicy = props.outboundPolicy;
     }
 
     /**
@@ -104,19 +112,21 @@ export class ProxyRequest {
                     this.axiosConfig = getAxiosConfiguration({
                         integrationConfig: this.integrationConfig,
                         proxyConfig: this.config,
-                        connection: this.connection
+                        connection: this.connection,
+                        outboundPolicy: this.outboundPolicy
                     });
 
                     const byteTotals = { sent: 0, received: 0 };
 
                     if (this.onBytes) {
-                        this.axiosConfig.transport = createMeteringTransport(
-                            (bytes) => {
+                        this.axiosConfig.transport = createMeteringTransport({
+                            onBytes: (bytes) => {
                                 byteTotals.sent += bytes.sent;
                                 byteTotals.received += bytes.received;
                             },
-                            this.axiosConfig.beforeRedirect as (opts: Record<string, unknown>) => void
-                        );
+                            beforeRedirect: this.axiosConfig.beforeRedirect as (opts: Record<string, unknown>) => void,
+                            maxRedirects: this.axiosConfig.maxRedirects
+                        });
                     }
 
                     const start = new Date();

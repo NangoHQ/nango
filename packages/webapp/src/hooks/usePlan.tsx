@@ -1,5 +1,5 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
@@ -8,6 +8,7 @@ import type {
     ApiPlan,
     BreakdownDimensions,
     GetBillingUsage,
+    GetBillingUsageTopDimensionValues,
     GetPlan,
     GetPlans,
     GetUsage,
@@ -16,6 +17,7 @@ import type {
     PutBillingInvoicingDetails,
     UsageMetric
 } from '@nangohq/types';
+import type { InfiniteData, QueryKey } from '@tanstack/react-query';
 
 export async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']> {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, { method: 'GET' });
@@ -128,34 +130,60 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
 }
 
 /**
- * Fetches one metric's breakdown: the top-N values of `dimension` plus a 'rest'
- * rollup, under `usage[metric].breakdown`. Always queries ClickHouse (breakdowns
- * don't exist on the Orb path). The panel's headline total still comes from
- * `useApiGetBillingUsage`.
+ * Per-panel usage detail. Fires one request scoped to a single metric
+ * (`metrics=<metric>`) carrying an optional `breakdown[<metric>]=<dimension>`
+ * and/or `filter[<metric>]=<dim>:<value>` spec, covering every drill-in state:
+ *
+ *  - breakdown only → top-N dimension-value series + 'rest' rollup under
+ *    `usage[metric].breakdown` (top-level `usage` empty).
+ *  - filter only → the metric scoped to one value, single series in the
+ *    top-level `usage[metric].usage` with a real filtered `total` (no breakdown).
+ *  - filter + breakdown (different dims) → the breakdown computed within the
+ *    filtered slice, plus a filtered `total` so the headline matches the series.
+ *
+ * These are ClickHouse-only features, so the request forces `source=clickhouse`
+ * (honoured under the dev gate). The caller keeps using `useApiGetBillingUsage`
+ * for the unfiltered page-load totals.
  */
-export function useApiGetBillingUsageBreakdown<M extends UsageMetric>(
+export function useApiGetBillingUsageDetail<M extends UsageMetric>(
     env: string,
     timeframe: { start: string; end: string } | undefined,
     metric: M,
-    dimension: BreakdownDimensions[M] | null,
+    spec: {
+        dimension?: BreakdownDimensions[M] | null;
+        filter?: { dimension: BreakdownDimensions[M]; value: string } | null;
+    },
     top: number,
     options?: { enabled?: boolean }
 ) {
+    const dimension = spec.dimension ?? null;
+    const filter = spec.filter ?? null;
+
+    // Fetch lazily: only once the panel has something to detail — a breakdown or a filter — and
+    // the caller hasn't disabled it.
+    const hasDetail = Boolean(dimension) || Boolean(filter);
+    const enabled = Boolean(env) && Boolean(timeframe) && hasDetail && (options?.enabled ?? true);
+
     return useQuery<GetBillingUsage['Success'], APIError>({
-        enabled: Boolean(env) && Boolean(timeframe) && Boolean(dimension) && (options?.enabled ?? true),
-        queryKey: [...GetBillingUsageQueryKey, 'breakdown', timeframe, metric, dimension, top],
+        enabled,
+        // `filter` is part of the key so drilling into a different value refetches rather than
+        // serving the previous slice.
+        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter, top],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
             }
-            // Breakdowns only exist on the ClickHouse path; force the source so it
-            // resolves under the dev gate (FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE).
+            // breakdown / filter only exist on the ClickHouse path; force the
+            // source so it resolves under the dev gate (FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE).
             params.append('source', 'clickhouse');
             params.append('metrics', metric);
             if (dimension) {
                 params.append(`breakdown[${metric}]`, dimension);
+            }
+            if (filter) {
+                params.append(`filter[${metric}]`, `${filter.dimension}:${filter.value}`);
             }
             params.append('top', String(top));
 
@@ -171,6 +199,106 @@ export function useApiGetBillingUsageBreakdown<M extends UsageMetric>(
             return json;
         }
     });
+}
+
+export const GetBillingUsageTopDimensionValuesQueryKey = ['plans', 'billing-usage', 'top-dimension-values'];
+
+// Top values for a (metric, dimension, month) are stable, so keep them fresh for a while —
+// reopening (or prefetching) the filter popover serves the cache instead of refetching.
+const TOP_DIMENSION_VALUES_STALE_TIME = 5 * 60 * 1000;
+
+// `search` is part of the key so each search term caches independently; `page`
+// is the infinite-query page param, not the key.
+function topDimensionValuesQueryKey(timeframe: { start: string; end: string } | undefined, metric: UsageMetric, dimension: string | null, search: string) {
+    return [...GetBillingUsageTopDimensionValuesQueryKey, timeframe, metric, dimension, search];
+}
+
+function fetchTopDimensionValuesPage(
+    env: string,
+    metric: UsageMetric,
+    dimension: string | null,
+    timeframe: { start: string; end: string } | undefined,
+    search: string
+) {
+    return async ({ pageParam = 0 }: { pageParam?: number }): Promise<GetBillingUsageTopDimensionValues['Success']> => {
+        const params = new URLSearchParams({ env, metric, page: String(pageParam) });
+        if (timeframe) {
+            params.append('from', timeframe.start);
+            params.append('to', timeframe.end);
+        }
+        if (dimension) {
+            params.append('dimension', dimension);
+        }
+        if (search) {
+            params.append('search', search);
+        }
+
+        const res = await apiFetch(`/api/v1/plans/billing-usage/top-dimension-values?${params.toString()}`, { method: 'GET' });
+
+        const json = (await res.json()) as GetBillingUsageTopDimensionValues['Reply'];
+        if (res.status !== 200 || 'error' in json) {
+            throw new APIError({ res, json });
+        }
+
+        return json;
+    };
+}
+
+/**
+ * Seen values for a (metric, dimension) over a timeframe, ranked by usage and
+ * paged so ANY value is reachable — `search` narrows to matching values across
+ * the customer's full set (server-side), and pages load incrementally past the
+ * first. Backs the filter value picker. Lazy — only fires when `enabled` and a
+ * dimension is set.
+ */
+export function useApiGetBillingUsageTopDimensionValues<M extends UsageMetric>(
+    env: string,
+    metric: M,
+    dimension: BreakdownDimensions[M] | null,
+    timeframe: { start: string; end: string } | undefined,
+    search: string,
+    options?: { enabled?: boolean }
+) {
+    return useInfiniteQuery<
+        GetBillingUsageTopDimensionValues['Success'],
+        APIError,
+        InfiniteData<GetBillingUsageTopDimensionValues['Success']>,
+        QueryKey,
+        number
+    >({
+        enabled: Boolean(env) && Boolean(timeframe) && Boolean(dimension) && (options?.enabled ?? true),
+        staleTime: TOP_DIMENSION_VALUES_STALE_TIME,
+        queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, search),
+        queryFn: fetchTopDimensionValuesPage(env, metric, dimension, timeframe, search),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => (lastPage.data.pagination.hasMore ? lastPage.data.pagination.page + 1 : undefined),
+        // Keep showing the previous pages while a new search term's first page loads, so the
+        // input doesn't unmount mid-keystroke and lose focus (see useGetIntegrationFunctions).
+        placeholderData: keepPreviousData
+    });
+}
+
+/**
+ * Returns a callback that warms the value cache (first page, no search) for a set of dimensions.
+ * Call it when the filter popover opens so picking a dimension shows its values instantly instead
+ * of spinning through a fetch. No-ops per dimension while the cached values are still fresh.
+ */
+export function useApiPrefetchBillingUsageTopDimensionValues(env: string, metric: UsageMetric, timeframe: { start: string; end: string } | undefined) {
+    const queryClient = useQueryClient();
+    return useCallback(
+        (dimensions: readonly string[]) => {
+            if (!env || !timeframe) return;
+            for (const dimension of dimensions) {
+                void queryClient.prefetchInfiniteQuery({
+                    staleTime: TOP_DIMENSION_VALUES_STALE_TIME,
+                    queryKey: topDimensionValuesQueryKey(timeframe, metric, dimension, ''),
+                    queryFn: fetchTopDimensionValuesPage(env, metric, dimension, timeframe, ''),
+                    initialPageParam: 0
+                });
+            }
+        },
+        [queryClient, env, metric, timeframe]
+    );
 }
 
 export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver: boolean; daysRemaining: number } {

@@ -17,6 +17,7 @@
         "@aws-sdk/client-s3": "3.993.0",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",
+        "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",

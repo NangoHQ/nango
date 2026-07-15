@@ -420,6 +420,7 @@ class Kubernetes {
             ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
                 ? [{ name: 'NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', value: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }]
                 : []),
+            ...(envs.NANGO_OUTBOUND_URL_POLICY ? [{ name: 'NANGO_OUTBOUND_URL_POLICY', value: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) }] : []),
             ...(envs.DD_ENV ? [{ name: 'DD_ENV', value: envs.DD_ENV }] : []),
             ...(envs.DD_SITE ? [{ name: 'DD_SITE', value: envs.DD_SITE }] : []),
             ...(envs.DD_TRACE_AGENT_URL ? [{ name: 'DD_TRACE_AGENT_URL', value: envs.DD_TRACE_AGENT_URL }] : []),
@@ -429,12 +430,7 @@ class Kubernetes {
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
-            ...(node.replicas > 1
-                ? [
-                      { name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'REDIS' },
-                      { name: 'NANGO_CUSTOMER_REDIS_URL', value: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '' }
-                  ]
-                : [])
+            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'DISTRIBUTED' }] : [])
         ];
     }
 

@@ -1,5 +1,5 @@
-import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
+import { Calendar, Check } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
@@ -96,8 +96,8 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button variant="outline" size="lg" className="grow truncate tabular-nums">
-                    <IconCalendar size={18} />
+                <Button variant="outline" size="md" className="grow truncate tabular-nums">
+                    <Calendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
@@ -116,7 +116,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                             )}
                         >
                             <div className="w-12 shrink-0 flex justify-center items-center h-full p-1 bg-surface-panel-muted rounded-md font-medium">
-                                <IconCalendar size={18} />
+                                <Calendar size={18} />
                             </div>
                             <form onSubmit={onSubmitCustomRange} className="w-full">
                                 <input
@@ -147,7 +147,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                         </div>
                                         <span>{preset.label}</span>
                                     </div>
-                                    {selectedPreset?.name === preset.name && <IconCheck className="w-4 h-4 mr-2" />}
+                                    {selectedPreset?.name === preset.name && <Check className="w-4 h-4 mr-2" />}
                                 </div>
                             );
                         })}

@@ -35,6 +35,7 @@ import { postImpersonate } from './controllers/v1/admin/impersonate/postImperson
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
+import { patchConnection } from './controllers/v1/connections/connectionId/patchConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
 import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
@@ -66,6 +67,7 @@ import { postIntegration } from './controllers/v1/integrations/postIntegration.j
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
 import { deleteIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/deleteFunction.js';
+import { getIntegrationFunctionCode } from './controllers/v1/integrations/providerConfigKey/functions/getCode.js';
 import { getIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/getFunction.js';
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
@@ -248,6 +250,11 @@ web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ actio
 web.route('/integrations/:providerConfigKey/functions/:functionName')
     .get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunction)
     .delete(webAuth, can({ action: 'delete', resource: 'flow', scopedBy: envScope }), deleteIntegrationFunction);
+web.route('/integrations/:providerConfigKey/functions/:functionName/code').get(
+    webAuth,
+    can({ action: 'read', resource: 'flow', scopedBy: envScope }),
+    getIntegrationFunctionCode
+);
 web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
@@ -266,6 +273,7 @@ web.route('/connections/:connectionId/records/models').get(
 );
 web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
+web.route('/connections/:connectionId').patch(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), patchConnection);
 web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
 web.route('/connections/admin/:connectionId').delete(
     webAuth,

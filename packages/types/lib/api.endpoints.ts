@@ -27,6 +27,8 @@ import type {
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization
 } from './auth/http.api.js';
+import type { PostCliTelemetry } from './cli/api.js';
+import type { GetPublicClientMetadata } from './clientMetadata/http.api.js';
 import type {
     DeleteConnectSession,
     GetConnectSession,
@@ -42,6 +44,7 @@ import type {
     GetConnectionsCount,
     GetPublicConnection,
     GetPublicConnections,
+    PatchConnection,
     PatchPublicConnection,
     PostConnectionRefresh,
     PostPublicConnection
@@ -85,6 +88,7 @@ import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/ap
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
+    GetFunctionCode,
     GetIntegration,
     GetIntegrationFlows,
     GetPublicFunctionCode,
@@ -145,10 +149,12 @@ export type PublicApiEndpoints =
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook
+    | GetPublicClientMetadata
     | GetPublicRecords
     | PatchPublicPruneRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
+    | PostCliTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
     | PostPublicQuickstartIntegration
@@ -206,6 +212,7 @@ export type PrivateApiEndpoints =
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions
+    | GetFunctionCode
     | DeleteIntegrationFunction
     | GetIntegrationTemplates
     | GetProviderTemplates
@@ -229,6 +236,7 @@ export type PrivateApiEndpoints =
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
+    | PatchConnection
     | PostManagedEmailVerification
     | PostManagedSignup
     | PostPreBuiltDeploy

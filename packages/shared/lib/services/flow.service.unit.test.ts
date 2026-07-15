@@ -142,6 +142,19 @@ describe('Flow service tests', () => {
         }
     });
 
+    it('should resolve the symlink target name for symlinked providers and return null otherwise', () => {
+        const symlinked = FlowService.flowsJson.find((flow) => flow.symLinkTargetName);
+        expect(symlinked, 'expected at least one symlinked provider in flows.zero.json').toBeDefined();
+
+        const provider = symlinked!.providerConfigKey;
+        const target = symlinked!.symLinkTargetName!;
+
+        expect(FlowService.getSymLinkTargetName(provider)).toBe(target);
+        // The target folder is canonical, so it must not itself be a symlink.
+        expect(FlowService.getSymLinkTargetName(target)).toBeNull();
+        expect(FlowService.getSymLinkTargetName('this-provider-does-not-exist')).toBeNull();
+    });
+
     it('should cache flows standard config after first call', () => {
         // First call should populate cache
         const result1 = FlowService.getAllAvailableFlowsAsStandardConfig();

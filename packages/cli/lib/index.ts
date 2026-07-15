@@ -21,6 +21,7 @@ import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
 import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
 import { pullFromCatalog, pullFunction } from './services/pull.service.js';
+import { trackCliEvent } from './services/telemetry.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
@@ -34,7 +35,21 @@ import { initZero } from './zeroYaml/init.js';
 import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
-import type { NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
+import type { CliTelemetryEvent, NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
+
+const commandTelemetryEvents: Record<string, CliTelemetryEvent> = {
+    init: 'cli:init',
+    create: 'cli:create',
+    compile: 'cli:compile',
+    dev: 'cli:dev',
+    dryrun: 'cli:dryrun',
+    'generate:docs': 'cli:generate:docs',
+    'generate:tests': 'cli:generate:tests',
+    clone: 'cli:clone',
+    'migrate-to-zero-yaml': 'cli:migrate_to_zero_yaml',
+    deploy: 'cli:deploy',
+    pull: 'cli:pull'
+};
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -46,6 +61,7 @@ class NangoCommand extends Command {
         // Passing --no-interactive will set it to false.
         cmd.option('--no-interactive', 'Disable interactive prompts for missing arguments.');
         cmd.option('--no-dependency-update', 'Skip automatic dependency updates and package installation.');
+        cmd.option('--no-telemetry', 'Disable anonymous CLI usage telemetry.');
 
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const opts = actionCommand.opts<GlobalOptions>();
@@ -76,6 +92,18 @@ class NangoCommand extends Command {
                 opts.dependencyUpdate = false;
             }
             printDebug(`Dependency update: ${opts.dependencyUpdate ? 'enabled' : 'disabled'}`, opts.debug);
+
+            if (opts.telemetry === false) {
+                process.env['NANGO_CLI_TELEMETRY'] = 'false';
+            }
+            if (opts.debug) {
+                process.env['NANGO_CLI_DEBUG'] = 'true';
+            }
+
+            const telemetryEvent = commandTelemetryEvents[actionCommand.name()];
+            if (telemetryEvent) {
+                trackCliEvent(telemetryEvent);
+            }
 
             if (opts.debug && fs.existsSync('.env')) {
                 printDebug('.env file detected and loaded', opts.debug);
@@ -181,12 +209,10 @@ program
     .option('--sync', 'Create a new sync scaffold')
     .option('--action', 'Create a new action scaffold')
     .option('--on-event', 'Create a new on event scaffold')
-    // TODO: add once released (NAN-5943)
-    //.option('--webhook', 'Create a new webhook function scaffold')
     .argument('[integration]', 'Integration name, e.g. "google-calendar"')
     .argument('[name]', 'Name of the sync/action, e.g. "calendar-events"')
     .action(async function (this: Command) {
-        const { debug, sync, action, onEvent, webhook, interactive } = this.opts();
+        const { debug, sync, action, onEvent, interactive } = this.opts();
         let [integration, name] = this.args;
         const absolutePath = process.cwd();
 
@@ -195,7 +221,7 @@ program
 
         try {
             const ensure = new Ensure(interactive);
-            const functionType = await ensure.functionType({ sync, action, onEvent, webhook });
+            const functionType = await ensure.functionType({ sync, action, onEvent });
 
             let integrations: string[] = [];
 

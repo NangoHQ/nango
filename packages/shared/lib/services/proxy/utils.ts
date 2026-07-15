@@ -4,6 +4,7 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
+import { assertSafeOutboundUrlSync, getSafeHttpAgents, getSafeLookup } from '@nangohq/egress';
 import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
 import {
@@ -16,6 +17,7 @@ import {
 import { getProvider } from '../providers.js';
 import { signAwsSigV4Request } from './aws-sigv4.js';
 
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type {
     ApplicationConstructedProxyConfiguration,
     ConnectionForProxy,
@@ -85,11 +87,13 @@ export function absoluteUrlFromRedirectRequestOptions(options: Record<string, un
 export function getAxiosConfiguration({
     proxyConfig,
     connection,
-    integrationConfig
+    integrationConfig,
+    outboundPolicy
 }: {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
+    outboundPolicy?: OutboundUrlPolicy | undefined;
 }): AxiosRequestConfig {
     if (proxyConfig.provider.integration_config) {
         proxyConfig = deriveIntegrationConfigProxy({ proxyConfig, integrationConfig });
@@ -103,6 +107,9 @@ export function getAxiosConfiguration({
             connection,
             ...(integrationConfig !== undefined ? { integrationConfig } : {})
         });
+    }
+    if (outboundPolicy) {
+        assertSafeOutboundUrlSync(url, outboundPolicy, { context: 'proxy' });
     }
     // Merge proxy.body into proxyConfig.data before building headers so that any
     // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
@@ -122,11 +129,13 @@ export function getAxiosConfiguration({
     const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
 
     axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
-        if (proxyConfig.validateProxyRedirectUrl) {
-            const absolute = absoluteUrlFromRedirectRequestOptions(options);
-            if (absolute) {
-                proxyConfig.validateProxyRedirectUrl(absolute);
-            }
+        const absolute = absoluteUrlFromRedirectRequestOptions(options);
+        if (proxyConfig.validateProxyRedirectUrl && absolute) {
+            proxyConfig.validateProxyRedirectUrl(absolute);
+        }
+        // Block redirect hops to blocked IP literals / denied hosts; hostname rebinding is caught by the safe agent.
+        if (outboundPolicy && absolute) {
+            assertSafeOutboundUrlSync(absolute, outboundPolicy, { context: 'redirect' });
         }
         if (shouldForward) {
             Object.keys(headers).forEach((key) => {
@@ -170,7 +179,8 @@ export function getAxiosConfiguration({
                 const agent = new https.Agent({
                     cert,
                     key,
-                    rejectUnauthorized: false
+                    rejectUnauthorized: false,
+                    ...(outboundPolicy ? { lookup: getSafeLookup(outboundPolicy) } : {})
                 });
 
                 axiosConfig.httpAgent = agent;
@@ -181,6 +191,15 @@ export function getAxiosConfiguration({
                     `Certificate and private key must be in PEM format with proper BEGIN/END boundaries: ${err}`
                 );
             }
+        }
+    }
+
+    if (outboundPolicy) {
+        axiosConfig.maxRedirects = outboundPolicy.maxRedirects;
+        if (!axiosConfig.httpAgent && !axiosConfig.httpsAgent) {
+            const agents = getSafeHttpAgents(outboundPolicy);
+            axiosConfig.httpAgent = agents.httpAgent;
+            axiosConfig.httpsAgent = agents.httpsAgent;
         }
     }
 
@@ -314,8 +333,8 @@ export function deriveIntegrationConfigProxy({
     const proxy = {
         ...baseProxy,
         base_url: baseUrl || baseProxy.base_url,
-        headers: { ...(baseProxy.headers ?? {}) },
-        query: { ...(baseProxy.query ?? {}) }
+        headers: { ...baseProxy.headers },
+        query: { ...baseProxy.query }
     };
 
     if (placement === 'query') {

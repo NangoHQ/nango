@@ -2,7 +2,7 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, IconButton } from '@nangohq/design-system';
+import { Button, IconButton, Input } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Badge } from '@/components/ui/Badge';
@@ -10,7 +10,6 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { Input } from '@/components/ui/Input';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -123,7 +122,7 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-heading-sm text-text-strong">Team members</h3>
+            <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
             <Table>
                 <TableHeader>
                     <TableRow>

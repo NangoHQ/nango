@@ -66,7 +66,7 @@ export const ProfileDropdown: React.FC = () => {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="group/profile flex h-14 w-full cursor-pointer items-center justify-between border-t-[0.5px] border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
+                    <DropdownMenuTrigger className="group/profile focus-inset flex h-14 w-full cursor-pointer items-center justify-between border-t-[0.5px] border-b-[0.5px] border-border-default px-4 outline-none transition-colors hover:bg-state-hover data-[state=open]:bg-surface-overlay">
                         <div className="flex min-w-0 items-center gap-3">
                             <div className="type-text-regular-xs flex size-8 shrink-0 items-center justify-center rounded-full border-[0.5px] border-border-default bg-surface-overlay text-text-default">
                                 {initials}

@@ -16,7 +16,10 @@ import type { ReplaceInObject } from '../../utils.js';
 import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
-export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
+export type ApiConnectionSimple = Pick<
+    Merge<DBConnection, ApiTimestamps>,
+    'id' | 'config_id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'
+> & {
     provider: string;
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
@@ -166,9 +169,29 @@ export type PatchPublicConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
+        webhook_url?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
+}>;
+
+export type PatchConnection = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+        env: string;
+    };
+    Body: {
+        end_user?: EndUserInput | undefined;
+        tags?: Tags | undefined;
+        webhook_url?: string | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
 }>;
 
 export type PostConnectionRefresh = Endpoint<{

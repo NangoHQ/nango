@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
-import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
+import { getCliHeaders, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
@@ -378,6 +378,7 @@ async function postConfirmation({
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
+                ...getCliHeaders(),
                 authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}`,
                 'content-type': 'application/json'
             })
@@ -410,6 +411,7 @@ async function postDeploy({ hostport, body }: { hostport: string; body: PostDepl
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
+                ...getCliHeaders(),
                 authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}`,
                 'content-type': 'application/json'
             })

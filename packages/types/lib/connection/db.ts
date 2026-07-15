@@ -13,6 +13,7 @@ export interface ConnectionConfig {
     oauth_scopes_override?: string[] | undefined;
     oauth_scopes?: string | undefined;
     authorization_params?: Record<string, string> | undefined;
+    webhook_url?: string | undefined;
 }
 
 export interface DBConnection extends TimestampsAndDeletedCorrect {
@@ -57,7 +58,7 @@ export interface FailedConnectionError {
 }
 
 export interface RecentlyFailedConnection {
-    connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key'>;
+    connection: DBConnection | Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'connection_config'>;
     auth_mode: AuthModeType;
     error?: FailedConnectionError;
     operation: AuthOperationType;

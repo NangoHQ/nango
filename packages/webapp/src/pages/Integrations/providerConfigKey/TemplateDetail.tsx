@@ -27,12 +27,15 @@ import type { JSONSchema7 } from 'json-schema';
 interface TemplateDetailProps {
     template: NangoFunctionTemplate;
     provider: string;
+    // Canonical templates-repo folder when `provider` symlinks to another; used for repo URLs only.
+    symLinkTargetName?: string | null;
     onDeploy: () => void;
     isDeploying: boolean;
 }
 
-export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onDeploy, isDeploying }) => {
-    const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/${functionRepoPath({ provider, name: template.name, type: template.type })}`;
+export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, symLinkTargetName, onDeploy, isDeploying }) => {
+    const repoProvider = symLinkTargetName ?? provider;
+    const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/${functionRepoPath({ provider: repoProvider, name: template.name, type: template.type })}`;
 
     const inputSchema = useMemo<JSONSchema7 | null>(() => {
         if (!template.input || !template.json_schema) {
@@ -182,7 +185,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                     )}
                 </TabsContent>
                 <TabsContent value="code" className="flex flex-col gap-4">
-                    <CodeTab provider={provider} templateType={template.type} templateName={template.name} githubUrl={githubUrl} />
+                    <CodeTab provider={repoProvider} templateType={template.type} templateName={template.name} githubUrl={githubUrl} />
                 </TabsContent>
             </Tabs>
         </div>

@@ -2,55 +2,18 @@ import { gunzipSync } from 'node:zlib';
 
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { getKVStore, getLocking } from '@nangohq/kvstore';
-import { abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient, KVLocks } from '@nangohq/runner';
+import { abortCheckIntervalMs, exec, heartbeatIntervalMs, HttpLocks, jobsClient, PersistClient, syncConflictTtlMs } from '@nangohq/runner';
 import { loadProviders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { lambdaInvocationSchema } from './schemas.js';
 
 import type { FunctionExecutionRequest, LambdaInvocation, ReadinessCheckRequest } from './schemas.js';
-import type { Lock, Locking } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 import type { Context } from 'aws-lambda';
 
 const logger = getLogger('lambda-function-runner');
 const s3 = new S3Client();
-
-interface GatePass {
-    lock?: Lock;
-    allowed: boolean;
-}
-
-class Gate {
-    constructor(private readonly locking: Locking) {}
-
-    getKey(nangoProps: NangoProps): string {
-        return `function:${nangoProps.scriptType}:${nangoProps.syncId}`;
-    }
-
-    async enter(nangoProps: NangoProps, opts: { ttlMs: number }): Promise<GatePass> {
-        try {
-            if (nangoProps.scriptType !== 'sync') return { allowed: true };
-            const key = this.getKey(nangoProps);
-            const lock = await this.locking.tryAcquire(key, opts.ttlMs, 1000);
-            return {
-                allowed: true,
-                lock
-            };
-        } catch {
-            return { allowed: false };
-        }
-    }
-
-    async exit(lock: Lock) {
-        try {
-            await this.locking.release(lock);
-        } catch {
-            // best-effort release; lock TTL is the safety net
-        }
-    }
-}
 
 function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
@@ -123,15 +86,21 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const request: FunctionExecutionRequest = parsedRequest;
 
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
-    const kvStore = await getKVStore('customer');
-    const locking = await getLocking('customer');
-    const gate = new Gate(locking);
-    const pass = await gate.enter(nangoProps, { ttlMs: context.getRemainingTimeInMillis() });
-    if (!pass.allowed) {
-        logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
-        throw new Error('Conflicting sync detected');
+    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const locks = new HttpLocks({ persistClient, environmentId: nangoProps.environmentId });
+
+    if (nangoProps.scriptType === 'sync' && nangoProps.syncId) {
+        const conflictRes = await persistClient.putSyncConflict({
+            environmentId: nangoProps.environmentId,
+            scriptType: nangoProps.scriptType,
+            syncId: nangoProps.syncId,
+            ttlMs: syncConflictTtlMs
+        });
+        if (conflictRes.isErr()) {
+            logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
+            throw new Error('Conflicting sync detected');
+        }
     }
-    const locks = new KVLocks(kvStore);
 
     let lastSuccessHeartbeatAt: number | null = null;
     const startTime = Date.now();
@@ -140,24 +109,20 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
 
     const abort = setInterval(async () => {
-        let shouldAbort = false;
         try {
-            shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
+            const abortRes = await persistClient.getTaskAbort({ environmentId: nangoProps.environmentId, taskId: request.taskId });
+            if (abortRes.isOk() && abortRes.value) {
+                logger.info('Aborting task', { taskId: request.taskId });
+                abortController.abort();
+                clearInterval(abort);
+            }
         } catch {
             // best-effort abort poll; retry on next interval
-        }
-        if (shouldAbort) {
-            logger.info('Aborting task', { taskId: request.taskId });
-            abortController.abort();
-            clearInterval(abort);
-            return;
         }
     }, abortCheckIntervalMs);
 
     const heartbeat = setInterval(async () => {
         if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
-            // Jobs and orchestrator will kill the task if the heartbeat is not successful for too long
-            // This is to prevent the task from hanging indefinitely if we have trouble reaching orch or the opposite
             logger.error('Heartbeat failed for too long, self killing task', { taskId: request.taskId });
             abortController.abort();
             clearInterval(heartbeat);
@@ -167,6 +132,19 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         const res = await jobsClient.postHeartbeat({ taskId: request.taskId });
         if (res.isOk()) {
             lastSuccessHeartbeatAt = Date.now();
+        }
+
+        if (nangoProps.scriptType === 'sync' && nangoProps.syncId) {
+            const refreshRes = await persistClient.putSyncConflict({
+                environmentId: nangoProps.environmentId,
+                scriptType: nangoProps.scriptType,
+                syncId: nangoProps.syncId,
+                refresh: true,
+                ttlMs: syncConflictTtlMs
+            });
+            if (refreshRes.isErr()) {
+                logger.error('Failed to refresh sync conflict lock', { error: refreshRes.error });
+            }
         }
     }, heartbeatIntervalMs);
     try {
@@ -219,8 +197,16 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         });
     } finally {
         clearInterval(heartbeat);
-        if (pass.lock) {
-            await gate.exit(pass.lock);
+        clearInterval(abort);
+        if (nangoProps.scriptType === 'sync' && nangoProps.syncId) {
+            const releaseRes = await persistClient.deleteSyncConflict({
+                environmentId: nangoProps.environmentId,
+                scriptType: nangoProps.scriptType,
+                syncId: nangoProps.syncId
+            });
+            if (releaseRes.isErr()) {
+                logger.error('Failed to release sync conflict lock', { error: releaseRes.error });
+            }
         }
         await deleteCodeParams(request);
         logger.info(`Task ${request.taskId} completed`);

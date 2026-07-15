@@ -1,0 +1,82 @@
+---
+title: 'Everflow'
+sidebarTitle: 'Everflow'
+description: 'Integrate your application with the Everflow partner marketing platform API'
+---
+
+## 🚀 Quickstart
+
+Connect to Everflow with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Everflow_.
+    </Step>
+    <Step id="authorize-everflow" title="Authorize Everflow">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Everflow API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-everflow-api" title="Call the Everflow API">
+    Let's make your first request to the Everflow API (list networks). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/networks" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/networks',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Everflow integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Everflow account?](/api-integrations/everflow/connect)
+Generate your Everflow API key and connect to Nango
+
+Official docs: [Everflow API docs](https://developers.everflow.io)
+
+## 🧩 Pre-built syncs & actions for Everflow
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/everflow/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

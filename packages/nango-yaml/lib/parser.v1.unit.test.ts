@@ -54,8 +54,7 @@ describe('parse', () => {
                             usedModels: ['GithubIssue'],
                             version: ''
                         }
-                    ],
-                    functions: []
+                    ]
                 }
             ],
             models: new Map([['GithubIssue', { name: 'GithubIssue', fields: [{ name: 'id', value: 'string', tsType: true, array: false, optional: false }] }]]),
@@ -97,8 +96,7 @@ describe('parse', () => {
                         }
                     ],
                     onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
-                    actions: [],
-                    functions: []
+                    actions: []
                 }
             ],
             models: new Map([

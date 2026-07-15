@@ -7,7 +7,7 @@ sidebarTitle: Tanium
 
 To authenticate with Tanium, you will need:
 1. **API Token** — an API token generated from the Tanium Console.
-2. **Hostname** — your Tanium Cloud hostname (e.g. `acme.cloud.tanium.com`).
+2. **Hostname** — your Tanium Cloud API hostname (e.g. `acme-api.cloud.tanium.com`).
 
 This guide walks you through generating your **API Token** and finding your **Hostname** in Tanium.
 
@@ -27,7 +27,8 @@ This guide walks you through generating your **API Token** and finding your **Ho
 
 #### Step 2: Find your hostname
 
-- Your Tanium Cloud hostname is the domain you use to access the Tanium Console, for example `acme.cloud.tanium.com`.
+- Tanium Cloud uses a separate hostname for API access. Take the domain you use to access the Tanium Console (for example `acme.cloud.tanium.com`) and append `-api` to the subdomain: `acme-api.cloud.tanium.com`.
+- For Tanium Cloud for U.S. Government, use `-api.cloud.taniumfed.com` instead of `-api.cloud.tanium.com`.
 
 
 #### Step 3: Enter credentials in the Connect UI

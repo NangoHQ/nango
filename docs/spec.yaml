@@ -141,8 +141,20 @@ paths:
                                 display_name:
                                     type: string
                                     description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
+                                integration_config:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Provider-specific configuration for providers that declare an
+                                        `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
+                                        Keys and required fields depend on the provider; values are validated against
+                                        the provider schema.
 
             responses:
                 '200':
@@ -264,8 +276,19 @@ paths:
                                 display_name:
                                     type: string
                                     description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks received for this integration.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
+                                integration_config:
+                                    type: object
+                                    additionalProperties:
+                                        type: string
+                                    description: >
+                                        Provider-specific configuration for providers that declare an
+                                        `integration_config` schema (e.g. `private-api-generic`, `aws-sigv4`).
+                                        Only the fields you pass are updated.
             responses:
                 '200':
                     description: Successfully updated an integration
@@ -1312,6 +1335,12 @@ paths:
                             properties:
                                 tags:
                                     $ref: '#/components/schemas/Tags'
+                                webhook_url:
+                                    type: string
+                                    description: >
+                                        Override the environment's webhook URLs for this connection.
+                                        When set, this connection's webhooks are sent only to this URL.
+                                        Pass an empty string to clear the override.
                                 end_user:
                                     allOf:
                                         - $ref: '#/components/schemas/EndUser'
@@ -3944,6 +3973,9 @@ components:
                                     oauth_client_secret_override:
                                         type: string
                                         description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
+                                    webhook_url:
+                                        type: string
+                                        description: Override the environment's webhook URLs for connections created with this session. When set, webhooks for the connection are sent only to this URL (the environment's primary and secondary URLs are bypassed).
                 overrides:
                     type: object
                     additionalProperties:

@@ -1,12 +1,14 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { stringifyStable } from '@nangohq/utils';
+import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
-import { mockWebhookDenylistAllowAll, restoreWebhookDenylistMock } from './helpers/setup.unit.js';
+import { allowAllWebhookOutbound } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
-import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe } from './utils.js';
+import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe, resolveWebhookSettings } from './utils.js';
 
-import type { DBAPISecret } from '@nangohq/types';
+import type { DBAPISecret, DBExternalWebhook } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
+import type { MockInstance } from 'vitest';
 
 describe('getSignatureHeaderUnsafe', () => {
     it('should return a string', () => {
@@ -48,9 +50,114 @@ describe('getHmacSignatureHeader', () => {
     });
 });
 
+describe('deliver request shape', () => {
+    const secret = 'secret' as DBAPISecret['secret'];
+    const allowAll = allowAllWebhookOutbound();
+    const okResponse = { status: 200, statusText: 'OK', headers: {}, data: { ok: true }, config: {} } as unknown as AxiosResponse;
+
+    let postSpy: MockInstance<typeof axiosInstance.post>;
+
+    beforeEach(() => {
+        postSpy = vi.spyOn(axiosInstance, 'post').mockResolvedValue(okResponse);
+    });
+
+    afterEach(() => {
+        postSpy.mockRestore();
+    });
+
+    it('POSTs once per webhook URL with the stable body and signed headers', async () => {
+        const body = { hello: 'world' };
+        const result = await deliver({
+            webhooks: [
+                { url: 'https://example.com/primary', type: 'primary' },
+                { url: 'https://example.com/secondary', type: 'secondary' }
+            ],
+            body,
+            webhookType: 'forward',
+            secret,
+            outbound: allowAll
+        });
+
+        expect(result.isOk()).toBe(true);
+        expect(postSpy).toHaveBeenCalledTimes(2);
+
+        const bodyString = stringifyStable(body).unwrap();
+        const expectedHeaders = {
+            'X-Nango-Signature': expect.toBeSha256(),
+            'X-Nango-Hmac-Sha256': expect.toBeSha256(),
+            'content-type': 'application/json',
+            'user-agent': expect.stringContaining('nango/')
+        };
+
+        expect(postSpy).toHaveBeenNthCalledWith(1, 'https://example.com/primary', bodyString, expect.objectContaining({ headers: expectedHeaders }));
+        expect(postSpy).toHaveBeenNthCalledWith(2, 'https://example.com/secondary', bodyString, expect.objectContaining({ headers: expectedHeaders }));
+    });
+
+    it('caps redirects and attaches the outbound agents from the transport', async () => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            outbound: allowAll
+        });
+
+        expect(postSpy).toHaveBeenCalledTimes(1);
+        const config = postSpy.mock.calls[0]![2]!;
+        expect(config.maxRedirects).toBe(allowAll.policy.maxRedirects);
+        expect(config.httpAgent).toBe(allowAll.agents.httpAgent);
+        expect(config.httpsAgent).toBe(allowAll.agents.httpsAgent);
+    });
+});
+
+describe('resolveWebhookSettings', () => {
+    const envSettings: DBExternalWebhook = {
+        id: 1,
+        environment_id: 1,
+        primary_url: 'https://env-primary.example.com/hook',
+        secondary_url: 'https://env-secondary.example.com/hook',
+        on_sync_completion_always: true,
+        on_auth_creation: true,
+        on_auth_refresh_error: true,
+        on_sync_error: true,
+        on_async_action_completion: true,
+        created_at: new Date(),
+        updated_at: new Date()
+    };
+
+    it('returns the environment settings unchanged when there is no override', () => {
+        expect(resolveWebhookSettings(envSettings, null)).toBe(envSettings);
+        expect(resolveWebhookSettings(envSettings, undefined)).toBe(envSettings);
+        expect(resolveWebhookSettings(envSettings, {})).toBe(envSettings);
+    });
+
+    it('overrides the primary URL, drops the env secondary, and keeps the environment event flags', () => {
+        const result = resolveWebhookSettings(envSettings, { webhook_url: 'https://dev-tunnel.example.com/hook' });
+        expect(result.primary_url).toBe('https://dev-tunnel.example.com/hook');
+        // The env secondary is dropped so the connection's webhooks are not also sent to the shared endpoint.
+        expect(result.secondary_url).toBeNull();
+        expect(result.on_sync_completion_always).toBe(true);
+        expect(result.on_sync_error).toBe(true);
+        expect(result.on_auth_creation).toBe(true);
+    });
+
+    it('treats blank/whitespace override URLs as no override', () => {
+        expect(resolveWebhookSettings(envSettings, { webhook_url: '' })).toBe(envSettings);
+        expect(resolveWebhookSettings(envSettings, { webhook_url: '   ' })).toBe(envSettings);
+    });
+
+    it('does not mutate the original environment settings', () => {
+        resolveWebhookSettings(envSettings, { webhook_url: 'https://dev-tunnel.example.com/hook' });
+        expect(envSettings.primary_url).toBe('https://env-primary.example.com/hook');
+        expect(envSettings.secondary_url).toBe('https://env-secondary.example.com/hook');
+    });
+});
+
 describe('deliver bytes metering', () => {
     const testServer = new TestWebhookServer(4104);
     const secret = 'test-secret' as DBAPISecret['secret'];
+    // Permissive transport so we can reach the loopback test server (the real policy blocks loopback).
+    const allowAll = allowAllWebhookOutbound();
 
     beforeAll(async () => {
         await testServer.start();
@@ -60,10 +167,6 @@ describe('deliver bytes metering', () => {
         await testServer.stop();
     });
 
-    beforeEach(() => {
-        mockWebhookDenylistAllowAll();
-    });
-
     it('should fire onBytes with non-zero sent on successful POST', async () => {
         const hops: { sent: number; received: number }[] = [];
         const result = await deliver({
@@ -71,6 +174,7 @@ describe('deliver bytes metering', () => {
             body: { hello: 'world' },
             webhookType: 'forward',
             secret,
+            outbound: allowAll,
             onBytes: (b) => hops.push(b)
         });
         expect(result.isOk()).toBe(true);
@@ -88,6 +192,7 @@ describe('deliver bytes metering', () => {
             body: { hello: 'world' },
             webhookType: 'forward',
             secret,
+            outbound: allowAll,
             onBytes: (b) => hops.push(b)
         });
         expect(hops.length).toBe(2);
@@ -96,12 +201,24 @@ describe('deliver bytes metering', () => {
         }
     });
 
+    // No `outbound` override here: exercise the real env-derived policy so the SSRF checks actually run.
     it('should skip denylisted webhook URLs', async () => {
-        restoreWebhookDenylistMock();
-
         const hops: { sent: number; received: number }[] = [];
         const result = await deliver({
             webhooks: [{ url: 'http://169.254.169.254/webhook', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            onBytes: (b) => hops.push(b)
+        });
+        expect(result.isOk()).toBe(true);
+        expect(hops.length).toBe(0);
+    });
+
+    it('should skip webhook URLs pointing at private (RFC1918) IP literals', async () => {
+        const hops: { sent: number; received: number }[] = [];
+        const result = await deliver({
+            webhooks: [{ url: 'http://10.0.0.1/webhook', type: 'primary' }],
             body: { hello: 'world' },
             webhookType: 'forward',
             secret,
