@@ -12,11 +12,9 @@ echo "$dir/packages/server/dist/server.js"
 if [ "$FLAG_SERVE_CONNECT_UI" == "true" ]; then
   node "$dir/packages/server/dist/server.js" &
 
-  # Rewrite Connect UI's placeholder base path to the one this deployment serves it under (derived
-  # from NANGO_PUBLIC_CONNECT_URL, or NANGO_CONNECT_UI_BASE_PATH; defaults to "/"), so it can be
-  # hosted under a non-root path. Rewrites to "/" for root deployments.
-  npm run -w @nangohq/connect-ui set-base-path
-
+  # serve:unsafe first rewrites Connect UI's placeholder base path to the one this deployment serves
+  # it under (from NANGO_PUBLIC_CONNECT_URL, or NANGO_CONNECT_UI_BASE_PATH; defaults to "/"), so it
+  # can be hosted under a non-root path.
   # This is not recommended, you should serve Connect UI from a dedicated static website hosting
   npm run -w @nangohq/connect-ui serve:unsafe &
 
