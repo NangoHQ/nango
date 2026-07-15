@@ -91,6 +91,10 @@
       "destination": "/api-integrations/google-gemini/connect"
     },
     {
+      "source": "/integrations/all/apple-app-store",
+      "destination": "/api-integrations/apple-app-store"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -963,7 +967,7 @@
               "integrations/all/apify",
               "api-integrations/apollo",
               "integrations/all/apollo-oauth",
-              "integrations/all/apple-app-store",
+              "api-integrations/apple-app-store",
               "api-integrations/apple-business-manager",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",

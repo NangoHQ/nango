@@ -1611,7 +1611,25 @@ apple-app-store:
         audience: appstoreconnect-v1
     proxy:
         base_url: https://api.appstoreconnect.apple.com
-    docs: https://nango.dev/docs/integrations/all/apple-app-store
+    docs: https://nango.dev/docs/api-integrations/apple-app-store
+    docs_connect: https://nango.dev/docs/api-integrations/apple-app-store/connect
+    credentials:
+        issuerId:
+            type: string
+            title: Issuer ID
+            description: Your App Store Connect Issuer ID.
+            doc_section: '#step-2-note-your-issuer-id-and-key-id'
+        privateKeyId:
+            type: string
+            title: Key ID
+            description: Your App Store Connect Key ID.
+            doc_section: '#step-2-note-your-issuer-id-and-key-id'
+        privateKey:
+            type: string
+            title: Private Key
+            description: Your App Store Connect private key.
+            secret: true
+            doc_section: '#step-1-create-an-api-key'
 
 apple-business-manager:
     display_name: Apple Business Manager
