@@ -1,5 +1,5 @@
 import { playwright } from '@vitest/browser-playwright';
-import { defineConfig, defineProject, mergeConfig } from 'vitest/config';
+import { configDefaults, defineConfig, defineProject, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config';
 
@@ -20,6 +20,8 @@ export default defineConfig({
                     test: {
                         name: 'browser',
                         include: ['src/**/*.test.tsx'],
+                        // Node script tests run in the 'node' project below; keep them out of the browser runner.
+                        exclude: [...configDefaults.exclude, '**/*.node.test.js'],
                         setupFiles: ['./src/test/setup.ts'],
                         browser: {
                             // Required: browser mode is off by default and the `test` script runs `vitest run`
