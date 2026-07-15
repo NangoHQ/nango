@@ -2962,6 +2962,38 @@ basecamp:
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
 
+baserow:
+    display_name: Baserow
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api
+        headers:
+            authorization: Token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/baserow
+    docs_connect: https://nango.dev/docs/api-integrations/baserow/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your Baserow instance's base URL.
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
+            example: https://api.baserow.io
+            suffix: /api
+            order: 1
+            doc_section: '#step-1-finding-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Database Token
+            description: Your Baserow database token.
+            example: Q7mZpX2k************************
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-2-generating-your-database-token'
+
 battlenet:
     display_name: Battle.net
     categories:
@@ -5147,6 +5179,52 @@ copper-api-key:
             description: Email address of the user who generated the token
     docs: https://nango.dev/docs/integrations/all/copper-api-key
 
+connectsecure:
+    display_name: ConnectSecure
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.base_url}
+        headers:
+            accept: application/json
+            client-auth-token: '${base64(${connectionConfig.tenant}+${credentials.username}:${credentials.password})}'
+        verification:
+            method: POST
+            endpoints:
+                - /w/authorize
+    docs: https://nango.dev/docs/api-integrations/connectsecure
+    docs_connect: https://nango.dev/docs/api-integrations/connectsecure/connect
+    connection_config:
+        base_url:
+            type: string
+            title: Pod Host
+            description: The hostname of your ConnectSecure pod
+            example: pod123.myconnectsecure.com
+            pattern: '^[A-Za-z0-9-]+\.myconnectsecure\.com$'
+            order: 1
+            doc_section: '#step-1-gather-your-connection-details'
+        tenant:
+            type: string
+            title: Tenant
+            description: Your ConnectSecure tenant identifier
+            example: example-tenant
+            pattern: '^[A-Za-z0-9_-]+$'
+            order: 2
+            doc_section: '#step-1-gather-your-connection-details'
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your ConnectSecure API client ID
+            doc_section: '#step-1-gather-your-connection-details'
+        password:
+            type: string
+            title: Client Secret
+            description: Your ConnectSecure API client secret
+            secret: true
+            doc_section: '#step-1-gather-your-connection-details'
+
 connectwise-psa:
     display_name: ConnectWise PSA
     categories:
@@ -6800,6 +6878,40 @@ emarsys-oauth:
                 - 'x-ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/emarsys-oauth
     docs_connect: https://nango.dev/docs/integrations/all/emarsys-oauth/connect
+
+embat:
+    display_name: Embat
+    categories:
+        - accounting
+        - banking
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.embat.io/authentication/token
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: idToken
+    proxy:
+        base_url: https://api.embat.io
+    docs: https://nango.dev/docs/api-integrations/embat
+    docs_connect: https://nango.dev/docs/api-integrations/embat/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            format: email
+            description: The email address of your Embat service user.
+            doc_section: '#step-1-get-your-service-user-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Embat service user.
+            secret: true
+            doc_section: '#step-1-get-your-service-user-credentials'
 
 employment-hero:
     display_name: Employment Hero
@@ -13243,6 +13355,30 @@ maxio:
             order: 1
             doc_section: '#step-1-finding-your-hostname'
 
+millionverifier:
+    display_name: MillionVerifier
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.millionverifier.com/api/
+        query:
+            api: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/credits
+    docs: https://nango.dev/docs/api-integrations/millionverifier
+    docs_connect: https://nango.dev/docs/api-integrations/millionverifier/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your MillionVerifier API key.
+            example: oUo8*****************kJTr
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 mindbody:
     display_name: Mindbody
     categories:
@@ -13695,6 +13831,36 @@ mural:
     proxy:
         base_url: https://app.mural.co
     docs: https://nango.dev/docs/integrations/all/mural
+
+n8n:
+    display_name: n8n
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api
+        headers:
+            x-n8n-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/n8n
+    docs_connect: https://nango.dev/docs/api-integrations/n8n/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your n8n instance's base URL.
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
+            example: https://your-instance.app.n8n.cloud
+            order: 1
+            suffix: /api
+            doc_section: '#step-1-finding-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your n8n API key.
+            doc_section: '#step-2-generating-your-api-key'
 
 nable-ncentral:
     display_name: N-able N-central
@@ -21611,6 +21777,73 @@ perk:
     docs: https://nango.dev/docs/api-integrations/perk
     setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
 
+tripletex:
+    display_name: Tripletex
+    categories:
+        - accounting
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.environment}/v2/token/session/:create
+    token_headers:
+        accept: application/json
+        content-type: application/json
+    token_params:
+        consumerToken: ${credentials.consumerToken}
+        employeeToken: ${credentials.employeeToken}
+        expirationDate: ${now+7:days:YYYY-MM-DD}
+    token_response:
+        token: value.token
+    token_expires_in_ms: 432000000
+    proxy:
+        base_url: https://${connectionConfig.environment}
+        headers:
+            authorization: Basic ${base64(${connectionConfig.proxyCompanyId}:${credentials.token})}
+        retry:
+            after:
+                - 'x-rate-limit-reset'
+        paginate:
+            type: offset
+            offset_name_in_request: from
+            limit_name_in_request: count
+            offset_start_value: 0
+    docs: https://nango.dev/docs/api-integrations/tripletex
+    docs_connect: https://nango.dev/docs/api-integrations/tripletex/connect
+    credentials:
+        consumerToken:
+            type: string
+            title: Consumer Token
+            description: The consumer token issued by Tripletex for this environment.
+            secret: true
+            example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
+            pattern: '^eyJ[A-Za-z0-9+/=]+$'
+            doc_section: '#step-2-obtain-the-consumer-token'
+        employeeToken:
+            type: string
+            title: Employee Token
+            description: The employee token the end user generates in their Tripletex tenant.
+            secret: true
+            example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
+            pattern: '^eyJ[A-Za-z0-9+/=]+$'
+            doc_section: '#step-3-generate-an-employee-token'
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The Tripletex environment to connect to.
+            enum:
+                - tripletex.no
+                - api-test.tripletex.tech
+            order: 1
+            doc_section: '#step-1-selecting-your-environment'
+        proxyCompanyId:
+            type: string
+            title: Proxy Company ID
+            description: HTTP Basic-auth username.
+            default_value: '0'
+            pattern: '^[0-9]+$'
+            example: '0'
+            order: 2
+            doc_section: '#step-4-set-the-proxy-company-id'
+
 trello:
     display_name: Trello
     categories:
@@ -23544,6 +23777,35 @@ workday-cc:
             secret: true
             doc_section: '#step-5-register-an-api-client'
 
+workato:
+    display_name: Workato
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/workato
+    docs_connect: https://nango.dev/docs/api-integrations/workato/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Data center hostname
+            description: The hostname of the data center your account is hosted in.
+            format: hostname
+            prefix: https://
+            example: www.workato.com
+            order: 1
+            suffix: /api
+            doc_section: '#step-1-finding-your-data-center-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated for your Workato API client.
+            doc_section: '#step-2-generating-your-api-token'
+
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning
     categories:
@@ -24080,6 +24342,28 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
     docs: https://nango.dev/docs/integrations/all/zenefits
+
+zero:
+    display_name: Zero
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.zero.inc
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/workspaces
+    docs: https://nango.dev/docs/api-integrations/zero
+    docs_connect: https://nango.dev/docs/api-integrations/zero/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key generated from your Zero account.
+            doc_section: '#step-1-generate-an-api-key'
 
 zigpoll:
     display_name: Zigpoll
