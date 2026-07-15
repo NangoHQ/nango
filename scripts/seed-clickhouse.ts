@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
 import db from '@nangohq/database';
-import { createPlan, freePlan, updatePlanByTeam } from '@nangohq/shared';
+import { records } from '@nangohq/records';
+import { connectionService, createPlan, environmentService, freePlan, updatePlanByTeam } from '@nangohq/shared';
 import { Clickhouse, clickhouseClient, migrate } from '@nangohq/usage';
 
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
@@ -109,8 +110,139 @@ function parseArgs() {
         days: days !== undefined ? Number(days) : 60,
         reset: !argv.includes('--no-reset'),
         allowRemote: argv.includes('--allow-remote'),
-        verbose: argv.includes('--verbose')
+        verbose: argv.includes('--verbose'),
+        // Make the data realistic for the Free caps view: (1) mirror the account's real Postgres
+        // connection/record counts into ClickHouse (ramping to the live count) so those AVG metrics
+        // match the DB-backed gauge, and (2) enforce the Free plan caps so counter metrics plateau
+        // at their monthly cap instead of running arbitrarily over.
+        mirrorDbCounts: argv.includes('--mirror-db-counts')
     };
+}
+
+/** Live Postgres counts the caps gauge uses for the AVG metrics (connections, records). */
+async function getDbCounts(accountId: number): Promise<{ connections: number; records: number }> {
+    const connections = await connectionService.countByAccountId(accountId);
+    const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+    const environmentIds = envs.map((e) => e.id);
+    let recordCount = 0;
+    if (environmentIds.length > 0) {
+        for await (const page of records.paginateCounts({ environmentIds })) {
+            if (page.isErr()) throw new Error(`paginateCounts failed: ${page.error}`);
+            recordCount += page.value.reduce((sum, r) => sum + r.count, 0);
+        }
+    }
+    return { connections, records: recordCount };
+}
+
+/**
+ * Scale counter metrics so their monthly totals land at a realistic fraction of the Free caps: a
+ * couple just over (so they hit the cap late in the month, then plateau) and the function group
+ * comfortably under (so function runs are never blocked and the chart has data all month). Without
+ * this the breakdown-test volume is many times the cap, so metrics deplete in the first few days.
+ * The function group scales by its logs total (the binding function cap). Per calendar month.
+ */
+function scaleCountersForFreeDemo(events: ClickhouseRawUsageEvent[]): ClickhouseRawUsageEvent[] {
+    const flags = freePlan.flags;
+    const monthOf = (ts: number): string => new Date(ts).toISOString().slice(0, 7);
+
+    const proxyTotal = new Map<string, number>();
+    const webhookTotal = new Map<string, number>();
+    const logsTotal = new Map<string, number>();
+    for (const ev of events) {
+        const m = monthOf(ev.ts);
+        if (ev.type === 'usage.proxy') proxyTotal.set(m, (proxyTotal.get(m) ?? 0) + ev.value);
+        else if (ev.type === 'usage.webhook_forward') webhookTotal.set(m, (webhookTotal.get(m) ?? 0) + ev.value);
+        else if (ev.type === 'usage.function_executions') {
+            const bag = (ev.attributes as { telemetryBag?: { customLogs?: number } }).telemetryBag;
+            logsTotal.set(m, (logsTotal.get(m) ?? 0) + (bag?.customLogs ?? 0));
+        }
+    }
+    const scaleFor =
+        (totals: Map<string, number>, cap: number | null | undefined, target: number) =>
+        (m: string): number => {
+            const total = totals.get(m) ?? 0;
+            return total > 0 && cap != null && Number.isFinite(cap) ? (target * cap) / total : 1;
+        };
+    const proxyScale = scaleFor(proxyTotal, flags.proxy_max, 1.15);
+    const webhookScale = scaleFor(webhookTotal, flags.webhook_forwards_max, 1.1);
+    const fnScale = scaleFor(logsTotal, flags.function_logs_max, 0.85);
+    const scaled = (n: number, f: number): number => Math.max(1, Math.round(n * f));
+
+    return events.map((ev) => {
+        const m = monthOf(ev.ts);
+        if (ev.type === 'usage.proxy') return { ...ev, value: scaled(ev.value, proxyScale(m)) };
+        if (ev.type === 'usage.webhook_forward') return { ...ev, value: scaled(ev.value, webhookScale(m)) };
+        if (ev.type === 'usage.function_executions') {
+            const f = fnScale(m);
+            const attrs = ev.attributes as { telemetryBag?: { customLogs?: number; durationMs?: number } };
+            const bag = attrs.telemetryBag;
+            return {
+                ...ev,
+                value: scaled(ev.value, f),
+                attributes: bag
+                    ? {
+                          ...attrs,
+                          telemetryBag: { ...bag, customLogs: Math.round((bag.customLogs ?? 0) * f), durationMs: Math.round((bag.durationMs ?? 0) * f) }
+                      }
+                    : ev.attributes
+            } as ClickhouseRawUsageEvent;
+        }
+        return ev;
+    });
+}
+
+/**
+ * Model Free-plan cap enforcement: once a metric hits its monthly cap, further usage is blocked, so
+ * it plateaus at the cap instead of running arbitrarily over. proxy and webhook_forward each cap
+ * independently; the function metrics — executions plus derived logs (Σ customLogs) and compute
+ * (Σ durationMs) — all stop together once the first of their caps is reached (function runs are
+ * blocked). Caps reset per calendar month. Events for other metrics pass through untouched.
+ */
+function capUsageAtFreeLimits(events: ClickhouseRawUsageEvent[]): ClickhouseRawUsageEvent[] {
+    const flags = freePlan.flags;
+    const proxyCap = flags.proxy_max ?? Infinity;
+    const webhookCap = flags.webhook_forwards_max ?? Infinity;
+    const execCap = flags.function_executions_max ?? Infinity;
+    const logsCap = flags.function_logs_max ?? Infinity;
+    const computeCap = flags.function_compute_gbms_max ?? Infinity;
+    const monthOf = (ts: number): string => new Date(ts).toISOString().slice(0, 7);
+
+    const proxy = new Map<string, number>();
+    const webhook = new Map<string, number>();
+    const exec = new Map<string, number>();
+    const logs = new Map<string, number>();
+    const compute = new Map<string, number>();
+
+    const kept: ClickhouseRawUsageEvent[] = [];
+    // Chronological so each month's cap fills from its first day.
+    for (const ev of [...events].sort((a, b) => a.ts - b.ts)) {
+        const m = monthOf(ev.ts);
+        if (ev.type === 'usage.proxy') {
+            const used = proxy.get(m) ?? 0;
+            if (used >= proxyCap) continue;
+            const value = Math.min(ev.value, proxyCap - used);
+            proxy.set(m, used + value);
+            kept.push(value === ev.value ? ev : { ...ev, value });
+        } else if (ev.type === 'usage.webhook_forward') {
+            const used = webhook.get(m) ?? 0;
+            if (used >= webhookCap) continue;
+            const value = Math.min(ev.value, webhookCap - used);
+            webhook.set(m, used + value);
+            kept.push(value === ev.value ? ev : { ...ev, value });
+        } else if (ev.type === 'usage.function_executions') {
+            if ((exec.get(m) ?? 0) >= execCap || (logs.get(m) ?? 0) >= logsCap || (compute.get(m) ?? 0) >= computeCap) {
+                continue; // function runs blocked once any function cap is hit
+            }
+            const bag = (ev.attributes as { telemetryBag?: { customLogs?: number; durationMs?: number } }).telemetryBag;
+            exec.set(m, (exec.get(m) ?? 0) + ev.value);
+            logs.set(m, (logs.get(m) ?? 0) + (bag?.customLogs ?? 0));
+            compute.set(m, (compute.get(m) ?? 0) + (bag?.durationMs ?? 0));
+            kept.push(ev);
+        } else {
+            kept.push(ev);
+        }
+    }
+    return kept;
 }
 
 const rnd = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -248,7 +380,10 @@ function generateForEnvDay(
     isProduction: boolean,
     ts: number,
     batchId: string,
-    trafficMonthlyGrowth: number
+    trafficMonthlyGrowth: number,
+    // When true, skip synthetic connections/records — they're emitted once per account/day in the
+    // main loop from the real DB counts so the Free caps drill-in matches the gauge.
+    mirrorDbCounts: boolean
 ): ClickhouseRawUsageEvent[] {
     const events: ClickhouseRawUsageEvent[] = [];
     const dayScale = trafficScale(ts, trafficMonthlyGrowth);
@@ -345,22 +480,27 @@ function generateForEnvDay(
             }
         }
 
-        // records — AVG metric. The snapshot shares the day's batchId so the metric
-        // reflects the daily total record count, not a per-integration average.
-        for (const model of integration.models) {
-            for (const connectionId of connections.slice(0, 2)) {
-                events.push(event('usage.records', accountId, ts, scaledInt(50, 5_000, dayScale, 10), { ...base, connectionId, model, batchId }));
+        // records + connections (AVG metrics) are synthetic per-integration volume by default.
+        // With --mirror-db-counts they come from the primary DB instead — emitted once per
+        // account/day in the main loop — so the Free caps drill-in matches the DB-backed gauge.
+        if (!mirrorDbCounts) {
+            // records — AVG metric. The snapshot shares the day's batchId so the metric
+            // reflects the daily total record count, not a per-integration average.
+            for (const model of integration.models) {
+                for (const connectionId of connections.slice(0, 2)) {
+                    events.push(event('usage.records', accountId, ts, scaledInt(50, 5_000, dayScale, 10), { ...base, connectionId, model, batchId }));
+                }
             }
-        }
 
-        // connections — AVG metric. value = this integration's active connection count.
-        // Shares the day's batchId so the headline is the daily total, not a per-row average.
-        events.push(
-            event('usage.connections', accountId, ts, reportedConnectionCount(integration.id, pool.length, ts), {
-                ...base,
-                batchId
-            })
-        );
+            // connections — AVG metric. value = this integration's active connection count.
+            // Shares the day's batchId so the headline is the daily total, not a per-row average.
+            events.push(
+                event('usage.connections', accountId, ts, reportedConnectionCount(integration.id, pool.length, ts), {
+                    ...base,
+                    batchId
+                })
+            );
+        }
     }
     return events;
 }
@@ -406,7 +546,7 @@ async function resolveTargets(
 }
 
 async function main() {
-    const { onlyAccount, days, reset, allowRemote, verbose } = parseArgs();
+    const { onlyAccount, days, reset, allowRemote, verbose, mirrorDbCounts } = parseArgs();
 
     const clickhouseUrl = process.env['CLICKHOUSE_URL'];
     if (!clickhouseUrl) {
@@ -480,26 +620,51 @@ async function main() {
         // metering cron so the AVG metrics (connections, records) reconstruct the daily
         // total instead of a per-row average.
         const dayBatchIds = Array.from({ length: days }, () => randomUUID());
+        const dbCounts = mirrorDbCounts ? await getDbCounts(accountId) : null;
+        const prodEnv = environments.find((e) => e.isProduction) ?? environments[0];
+
+        // Collect the whole account (all envs) before flushing so the Free-cap plateau can enforce
+        // the account-level monthly caps across prod + dev together.
+        const accountEvents: ClickhouseRawUsageEvent[] = [];
         for (const env of environments) {
-            const events: ClickhouseRawUsageEvent[] = [];
             for (const [offset, batchId] of dayBatchIds.entries()) {
-                events.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId, trafficMonthlyGrowth));
+                accountEvents.push(...generateForEnvDay(accountId, env.id, env.isProduction, dayTs(offset), batchId, trafficMonthlyGrowth, mirrorDbCounts));
             }
-            // Flush each chunk before generating the next. The whole generate loop is
-            // synchronous and never yields, so the batcher's auto-flush can't run mid-loop;
-            // without awaiting here the queue fills past maxQueueSize (default 500k) and
-            // silently drops the tail on long runs (large --days or many accounts). Awaiting
-            // flush per chunk applies backpressure and keeps the queue near-empty; the chunk
-            // stays below maxBatchSize so each flush drains it fully. Transient insert errors
-            // are retried by the batcher on the next flush / during shutdown.
-            for (let i = 0; i < events.length; i += 1_000) {
-                clickhouse.addRaw(events.slice(i, i + 1_000));
-                await clickhouse.flush();
+            // Mirror snapshots: one connections + one records event per day (prod env), ramping from
+            // a fraction of the count up to the live DB count on the newest day — so the AVG charts
+            // match the gauge and still show growth rather than a flat line.
+            if (dbCounts && prodEnv && env.id === prodEnv.id) {
+                const grow = (final: number, startFraction: number, offset: number): number => {
+                    if (offset === 0) return final;
+                    const start = Math.max(1, Math.round(final * startFraction));
+                    const progress = days > 1 ? (days - 1 - offset) / (days - 1) : 1;
+                    return Math.round(start + (final - start) * progress);
+                };
+                for (const [offset, batchId] of dayBatchIds.entries()) {
+                    const ts = dayTs(offset);
+                    const attrs = { environmentId: env.id, integrationId: 'demo-github', batchId };
+                    accountEvents.push(event('usage.connections', accountId, ts, grow(dbCounts.connections, 0.25, offset), attrs));
+                    accountEvents.push(
+                        event('usage.records', accountId, ts, grow(dbCounts.records, 0.1, offset), { ...attrs, connectionId: 'db-mirror', model: 'Contact' })
+                    );
+                }
             }
-            total += events.length;
-            if (verbose) {
-                console.log(`  account ${accountId} · env ${env.id} (${env.name}): ${events.length} events`);
-            }
+        }
+
+        // Enforce the Free caps: counters plateau at their monthly cap once reached (realistic
+        // blocking) rather than running arbitrarily over.
+        const finalEvents = mirrorDbCounts ? capUsageAtFreeLimits(scaleCountersForFreeDemo(accountEvents)) : accountEvents;
+
+        // Flush in chunks with a per-chunk await. The generate loop above is synchronous and never
+        // yields, so the batcher's auto-flush can't run mid-loop; awaiting per chunk applies
+        // backpressure and keeps the queue below maxQueueSize instead of silently dropping the tail.
+        for (let i = 0; i < finalEvents.length; i += 1_000) {
+            clickhouse.addRaw(finalEvents.slice(i, i + 1_000));
+            await clickhouse.flush();
+        }
+        total += finalEvents.length;
+        if (verbose) {
+            console.log(`  account ${accountId}: ${finalEvents.length} events`);
         }
     }
 
