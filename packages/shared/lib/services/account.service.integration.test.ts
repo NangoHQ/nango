@@ -79,7 +79,8 @@ describe('Account service', () => {
             auth: {
                 source: 'customer_key',
                 scopes: ['environment:*'],
-                apiKeyId: expect.any(Number)
+                apiKeyId: expect.any(Number),
+                apiKeyDisplayName: 'Default - Full access'
             }
         });
     });
@@ -114,7 +115,8 @@ describe('Account service', () => {
         expect(bySecretKey?.auth).toStrictEqual({
             source: 'customer_key',
             scopes: ['environment:deploy'],
-            apiKeyId: expect.any(Number)
+            apiKeyId: expect.any(Number),
+            apiKeyDisplayName: 'Default - Full access'
         });
     });
 
