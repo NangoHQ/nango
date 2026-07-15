@@ -87,6 +87,9 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
                     onApplyToAll={onApplyToAll}
                     hideHeader
                     disableApplyToAll
+                    capLine={limit ?? undefined}
+                    chartMode="cumulative"
+                    pointInTime
                     extraHeaderActions={<MonthPagination />}
                 />
             </CollapsibleContent>

@@ -43,7 +43,7 @@ export const MonthPagination: React.FC = () => {
             ) : (
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <span className="inline-flex" tabIndex={0}>
+                        <span className="inline-flex rounded-[2px] focus-visible:outline-none focus-visible:shadow-focus-outline-default" tabIndex={0}>
                             {previousButton}
                         </span>
                     </TooltipTrigger>

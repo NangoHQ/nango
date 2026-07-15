@@ -54,7 +54,9 @@ export const FreeUsage: React.FC = () => {
     }, [selectedMonth]);
 
     const { data: caps, error: capsError } = useApiGetUsage(env);
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse');
+    // pointInTime: connections/records come back as the concurrent daily count (not the billing
+    // running-average), so their cap line is meaningful. No-op for the counter metrics.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse', true);
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
     if (usageError || capsError) {

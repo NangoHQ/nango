@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
+import { useCallback, useMemo } from 'react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, Text, XAxis, YAxis } from 'recharts';
 
 import { formatQuantity } from '@/utils/utils';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
@@ -17,6 +17,31 @@ const dayOfMonth = (date: string) => new Date(date).getUTCDate();
 const formatTooltipDate = (date: string | number) =>
     new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
+/** Nearest "nice" number (1, 2, 2.5, 5, 10 × 10ⁿ) at or above x — for round tick steps. */
+function niceStep(x: number): number {
+    const base = 10 ** Math.floor(Math.log10(x));
+    const frac = x / base;
+    return (frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10) * base;
+}
+
+/**
+ * Round, evenly-spaced Y-axis ticks (0, step, …, cap) for the cap-line chart so the axis reads
+ * "0, 50K, 100K" rather than a ragged "0, 3, 6, 11.2". The cap is always a labelled tick; the plot
+ * ceiling is only ~10% above the data/cap (unlabelled) so the chart isn't shrunk by dead headroom.
+ */
+function niceCapAxis(dataMax: number, capLine: number): { max: number; ticks: number[] } {
+    const top = Math.max(dataMax, capLine, 1);
+    const step = niceStep(top / 5);
+    const ticks: number[] = [];
+    for (let t = 0; t <= top + step / 2; t += step) ticks.push(t);
+    // The cap is the key reference — make sure it's a labelled tick even if off the step grid.
+    if (!ticks.some((t) => Math.abs(t - capLine) < step / 100)) {
+        ticks.push(capLine);
+        ticks.sort((a, b) => a - b);
+    }
+    return { max: top * 1.1, ticks };
+}
+
 interface BreakdownChartProps {
     /** Per-day rows: `{ date, total }` for the single series, or `{ date, [seriesKey]: value }` stacked. */
     chartData: Record<string, string | number | null | undefined>[];
@@ -28,13 +53,24 @@ interface BreakdownChartProps {
     series: ChartSeries[];
     todayDateKey: string;
     interactions: ChartInteractions;
+    /** Draw a horizontal cap reference line at this value (the metric's plan limit). */
+    capLine?: number;
 }
 
 /**
  * The recharts chart for a usage panel — a single "total" series, or a stacked
  * breakdown with hover/click interactions.
  */
-export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, config, isCumulative, isBreakdown, series, todayDateKey, interactions }) => {
+export const BreakdownChart: React.FC<BreakdownChartProps> = ({
+    chartData,
+    config,
+    isCumulative,
+    isBreakdown,
+    series,
+    todayDateKey,
+    interactions,
+    capLine
+}) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
     // Clicking a band isolates that series (shows only it; click again shows all) — a
     // client-only view change, never a query change. Filtering lives on the Filter control.
@@ -109,6 +145,22 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
     };
     const seriesElements = renderSeries();
 
+    // With a cap line, pin the axis to round ticks with headroom above the cap (so its tick is a
+    // nice number, not a fraction like 11.2). Sum per row so stacked breakdowns use the stack height.
+    const capAxis = useMemo(() => {
+        if (capLine === undefined) return null;
+        let dataMax = 0;
+        for (const row of chartData) {
+            let rowSum = 0;
+            for (const key in row) {
+                const value = row[key];
+                if (key !== 'date' && typeof value === 'number') rowSum += value;
+            }
+            if (rowSum > dataMax) dataMax = rowSum;
+        }
+        return niceCapAxis(dataMax, capLine);
+    }, [chartData, capLine]);
+
     // Today's day number is rendered brighter than the rest so the current date stands out
     // on the axis itself. Reuses recharts' <Text> so it sits where the default ticks do; the
     // inline style is the only thing that beats the ChartContainer's tick-fill rule.
@@ -173,9 +225,26 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                     tickFormatter={(value: string) => String(dayOfMonth(value))}
                     tick={renderDayTick}
                 />
-                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
+                <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => formatQuantity(value)}
+                    padding={{ top: 20 }}
+                    // Round ticks + headroom above the cap line (nice tick values, cap not pinned to the top).
+                    domain={capAxis ? [0, capAxis.max] : undefined}
+                    ticks={capAxis?.ticks}
+                />
                 <ChartTooltip content={renderTooltip} isAnimationActive={false} />
                 {seriesElements}
+                {capLine !== undefined && (
+                    <ReferenceLine
+                        y={capLine}
+                        stroke="var(--color-icon-danger)"
+                        strokeDasharray="4 4"
+                        strokeOpacity={0.6}
+                        label={{ value: 'Limit', position: 'top', fill: 'var(--color-icon-danger)', fontSize: 11, offset: 6 }}
+                    />
+                )}
             </ChartComponent>
         </ChartContainer>
     );

@@ -43,8 +43,8 @@ export function formatUsage(usage: number) {
 /** Usage against a plan cap. `uncapped` = no limit; `near` starts at 80%; `over` at 100%. */
 export type UsageState = 'uncapped' | 'ok' | 'near' | 'over';
 
-/** Threshold at which a metric is considered "near" its limit (mirrors the sidebar warning band). */
-export const NEAR_LIMIT_RATIO = 0.8;
+/** Threshold at which a metric is considered "near" its limit (warning state), per the design. */
+export const NEAR_LIMIT_RATIO = 0.7;
 
 export function getUsageState(usage: number, limit: number | null): UsageState {
     if (!limit) {
