@@ -2073,7 +2073,7 @@ Nango handles OAuth with the MCP provider and stores the tokens. You can then us
 | **Catalog MCP servers** | Official MCP servers listed in [Nango's catalog](https://nango.dev/api-integrations?category=mcp) | [HubSpot (MCP)](/api-integrations/hubspot-mcp), [Notion MCP](/api-integrations/notion-mcp), [Linear MCP](/api-integrations/linear-mcp) |
 | **Generic MCP Server OAuth2** | Let your users connect any server that supports the [MCP Protocol](https://modelcontextprotocol.io/specification/draft). | Custom servers |
 
-If you are missing a catalog MCP servers you can [request it](/integrations/contribute-or-request-api).
+If you are missing a catalog MCP server you can [request it](/integrations/contribute-or-request-api).
 
 ## How to use it
 
