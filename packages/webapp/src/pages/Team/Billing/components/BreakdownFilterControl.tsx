@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useApiGetBillingUsageTopDimensionValues, useApiPrefetchBillingUsageTopDimensionValues } from '@/hooks/usePlan';
+import { track } from '@/utils/analytics';
 import { cn } from '@/utils/utils';
 import { DIMENSION_LABELS, formatDimensionValue, isSearchableDimension } from '../usageBreakdown';
 
@@ -160,7 +161,17 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                 </Tooltip>
             )}
 
-            <SlotTrigger onClear={breakdownDimension ? () => onSetBreakdown(null) : undefined} clearLabel="Remove grouping">
+            <SlotTrigger
+                onClear={
+                    breakdownDimension
+                        ? () => {
+                              track('web:usage:group_cleared', { metric });
+                              onSetBreakdown(null);
+                          }
+                        : undefined
+                }
+                clearLabel="Remove grouping"
+            >
                 <DropdownMenu open={groupOpen} onOpenChange={setGroupOpen}>
                     <DropdownMenuTrigger asChild>
                         <button type="button" className={cn(TRIGGER, breakdownDimension ? 'pr-9' : 'pr-6')} title="Group this metric by a dimension">
@@ -177,7 +188,14 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                         {dimensions.map((d) => (
-                            <DropdownMenuItem key={d} onSelect={() => onSetBreakdown(d)} className={DIM_ITEM}>
+                            <DropdownMenuItem
+                                key={d}
+                                onSelect={() => {
+                                    track('web:usage:grouped', { metric, dimension: d });
+                                    onSetBreakdown(d);
+                                }}
+                                className={DIM_ITEM}
+                            >
                                 <span className="truncate">{DIMENSION_LABELS[d]}</span>
                                 {d === breakdownDimension && <Check className="ml-auto size-3.5 shrink-0 text-text-muted" />}
                             </DropdownMenuItem>
@@ -192,7 +210,10 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
                     open={filterOpen}
                     onOpenChange={(next) => {
                         setFilterOpen(next);
-                        if (next) prefetchValues(dimensions);
+                        if (next) {
+                            track('web:usage:filter_opened', { metric });
+                            prefetchValues(dimensions);
+                        }
                     }}
                     groups={filterGroups}
                     useGroupData={useGroupData}

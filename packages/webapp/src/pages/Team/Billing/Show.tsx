@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
@@ -7,6 +8,7 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
+import { track } from '@/utils/analytics';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
@@ -29,6 +31,18 @@ export const TeamBilling: React.FC = () => {
             setActiveTab('usage');
         }
     }, [canManageBilling, activeTab, setActiveTab]);
+
+    // Read the tab from the URL hash directly: useHashNavigation defaults to 'usage' until it syncs
+    // after mount, so opening #plans would otherwise fire a usage view for one render.
+    const location = useLocation();
+    const onUsageTab = (location.hash ? location.hash.slice(1) : 'usage') === 'usage';
+
+    // Track a usage-page view when the tab becomes active (initial load or switching back to it).
+    useEffect(() => {
+        if (onUsageTab) {
+            track('web:usage:viewed', {});
+        }
+    }, [onUsageTab]);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but the billing
     // content is capped and left-aligned: the usage charts have a fixed height, so unbounded width
