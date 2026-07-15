@@ -130,6 +130,12 @@ export interface GetBillingUsageOpts {
      * ignores it.
      */
     filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
+    /**
+     * AVG metrics (connections, records) are returned as the point-in-time daily count instead of
+     * the billing running-average. Used by the Free caps view, where the cap is a concurrent
+     * maximum. CH path only. Default false (billing running-average).
+     */
+    pointInTime?: boolean;
 }
 
 export interface BillingUsageMetric {

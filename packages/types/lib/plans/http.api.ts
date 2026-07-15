@@ -127,6 +127,9 @@ export type GetBillingUsage = Endpoint<{
         // Composes with `breakdown[<metric>]` on the same metric when the
         // dimensions differ; only the same-dimension pairing is rejected.
         filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
+        // AVG metrics (connections, records) as point-in-time daily counts instead of the
+        // billing running-average — used by the Free caps view. CH path only.
+        pointInTime?: boolean | undefined;
     };
     Success: {
         data: {
