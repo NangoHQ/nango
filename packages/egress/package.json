@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/egress",
-    "version": "0.70.9",
+    "version": "0.71.0",
     "description": "Outbound URL security for Nango (SSRF hardening)",
     "type": "module",
     "main": "dist/index.js",
