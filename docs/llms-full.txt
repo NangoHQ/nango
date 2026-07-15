@@ -2,10 +2,15 @@
 
 > Curated full-text context for Nango core docs. Provider-specific API pages are excluded to keep this file focused; use the API catalog section at the end to discover supported provider slugs.
 
-## Introduction
+## Intro To Nango
 
 Source: https://nango.dev/docs/getting-started/intro-to-nango.md
-Description: Build product integrations with AI, using code you control and infrastructure built for scale.
+
+---
+title: 'Introduction'
+sidebarTitle: 'Introduction'
+description: 'Build product integrations with AI, using code you control and infrastructure built for scale.'
+---
 
 ## What is Nango?
 
@@ -92,7 +97,12 @@ Explore the main product integration use cases:
 ## Quickstart
 
 Source: https://nango.dev/docs/getting-started/quickstart.md
-Description: Authorize an API and run your first Nango function
+
+---
+title: 'Quickstart'
+sidebarTitle: '🚀 Quickstart'
+description: 'Authorize an API and run your first Nango function'
+---
 
 ## AI-assisted quickstart
 
@@ -229,10 +239,15 @@ The steps below show the flow end to end. This quickstart uses the GitHub API as
 
 <Tip>**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).</Tip>
 
-## Coding agent setup
+## Coding Agent Setup
 
 Source: https://nango.dev/docs/getting-started/coding-agent-setup.md
-Description: Give coding agents the Nango docs, core skill, and MCP tools.
+
+---
+title: 'Coding agent setup'
+sidebarTitle: '✨ Coding agent setup'
+description: 'Give coding agents the Nango docs, core skill, and MCP tools.'
+---
 
 Coding agents can speed up Nango integration work in two places: wiring Nango into your product and building [Nango Functions](/guides/functions/functions-guide).
 
@@ -285,10 +300,15 @@ These resources help agents discover Nango docs, provider slugs, API shapes, and
 | `api-catalog.txt` | `https://nango.dev/docs/api-catalog.txt` | Provider and integration slug discovery. |
 | OpenAPI spec | `https://nango.dev/docs/spec.yaml` | Exact HTTP API schemas for code generation or typed clients. |
 
-## Tool calling for AI agents
+## Tool Calling
 
 Source: https://nango.dev/docs/getting-started/use-cases/tool-calling.md
-Description: Give agents scoped, observable access to external APIs through Nango action functions.
+
+---
+title: 'Tool calling for AI agents'
+sidebarTitle: 'Tool calling for AI agents'
+description: 'Give agents scoped, observable access to external APIs through Nango action functions.'
+---
 
 AI agents become useful when they can act in the systems your users already use: HubSpot, Gmail, Slack, Linear, Notion, Salesforce, and the rest. The hard part is not just calling an API. It is OAuth, token refresh, per-user permissions, rate limits, logging, and keeping credentials out of the model loop.
 
@@ -328,10 +348,15 @@ Nango supports both direct action function execution and MCP-based tool discover
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions.
 - [Auth guide](/guides/auth/auth-guide) - let users authorize external APIs.
 
-## Sync external API data
+## Syncs
 
 Source: https://nango.dev/docs/getting-started/use-cases/syncs.md
-Description: Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
+
+---
+title: 'Sync external API data'
+sidebarTitle: 'Sync external API data'
+description: 'Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.'
+---
 
 Many products need a local copy of customer data from CRMs, file stores, ticketing tools, billing systems, calendars, or communication apps. Doing this reliably means handling OAuth, polling, pagination, rate limits, retries, deletions, and missed webhooks for every provider.
 
@@ -373,10 +398,15 @@ The same foundation works for classic data sync, indexing, RAG ingestion, and tr
   You can also pair sync functions with Action functions for two-way sync: sync reads from the external API, then call a function on demand to write changes back.
 </Note>
 
-## Run external API operations
+## Actions
 
 Source: https://nango.dev/docs/getting-started/use-cases/actions.md
-Description: Use Nango functions to read, write, and automate external APIs on demand.
+
+---
+title: 'Run external API operations'
+sidebarTitle: 'Run external API operations'
+description: 'Use Nango functions to read, write, and automate external APIs on demand.'
+---
 
 Some integration work needs to happen immediately: create a CRM contact, send a Slack message, fetch the latest account settings, or run a multi-step workflow after a user clicks a button.
 
@@ -416,10 +446,15 @@ These functions are the technical foundation behind on-demand API operations, un
   You can enable template functions from the [template catalog](https://www.nango.dev/templates) and skip writing code until you need custom behavior.
 </Note>
 
-## Process external webhooks
+## Webhooks From External Apis
 
 Source: https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis.md
-Description: Receive provider webhooks through Nango, then forward or process them with functions.
+
+---
+title: 'Process external webhooks'
+sidebarTitle: 'Process external webhooks'
+description: 'Receive provider webhooks through Nango, then forward or process them with functions.'
+---
 
 Many APIs can notify you when something changes, but each provider has its own webhook registration flow, payload shape, retries, and connection mapping. Nango gives external APIs one integration-specific webhook URL and attributes incoming events to the right connection.
 
@@ -461,10 +496,15 @@ For outgoing webhooks from Nango to your app, see [Receive webhooks from Nango](
 - [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) - configure your app's webhook URL and verify signatures.
 - [Sync functions](/guides/functions/syncs/sync-functions) - write changed records into Nango's cache.
 
-## Build a unified API
+## Unified Apis
 
 Source: https://nango.dev/docs/getting-started/use-cases/unified-apis.md
-Description: Normalize several external APIs behind your own stable product interface.
+
+---
+title: 'Build a unified API'
+sidebarTitle: 'Build a unified API'
+description: 'Normalize several external APIs behind your own stable product interface.'
+---
 
 API unification means turning several provider-specific APIs into one interface your product can use consistently. For example, your app might expose one `create-contact` operation even though Salesforce, HubSpot, Attio, and Pipedrive each model contacts differently.
 
@@ -506,10 +546,15 @@ Use [data validation](/guides/functions/data-validation) to keep provider mappin
 - [Storage](/guides/functions/storage#customer-configuration-pattern) - handle custom fields and per-customer mapping.
 - [Functions SDK reference](/reference/functions/functions-sdk) - runtime methods available inside provider-specific functions.
 
-## Customize per customer
+## Customer Configuration
 
 Source: https://nango.dev/docs/getting-started/use-cases/customer-configuration.md
-Description: Adapt integration behavior for each customer without forking code.
+
+---
+title: 'Customize per customer'
+sidebarTitle: 'Customize per customer'
+description: 'Adapt integration behavior for each customer without forking code.'
+---
 
 Many integrations need customer-specific behavior: custom field mappings, record filters, account IDs, feature flags, or provider-specific options. Large customers often have custom schemas in CRMs, ERPs, ticketing tools, and productivity apps, so one fixed integration path is rarely enough.
 
@@ -550,10 +595,15 @@ Metadata is available to Action functions, sync functions, and event functions.
 - [Event functions](/guides/functions/event-functions) - initialize metadata when a connection is created.
 - [Connection metadata API](/reference/backend/http-api/connections/set-metadata) - API reference.
 
-## React to connection lifecycle events
+## Implement Event Handler
 
 Source: https://nango.dev/docs/getting-started/use-cases/implement-event-handler.md
-Description: Run integration logic when a connection is validated, created, or deleted.
+
+---
+title: 'React to connection lifecycle events'
+sidebarTitle: 'Connection lifecycle events'
+description: 'Run integration logic when a connection is validated, created, or deleted.'
+---
 
 Some integration work should happen around the connection lifecycle rather than from a user action or schedule. For example, you may need to verify credentials before accepting a connection, register provider webhooks after authorization, or clean up subscriptions before a customer disconnects.
 
@@ -585,10 +635,15 @@ These functions are not called by your app directly. Nango runs them when the co
 - [Storage](/guides/functions/storage) - store account context on the connection.
 - [Functions SDK reference](/reference/functions/functions-sdk#createonevent) - `createOnEvent()` reference.
 
-## Sample app
+## Sample App
 
 Source: https://nango.dev/docs/getting-started/use-cases/sample-app.md
-Description: A practical demonstration of integrating Nango in your codebase.
+
+---
+title: 'Sample app'
+sidebarTitle: 'Sample app'
+description: 'A practical demonstration of integrating Nango in your codebase.'
+---
 
 The sample app contains:
 - **A frontend**: lets users connect an integration using the Nango frontend SDK.
@@ -608,6 +663,7 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
   </svg>
   <div>NangoHQ/sample-app</div>
 </a>
+
 
 ### Run the sample app
 
@@ -924,10 +980,15 @@ The sample app supports all file types through Nango's proxy:
 - [Sync functions](/guides/functions/syncs/sync-functions) - customize the data sync logic.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - process sync and auth notifications.
 
-## Auth guide
+## Auth Guide
 
 Source: https://nango.dev/docs/guides/auth/auth-guide.md
-Description: Let your users connect external APIs to your agents & apps.
+
+---
+title: 'Auth guide'
+sidebarTitle: 'Auth guide'
+description: 'Let your users connect external APIs to your agents & apps.'
+---
 
 ## Overview
 
@@ -1325,10 +1386,15 @@ The same tradeoffs apply to shared OAuth apps provided by other auth platforms.
 - [Customize Connect UI](/guides/auth/customize-connect-ui) - customize branding or build your own authorization UI.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked or expired credentials.
 
-## Share a connect link
+## Share Connect Link
 
 Source: https://nango.dev/docs/guides/auth/share-connect-link.md
-Description: Generate a short-lived connect link and share it with your end user.
+
+---
+title: 'Share a connect link'
+sidebarTitle: 'Share a connect link'
+description: 'Generate a short-lived connect link and share it with your end user.'
+---
 
 Use a connect link when you want to trigger authorization without opening Connect UI immediately in your app (for example: email-based onboarding, support-assisted setup, or cross-device flows).
 
@@ -1755,10 +1821,15 @@ For deeper function patterns, see [Storage](/guides/functions/storage).
 - [Storage](/guides/functions/storage) - use metadata inside functions.
 - [List connections API](/reference/backend/http-api/connections/list) - filter connections by tags.
 
-## Customize Connect UI
+## Customize Connect Ui
 
 Source: https://nango.dev/docs/guides/auth/customize-connect-ui.md
-Description: Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
+
+---
+title: 'Customize Connect UI'
+sidebarTitle: 'Customize Connect UI'
+description: 'Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.'
+---
 
 <Info>
 Pre-requisites:
@@ -2019,10 +2090,15 @@ Once authorization succeeds, [_save the connection ID_](/guides/auth/auth-guide#
 - [Frontend SDK reference](/reference/frontend/frontend-sdk#connect-using-the-headless-client) - headless authorization methods and parameters.
 - [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - understand connection-level storage.
 
-## Token refreshing & validity
+## Token Refreshing
 
 Source: https://nango.dev/docs/guides/auth/token-refreshing.md
-Description: How Nango handles OAuth token refresh and what to do when tokens are revoked.
+
+---
+title: "Token refreshing & validity"
+sidebarTitle: "Token refreshing & validity"
+description: "How Nango handles OAuth token refresh and what to do when tokens are revoked."
+---
 
 ## Automatic token refresh
 
@@ -2335,10 +2411,15 @@ This works for any deployed function — a template you enabled from the dashboa
 - [Rate limits](/guides/functions/rate-limits) — handle provider `429` responses and long-running retries.
 - [CI/CD](/guides/functions/ci-cd) — deploy functions with your application pipeline.
 
-## Sync function guide
+## Sync Functions
 
 Source: https://nango.dev/docs/guides/functions/syncs/sync-functions.md
-Description: Build sync functions that keep external API data fresh and consumable by your app.
+
+---
+title: 'Sync function guide'
+sidebarTitle: 'Sync function guide'
+description: 'Build sync functions that keep external API data fresh and consumable by your app.'
+---
 
 Sync functions keep external API data fresh in your app. They run on a recurring cadence, write records to Nango's records cache, and let your app consume changes reliably.
 
@@ -2561,10 +2642,15 @@ For unified models, use the same schema for synced records and write action inpu
 - [Real-time syncs](/guides/functions/syncs/realtime-syncs)
 - [Sync partitioning](/guides/functions/syncs/sync-partitioning)
 
-## Sync efficiency
+## Sync Efficiency
 
 Source: https://nango.dev/docs/guides/functions/syncs/sync-efficiency.md
-Description: Build sync functions that replicate external datasets without wasting API calls, memory, or compute.
+
+---
+title: 'Sync efficiency'
+sidebarTitle: 'Sync efficiency'
+description: 'Build sync functions that replicate external datasets without wasting API calls, memory, or compute.'
+---
 
 Sync functions are often used to replicate external datasets into your app or to notify your app when external data changes. Efficient syncs fetch only what changed, save records in batches, and let your app consume changes promptly.
 
@@ -2679,7 +2765,12 @@ Read [Records cache](/guides/functions/syncs/records-cache) for cursor behavior,
 ## Checkpoints
 
 Source: https://nango.dev/docs/guides/functions/syncs/checkpoints.md
-Description: Save progress mid-run, resume after failures, and turn full syncs into incremental ones.
+
+---
+title: 'Checkpoints'
+sidebarTitle: 'Checkpoints'
+description: 'Save progress mid-run, resume after failures, and turn full syncs into incremental ones.'
+---
 
 Checkpoints let sync functions save their progress and resume from where they left off. This enables a function to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are what make sync functions **resilient to failures** and enable **incremental syncing**, the recommended approach for any non-trivial dataset.
 
@@ -2960,10 +3051,15 @@ This lets you test that your sync correctly resumes from a checkpoint without ne
 | [`nango.saveCheckpoint()`](/reference/functions/functions-sdk#savecheckpoint) | Saves progress. Call after each batch of data. |
 | [`nango.clearCheckpoint()`](/reference/functions/functions-sdk#clearcheckpoint) | Clears the checkpoint. Use at the end of a full sync so the next run starts from the first page. Checkpoints are also automatically cleared when triggering a sync with `reset: true`. |
 
-## Records cache
+## Records Cache
 
 Source: https://nango.dev/docs/guides/functions/syncs/records-cache.md
-Description: How Nango stores synced records, detects changes, and lets your app fetch deltas via cursors.
+
+---
+title: 'Records cache'
+sidebarTitle: 'Records cache'
+description: 'How Nango stores synced records, detects changes, and lets your app fetch deltas via cursors.'
+---
 
 Sync functions replicate records from an external API to your system continuously. To do this reliably, Nango uses a **records cache** — an intermediate store that sits between the external API and your application.
 
@@ -3119,10 +3215,15 @@ See [Re-syncing: resetting checkpoints and the cache](/guides/functions/syncs/ch
 - [Deletion detection](/guides/functions/syncs/deletion-detection) - mark records deleted in the cache.
 - [Get records API](/reference/backend/http-api/sync/records-list) - fetch changed records from your app.
 
-## Deletion detection
+## Deletion Detection
 
 Source: https://nango.dev/docs/guides/functions/syncs/deletion-detection.md
-Description: Surface deletes from the external API — even when the API itself doesn't expose them cleanly.
+
+---
+title: 'Deletion detection'
+sidebarTitle: 'Deletion detection'
+description: 'Surface deletes from the external API — even when the API itself doesn''t expose them cleanly.'
+---
 
 Sometimes you need to know when a record you are syncing has been deleted in the external system. Deletion detection works differently depending on whether your sync function is incremental or full — pick the strategy that matches your sync approach.
 
@@ -3285,10 +3386,15 @@ We strongly recommend not performing irreversible destructive actions (like hard
 - [Sync efficiency](/guides/functions/syncs/sync-efficiency) - reduce API work during delete detection.
 - [Functions SDK reference](/reference/functions/functions-sdk#delete-records) - deletion helper methods.
 
-## Real-time syncs with webhooks
+## Realtime Syncs
 
 Source: https://nango.dev/docs/guides/functions/syncs/realtime-syncs.md
-Description: Combine webhooks from external APIs with periodic polling for a reliable, real-time stream of changes.
+
+---
+title: 'Real-time syncs with webhooks'
+sidebarTitle: 'Real-time syncs'
+description: 'Combine webhooks from external APIs with periodic polling for a reliable, real-time stream of changes.'
+---
 
 Nango supports real-time syncs using [webhook functions](/guides/functions/webhook-functions). You can rely entirely on webhooks or combine them with polling to ensure you never miss data.
 
@@ -3381,10 +3487,15 @@ Run `batchSave` / `batchUpdate` / `batchDelete` calls sequentially (not in paral
 - [Sync functions](/guides/functions/syncs/sync-functions) - keep a polling sync as reconciliation.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - consume sync completion notifications.
 
-## Sync partitioning
+## Sync Partitioning
 
 Source: https://nango.dev/docs/guides/functions/syncs/sync-partitioning.md
-Description: Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.
+
+---
+title: 'Sync partitioning'
+sidebarTitle: 'Sync partitioning'
+description: 'Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.'
+---
 
 Sync variants let you spawn multiple independent sync processes **inside a single connection** — one per mailbox, file folder, Slack channel, repo, or any other sub-resource the end-user has access to. Each variant runs on its own schedule, with its own checkpoint and records cache, so a slow partition doesn't block a fast one.
 
@@ -3545,10 +3656,15 @@ Keep variants non-overlapping in data scope (unless intentional), store variant-
 - [Records cache](/guides/functions/syncs/records-cache) - fetch data for each variant.
 - [Create sync variant API](/reference/backend/http-api/sync/create-variant) - manage variants programmatically.
 
-## Action functions
+## Action Functions
 
 Source: https://nango.dev/docs/guides/functions/action-functions.md
-Description: Build Action functions that your app, backend jobs, or agents can call on demand.
+
+---
+title: 'Action functions'
+sidebarTitle: 'Action functions'
+description: 'Build Action functions that your app, backend jobs, or agents can call on demand.'
+---
 
 Action functions run when your app, backend job, or agent explicitly calls them. In SDK and API names, this function type is often called an **action** because it receives an input and returns an output.
 
@@ -3744,10 +3860,15 @@ To receive completion events instead of polling, configure [webhooks from Nango 
 - [Trigger action API](/reference/backend/http-api/action/trigger)
 - [Functions SDK reference](/reference/functions/functions-sdk)
 
-## Webhook functions
+## Webhook Functions
 
 Source: https://nango.dev/docs/guides/functions/webhook-functions.md
-Description: Process external API webhooks inside Nango functions.
+
+---
+title: 'Webhook functions'
+sidebarTitle: 'Webhook functions'
+description: 'Process external API webhooks inside Nango functions.'
+---
 
 Webhook functions run when an external API sends a webhook to Nango. Use them when the webhook should execute Nango-hosted logic, update records, normalize events, or mark data for later reconciliation.
 
@@ -3880,10 +4001,15 @@ Prefer lightweight, idempotent handling in `onWebhook`, and let the sync functio
 - [Event functions](/guides/functions/event-functions)
 - [Records cache](/guides/functions/syncs/records-cache)
 
-## Event functions
+## Event Functions
 
 Source: https://nango.dev/docs/guides/functions/event-functions.md
-Description: Run function logic automatically when Nango connection lifecycle events happen.
+
+---
+title: 'Event functions'
+sidebarTitle: 'Event functions'
+description: 'Run function logic automatically when Nango connection lifecycle events happen.'
+---
 
 Event functions run automatically when Nango reaches a connection lifecycle event. They are defined with `createOnEvent()`.
 
@@ -4062,10 +4188,15 @@ Event functions run automatically when their configured event occurs. Your app d
 - [Storage](/guides/functions/storage)
 - [Functions SDK reference](/reference/functions/functions-sdk)
 
-## Tool calling & MCP
+## Tool Calling
 
 Source: https://nango.dev/docs/guides/functions/tool-calling.md
-Description: Expose Nango action functions to agents, LLM SDKs, and MCP clients.
+
+---
+title: 'Tool calling & MCP'
+sidebarTitle: 'Tool calling & MCP'
+description: 'Expose Nango action functions to agents, LLM SDKs, and MCP clients.'
+---
 
 Tool calling in Nango happens through [action functions](/guides/functions/action-functions). Each tool is an action function that an agent, LLM SDK, or MCP client can call on demand for a specific connection.
 
@@ -4439,7 +4570,12 @@ Keep tool names and descriptions specific. Expose only action functions the agen
 ## Storage
 
 Source: https://nango.dev/docs/guides/functions/storage.md
-Description: Use connection metadata as the default storage for function parameters and per-customer configuration.
+
+---
+title: 'Storage'
+sidebarTitle: 'Storage'
+description: 'Use connection metadata as the default storage for function parameters and per-customer configuration.'
+---
 
 Functions have access to storage that is scoped to the connection they run for. Use it to keep integration behavior tied to the customer, account, workspace, or tenant that authorized the connection.
 
@@ -4606,10 +4742,15 @@ Use the records cache for synced external data, not for function configuration. 
 - [Set connection metadata API](/reference/backend/http-api/connections/set-metadata) - replace metadata from your app.
 - [Update connection metadata API](/reference/backend/http-api/connections/update-metadata) - patch metadata from your app.
 
-## Function logging
+## Logging
 
 Source: https://nango.dev/docs/guides/functions/logging.md
-Description: Use function logs for local debugging, cloud observability, and production troubleshooting.
+
+---
+title: 'Function logging'
+sidebarTitle: 'Logging'
+description: 'Use function logs for local debugging, cloud observability, and production troubleshooting.'
+---
 
 Nango records function executions in the Logs tab. You can also add custom logs from action, sync, webhook, and event functions with `nango.log()`.
 
@@ -4695,10 +4836,15 @@ Avoid logging secrets, access tokens, refresh tokens, full request headers, or r
 - [Testing](/guides/functions/testing)
 - [Sync efficiency](/guides/functions/syncs/sync-efficiency)
 
-## Rate limits
+## Rate Limits
 
 Source: https://nango.dev/docs/guides/functions/rate-limits.md
-Description: Guide on how to handle API rate limits from external APIs.
+
+---
+title: 'Rate limits'
+sidebarTitle: 'Rate limits'
+description: 'Guide on how to handle API rate limits from external APIs.'
+---
 
 External APIs often enforce rate limits to prevent excessive use. When these limits are reached, you'll start receiving HTTP `429 Too Many Requests` errors, blocking further requests until the limit resets.
 
@@ -4734,6 +4880,7 @@ This is set up in the same way as the first strategy:
 await nango.get({ endpoint: '/some-endpoint', retryHeader: { at: "x-ratelimit-reset" } });
 ```
 
+
 If rate-limit headers are not already configured for an API you are using, you can request their inclusion by reaching out to the Nango team via the [community](https://nango.dev/slack)—typically within 24 hours.
 
 ## Related guides
@@ -4747,10 +4894,15 @@ If rate-limit headers are not already configured for an API you are using, you c
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
 
-## Data validation
+## Data Validation
 
 Source: https://nango.dev/docs/guides/functions/data-validation.md
-Description: How to validate data in your functions and in your app
+
+---
+title: 'Data validation'
+sidebarTitle: 'Data validation'
+description: 'How to validate data in your functions and in your app'
+---
 
 Nango offers data validation at two levels: inside your [Nango functions](/guides/functions/functions-guide) (when calling external APIs) and in your application code (when consuming function responses).
 
@@ -4846,10 +4998,15 @@ const jsonSchema = z.toJSONSchema(issueSchema);
 - [Unified APIs](/guides/functions/unified-apis) - normalize provider data behind stable schemas.
 - [Testing](/guides/functions/testing) - cover validation behavior in tests.
 
-## Testing integrations
+## Testing
 
 Source: https://nango.dev/docs/guides/functions/testing.md
-Description: How to test your Nango integrations using dry runs, mocks, and snapshots
+
+---
+title: 'Testing integrations'
+sidebarTitle: 'Testing'
+description: 'How to test your Nango integrations using dry runs, mocks, and snapshots'
+---
 
 Nango provides a comprehensive testing framework that combines dry runs with mock-based snapshot testing. This guide will walk you through testing your integrations effectively.
 
@@ -5444,10 +5601,15 @@ describe.each([
 - [Action functions](/guides/functions/action-functions) - Building and testing on-demand functions
 - [Sync functions](/guides/functions/syncs/sync-functions) - Building and testing sync functions
 
-## CI/CD for Nango Functions
+## Ci Cd
 
 Source: https://nango.dev/docs/guides/functions/ci-cd.md
-Description: How to integrate Nango Function deployments into your CI/CD pipeline.
+
+---
+title: 'CI/CD for Nango Functions'
+sidebarTitle: 'CI/CD'
+description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
+---
 
 CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, action functions, webhook functions, and event functions — in sync with your application across environments.
 
@@ -5647,10 +5809,15 @@ In CI environments, Nango automatically disables dependency updates to prevent m
 - [Testing integrations](/guides/functions/testing) - A comprehensive guide to testing your Nango Functions.
 - [API Keys reference](/reference/backend/http-api/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.
 
-## Unified APIs with functions
+## Unified Apis
 
 Source: https://nango.dev/docs/guides/functions/unified-apis.md
-Description: Build provider-specific functions behind one stable model and operation surface.
+
+---
+title: 'Unified APIs with functions'
+sidebarTitle: 'Unified APIs'
+description: 'Build provider-specific functions behind one stable model and operation surface.'
+---
 
 API unification is the process of standardizing multiple provider APIs behind one interface that your product can use consistently.
 
@@ -5844,7 +6011,12 @@ Use one of these patterns when the common model is not enough:
 ## Observability
 
 Source: https://nango.dev/docs/guides/platform/observability.md
-Description: How Nango helps you with observability for your integrations
+
+---
+title: 'Observability'
+sidebarTitle: 'Observability'
+description: 'How Nango helps you with observability for your integrations'
+---
 
 Nango's logs are comprehensive and give you a detailed picture of what happens in your integrations.
 
@@ -6018,7 +6190,12 @@ When you deploy [Functions](/guides/functions/functions-guide), you always targe
 ## Limits
 
 Source: https://nango.dev/docs/guides/platform/limits.md
-Description: Overview of resource limits on Nango Cloud.
+
+---
+title: 'Limits'
+sidebarTitle: 'Limits'
+description: 'Overview of resource limits on Nango Cloud.'
+---
 
 Nango Cloud has several resource limits to ensure platform stability and fair usage across all customers.
 
@@ -6108,7 +6285,12 @@ These limits apply to all webhook types: auth, sync function completion, async a
 ## Security
 
 Source: https://nango.dev/docs/guides/platform/security.md
-Description: How Nango secures your API credentials and customer data.
+
+---
+title: 'Security'
+sidebarTitle: 'Security'
+description: 'How Nango secures your API credentials and customer data.'
+---
 
 Nango is designed with security as a core principle. This page provides technical details about how Nango stores, encrypts, and manages API credentials.
 
@@ -6425,6 +6607,7 @@ Once SSO is configured, users sign in through your company's identity provider (
 Some integrations require network-level access controls that only allow inbound traffic from known IP addresses.
 This page lists the **public IP addresses used by Nango services** when making outbound requests.
 
+
 ### When is IP allowlisting required?
 
 IP allowlisting is only required if **your customers' systems** restrict inbound network traffic.
@@ -6436,6 +6619,7 @@ Common examples include:
 
 If a system is publicly accessible without IP restrictions, **no allowlist configuration is needed**.
 
+
 ### Nango public IP addresses
 
 Allowlist the following IP addresses to permit inbound traffic from Nango:
@@ -6444,6 +6628,7 @@ Allowlist the following IP addresses to permit inbound traffic from Nango:
 - `54.69.127.183`
 - `44.247.133.183`
 - `52.26.211.56`
+
 
 ### IP address changes
 
@@ -6472,10 +6657,15 @@ For details on available scopes, advised profiles, and key management, see the [
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked OAuth credentials.
 - [Self-host Nango](/guides/platform/self-hosting) - review deployment and data ownership options.
 
-## Self-host Nango
+## Self Hosting
 
 Source: https://nango.dev/docs/guides/platform/self-hosting.md
-Description: Overview of self-hosted deployments.
+
+---
+title: 'Self-host Nango'
+sidebarTitle: 'Self-hosting'
+description: 'Overview of self-hosted deployments.'
+---
 
 Nango offers a self-hosted deployment option for Enterprise customers. This guide covers deployment, scaling, updates, and other key operational details.
 
@@ -6921,10 +7111,15 @@ If you are interested in the Enterprise self-hosting version, please get in touc
 - [Environments](/guides/platform/environments) - organize dev, staging, and production setups.
 - [Changelog](/updates/changelog) - track changes that affect self-hosted upgrades.
 
-## Proxy requests
+## Proxy Requests
 
 Source: https://nango.dev/docs/guides/platform/proxy-requests.md
-Description: How to use the requests proxy from Nango
+
+---
+title: 'Proxy requests'
+sidebarTitle: 'Proxy requests'
+description: 'How to use the requests proxy from Nango'
+---
 
 Use the requests proxy to make authenticated API requests to the external API.
 
@@ -7388,10 +7583,15 @@ You can also use the [OpenTelemetry exporter](/guides/platform/observability#ope
 - [Event functions](/guides/functions/event-functions) - react to connection lifecycle events.
 - [Observability](/guides/platform/observability) - monitor webhook operations and retries.
 
-## External webhook forwarding
+## Webhook Forwarding
 
 Source: https://nango.dev/docs/guides/platform/webhook-forwarding.md
-Description: Forward external API webhooks through Nango to your app, with connection attribution.
+
+---
+title: 'External webhook forwarding'
+sidebarTitle: 'External webhook forwarding'
+description: 'Forward external API webhooks through Nango to your app, with connection attribution.'
+---
 
 Webhook forwarding lets Nango receive webhooks from external APIs and forward them to your app's webhook URL. Use it when your app should own the webhook handling logic, but you still want Nango to provide the provider-specific webhook URL, routing, signing, retries, and logs.
 
@@ -7490,10 +7690,15 @@ For retry behavior, timeout limits, and local testing tips, see [Webhook retries
 - [Receive webhooks from Nango](/guides/platform/webhooks-from-nango)
 - [Observability](/guides/platform/observability)
 
-## Common issues
+## Common Issues
 
 Source: https://nango.dev/docs/guides/platform/common-issues.md
-Description: Troubleshooting guide for frequent errors and how to fix them.
+
+---
+title: 'Common issues'
+sidebarTitle: 'Common issues'
+description: 'Troubleshooting guide for frequent errors and how to fix them.'
+---
 
 If you encounter an issue not documented here, reach out on the [Slack community](https://nango.dev/slack).
 
@@ -7564,6 +7769,7 @@ Known API-specific behaviors:
 - Google: All tokens are revoked after 7 days if your OAuth app is in test mode ([detailed guide](https://www.nango.dev/blog/google-oauth-invalid-grant-token-has-been-expired-or-revoked)). To go to production, read our [guide for Google's OAuth app review](/api-integrations/google-shared/google-security-review).
 - Salesforce: See [Salesforce refresh token issues](https://nango.dev/blog/salesforce-oauth-refresh-token-invalid-grant/).
 
+
 ## Connection not found (unknown_connection / 404)
 
 Indications of the error:
@@ -7607,10 +7813,15 @@ Indications of the error:
 - [Token refreshing and validity](/guides/auth/token-refreshing) - understand refresh failures.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive failure notifications.
 
-## Migrate to checkpoints
+## Migrate To Checkpoints
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-checkpoints.md
-Description: Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.
+
+---
+title: 'Migrate to checkpoints'
+sidebarTitle: 'Migrate to checkpoints'
+description: 'Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.'
+---
 
 <div className="agent-quickstart-actions">
   <button
@@ -7826,10 +8037,15 @@ Because the first post-migration run starts fresh, it may take longer than usual
 - [Sync functions](/guides/functions/syncs/sync-functions) - update sync implementations.
 - [Testing](/guides/functions/testing) - test checkpoint filtering.
 
-## Migrate from end user
+## Migrate From End User
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-from-end-user.md
-Description: Guide to migrate away from using end users in connections and connect sessions
+
+---
+title: 'Migrate from end user'
+sidebarTitle: 'Migrate from end user'
+description: 'Guide to migrate away from using end users in connections and connect sessions'
+---
 
 # Who is impacted
 
@@ -7953,10 +8169,15 @@ Once your code relies on `tags`, stop sending or reading the deprecated `end_use
 - [Auth guide](/guides/auth/auth-guide) - create connect sessions with tags.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango#auth-webhooks) - reconcile auth webhooks with tags.
 
-## Migrate from public key
+## Migrate From Public Key
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md
-Description: Guide to migrate from using the public key (and HMAC) to a Connect session.
+
+---
+title: 'Migrate from public key'
+sidebarTitle: 'Migrate from public key'
+description: 'Guide to migrate from using the public key (and HMAC) to a Connect session.'
+---
 
 # Who is impacted
 
@@ -8044,7 +8265,9 @@ curl -X PATCH https://api.nango.dev/v1/connections/<CONNECTION-ID> \
   </Tab>
 </Tabs>
 
+
 Check endpoint documentation [here](/reference/backend/http-api/connections/patch).
+
 
 ## Step 2: Implement the Connect and reconnect flows
 
@@ -8066,10 +8289,15 @@ Finally, remove all usage of the **public key and HMAC** from your frontend.
 - [Customize Connect UI](/guides/auth/customize-connect-ui) - migrate custom authorization UIs or customize the pre-built UI.
 - [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - add ownership attribution during migration.
 
-## Migrating to Zero YAML
+## Migrate To Zero Yaml
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md
-Description: Guide on how to migrate to Zero YAML in Nango.
+
+---
+title: 'Migrating to Zero YAML'
+sidebarTitle: 'Migrating to Zero YAML'
+description: 'Guide on how to migrate to Zero YAML in Nango.'
+---
 
 <div className="agent-quickstart-actions">
   <button
@@ -8145,7 +8373,9 @@ Three core functions that replace YAML configuration. You'll benefit from Intell
 - **`createAction()`**: Defines one-off jobs
 - **`createOnEvent()`**: Defines event-based jobs
 
+
 ----
+
 
 ## Quick Migration Guide
 
@@ -8420,9 +8650,15 @@ If you encounter any issues during migration, our support team is ready to help.
 - [Functions CLI](/reference/functions/functions-cli) - deploy and dry-run migrated functions.
 - [Testing](/guides/functions/testing) - verify migrated integrations before rollout.
 
-## Frontend SDK
+## Frontend Sdk
 
 Source: https://nango.dev/docs/reference/frontend/frontend-sdk.md
+
+---
+title: 'Frontend SDK'
+sidebarTitle: 'Frontend SDK'
+icon: 'js'
+---
 
 Trigger authorization flows in your frontend with this SDK. It is available on [NPM](https://www.npmjs.com/package/@nangohq/frontend) as `@nangohq/frontend`.
 
@@ -8465,6 +8701,7 @@ const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKEN>' });
     </Expandable>
   </ResponseField>
 </Expandable>
+
 
 # Connect using Nango Connect UI
 
@@ -8947,6 +9184,10 @@ The **Default - Full access** key that comes with each environment already has a
 
 Source: https://nango.dev/docs/reference/backend/http-api/authentication.md
 
+---
+title: 'Authentication'
+---
+
 Use an [API key](/reference/backend/http-api/api-keys) as a Bearer token in the `Authorization` header. API keys are managed in **Environment Settings > API Keys** in the Nango UI.
 
 ```
@@ -8955,9 +9196,13 @@ Authorization: Bearer <NANGO-API-KEY>
 
 Each API key has [scopes](/reference/backend/http-api/api-keys#scopes) that control which endpoints it can access. A key without the required scope will receive a `403 Forbidden` response.
 
-## Rate limits
+## Rate Limits
 
 Source: https://nango.dev/docs/reference/backend/http-api/rate-limits.md
+
+---
+title: 'Rate limits'
+---
 
 The Nango API is rate-limited to prevent abuse and ensure fair usage across all clients. The rate limit is enforced on a per-account basis, with a fixed window of time and a maximum number of requests allowed within that window.
 
@@ -8968,9 +9213,14 @@ Those headers are sent back with every API response:
 
 If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
 
-## List all integrations
+## List
 
 Source: https://nango.dev/docs/reference/backend/http-api/integration/list.md
+
+---
+title: 'List all integrations'
+openapi: 'GET /integrations'
+---
 
 <Info>
   Requires an API key with one of: `environment:integrations:list` or `environment:integrations:list_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9011,9 +9261,14 @@ const response = await nango.listIntegrations();
 ```
 </ResponseExample>
 
-## Get an integration
+## Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
+
+---
+title: 'Get an integration'
+openapi: 'GET /integrations/{uniqueKey}'
+---
 
 <Info>
   Requires an API key with one of: `environment:integrations:read` or `environment:integrations:read_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9078,9 +9333,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
 ```
 </ResponseExample>
 
-## Create an integration
+## Create
 
 Source: https://nango.dev/docs/reference/backend/http-api/integration/create.md
+
+---
+title: 'Create an integration'
+openapi: 'POST /integrations'
+---
 
 <Info>
   Requires an API key with the `environment:integrations:create` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9101,25 +9361,40 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/create.md
 ```
 </ResponseExample>
 
-## Update an integration
+## Update
 
 Source: https://nango.dev/docs/reference/backend/http-api/integration/update.md
+
+---
+title: 'Update an integration'
+openapi: 'PATCH /integrations/{uniqueKey}'
+---
 
 <Info>
   Requires an API key with the `environment:integrations:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Delete an integration
+## Delete
 
 Source: https://nango.dev/docs/reference/backend/http-api/integration/delete.md
+
+---
+title: 'Delete an integration'
+openapi: 'DELETE /integrations/{uniqueKey}'
+---
 
 <Info>
   Requires an API key with the `environment:integrations:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Create a connect session
+## Create
 
 Source: https://nango.dev/docs/reference/backend/http-api/connect/sessions/create.md
+
+---
+title: 'Create a connect session'
+openapi: 'POST /connect/sessions'
+---
 
 <Info>
   Requires an API key with the `environment:connect_sessions:write` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9132,29 +9407,49 @@ You can attach connection-level tags to the session via the `tags` field. These 
 
 Most apps start with these tags: `end_user_id`, `end_user_email`, `organization_id`.
 
-## Create a reconnect session
+## Reconnect
 
 Source: https://nango.dev/docs/reference/backend/http-api/connect/sessions/reconnect.md
+
+---
+title: 'Create a reconnect session'
+openapi: 'POST /connect/sessions/reconnect'
+---
 
 <Info>
   Requires an API key with the `environment:connect_sessions:write` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Get a connect session
+## Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/connect/session/get.md
 
+---
+title: 'Get a connect session'
+openapi: 'GET /connect/session'
+---
+
 Retrieves a connect session information (allowed integrations, default connection configurations).
 
-## Delete a connect session
+## Delete
 
 Source: https://nango.dev/docs/reference/backend/http-api/connect/session/delete.md
 
+---
+title: 'Delete a connect session'
+openapi: 'DELETE /connect/session'
+---
+
 Deletes a connect session
 
-## Import a connection
+## Post
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/post.md
+
+---
+title: 'Import a connection'
+openapi: 'POST /connections'
+---
 
 <Info>
   Requires an API key with the `environment:connections:create` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9174,9 +9469,14 @@ You can use this endpoint to import OAuth 2, OAuth 1, API Keys, and Basic auth c
 
 The required fields depend on the type of authentication of the _connections_ you are trying to import.
 
-## List connections
+## List
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/list.md
+
+---
+title: 'List connections'
+openapi: 'GET /connections'
+---
 
 <Info>
   Requires an API key with one of: `environment:connections:list` or `environment:connections:list_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9221,9 +9521,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/connections/list.md
   ```
 </ResponseExample>
 
-## Get connection & credentials
+## Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/get.md
+
+---
+title: 'Get connection & credentials'
+openapi: 'GET /connections/{connectionId}'
+---
 
 <Info>
   Requires an API key with one of: `environment:connections:read` or `environment:connections:read_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9244,17 +9549,27 @@ Every time you fetch the connection with this API endpoint, Nango will check if 
 
 </Tip>
 
-## Patch a connection
+## Patch
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/patch.md
+
+---
+title: 'Patch a connection'
+openapi: 'PATCH /connections/{connectionId}'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Set connection metadata
+## Set Metadata
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/set-metadata.md
+
+---
+title: 'Set connection metadata'
+openapi: 'POST /connections/metadata'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9268,9 +9583,14 @@ Nango uses the request body as the new metadata (it must be a JSON object). Note
 
 To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
 
-## Edit connection metadata
+## Update Metadata
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/update-metadata.md
+
+---
+title: 'Edit connection metadata'
+openapi: 'PATCH /connections/metadata'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9284,9 +9604,14 @@ Nango uses the request body as the new metadata (it must be a JSON object). Note
 
 To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
 
-## Delete a connection
+## Delete
 
 Source: https://nango.dev/docs/reference/backend/http-api/connections/delete.md
+
+---
+title: 'Delete a connection'
+openapi: 'DELETE /connections/{connectionId}'
+---
 
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9332,9 +9657,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/delete.md
 
 Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint.
 
-## Compile a function
+## Compile
 
 Source: https://nango.dev/docs/reference/backend/http-api/functions/compile.md
+
+---
+title: 'Compile a function'
+openapi: 'POST /functions/compile'
+---
 
 <Info>
   Requires an API key with the `environment:functions:compile` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9342,9 +9672,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/compile.md
 
 Compiles TypeScript function source code and returns the bundled JavaScript.
 
-## Dry run a function
+## Dryruns Create
 
 Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md
+
+---
+title: 'Dry run a function'
+openapi: 'POST /functions/dryruns'
+---
 
 <Info>
   Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9352,9 +9687,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-crea
 
 Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
 
-## Get dry run results
+## Dryruns Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md
+
+---
+title: 'Get dry run results'
+openapi: 'GET /functions/dryruns/{id}'
+---
 
 <Info>
   Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9362,9 +9702,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.
 
 Returns the status and result of an asynchronous function dry run.
 
-## Create a function deployment
+## Deployments
 
 Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.md
+
+---
+title: 'Create a function deployment'
+openapi: 'POST /functions/deployments'
+---
 
 <Info>
   Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9372,9 +9717,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.
 
 Deploys a function to an existing integration: either submitted TypeScript source code (`type: function`) or a template from the provider catalog (`type: template`).
 
-## Get integration functions config
+## Config
 
 Source: https://nango.dev/docs/reference/backend/http-api/scripts/config.md
+
+---
+title: 'Get integration functions config'
+openapi: 'GET /scripts/config'
+---
 
 <Info>
   Requires an API key with the `environment:integrations:list_functions` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9499,9 +9849,15 @@ It will be transformed into:
 }
 ```
 
-## Get records
+## Records List
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/records-list.md
+
+---
+title: 'Get records'
+sidebarTitle: 'Get records'
+openapi: 'GET /records'
+---
 
 <Info>
   Requires an API key with the `environment:records:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9549,9 +9905,15 @@ By default this returns an array of objects in the data model that you queried w
 }
 ```
 
-## Prune records
+## Prune Records
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/prune-records.md
+
+---
+title: 'Prune records'
+sidebarTitle: 'Prune records'
+openapi: 'PATCH /records/prune'
+---
 
 <Info>
   Requires an API key with the `environment:records:write` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9588,9 +9950,14 @@ The `has_more` field indicates whether there are potentially more records to pru
 }
 ```
 
-## Trigger sync(s)
+## Trigger
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/trigger.md
+
+---
+title: 'Trigger sync(s)'
+openapi: 'POST /sync/trigger'
+---
 
 <Info>
   Requires an API key with the `environment:syncs:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9602,25 +9969,40 @@ This is especially useful if you e.g. changed the metadata for the connection an
 
 Use `reset` to clear the checkpoint and re-fetch all data, or `reset` with `emptyCache` to start completely fresh. See the [checkpoints guide](/guides/functions/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details.
 
-## Start sync(s)
+## Start
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/start.md
 
+---
+title: 'Start sync(s)'
+openapi: 'POST /sync/start'
+---
+
 <Info>
   Requires an API key with the `environment:syncs:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Pause sync(s)
+## Pause
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/pause.md
 
+---
+title: 'Pause sync(s)'
+openapi: 'POST /sync/pause'
+---
+
 <Info>
   Requires an API key with the `environment:syncs:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Sync status
+## Status
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/status.md
+
+---
+title: 'Sync status'
+openapi: 'GET /sync/status'
+---
 
 <Info>
   Requires an API key with the `environment:syncs:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9628,25 +10010,41 @@ Source: https://nango.dev/docs/reference/backend/http-api/sync/status.md
 
 The response includes the current `checkpoint` for each sync, which tracks how far the sync has progressed. Learn more about [checkpoints](/guides/functions/syncs/checkpoints).
 
-## Override sync connection frequency
+## Update Connection Frequency
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/update-connection-frequency.md
+
+---
+title: 'Override sync connection frequency'
+openapi: 'PUT /sync/update-connection-frequency'
+---
 
 <Info>
   Requires an API key with the `environment:syncs:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Get environment variables
+## Environment Variables
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/environment-variables.md
+
+---
+title: 'Get environment variables'
+openapi: 'GET /environment-variables'
+---
 
 <Info>
   Requires an API key with the `environment:variables:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Create sync variant
+## Create Variant
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/create-variant.md
+
+---
+title: 'Create sync variant'
+sidebarTitle: 'Create variant'
+openapi: 'POST /sync/{name}/variant/{variant}'
+---
 
 <Info>
   Requires an API key with the `environment:syncs:variant:create` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9667,26 +10065,43 @@ After creating a variant, you can use the `/records` endpoint to access its data
 GET /records?model=MyModel&variant=MyVariant
 ```
 
-## Delete sync variant
+## Delete Variant
 
 Source: https://nango.dev/docs/reference/backend/http-api/sync/delete-variant.md
+
+---
+title: 'Delete sync variant'
+sidebarTitle: 'Delete variant'
+openapi: 'DELETE /sync/{name}/variant/{variant}'
+---
 
 <Info>
   Requires an API key with the `environment:syncs:variant:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Trigger an action
+## Trigger
 
 Source: https://nango.dev/docs/reference/backend/http-api/action/trigger.md
+
+---
+title: 'Trigger an action'
+openapi: 'POST /action/trigger'
+---
 
 <Info>
   Requires an API key with the `environment:actions:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Proxy - GET requests
+## Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/proxy/get.md
 
+---
+title: 'Proxy - GET requests'
+sidebarTitle: 'Proxy  - GET requests'
+openapi: 'GET /proxy/{anyPath}'
+---
+
 <Info>
   Requires an API key with the `environment:proxy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
@@ -9707,10 +10122,16 @@ The response from the external API is passed back to you exactly as Nango gets i
 * Response headers
 * Response body
 
-## Proxy - POST requests
+## Post
 
 Source: https://nango.dev/docs/reference/backend/http-api/proxy/post.md
 
+---
+title: 'Proxy - POST requests'
+sidebarTitle: 'Proxy - POST requests'
+openapi: 'POST /proxy/{anyPath}'
+---
+
 <Info>
   Requires an API key with the `environment:proxy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
@@ -9730,10 +10151,16 @@ The response from the external API is passed back to you exactly as Nango gets i
 * Response headers
 * Response body
 
-## Proxy - PUT requests
+## Put
 
 Source: https://nango.dev/docs/reference/backend/http-api/proxy/put.md
 
+---
+title: 'Proxy - PUT requests'
+sidebarTitle: 'Proxy - PUT requests'
+openapi: 'PUT /proxy/{anyPath}'
+---
+
 <Info>
   Requires an API key with the `environment:proxy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
@@ -9754,10 +10181,16 @@ The response from the external API is passed back to you exactly as Nango gets i
 * Response headers
 * Response body
 
-## Proxy - PATCH requests
+## Patch
 
 Source: https://nango.dev/docs/reference/backend/http-api/proxy/patch.md
 
+---
+title: 'Proxy - PATCH requests'
+sidebarTitle: 'Proxy - PATCH requests'
+openapi: 'PATCH /proxy/{anyPath}'
+---
+
 <Info>
   Requires an API key with the `environment:proxy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
@@ -9777,9 +10210,15 @@ The response from the external API is passed back to you exactly as Nango gets i
 * Response headers
 * Response body
 
-## Proxy - DELETE requests
+## Delete
 
 Source: https://nango.dev/docs/reference/backend/http-api/proxy/delete.md
+
+---
+title: 'Proxy - DELETE requests'
+sidebarTitle: 'Proxy - DELETE requests'
+openapi: 'DELETE /proxy/{anyPath}'
+---
 
 <Info>
   Requires an API key with the `environment:proxy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9801,9 +10240,14 @@ The response from the external API is passed back to you exactly as Nango gets i
 * Response headers
 * Response body
 
-## List all providers
+## List
 
 Source: https://nango.dev/docs/reference/backend/http-api/providers/list.md
+
+---
+title: 'List all providers'
+openapi: 'GET /providers'
+---
 
 <ResponseExample>
 ```json Example Response
@@ -9849,9 +10293,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/providers/list.md
 ```
 </ResponseExample>
 
-## Get a provider
+## Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/providers/get.md
+
+---
+title: 'Get a provider'
+openapi: 'GET /providers/{provider}'
+---
 
 <ResponseExample>
 ```json Example Response
@@ -9890,9 +10339,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/providers/templates.md
 
 Returns the template functions available in the catalog for a provider.
 
-## List connections (deprecated)
+## List
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/list.md
+
+---
+title: 'List connections (deprecated)'
+openapi: 'GET /connection'
+---
 
 <Info>
   Requires an API key with one of: `environment:connections:list` or `environment:connections:list_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9937,9 +10391,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/connection/list.md
   ```
 </ResponseExample>
 
-## Get connection & credentials (deprecated)
+## Get
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/get.md
+
+---
+title: 'Get connection & credentials (deprecated)'
+openapi: 'GET /connection/{connectionId}'
+---
 
 <Info>
   Requires an API key with one of: `environment:connections:read` or `environment:connections:read_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9960,9 +10419,14 @@ Every time you fetch the connection with this API endpoint, Nango will check if 
 
 </Tip>
 
-## Import a connection (deprecated)
+## Post
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/post.md
+
+---
+title: 'Import a connection (deprecated)'
+openapi: 'POST /connection'
+---
 
 <Info>
   Requires an API key with the `environment:connections:create` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9982,9 +10446,14 @@ You can use this endpoint to import OAuth 2, OAuth 1, API Keys, and Basic auth c
 
 The required fields depend on the type of authentication of the _connections_ you are trying to import.
 
-## Set connection metadata (deprecated)
+## Set Metadata
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/set-metadata.md
+
+---
+title: 'Set connection metadata (deprecated)'
+openapi: 'POST /connection/metadata'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -9998,9 +10467,14 @@ Nango uses the request body as the new metadata (it must be a JSON object). Note
 
 To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
 
-## Set connection metadata (deprecated)
+## Set Metadata Legacy
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/set-metadata-legacy.md
+
+---
+title: 'Set connection metadata (deprecated)'
+openapi: 'POST /connection/{connectionId}/metadata'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -10014,9 +10488,14 @@ Nango uses the request body as the new metadata (it must be a JSON object). Note
 
 To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
 
-## Edit connection metadata (deprecated)
+## Update Metadata
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/update-metadata.md
+
+---
+title: 'Edit connection metadata (deprecated)'
+openapi: 'PATCH /connection/metadata'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -10030,9 +10509,14 @@ Nango uses the request body as the new metadata (it must be a JSON object). Note
 
 To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
 
-## Edit connection metadata (deprecated)
+## Update Metadata Legacy
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/update-metadata-legacy.md
+
+---
+title: 'Edit connection metadata (deprecated)'
+openapi: 'PATCH /connection/{connectionId}/metadata'
+---
 
 <Info>
   Requires an API key with the `environment:connections:update` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -10046,9 +10530,14 @@ Nango uses the request body as the new metadata (it must be a JSON object).
 
 To read the existing metadata of a _connection_, simply fetch the connection. Your custom metadata is included as part of the returned connection object.
 
-## Delete a connection (deprecated)
+## Delete
 
 Source: https://nango.dev/docs/reference/backend/http-api/connection/delete.md
+
+---
+title: 'Delete a connection (deprecated)'
+openapi: 'DELETE /connection/{connectionId}'
+---
 
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
@@ -12407,11 +12896,23 @@ async (req, res) => {
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/python.md
 
+---
+title: 'Python'
+sidebarTitle: 'Python'
+icon: 'python'
+---
+
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
 ## Java
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/java.md
+
+---
+title: 'Java'
+sidebarTitle: 'Java'
+icon: 'java'
+---
 
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
@@ -12419,11 +12920,23 @@ Source: https://nango.dev/docs/reference/backend/backend-sdk/java.md
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/ruby.md
 
+---
+title: 'Ruby'
+sidebarTitle: 'Ruby'
+icon: 'gem'
+---
+
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
 ## Go
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/go.md
+
+---
+title: 'Go'
+sidebarTitle: 'Go'
+icon: 'golang'
+---
 
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
@@ -12431,18 +12944,36 @@ Source: https://nango.dev/docs/reference/backend/backend-sdk/go.md
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/rust.md
 
+---
+title: 'Rust'
+sidebarTitle: 'Rust'
+icon: 'rust'
+---
+
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
-## PHP
+## Php
 
 Source: https://nango.dev/docs/reference/backend/backend-sdk/php.md
 
+---
+title: 'PHP'
+sidebarTitle: 'PHP'
+icon: 'php'
+---
+
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
-## Functions CLI
+## Functions Cli
 
 Source: https://nango.dev/docs/reference/functions/functions-cli.md
-Description: Full reference of the CLI available to implement, test & deploy Nango Functions.
+
+---
+title: 'Functions CLI'
+sidebarTitle: 'Functions CLI'
+icon: 'terminal'
+description: "Full reference of the CLI available to implement, test & deploy Nango Functions."
+---
 
 ### Install the Nango CLI
 
@@ -12614,10 +13145,16 @@ Supported managers are `npm`, `pnpm`, `yarn`, and `bun`.
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
 
-## Functions SDK
+## Functions Sdk
 
 Source: https://nango.dev/docs/reference/functions/functions-sdk.md
-Description: Full reference of the SDK available in Nango Functions.
+
+---
+title: "Functions SDK"
+sidebarTitle: "Functions SDK"
+icon: "code"
+description: "Full reference of the SDK available in Nango Functions."
+---
 
 ## Examples
 
@@ -12803,6 +13340,8 @@ Read more about [integration functions](/guides/functions/functions-guide) to un
 <ResponseField name="description" type="string" required>
   The description of the sync.
 </ResponseField>
+
+
 
 <ResponseField name="exec" type="function" required>
   The function that will be called when the action is triggered.
@@ -13675,9 +14214,14 @@ Please reach out in the [community](https://nango.dev/slack) if you would like t
   **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
 
-## Explore APIs & integrations
+## Overview
 
 Source: https://nango.dev/docs/integrations/overview.md
+
+---
+title: Explore APIs & integrations
+sidebarTitle: Overview
+---
 
 <Info>
 Nango is the leading provider of **API access for AI agents & apps**. It is designed for developers building integrations for their users, with full flexibility.
@@ -13695,9 +14239,14 @@ It's fast & easy.
 </Card>
 </CardGroup>
 
-## API configuration (`providers.yaml`)
+## Api Configuration
 
 Source: https://nango.dev/docs/integrations/api-configuration.md
+
+---
+title: 'API configuration (`providers.yaml`)'
+sidebarTitle: 'API configuration'
+---
 
 API configurations are listed in the `providers.yaml` file, located in the [Nango GitHub repository](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml).
 
@@ -14136,6 +14685,7 @@ slack:
     Should the `token_url` be encoded or not
 </ResponseField>
 
+
 <ResponseField name="webhook_user_defined_secret" type="boolean">
     Wether the webhook secret is set by the user.
 </ResponseField>
@@ -14217,10 +14767,15 @@ slack:
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
 
-## Contribute or request an API
+## Contribute Or Request Api
 
 Source: https://nango.dev/docs/integrations/contribute-or-request-api.md
-Description: Add support for a new API to Nango
+
+---
+title: 'Contribute or request an API'
+sidebarTitle: 'Contribute or request an API'
+description: 'Add support for a new API to Nango'
+---
 
 ## Option 1: Request a new API (most popular)
 
