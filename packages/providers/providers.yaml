@@ -694,6 +694,18 @@ agentcard:
         base_url: https://api.agentcard.sh
     docs: https://nango.dev/docs/api-integrations/agentcard
     docs_connect: https://nango.dev/docs/api-integrations/agentcard/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The OAuth client ID from the Credentials page of your Agentcard dashboard
+            doc_section: '#step-2-copy-your-client-id-and-client-secret'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The OAuth client secret from the Credentials page of your Agentcard dashboard
+            secret: true
+            doc_section: '#step-2-copy-your-client-id-and-client-secret'
 
 ahrefs:
     display_name: Ahrefs
