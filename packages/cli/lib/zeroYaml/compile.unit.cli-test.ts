@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import { assert, describe, expect, it } from 'vitest';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
-import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
+import { bundleFile, compileAllFunctions, compileFunction, detectFeatures } from './compile.js';
 import { validateFunction } from './definitions.js';
 import { CompileError } from './utils.js';
 
@@ -141,6 +141,94 @@ describe('validateFunction', () => {
         const res = validateFunction({ ...base, params: { requires: { connection: false } } });
         assert(res.isErr());
         expect(res.error.message).toContain('connection-less');
+    });
+});
+
+describe('bundleDependencies', () => {
+    // The fixture's workspace package must be resolvable via node_modules (mirroring a workspace
+    // symlink). node_modules is gitignored, so we materialize it into a temp project at runtime.
+    async function setupBundleProject() {
+        const dir = await getTestDirectory('zero_bundle');
+        await copyDirectoryAndContents(path.join(fixturesPath, 'zero/bundle'), dir);
+        const sharedDest = path.join(dir, 'node_modules', '@repo', 'shared');
+        await fs.promises.mkdir(sharedDest, { recursive: true });
+        await copyDirectoryAndContents(path.join(dir, 'shared-pkg'), sharedDest);
+        return { dir, entryPoint: path.join(dir, 'importsWorkspace.js') };
+    }
+
+    it('should reject a workspace import that is not opted-in', async () => {
+        const { dir, entryPoint } = await setupBundleProject();
+        const result = await bundleFile({ entryPoint, projectRootPath: dir });
+        assert(result.isErr(), 'Should be an error');
+        assert(result.error instanceof CompileError, 'Should be a CompileError');
+        expect(result.error.type).toBe('disallowed_import');
+    });
+
+    it('should bundle (inline) a workspace import when opted-in', async () => {
+        const { dir, entryPoint } = await setupBundleProject();
+        const result = await bundleFile({ entryPoint, projectRootPath: dir, bundleDependencies: ['@repo/shared'] });
+        const value = result.unwrap();
+        // The inlined implementation must be present in the bundled output...
+        expect(value).toContain('.trim().toLowerCase()');
+        // ...and it must NOT be left as an external require.
+        expect(value).not.toContain('require("@repo/shared")');
+    });
+
+    it('should inline a subpath-matched import of an opted-in dependency prefix', async () => {
+        const { dir, entryPoint } = await setupBundleProject();
+        // '@repo' is a prefix; '@repo/shared' matches as a subpath and is inlined.
+        const result = await bundleFile({ entryPoint, projectRootPath: dir, bundleDependencies: ['@repo'] });
+        const value = result.unwrap();
+        expect(value).toContain('.trim().toLowerCase()');
+    });
+
+    it('should write a compiled artifact with the dependency inlined (compileFunction)', async () => {
+        const { dir, entryPoint } = await setupBundleProject();
+        const result = await compileFunction({ entryPoint, projectRootPath: dir, bundleDependencies: ['@repo/shared'] });
+        expect(result.isOk()).toBe(true);
+        const artifact = path.join(dir, 'build', 'importsWorkspace.cjs');
+        expect(fs.existsSync(artifact)).toBe(true);
+        const written = await fs.promises.readFile(artifact, 'utf8');
+        expect(written).toContain('.trim().toLowerCase()');
+    });
+
+    it('should not let a Node built-in bypass the allowlist via bundleDependencies', async () => {
+        // A script importing a Node built-in must stay rejected even if the built-in is listed,
+        // because esbuild leaves built-ins external and they would reach the sandbox.
+        const dir = await getTestDirectory('zero_bundle_builtin');
+        await fs.promises.mkdir(path.join(dir, 'syncs'), { recursive: true });
+        const sync = [
+            `import { createSync } from 'nango';`,
+            `import * as z from 'zod';`,
+            `import fs from 'fs';`,
+            `export default createSync({`,
+            `    description: 'x', version: '1.0.0',`,
+            `    endpoints: [{ method: 'GET', path: '/x', group: 'X' }],`,
+            `    frequency: 'every hour', syncType: 'full',`,
+            `    models: { M: z.object({ id: z.string() }) },`,
+            `    exec: async (nango) => { await nango.log(String(fs.readdirSync('/'))); }`,
+            `});`
+        ].join('\n');
+        await fs.promises.writeFile(path.join(dir, 'syncs', 'usesFs.ts'), sync);
+
+        const result = await bundleFile({ entryPoint: path.join(dir, 'syncs', 'usesFs.js'), projectRootPath: dir, bundleDependencies: ['fs'] });
+        assert(result.isErr(), 'Should be an error');
+        assert(result.error instanceof CompileError, 'Should be a CompileError');
+        expect(result.error.type).toBe('disallowed_import');
+    });
+
+    it('should fail compilation when bundleDependencies lists a Node built-in', async () => {
+        const { dir } = await setupBundleProject();
+        // A minimal index.ts so compileAllFunctions has an entry point.
+        await fs.promises.writeFile(path.join(dir, 'index.ts'), `import './importsWorkspace.js';\n`);
+        await fs.promises.writeFile(
+            path.join(dir, 'package.json'),
+            JSON.stringify({ name: 'test', type: 'module', bundleDependencies: ['fs', '@repo/shared'] })
+        );
+
+        const result = await compileAllFunctions({ fullPath: dir, debug: false, interactive: false });
+        assert(result.isErr(), 'Should be an error');
+        expect(result.error.message).toContain('Node built-in');
     });
 });
 

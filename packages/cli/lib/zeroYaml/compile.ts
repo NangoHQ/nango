@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { isBuiltin } from 'node:module';
 import path from 'node:path';
 
 import * as babel from '@babel/core';
@@ -17,6 +18,56 @@ import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, t
 
 // import type { BabelErrorType } from './constants.js';
 import type { Feature, Result } from '@nangohq/types';
+import type { PackageJson } from 'type-fest';
+
+/**
+ * Returns true when an import specifier refers to one of the opt-in bundled dependencies,
+ * either exactly (`@repo/shared`) or as a subpath (`@repo/shared/utils`).
+ *
+ * Node built-ins can never be bundled (esbuild leaves them external under `platform: 'node'`),
+ * so they are rejected here as a defensive guard against bypassing the sandbox import allowlist.
+ */
+function isBundledDependency(source: string, bundleDependencies: string[]): boolean {
+    if (isBuiltin(source)) {
+        return false;
+    }
+    return bundleDependencies.some((dep) => source === dep || source.startsWith(`${dep}/`));
+}
+
+/**
+ * Reads the opt-in `bundleDependencies` array from the integration project's package.json.
+ * These packages are bundled (inlined) into the compiled artifact instead of being treated as
+ * disallowed/external imports.
+ *
+ * Node built-ins are rejected: esbuild will not inline them (they stay `require('fs')` under
+ * `platform: 'node'`), so allowing them would let a script bypass the sandbox import allowlist.
+ * Returns an error listing the offending entries, or the validated list (empty when absent/malformed).
+ */
+function readBundleDependencies(fullPath: string): Result<string[]> {
+    let raw: unknown;
+    try {
+        const packageJson = JSON.parse(fs.readFileSync(path.join(fullPath, 'package.json'), 'utf-8')) as PackageJson & {
+            bundleDependencies?: unknown;
+        };
+        raw = packageJson.bundleDependencies;
+    } catch {
+        return Ok([]);
+    }
+
+    if (!Array.isArray(raw)) {
+        return Ok([]);
+    }
+
+    const entries = raw.filter((entry): entry is string => typeof entry === 'string');
+    const builtins = entries.filter((entry) => isBuiltin(entry));
+    if (builtins.length > 0) {
+        return Err(
+            `bundleDependencies cannot include Node built-in modules (${builtins.join(', ')}). Built-ins are not inlined and would bypass the sandbox import allowlist.`
+        );
+    }
+
+    return Ok(entries);
+}
 
 /**
  * This function is used to compile the code in the integration.
@@ -58,6 +109,18 @@ export async function compileAllFunctions({
 
         printDebug(`Found ${entryPoints.length} entry points in index.ts: ${entryPoints.join(', ')}`, debug);
 
+        // Opt-in list of internal/workspace packages to bundle (inline) rather than externalize
+        const bundleDependenciesResult = readBundleDependencies(fullPath);
+        if (bundleDependenciesResult.isErr()) {
+            spinner.fail();
+            console.error(chalk.red(bundleDependenciesResult.error.message));
+            return Err(bundleDependenciesResult.error);
+        }
+        const bundleDependencies = bundleDependenciesResult.value;
+        if (bundleDependencies.length > 0) {
+            printDebug(`Bundling dependencies: ${bundleDependencies.join(', ')}`, debug);
+        }
+
         // Typecheck the code
         const typechecked = typeCheck({ fullPath, entryPoints });
         if (typechecked.isErr()) {
@@ -76,7 +139,7 @@ export async function compileAllFunctions({
             spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
-            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath, bundleDependencies });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
                 console.log('');
@@ -191,10 +254,18 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 /**
  * Bundles the entry file using esbuild and returns the bundled code as a string (in memory).
  */
-export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
+export async function bundleFile({
+    entryPoint,
+    projectRootPath,
+    bundleDependencies = []
+}: {
+    entryPoint: string;
+    projectRootPath: string;
+    bundleDependencies?: string[];
+}): Promise<Result<string>> {
     const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
     try {
-        const { plugin, bag } = nangoPlugin({ entryPoint });
+        const { plugin, bag } = nangoPlugin({ entryPoint, bundleDependencies });
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
@@ -226,6 +297,11 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                     setup(buildInstance) {
                         buildInstance.onResolve({ filter: npmPackageRegex }, (args) => {
                             if (!args.path.startsWith('.') && !path.isAbsolute(args.path)) {
+                                // Opt-in bundled dependencies are resolved normally (via node resolution)
+                                // so esbuild inlines them into the bundle instead of externalizing them.
+                                if (isBundledDependency(args.path, bundleDependencies)) {
+                                    return null;
+                                }
                                 return { path: args.path, external: true };
                             }
                             return null; // let esbuild handle other paths
@@ -379,7 +455,15 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
  * We use esbuild to compile the code to .cjs.
  * node.vm only supports CJS and we also bundle all imported files in the same file.
  */
-export async function compileFunction({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+export async function compileFunction({
+    entryPoint,
+    projectRootPath,
+    bundleDependencies = []
+}: {
+    entryPoint: string;
+    projectRootPath: string;
+    bundleDependencies?: string[];
+}): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
     // Because it's easier to manipulate the files and it's easier in S3
@@ -388,7 +472,7 @@ export async function compileFunction({ entryPoint, projectRootPath }: { entryPo
     // Ensure the output directory exists
     await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
 
-    const bundleResult = await bundleFile({ entryPoint, projectRootPath });
+    const bundleResult = await bundleFile({ entryPoint, projectRootPath, bundleDependencies });
     if (bundleResult.isErr()) {
         return Err(bundleResult.error);
     }
@@ -448,7 +532,7 @@ type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transfo
  * it was annoying to have to compile the code twice. And have mixed code when publishing.
  * Since the wrapper is only used to stringly type the exports, we can remove it.
  */
-function nangoPlugin({ entryPoint }: { entryPoint: string }) {
+function nangoPlugin({ entryPoint, bundleDependencies = [] }: { entryPoint: string; bundleDependencies?: string[] }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
@@ -523,6 +607,11 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
                         // Allow relative path imports (./path or ../path)
                         if (source.startsWith('./') || source.startsWith('../')) {
+                            return;
+                        }
+
+                        // Opt-in bundled dependencies are inlined into the artifact, so they are allowed.
+                        if (isBundledDependency(source, bundleDependencies)) {
                             return;
                         }
 
