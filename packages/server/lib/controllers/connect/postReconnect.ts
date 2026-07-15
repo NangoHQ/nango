@@ -6,6 +6,7 @@ import { endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, getEndUser } from '@nangohq/shared';
 import { buildConnectUiSessionLink, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -145,7 +146,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        const connect_link = buildConnectUiSessionLink(token);
+        const connect_link = buildConnectUiSessionLink(token, { connectUrl: envs.NANGO_PUBLIC_CONNECT_URL, basePath: envs.NANGO_CONNECT_UI_BASE_PATH });
         return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 

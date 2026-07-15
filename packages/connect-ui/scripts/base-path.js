@@ -10,6 +10,11 @@ export const BASE_PATH_PLACEHOLDER = '/__NANGO_CONNECT_UI_BASE_PATH__/';
  * Resolve the base path Connect UI is served under, normalized to a single leading and trailing
  * slash (e.g. "/" or "/nango/connect/").
  *
+ * The normalization and safe-character contract here must stay in sync with the server-side session
+ * link builder in packages/utils/lib/connect-ui.ts, so generated links and rewritten assets target
+ * the same path. They can't share code: connect-ui doesn't depend on @nangohq/utils, and this runs
+ * as a plain node script at container startup.
+ *
  * Precedence:
  *   1. NANGO_CONNECT_UI_BASE_PATH (explicit override)
  *   2. the path of NANGO_PUBLIC_CONNECT_URL (the public URL already set for Connect UI)

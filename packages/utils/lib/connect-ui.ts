@@ -1,28 +1,28 @@
 const DEFAULT_CONNECT_URL = 'http://localhost:3009';
 
-function normalizeConnectUiBasePath(raw: string): string {
-    const path = raw.split(/[?#]/)[0] || '/';
-    const normalized = `/${path}/`.replace(/\/+/g, '/');
-
-    if (!/^\/[A-Za-z0-9._~:@%+/-]*$/.test(normalized)) {
-        throw new Error(`Invalid Connect UI base path "${normalized}". Allowed characters: letters, digits, and -._~:@%+/`);
-    }
-
-    return normalized;
+// Normalize the base path to a single leading and trailing slash. The character set is validated at
+// startup by the ENVS schema (NANGO_CONNECT_UI_BASE_PATH), so it is not re-checked here.
+//
+// This must stay in sync with the asset rewrite in packages/connect-ui/scripts/base-path.js, which
+// applies the same base path to the built assets — otherwise session links and assets could target
+// different paths. They can't share code: connect-ui does not depend on @nangohq/utils, and that
+// script runs as plain node at container startup.
+function normalizeConnectUiBasePath(basePath: string): string {
+    return `/${basePath}/`.replace(/\/+/g, '/');
 }
 
-export function resolveConnectUiUrl(env: Record<string, string | undefined> = process.env): URL {
-    const url = new URL(env['NANGO_PUBLIC_CONNECT_URL'] || DEFAULT_CONNECT_URL);
+export function resolveConnectUiUrl({ connectUrl, basePath }: { connectUrl?: string | undefined; basePath?: string | undefined }): URL {
+    const url = new URL(connectUrl || DEFAULT_CONNECT_URL);
 
-    if (env['NANGO_CONNECT_UI_BASE_PATH']) {
-        url.pathname = normalizeConnectUiBasePath(env['NANGO_CONNECT_UI_BASE_PATH']);
+    if (basePath) {
+        url.pathname = normalizeConnectUiBasePath(basePath);
     }
 
     return url;
 }
 
-export function buildConnectUiSessionLink(token: string, env: Record<string, string | undefined> = process.env): string {
-    const url = resolveConnectUiUrl(env);
+export function buildConnectUiSessionLink(token: string, { connectUrl, basePath }: { connectUrl?: string | undefined; basePath?: string | undefined }): string {
+    const url = resolveConnectUiUrl({ connectUrl, basePath });
     url.searchParams.set('session_token', token);
     return url.toString();
 }

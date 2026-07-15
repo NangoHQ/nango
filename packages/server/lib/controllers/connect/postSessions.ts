@@ -6,6 +6,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import { buildTagsFromEndUser, configService, EndUserMapper } from '@nangohq/shared';
 import { buildConnectUiSessionLink, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -233,7 +234,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        const connect_link = buildConnectUiSessionLink(token);
+        const connect_link = buildConnectUiSessionLink(token, { connectUrl: envs.NANGO_PUBLIC_CONNECT_URL, basePath: envs.NANGO_CONNECT_UI_BASE_PATH });
         return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 
