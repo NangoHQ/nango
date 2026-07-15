@@ -1,4 +1,6 @@
-import { mfaService, userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
+import { accountService, mfaService, userService } from '@nangohq/shared';
 
 import type { DBUser } from '@nangohq/types';
 import type { Request } from 'express';
@@ -6,7 +8,7 @@ import type { Request } from 'express';
 const MFA_LOGIN_TTL_MS = 10 * 60 * 1000;
 
 export async function loginOrStartPendingMfa(req: Request, user: DBUser, returnTo: string): Promise<boolean> {
-    if (!(await mfaService.hasActiveFactor(user.id))) {
+    if (!(await isMFAEnabled(user)) || !(await mfaService.hasActiveFactor(user.id))) {
         await loginUser(req, user);
         return false;
     }
@@ -26,8 +28,11 @@ export async function verifyPendingMfaLogin(req: Request, code: string, recovery
     }
 
     const user = await userService.getUserById(pending.userId, true);
-    const verified = recoveryCode ? await mfaService.consumeRecoveryCode(user?.id ?? -1, recoveryCode) : await mfaService.verifyTotp(user?.id ?? -1, code);
-    if (!user || !verified) {
+    if (!user || !(await isMFAEnabled(user))) {
+        return null;
+    }
+    const verified = recoveryCode ? await mfaService.consumeRecoveryCode(user.id, recoveryCode) : await mfaService.verifyTotp(user.id, code);
+    if (!verified) {
         return null;
     }
 
@@ -36,6 +41,11 @@ export async function verifyPendingMfaLogin(req: Request, code: string, recovery
     req.session.mfaVerifiedAt = Date.now();
     await saveSession(req);
     return { user, returnTo };
+}
+
+async function isMFAEnabled(user: DBUser): Promise<boolean> {
+    const account = await accountService.getAccountById(db.knex, user.account_id);
+    return Boolean(account && (await getFlags().isMFAEnabled(account.uuid)));
 }
 
 async function loginUser(req: Request, user: DBUser): Promise<void> {
