@@ -4,7 +4,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handleReplaceConnectionMetadata } from '../../../shared/connections/replaceMetadata.js';
+import { handlePostConnectionMetadata } from '../../../shared/connections/postConnectionMetadata.js';
 
 import type { PostConnectionMetadata } from '@nangohq/types';
 
@@ -46,7 +46,7 @@ export const postConnectionMetadata = asyncWrapper<PostConnectionMetadata>(async
 
     const { environment } = res.locals;
 
-    await handleReplaceConnectionMetadata({
+    await handlePostConnectionMetadata({
         res,
         environment,
         connectionId: valParams.data.connectionId,

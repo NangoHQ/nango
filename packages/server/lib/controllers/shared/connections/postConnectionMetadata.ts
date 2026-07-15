@@ -5,7 +5,7 @@ import type { RequestLocals } from '../../../utils/express.js';
 import type { DBEnvironment, Metadata, PostConnectionMetadata } from '@nangohq/types';
 import type { Response } from 'express';
 
-export async function handleReplaceConnectionMetadata({
+export async function handlePostConnectionMetadata({
     res,
     environment,
     connectionId,
