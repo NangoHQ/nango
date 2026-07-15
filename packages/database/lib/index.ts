@@ -34,6 +34,7 @@ export class KnexDatabase {
             async () => {
                 await this.knex.migrate.latest({
                     directory: directory,
+                    loadExtensions: ['.cjs'],
                     tableName: '_nango_auth_migrations',
                     schemaName: this.schema()
                 });
@@ -74,7 +75,8 @@ export const multipleMigrations = async (): Promise<void> => {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 
         const [_, pendingMigrations] = await db.knex.migrate.list({
-            directory
+            directory,
+            loadExtensions: ['.cjs']
         });
 
         if (pendingMigrations.length === 0) {
@@ -82,7 +84,8 @@ export const multipleMigrations = async (): Promise<void> => {
         } else {
             console.log('Migrations pending, running migrations.');
             await db.knex.migrate.latest({
-                directory
+                directory,
+                loadExtensions: ['.cjs']
             });
             console.log('Migrations completed.');
         }
