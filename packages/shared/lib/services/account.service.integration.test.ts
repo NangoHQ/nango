@@ -2,7 +2,9 @@ import { v4 as uuid } from 'uuid';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { metrics } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
@@ -331,6 +333,86 @@ describe('Account service', () => {
         expect(result?.auth).toStrictEqual({
             source: 'api_secret',
             scopes: ['environment:*']
+        });
+    });
+
+    describe('internal secret account context cache', () => {
+        const setCacheMode = (mode: string) => {
+            (envs as { AUTH_ACCOUNT_CONTEXT_CACHE_MODE: string }).AUTH_ACCOUNT_CONTEXT_CACHE_MODE = mode;
+        };
+        const defaultMode = envs.AUTH_ACCOUNT_CONTEXT_CACHE_MODE;
+
+        const seedEnvironmentWithSecret = async () => {
+            const account = await createTestAccount();
+            const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+            await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+            const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!)).unwrap();
+            return { environment: environment!, secret };
+        };
+
+        afterEach(() => {
+            setCacheMode(defaultMode);
+            vi.useRealTimers();
+        });
+
+        it('should serve from cache within the TTL', async () => {
+            setCacheMode('on');
+            const { environment, secret } = await seedEnvironmentWithSecret();
+
+            const first = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(first?.environment.id).toBe(environment.id);
+
+            // Break the DB lookup; a cached context must still resolve without hitting the DB
+            await db.knex('api_secrets').where({ environment_id: environment.id }).update({ hashed: uuid() });
+
+            const second = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(second?.environment.id).toBe(environment.id);
+            expect(second).toStrictEqual(first);
+        });
+
+        it('should refetch once the cache TTL elapses', async () => {
+            setCacheMode('on');
+            // Fake only hrtime (the cache clock); DB clients keep real timers
+            vi.useFakeTimers({ toFake: ['hrtime'] });
+            const { environment, secret } = await seedEnvironmentWithSecret();
+
+            const first = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(first?.environment.id).toBe(environment.id);
+
+            await db.knex('api_secrets').where({ environment_id: environment.id }).update({ hashed: uuid() });
+            vi.advanceTimersByTime(envs.AUTH_ACCOUNT_CONTEXT_CACHE_TTL_MS + 1);
+
+            const second = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(second).toBeNull();
+        });
+
+        it('should not serve from cache in dry mode but still record hits', async () => {
+            setCacheMode('dry');
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            const { environment, secret } = await seedEnvironmentWithSecret();
+
+            const first = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(first?.environment.id).toBe(environment.id);
+
+            // The cached entry is fresh, but dry mode must still go to the DB and see the revoked key
+            await db.knex('api_secrets').where({ environment_id: environment.id }).update({ hashed: uuid() });
+
+            const second = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(second).toBeNull();
+
+            expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_ACCOUNT_CONTEXT_CACHE, 1, { result: 'miss', mode: 'dry' });
+            expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_ACCOUNT_CONTEXT_CACHE, 1, { result: 'hit', mode: 'dry' });
+        });
+
+        it('should not touch the cache when the mode is off', async () => {
+            expect(envs.AUTH_ACCOUNT_CONTEXT_CACHE_MODE).toBe('off');
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            const { environment, secret } = await seedEnvironmentWithSecret();
+
+            const first = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            expect(first?.environment.id).toBe(environment.id);
+
+            expect(incrementSpy).not.toHaveBeenCalledWith(metrics.Types.AUTH_ACCOUNT_CONTEXT_CACHE, 1, expect.anything());
         });
     });
 
