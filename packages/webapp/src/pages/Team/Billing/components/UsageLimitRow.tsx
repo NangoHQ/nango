@@ -67,7 +67,18 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({ metric, label, usa
                 </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-                <UsageChartCard metric={metric} data={data} isLoading={isLoading} env={env} timeframe={timeframe} hideHeader disableApplyToAll />
+                <UsageChartCard
+                    metric={metric}
+                    data={data}
+                    isLoading={isLoading}
+                    env={env}
+                    timeframe={timeframe}
+                    hideHeader
+                    disableApplyToAll
+                    capLine={limit ?? undefined}
+                    chartMode="cumulative"
+                    pointInTime
+                />
             </CollapsibleContent>
         </Collapsible>
     );
