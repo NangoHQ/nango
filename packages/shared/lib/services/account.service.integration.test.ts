@@ -404,6 +404,26 @@ describe('Account service', () => {
             expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_ACCOUNT_CONTEXT_CACHE, 1, { result: 'hit', mode: 'dry' });
         });
 
+        it('should not refresh fresh entries in dry mode', async () => {
+            setCacheMode('dry');
+            vi.useFakeTimers({ toFake: ['hrtime'] });
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            const { secret } = await seedEnvironmentWithSecret();
+            const ttlMs = envs.AUTH_ACCOUNT_CONTEXT_CACHE_TTL_MS;
+
+            // t0: miss, entry cached
+            await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            // just before expiry: hit recorded, but must NOT reset the entry's TTL
+            vi.advanceTimersByTime(ttlMs - 1000);
+            await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+            // past the original expiry: 'on' mode would miss here, so dry must record a miss too
+            vi.advanceTimersByTime(2000);
+            incrementSpy.mockClear();
+            await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+
+            expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_ACCOUNT_CONTEXT_CACHE, 1, { result: 'miss', mode: 'dry' });
+        });
+
         it('should not touch the cache when the mode is off', async () => {
             expect(envs.AUTH_ACCOUNT_CONTEXT_CACHE_MODE).toBe('off');
             const incrementSpy = vi.spyOn(metrics, 'increment');

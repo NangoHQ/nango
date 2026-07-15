@@ -26,7 +26,7 @@ export class FixedSizeMap<K, V> {
     private maxSize: number;
 
     constructor(maxSize: number) {
-        if (maxSize <= 0) {
+        if (!Number.isInteger(maxSize) || maxSize <= 0) {
             throw new Error('maxSize must be a positive integer.');
         }
         this.map = new Map<K, V>();
@@ -81,6 +81,9 @@ export class TTLFixedSizeMap<K, V> {
     private ttlNs: bigint;
 
     constructor(maxSize: number, ttlMs: number) {
+        if (!Number.isFinite(ttlMs) || ttlMs < 0) {
+            throw new Error('ttlMs must be a finite, non-negative number.');
+        }
         this.map = new FixedSizeMap(maxSize);
         // trunc: BigInt() throws on non-integers
         this.ttlNs = BigInt(Math.trunc(ttlMs)) * 1_000_000n;

@@ -740,8 +740,12 @@ class AccountService {
         };
 
         if (cacheMode !== 'off') {
-            // The cached instance is shared across requests; callers must not mutate it
-            accountContextLocalCache.set(hash, context);
+            // dry: don't refresh fresh entries — 'on' never reaches this path on a hit, so
+            // refreshing here would inflate the measured hit ratio over what 'on' would serve.
+            if (cacheMode === 'on' || accountContextLocalCache.get(hash) === undefined) {
+                // The cached instance is shared across requests; callers must not mutate it
+                accountContextLocalCache.set(hash, context);
+            }
         }
 
         return context;

@@ -25,7 +25,7 @@ export const ENVS = z.object({
     // in the context: revoked/rotated keys, revoked accounts, plan changes and account metadata all
     // keep resolving from cache for up to this long, so keep it very short while still effective.
     // Read once at startup.
-    AUTH_ACCOUNT_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().optional().default(60_000), // 1 minute
+    AUTH_ACCOUNT_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
     // 'dry' records hit/miss metrics but every lookup still goes to the DB; 'on' serves hits from the cache.
     AUTH_ACCOUNT_CONTEXT_CACHE_MODE: z.enum(['off', 'dry', 'on']).optional().default('off'),
 

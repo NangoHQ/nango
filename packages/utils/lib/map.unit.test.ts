@@ -234,6 +234,13 @@ describe('TTLFixedSizeMap', () => {
         expect(map.get('a')).toBe(2);
     });
 
+    it('should throw on invalid maxSize or TTL', () => {
+        expect(() => new TTLFixedSizeMap<string, number>(1.5, 60_000)).toThrow('maxSize must be a positive integer.');
+        expect(() => new TTLFixedSizeMap<string, number>(10, NaN)).toThrow('ttlMs must be a finite, non-negative number.');
+        expect(() => new TTLFixedSizeMap<string, number>(10, Infinity)).toThrow('ttlMs must be a finite, non-negative number.');
+        expect(() => new TTLFixedSizeMap<string, number>(10, -1)).toThrow('ttlMs must be a finite, non-negative number.');
+    });
+
     it('should accept a non-integer TTL', () => {
         const map = new TTLFixedSizeMap<string, number>(10, 1500.5);
         map.set('a', 1);
