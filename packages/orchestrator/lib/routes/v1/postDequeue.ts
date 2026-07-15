@@ -50,31 +50,38 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostDequeue>) => {
         const { groupKeyPattern, limit, longPolling } = res.locals.parsedBody;
         const longPollingTimeoutMs = 10_000;
-        const eventId = taskEvents.taskCreated(groupKeyPattern);
+        const deadline = Date.now() + longPollingTimeoutMs;
+        const taskCreatedEventId = taskEvents.taskCreated(groupKeyPattern);
         const cleanupAndRespond = (respond: (res: EndpointResponse<PostDequeue>) => void) => {
             if (timeout) {
                 clearTimeout(timeout);
             }
-            if (onTaskStarted) {
-                eventEmitter.removeListener(eventId, onTaskStarted);
+            if (onTaskCreated) {
+                eventEmitter.removeListener(taskCreatedEventId, onTaskCreated);
             }
             if (!res.writableEnded) {
                 respond(res);
             }
         };
-        const onTaskStarted = () => {
-            cleanupAndRespond(async (res) => {
+
+        const armTimeout = () => setTimeout(() => cleanupAndRespond((res) => res.status(200).send([])), Math.max(0, deadline - Date.now()));
+
+        const onTaskCreated = (): void => {
+            clearTimeout(timeout); // stop the timeout from firing while dequeue is in flight
+            void (async () => {
                 const getTasks = await scheduler.dequeue({ groupKeyPattern, limit });
                 if (getTasks.isErr()) {
-                    res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } });
+                    cleanupAndRespond((res) => res.status(500).json({ error: { code: 'dequeue_failed', message: getTasks.error.message } }));
+                } else if (getTasks.value.length > 0) {
+                    cleanupAndRespond((res) => res.status(200).json(getTasks.value));
                 } else {
-                    res.status(200).json(getTasks.value);
+                    // no tasks were dequeued, re-arm the timeout and wait for next event
+                    timeout = armTimeout();
+                    eventEmitter.once(taskCreatedEventId, onTaskCreated);
                 }
-            });
+            })();
         };
-        const timeout = setTimeout(() => {
-            cleanupAndRespond((res) => res.status(200).send([]));
-        }, longPollingTimeoutMs);
+        let timeout = armTimeout();
 
         const getTasks = await scheduler.dequeue({ groupKeyPattern, limit });
         if (getTasks.isErr()) {
@@ -82,7 +89,7 @@ const handler = (scheduler: Scheduler, eventEmitter: EventEmitter) => {
             return;
         }
         if (longPolling && getTasks.value.length === 0) {
-            eventEmitter.once(eventId, onTaskStarted);
+            eventEmitter.once(taskCreatedEventId, onTaskCreated);
             await new Promise((resolve) => resolve(timeout));
         } else {
             cleanupAndRespond((res) => res.status(200).json(getTasks.value));

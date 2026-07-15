@@ -56,6 +56,7 @@ export class AccessMiddleware {
                 source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
+                apiKeyDisplayName?: string;
                 purpose?: 'dryrun' | 'deploy';
                 dryrunId?: string;
                 deploymentId?: string;
@@ -123,6 +124,9 @@ export class AccessMiddleware {
                 res.locals['apiKeyAuthSource'] = result.value.auth.source;
                 if (result.value.auth.apiKeyId !== undefined) {
                     res.locals['apiKeyId'] = result.value.auth.apiKeyId;
+                }
+                if (result.value.auth.apiKeyDisplayName !== undefined) {
+                    res.locals['apiKeyDisplayName'] = result.value.auth.apiKeyDisplayName;
                 }
                 if (result.value.auth.purpose !== undefined) {
                     res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
@@ -412,6 +416,9 @@ export class AccessMiddleware {
                     res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
                     if (apiKeyResult.value.auth.apiKeyId !== undefined) {
                         res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
+                    }
+                    if (apiKeyResult.value.auth.apiKeyDisplayName !== undefined) {
+                        res.locals['apiKeyDisplayName'] = apiKeyResult.value.auth.apiKeyDisplayName;
                     }
                     if (apiKeyResult.value.auth.purpose !== undefined) {
                         res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;

@@ -38,6 +38,7 @@ import type {
     PostPublicConnectTelemetry
 } from './connect/api.js';
 import type {
+    DeleteConnection,
     DeletePublicConnection,
     GetConnection,
     GetConnections,
@@ -146,6 +147,7 @@ export type PublicApiEndpoints =
     | PostDeployInternal
     | PostPublicBillAuthorization
     | DeletePublicConnection
+    | DeleteConnection
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook

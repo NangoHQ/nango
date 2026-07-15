@@ -112,7 +112,7 @@ function setupDeployTestMocks({
     const capturedSyncConfigs: Record<string, unknown>[] = [];
     const existingConfig = buildDeployExistingConfig(previousVersion);
 
-    vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(deployMockProviderConfig as any);
+    vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([deployMockProviderConfig] as any);
     vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(existingConfig);
     vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
     vi.spyOn(db.knex, 'from').mockReturnValue({
@@ -212,9 +212,7 @@ describe('Sync config create', () => {
             }
         ];
 
-        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
-            return Promise.resolve(null);
-        });
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([]);
 
         const { error } = await DeployConfigService.deploy({
             account,
@@ -260,21 +258,23 @@ describe('Sync config create', () => {
             enrichOperation: vi.fn().mockResolvedValue(undefined)
         } as any);
 
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue({
-            id: 1,
-            unique_key: 'google',
-            display_name: null,
-            provider: 'google',
-            oauth_client_id: '123',
-            oauth_client_secret: '123',
-            post_connection_scripts: null,
-            environment_id: 1,
-            created_at: new Date(),
-            updated_at: new Date(),
-            missing_fields: [],
-            forward_webhooks: true,
-            shared_credentials_id: null
-        } as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([
+            {
+                id: 1,
+                unique_key: 'google',
+                display_name: null,
+                provider: 'google',
+                oauth_client_id: '123',
+                oauth_client_secret: '123',
+                post_connection_scripts: null,
+                environment_id: 1,
+                created_at: new Date(),
+                updated_at: new Date(),
+                missing_fields: [],
+                forward_webhooks: true,
+                shared_credentials_id: null
+            }
+        ] as any);
 
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
@@ -321,21 +321,23 @@ describe('Sync config create', () => {
             }
         ];
 
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue({
-            id: 1,
-            unique_key: 'google',
-            display_name: null,
-            provider: 'google',
-            oauth_client_id: '123',
-            oauth_client_secret: '123',
-            post_connection_scripts: null,
-            environment_id: 1,
-            created_at: new Date(),
-            updated_at: new Date(),
-            missing_fields: [],
-            forward_webhooks: true,
-            shared_credentials_id: null
-        } as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([
+            {
+                id: 1,
+                unique_key: 'google',
+                display_name: null,
+                provider: 'google',
+                oauth_client_id: '123',
+                oauth_client_secret: '123',
+                post_connection_scripts: null,
+                environment_id: 1,
+                created_at: new Date(),
+                updated_at: new Date(),
+                missing_fields: [],
+                forward_webhooks: true,
+                shared_credentials_id: null
+            }
+        ] as any);
 
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
@@ -401,8 +403,8 @@ describe('Sync config create', () => {
             }
         ];
 
-        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
-            return Promise.resolve({
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([
+            {
                 id: 1,
                 unique_key: 'google',
                 display_name: null,
@@ -416,8 +418,8 @@ describe('Sync config create', () => {
                 missing_fields: [],
                 forward_webhooks: true,
                 shared_credentials_id: null
-            });
-        });
+            }
+        ] as any);
 
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigsBySyncNameAndConfigId').mockImplementation(() => {
             return Promise.resolve([
@@ -576,7 +578,7 @@ describe('Sync config models_json_schema handling', () => {
     };
 
     function setupInfrastructureMocks(capturedSyncConfigs: any[]) {
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([mockProviderConfig] as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
@@ -923,7 +925,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         const { mockTrx, whereInSpy } = buildMockTrx();
         mockDbKnexActiveConfig(mockExistingConfig); // activeConfig.id = 99
 
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([mockProviderConfig] as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
         vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
@@ -948,7 +950,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         const { mockTrx, whereInSpy } = buildMockTrx();
         mockDbKnexActiveConfig(null);
 
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([mockProviderConfig] as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
         vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
@@ -974,7 +976,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         const { mockTrx } = buildMockTrx(capturedInserts);
         mockDbKnexActiveConfig({ ...mockExistingConfig, enabled: false });
 
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([mockProviderConfig] as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue({ ...mockExistingConfig, enabled: false });
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
         vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
@@ -1001,7 +1003,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         const { mockTrx } = buildMockTrx(capturedInserts);
         mockDbKnexActiveConfig(null);
 
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([mockProviderConfig] as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
         vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
