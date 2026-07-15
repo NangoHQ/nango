@@ -25,8 +25,8 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 // including permission denials, where the controller never runs.
 interface AuditSpecBase<TEndpoint extends Endpoint<any>> {
     target?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => AuditTarget | undefined | Promise<AuditTarget | undefined>;
-    // Emit a null environment even when the request carries one: these events aren't env-specific.
-    accountScoped?: boolean;
+    // `account`-scoped events emit a null environment; `environment`-scoped carry the request's env.
+    scope: 'account' | 'environment';
 }
 
 export type AuditSpec<TEndpoint extends Endpoint<any> = Endpoint<any>> =
@@ -100,7 +100,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
         if (!account) {
             return;
         }
-        if (!(await getFlags().isAuditLoggingEnabled(account.uuid))) {
+        if (!(await getFlags().isAuditTrailEnabled(account.uuid))) {
             return;
         }
         const target = await spec.target?.(req, locals);
@@ -110,7 +110,7 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
         const event = {
             occurredAt,
             accountId: account.id,
-            environment: spec.accountScoped || !environment ? null : { id: environment.id, display: environment.name },
+            environment: spec.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
             actor: resolveActor(locals),
             resource: spec.resource,
             action: spec.action,
@@ -119,7 +119,10 @@ async function emit(spec: AuditSpec, req: Request, res: Response): Promise<void>
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
-        audit.record(event);
+        const result = await audit.record(event);
+        if (result.isErr()) {
+            logger.error(`failed to record audit event`, result.error);
+        }
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
     }
@@ -140,6 +143,7 @@ export function auditable<TEndpoint extends Endpoint<any>>(spec: AuditSpec<TEndp
 export const auditConnectionDeleted = auditable<DeletePublicConnection | DeleteConnection>({
     resource: 'connection',
     action: 'deleted',
+    scope: 'environment',
     target: (req) => ({ type: 'connection', id: req.params.connectionId }),
     metadata: (req) => {
         const key = req.query.provider_config_key;
@@ -150,7 +154,7 @@ export const auditConnectionDeleted = auditable<DeletePublicConnection | DeleteC
 export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     resource: 'member',
     action: 'role_changed',
-    accountScoped: true,
+    scope: 'account',
     target: async (req, locals) => {
         const display = await resolveDisplay('member', async () => {
             if (!locals.account) {

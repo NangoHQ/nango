@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
+import { Ok } from '@nangohq/utils';
+
 import { Audit } from './audit.js';
 
 import type { AuditEvent } from './event.js';
 import type { AuditSink } from './sink.js';
+import type { Result } from '@nangohq/utils';
 
 // In-memory sink so tests can assert on what was recorded.
 class RecordingSink implements AuditSink {
     events: AuditEvent[] = [];
-    record(event: AuditEvent): void {
+    record(event: AuditEvent): Promise<Result<void>> {
         this.events.push(event);
+        return Promise.resolve(Ok(undefined));
     }
 }
 
@@ -39,26 +43,25 @@ const roleEvent: AuditEvent = {
 };
 
 describe('Audit.record', () => {
-    it('routes events to its sink', () => {
+    it('routes events to its sink', async () => {
         const sink = new RecordingSink();
-        new Audit(sink).record(event);
+        await new Audit(sink).record(event);
         expect(sink.events).toEqual([event]);
     });
 
-    it('never throws when the sink throws', () => {
+    it('returns Err instead of throwing when the sink fails', async () => {
         const audit = new Audit({
             record() {
                 throw new Error('boom');
             }
         });
-        expect(() => {
-            audit.record(event);
-        }).not.toThrow();
+        const result = await audit.record(event);
+        expect(result.isErr()).toBe(true);
     });
 
-    it('preserves typed metadata on events that define it', () => {
+    it('preserves typed metadata on events that define it', async () => {
         const sink = new RecordingSink();
-        new Audit(sink).record(roleEvent);
+        await new Audit(sink).record(roleEvent);
         expect(sink.events).toEqual([roleEvent]);
     });
 });

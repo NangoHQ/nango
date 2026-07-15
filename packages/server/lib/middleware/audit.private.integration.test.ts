@@ -28,8 +28,8 @@ describe('audit middleware (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force audit-logging on.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditLoggingEnabled').mockResolvedValue(true);
+        // getFlags() returns the stable noop facade in tests; force the audit trail on.
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

@@ -10,7 +10,7 @@ import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
-let flagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isAuditLoggingEnabled']>;
+let flagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isAuditTrailEnabled']>;
 
 // Sets up an account + env + a connection under provider_config_key 'algolia'.
 async function seedConnection() {
@@ -28,8 +28,8 @@ describe('audit middleware (public API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force audit-logging on.
-        flagSpy = vi.spyOn(featureFlags.getFlags(), 'isAuditLoggingEnabled').mockResolvedValue(true);
+        // getFlags() returns the stable noop facade in tests; force the audit trail on.
+        flagSpy = vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
