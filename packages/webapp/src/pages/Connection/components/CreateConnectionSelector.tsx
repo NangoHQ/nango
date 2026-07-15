@@ -255,8 +255,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             } else if (event.type === 'error') {
                 track('web:connection_failed', {
                     provider: integration?.provider || 'unknown',
-                    errorType: event.payload.errorType,
-                    errorMessage: event.payload.errorMessage
+                    errorType: event.payload.errorType
                 });
             }
         },

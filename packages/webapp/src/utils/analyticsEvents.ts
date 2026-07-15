@@ -42,7 +42,8 @@ export interface AnalyticsEvents {
     'web:share_connection_link_button:clicked': { provider: string };
     'web:connection_created': { provider: string };
     'web:connection_created:legacy': { provider: string };
-    'web:connection_failed': { provider: string; errorType: string; errorMessage: string };
+    // errorType is a bounded code; the raw provider errorMessage is intentionally not sent (can contain PII/credentials).
+    'web:connection_failed': { provider: string; errorType: string };
 
     // Getting started
     'web:getting_started:connect-clicked': Record<string, never>;
@@ -58,6 +59,7 @@ export interface AnalyticsEvents {
     'web:getting_started:custom': Record<string, never>;
 
     // Account & onboarding
-    'web:account_signup': { user_id: number; email: string; name: string; accountId: number };
+    // email/name are intentionally not sent — identify() already attaches them as PostHog person properties.
+    'web:account_signup': { user_id: number; accountId: number };
     'web:signup:hear_about': { source: PostOnboardingHearAboutUs['Body']['source'] };
 }

@@ -53,8 +53,6 @@ export const EmailVerified: React.FC = () => {
 
                 track('web:account_signup', {
                     user_id: user.id,
-                    email: user.email,
-                    name: user.name,
                     accountId: user.accountId
                 });
 
