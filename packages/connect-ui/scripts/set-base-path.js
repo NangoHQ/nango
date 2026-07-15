@@ -8,10 +8,6 @@
 //
 // Each deployment starts from a freshly built (pristine) dist, so this only ever runs once against
 // the placeholder — re-running on an already-rewritten dist is a no-op.
-//
-// TODO(NAN-6242): confirm no self-hoster is already serving Connect UI from their own static
-// hosting. If any are, they must add this rewrite step to their deploy before upgrading, and we
-// should document it (the docs don't yet mention static hosting for Connect UI).
 
 /* eslint-disable no-console -- startup CLI script; console output is the intended interface */
 
