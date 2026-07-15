@@ -121,8 +121,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Deprecated: Edit connection metadata (deprecated)](https://nango.dev/docs/reference/backend/http-api/connection/update-metadata.md)
 - [Backend: HTTP API: Deprecated: Edit connection metadata (deprecated)](https://nango.dev/docs/reference/backend/http-api/connection/update-metadata-legacy.md)
 - [Backend: HTTP API: Deprecated: Delete a connection (deprecated)](https://nango.dev/docs/reference/backend/http-api/connection/delete.md)
-- [Backend: Control Plane MCP (Beta): Control Plane MCP overview (Beta)](https://nango.dev/docs/reference/backend/control-plane-mcp/overview.md): Manage a Nango environment from an MCP client.
-- [Backend: Control Plane MCP (Beta): Logs](https://nango.dev/docs/reference/backend/control-plane-mcp/logs.md): Query Nango log operations and messages with the Control Plane MCP server.
+- [Backend: Management MCP (Beta): Management MCP overview (Beta)](https://nango.dev/docs/reference/backend/management-mcp/overview.md): Manage a Nango environment from an MCP client.
 - [Backend: Backend SDK: Node](https://nango.dev/docs/reference/backend/backend-sdk/node.md)
 - [Backend: Backend SDK: Python](https://nango.dev/docs/reference/backend/backend-sdk/python.md)
 - [Backend: Backend SDK: Java](https://nango.dev/docs/reference/backend/backend-sdk/java.md)

@@ -253,6 +253,136 @@ https://nango.dev/docs/mcp
 
 It is public and does not require authentication.
 
+## Management MCP server (Beta)
+
+Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools and required API key scopes are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
+
+Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below. VS Code instead prompts for the key and stores it securely. The API key determines which Nango environment the agent can access. Only grant the [scopes](/reference/backend/http-api/api-keys#scopes) needed for the tools you want the agent to use.
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add the server for your user so it is available across projects:
+
+    ```bash
+    claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp \
+      --header "Authorization: Bearer <NANGO_API_KEY>"
+    ```
+
+    Run `claude mcp list` to verify the connection.
+  </Tab>
+
+  <Tab title="Cursor">
+    Add the following to `~/.cursor/mcp.json` for a global configuration, or `.cursor/mcp.json` for a project configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer <NANGO_API_KEY>"
+          }
+        }
+      }
+    }
+    ```
+
+    Restart Cursor after saving the file.
+  </Tab>
+
+  <Tab title="Codex">
+    Add the following to `~/.codex/config.toml` for a global configuration, or `.codex/config.toml` for a project configuration:
+
+    ```toml
+    [mcp_servers.nango-management]
+    url = "https://mcp.nango.dev/mcp"
+    http_headers = { Authorization = "Bearer <NANGO_API_KEY>" }
+    ```
+
+    Restart Codex after saving the file, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="VS Code">
+    Run **MCP: Open User Configuration** from the Command Palette, then add the server and a secure input for the API key:
+
+    ```json
+    {
+      "inputs": [
+        {
+          "type": "promptString",
+          "id": "nango-api-key",
+          "description": "Nango API key",
+          "password": true
+        }
+      ],
+      "servers": {
+        "nangoManagement": {
+          "type": "http",
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer ${input:nango-api-key}"
+          }
+        }
+      }
+    }
+    ```
+
+    VS Code prompts for the API key when it first starts the server and stores the value securely.
+  </Tab>
+
+  <Tab title="Pi">
+    Pi does not include an MCP client, so first install the [`pi-mcp-adapter`](https://pi.dev/packages/pi-mcp-adapter) extension:
+
+    ```bash
+    pi install npm:pi-mcp-adapter
+    ```
+
+    Then add the following to `~/.config/mcp/mcp.json` for a global configuration, or `.mcp.json` for a project configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer <NANGO_API_KEY>"
+          }
+        }
+      }
+    }
+    ```
+
+    Restart Pi after installing the extension, then use `/mcp` to verify the connection. `pi-mcp-adapter` is a third-party extension, so review its source before installing it.
+  </Tab>
+
+  <Tab title="OpenCode">
+    Add the following to `~/.config/opencode/opencode.json` for a global configuration, or `opencode.json` in a project root for a project configuration:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "mcp": {
+        "nango-management": {
+          "type": "remote",
+          "url": "https://mcp.nango.dev/mcp",
+          "oauth": false,
+          "headers": {
+            "Authorization": "Bearer <NANGO_API_KEY>"
+          },
+          "enabled": true
+        }
+      }
+    }
+    ```
+
+    Run `opencode mcp list` to verify the connection.
+  </Tab>
+</Tabs>
+
+<Warning>
+    Do not commit API keys to source control. Prefer user-level configuration when storing an API key inline.
+</Warning>
+
 ## Skills
 
 Nango's public skills live in [NangoHQ/skills](https://github.com/NangoHQ/skills).
@@ -5876,7 +6006,7 @@ We recommend exploring the logs in your own Nango account under **Logs**.
 
 ## Logs MCP tools (Beta)
 
-The [Control Plane MCP server](/reference/backend/control-plane-mcp/logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client. Authenticate with a Nango API key that has the `environment:logs:read` scope.
+The [Management MCP server](/reference/backend/management-mcp/overview#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client. Authenticate with a Nango API key that has the `environment:logs:read` scope.
 
 ## OpenTelemetry export
 
@@ -8930,7 +9060,7 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:logs:read` | Read log operations and messages |
 
 <Note>
-    The `environment:logs:read` scope is currently only used by the [Logs tools in the Control Plane MCP server](/reference/backend/control-plane-mcp/logs).
+    The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp/overview#logs).
 </Note>
 
 ### Actions
@@ -10068,19 +10198,19 @@ Source: https://nango.dev/docs/reference/backend/http-api/connection/delete.md
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-## Control Plane MCP overview (Beta)
+## Management MCP overview (Beta)
 
-Source: https://nango.dev/docs/reference/backend/control-plane-mcp/overview.md
+Source: https://nango.dev/docs/reference/backend/management-mcp/overview.md
 Description: Manage a Nango environment from an MCP client.
 
 <Warning>
-    The Control Plane MCP server is in Beta because it currently uses API key authentication, which requires giving the MCP client access to a Nango API key.
+    The Management MCP server is in Beta because it currently uses API key authentication, which requires giving the MCP client access to a Nango API key.
     We plan to change the authentication method to be OAuth-based in a future release.
 </Warning>
 
-The Control Plane MCP server lets MCP-compatible clients manage Nango through tools. It is an agent-friendly alternative to the [public API](/reference/backend/http-api/authentication).
+The Management MCP server lets MCP-compatible clients manage Nango through tools. It is an agent-friendly alternative to the [public API](/reference/backend/http-api/authentication).
 
-The Beta currently includes tools for [querying Nango logs](/reference/backend/control-plane-mcp/logs). More tools will be added over time, with the goal of supporting all public API functionality.
+More tools will be added over time, with the goal of supporting all public API functionality.
 
 ## Connect
 
@@ -10099,118 +10229,23 @@ Configure your MCP client to send a Nango API key as a Bearer token:
 Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access, and its [scopes](/reference/backend/http-api/api-keys#scopes) determine which tools are available.
 
 <Note>
-    The `environment:mcp` scope is not required for Control Plane MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
+    The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
 </Note>
 
 Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
 
-## Logs
+## Tools
 
-Source: https://nango.dev/docs/reference/backend/control-plane-mcp/logs.md
-Description: Query Nango log operations and messages with the Control Plane MCP server.
+### Logs
 
-The Control Plane MCP server provides two tools for investigating activity in the authenticated Nango environment. Use them to find relevant operations, then inspect the messages for a specific operation.
+Use the Logs tools to find activity in the authenticated Nango environment and inspect the messages for a specific operation.
 
-## Authentication
+| Tool                   | Description                                | Required API key scope  |
+| ---------------------- | ------------------------------------------ | ----------------------- |
+| `logs_list_operations` | List and filter log operations.            | `environment:logs:read` |
+| `logs_get_operation`   | Get an operation and its log messages.     | `environment:logs:read` |
 
-Both tools require a Nango API key with the `environment:logs:read` scope. See the [Control Plane MCP overview](/reference/backend/control-plane-mcp/overview) for the server URL and authentication setup.
-
-## `logs_list_operations`
-
-Lists Nango log operations newest first. An operation is a top-level execution record for activity such as a sync, action, authentication flow, webhook, or proxy call.
-
-By default, the tool returns up to 25 operations created in the last 24 hours.
-
-### Arguments
-
-| Argument       | Type             | Description                                                                                    |
-| -------------- | ---------------- | ---------------------------------------------------------------------------------------------- |
-| `search`       | string           | Search operation messages. Maximum 256 characters.                                             |
-| `limit`        | integer          | Maximum operations to inspect. From 1 to 500; defaults to 25.                                  |
-| `cursor`       | string or `null` | Cursor returned by a previous call.                                                            |
-| `states`       | string[]         | Filter by `waiting`, `running`, `success`, `failed`, `timeout`, or `cancelled`.                |
-| `operations`   | object[]         | Filter by operation type and, optionally, action. Maximum 20 filters.                          |
-| `integrations` | string[]         | Filter by integration name. Maximum 20 values.                                                 |
-| `connections`  | string[]         | Filter by connection name. Maximum 20 values.                                                  |
-| `syncs`        | string[]         | Filter by sync name. Maximum 20 values.                                                        |
-| `period`       | object           | ISO 8601 date range with required `from` and optional `to`. `to` defaults to the current time. |
-
-The `operations` argument accepts these type and action combinations:
-
-| Type      | Actions                                                                                                            |
-| --------- | ------------------------------------------------------------------------------------------------------------------ |
-| `action`  | `run`                                                                                                              |
-| `sync`    | `pause`, `unpause`, `run`, `request_run`, `request_run_full`, `cancel`, `init`, `create_variant`, `delete_variant` |
-| `proxy`   | `call`                                                                                                             |
-| `events`  | `post_connection_creation`, `pre_connection_deletion`, `validate_connection`                                       |
-| `auth`    | `create_connection`, `refresh_token`, `post_connection`, `connection_test`                                         |
-| `admin`   | `impersonation`                                                                                                    |
-| `webhook` | `incoming`, `forward`, `sync`, `connection_create`, `connection_refresh`                                           |
-| `deploy`  | `prebuilt`, `custom`                                                                                               |
-
-Omit `actions` to include every action for that type.
-
-Example arguments for finding failed sync executions:
-
-```json
-{
-    "states": ["failed"],
-    "operations": [{ "type": "sync", "actions": ["run"] }],
-    "period": { "from": "2026-07-12T00:00:00.000Z" },
-    "limit": 50
-}
-```
-
-### Result
-
-The tool returns:
-
-- `operations`: matching operation records. Each record includes its ID, state, operation type and action, timestamps, and related integration, connection, or function identifiers when available.
-- `pagination.total`: number of matching operations. When `search` is set, this is the number of matches in the inspected page.
-- `pagination.cursor`: cursor for the next page, or `null` when there are no more pages.
-
-<Note>
-    When `search` is set, `limit` is the maximum number of operations whose messages are inspected, not a guaranteed number of matches. A page can contain fewer
-    or no matching operations and still return a cursor.
-</Note>
-
-## `logs_get_operation`
-
-Gets one operation and a page of its log messages. Messages are returned newest first.
-
-### Arguments
-
-| Argument          | Type             | Description                                                                                    |
-| ----------------- | ---------------- | ---------------------------------------------------------------------------------------------- |
-| `operationId`     | string           | ID returned by `logs_list_operations`. Required.                                               |
-| `messages`        | object           | Optional message pagination and filtering settings.                                            |
-| `messages.limit`  | integer          | Maximum messages to return. From 1 to 500; defaults to 25.                                     |
-| `messages.cursor` | string or `null` | Cursor returned by a previous call.                                                            |
-| `messages.search` | string           | Search operation messages. Maximum 100 characters.                                             |
-| `messages.period` | object           | ISO 8601 date range with required `from` and optional `to`. `to` defaults to the current time. |
-
-Example arguments:
-
-```json
-{
-    "operationId": "<OPERATION-ID>",
-    "messages": {
-        "search": "rate limit",
-        "limit": 100
-    }
-}
-```
-
-### Result
-
-The tool returns:
-
-- `operation`: the requested operation record.
-- `messages`: log messages for the operation. Each message includes its ID, level, type, message, timestamp, and related error, HTTP request, HTTP response, retry, or metadata details when available.
-- `pagination.total`: total messages matching the filters.
-- `pagination.cursor`: cursor for the next message page, or `null` when there are no more pages.
-
-Pass each returned cursor back to the same tool with the same filters to retrieve the next page.
+See [Observability](/guides/platform/observability) for more information about Nango logs.
 
 ## Node
 
