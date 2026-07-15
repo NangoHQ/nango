@@ -1,13 +1,13 @@
 // Rewrites Connect UI's placeholder base path (baked in at build time) to the base path this
 // deployment serves it under, so the built assets and router resolve relative to it.
 //
-// This MUST run once after `vite build` and before the bundle is served — the built assets are
-// unusable until it does (they still contain the placeholder). It runs in two places today:
-//   - the container entrypoint (packages/server/entrypoint.sh), before serving; and
-//   - the connect_ui deploy workflow, before uploading to static hosting (e.g. connect.nango.dev).
+// Runs before the bundle is served: automatically as the first step of `serve:unsafe` (covering the
+// FLAG_SERVE_CONNECT_UI entrypoint and standalone containers), and in the connect_ui deploy workflow
+// before upload. The base path comes from the environment (see resolveBasePath) and defaults to "/";
+// a root deployment still runs the replacement, rewriting the placeholder to "/".
 //
-// The base path comes from the environment (see resolveBasePath) and defaults to "/". Even a root
-// deployment runs the replacement — it just rewrites the placeholder to "/", not a no-op.
+// Each deployment starts from a freshly built (pristine) dist, so this only ever runs once against
+// the placeholder — re-running on an already-rewritten dist is a no-op.
 //
 // TODO(NAN-6242): confirm no self-hoster is already serving Connect UI from their own static
 // hosting. If any are, they must add this rewrite step to their deploy before upgrading, and we
@@ -17,11 +17,12 @@
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { BASE_PATH_PLACEHOLDER, resolveBasePath } from './base-path.js';
 
 const REWRITABLE = /\.(?:js|css|html)$/;
+const defaultDistDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 
 async function* walk(dir) {
     for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -34,9 +35,8 @@ async function* walk(dir) {
     }
 }
 
-async function main() {
-    const distDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
-    const basePath = resolveBasePath(process.env);
+export async function setBasePath({ distDir = defaultDistDir, env = process.env } = {}) {
+    const basePath = resolveBasePath(env);
 
     let changed = 0;
     for await (const file of walk(distDir)) {
@@ -56,7 +56,9 @@ async function main() {
     console.log(`[connect-ui] base path set to "${basePath}" (${changed} file(s) updated)`);
 }
 
-main().catch((err) => {
-    console.error('[connect-ui] failed to set base path:', err);
-    process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    setBasePath().catch((err) => {
+        console.error('[connect-ui] failed to set base path:', err);
+        process.exit(1);
+    });
+}
