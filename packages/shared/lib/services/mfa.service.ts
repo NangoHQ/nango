@@ -26,7 +26,8 @@ class MFAService {
         const [encryptedSecret, iv, authTag] = encryptionManager.encryptSync(totp.secret.base32);
 
         await db.knex.transaction(async (trx) => {
-            const existing = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).first();
+            await this.acquireUserLock(trx, userId);
+            const existing = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).forUpdate().first();
             if (existing?.enabled_at) {
                 throw new Error('MFA is already enabled');
             }
@@ -60,7 +61,7 @@ class MFAService {
 
     public async activateEnrollment(userId: number, token: string): Promise<{ recoveryCodes: string[] }> {
         return db.knex.transaction(async (trx) => {
-            const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNull('enabled_at').first();
+            const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNull('enabled_at').forUpdate().first();
             if (!factor) {
                 throw new Error('No pending MFA enrollment found');
             }
@@ -122,18 +123,24 @@ class MFAService {
 
     public async consumeRecoveryCode(userId: number, code: string): Promise<boolean> {
         const codeHash = this.hashRecoveryCode(code);
-        const updated = await db
-            .knex<DBMFARecoveryCode>(RECOVERY_CODES_TABLE)
-            .where({ user_id: userId, code_hash: codeHash })
-            .whereNull('used_at')
-            .update({ used_at: db.knex.fn.now() as unknown as Date });
+        return db.knex.transaction(async (trx) => {
+            const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
+            if (!factor) {
+                return false;
+            }
 
-        return updated === 1;
+            const updated = await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE)
+                .where({ user_id: userId, code_hash: codeHash })
+                .whereNull('used_at')
+                .update({ used_at: trx.fn.now() as unknown as Date });
+
+            return updated === 1;
+        });
     }
 
     public async regenerateRecoveryCodes(userId: number): Promise<string[]> {
         return db.knex.transaction(async (trx) => {
-            const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').first();
+            const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
             if (!factor) {
                 throw new Error('MFA is not enabled');
             }
@@ -146,6 +153,7 @@ class MFAService {
 
     public async disable(userId: number): Promise<void> {
         await db.knex.transaction(async (trx) => {
+            await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).forUpdate().first();
             await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE).where({ user_id: userId }).delete();
             await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).delete();
         });
@@ -174,8 +182,9 @@ class MFAService {
 
         const secret = encryptionManager.decryptSync(factor.encrypted_secret, factor.iv, factor.auth_tag);
         const totp = this.createTotp('', OTPAuth.Secret.fromBase32(secret));
-        const delta = totp.validate({ token, window: TOTP_WINDOW });
-        return delta === null ? null : totp.counter() + delta;
+        const timestamp = Date.now();
+        const delta = totp.validate({ token, timestamp, window: TOTP_WINDOW });
+        return delta === null ? null : totp.counter({ timestamp }) + delta;
     }
 
     private createRecoveryCodes(): string[] {
@@ -194,6 +203,10 @@ class MFAService {
     private async replaceRecoveryCodes(trx: Knex, userId: number, recoveryCodes: string[]): Promise<void> {
         await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE).where({ user_id: userId }).delete();
         await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE).insert(recoveryCodes.map((code) => ({ user_id: userId, code_hash: this.hashRecoveryCode(code) })));
+    }
+
+    private async acquireUserLock(trx: Knex, userId: number): Promise<void> {
+        await trx.raw('SELECT pg_advisory_xact_lock(?)', [userId]);
     }
 }
 

@@ -48,6 +48,7 @@ describe('MFA service', () => {
         const replacement = await mfaService.regenerateRecoveryCodes(user.id);
         expect(replacement).toHaveLength(10);
         expect(await mfaService.consumeRecoveryCode(user.id, activated.recoveryCodes[0]!)).toBe(false);
+        expect(await mfaService.consumeRecoveryCode(user.id, replacement[0]!)).toBe(true);
 
         await mfaService.disable(user.id);
         expect(await mfaService.hasActiveFactor(user.id)).toBe(false);
