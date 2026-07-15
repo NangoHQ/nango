@@ -146,20 +146,13 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
                 }}
             />
         ) : null;
-    const headerActions =
-        breakdownControl || extraHeaderActions ? (
-            <>
-                {breakdownControl}
-                {extraHeaderActions}
-            </>
-        ) : undefined;
-
     return (
         <ChartCard
             data={live}
             isLoading={isLoading}
             timeframe={timeframe}
-            headerActions={headerActions}
+            headerActions={breakdownControl}
+            extraHeaderActions={extraHeaderActions}
             hideHeader={hideHeader}
             breakdownSeries={breakdownSeries}
             detailLoading={isDetail ? detailQuery.isLoading : false}

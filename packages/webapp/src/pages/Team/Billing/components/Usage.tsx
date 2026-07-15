@@ -30,6 +30,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const env = useStore((state) => state.env);
     const { data: environmentData } = useEnvironment(env);
     const plan = environmentData?.plan;
+    const isFree = plan?.name === 'free';
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
@@ -46,7 +47,9 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const breakdownEnabled = useBreakdownEnabled();
     const source = breakdownEnabled ? 'clickhouse' : undefined;
 
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source);
+    // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
+    // Free — it would double-fetch and can briefly hit Orb before `breakdownEnabled` resolves.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source, { enabled: !isFree });
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
@@ -56,7 +59,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
     // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
-    if (plan?.name === 'free') {
+    if (isFree) {
         return <FreeUsage />;
     }
 

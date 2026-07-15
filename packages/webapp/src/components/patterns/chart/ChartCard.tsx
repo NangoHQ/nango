@@ -18,8 +18,10 @@ interface ChartCardProps {
     isLoading: boolean;
     data?: ApiBillingUsageMetric;
     timeframe: { start: string; end: string };
-    /** Right-aligned controls in the header (e.g. the breakdown dropdown). */
+    /** Right-aligned controls in the header (e.g. the breakdown dropdown). Hidden in the empty state. */
     headerActions?: React.ReactNode;
+    /** Always-visible right-aligned controls (e.g. the month stepper) — kept even when empty so the user can navigate away. */
+    extraHeaderActions?: React.ReactNode;
     /** When provided, the chart renders these stacked series instead of the single total. */
     breakdownSeries?: ChartSeries[];
     /** Loading/error of the per-panel detail fetch (breakdown or filtered slice), shown in the chart body. */
@@ -50,6 +52,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     data,
     timeframe,
     headerActions,
+    extraHeaderActions,
     breakdownSeries,
     detailLoading,
     detailError,
@@ -159,13 +162,21 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                             </>
                         )}
                     </div>
-                    {headerActions && (!showEmpty || filtered) && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
+                    {(headerActions || extraHeaderActions) && (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {(!showEmpty || filtered) && headerActions}
+                            {extraHeaderActions}
+                        </div>
+                    )}
                 </header>
             )}
 
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden flex flex-col">
-                {hideHeader && headerActions && (!showEmpty || filtered) && (
-                    <div className="flex items-center justify-end gap-2 flex-shrink-0 pb-4">{headerActions}</div>
+                {hideHeader && (headerActions || extraHeaderActions) && (
+                    <div className="flex items-center justify-end gap-2 flex-shrink-0 pb-4">
+                        {(!showEmpty || filtered) && headerActions}
+                        {extraHeaderActions}
+                    </div>
                 )}
                 {showChart && (
                     <>

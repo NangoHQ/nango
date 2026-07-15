@@ -29,11 +29,16 @@ export function useSelectedMonth(): UseSelectedMonth {
 
     const selectedMonth = useMemo(() => {
         const now = new Date();
-        let month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-        if (monthParam) {
-            const [year, m] = monthParam.split('-').map(Number);
-            if (!isNaN(year) && !isNaN(m) && m >= 1 && m <= 12) {
-                month = new Date(Date.UTC(year, m - 1, 1));
+        const currentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        let month = currentMonth;
+        // Strict YYYY-MM so a malformed deep link can't build an invalid Date (which throws on toISOString).
+        const match = /^(\d{4})-(\d{2})$/.exec(monthParam);
+        if (match) {
+            const m = Number(match[2]);
+            if (m >= 1 && m <= 12) {
+                const parsed = new Date(Date.UTC(Number(match[1]), m - 1, 1));
+                // Clamp future deep links to the current month — usage never has a future period.
+                month = parsed > currentMonth ? currentMonth : parsed;
             }
         }
         return breakdownEnabled && month.getTime() < EARLIEST_USAGE_MONTH_MS ? new Date(EARLIEST_USAGE_MONTH_MS) : month;

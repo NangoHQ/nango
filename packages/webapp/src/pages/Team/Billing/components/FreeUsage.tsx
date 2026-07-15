@@ -53,7 +53,7 @@ export const FreeUsage: React.FC = () => {
         return { start: start.toISOString(), end: end.toISOString() };
     }, [selectedMonth]);
 
-    const { data: caps, error: capsError } = useApiGetUsage(env);
+    const { data: caps, isLoading: capsLoading, error: capsError } = useApiGetUsage(env);
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse');
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
@@ -85,6 +85,7 @@ export const FreeUsage: React.FC = () => {
                             sublabel={METRIC_DESCRIPTIONS[metric]}
                             usage={cap?.usage ?? 0}
                             limit={cap?.limit ?? null}
+                            capsLoading={capsLoading}
                             data={usage?.data.usage[metric]}
                             isLoading={isLoading}
                             env={env}

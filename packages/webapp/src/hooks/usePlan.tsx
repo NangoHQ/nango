@@ -82,7 +82,7 @@ export const GetUsageQueryKey = ['plans', 'usage'];
 export function useApiGetUsage(env: string) {
     return useQuery<GetUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: GetUsageQueryKey,
+        queryKey: [...GetUsageQueryKey, env],
         queryFn: async (): Promise<GetUsage['Success']> => {
             const res = await apiFetch(`/api/v1/plans/usage?env=${env}`, {
                 method: 'GET'
@@ -101,10 +101,10 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, source?: 'clickhouse' | 'orb') {
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, source?: 'clickhouse' | 'orb', options?: { enabled?: boolean }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
-        enabled: Boolean(env),
-        queryKey: [...GetBillingUsageQueryKey, timeframe, source],
+        enabled: Boolean(env) && (options?.enabled ?? true),
+        queryKey: [...GetBillingUsageQueryKey, env, timeframe, source],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {

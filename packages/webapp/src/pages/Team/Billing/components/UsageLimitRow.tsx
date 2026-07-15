@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { formatLimit, formatUsage, getUsageState } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { MonthPagination } from './MonthPagination';
@@ -20,6 +21,8 @@ interface UsageLimitRowProps {
     /** Live current-period usage (from the plans/usage endpoint), against the plan cap. */
     usage: number;
     limit: number | null;
+    /** The caps gauge (usage/limit) is still loading — show a placeholder instead of a bogus 0 / —. */
+    capsLoading?: boolean;
     /** Selected-month series for the drill-in chart. */
     data?: ApiBillingUsageMetric;
     isLoading: boolean;
@@ -40,6 +43,7 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
     sublabel,
     usage,
     limit,
+    capsLoading,
     data,
     isLoading,
     env,
@@ -59,20 +63,36 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
                         {sublabel && <span className="text-text-secondary text-body-small-regular truncate">{sublabel}</span>}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <span className="text-text-default text-body-medium-regular">
-                            {formatUsage(usage)}
-                            {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
-                        </span>
-                        {limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
-                    </div>
-                    <div
-                        className={cn(
-                            'text-body-medium-regular',
-                            limit == null ? 'text-text-muted' : state === 'over' ? 'text-text-danger' : 'text-text-default'
+                        {capsLoading ? (
+                            <Skeleton className="h-5 w-32" />
+                        ) : (
+                            <>
+                                <span className="text-text-default text-body-medium-regular">
+                                    {formatUsage(usage)}
+                                    {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
+                                </span>
+                                {limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
+                            </>
                         )}
-                    >
-                        {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                     </div>
+                    {capsLoading ? (
+                        <Skeleton className="h-4 w-12" />
+                    ) : (
+                        <div
+                            className={cn(
+                                'text-body-medium-regular',
+                                limit == null
+                                    ? 'text-text-muted'
+                                    : state === 'over'
+                                      ? 'text-text-danger'
+                                      : state === 'near'
+                                        ? 'text-text-warning'
+                                        : 'text-text-default'
+                            )}
+                        >
+                            {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
+                        </div>
+                    )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>
             </CollapsibleTrigger>
