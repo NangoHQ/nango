@@ -4,9 +4,8 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { buildTagsFromEndUser, configService, EndUserMapper } from '@nangohq/shared';
-import { buildConnectUiSessionLink, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
 import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -234,7 +233,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        const connect_link = buildConnectUiSessionLink(token, envs.NANGO_PUBLIC_CONNECT_URL);
+        const connect_link = new URL(`${connectUrl}?session_token=${token}`).toString();
         return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 
