@@ -1049,6 +1049,7 @@
               "api-integrations/canva-mcp",
               "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
+              "api-integrations/cerby",
               "integrations/all/certn",
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
