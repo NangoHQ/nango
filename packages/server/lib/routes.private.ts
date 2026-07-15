@@ -35,6 +35,7 @@ import { postImpersonate } from './controllers/v1/admin/impersonate/postImperson
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
+import { patchConnection } from './controllers/v1/connections/connectionId/patchConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
 import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
@@ -273,6 +274,7 @@ web.route('/connections/:connectionId/records/models').get(
 );
 web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
+web.route('/connections/:connectionId').patch(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), patchConnection);
 web.route('/connections/:connectionId').delete(
     webAuth,
     auditConnectionDeleted,

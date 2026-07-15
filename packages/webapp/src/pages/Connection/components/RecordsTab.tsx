@@ -2,6 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLocalStorage } from 'react-use';
 
 import { Button, buttonVariants } from '@nangohq/design-system';
 
@@ -20,6 +21,7 @@ import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTab
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
+import { LocalStorageKeys } from '@/utils/local-storage';
 import { cn, formatDateToUSFormat } from '@/utils/utils';
 
 import type { ConnectionRecordModel, NangoRecord } from '@nangohq/types';
@@ -35,7 +37,7 @@ export const RecordsTab = () => {
     const navigate = useNavigate();
     const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
-    const [isDocsBannerVisible, setIsDocsBannerVisible] = useState(true);
+    const [isDocsBannerDismissed, setIsDocsBannerDismissed] = useLocalStorage(LocalStorageKeys.RecordsDocsBannerDismissed, false);
 
     const {
         data: models,
@@ -59,7 +61,7 @@ export const RecordsTab = () => {
 
                 {!modelsError && !isModelsLoading && models && models.length > 0 && (
                     <>
-                        {isDocsBannerVisible && <RecordsDocsBanner onClose={() => setIsDocsBannerVisible(false)} />}
+                        {!isDocsBannerDismissed && <RecordsDocsBanner onClose={() => setIsDocsBannerDismissed(true)} />}
                         <RecordModelsTable models={models} onSelect={handleSelectModel} />
                     </>
                 )}
