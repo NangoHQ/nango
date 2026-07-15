@@ -32,6 +32,7 @@ interface AccountContext {
         source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
         scopes?: string[];
         apiKeyId?: number;
+        apiKeyDisplayName?: string;
         purpose?: 'dryrun' | 'deploy';
         dryrunId?: string;
         deploymentId?: string;
@@ -552,11 +553,12 @@ class AccountService {
                 pending_secret: DBAPISecret | null;
                 auth_scopes: string[] | null;
                 auth_api_key_id: number;
+                auth_display_name: string;
             }[];
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes
+                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes, ck.display_name
                     FROM customer_keys ck
                     JOIN customer_keys_relations ckr ON ckr.customer_key_id = ck.id
                     WHERE ck.hashed = ?
@@ -580,7 +582,8 @@ class AccountService {
                     row_to_json(default_secret.*) AS default_secret,
                     row_to_json(pending_secret.*) AS pending_secret,
                     matched_customer_key.scopes AS auth_scopes,
-                    matched_customer_key.id AS auth_api_key_id
+                    matched_customer_key.id AS auth_api_key_id,
+                    matched_customer_key.display_name AS auth_display_name
                 FROM matched_customer_key
                 JOIN _nango_environments ON _nango_environments.id = matched_customer_key.environment_id
                 JOIN _nango_accounts ON _nango_accounts.id = _nango_environments.account_id
@@ -635,7 +638,8 @@ class AccountService {
             auth: {
                 source: 'customer_key' as const,
                 scopes: row.auth_scopes ?? [],
-                apiKeyId: row.auth_api_key_id
+                apiKeyId: row.auth_api_key_id,
+                apiKeyDisplayName: row.auth_display_name
             }
         };
     }

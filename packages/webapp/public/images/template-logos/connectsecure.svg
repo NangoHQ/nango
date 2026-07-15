@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">ConnectSecure</title>
+  <defs>
+    <linearGradient id="shield" x1="16" y1="13" x2="48" y2="51" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#16B8A6"/>
+      <stop offset="1" stop-color="#086C74"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(6.857 6.857) scale(0.785714)">
+    <path fill="url(#shield)" d="M32 4 54 12v17c0 14.3-8.8 25.6-22 31C18.8 54.6 10 43.3 10 29V12L32 4Z"/>
+    <path fill="#fff" d="M38.8 21.2a12.9 12.9 0 1 0 0 21.6l-3.6-5.4a6.4 6.4 0 1 1 0-10.8l3.6-5.4Z"/>
+    <path fill="#CFF8F1" d="M36 28.8h13v6.4H36z"/>
+  </g>
+</svg>
