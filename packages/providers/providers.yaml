@@ -2962,6 +2962,38 @@ basecamp:
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
 
+baserow:
+    display_name: Baserow
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api
+        headers:
+            authorization: Token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/baserow
+    docs_connect: https://nango.dev/docs/api-integrations/baserow/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your Baserow instance's base URL.
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
+            example: https://api.baserow.io
+            suffix: /api
+            order: 1
+            doc_section: '#step-1-finding-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Database Token
+            description: Your Baserow database token.
+            example: Q7mZpX2k************************
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-2-generating-your-database-token'
+
 battlenet:
     display_name: Battle.net
     categories:

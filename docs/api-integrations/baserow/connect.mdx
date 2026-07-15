@@ -1,0 +1,55 @@
+---
+title: 'Baserow - How do I link my account?'
+sidebarTitle: 'Baserow'
+---
+
+# Overview
+
+To authenticate with Baserow, you need:
+
+1. **Base URL** - Your Baserow instance's base URL.
+2. **Database Token** - A token that grants access to a database's tables through the Baserow API.
+
+This guide will walk you through finding your **Base URL** and generating your **Database Token** in Baserow.
+
+### Prerequisites
+
+- A Baserow account (Cloud) or self-hosted instance.
+
+### Instructions
+
+#### Step 1: Finding your base URL
+
+Your **Base URL** is your Baserow instance's root URL — don't include `/api`:
+
+- **Baserow Cloud**: `https://api.baserow.io`.
+- **Self-hosted**: `https://<your-domain>`.
+
+#### Step 2: Generating your database token
+
+1. Log in to Baserow and open your account settings.
+2. Go to the **Database tokens** section.
+
+<img src="/api-integrations/baserow/dashboard.png"/>
+
+3. Create a new token and choose a name for it.
+4. Select the workspace, and optionally scope it down to specific databases or tables, choosing which of create, read, update, and delete permissions to grant.
+5. Click the 3 dots next to the generated Token and copy the token.
+
+<img src="/api-integrations/baserow/generated_api_key.png"/>
+
+<Note>
+  A token only grants the permissions and table access you assigned it. If a request fails with a permission error, check that the token has the right scope and CRUD permission for that table.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Base URL** and **Database Token**:
+
+1. Open the form where you need to authenticate with Baserow.
+2. Enter your **Base URL** and **Database Token** in the fields provided.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/baserow/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Baserow.
