@@ -80,9 +80,7 @@ function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
-// Resolve a target's display via a best-effort async lookup. Fails open: on error the event still
-// emits (display stays unset) and the failure is surfaced to logs + metrics. Low-RPS events only —
-// never call this on a hot path (see get-credentials, which derives everything from the request).
+// Low-RPS events only — never call this on a hot path (get-credentials derives displays from the request).
 async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<string | undefined>): Promise<string | undefined> {
     try {
         return await lookup();
@@ -153,8 +151,6 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     resource: 'member',
     action: 'role_changed',
     accountScoped: true,
-    // The affected member is on the request only as an id; resolve their email via an account-scoped
-    // lookup so a bad/cross-account id can't leak another account's email.
     target: async (req, locals) => {
         const display = await resolveDisplay('member', async () => {
             if (!locals.account) {

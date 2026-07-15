@@ -22,7 +22,6 @@ class UserService {
         return result || null;
     }
 
-    // Account-scoped by id: returns null for a user in another account, so callers can't cross tenants.
     async getUserByIdAndAccountId(id: number, accountId: number, includeSuspended = false): Promise<DBUser | null> {
         const result = await db.knex
             .select<DBUser>('*')
