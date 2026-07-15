@@ -154,12 +154,14 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
             let rowSum = 0;
             for (const key in row) {
                 const value = row[key];
-                if (key !== 'date' && typeof value === 'number') rowSum += value;
+                // Sum only the series currently drawn — isolating/hiding a slice rescales the axis so the
+                // visible data (and the cap line) aren't flattened against the full stacked total.
+                if (key !== 'date' && typeof value === 'number' && !isSeriesHidden(key)) rowSum += value;
             }
             if (rowSum > dataMax) dataMax = rowSum;
         }
         return niceCapAxis(dataMax, capLine);
-    }, [chartData, capLine]);
+    }, [chartData, capLine, isSeriesHidden]);
 
     // Today's day number is rendered brighter than the rest so the current date stands out
     // on the axis itself. Reuses recharts' <Text> so it sits where the default ticks do; the

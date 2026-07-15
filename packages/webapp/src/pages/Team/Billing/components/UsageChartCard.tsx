@@ -136,11 +136,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
     // Counter metrics can toggle cumulative ↔ daily; AVG metrics (view_mode 'cumulative') are a
     // level series with no daily equivalent, so they don't get the toggle. Defaults from the prop.
-    const [chartModeState, setChartModeState] = useState<ChartMode>(chartMode ?? 'cumulative');
+    const [chartModeState, setChartModeState] = useState<ChartMode>(chartMode ?? 'daily');
     const isCounter = data?.view_mode === 'periodic';
 
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
-    const viewToggle = showControls && isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
+    // The daily/cumulative toggle is a chart-mode control, not a breakdown feature — show it whenever
+    // a chartMode is explicitly supplied (Free), independent of the breakdown rollout flag.
+    const canToggleMode = chartMode !== undefined || showControls;
+    const viewToggle = canToggleMode && isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
     const breakdownControl =
         showControls && !baseEmpty ? (
             <BreakdownFilterControl

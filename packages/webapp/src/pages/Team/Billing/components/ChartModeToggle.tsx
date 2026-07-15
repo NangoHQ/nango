@@ -16,11 +16,12 @@ const OPTIONS: { value: ChartMode; label: string; Icon: typeof AreaChart }[] = [
 
 /** Segmented control to switch a counter metric's drill-in between the cumulative and daily views. */
 export const ChartModeToggle: React.FC<ChartModeToggleProps> = ({ mode, onChange }) => (
-    <div className="flex items-center h-7 rounded-[2px] border-[0.5px] border-border-interactive text-body-small-regular">
+    <div role="group" aria-label="Chart view" className="flex items-center h-7 rounded-[2px] border-[0.5px] border-border-interactive text-body-small-regular">
         {OPTIONS.map(({ value, label, Icon }, i) => (
             <button
                 key={value}
                 type="button"
+                aria-pressed={mode === value}
                 onClick={() => onChange(value)}
                 className={cn(
                     'flex items-center gap-1 px-2.5 h-full transition-colors focus-visible:outline-none focus-visible:shadow-focus-outline-default focus-visible:relative focus-visible:z-10',
