@@ -30,13 +30,13 @@ Your **Base URL** is your Baserow instance's root URL — don't include `/api`:
 1. Log in to Baserow and open your account settings.
 2. Go to the **Database tokens** section.
 
-<img src="/api-integrations/baserow/dashboard.png"/>
+<img src="/api-integrations/baserow/dashboard.png" alt="Baserow account settings with the Database tokens section open"/>
 
 3. Create a new token and choose a name for it.
 4. Select the workspace, and optionally scope it down to specific databases or tables, choosing which of create, read, update, and delete permissions to grant.
 5. Click the 3 dots next to the generated Token and copy the token.
 
-<img src="/api-integrations/baserow/generated_api_key.png"/>
+<img src="/api-integrations/baserow/generated_api_key.png" alt="Newly generated Baserow database token with the copy option highlighted"/>
 
 <Note>
   A token only grants the permissions and table access you assigned it. If a request fails with a permission error, check that the token has the right scope and CRUD permission for that table.
@@ -50,6 +50,6 @@ Once you have your **Base URL** and **Database Token**:
 2. Enter your **Base URL** and **Database Token** in the fields provided.
 3. Submit the form, and you should be successfully authenticated.
 
-<img src="/api-integrations/baserow/form.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/baserow/form.png" alt="Nango Connect UI form with fields for Base URL and Database Token" style={{maxWidth: "450px" }}/>
 
 You are now connected to Baserow.
