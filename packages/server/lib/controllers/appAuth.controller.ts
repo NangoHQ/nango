@@ -7,7 +7,7 @@ import publisher from '../clients/publisher.client.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { resolveConnectionConfig, resolveWebhookUrlOverride } from '../utils/auth.js';
+import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
@@ -163,7 +163,7 @@ class AppAuthController {
             // Apply the connect session's connection_config defaults and webhook URL override.
             // Done after credential creation so it can't interfere with the GitHub App JWT generation above.
             resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
-            resolvedWebhookUrlOverride = resolveWebhookUrlOverride({ connectSession: connectSession?.connectSession });
+            resolvedWebhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession: connectSession?.connectSession });
             Object.assign(connectionConfig, resolvedConnectionConfig);
 
             const [updatedConnection] = await connectionService.upsertConnection({

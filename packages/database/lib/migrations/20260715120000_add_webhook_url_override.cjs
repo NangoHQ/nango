@@ -1,4 +1,8 @@
-exports.config = { transaction: true };
+// Not wrapped in a single transaction: the column adds each take a brief ACCESS EXCLUSIVE lock, but the
+// backfill runs a full-table scan (no index on connection_config). Keeping them in one transaction would
+// hold that exclusive lock on _nango_connections for the whole backfill. We commit the schema change first,
+// then backfill separately so the scan runs without blocking reads/writes.
+exports.config = { transaction: false };
 
 /**
  * Moves the per-connection webhook URL override out of `connection_config` (which holds provider-declared,
@@ -28,17 +32,4 @@ exports.up = async function (knex) {
     `);
 };
 
-/**
- * @param {import('knex').Knex} knex
- */
-exports.down = async function (knex) {
-    await knex.schema.alterTable('_nango_connections', (table) => {
-        table.dropColumn('webhook_url_override');
-    });
-    await knex.schema.alterTable('_nango_oauth_sessions', (table) => {
-        table.dropColumn('webhook_url_override');
-    });
-    await knex.schema.alterTable('connect_sessions', (table) => {
-        table.dropColumn('webhook_url_override');
-    });
-};
+exports.down = async function () {};

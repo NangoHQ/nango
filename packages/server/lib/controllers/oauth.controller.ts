@@ -42,7 +42,7 @@ import {
 } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveWebhookUrlOverride } from '../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
 import {
@@ -223,7 +223,7 @@ class OAuthController {
                 id: uuid.v1(),
                 connectSessionId: connectSession ? connectSession.id : null,
                 connectionConfig,
-                webhookUrlOverride: resolveWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined }),
+                webhookUrlOverride: resolveOutboundWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined }),
                 environmentId,
                 webSocketClientId: wsClientId,
                 activityLogId: logCtx.id,
@@ -368,7 +368,7 @@ class OAuthController {
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
         // Hoisted so both the upsert and the failure hook honor the session-set per-connection overrides.
-        const webhookUrlOverride = resolveWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined });
+        const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined });
 
         if (!body.client_id) {
             errorManager.errRes(res, 'missing_client_id');

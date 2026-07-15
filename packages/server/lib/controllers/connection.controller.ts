@@ -188,8 +188,8 @@ class ConnectionController {
                 return;
             }
 
-            const rawWebhookUrlOverride = req.body['webhook_url_override'];
-            const webhookUrlOverride = typeof rawWebhookUrlOverride === 'string' && rawWebhookUrlOverride.trim() !== '' ? rawWebhookUrlOverride : null;
+            // z.url() already trims; '' (no override) and undefined both normalize to null.
+            const webhookUrlOverride = webhookUrlValidation.data || null;
 
             const integration = await configService.getProviderConfig(provider_config_key, environment.id);
             if (!integration) {

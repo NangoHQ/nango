@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveConnectionConfig, resolveWebhookUrlOverride } from './auth.js';
+import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from './auth.js';
 
 import type { ConnectSession } from '@nangohq/types';
 
@@ -105,21 +105,21 @@ describe('resolveConnectionConfig', () => {
     });
 });
 
-describe('resolveWebhookUrlOverride', () => {
+describe('resolveOutboundWebhookUrlOverride', () => {
     it('returns null when there is no connect session', () => {
-        expect(resolveWebhookUrlOverride({ connectSession: undefined })).toBeNull();
+        expect(resolveOutboundWebhookUrlOverride({ connectSession: undefined })).toBeNull();
     });
 
     it('returns null when the session has no webhook_url override', () => {
-        expect(resolveWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride(null) })).toBeNull();
+        expect(resolveOutboundWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride(null) })).toBeNull();
     });
 
     it('returns the session-level webhook_url override', () => {
         const connectSession = connectSessionWithWebhookOverride('https://backend.example.com/hook');
-        expect(resolveWebhookUrlOverride({ connectSession })).toBe('https://backend.example.com/hook');
+        expect(resolveOutboundWebhookUrlOverride({ connectSession })).toBe('https://backend.example.com/hook');
     });
 
     it('treats a blank webhook_url override as no override', () => {
-        expect(resolveWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride('   ') })).toBeNull();
+        expect(resolveOutboundWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride('   ') })).toBeNull();
     });
 });

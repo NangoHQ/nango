@@ -58,14 +58,12 @@ describe('migration: add webhook_url_override column', () => {
         expect(backfill).toContain("WHERE jsonb_exists(connection_config, 'webhook_url')");
     });
 
-    it('drops the webhook_url_override column from the three tables on rollback', async () => {
-        const { knex, alterCalls } = mockKnex();
+    it('is a no-op on rollback (rollbacks are not supported)', async () => {
+        const { knex, raw, alterCalls } = mockKnex();
 
         await migration.down(knex);
 
-        const dropped = alterCalls.filter((c) => c.dropped.includes('webhook_url_override')).map((c) => c.table);
-        expect(dropped).toContain('_nango_connections');
-        expect(dropped).toContain('_nango_oauth_sessions');
-        expect(dropped).toContain('connect_sessions');
+        expect(alterCalls).toHaveLength(0);
+        expect(raw).not.toHaveBeenCalled();
     });
 });

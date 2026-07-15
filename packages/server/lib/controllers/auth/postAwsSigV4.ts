@@ -23,7 +23,7 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveWebhookUrlOverride } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -85,7 +85,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
 
     let connectionId = query.connection_id || connectionService.generateConnectionId();
     const connectionConfig = resolveConnectionConfig({ params: query.params, connectSession, providerConfigKey });
-    const webhookUrlOverride = resolveWebhookUrlOverride({ connectSession });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     const hmac = 'hmac' in query ? query.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
 

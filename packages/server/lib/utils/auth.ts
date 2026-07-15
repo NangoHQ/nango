@@ -28,7 +28,7 @@ export function resolveConnectionConfig({
     return connectionConfig;
 }
 
-export function resolveWebhookUrlOverride({ connectSession }: { connectSession: ConnectSession | undefined }): string | null {
+export function resolveOutboundWebhookUrlOverride({ connectSession }: { connectSession: ConnectSession | undefined }): string | null {
     const webhookUrl = connectSession?.webhookUrlOverride;
     if (typeof webhookUrl !== 'string' || webhookUrl.trim() === '') {
         return null;
