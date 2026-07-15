@@ -32,9 +32,7 @@ export async function handleReplaceConnectionMetadata({
 
     const connection = connectionRes.response;
 
-    await db.knex.transaction(async (trx) => {
-        await connectionService.replaceMetadata([connection.id], metadata, trx);
-    });
+    await connectionService.replaceMetadata([connection.id], metadata, db.knex);
 
     res.status(200).send({ success: true });
 }
