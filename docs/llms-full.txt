@@ -6689,9 +6689,13 @@ Connect UI is served at the root of its domain by default. To host it under a no
 NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
 ```
 
-Nango rewrites the built asset paths to match when Connect UI starts, so no rebuild is needed. This works whether you serve Connect UI via `FLAG_SERVE_CONNECT_UI` or run its static file server directly (`npm run -w @nangohq/connect-ui serve:unsafe`, e.g. as a standalone container). The rewrite edits files in `dist` in place at startup, so that directory must be writable — a read-only root filesystem will fail.
+Nango rewrites the built asset paths to match when Connect UI starts, so no rebuild is needed. This works whether you serve Connect UI via `FLAG_SERVE_CONNECT_UI` or run its static file server directly (`npm run -w @nangohq/connect-ui serve:unsafe`, e.g. as a standalone container).
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
+
+<Note>
+The startup rewrite edits files in `dist` in place, so that directory must be writable. A read-only root filesystem will fail.
+</Note>
 
 <Note>
 If you upload Connect UI's built `dist` to a static host or CDN instead of serving it from the container, run `npm run -w @nangohq/connect-ui set-base-path` (with `NANGO_PUBLIC_CONNECT_URL` set) against `dist` before uploading. The built assets contain a placeholder base until this step runs.
