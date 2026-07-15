@@ -31,6 +31,8 @@ interface ChartCardProps {
     globalTotal?: number;
     /** Colour + label for a filtered single series (no grouping): tints the one drawn series and shows a one-row legend. */
     singleSeries?: { label: string; color: string };
+    /** Drop the label + total header (e.g. when an outer row already shows them); the controls move atop the chart body. */
+    hideHeader?: boolean;
 }
 
 /**
@@ -49,7 +51,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     detailError,
     filtered,
     globalTotal,
-    singleSeries
+    singleSeries,
+    hideHeader
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
@@ -107,38 +110,44 @@ export const ChartCard: React.FC<ChartCardProps> = ({
 
     return (
         <div className={cn('bg-surface-panel rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
-            <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
-                <div className="flex flex-col items-start justify-center h-11">
-                    {isLoading || !data ? (
-                        <Skeleton className="bg-surface-panel-inset h-4 w-32" />
-                    ) : (
-                        <>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-text-strong text-body-large-semi">{data.label}</span>
-                                {isCumulative && (
-                                    <InfoTooltip>
-                                        This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
-                                        than a cumulative total.
-                                        {filtered && " For a filtered slice this is the slice's contribution to the monthly average, not a standalone average."}
-                                    </InfoTooltip>
-                                )}
-                            </div>
-                            {/* Hidden while the detail slice loads: `data` falls back to the unfiltered
-                                base then, so showing it would flash the wrong number (e.g. "100% of X"). */}
-                            {headlineTotal !== undefined && !showDetailSpinner && (
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
-                                    {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
-                                    {shareLabel && <span className="text-text-muted text-body-small-regular">{shareLabel}</span>}
+            {!hideHeader && (
+                <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
+                    <div className="flex flex-col items-start justify-center h-11">
+                        {isLoading || !data ? (
+                            <Skeleton className="bg-surface-panel-inset h-4 w-32" />
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-text-strong text-body-large-semi">{data.label}</span>
+                                    {isCumulative && (
+                                        <InfoTooltip>
+                                            This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
+                                            than a cumulative total.
+                                            {filtered &&
+                                                " For a filtered slice this is the slice's contribution to the monthly average, not a standalone average."}
+                                        </InfoTooltip>
+                                    )}
                                 </div>
-                            )}
-                        </>
-                    )}
-                </div>
-                {headerActions && (!showEmpty || filtered) && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
-            </header>
+                                {/* Hidden while the detail slice loads: `data` falls back to the unfiltered
+                                    base then, so showing it would flash the wrong number (e.g. "100% of X"). */}
+                                {headlineTotal !== undefined && !showDetailSpinner && (
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
+                                        {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
+                                        {shareLabel && <span className="text-text-muted text-body-small-regular">{shareLabel}</span>}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                    {headerActions && (!showEmpty || filtered) && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
+                </header>
+            )}
 
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+                {hideHeader && headerActions && (!showEmpty || filtered) && (
+                    <div className="flex items-center justify-end gap-2 flex-shrink-0 pb-4">{headerActions}</div>
+                )}
                 {showChart && (
                     <>
                         <BreakdownChart

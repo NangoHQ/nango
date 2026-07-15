@@ -5,8 +5,10 @@ import { permissions } from '@nangohq/authz';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useStore } from '@/store';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
@@ -20,6 +22,11 @@ export const TeamBilling: React.FC = () => {
         const now = new Date();
         return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
     });
+
+    const env = useStore((state) => state.env);
+    const { data: environmentData } = useEnvironment(env);
+    // Free uses a per-metric month stepper inside each drill-in, so the shared header stepper is hidden.
+    const isFreePlan = environmentData?.plan?.name === 'free';
 
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
@@ -40,7 +47,7 @@ export const TeamBilling: React.FC = () => {
             </Helmet>
             <div className="flex flex-col gap-8 max-w-[1280px]">
                 <header className="flex justify-end items-center">
-                    {isUsageTab && (
+                    {isUsageTab && !isFreePlan && (
                         <div className="flex items-center gap-4">
                             <MonthSelector onMonthChange={setSelectedMonth} />
                         </div>
