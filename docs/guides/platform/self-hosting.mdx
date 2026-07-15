@@ -221,7 +221,7 @@ Nango rewrites the built asset paths to match when Connect UI starts, so no rebu
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
 <Note>
-The startup rewrite edits files in `dist` in place, so that directory must be writable. A read-only root filesystem will fail.
+The startup rewrite edits files in `dist` in place, so that directory must be writable at runtime. With a read-only root filesystem, mount `dist` as a writable volume or tmpfs.
 </Note>
 
 <Note>
