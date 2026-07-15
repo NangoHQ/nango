@@ -16,12 +16,12 @@ Connect to Agentcard with Nango and see data flow in 2 minutes. The Agentcard AP
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Client ID and Client Secret, then save.
     </Step>
     <Step title="Call the Agentcard API">
-    Make your first request. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first request: introspect the credential to confirm the connection works (it returns your organization and mode). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/api/v2/cards" \
+            curl "https://api.nango.dev/proxy/api/v2" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Agentcard with Nango and see data flow in 2 minutes. The Agentcard AP
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/api/v2/cards',
+            endpoint: '/api/v2',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
