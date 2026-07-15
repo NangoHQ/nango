@@ -104,6 +104,7 @@ export const ENVS = z.object({
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
+    NANGO_CONNECT_UI_BASE_PATH: z.string().optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
     PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z.coerce.date().catch(new Date('2025-08-25')),
 
