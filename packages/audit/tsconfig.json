@@ -6,6 +6,12 @@
     },
     "references": [
         {
+            "path": "../pubsub"
+        },
+        {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         }
     ],

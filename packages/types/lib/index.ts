@@ -1,6 +1,7 @@
 export type * from './db.js';
 export type * from './api.js';
 export type * from './api.endpoints.js';
+export type * from './audit/event.js';
 
 export type * from './gettingStarted/db.js';
 export type * from './gettingStarted/dto.js';

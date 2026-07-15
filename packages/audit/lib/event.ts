@@ -1,52 +1,15 @@
-// `id` and `recordedAt` are stamped downstream by ingestion, not by the caller.
-
-export type AuditActorType = 'user' | 'api_key' | 'system';
-export type AuditOutcome = 'success' | 'failure' | 'denied';
-export type AuditTargetType = 'connection' | 'member';
-
-export interface AuditActor {
-    type: AuditActorType;
-    id: string;
-    display?: string;
-}
-
-export interface AuditTarget {
-    type: AuditTargetType;
-    id: string;
-    display?: string;
-}
-
-export interface AuditContext {
-    ip?: string;
-    userAgent?: string;
-}
-
-export interface ConnectionDeletedMetadata {
-    // Qualifies the target: connection_id is unique only per (provider config key, environment).
-    providerConfigKey: string;
-}
-
-export interface MemberRoleChangedMetadata {
-    // Optional: capturing it needs pre-update state a route-level emit may not have.
-    fromRole?: string;
-    toRole: string;
-}
-
-interface AuditEventCommon {
-    occurredAt: string;
-    accountId: number;
-    // null for account-scoped events (e.g. member changes) that aren't tied to an environment.
-    environment: { id: number; display: string } | null;
-    actor: AuditActor;
-    via?: AuditActor[];
-    targets: AuditTarget[];
-    context: AuditContext;
-    outcome: AuditOutcome;
-}
-
-export type AuditEvent =
-    | (AuditEventCommon & { resource: 'connection'; action: 'deleted'; metadata?: ConnectionDeletedMetadata })
-    | (AuditEventCommon & { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata });
-
-export type AuditResource = AuditEvent['resource'];
-export type AuditAction = AuditEvent['action'];
+// The audit event model lives in @nangohq/types so the pub/sub Event union and the metering
+// consumer can share the wire contract. Re-exported here so @nangohq/audit stays the import site.
+export type {
+    AuditAction,
+    AuditActor,
+    AuditActorType,
+    AuditContext,
+    AuditEvent,
+    AuditOutcome,
+    AuditResource,
+    AuditTarget,
+    AuditTargetType,
+    ConnectionDeletedMetadata,
+    MemberRoleChangedMetadata
+} from '@nangohq/types';

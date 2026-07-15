@@ -6,13 +6,14 @@ import { billing } from '@nangohq/billing';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
-import { initSentry, once, report } from '@nangohq/utils';
+import { initSentry, isCloud, once, report } from '@nangohq/utils';
 
 import { billingEventsS3DLQMonitorCron } from './crons/billingEventsS3DLQMonitor.js';
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
 import { exportUsageCron } from './crons/usage.js';
 import { e2bSandboxesDaemon } from './daemons/e2b-sandboxes.daemon.js';
 import { envs } from './env.js';
+import { AuditProcessor } from './processors/audit.js';
 import { TeamProcessor } from './processors/team.js';
 import { UsageProcessor } from './processors/usage.js';
 import { logger } from './utils.js';
@@ -58,6 +59,12 @@ try {
     // Team processor
     const teamProc = new TeamProcessor({ transport: pubsubTransport });
     teamProc.start();
+
+    // Audit processor (Cloud only — other tiers don't publish audit events yet)
+    if (isCloud) {
+        const auditProc = new AuditProcessor({ transport: pubsubTransport });
+        auditProc.start();
+    }
 
     // Crons
     exportUsageCron();

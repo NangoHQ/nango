@@ -14,6 +14,8 @@
         "directory": "packages/audit"
     },
     "dependencies": {
+        "@nangohq/pubsub": "file:../pubsub",
+        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils"
     },
     "devDependencies": {
