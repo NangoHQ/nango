@@ -5179,6 +5179,52 @@ copper-api-key:
             description: Email address of the user who generated the token
     docs: https://nango.dev/docs/integrations/all/copper-api-key
 
+connectsecure:
+    display_name: ConnectSecure
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.base_url}
+        headers:
+            accept: application/json
+            client-auth-token: '${base64(${connectionConfig.tenant}+${credentials.username}:${credentials.password})}'
+        verification:
+            method: POST
+            endpoints:
+                - /w/authorize
+    docs: https://nango.dev/docs/api-integrations/connectsecure
+    docs_connect: https://nango.dev/docs/api-integrations/connectsecure/connect
+    connection_config:
+        base_url:
+            type: string
+            title: Pod Host
+            description: The hostname of your ConnectSecure pod
+            example: pod123.myconnectsecure.com
+            pattern: '^[A-Za-z0-9-]+\.myconnectsecure\.com$'
+            order: 1
+            doc_section: '#step-1-gather-your-connection-details'
+        tenant:
+            type: string
+            title: Tenant
+            description: Your ConnectSecure tenant identifier
+            example: example-tenant
+            pattern: '^[A-Za-z0-9_-]+$'
+            order: 2
+            doc_section: '#step-1-gather-your-connection-details'
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your ConnectSecure API client ID
+            doc_section: '#step-1-gather-your-connection-details'
+        password:
+            type: string
+            title: Client Secret
+            description: Your ConnectSecure API client secret
+            secret: true
+            doc_section: '#step-1-gather-your-connection-details'
+
 connectwise-psa:
     display_name: ConnectWise PSA
     categories:
@@ -6832,6 +6878,40 @@ emarsys-oauth:
                 - 'x-ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/emarsys-oauth
     docs_connect: https://nango.dev/docs/integrations/all/emarsys-oauth/connect
+
+embat:
+    display_name: Embat
+    categories:
+        - accounting
+        - banking
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.embat.io/authentication/token
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: idToken
+    proxy:
+        base_url: https://api.embat.io
+    docs: https://nango.dev/docs/api-integrations/embat
+    docs_connect: https://nango.dev/docs/api-integrations/embat/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            format: email
+            description: The email address of your Embat service user.
+            doc_section: '#step-1-get-your-service-user-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password for your Embat service user.
+            secret: true
+            doc_section: '#step-1-get-your-service-user-credentials'
 
 employment-hero:
     display_name: Employment Hero
@@ -10494,6 +10574,41 @@ icypeas:
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-1-finding-your-api-key'
 
+ids-fulfillment:
+    display_name: IDS Fulfillment
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.idsfulfillment.com
+        headers:
+            apikey: ${apiKey}
+        connection_config:
+            warehouse: ${connectionConfig.warehouse}
+            customerNumber: ${connectionConfig.customerNumber}
+    docs: https://nango.dev/docs/api-integrations/ids-fulfillment
+    docs_connect: https://nango.dev/docs/api-integrations/ids-fulfillment/connect
+    connection_config:
+        warehouse:
+            type: string
+            title: Warehouse
+            description: Your IDS Fulfillment warehouse code.
+            optional: true
+            doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+        customerNumber:
+            type: string
+            title: Customer Number
+            description: Your IDS Fulfillment customer number.
+            optional: true
+            doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your IDS Fulfillment API key.
+            example: f3a92c1b-****-****-****-7d84c6e21093
+            doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+
 itglue:
     display_name: IT Glue
     categories:
@@ -12410,6 +12525,32 @@ mailjet:
             example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
+mandrill:
+    display_name: Mandrill
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mandrillapp.com/api
+        body:
+            key: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /1.3/users/ping
+            headers:
+                content-type: application/json
+    docs: https://nango.dev/docs/api-integrations/mandrill
+    docs_connect: https://nango.dev/docs/api-integrations/mandrill/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The Mandrill API key for your Mailchimp Transactional account.
+            pattern: '^md-[A-Za-z0-9_-]+$'
+            example: md-fNel34e***************
+            doc_section: '#step-1-generate-your-api-key'
+
 mcp-generic:
     display_name: MCP Server OAuth2 (Generic)
     categories:
@@ -13214,6 +13355,30 @@ maxio:
             order: 1
             doc_section: '#step-1-finding-your-hostname'
 
+millionverifier:
+    display_name: MillionVerifier
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.millionverifier.com/api/
+        query:
+            api: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/credits
+    docs: https://nango.dev/docs/api-integrations/millionverifier
+    docs_connect: https://nango.dev/docs/api-integrations/millionverifier/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your MillionVerifier API key.
+            example: oUo8*****************kJTr
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 mindbody:
     display_name: Mindbody
     categories:
@@ -13666,6 +13831,36 @@ mural:
     proxy:
         base_url: https://app.mural.co
     docs: https://nango.dev/docs/integrations/all/mural
+
+n8n:
+    display_name: n8n
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api
+        headers:
+            x-n8n-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/n8n
+    docs_connect: https://nango.dev/docs/api-integrations/n8n/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your n8n instance's base URL.
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
+            example: https://your-instance.app.n8n.cloud
+            order: 1
+            suffix: /api
+            doc_section: '#step-1-finding-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your n8n API key.
+            doc_section: '#step-2-generating-your-api-key'
 
 nable-ncentral:
     display_name: N-able N-central
@@ -15676,6 +15871,35 @@ personio-recruiting:
             type: string
             title: API Key
             description: The API key for your Pingboard account
+
+phrase:
+    display_name: Phrase
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/phrase
+    docs_connect: https://nango.dev/docs/api-integrations/phrase/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The API hostname for your Phrase data center.
+            doc_section: '#step-2-determine-your-hostname'
+            enum:
+                - api.phrase.com
+                - api.us.app.phrase.com
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The OAuth Access Token from your Phrase account.
+            example: 'aVdNWDZR****************************************************dDdN'
+            pattern: '^[A-Za-z0-9]{64}$'
+            doc_section: '#step-1-generate-an-access-token'
 
 pingboard:
     display_name: Pingboard
@@ -18323,6 +18547,37 @@ salesmsg-oauth2:
         base_url: https://api.salesmessage.com/pub/
     docs: https://nango.dev/docs/api-integrations/salesmsg-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app
+
+sanity-mcp:
+    display_name: Sanity (MCP)
+    categories:
+        - cms
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.sanity.io/authorize
+    token_url: https://mcp.sanity.io/token
+    registration_url: https://mcp.sanity.io/register
+    default_scopes:
+        - global
+    authorization_params:
+        response_type: code
+        resource: https://mcp.sanity.io
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.sanity.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/sanity-mcp
 
 sap-fieldglass:
     display_name: SAP Fieldglass
@@ -21301,6 +21556,33 @@ timely:
         base_url: https://api.timelyapp.com
     docs: https://nango.dev/docs/integrations/all/timely
 
+timetastic:
+    display_name: Timetastic
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.timetastic.co.uk/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /users
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/timetastic
+    docs_connect: https://nango.dev/docs/api-integrations/timetastic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Timetastic account.
+            format: uuid
+            example: 6a6b202d-6aee-4a62-a2f1-************
+            doc_section: '#step-1-generate-your-api-key'
+
 thrivecart-oauth:
     display_name: ThriveCart (OAuth)
     categories:
@@ -21484,6 +21766,73 @@ perk:
                 - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/perk
     setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
+
+tripletex:
+    display_name: Tripletex
+    categories:
+        - accounting
+    auth_mode: TWO_STEP
+    token_url: https://${connectionConfig.environment}/v2/token/session/:create
+    token_headers:
+        accept: application/json
+        content-type: application/json
+    token_params:
+        consumerToken: ${credentials.consumerToken}
+        employeeToken: ${credentials.employeeToken}
+        expirationDate: ${now+7:days:YYYY-MM-DD}
+    token_response:
+        token: value.token
+    token_expires_in_ms: 432000000
+    proxy:
+        base_url: https://${connectionConfig.environment}
+        headers:
+            authorization: Basic ${base64(${connectionConfig.proxyCompanyId}:${credentials.token})}
+        retry:
+            after:
+                - 'x-rate-limit-reset'
+        paginate:
+            type: offset
+            offset_name_in_request: from
+            limit_name_in_request: count
+            offset_start_value: 0
+    docs: https://nango.dev/docs/api-integrations/tripletex
+    docs_connect: https://nango.dev/docs/api-integrations/tripletex/connect
+    credentials:
+        consumerToken:
+            type: string
+            title: Consumer Token
+            description: The consumer token issued by Tripletex for this environment.
+            secret: true
+            example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
+            pattern: '^eyJ[A-Za-z0-9+/=]+$'
+            doc_section: '#step-2-obtain-the-consumer-token'
+        employeeToken:
+            type: string
+            title: Employee Token
+            description: The employee token the end user generates in their Tripletex tenant.
+            secret: true
+            example: eyJ0b2tlbklkIjoxLCJ0b2tlbiI6ImV4YW1wbGUtMDAwMC0wMDAwLTAwMDAtZXhhbXBsZSJ9
+            pattern: '^eyJ[A-Za-z0-9+/=]+$'
+            doc_section: '#step-3-generate-an-employee-token'
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The Tripletex environment to connect to.
+            enum:
+                - tripletex.no
+                - api-test.tripletex.tech
+            order: 1
+            doc_section: '#step-1-selecting-your-environment'
+        proxyCompanyId:
+            type: string
+            title: Proxy Company ID
+            description: HTTP Basic-auth username.
+            default_value: '0'
+            pattern: '^[0-9]+$'
+            example: '0'
+            order: 2
+            doc_section: '#step-4-set-the-proxy-company-id'
 
 trello:
     display_name: Trello
@@ -23418,6 +23767,35 @@ workday-cc:
             secret: true
             doc_section: '#step-5-register-an-api-client'
 
+workato:
+    display_name: Workato
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/workato
+    docs_connect: https://nango.dev/docs/api-integrations/workato/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Data center hostname
+            description: The hostname of the data center your account is hosted in.
+            format: hostname
+            prefix: https://
+            example: www.workato.com
+            order: 1
+            suffix: /api
+            doc_section: '#step-1-finding-your-data-center-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated for your Workato API client.
+            doc_section: '#step-2-generating-your-api-token'
+
 workday-adaptive-planning:
     display_name: Workday Adaptive Planning
     categories:
@@ -23954,6 +24332,28 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
     docs: https://nango.dev/docs/integrations/all/zenefits
+
+zero:
+    display_name: Zero
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.zero.inc
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/workspaces
+    docs: https://nango.dev/docs/api-integrations/zero
+    docs_connect: https://nango.dev/docs/api-integrations/zero/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key generated from your Zero account.
+            doc_section: '#step-1-generate-an-api-key'
 
 zigpoll:
     display_name: Zigpoll
