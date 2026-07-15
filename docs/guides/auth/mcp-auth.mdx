@@ -1,0 +1,62 @@
+---
+title: 'MCP Auth'
+sidebarTitle: 'MCP Auth'
+description: 'Let your users connect to MCP servers through Nango'
+---
+
+MCP Auth lets your application authorize end users to access external MCP servers, such as Notion MCP, Linear MCP, or HubSpot MCP, so you can call those servers’ tools on behalf of each user.
+
+Nango handles OAuth with the MCP provider and stores the tokens. You can then use the connection to call the MCP server via Nango’s [proxy](/reference/backend/http-api/proxy/post).
+
+## Two ways to use MCP Auth
+
+| Type | Use case | Examples |
+|------|----------|----------|
+| **Catalog MCP servers** | Official MCP servers listed in [Nango's catalog](https://nango.dev/api-integrations?category=mcp) | [HubSpot (MCP)](/api-integrations/hubspot-mcp), [Notion MCP](/api-integrations/notion-mcp), [Linear MCP](/api-integrations/linear-mcp) |
+| **Generic MCP Server OAuth2** | Let your users connect any server that supports the [MCP Protocol](https://modelcontextprotocol.io/specification/draft). | Custom servers |
+
+If you are missing a catalog MCP servers you can [request it](/integrations/contribute-or-request-api).
+
+## How to use it
+
+### Catalog MCP servers
+
+1. **Create the integration**  
+   In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).  
+   Some providers, for example HubSpot MCP, require you to [register an MCP auth app](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app) and add **Client ID** and **Client Secret** in Nango. But most support dynamic client registrations: You can just enable them on Nango, and Nango registers a client for you in the background.
+
+2. **Run the same auth flow as standard OAuth**  
+   - Backend: [create a Connect session](/guides/auth/auth-guide#generate-session-token) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).  
+   - Frontend: [open the Connect UI](/guides/auth/auth-guide#trigger-auth-flow) with the session token.  
+   - Backend: [persist the connection ID](/guides/auth/auth-guide#save-connection-id-from-webhook) from the auth webhook or Connect UI callback.
+
+3. **Call the MCP server**  
+   Use the stored `connection_id` and integration id (e.g. `hubspot-mcp`) with the [Proxy API](/reference/backend/http-api/proxy/post) (JSON-RPC `tools/call`, etc.).
+
+### Generic MCP Server OAuth2
+
+1. **Create a generic MCP integration**  
+   [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _MCP Server OAuth2 (Generic)_. Optionally set **OAuth Client Name**, **URI**, and **Logo URI** (used in dynamic client registration with the MCP server).
+
+2. **Same Connect session + Connect UI flow**  
+   As above: backend creates a session with `allowed_integrations: ['mcp-generic']` (or your custom integration id), frontend opens Connect UI with that token, backend stores the connection ID.
+
+3. **End user supplies the MCP server URL**  
+   When the user starts the connection, the Connect UI prompts for **MCP Server URL** (e.g. `https://mcp.notion.com/mcp`). Nango automatically discovers the OAuth endpoints from the server and walks the user through the OAuth connection flow.
+
+4. **Call the MCP server**  
+   Same as pre-built: use the connection with the [Proxy API](/reference/backend/http-api/proxy/post). The connection is tied to the MCP server URL the user entered.
+
+<Info>
+Our generic MCP provider currently only works with MCP servers that support automatic client registration (DCR, or CIMD).
+</Info>
+
+## End user experience
+
+- **Catalog MCP servers**  
+  User sees a list of supported MCP servers in your app → clicks connect → is redirected to the provider’s OAuth page (e.g. HubSpot or Notion) → signs in and approves → connection is created in Nango
+
+- **MCP Generic**  
+  User clicks connect → sees a form asking for the MCP Server URL → submits → is redirected to that MCP server’s OAuth page → signs in and approves → connection is created in Nango
+
+In both cases, your app only needs to open the Connect UI and pass the session token. Nango handles the rest.
