@@ -20,7 +20,8 @@ function basePathSource(env) {
         try {
             return new URL(env.NANGO_PUBLIC_CONNECT_URL).pathname;
         } catch {
-            return '/';
+            // It's set but unparseable — fail loudly rather than silently serving from root.
+            throw new Error(`Invalid NANGO_PUBLIC_CONNECT_URL "${env.NANGO_PUBLIC_CONNECT_URL}": not a valid URL`);
         }
     }
     return '/';

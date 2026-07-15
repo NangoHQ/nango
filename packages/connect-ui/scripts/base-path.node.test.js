@@ -22,4 +22,8 @@ describe('resolveBasePath', () => {
     it('rejects a base path with unsafe characters', () => {
         expect(() => resolveBasePath({ NANGO_CONNECT_UI_BASE_PATH: '/a"><script>alert(1)</script>' })).toThrow(/Invalid Connect UI base path/);
     });
+
+    it('throws when NANGO_PUBLIC_CONNECT_URL is set but not a valid URL', () => {
+        expect(() => resolveBasePath({ NANGO_PUBLIC_CONNECT_URL: 'not a url' })).toThrow(/Invalid NANGO_PUBLIC_CONNECT_URL/);
+    });
 });
