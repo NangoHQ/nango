@@ -6,9 +6,9 @@ export const sql = [
     (
         event          String,
         retention_days UInt16,                                                                        -- per-plan retention, set at ingestion (partition + TTL key)
-        id             UUID          MATERIALIZED toUUIDOrZero(JSONExtractString(event, 'id')),
+        id             UUID          MATERIALIZED toUUID(JSONExtractString(event, 'id')),
         account_id     Int64         MATERIALIZED JSONExtractInt(event, 'accountId'),
-        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffortOrZero(JSONExtractString(event, 'occurredAt'), 3)
+        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3)
     )
     ENGINE = ReplacingMergeTree
     PARTITION BY (retention_days, toYYYYMM(occurred_at))
