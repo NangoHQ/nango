@@ -1,6 +1,5 @@
 // `event` is the canonical audit blob we restore/export from — every field lives inside it. Only the
-// ORDER BY / partition keys are materialized out for now; searchable columns come later. `version` is
-// not implemented yet — the event is currently unversioned.
+// ORDER BY / partition keys are materialized out for now; searchable columns come later.
 export const sql = [
     `
     CREATE TABLE IF NOT EXISTS {database:Identifier}.audit_trail_events
