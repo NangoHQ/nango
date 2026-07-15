@@ -694,7 +694,8 @@
                   "guides/auth/share-connect-link",
                   "guides/auth/connection-tags-configuration-metadata",
                   "guides/auth/customize-connect-ui",
-                  "guides/auth/token-refreshing"
+                  "guides/auth/token-refreshing",
+                  "guides/auth/mcp-auth"
                 ]
               },
               {
