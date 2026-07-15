@@ -10,6 +10,7 @@ import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
+import { FreeUsage } from './FreeUsage';
 import { UsageChartCard } from './UsageChartCard';
 
 import type { DBPlan, UsageMetric } from '@nangohq/types';
@@ -51,6 +52,12 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;
+    }
+
+    // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
+    // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
+    if (plan?.name === 'free') {
+        return <FreeUsage />;
     }
 
     const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);

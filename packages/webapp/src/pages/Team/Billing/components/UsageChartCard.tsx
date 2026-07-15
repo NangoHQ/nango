@@ -28,6 +28,12 @@ interface UsageChartCardProps {
     isDivergingFromGlobal: (metric: UsageMetric, selection: GroupFilterSelection) => boolean;
     /** Apply this panel's group + filter to every applicable metric. */
     onApplyToAll: (selection: GroupFilterSelection) => void;
+    /** Drop the ChartCard's own label + total header (an outer row already shows them). */
+    hideHeader?: boolean;
+    /** Extra controls placed after the breakdown Group/Filter cluster (e.g. a month stepper). */
+    extraHeaderActions?: React.ReactNode;
+    /** Hide the "Apply to all" affordance (e.g. the Free caps view, where panels are independent). */
+    disableApplyToAll?: boolean;
 }
 
 /**
@@ -38,7 +44,18 @@ interface UsageChartCardProps {
  * breakdown live in the URL (`${metric}.breakdown`, `${metric}.filter`) so the state
  * is deep-linkable and survives month changes. One filter + one breakdown per panel.
  */
-export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, isDivergingFromGlobal, onApplyToAll }) => {
+export const UsageChartCard: React.FC<UsageChartCardProps> = ({
+    metric,
+    data,
+    isLoading,
+    env,
+    timeframe,
+    isDivergingFromGlobal,
+    onApplyToAll,
+    hideHeader,
+    extraHeaderActions,
+    disableApplyToAll
+}) => {
     const showControls = useBreakdownEnabled();
 
     const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
@@ -84,7 +101,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // "Apply to all" uses the raw (URL) grouping, not the collision-resolved one, so a panel
     // grouped-and-filtered on the same dimension still propagates and keeps its grouping.
     const selection = { group: rawDimension, filter };
-    const canApplyToAll = isDivergingFromGlobal(metric, selection);
+    const canApplyToAll = !disableApplyToAll && isDivergingFromGlobal(metric, selection);
 
     // Show the detail response (filtered and/or broken down) when there is one, else the base
     // metric. Both are full ApiBillingUsageMetrics, so the headline needs no per-state override.
@@ -106,7 +123,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // No data at all for this metric (ignoring filters) → nothing to slice, so hide the controls.
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
-    const headerActions =
+    const breakdownControl =
         showControls && !baseEmpty ? (
             <BreakdownFilterControl
                 metric={metric}
@@ -128,6 +145,13 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
                     onApplyToAll(selection);
                 }}
             />
+        ) : null;
+    const headerActions =
+        breakdownControl || extraHeaderActions ? (
+            <>
+                {breakdownControl}
+                {extraHeaderActions}
+            </>
         ) : undefined;
 
     return (
@@ -136,6 +160,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             isLoading={isLoading}
             timeframe={timeframe}
             headerActions={headerActions}
+            hideHeader={hideHeader}
             breakdownSeries={breakdownSeries}
             detailLoading={isDetail ? detailQuery.isLoading : false}
             detailError={isDetail ? detailQuery.isError : false}
