@@ -682,6 +682,19 @@ adyntel:
             example: you@company.com
             doc_section: '#step-2-find-your-email-address'
 
+agentcard:
+    display_name: Agentcard
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://api.agentcard.sh/api/v1/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.agentcard.sh
+    docs: https://nango.dev/docs/api-integrations/agentcard
+    docs_connect: https://nango.dev/docs/api-integrations/agentcard/connect
+
 ahrefs:
     display_name: Ahrefs
     categories:
