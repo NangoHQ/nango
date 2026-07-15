@@ -146,7 +146,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        const connect_link = buildConnectUiSessionLink(token, { connectUrl: envs.NANGO_PUBLIC_CONNECT_URL, basePath: envs.NANGO_CONNECT_UI_BASE_PATH });
+        const connect_link = buildConnectUiSessionLink(token, envs.NANGO_PUBLIC_CONNECT_URL);
         return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 

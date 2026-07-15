@@ -23,7 +23,7 @@ describe('setBasePath', () => {
     });
 
     it('rewrites the placeholder to the configured base path', async () => {
-        await setBasePath({ distDir, env: { NANGO_CONNECT_UI_BASE_PATH: '/nango/connect' } });
+        await setBasePath({ distDir, env: { NANGO_PUBLIC_CONNECT_URL: 'https://example.com/nango/connect' } });
 
         await expect(readFile(join(distDir, 'index.html'), 'utf8')).resolves.toBe('<script src="/nango/connect/assets/index.js"></script>');
     });
@@ -31,7 +31,7 @@ describe('setBasePath', () => {
     it('is a no-op on an already-rewritten dist (deployments always start from a pristine build)', async () => {
         await writeFile(join(distDir, 'index.html'), '<script src="/nango/connect/assets/index.js"></script>');
 
-        await setBasePath({ distDir, env: { NANGO_CONNECT_UI_BASE_PATH: '/other' } });
+        await setBasePath({ distDir, env: { NANGO_PUBLIC_CONNECT_URL: 'https://example.com/other' } });
 
         await expect(readFile(join(distDir, 'index.html'), 'utf8')).resolves.toBe('<script src="/nango/connect/assets/index.js"></script>');
     });

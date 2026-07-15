@@ -7,15 +7,12 @@
 export const BASE_PATH_PLACEHOLDER = '/__NANGO_CONNECT_UI_BASE_PATH__/';
 
 /**
- * The base path source, in precedence order: the explicit NANGO_CONNECT_UI_BASE_PATH override, then
- * the path of NANGO_PUBLIC_CONNECT_URL, then "/" (root, the default).
+ * The base path source: the path of NANGO_PUBLIC_CONNECT_URL (Connect UI's public URL already
+ * includes any sub-path), or "/" (root, the default).
  * @param {Record<string, string | undefined>} env
  * @returns {string}
  */
 function basePathSource(env) {
-    if (env.NANGO_CONNECT_UI_BASE_PATH) {
-        return env.NANGO_CONNECT_UI_BASE_PATH;
-    }
     if (env.NANGO_PUBLIC_CONNECT_URL) {
         try {
             return new URL(env.NANGO_PUBLIC_CONNECT_URL).pathname;
@@ -31,19 +28,12 @@ function basePathSource(env) {
  * Resolve the base path Connect UI is served under, normalized to a single leading and trailing
  * slash (e.g. "/" or "/nango/connect/").
  *
- * The normalization and safe-character contract here must stay in sync with the server-side session
- * link builder in packages/utils/lib/connect-ui.ts, so generated links and rewritten assets target
- * the same path. They can't share code: connect-ui doesn't depend on @nangohq/utils, and this runs
- * as a plain node script at container startup.
- *
  * @param {Record<string, string | undefined>} env
  * @returns {string}
  */
 export function resolveBasePath(env) {
-    // A base path is only a pathname; drop any query/fragment passed by mistake, then collapse into
-    // a single leading and trailing slash regardless of how it was provided.
-    const raw = basePathSource(env).split(/[?#]/)[0];
-    const normalized = `/${raw}/`.replace(/\/+/g, '/');
+    // Collapse into a single leading and trailing slash.
+    const normalized = `/${basePathSource(env)}/`.replace(/\/+/g, '/');
 
     // The base path is written verbatim into the built HTML/CSS/JS. Reject anything outside a safe
     // URL-path character set so a malformed value fails loudly here instead of emitting broken —

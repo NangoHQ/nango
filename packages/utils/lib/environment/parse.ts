@@ -104,13 +104,6 @@ export const ENVS = z.object({
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
-    // Base path Connect UI is served under. Validated here so a malformed value fails at startup
-    // rather than when a connect session is created. Characters are restricted to a safe URL-path
-    // set (the value is written verbatim into built asset URLs and used to build session links).
-    NANGO_CONNECT_UI_BASE_PATH: z
-        .string()
-        .regex(/^[A-Za-z0-9._~:@%+/-]*$/, 'NANGO_CONNECT_UI_BASE_PATH may only contain URL path characters (letters, digits, and -._~:@%+/)')
-        .optional(),
     NANGO_CONNECT_UI_PORT: z.coerce.number().optional().default(3009),
     PUBLIC_AUTHENTICATION_DEPRECATION_DATE: z.coerce.date().catch(new Date('2025-08-25')),
 
