@@ -6689,12 +6689,12 @@ Connect UI is served at the root of its domain by default. To host it under a no
 NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
 ```
 
-Nango rewrites the built asset paths to match on startup, so no rebuild is needed. If you need a base path that differs from the URL's path, set `NANGO_CONNECT_UI_BASE_PATH` to override it.
+Nango rewrites the built asset paths to match when Connect UI starts, so no rebuild is needed. This works whether you serve Connect UI via `FLAG_SERVE_CONNECT_UI` or run its static file server directly (`npm run -w @nangohq/connect-ui serve:unsafe`, e.g. as a standalone container). If you need a base path that differs from the URL's path, set `NANGO_CONNECT_UI_BASE_PATH` to override it.
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
 <Note>
-If you serve Connect UI's static files from your own host instead of the bundled Docker image, run `npm run -w @nangohq/connect-ui set-base-path` (with `NANGO_PUBLIC_CONNECT_URL` set) against the built `dist` before uploading. The built assets contain a placeholder base until this step runs.
+If you upload Connect UI's built `dist` to a static host or CDN instead of serving it from the container, run `npm run -w @nangohq/connect-ui set-base-path` (with `NANGO_PUBLIC_CONNECT_URL` set) against `dist` before uploading. The built assets contain a placeholder base until this step runs.
 </Note>
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
