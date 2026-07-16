@@ -1465,6 +1465,7 @@
               "api-integrations/ocean-io",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
+              "api-integrations/odoo-api-key",
               "integrations/all/okta",
               "api-integrations/okta-cc",
               "integrations/all/okta-preview",

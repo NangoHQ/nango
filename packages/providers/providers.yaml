@@ -14627,6 +14627,46 @@ odoo-cc:
             order: 1
             doc_section: '#step-1-finding-your-odoo-domain'
 
+odoo-api-key:
+    display_name: Odoo (API Key)
+    categories:
+        - erp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/json
+        headers:
+            authorization: bearer ${apiKey}
+            content-type: application/json
+            x-odoo-database: ${connectionConfig.database}
+    docs: https://nango.dev/docs/api-integrations/odoo-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/odoo-api-key/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Domain
+            description: The domain of your Odoo instance.
+            format: hostname
+            example: mycompany.odoo.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-odoo-domain'
+        database:
+            type: string
+            title: Database Name
+            description: Your Odoo database name.
+            optional: true
+            order: 2
+            doc_section: '#step-2-finding-your-database-name-if-applicable'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Odoo API key.
+            secret: true
+            pattern: '^[a-f0-9]{40}$'
+            example: 20d6113f****************************2921
+            doc_section: '#step-3-generating-an-api-key'
+
 okta:
     display_name: Okta
     auth_mode: OAUTH2
