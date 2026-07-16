@@ -255,9 +255,9 @@ It is public and does not require authentication.
 
 ## Management MCP server (Beta)
 
-Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools and required API key scopes are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
+Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
 
-Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below. VS Code instead prompts for the key and stores it securely. The API key determines which Nango environment the agent can access. Only grant the [scopes](/reference/backend/http-api/api-keys#scopes) needed for the tools you want the agent to use.
+Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -352,7 +352,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
     }
     ```
 
-    Restart Pi after installing the extension, then use `/mcp` to verify the connection. `pi-mcp-adapter` is a third-party extension, so review its source before installing it.
+    Restart Pi after installing the extension, then use `/mcp` to verify the connection.
   </Tab>
 
   <Tab title="OpenCode">
@@ -6006,7 +6006,7 @@ We recommend exploring the logs in your own Nango account under **Logs**.
 
 ## Logs MCP tools (Beta)
 
-The [Management MCP server](/reference/backend/management-mcp/overview#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client. Authenticate with a Nango API key that has the `environment:logs:read` scope.
+The [Management MCP server](/reference/backend/management-mcp/overview#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
 
 ## OpenTelemetry export
 
@@ -10203,14 +10203,11 @@ Source: https://nango.dev/docs/reference/backend/http-api/connection/delete.md
 Source: https://nango.dev/docs/reference/backend/management-mcp/overview.md
 Description: Manage a Nango environment from an MCP client.
 
-<Warning>
-    The Management MCP server is in Beta because it currently uses API key authentication, which requires giving the MCP client access to a Nango API key.
-    We plan to change the authentication method to be OAuth-based in a future release.
-</Warning>
+<Note>
+    The Management MCP server is in Beta. We will continue to add functionality, with the goal of supporting the full public API. This means we may introduce breaking changes along the way. We would love to hear your feedback and requests!
+</Note>
 
 The Management MCP server lets MCP-compatible clients manage Nango through tools. It is an agent-friendly alternative to the [public API](/reference/backend/http-api/authentication).
-
-More tools will be added over time, with the goal of supporting all public API functionality.
 
 ## Connect
 
@@ -10226,7 +10223,7 @@ Configure your MCP client to send a Nango API key as a Bearer token:
 | --------------- | ------------------------ |
 | `Authorization` | `Bearer <NANGO-API-KEY>` |
 
-Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access, and its [scopes](/reference/backend/http-api/api-keys#scopes) determine which tools are available.
+Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
 
 <Note>
     The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.

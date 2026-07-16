@@ -25,9 +25,9 @@ It is public and does not require authentication.
 
 ## Management MCP server (Beta)
 
-Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools and required API key scopes are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
+Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
 
-Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below. VS Code instead prompts for the key and stores it securely. The API key determines which Nango environment the agent can access. Only grant the [scopes](/reference/backend/http-api/api-keys#scopes) needed for the tools you want the agent to use.
+Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -122,7 +122,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
     }
     ```
 
-    Restart Pi after installing the extension, then use `/mcp` to verify the connection. `pi-mcp-adapter` is a third-party extension, so review its source before installing it.
+    Restart Pi after installing the extension, then use `/mcp` to verify the connection.
   </Tab>
 
   <Tab title="OpenCode">

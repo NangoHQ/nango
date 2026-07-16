@@ -4,14 +4,11 @@ sidebarTitle: 'Overview'
 description: 'Manage a Nango environment from an MCP client.'
 ---
 
-<Warning>
-    The Management MCP server is in Beta because it currently uses API key authentication, which requires giving the MCP client access to a Nango API key.
-    We plan to change the authentication method to be OAuth-based in a future release.
-</Warning>
+<Note>
+    The Management MCP server is in Beta. We will continue to add functionality, with the goal of supporting the full public API. This means we may introduce breaking changes along the way. We would love to hear your feedback and requests!
+</Note>
 
 The Management MCP server lets MCP-compatible clients manage Nango through tools. It is an agent-friendly alternative to the [public API](/reference/backend/http-api/authentication).
-
-More tools will be added over time, with the goal of supporting all public API functionality.
 
 ## Connect
 
@@ -27,7 +24,7 @@ Configure your MCP client to send a Nango API key as a Bearer token:
 | --------------- | ------------------------ |
 | `Authorization` | `Bearer <NANGO-API-KEY>` |
 
-Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access, and its [scopes](/reference/backend/http-api/api-keys#scopes) determine which tools are available.
+Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
 
 <Note>
     The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
