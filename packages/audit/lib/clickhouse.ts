@@ -2,10 +2,7 @@ import { createClient } from '@clickhouse/client';
 
 import type { ClickHouseClient } from '@clickhouse/client';
 
-export function auditClickhouseClient({ clickhouseUrl }: { clickhouseUrl: string | undefined }): ClickHouseClient | null {
-    if (!clickhouseUrl) {
-        return null;
-    }
+export function auditClickhouseClient(clickhouseUrl: string): ClickHouseClient {
     return createClient({
         url: clickhouseUrl,
         database: 'usage',

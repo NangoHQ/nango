@@ -8,6 +8,7 @@ import type { Result } from '@nangohq/utils';
 
 // Schema version (date it shipped, not a timestamp); bump to a new date only on a breaking change.
 const AUDIT_EVENT_VERSION = '2026-07-16';
+const AUDIT_RETENTION_DAYS = 90;
 
 export interface AuditSink {
     record(event: AuditEvent): Promise<Result<void>>;
@@ -22,7 +23,7 @@ export class DropSink implements AuditSink {
 export class ClickhouseAuditSink implements AuditSink {
     constructor(
         private readonly client: ClickHouseClient,
-        private readonly retentionDays: number
+        private readonly retentionDays = AUDIT_RETENTION_DAYS
     ) {}
 
     async record(event: AuditEvent): Promise<Result<void>> {
@@ -41,13 +42,4 @@ export class ClickhouseAuditSink implements AuditSink {
             return Err(err);
         }
     }
-}
-
-const AUDIT_RETENTION_DAYS = 90;
-
-export function auditSink(client: ClickHouseClient | null): AuditSink {
-    if (!client) {
-        return new DropSink();
-    }
-    return new ClickhouseAuditSink(client, AUDIT_RETENTION_DAYS);
 }

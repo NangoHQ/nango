@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { auditSink, ClickhouseAuditSink, DropSink } from './sink.js';
+import { ClickhouseAuditSink } from './sink.js';
 
 import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
@@ -18,16 +18,6 @@ const event: AuditEvent = {
     context: { ip: '1.2.3.4' },
     outcome: 'success'
 };
-
-describe('auditSink', () => {
-    it('returns a DropSink when no client is provided', () => {
-        expect(auditSink(null)).toBeInstanceOf(DropSink);
-    });
-
-    it('returns a ClickhouseAuditSink when a client is provided', () => {
-        expect(auditSink({ insert: () => undefined } as unknown as ClickHouseClient)).toBeInstanceOf(ClickhouseAuditSink);
-    });
-});
 
 describe('ClickhouseAuditSink.record', () => {
     afterEach(() => vi.restoreAllMocks());

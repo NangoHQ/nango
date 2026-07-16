@@ -8,7 +8,7 @@ import * as cron from 'node-cron';
 import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
-import { audit, auditClickhouseClient, auditSink, DropSink } from '@nangohq/audit';
+import { audit, auditClickhouseClient, ClickhouseAuditSink } from '@nangohq/audit';
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
@@ -113,17 +113,15 @@ if (pubsubConnect.isErr()) {
 
 await initializeFeatureFlags();
 
-function getAuditSink() {
-    if (!isCloud) {
-        return new DropSink();
-    }
-    if (!envs.CLICKHOUSE_URL) {
-        return new DropSink();
-    }
-    return auditSink(auditClickhouseClient({ clickhouseUrl: envs.CLICKHOUSE_URL }));
+// audit drops by default; only override that when there's a ClickHouse to write to
+if (!isCloud) {
+    logger.info('Audit: dropping events (not on Nango Cloud)');
+} else if (!envs.CLICKHOUSE_URL) {
+    logger.warning('Audit: dropping events (CLICKHOUSE_URL not set)');
+} else {
+    audit.setSink(new ClickhouseAuditSink(auditClickhouseClient(envs.CLICKHOUSE_URL)));
+    logger.info('Audit: writing events to ClickHouse');
 }
-
-audit.setSink(getAuditSink());
 
 const port = getServerPort();
 server.listen(port, () => {
