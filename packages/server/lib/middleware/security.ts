@@ -1,8 +1,12 @@
 import helmet from 'helmet';
 
-import { basePublicUrl, baseUrl, connectUrl } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrlAsDocumentBase } from '@nangohq/utils';
 
 import type { RequestHandler } from 'express';
+
+// CSP source path matching is exact when the path has no trailing slash; with one it's a prefix
+// match, which is what we want when NANGO_PUBLIC_CONNECT_URL includes a base path.
+const connectUrlCspSource = connectUrlAsDocumentBase().toString();
 
 export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;
@@ -24,7 +28,7 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.contentSecurityPolicy({
             reportOnly: reportOnly !== 'false',
             directives: {
-                defaultSrc: ["'self'", hostPublic, hostApi, connectUrl],
+                defaultSrc: ["'self'", hostPublic, hostApi, connectUrlCspSource],
                 childSrc: "'self'",
                 connectSrc: [
                     "'self'",
@@ -33,7 +37,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     hostPublic,
                     hostApi,
                     hostWs.href,
-                    connectUrl,
+                    connectUrlCspSource,
                     'https://*.posthog.com',
                     'https://*.stripe.com',
                     'https://*.plain.com',
@@ -41,7 +45,15 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://raw.githubusercontent.com'
                 ],
                 fontSrc: ["'self'", 'data:', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
-                frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com', 'https://*.stripe.com'],
+                frameSrc: [
+                    "'self'",
+                    'https://accounts.google.com',
+                    hostPublic,
+                    hostApi,
+                    connectUrlCspSource,
+                    'https://www.youtube.com',
+                    'https://*.stripe.com'
+                ],
                 imgSrc: [
                     "'self'",
                     'data:',
