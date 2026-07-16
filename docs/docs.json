@@ -880,11 +880,6 @@
                     ]
                   },
                   {
-                    "group": "Management MCP (Beta)",
-                    "icon": "/images/mcp.svg",
-                    "pages": ["reference/backend/management-mcp/overview"]
-                  },
-                  {
                     "group": "Backend SDK",
                     "icon": "cubes",
                     "pages": [
@@ -896,6 +891,11 @@
                       "reference/backend/backend-sdk/rust",
                       "reference/backend/backend-sdk/php"
                     ]
+                  },
+                  {
+                    "group": "Management MCP (Beta)",
+                    "icon": "/images/mcp.svg",
+                    "pages": ["reference/backend/management-mcp/overview"]
                   }
                 ]
               },
