@@ -14663,7 +14663,6 @@ odoo-api-key:
             title: API Key
             description: Your Odoo API key.
             secret: true
-            order: 3
             pattern: '^[a-f0-9]{40}$'
             example: 20d6113f****************************2921
             doc_section: '#step-3-generating-an-api-key'
