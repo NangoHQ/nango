@@ -10,8 +10,7 @@ export const sql = [
         retention_days UInt16,                          -- fixed app-level tier (e.g. 90/180/365), never free-form — bounds partitions
         id             UUID          MATERIALIZED toUUID(JSONExtractString(event, 'id')),
         account_id     Int64         MATERIALIZED JSONExtractInt(event, 'accountId'),
-        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3),
-        CONSTRAINT valid_event CHECK account_id != 0 AND id != toUUID('00000000-0000-0000-0000-000000000000') AND occurred_at > toDateTime64('2020-01-01 00:00:00', 3)
+        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3)
     )
     ENGINE = ReplacingMergeTree
     PARTITION BY (retention_days, toYYYYMM(occurred_at))
