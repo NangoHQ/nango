@@ -22,7 +22,7 @@ Connect to Cerby with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/v1/accounts?page[size]=5" \
+            curl -g "https://api.nango.dev/proxy/v1/accounts?page[size]=5" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
