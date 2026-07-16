@@ -4,6 +4,8 @@
 // then backfill separately so the scan runs without blocking reads/writes.
 exports.config = { transaction: false };
 
+const { backfillWebhookUrlOverride } = require('../migration-helpers/webhookUrlOverride.cjs');
+
 /**
  * Moves the per-connection webhook URL override out of `connection_config` (which holds provider-declared,
  * end-user-supplied inputs) into a dedicated top-level `webhook_url_override` column on the connection.
@@ -23,13 +25,7 @@ exports.up = async function (knex) {
         table.text('webhook_url_override').nullable();
     });
 
-    // Backfill: move any existing connection_config.webhook_url into the new column and strip the key.
-    await knex.raw(`
-        UPDATE _nango_connections
-        SET webhook_url_override = NULLIF(TRIM(connection_config->>'webhook_url'), ''),
-            connection_config = connection_config - 'webhook_url'
-        WHERE jsonb_exists(connection_config, 'webhook_url')
-    `);
+    await backfillWebhookUrlOverride(knex);
 };
 
 exports.down = async function () {};
