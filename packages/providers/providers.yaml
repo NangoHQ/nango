@@ -8836,7 +8836,6 @@ gitlab:
     authorization_params:
         response_type: code
     webhook_routing_script: gitlabWebhookRouting
-    webhook_user_defined_secret: true
     proxy:
         base_url: https://gitlab.com
     webhook_allowed_query_params:
@@ -8850,7 +8849,6 @@ gitlab-pat:
         - ticketing
     auth_mode: API_KEY
     webhook_routing_script: gitlabWebhookRouting
-    webhook_user_defined_secret: true
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
