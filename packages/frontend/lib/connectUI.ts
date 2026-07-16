@@ -97,6 +97,11 @@ export class ConnectUI {
 
     private createIframe() {
         const baseURL = new URL(this.baseURL);
+        // Connect UI's built assets use relative paths, which only resolve when the document path
+        // ends with '/'.
+        if (!baseURL.pathname.endsWith('/')) {
+            baseURL.pathname += '/';
+        }
         if (this.apiURL) {
             baseURL.searchParams.append('apiURL', this.apiURL);
         }
