@@ -6,6 +6,9 @@ import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { Result } from '@nangohq/utils';
 
+// Bumped only on a breaking change to the event shape; additive changes ride on the current version.
+const AUDIT_EVENT_VERSION = 1;
+
 export interface AuditSink {
     record(event: AuditEvent): Promise<Result<void>>;
 }
@@ -25,7 +28,7 @@ export class ClickhouseAuditSink implements AuditSink {
 
     async record(event: AuditEvent): Promise<Result<void>> {
         // id (the ReplacingMergeTree dedup key) and version aren't in the emitted event — stamp them here.
-        const stored = { ...event, id: randomUUID(), version: '1.0' };
+        const stored = { ...event, id: randomUUID(), version: AUDIT_EVENT_VERSION };
         try {
             await this.client.insert({
                 table: 'audit_trail_events',
