@@ -13,7 +13,6 @@ export class Audit {
         this.sink = sink;
     }
 
-    // The app injects the real sink at startup (see server bootstrap).
     setSink(sink: AuditSink): void {
         this.sink = sink;
     }
@@ -28,5 +27,4 @@ export class Audit {
     }
 }
 
-// Drops by default; the app injects a ClickHouse sink at startup when configured.
 export const audit = new Audit(new DropSink());

@@ -113,8 +113,6 @@ if (pubsubConnect.isErr()) {
 
 await initializeFeatureFlags();
 
-// Audit: write directly to ClickHouse when CLICKHOUSE_URL is set, otherwise drop. Wired here (not in
-// @nangohq/audit) so the library stays free of env/isCloud and testable with any client.
 const auditClient = auditClickhouseClient({ clickhouseUrl: envs.CLICKHOUSE_URL });
 if (isCloud && !auditClient) {
     logger.warning('Audit events will be dropped: CLICKHOUSE_URL is not set');
