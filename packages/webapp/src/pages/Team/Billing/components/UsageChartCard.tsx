@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
+import { track } from '@/utils/analytics';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
@@ -69,11 +70,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
 
     // Group and filter are independent slots: clearing the filter leaves the grouping untouched.
     const clearFilter = () => {
+        track('web:usage:filter_cleared', { metric });
         void setFilterParam(null);
     };
     // Filtering by the grouped dimension is allowed (the "drill into a Rest value" case); the
     // collision is resolved for the query while the grouping stays set in the URL.
     const applyFilter = (dim: AnyBreakdownDimension, value: string) => {
+        // Dimension only — filter values can be connection/environment identifiers.
+        track('web:usage:filtered', { metric, dimension: dim });
         void setFilterParam(`${dim}:${value}`);
     };
 
@@ -115,7 +119,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
                 onApplyFilter={applyFilter}
                 onClearFilter={clearFilter}
                 canApplyToAll={canApplyToAll}
-                onApplyToAll={() => onApplyToAll(selection)}
+                onApplyToAll={() => {
+                    track('web:usage:applied_to_all', {
+                        metric,
+                        group_dimension: rawDimension ?? 'none',
+                        filter_dimension: filter?.dimension ?? 'none'
+                    });
+                    onApplyToAll(selection);
+                }}
             />
         ) : undefined;
 
@@ -131,6 +142,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             filtered={inFilterMode}
             globalTotal={globalTotal}
             singleSeries={singleSeries}
+            onSeriesIsolate={() => track('web:usage:series_isolated', { metric })}
+            onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
         />
     );
 };

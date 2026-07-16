@@ -349,21 +349,6 @@ export default class Nango {
             params['region'] = credentials['region'];
         }
 
-        if (
-            // for backwards compatibility with the old JWT credentials (ghost-admin)
-            'privateKey' in credentials ||
-            ('type' in credentials && credentials.type === 'JWT')
-        ) {
-            const { privateKey, ...rest } = credentials;
-            const params: Record<string, any> = { ...rest };
-
-            if (privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
-                params['privateKey'] = privateKey;
-            }
-
-            return { params: credentials } as unknown as ConnectionConfig;
-        }
-
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             const appStoreCredentials: { params: Record<string, string | string[]> } = {
                 params: {
@@ -377,6 +362,21 @@ export default class Nango {
                 appStoreCredentials.params['scope'] = credentials['scope'];
             }
             return appStoreCredentials as unknown as ConnectionConfig;
+        }
+
+        if (
+            // for backwards compatibility with the old JWT credentials (ghost-admin)
+            'privateKey' in credentials ||
+            ('type' in credentials && credentials.type === 'JWT')
+        ) {
+            const { privateKey, ...rest } = credentials;
+            const params: Record<string, any> = { ...rest };
+
+            if (privateKey && typeof privateKey === 'object' && 'id' in privateKey && 'secret' in privateKey) {
+                params['privateKey'] = privateKey;
+            }
+
+            return { params: credentials } as unknown as ConnectionConfig;
         }
 
         if ('client_id' in credentials && ('client_secret' in credentials || 'client_private_key' in credentials)) {
@@ -539,17 +539,17 @@ export default class Nango {
             });
         }
 
-        if ('privateKey' in credentials || ('type' in credentials && credentials['type'] === 'JWT')) {
-            return await this.triggerAuth({
-                authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as JwtCredentials
-            });
-        }
-
         if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as unknown as AppStoreCredentials
+            });
+        }
+
+        if ('privateKey' in credentials || ('type' in credentials && credentials['type'] === 'JWT')) {
+            return await this.triggerAuth({
+                authUrl: this.hostBaseUrl + `/auth/jwt/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
+                credentials: credentials as unknown as JwtCredentials
             });
         }
 

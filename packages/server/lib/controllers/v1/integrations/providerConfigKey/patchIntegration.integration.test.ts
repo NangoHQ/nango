@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { configService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -286,5 +286,30 @@ describe(`PATCH ${endpoint}`, () => {
 
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
+    });
+
+    it('actually persists an updated integration_config secret across successive updates', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'sage-intacct-cc', 'sage-intacct-cc');
+
+        await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'sage-intacct-cc' },
+            body: { integrationConfig: { clientId: 'first-client-id', clientSecret: 'first-secret' } }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'sage-intacct-cc' },
+            body: { integrationConfig: { clientSecret: 'second-secret' } }
+        });
+        isSuccess(res.json);
+
+        const stored = await configService.getProviderConfig('sage-intacct-cc', env.id);
+        expect(stored?.custom).toMatchObject({ clientId: 'first-client-id', clientSecret: 'second-secret' });
     });
 });
