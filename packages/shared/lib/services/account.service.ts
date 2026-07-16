@@ -18,7 +18,7 @@ import secretService from './secret.service.js';
 import userService from './user.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalAuthContext, Result } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, PersistAuthContext, Result } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
@@ -656,12 +656,14 @@ class AccountService {
     }
 
     /**
-     * Hot-path variant of the internal-secret lookup: fetches only the fields
-     * internal-secret consumers read (see InternalAuthContext) — no secret joins,
-     * no row_to_json of full rows, no decryption. The matched api_secrets row is
-     * the default secret, so no self-join is needed either.
+     * Authenticates persist requests by internal secret key. Persist authenticates every
+     * request it receives (thousands per second in production), and only reads a handful
+     * of fields from the resolved context, so this lookup is deliberately minimal: it
+     * selects six scalar columns across api_secrets/environments/accounts/plans and
+     * returns them as a PersistAuthContext. Unlike getAccountContextByApiKey it does not
+     * fetch whole rows, join the secret tables a second time, or decrypt any secret.
      */
-    async getInternalAuthContext(secretKey: string): Promise<InternalAuthContext | null> {
+    async getPersistAuthContext(secretKey: string): Promise<PersistAuthContext | null> {
         if (!isCloud) {
             // Mirror getAccountContextByApiKey: env-var keys resolve before any hashing or DB lookup
             const envMatch = await this.getAccountContextFromEnvVar(secretKey);

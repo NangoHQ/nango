@@ -50,7 +50,7 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(accountService, 'getInternalAuthContext').mockImplementation((key) => {
+        vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
                 return Promise.resolve({
                     account: { id: seed.account.id },
