@@ -1,0 +1,65 @@
+---
+title: 'How to set up webhooks with ConnectWise PSA on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time ConnectWise PSA events in Nango'
+---
+
+This guide explains how Nango receives and routes ConnectWise PSA webhooks.
+
+## How it works
+
+1. ConnectWise sends a signed POST request to your Nango webhook URL when a subscribed event occurs.
+2. Nango verifies the signature using the signing key referenced in the payload's `Metadata.key_url` (only trusted `*.myconnectwise.net` subdomains are accepted).
+3. Nango routes the webhook to the matching connection(s), then either forwards it to your app or runs a sync (`onWebhook`).
+
+## Connection routing
+
+ConnectWise webhook payloads include a `CompanyId` field identifying the tenant the event belongs to. Nango routes each webhook to the connection(s) whose `metadata.companyId` **exactly matches** the payload's `CompanyId`.
+
+This is a 1:1 match:
+
+- A webhook is only dispatched to connections that have `metadata.companyId` set to the payload's `CompanyId`.
+- Connections without a matching `metadata.companyId` do not receive the webhook.
+
+<Warning>
+You must set `metadata.companyId` on each connection for webhook routing to work. If it is unset (or does not match the `CompanyId` in the payload), the connection receives no webhooks. The match is case-sensitive.
+</Warning>
+
+### Set `metadata.companyId` on a connection
+
+Set `metadata.companyId` to the ConnectWise Company ID for that tenant — the same Company ID used in the connection's credentials (the value ConnectWise sends as `CompanyId` in the webhook payload).
+
+Set it via the API:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "connectwise-psa",
+    "metadata": { "companyId": "<CONNECTWISE-COMPANY-ID>" }
+  }'
+```
+
+`PATCH` merges the key into existing metadata; use `POST` if you want to replace all metadata.
+
+You can also set it from a [post-connection-creation event function](/getting-started/use-cases/implement-event-handler) with `nango.updateMetadata({ companyId })` once you have the Company ID for the connection.
+
+<Note>
+`metadata.companyId` must match the `CompanyId` ConnectWise sends in the webhook payload. Confirm the exact value in an incoming webhook (or the ConnectWise login Company ID) and store that same value.
+</Note>
+
+## Handle the webhook
+
+Once routed to a connection, you have two options:
+
+- **Forward it to your app** — Nango verifies the signature and forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+See: [Real-time syncs](/guides/functions/syncs/realtime-syncs)
+</Note>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---
