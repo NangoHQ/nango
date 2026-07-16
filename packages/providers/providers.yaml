@@ -18120,16 +18120,21 @@ sage-intacct-cc:
     docs: https://nango.dev/docs/api-integrations/sage-intacct-cc
     docs_connect: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
-    credentials:
+    integration_config:
         clientId:
             type: string
             title: Client ID
             description: Your Sage Intacct application Client ID.
+            order: 1
+            optional: true
         clientSecret:
             type: string
             title: Client Secret
             description: Your Sage Intacct application Client Secret.
             secret: true
+            order: 2
+            optional: true
+    credentials:
         username:
             type: string
             title: Username
