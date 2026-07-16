@@ -1,19 +1,13 @@
 import { Err } from '@nangohq/utils';
 
-import { DropSink } from './sink.js';
-
 import type { AuditEvent } from './event.js';
 import type { AuditSink } from './sink.js';
 import type { Result } from '@nangohq/utils';
 
 export class Audit {
-    private sink: AuditSink;
+    private readonly sink: AuditSink;
 
     constructor(sink: AuditSink) {
-        this.sink = sink;
-    }
-
-    setSink(sink: AuditSink): void {
         this.sink = sink;
     }
 
@@ -26,5 +20,3 @@ export class Audit {
         }
     }
 }
-
-export const audit = new Audit(new DropSink());
