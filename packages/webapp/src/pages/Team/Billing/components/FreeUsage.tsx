@@ -7,6 +7,7 @@ import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { useSelectedMonth } from '../useSelectedMonth';
+import { MonthStepper } from './MonthStepper';
 import { USAGE_ROW_GRID, UsageLimitRow } from './UsageLimitRow';
 
 import type { UsageMetric } from '@nangohq/types';
@@ -40,8 +41,9 @@ const METRIC_DESCRIPTIONS: Partial<Record<UsageMetric, string>> = {
 
 /**
  * Free-plan usage view: a per-metric caps table (used / limit, % of limit, near / "Limit reached")
- * with each row collapsing open into the existing trend + dimension-breakdown drill-in. The gauge
- * reads live current-period usage; the drill-in follows the month stepper in its own header.
+ * with each row collapsing open into the existing trend + dimension-breakdown drill-in. A single
+ * month stepper in the table header drives the whole table (every row's used/% and the drill-in
+ * charts): the live gauge for the current month, that month's usage for past months.
  */
 export const FreeUsage: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -71,6 +73,10 @@ export const FreeUsage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+                <span className="text-text-strong text-body-medium-medium">Usage</span>
+                <MonthStepper size="sm" />
+            </div>
             <div className="rounded border border-border-default overflow-hidden">
                 <div
                     className={cn(

@@ -4,7 +4,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatLimit, formatUsage, getUsageState } from '@/utils/usage';
 import { cn } from '@/utils/utils';
-import { MonthPagination } from './MonthPagination';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
 
@@ -107,7 +106,6 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
                     onApplyToAll={onApplyToAll}
                     hideHeader
                     disableApplyToAll
-                    extraHeaderActions={<MonthPagination />}
                 />
             </CollapsibleContent>
         </Collapsible>
