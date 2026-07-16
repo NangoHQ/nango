@@ -5,6 +5,7 @@ import { useEffect, useMemo } from 'react';
 import { IconButton } from '@nangohq/design-system';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { track } from '@/utils/analytics';
 import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 
@@ -59,12 +60,14 @@ export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) =
     }, [selectedMonth]);
 
     const handlePreviousMonth = () => {
+        track('web:usage:month_changed', { direction: 'previous' });
         const newDate = new Date(selectedMonth);
         newDate.setUTCMonth(selectedMonth.getUTCMonth() - 1);
         setSelectedMonth(newDate);
     };
 
     const handleNextMonth = () => {
+        track('web:usage:month_changed', { direction: 'next' });
         const newDate = new Date(selectedMonth);
         newDate.setUTCMonth(selectedMonth.getUTCMonth() + 1);
         setSelectedMonth(newDate);
