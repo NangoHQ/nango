@@ -1736,6 +1736,7 @@
               "api-integrations/vanta",
               "api-integrations/veed",
               "api-integrations/veeva-vault",
+              "api-integrations/veeva-vault-oauth",
               "api-integrations/vercel",
               "api-integrations/vercel-mcp",
               "api-integrations/videoask",
