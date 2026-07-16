@@ -253,6 +253,136 @@ https://nango.dev/docs/mcp
 
 It is public and does not require authentication.
 
+## Management MCP server (Beta)
+
+Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
+
+Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below.
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add the server for your user so it is available across projects:
+
+    ```bash
+    claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp \
+      --header "Authorization: Bearer <NANGO_API_KEY>"
+    ```
+
+    Run `claude mcp list` to verify the connection.
+  </Tab>
+
+  <Tab title="Cursor">
+    Add the following to `~/.cursor/mcp.json` for a global configuration, or `.cursor/mcp.json` for a project configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer <NANGO_API_KEY>"
+          }
+        }
+      }
+    }
+    ```
+
+    Restart Cursor after saving the file.
+  </Tab>
+
+  <Tab title="Codex">
+    Add the following to `~/.codex/config.toml` for a global configuration, or `.codex/config.toml` for a project configuration:
+
+    ```toml
+    [mcp_servers.nango-management]
+    url = "https://mcp.nango.dev/mcp"
+    http_headers = { Authorization = "Bearer <NANGO_API_KEY>" }
+    ```
+
+    Restart Codex after saving the file, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="VS Code">
+    Run **MCP: Open User Configuration** from the Command Palette, then add the server and a secure input for the API key:
+
+    ```json
+    {
+      "inputs": [
+        {
+          "type": "promptString",
+          "id": "nango-api-key",
+          "description": "Nango API key",
+          "password": true
+        }
+      ],
+      "servers": {
+        "nangoManagement": {
+          "type": "http",
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer ${input:nango-api-key}"
+          }
+        }
+      }
+    }
+    ```
+
+    VS Code prompts for the API key when it first starts the server and stores the value securely.
+  </Tab>
+
+  <Tab title="Pi">
+    Pi does not include an MCP client, so first install the [`pi-mcp-adapter`](https://pi.dev/packages/pi-mcp-adapter) extension:
+
+    ```bash
+    pi install npm:pi-mcp-adapter
+    ```
+
+    Then add the following to `~/.config/mcp/mcp.json` for a global configuration, or `.mcp.json` for a project configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "nango-management": {
+          "url": "https://mcp.nango.dev/mcp",
+          "headers": {
+            "Authorization": "Bearer <NANGO_API_KEY>"
+          }
+        }
+      }
+    }
+    ```
+
+    Restart Pi after installing the extension, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="OpenCode">
+    Add the following to `~/.config/opencode/opencode.json` for a global configuration, or `opencode.json` in a project root for a project configuration:
+
+    ```json
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "mcp": {
+        "nango-management": {
+          "type": "remote",
+          "url": "https://mcp.nango.dev/mcp",
+          "oauth": false,
+          "headers": {
+            "Authorization": "Bearer <NANGO_API_KEY>"
+          },
+          "enabled": true
+        }
+      }
+    }
+    ```
+
+    Run `opencode mcp list` to verify the connection.
+  </Tab>
+</Tabs>
+
+<Warning>
+    Do not commit API keys to source control. Prefer user-level configuration when storing an API key inline.
+</Warning>
+
 ## Skills
 
 Nango's public skills live in [NangoHQ/skills](https://github.com/NangoHQ/skills).
@@ -5936,6 +6066,10 @@ Nango provides detailed filtering and searching of log messages by integration, 
 
 We recommend exploring the logs in your own Nango account under **Logs**.
 
+## Logs MCP tools (Beta)
+
+The [Management MCP server](/reference/backend/management-mcp/overview#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
+
 ## OpenTelemetry export
 
 Nango supports exporting OpenTelemetry traces so you can monitor and analyze integration activity in your own observability stack.
@@ -8980,6 +9114,16 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:records:read` | Read synced records |
 | `environment:records:write` | Prune records |
+
+### Logs
+
+| Scope | Description |
+|-------|-------------|
+| `environment:logs:read` | Read log operations and messages |
+
+<Note>
+    The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp/overview#logs).
+</Note>
 
 ### Actions
 
@@ -12500,6 +12644,52 @@ Source: https://nango.dev/docs/reference/backend/backend-sdk/rust.md
 Source: https://nango.dev/docs/reference/backend/backend-sdk/php.md
 
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
+
+## Management MCP overview (Beta)
+
+Source: https://nango.dev/docs/reference/backend/management-mcp/overview.md
+Description: Manage a Nango environment from an MCP client.
+
+<Note>
+    The Management MCP server is in Beta. We will continue to add functionality, with the goal of supporting the full public API. This means we may introduce breaking changes along the way. We would love to hear your feedback and requests!
+</Note>
+
+The Management MCP server lets MCP-compatible clients manage Nango through tools. It is an agent-friendly alternative to the [public API](/reference/backend/http-api/authentication).
+
+## Connect
+
+The server uses the Streamable HTTP transport at:
+
+```text
+https://mcp.nango.dev/mcp
+```
+
+Configure your MCP client to send a Nango API key as a Bearer token:
+
+| Header          | Value                    |
+| --------------- | ------------------------ |
+| `Authorization` | `Bearer <NANGO-API-KEY>` |
+
+Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
+
+<Note>
+    The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
+</Note>
+
+Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
+
+## Tools
+
+### Logs
+
+Use the Logs tools to find activity in the authenticated Nango environment and inspect the messages for a specific operation.
+
+| Tool                   | Description                                | Required API key scope  |
+| ---------------------- | ------------------------------------------ | ----------------------- |
+| `logs_list_operations` | List and filter log operations.            | `environment:logs:read` |
+| `logs_get_operation`   | Get an operation and its log messages.     | `environment:logs:read` |
+
+See [Observability](/guides/platform/observability) for more information about Nango logs.
 
 ## Functions CLI
 
