@@ -14,7 +14,7 @@ import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 
@@ -37,7 +37,6 @@ export type ConnectionFormData = z.infer<typeof schema>;
 export const ConnectionCreate: React.FC = () => {
     const env = useStore((state) => state.env);
     const paramIntegrationId = useSearchParam('integration_id');
-    const analyticsTrack = useAnalyticsTrack();
 
     const { user } = useUser(true);
     const { data: listIntegrationData, isLoading } = useListIntegrations(env);
@@ -90,8 +89,8 @@ export const ConnectionCreate: React.FC = () => {
     }, [provider, form]);
 
     useEffect(() => {
-        analyticsTrack('web:create_connection:viewed');
-    }, [analyticsTrack]);
+        track('web:create_connection:viewed', {});
+    }, []);
 
     useEffect(() => {
         if (paramIntegrationId && listIntegration) {
