@@ -155,7 +155,7 @@ export const postPublicTwoStepAuthorization = asyncWrapper<PostPublicTwoStepAuth
             void logCtx.error('Error during TwoStep credentials creation', { error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'two_step_error');
+            errorManager.errResFromNangoErr(res, error);
 
             return;
         }
