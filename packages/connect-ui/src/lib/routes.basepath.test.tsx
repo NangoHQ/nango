@@ -1,11 +1,11 @@
 import { createMemoryHistory, createRouter } from '@tanstack/react-router';
 import { describe, expect, it } from 'vitest';
 
-import { basepathFromBaseUrl, routeTree } from './routes';
+import { basepathFromDocumentBaseURI, routeTree } from './routes';
 
 // Connect UI can be served under a non-root base path (NAN-6242). The router's basepath is derived
-// from import.meta.env.BASE_URL at runtime; these tests pin the two behaviors that base path relies
-// on: matching an incoming deep URL, and generating in-app links with the prefix.
+// from document.baseURI at runtime; these tests pin the two behaviors that base path relies on:
+// matching an incoming deep URL, and generating in-app links with the prefix.
 const basepath = '/nango/connect';
 
 function routerAt(initialPath: string) {
@@ -41,12 +41,27 @@ describe('router basepath', () => {
     });
 });
 
-describe('basepathFromBaseUrl', () => {
-    it('returns undefined for the root base', () => {
-        expect(basepathFromBaseUrl('/')).toBeUndefined();
+describe('basepathFromDocumentBaseURI', () => {
+    it('returns undefined for a root deploy', () => {
+        expect(basepathFromDocumentBaseURI('https://example.com/')).toBeUndefined();
     });
 
-    it('strips the trailing slash for a sub-path base', () => {
-        expect(basepathFromBaseUrl('/nango/connect/')).toBe('/nango/connect');
+    it('returns undefined for a deep-route refresh on a root deploy', () => {
+        expect(basepathFromDocumentBaseURI('https://example.com/integrations')).toBeUndefined();
+    });
+
+    it('derives the base path from an entry URL with query params', () => {
+        expect(basepathFromDocumentBaseURI('https://example.com/nango/connect/?session_token=abc')).toBe('/nango/connect');
+    });
+
+    it('derives the base path from a deep-route refresh under the base', () => {
+        expect(basepathFromDocumentBaseURI('https://example.com/nango/connect/integrations')).toBe('/nango/connect');
+    });
+
+    it('mis-derives the base path when the base root URL lacks a trailing slash', () => {
+        // A slashless base root is indistinguishable from a deep route, so the last segment is
+        // dropped. This is why every URL producer normalizes the trailing slash (and index.html
+        // self-heals it before assets load).
+        expect(basepathFromDocumentBaseURI('https://example.com/nango/connect')).toBe('/nango');
     });
 });

@@ -2,6 +2,20 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <script>
+            // Built assets use relative paths ("./assets/…"), which only resolve when the document
+            // path ends with "/" at the base root. Self-heal a missing trailing slash (e.g. an SDK
+            // baseURL of "https://host/nango/connect") before any asset request fires. 'integrations'
+            // and 'go' are real routes (src/lib/routes.ts): a document served there is a deep-route
+            // refresh, not a slashless base — keep this list in sync with the route tree.
+            (function () {
+                var path = location.pathname;
+                var last = path.split('/').pop();
+                if (!path.endsWith('/') && last.indexOf('.') === -1 && last !== 'integrations' && last !== 'go') {
+                    location.replace(path + '/' + location.search + location.hash);
+                }
+            })();
+        </script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Nango Connect</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />

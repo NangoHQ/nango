@@ -12,9 +12,6 @@ echo "$dir/packages/server/dist/server.js"
 if [ "$FLAG_SERVE_CONNECT_UI" == "true" ]; then
   node "$dir/packages/server/dist/server.js" &
 
-  # serve:unsafe first rewrites Connect UI's placeholder base path to the one this deployment serves
-  # it under (the path of NANGO_PUBLIC_CONNECT_URL; defaults to "/"), so it can be hosted under a
-  # non-root path.
   # This is not recommended, you should serve Connect UI from a dedicated static website hosting
   npm run -w @nangohq/connect-ui serve:unsafe &
 

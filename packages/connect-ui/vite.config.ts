@@ -5,17 +5,16 @@ import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 
-import { BASE_PATH_PLACEHOLDER } from './scripts/base-path.js';
-
 import type { UserConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
-    // Build under a placeholder base so the same bundle can be served from any base path without
-    // rebuilding. scripts/set-base-path.js MUST rewrite the placeholder to the real base before the
-    // bundle is served (from the container entrypoint or the connect_ui deploy workflow) — until it
-    // runs, the built assets are unusable. The dev server stays at root.
-    base: command === 'build' ? BASE_PATH_PLACEHOLDER : '/',
+    // Build with a relative base so the prebuilt bundle is servable under any path with no rewrite
+    // step. Correctness requires the document URL to end in '/' at the base root (guarded by the
+    // inline script in index.html) and all routes staying depth-1 without trailing slashes — from a
+    // deep-route document ('{base}/integrations'), relative assets resolve one level up, back to the
+    // base. The dev server stays at root.
+    base: command === 'build' ? './' : '/',
     plugins: [react(), svgr(), tailwindcss()] as UserConfig['plugins'],
     resolve: {
         alias: {
