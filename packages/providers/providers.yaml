@@ -18207,6 +18207,46 @@ sage-intacct:
             description: Your Sage Intacct User Password
             secret: true
 
+sage-member:
+    display_name: SAGE Member
+    categories:
+        - marketing
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.promoplace.com/ws/ws.dll
+        body:
+            auth:
+                acctId: ${connectionConfig.acctId}
+                loginId: ${connectionConfig.loginId}
+                key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/sage-member
+    docs_connect: https://nango.dev/docs/api-integrations/sage-member/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Key
+            example: 56edbbe3********************141a
+            pattern: '^[a-f0-9]{32}$'
+            description: The authentication key for your SAGE Member user.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+    connection_config:
+        acctId:
+            type: string
+            title: Account Number
+            description: Your SAGE Member account number.
+            pattern: '^[0-9]+$'
+            example: '4353478'
+            order: 1
+            doc_section: '#step-1-finding-your-credentials'
+        loginId:
+            type: string
+            title: Login ID
+            description: The login ID for your SAGE Member user.
+            order: 2
+            doc_section: '#step-1-finding-your-credentials'
+
 sage-people:
     display_name: Sage People
     categories:
