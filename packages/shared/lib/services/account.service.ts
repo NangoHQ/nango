@@ -662,8 +662,18 @@ class AccountService {
      * selects six scalar columns across api_secrets/environments/accounts/plans and
      * returns them as a PersistAuthContext. Unlike getAccountContextByApiKey it does not
      * fetch whole rows, join the secret tables a second time, or decrypt any secret.
+     *
+     * Ok(null) means the key is unknown; Err carries unexpected failures.
      */
-    async getPersistAuthContext(secretKey: string): Promise<PersistAuthContext | null> {
+    async getPersistAuthContext(secretKey: string): Promise<Result<PersistAuthContext | null>> {
+        try {
+            return Ok(await this.resolvePersistAuthContext(secretKey));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_persist_auth_context', { cause: err }));
+        }
+    }
+
+    private async resolvePersistAuthContext(secretKey: string): Promise<PersistAuthContext | null> {
         if (!isCloud) {
             // Mirror getAccountContextByApiKey: env-var keys resolve before any hashing or DB lookup
             const envMatch = await this.getAccountContextFromEnvVar(secretKey);

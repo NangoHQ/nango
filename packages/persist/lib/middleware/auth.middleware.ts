@@ -29,9 +29,14 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     }
 
     try {
-        const accountContext = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async () => {
+        const result = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async () => {
             return await accountService.getPersistAuthContext(secret);
         });
+        if (result.isErr()) {
+            res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(result.error)}` } });
+            return;
+        }
+        const accountContext = result.value;
         if (!accountContext) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Account not found` } });
             return;

@@ -18,6 +18,7 @@ import {
     SyncJobsType,
     SyncStatus
 } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { server } from './server.js';
 
@@ -52,13 +53,15 @@ describe('Persist API', () => {
 
         vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
-                return Promise.resolve({
-                    account: { id: seed.account.id },
-                    environment: { id: seed.env.id, name: seed.env.name },
-                    plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
-                });
+                return Promise.resolve(
+                    Ok({
+                        account: { id: seed.account.id },
+                        environment: { id: seed.env.id, name: seed.env.name },
+                        plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
+                    })
+                );
             }
-            return Promise.resolve(null);
+            return Promise.resolve(Ok(null));
         });
     });
 

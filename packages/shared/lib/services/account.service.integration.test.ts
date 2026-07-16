@@ -339,7 +339,7 @@ describe('Account service', () => {
         it('should return exactly the narrow context fields', async () => {
             const { account, env, plan, secret } = await seedAccountEnvAndUser();
 
-            const result = await accountService.getPersistAuthContext(secret.secret);
+            const result = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
 
             expect(result).toStrictEqual({
                 account: { id: account.id },
@@ -349,7 +349,7 @@ describe('Account service', () => {
         });
 
         it('should return null for an unknown key', async () => {
-            const result = await accountService.getPersistAuthContext(`nango_secret_key_${uuid()}`);
+            const result = (await accountService.getPersistAuthContext(`nango_secret_key_${uuid()}`)).unwrap();
             expect(result).toBeNull();
         });
 
@@ -363,7 +363,7 @@ describe('Account service', () => {
             const envVarKey = `nango_secret_key_${uuid()}`;
             process.env[envVarName] = envVarKey;
             try {
-                const result = await accountService.getPersistAuthContext(envVarKey);
+                const result = (await accountService.getPersistAuthContext(envVarKey)).unwrap();
                 expect(result?.environment.id).toBe(environment!.id);
                 expect(result?.account.id).toBe(account.id);
             } finally {
