@@ -50,14 +50,12 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(accountService, 'getAccountContextByApiKey').mockImplementation((opts) => {
-            const key = 'internalSecretKey' in opts ? opts.internalSecretKey : 'secretKey' in opts ? opts.secretKey : '';
+        vi.spyOn(accountService, 'getInternalAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
                 return Promise.resolve({
-                    account: seed.account,
-                    environment: seed.env,
-                    secret: seed.secret,
-                    plan: seed.plan
+                    account: { id: seed.account.id },
+                    environment: { id: seed.env.id, name: seed.env.name },
+                    plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
                 });
             }
             return Promise.resolve(null);

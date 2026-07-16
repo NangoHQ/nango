@@ -353,7 +353,7 @@ describe('Account service', () => {
             expect(result).toBeNull();
         });
 
-        it('should resolve env-var keys through the full-lookup fallback', async () => {
+        it('should resolve env-var keys before the DB lookup', async () => {
             const account = await createTestAccount();
             const envName = uuid();
             const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
