@@ -14901,6 +14901,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `gusto` | Gusto | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gusto.md) |  |  | hr |
 | `gusto-demo` | Gusto (Demo) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gusto-demo.md) |  |  | hr |
 | `hackerrank-work` | HackerRank Work | BASIC | [docs](https://nango.dev/docs/integrations/all/hackerrank-work.md) | [connect](https://nango.dev/docs/integrations/all/hackerrank-work/connect.md) |  | ats |
+| `hail` | Hail | API_KEY | [docs](https://nango.dev/docs/api-integrations/hail.md) | [connect](https://nango.dev/docs/api-integrations/hail/connect.md) |  | communication, dev-tools, marketing |
+| `hail-mcp` | Hail (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hail-mcp.md) |  |  | communication, dev-tools, marketing, mcp |
 | `haileyhr` | Hailey HR | API_KEY | [docs](https://nango.dev/docs/api-integrations/haileyhr.md) | [connect](https://nango.dev/docs/api-integrations/haileyhr/connect.md) |  | hr |
 | `halo-psa` | Halo PSA | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/halo-psa.md) | [connect](https://nango.dev/docs/api-integrations/halo-psa/connect.md) |  | support, ticketing |
 | `harvest` | Harvest | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/harvest.md) |  |  | productivity |
