@@ -4,6 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
+import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
@@ -331,6 +332,44 @@ describe('Account service', () => {
         expect(result?.auth).toStrictEqual({
             source: 'api_secret',
             scopes: ['environment:*']
+        });
+    });
+
+    describe('getInternalAuthContext', () => {
+        it('should return exactly the narrow context fields', async () => {
+            const { account, env, plan, secret } = await seedAccountEnvAndUser();
+
+            const result = await accountService.getInternalAuthContext(secret.secret);
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for an unknown key', async () => {
+            const result = await accountService.getInternalAuthContext(`nango_secret_key_${uuid()}`);
+            expect(result).toBeNull();
+        });
+
+        it('should resolve env-var keys through the full-lookup fallback', async () => {
+            const account = await createTestAccount();
+            const envName = uuid();
+            const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
+            await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+            const envVarName = `NANGO_SECRET_KEY_${envName.toUpperCase()}`;
+            const envVarKey = `nango_secret_key_${uuid()}`;
+            process.env[envVarName] = envVarKey;
+            try {
+                const result = await accountService.getInternalAuthContext(envVarKey);
+                expect(result?.environment.id).toBe(environment!.id);
+                expect(result?.account.id).toBe(account.id);
+            } finally {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete process.env[envVarName];
+            }
         });
     });
 

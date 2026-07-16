@@ -3,14 +3,10 @@ import tracer from 'dd-trace';
 import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
-import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { InternalAuthContext } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-export interface AuthLocals {
-    account: DBTeam;
-    environment: DBEnvironment;
-    plan: DBPlan | null;
-}
+export type AuthLocals = InternalAuthContext;
 
 export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
     const authorizationHeader = req.get('authorization');
@@ -33,8 +29,8 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     }
 
     try {
-        const accountContext = await tracer.trace('persist.middleware.auth.getAccountContextByApiKey', async () => {
-            return await accountService.getAccountContextByApiKey({ internalSecretKey: secret });
+        const accountContext = await tracer.trace('persist.middleware.auth.getInternalAuthContext', async () => {
+            return await accountService.getInternalAuthContext(secret);
         });
         if (!accountContext) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Account not found` } });

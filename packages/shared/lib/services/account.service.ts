@@ -18,7 +18,7 @@ import secretService from './secret.service.js';
 import userService from './user.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, Result } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalAuthContext, Result } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
@@ -637,6 +637,72 @@ class AccountService {
                 scopes: row.auth_scopes ?? [],
                 apiKeyId: row.auth_api_key_id
             }
+        };
+    }
+
+    /**
+     * Hot-path variant of the internal-secret lookup: fetches only the fields
+     * internal-secret consumers read (see InternalAuthContext) — no secret joins,
+     * no row_to_json of full rows, no decryption. The matched api_secrets row is
+     * the default secret, so no self-join is needed either.
+     */
+    async getInternalAuthContext(secretKey: string): Promise<InternalAuthContext | null> {
+        const hash = await this.hashSecretWithCache(secretKey);
+
+        const row = await db.readOnly
+            .select<{
+                environment_id: number;
+                environment_name: string;
+                account_id: number;
+                plan_id: number | null;
+                plan_name: DBPlan['name'] | null;
+                records_store: DBPlan['records_store'] | null;
+            }>(
+                '_nango_environments.id as environment_id',
+                '_nango_environments.name as environment_name',
+                '_nango_accounts.id as account_id',
+                'plans.id as plan_id',
+                'plans.name as plan_name',
+                'plans.records_store as records_store'
+            )
+            .from<DBAPISecret>('api_secrets')
+            .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('api_secrets.hashed', hash)
+            .where('api_secrets.is_default', true)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (row) {
+            // Store only successful lookups to avoid polluting the cache
+            hashLocalCache.set(secretKey, hash);
+            return {
+                account: { id: row.account_id },
+                environment: { id: row.environment_id, name: row.environment_name },
+                plan:
+                    row.plan_id !== null && row.plan_name !== null && row.records_store !== null
+                        ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
+                        : null
+            };
+        }
+
+        if (isCloud) {
+            // On cloud the full lookup filters on the same predicate, so it can never
+            // match when the query above missed — fail fast on unknown keys.
+            return null;
+        }
+
+        // Self-hosted keys can come from NANGO_SECRET_KEY_* env vars and may not exist in
+        // api_secrets, so fall back to the full lookup and narrow the result.
+        const full = await this.getAccountContextByApiKey({ internalSecretKey: secretKey });
+        if (!full) {
+            return null;
+        }
+        return {
+            account: { id: full.account.id },
+            environment: { id: full.environment.id, name: full.environment.name },
+            plan: full.plan ? { id: full.plan.id, name: full.plan.name, records_store: full.plan.records_store } : null
         };
     }
 
