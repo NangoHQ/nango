@@ -48,7 +48,7 @@ describe('ClickhouseAuditSink.record', () => {
         expect(arg.values[0]!.retention_days).toBe(90);
 
         const stored = JSON.parse(arg.values[0]!.event) as Record<string, unknown>;
-        expect(stored['version']).toBe(1);
+        expect(stored['version']).toBe('2026-07-16');
         expect(stored['id']).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         expect(stored['accountId']).toBe(42);
         expect(stored['resource']).toBe('connection');

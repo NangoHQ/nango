@@ -6,8 +6,8 @@ import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { Result } from '@nangohq/utils';
 
-// Bumped only on a breaking change to the event shape; additive changes ride on the current version.
-const AUDIT_EVENT_VERSION = 1;
+// Schema version (date it shipped, not a timestamp); bump to a new date only on a breaking change.
+const AUDIT_EVENT_VERSION = '2026-07-16';
 
 export interface AuditSink {
     record(event: AuditEvent): Promise<Result<void>>;

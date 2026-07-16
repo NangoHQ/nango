@@ -8,7 +8,7 @@ import * as cron from 'node-cron';
 import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
-import { audit, auditClickhouseClient, auditSink } from '@nangohq/audit';
+import { audit, auditClickhouseClient, auditSink, DropSink } from '@nangohq/audit';
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
@@ -113,11 +113,17 @@ if (pubsubConnect.isErr()) {
 
 await initializeFeatureFlags();
 
-const auditClient = auditClickhouseClient({ clickhouseUrl: envs.CLICKHOUSE_URL });
-if (isCloud && !auditClient) {
-    logger.warning('Audit events will be dropped: CLICKHOUSE_URL is not set');
+function getAuditSink() {
+    if (!isCloud) {
+        return new DropSink();
+    }
+    if (!envs.CLICKHOUSE_URL) {
+        return new DropSink();
+    }
+    return auditSink(auditClickhouseClient({ clickhouseUrl: envs.CLICKHOUSE_URL }));
 }
-audit.setSink(auditSink(auditClient));
+
+audit.setSink(getAuditSink());
 
 const port = getServerPort();
 server.listen(port, () => {
