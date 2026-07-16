@@ -16548,6 +16548,31 @@ posthog-oauth:
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
 
+postscript:
+    display_name: Postscript
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.postscript.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/me
+    docs: https://nango.dev/docs/api-integrations/postscript
+    docs_connect: https://nango.dev/docs/api-integrations/postscript/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Private API Key
+            description: The private API key for your Postscript account.
+            pattern: '^sk_.+$'
+            example: 'sk_12********abc'
+            doc_section: '#step-1-finding-your-private-api-key'
+
 prive:
     display_name: Prive
     categories:

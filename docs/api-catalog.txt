@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 904
+Provider count: 905
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -613,6 +613,7 @@ URL patterns:
 | `podscribe` | Podscribe | API_KEY | [docs](https://nango.dev/docs/api-integrations/podscribe.md) | [connect](https://nango.dev/docs/api-integrations/podscribe/connect.md) |  | marketing, analytics |
 | `posthog` | PostHog | API_KEY | [docs](https://nango.dev/docs/api-integrations/posthog.md) | [connect](https://nango.dev/docs/api-integrations/posthog/connect.md) |  | dev-tools |
 | `posthog-oauth` | PostHog (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/posthog-oauth.md) | [connect](https://nango.dev/docs/api-integrations/posthog-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/posthog-oauth/how-to-register-your-own-posthog-oauth-api-oauth-app.md) | dev-tools |
+| `postscript` | Postscript | API_KEY | [docs](https://nango.dev/docs/api-integrations/postscript.md) | [connect](https://nango.dev/docs/api-integrations/postscript/connect.md) |  | marketing, communication |
 | `practicefusion` | PracticeFusion | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/practicefusion.md) | [connect](https://nango.dev/docs/api-integrations/practicefusion/connect.md) | [setup](https://nango.dev/docs/api-integrations/practicefusion/how-to-register-your-own-practicefusion-api-oauth-app.md) | other |
 | `precisefp` | PreciseFP | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/precisefp.md) |  |  | crm, productivity |
 | `printful` | Printful | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/printful.md) |  | [setup](https://nango.dev/docs/api-integrations/printful/how-to-register-your-own-printful-oauth-app.md) | e-commerce |
