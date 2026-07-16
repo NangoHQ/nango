@@ -8,6 +8,7 @@ import * as cron from 'node-cron';
 import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
+import { audit, auditClickhouseClient, auditSink } from '@nangohq/audit';
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
@@ -16,7 +17,7 @@ import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { flags, getLogger, initSentry, NANGO_VERSION, once, report } from '@nangohq/utils';
+import { flags, getLogger, initSentry, isCloud, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
@@ -111,6 +112,14 @@ if (pubsubConnect.isErr()) {
 }
 
 await initializeFeatureFlags();
+
+// Audit: write directly to ClickHouse when CLICKHOUSE_URL is set, otherwise drop. Wired here (not in
+// @nangohq/audit) so the library stays free of env/isCloud and testable with any client.
+const auditClient = auditClickhouseClient({ clickhouseUrl: envs.CLICKHOUSE_URL });
+if (isCloud && !auditClient) {
+    logger.warning('Audit events will be dropped: CLICKHOUSE_URL is not set');
+}
+audit.setSink(auditSink(auditClient));
 
 const port = getServerPort();
 server.listen(port, () => {

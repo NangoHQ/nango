@@ -40,3 +40,15 @@ export class ClickhouseAuditSink implements AuditSink {
         }
     }
 }
+
+// Placeholder retention until per-plan retention is wired (fixed tier bounds partitions).
+const AUDIT_RETENTION_DAYS = 90;
+
+// A ClickHouse sink when a client is provided, otherwise a DropSink. The caller builds the client
+// (see auditClickhouseClient) so the package never reads env vars itself.
+export function auditSink(client: ClickHouseClient | null): AuditSink {
+    if (!client) {
+        return new DropSink();
+    }
+    return new ClickhouseAuditSink(client, AUDIT_RETENTION_DAYS);
+}
