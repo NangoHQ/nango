@@ -5846,6 +5846,53 @@ datadog:
             example: '4f3c12efb9659a0b5c123b568745dbf9'
             doc_section: '#step-2-datadog-api-key'
 
+datadog-oauth:
+    display_name: Datadog (OAuth)
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authorizeHost}/oauth2/v1/authorize
+    token_url: https://api.${connectionConfig.siteParameter}/oauth2/v1/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.siteParameter}/api
+    docs: https://nango.dev/docs/api-integrations/datadog-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/datadog-oauth/how-to-register-your-own-datadog-oauth-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/datadog-oauth/connect
+    connection_config:
+        siteParameter:
+            type: string
+            title: Site Parameter
+            description: The Datadog site for your account.
+            enum:
+                - datadoghq.com
+                - us3.datadoghq.com
+                - us5.datadoghq.com
+                - datadoghq.eu
+                - ddog-gov.com
+                - ap1.datadoghq.com
+            order: 1
+            doc_section: '#step-1-finding-your-datadog-site'
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The web application host for your Datadog site.
+            enum:
+                - app.datadoghq.com
+                - us3.datadoghq.com
+                - us5.datadoghq.com
+                - app.datadoghq.eu
+                - app.ddog-gov.com
+                - ap1.datadoghq.com
+            order: 2
+            doc_section: '#step-1-finding-your-datadog-site'
+
 dayforce:
     display_name: Dayforce
     categories:

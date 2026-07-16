@@ -1132,6 +1132,7 @@
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
               "api-integrations/datadog",
+              "api-integrations/datadog-oauth",
               "integrations/all/datev",
               "api-integrations/dayforce",
               "integrations/all/datto-rmm",

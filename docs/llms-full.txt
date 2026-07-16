@@ -14758,6 +14758,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `databricks-workspace` | Databricks (Workspace Level) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/databricks-workspace.md) |  |  | analytics |
 | `datacandy` | DataCandy | BASIC | [docs](https://nango.dev/docs/integrations/all/datacandy.md) |  |  | payment |
 | `datadog` | Datadog | API_KEY | [docs](https://nango.dev/docs/api-integrations/datadog.md) | [connect](https://nango.dev/docs/api-integrations/datadog/connect.md) |  | analytics, dev-tools |
+| `datadog-oauth` | Datadog (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/datadog-oauth.md) | [connect](https://nango.dev/docs/api-integrations/datadog-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/datadog-oauth/how-to-register-your-own-datadog-oauth-api-oauth-app.md) | analytics, dev-tools |
 | `datev` | Datev | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/datev.md) |  |  | legal |
 | `datto-rmm` | Datto RMM | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/datto-rmm.md) | [connect](https://nango.dev/docs/integrations/all/datto-rmm/connect.md) |  | support |
 | `datto-rmm-password-grant` | Datto RMM (Password Grant) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/datto-rmm-password-grant.md) | [connect](https://nango.dev/docs/integrations/all/datto-rmm-password-grant/connect.md) |  | support |
