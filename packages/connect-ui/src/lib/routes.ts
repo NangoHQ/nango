@@ -1,4 +1,4 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { createHashHistory, createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
 import { ErrorFallbackGlobal } from '@/components/ErrorFallback';
 import { Layout } from '@/components/Layout';
@@ -31,11 +31,7 @@ export const goRouter = createRoute({
 
 export const routeTree = rootRoute.addChildren([indexRoute, integrationsRoute, goRouter]);
 
-// `import.meta.env.BASE_URL` is the base path Connect UI is served under. It's baked in at build
-// time and rewritten at container start (scripts/set-base-path.js), so routing works under a
-// non-root path. TanStack Router wants the basepath without a trailing slash; root stays default.
-export function basepathFromBaseUrl(baseUrl: string): string | undefined {
-    return baseUrl === '/' ? undefined : baseUrl.replace(/\/$/, '');
-}
-
-export const router = createRouter({ routeTree, basepath: basepathFromBaseUrl(import.meta.env.BASE_URL) });
+// Hash history: the bundle is built with a relative base (vite base './'), so assets resolve
+// relative to the document URL. Routes must therefore live in the URL fragment — the document
+// itself never leaves the base root, which keeps Connect UI servable under any hosting path.
+export const router = createRouter({ routeTree, history: createHashHistory() });

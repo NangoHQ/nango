@@ -7,8 +7,7 @@
         "dev": "vite --port ${NANGO_CONNECT_UI_PORT:-3009}",
         "build": "tsc -b --noCheck && vite build",
         "preview": "vite preview",
-        "set-base-path": "node scripts/set-base-path.js",
-        "serve:unsafe": "node scripts/set-base-path.js && serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}",
+        "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}",
         "test": "vitest run"
     },
     "dependencies": {

@@ -2,6 +2,18 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <script>
+            // Built assets use relative paths ("./assets/…"), which only resolve when the document
+            // path ends with "/". With hash routing the path is always the base path, so a missing
+            // trailing slash (e.g. an SDK baseURL of "https://host/nango/connect") is safe to fix
+            // by redirecting before any asset request fires.
+            (function () {
+                var path = location.pathname;
+                if (!path.endsWith('/') && path.split('/').pop().indexOf('.') === -1) {
+                    location.replace(path + '/' + location.search + location.hash);
+                }
+            })();
+        </script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Nango Connect</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -135,11 +135,6 @@ jobs:
               run: npm ci
             - name: Build Connect UI
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
-            - name: Resolve base path in the built bundle
-              # Connect UI is built with a placeholder base; this rewrites it to the real base path
-              # before upload. No base env is set here, so it resolves to "/" (served at the origin
-              # root, e.g. connect.nango.dev).
-              run: npm run -w @nangohq/connect-ui set-base-path
             - name: configure aws credentials
               if: inputs.stage != 'replit'
               uses: aws-actions/configure-aws-credentials@v4
