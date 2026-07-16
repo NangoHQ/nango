@@ -21,6 +21,7 @@
     "dependencies": {
         "@aws-sdk/client-sqs": "3.993.0",
         "@modelcontextprotocol/sdk": "1.29.0",
+        "@nangohq/audit": "file:../audit",
         "@nangohq/authz": "file:../authz",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",

@@ -11,6 +11,7 @@ import { printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
 import { parse } from './config.service.js';
 
+import type { FunctionConfig } from '../zeroYaml/definitions.js';
 import type { NangoModel, NangoModelField, NangoYamlParsed } from '@nangohq/types';
 
 export type ModelsMap = Map<string, Record<string, any>>;
@@ -194,5 +195,33 @@ export function generateNangoJson({ fullPath, parsed, debug }: { fullPath: strin
     fs.writeFileSync(nangoJsonPath, JSON.stringify(parsed.integrations, null, 2));
     if (debug) {
         printDebug(`Generated export ${nangoJsonPath}`);
+    }
+}
+
+export function generateFunctionsJson({ fullPath, functions, debug }: { fullPath: string; functions: FunctionConfig[]; debug: boolean }): void {
+    const exportPath = path.resolve(fullPath, '.nango');
+    const functionsJsonPath = path.join(exportPath, 'functions.json');
+
+    // remove any stale file when there are no functions to write
+    if (functions.length === 0) {
+        if (fs.existsSync(functionsJsonPath)) {
+            if (debug) {
+                printDebug(`Removing stale .nango/functions.json in ${exportPath}`);
+            }
+            fs.rmSync(functionsJsonPath);
+        }
+        return;
+    }
+
+    if (debug) {
+        printDebug(`Generating .nango/functions.json in ${exportPath}`);
+    }
+    if (!fs.existsSync(exportPath)) {
+        fs.mkdirSync(exportPath, { recursive: true });
+    }
+
+    fs.writeFileSync(functionsJsonPath, JSON.stringify(functions, null, 2));
+    if (debug) {
+        printDebug(`Generated export ${functionsJsonPath}`);
     }
 }

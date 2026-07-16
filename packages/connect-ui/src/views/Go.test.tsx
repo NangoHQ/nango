@@ -6,7 +6,16 @@ import { AuthError } from '@nangohq/frontend';
 import { triggerClose } from '@/lib/events';
 import { useNango } from '@/lib/nango';
 import { expectAccessibleInBothThemes } from '@/test/a11y';
-import { apiKeyProvider, authResultFixture, integrationFixture } from '@/test/fixtures';
+import {
+    apiKeyProvider,
+    authResultFixture,
+    integrationFixture,
+    twoStepIntegrationFixture,
+    twoStepIntegrationFixtureNoPreconfig,
+    twoStepOtherIntegrationFixture,
+    twoStepOtherProvider,
+    twoStepProvider
+} from '@/test/fixtures';
 import { renderApp } from '@/test/render';
 
 import type * as EventsModule from '@/lib/events';
@@ -129,6 +138,38 @@ describe('Go', () => {
 
             // Back returns to the credentials form.
             await expect.element(page.getByRole('heading', { name: 'Link GitHub Account' })).toBeInTheDocument();
+        });
+    });
+
+    describe('preconfigured credentials (integration_config)', () => {
+        it('hides a credential field already set at the integration level, but still asks for the rest', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: twoStepProvider, integration: twoStepIntegrationFixture } });
+            await expect.element(page.getByRole('heading', { name: 'Link Sage Intacct Account' })).toBeInTheDocument();
+
+            await expect.element(page.getByPlaceholder('Username')).toBeInTheDocument();
+            expect(page.getByPlaceholder('Client ID').query()).toBeNull();
+        });
+
+        it('asks for the field when nothing is preconfigured at the integration level', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: twoStepProvider, integration: twoStepIntegrationFixtureNoPreconfig } });
+            await expect.element(page.getByRole('heading', { name: 'Link Sage Intacct Account' })).toBeInTheDocument();
+
+            await expect.element(page.getByPlaceholder('Client ID')).toBeInTheDocument();
+            await expect.element(page.getByPlaceholder('Username')).toBeInTheDocument();
+        });
+    });
+    describe('cross-provider TWO_STEP schema isolation', () => {
+        it('renders Sage Intacct with its own clientId fallback field', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: twoStepProvider, integration: twoStepIntegrationFixtureNoPreconfig } });
+            await expect.element(page.getByRole('heading', { name: 'Link Sage Intacct Account' })).toBeInTheDocument();
+            await expect.element(page.getByPlaceholder('Client ID')).toBeInTheDocument();
+        });
+
+        it('does not leak that fallback field into a later, unrelated TWO_STEP provider', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: twoStepOtherProvider, integration: twoStepOtherIntegrationFixture } });
+            await expect.element(page.getByRole('heading', { name: 'Link Tableau Account' })).toBeInTheDocument();
+            await expect.element(page.getByPlaceholder('Personal App Token', { exact: true })).toBeInTheDocument();
+            expect(page.getByPlaceholder('Client ID').query()).toBeNull();
         });
     });
 });
