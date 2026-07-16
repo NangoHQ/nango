@@ -1,0 +1,89 @@
+---
+title: 'Odoo (API Key)'
+sidebarTitle: 'Odoo (API Key)'
+description: 'Integrate your application with the Odoo JSON-2 API using an API key'
+---
+
+## 🚀 Quickstart
+
+Connect to Odoo with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Odoo (API Key)_.
+    </Step>
+    <Step id="authorize-odoo" title="Authorize Odoo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Odoo domain and API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-odoo-api" title="Call the Odoo API">
+    Let's make your first request to the Odoo API (search and read partner records). Odoo's JSON-2 API takes the model and method in the URL path, and any arguments in the request body. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/2/res.partner/search_read" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"domain": [["is_company", "=", true]], "fields": ["name"]}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/2/res.partner/search_read',
+            data: { domain: [['is_company', '=', true]], fields: ['name'] },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Odoo (API Key) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Odoo account?](/api-integrations/odoo-api-key/connect)  
+Connect your Odoo account using the Connect UI
+
+Official docs: [Odoo JSON-2 API](https://www.odoo.com/documentation/latest/developer/reference/external_api.html)
+
+<Note>
+This integration uses Odoo's native JSON-2 API (`/json/2/<model>/<method>`) with a personal API key. If your Odoo instance instead exposes the third-party OCA REST API module, use the [Odoo (OAuth)](/integrations/all/odoo) or [Odoo (Client Credentials)](/integrations/all/odoo-cc) integration instead.
+</Note>
+
+## 🧩 Pre-built syncs & actions for Odoo (API Key)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/odoo-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
