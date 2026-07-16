@@ -1,0 +1,82 @@
+---
+title: 'IDS Fulfillment'
+sidebarTitle: 'IDS Fulfillment'
+description: 'Integrate your application with the IDS Fulfillment API'
+---
+
+## 🚀 Quickstart
+
+Connect to IDS Fulfillment with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _IDS Fulfillment_.
+    </Step>
+    <Step title="Authorize IDS Fulfillment">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key (and optionally your warehouse and customer number). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the IDS Fulfillment API">
+    Let's make your first request to the IDS Fulfillment API (list shipment confirmations). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/request/Ship/preview" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/request/Ship/preview',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 IDS Fulfillment Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your IDS Fulfillment API credentials](/api-integrations/ids-fulfillment/connect)
+Use your API key, warehouse code, and customer number to connect your IDS Fulfillment account
+
+Official docs: [IDS Fulfillment API Documentation](https://api.idsfulfillment.com/swagger/index.html)
+
+## 🧩 Pre-built syncs & actions for IDS Fulfillment
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ids-fulfillment/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

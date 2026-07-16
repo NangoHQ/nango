@@ -7,7 +7,7 @@ import { useSWRConfig } from 'swr';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 import { useSignin } from '../../utils/user';
 
@@ -19,7 +19,6 @@ export const EmailVerified: React.FC = () => {
     const signin = useSignin();
     const navigate = useNavigate();
     const { toast } = useToast();
-    const analyticsTrack = useAnalyticsTrack();
     const { mutate } = useSWRConfig();
 
     const env = useStore((state) => state.env);
@@ -52,10 +51,8 @@ export const EmailVerified: React.FC = () => {
                 const user: ValidateEmailAndLogin['Success']['user'] = response['user'];
                 const showHearAboutUs = response['showHearAboutUs'] === true;
 
-                analyticsTrack('web:account_signup', {
+                track('web:account_signup', {
                     user_id: user.id,
-                    email: user.email,
-                    name: user.name,
                     accountId: user.accountId
                 });
 

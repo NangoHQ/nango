@@ -30,6 +30,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Auth: Connection tags, configuration, and metadata](https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata.md): Use tags, connection configuration, and metadata for the right connection-level data.
 - [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
 - [Auth: Token refreshing & validity](https://nango.dev/docs/guides/auth/token-refreshing.md): How Nango handles OAuth token refresh and what to do when tokens are revoked.
+- [Auth: MCP Auth](https://nango.dev/docs/guides/auth/mcp-auth.md): Let your users connect to MCP servers through Nango
 - [Functions: Functions guide](https://nango.dev/docs/guides/functions/functions-guide.md): Understand Nango Functions and choose the right way to start using them.
 - [Functions: Sync functions: Sync function guide](https://nango.dev/docs/guides/functions/syncs/sync-functions.md): Build sync functions that keep external API data fresh and consumable by your app.
 - [Functions: Sync functions: Sync efficiency](https://nango.dev/docs/guides/functions/syncs/sync-efficiency.md): Build sync functions that replicate external datasets without wasting API calls, memory, or compute.
@@ -139,7 +140,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 885 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 901 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

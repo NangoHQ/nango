@@ -20,6 +20,7 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import { postCliTelemetry } from './controllers/cli/postTelemetry.js';
 import { getClientMetadata } from './controllers/clientMetadata/environmentUuid/getClientMetadata.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
@@ -76,6 +77,7 @@ import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.j
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { auditConnectionDeleted } from './middleware/audit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
@@ -233,7 +235,7 @@ publicAPI
 // @deprecated
 publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 // @deprecated
-publicAPI.route('/connection/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connection/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
@@ -259,7 +261,7 @@ publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(apiAuth, withScope('environment:connections:update'), patchPublicConnection);
-publicAPI.route('/connections/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connections/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
@@ -270,6 +272,10 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, withScope('environment:deploy'), postDeployInternal);
+
+// CLI
+publicAPI.use('/cli', jsonContentTypeMiddleware);
+publicAPI.route('/cli/telemetry').post(rateLimiterMiddleware, postCliTelemetry);
 
 // Syncs
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, withScope('environment:syncs:update'), putSyncConnectionFrequency);

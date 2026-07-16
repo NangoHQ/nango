@@ -22,6 +22,17 @@ class UserService {
         return result || null;
     }
 
+    async getUserByIdAndAccountId(id: number, accountId: number, includeSuspended = false): Promise<DBUser | null> {
+        const result = await db.knex
+            .select<DBUser>('*')
+            .from<DBUser>(`_nango_users`)
+            .where({ id, account_id: accountId })
+            .andWhere(includeSuspended ? {} : { suspended: false })
+            .first();
+
+        return result || null;
+    }
+
     async getUserByUuid(uuid: string): Promise<DBUser | null> {
         const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ uuid }).first();
 

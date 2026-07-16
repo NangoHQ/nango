@@ -654,7 +654,7 @@ class ConnectionService {
         return result || [];
     }
 
-    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
         await trx.from<DBConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
@@ -1536,7 +1536,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status !== 200) {
+            if (response.status !== 200 && response.status !== 201) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 

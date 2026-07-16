@@ -31,6 +31,10 @@ interface ChartCardProps {
     globalTotal?: number;
     /** Colour + label for a filtered single series (no grouping): tints the one drawn series and shows a one-row legend. */
     singleSeries?: { label: string; color: string };
+    /** Fired when a series is isolated (band or legend-label click). For analytics only — keeps this pattern PostHog-free. */
+    onSeriesIsolate?: () => void;
+    /** Fired when a series is hidden/shown (legend swatch click). For analytics only. */
+    onSeriesToggle?: () => void;
 }
 
 /**
@@ -49,14 +53,29 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     detailError,
     filtered,
     globalTotal,
-    singleSeries
+    singleSeries,
+    onSeriesIsolate,
+    onSeriesToggle
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
 
     // Series labels identify the current dataset; interaction state resets when they change.
     const seriesSignature = (breakdownSeries ?? []).map((s) => s.label).join(' ');
-    const interactions = useChartInteractions(seriesSignature);
+    const baseInteractions = useChartInteractions(seriesSignature);
+    // Layer the optional analytics callbacks over the interaction toggles, so the generic chart
+    // components stay unaware of tracking. Rebuilt every render (baseInteractions already is).
+    const interactions: typeof baseInteractions = {
+        ...baseInteractions,
+        toggleIsolate: (key) => {
+            baseInteractions.toggleIsolate(key);
+            onSeriesIsolate?.();
+        },
+        toggleHidden: (key) => {
+            baseInteractions.toggleHidden(key);
+            onSeriesToggle?.();
+        }
+    };
     const { todayDateKey, baseChartData, breakdownChartData, isEmpty } = useChartData(data, breakdownSeries, timeframe);
 
     const chartConfig = useMemo<ChartConfig>(() => {

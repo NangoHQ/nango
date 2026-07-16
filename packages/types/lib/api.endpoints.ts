@@ -27,6 +27,7 @@ import type {
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization
 } from './auth/http.api.js';
+import type { PostCliTelemetry } from './cli/api.js';
 import type { GetPublicClientMetadata } from './clientMetadata/http.api.js';
 import type {
     DeleteConnectSession,
@@ -37,6 +38,7 @@ import type {
     PostPublicConnectTelemetry
 } from './connect/api.js';
 import type {
+    DeleteConnection,
     DeletePublicConnection,
     GetConnection,
     GetConnections,
@@ -48,7 +50,7 @@ import type {
     PostConnectionRefresh,
     PostPublicConnection
 } from './connection/api/get.js';
-import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { PostConnectionMetadata, SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
 import type {
@@ -145,6 +147,7 @@ export type PublicApiEndpoints =
     | PostDeployInternal
     | PostPublicBillAuthorization
     | DeletePublicConnection
+    | DeleteConnection
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook
@@ -153,6 +156,7 @@ export type PublicApiEndpoints =
     | PatchPublicPruneRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
+    | PostCliTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
     | PostPublicQuickstartIntegration
@@ -221,6 +225,8 @@ export type PrivateApiEndpoints =
     | GetConnections
     | GetConnectionsCount
     | GetConnection
+    | PatchConnection
+    | PostConnectionMetadata
     | GetConnectionRecordModels
     | GetConnectionRecords
     | GetInvite
@@ -234,7 +240,6 @@ export type PrivateApiEndpoints =
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
-    | PatchConnection
     | PostManagedEmailVerification
     | PostManagedSignup
     | PostPreBuiltDeploy

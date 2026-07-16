@@ -7,6 +7,7 @@ import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { UsageChartCard } from './UsageChartCard';
@@ -65,7 +66,13 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <StyledLink icon to={usage?.data.customer.portalUrl} type="external" variant="info">
+                                <StyledLink
+                                    icon
+                                    to={usage?.data.customer.portalUrl}
+                                    type="external"
+                                    variant="info"
+                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                >
                                     billing portal
                                 </StyledLink>
                             </>
@@ -88,7 +95,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
             ))}
 
             {usage?.data.customer.portalUrl && (
-                <StyledLink icon to={usage.data.customer.portalUrl} type="external">
+                <StyledLink icon to={usage.data.customer.portalUrl} type="external" onClick={() => track('web:usage:invoice_details_clicked', {})}>
                     View invoice details
                 </StyledLink>
             )}

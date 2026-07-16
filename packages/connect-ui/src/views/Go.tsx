@@ -36,7 +36,11 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         password: z.string().min(1)
     }),
     APP: z.object({}),
-    APP_STORE: z.object({}),
+    APP_STORE: z.object({
+        issuerId: z.string().min(1),
+        privateKeyId: z.string().min(1),
+        privateKey: z.string().min(1)
+    }),
     NONE: z.object({}),
     OAUTH1: z.object({}),
     OAUTH2: z.object({}),
@@ -95,7 +99,10 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
     'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' },
-    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' },
+    'credentials.issuerId': { secret: false, title: 'Issuer ID', example: 'Your Issuer ID' },
+    'credentials.privateKeyId': { secret: false, title: 'Key ID', example: 'Your Key ID' },
+    'credentials.privateKey': { secret: true, title: 'Private Key', example: 'Your Private Key' }
 };
 
 export const Go: React.FC = () => {
