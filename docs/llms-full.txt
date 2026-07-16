@@ -6683,23 +6683,19 @@ If you are using a custom domain, update `NANGO_PUBLIC_CONNECT_URL` to match it.
 
 #### Hosting under a base path
 
-Connect UI is served at the root of its domain by default. To host it under a non-root path — for example behind a reverse proxy that routes services by path — set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
+Connect UI is served at the root of its domain by default, but its prebuilt bundle uses relative asset paths and derives its routing base at runtime, so it works under any base path with no rebuild and no rewrite step. To host it under a non-root path — for example behind a reverse proxy that routes services by path — set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
 
 ```sh
 NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
 ```
 
-Nango rewrites the built asset paths to match when Connect UI starts, so no rebuild is needed. This works whether you serve Connect UI via `FLAG_SERVE_CONNECT_UI` or run its static file server directly (`npm run -w @nangohq/connect-ui serve:unsafe`, e.g. as a standalone container).
+This URL drives the generated `connect_link`, the dashboard's Content Security Policy, and CORS, so it must match what end users load.
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
-<Note>
-The startup rewrite edits files in `dist` in place, so that directory must be writable at runtime.
-</Note>
+URLs loading Connect UI at a sub-path must end with a trailing slash (`…/connect/`) — the Nango SDK and the generated links handle this automatically.
 
-<Note>
-If you upload Connect UI's built `dist` to a static host or CDN instead of serving it from the container, run `npm run -w @nangohq/connect-ui set-base-path` (with `NANGO_PUBLIC_CONNECT_URL` set) against `dist` before uploading. The built assets contain a placeholder base until this step runs.
-</Note>
+If you serve Connect UI's built `dist` from your own static host, enable SPA fallback (rewrite unknown paths to `index.html`) so in-app refreshes work.
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
