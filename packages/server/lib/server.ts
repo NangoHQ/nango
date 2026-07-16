@@ -113,14 +113,18 @@ if (pubsubConnect.isErr()) {
 
 await initializeFeatureFlags();
 
-// audit drops by default; only override that when there's a ClickHouse to write to
-if (!isCloud) {
-    logger.info('Audit: dropping events (not on Nango Cloud)');
-} else if (!envs.CLICKHOUSE_URL) {
-    logger.warning('Audit: dropping events (CLICKHOUSE_URL not set)');
-} else {
-    audit.setSink(new ClickhouseAuditSink(auditClickhouseClient(envs.CLICKHOUSE_URL)));
-    logger.info('Audit: writing events to ClickHouse');
+// audit drops by default; on Cloud, wire a ClickHouse sink when one is configured (fail open on error)
+if (isCloud) {
+    if (!envs.CLICKHOUSE_URL) {
+        logger.warning('Audit: dropping events (CLICKHOUSE_URL not set)');
+    } else {
+        try {
+            audit.setSink(new ClickhouseAuditSink(auditClickhouseClient(envs.CLICKHOUSE_URL)));
+            logger.info('Audit: writing events to ClickHouse');
+        } catch (err) {
+            logger.error('Audit: failed to configure the ClickHouse sink, dropping events', err);
+        }
+    }
 }
 
 const port = getServerPort();
