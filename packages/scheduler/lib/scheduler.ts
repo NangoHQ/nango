@@ -433,7 +433,7 @@ export class Scheduler {
         const newState: TaskState = 'SUCCEEDED';
         const succeeded: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(trx, { taskId, newState, output });
-            if (res.isOk()) {
+            if (res.isOk() && res.value.scheduleId !== null) {
                 const scheduleRes = await schedules.scheduleNextExecution(trx, {
                     taskIds: [taskId],
                     taskState: newState,
@@ -484,13 +484,15 @@ export class Scheduler {
 
             const failed = await tasks.transitionState(trx, { taskId, newState, output: error });
             if (failed.isOk()) {
-                const scheduleRes = await schedules.scheduleNextExecution(trx, {
-                    taskIds: [taskId],
-                    taskState: newState,
-                    nextExecutionInMs
-                });
-                if (scheduleRes.isErr()) {
-                    return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
+                if (failed.value.scheduleId !== null) {
+                    const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                        taskIds: [taskId],
+                        taskState: newState,
+                        nextExecutionInMs
+                    });
+                    if (scheduleRes.isErr()) {
+                        return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
+                    }
                 }
                 const task = failed.value;
                 this.onCallbacks[task.state](task);
@@ -543,7 +545,7 @@ export class Scheduler {
                 newState,
                 output: { reason }
             });
-            if (res.isOk()) {
+            if (res.isOk() && res.value.scheduleId !== null) {
                 const scheduleRes = await schedules.scheduleNextExecution(trx, {
                     taskIds: [taskId],
                     taskState: newState,
