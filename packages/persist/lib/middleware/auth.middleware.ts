@@ -29,8 +29,13 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     }
 
     try {
-        const result = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async () => {
-            return await accountService.getPersistAuthContext(secret);
+        const result = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async (span) => {
+            const res = await accountService.getPersistAuthContext(secret);
+            if (res.isErr()) {
+                // Err is returned, not thrown, so the span must be failed explicitly
+                span?.setTag('error', res.error);
+            }
+            return res;
         });
         if (result.isErr()) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(result.error)}` } });
