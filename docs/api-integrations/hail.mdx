@@ -1,0 +1,37 @@
+---
+title: 'Hail'
+sidebarTitle: 'Hail'
+description: 'Integrate your application with the Hail API for phone, SMS, and email for AI agents and humans'
+---
+
+## 🚀 Quickstart
+
+Connect to Hail with Nango and make your first API request in minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hail_.
+    </Step>
+    <Step title="Authorize Hail">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key (created at [hail.so/console](https://hail.so/console)). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Hail API">
+    Make your first request to the Hail API (list recent calls). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    ```bash
+    curl "https://api.nango.dev/proxy/calls" \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>"
+    ```
+    </Step>
+</Steps>
+
+## 📚 Hail Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Hail API key](/api-integrations/hail/connect)
+Get your API key to connect Hail to Nango
+
+Official docs: [Hail API Reference](https://hail.so/docs)

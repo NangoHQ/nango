@@ -1,0 +1,36 @@
+---
+title: 'Hail (MCP)'
+sidebarTitle: 'Hail (MCP)'
+description: 'Connect AI tools to Hail via the Model Context Protocol (MCP) for inbound and outbound phone, SMS, and email'
+---
+
+## 🚀 Quickstart
+
+Connect to the Hail MCP server with Nango and call MCP tools in minutes. Hail MCP uses OAuth 2.1 with **dynamic client registration**, so no app registration is required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Hail (MCP)_.
+    </Step>
+    <Step title="Authorize Hail">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Hail. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call a Hail MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    ```bash
+    curl "https://api.nango.dev/proxy/" \
+      -X POST \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json, text/event-stream" \
+      -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"nango","version":"1.0"}}}'
+    ```
+    </Step>
+</Steps>
+
+Hail exposes tools to place calls and send SMS and email, plus read and tracking tools across all three channels.
+
+Official docs: [Hail MCP setup](https://hail.so/mcp)
