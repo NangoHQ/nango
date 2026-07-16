@@ -53,6 +53,12 @@ export const FreeUsage: React.FC = () => {
         return { start: start.toISOString(), end: end.toISOString() };
     }, [selectedMonth]);
 
+    // The caps gauge (plans/usage) is live current-period. For a past month, show that month's usage
+    // from the billing series instead — counters: the month total; connections/records: the point-in-time
+    // value. The cap is constant, so used / limit / % stay meaningful across months.
+    const now = new Date();
+    const isCurrentMonth = selectedMonth.getUTCFullYear() === now.getUTCFullYear() && selectedMonth.getUTCMonth() === now.getUTCMonth();
+
     const { data: caps, isLoading: capsLoading, error: capsError } = useApiGetUsage(env);
     // pointInTime: connections/records come back as the concurrent daily count (not the billing
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
@@ -79,15 +85,16 @@ export const FreeUsage: React.FC = () => {
                 </div>
                 {METRICS.map((metric) => {
                     const cap = caps?.data[metric];
+                    const used = isCurrentMonth ? (cap?.usage ?? 0) : (usage?.data.usage[metric]?.total ?? 0);
                     return (
                         <UsageLimitRow
                             key={metric}
                             metric={metric}
                             label={METRIC_LABELS[metric]}
                             sublabel={METRIC_DESCRIPTIONS[metric]}
-                            usage={cap?.usage ?? 0}
+                            usage={used}
                             limit={cap?.limit ?? null}
-                            capsLoading={capsLoading}
+                            capsLoading={isCurrentMonth ? capsLoading : isLoading}
                             data={usage?.data.usage[metric]}
                             isLoading={isLoading}
                             env={env}
