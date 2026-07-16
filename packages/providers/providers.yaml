@@ -1611,7 +1611,25 @@ apple-app-store:
         audience: appstoreconnect-v1
     proxy:
         base_url: https://api.appstoreconnect.apple.com
-    docs: https://nango.dev/docs/integrations/all/apple-app-store
+    docs: https://nango.dev/docs/api-integrations/apple-app-store
+    docs_connect: https://nango.dev/docs/api-integrations/apple-app-store/connect
+    credentials:
+        issuerId:
+            type: string
+            title: Issuer ID
+            description: Your App Store Connect Issuer ID.
+            doc_section: '#step-2-note-your-issuer-id-and-key-id'
+        privateKeyId:
+            type: string
+            title: Key ID
+            description: Your App Store Connect Key ID.
+            doc_section: '#step-2-note-your-issuer-id-and-key-id'
+        privateKey:
+            type: string
+            title: Private Key
+            description: Your App Store Connect private key.
+            secret: true
+            doc_section: '#step-1-create-an-api-key'
 
 apple-business-manager:
     display_name: Apple Business Manager
@@ -3995,8 +4013,8 @@ callrail:
             type: string
             title: API Key
             description: The API key for your Callrail account
-            pattern: '^[a-f0-9]{32}$'
-            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            pattern: '^(ctrk_)?[a-f0-9]{32,}$'
+            example: 'ctrk_1234567890abcdef1234567890abcdef1234567890ab'
             doc_section: '#step-1-finding-your-api-key'
     docs: https://nango.dev/docs/integrations/all/callrail
 
@@ -18102,16 +18120,21 @@ sage-intacct-cc:
     docs: https://nango.dev/docs/api-integrations/sage-intacct-cc
     docs_connect: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
-    credentials:
+    integration_config:
         clientId:
             type: string
             title: Client ID
             description: Your Sage Intacct application Client ID.
+            order: 1
+            optional: true
         clientSecret:
             type: string
             title: Client Secret
             description: Your Sage Intacct application Client Secret.
             secret: true
+            order: 2
+            optional: true
+    credentials:
         username:
             type: string
             title: Username
@@ -18188,6 +18211,46 @@ sage-intacct:
             title: User Password
             description: Your Sage Intacct User Password
             secret: true
+
+sage-member:
+    display_name: SAGE Member
+    categories:
+        - marketing
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.promoplace.com/ws/ws.dll
+        body:
+            auth:
+                acctId: ${connectionConfig.acctId}
+                loginId: ${connectionConfig.loginId}
+                key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/sage-member
+    docs_connect: https://nango.dev/docs/api-integrations/sage-member/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Key
+            example: 56edbbe3********************141a
+            pattern: '^[a-f0-9]{32}$'
+            description: The authentication key for your SAGE Member user.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+    connection_config:
+        acctId:
+            type: string
+            title: Account Number
+            description: Your SAGE Member account number.
+            pattern: '^[0-9]+$'
+            example: '4353478'
+            order: 1
+            doc_section: '#step-1-finding-your-credentials'
+        loginId:
+            type: string
+            title: Login ID
+            description: The login ID for your SAGE Member user.
+            order: 2
+            doc_section: '#step-1-finding-your-credentials'
 
 sage-people:
     display_name: Sage People
