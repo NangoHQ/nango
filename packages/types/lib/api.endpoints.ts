@@ -14,6 +14,7 @@ import type {
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
+import type { GetAuditTrail } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
@@ -186,6 +187,7 @@ export type PublicApiEndpoints =
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
+    | GetAuditTrail
     | PostSignup
     | PostSignin
     | PostLogout

@@ -32,6 +32,7 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
@@ -319,6 +320,7 @@ web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
 
 // Logs
+web.route('/audit-trail').get(webAuth, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrail);
 web.route('/logs/operations').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchOperations);
 web.route('/logs/messages').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchMessages);
 web.route('/logs/filters').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchFilters);
