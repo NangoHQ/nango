@@ -160,7 +160,8 @@ const publicAPITelemetryCors = cors({
     exposedHeaders: 'content-type',
     allowedHeaders: 'Authorization, Content-type',
     methods: 'POST',
-    origin: connectUrl
+    // The Origin header never contains a path, so a path'd NANGO_PUBLIC_CONNECT_URL would never match.
+    origin: new URL(connectUrl).origin
 });
 publicAPI.options('/connect/telemetry', publicAPITelemetryCors);
 publicAPI.use('/', publicAPICorsHandler);
