@@ -654,7 +654,7 @@ class ConnectionService {
         return result || [];
     }
 
-    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
         await trx.from<DBConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 

@@ -14456,6 +14456,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `bamboohr` | BambooHR (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bamboohr.md) | [connect](https://nango.dev/docs/api-integrations/bamboohr/connect.md) | [setup](https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app.md) | hr |
 | `bamboohr-basic` | BambooHR (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/bamboohr-basic.md) | [connect](https://nango.dev/docs/integrations/all/bamboohr-basic/connect.md) |  | hr |
 | `basecamp` | Basecamp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/basecamp.md) | [connect](https://nango.dev/docs/integrations/all/basecamp/connect.md) |  | productivity |
+| `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
 | `bettercontact` | BetterContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/bettercontact.md) | [connect](https://nango.dev/docs/api-integrations/bettercontact/connect.md) |  | crm |
@@ -15037,7 +15038,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `salesforce-cdp` | Salesforce (Data Cloud) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/salesforce-cdp.md) | [connect](https://nango.dev/docs/integrations/all/salesforce-cdp/connect.md) |  | storage |
 | `salesforce-experience-cloud` | Salesforce Experience Cloud | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/salesforce-experience-cloud.md) |  |  | crm |
 | `salesforce-jwt` | Salesforce (JWT) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/salesforce-jwt.md) | [connect](https://nango.dev/docs/api-integrations/salesforce-jwt/connect.md) |  | crm |
-| `salesforce-sandbox` | Salesforce (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/salesforce-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/salesforce-sandbox/how-to-register-your-own-salesforce-sandbox-api-oauth-app.md) | crm |
+| `salesforce-sandbox` | Salesforce (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/salesforce-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/salesforce-sandbox/connect.md) | [setup](https://nango.dev/docs/api-integrations/salesforce-sandbox/how-to-register-your-own-salesforce-sandbox-api-oauth-app.md) | crm |
 | `salesloft` | Salesloft | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/salesloft.md) |  |  | marketing |
 | `salesmsg` | Salesmsg (PAT) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/salesmsg.md) | [connect](https://nango.dev/docs/api-integrations/salesmsg/connect.md) |  | communication, marketing |
 | `salesmsg-oauth2` | Salesmsg (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/salesmsg-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/salesmsg-oauth2/how-to-register-your-own-salesmsg-oauth-app.md) | communication, marketing |

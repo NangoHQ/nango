@@ -2962,6 +2962,38 @@ basecamp:
             pattern: '^[0-9]+$'
             doc_section: '#step-1-finding-your-account-id'
 
+baserow:
+    display_name: Baserow
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api
+        headers:
+            authorization: Token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/baserow
+    docs_connect: https://nango.dev/docs/api-integrations/baserow/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your Baserow instance's base URL.
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
+            example: https://api.baserow.io
+            suffix: /api
+            order: 1
+            doc_section: '#step-1-finding-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Database Token
+            description: Your Baserow database token.
+            example: Q7mZpX2k************************
+            pattern: '^[A-Za-z0-9]{32}$'
+            doc_section: '#step-2-generating-your-database-token'
+
 battlenet:
     display_name: Battle.net
     categories:
@@ -18375,8 +18407,8 @@ salesforce-sandbox:
     categories:
         - crm
     auth_mode: OAUTH2
-    authorization_url: https://test.salesforce.com/services/oauth2/authorize
-    token_url: https://test.salesforce.com/services/oauth2/token
+    authorization_url: https://${connectionConfig.hostname}/services/oauth2/authorize || https://test.salesforce.com/services/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/services/oauth2/token || https://test.salesforce.com/services/oauth2/token
     default_scopes:
         - offline_access
     token_response_metadata:
@@ -18384,6 +18416,7 @@ salesforce-sandbox:
     proxy:
         base_url: ${connectionConfig.instance_url}
     docs: https://nango.dev/docs/api-integrations/salesforce-sandbox
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce-sandbox/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce-sandbox/how-to-register-your-own-salesforce-sandbox-api-oauth-app
     connection_config:
         instance_url:
@@ -18393,6 +18426,15 @@ salesforce-sandbox:
             format: uri
             pattern: '^https?://.*$'
             automated: true
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname to your Salesforce sandbox instance
+            pattern: '^(?!(?:.*\.)?[Ll][Ii][Gg][Hh][Tt][Nn][Ii][Nn][Gg]\.([Ff][Oo][Rr][Cc][Ee]|[Ss][Aa][Ll][Ee][Ss][Ff][Oo][Rr][Cc][Ee])\.[Cc][Oo][Mm]$)[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
+            example: acme--sandboxname.sandbox.my.salesforce.com
+            prefix: https://
+            optional: true
+            doc_section: '#step-1-finding-your-hostname'
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
