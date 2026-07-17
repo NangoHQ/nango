@@ -49,7 +49,7 @@ async function isMFAEnabled<T>(res: Response<T, Required<RequestLocals>>): Promi
 }
 
 function rejectDisabledFeature<T>(res: Response<T, Required<RequestLocals>>) {
-    res.status(404).send({ error: { code: 'feature_disabled' } } as T);
+    res.status(400).send({ error: { code: 'feature_disabled' } } as T);
 }
 
 export const getMFAStatus = asyncWrapper<GetMFAStatus>(async (req, res) => {

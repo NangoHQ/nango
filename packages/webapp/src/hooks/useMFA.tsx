@@ -17,7 +17,7 @@ async function fetchMFAStatus(): Promise<GetMFAStatus['Success']> {
 
 export function useMFA() {
     const queryClient = useQueryClient();
-    const status = useQuery<GetMFAStatus['Success'], APIError>({ queryKey: mfaQueryKey, queryFn: fetchMFAStatus });
+    const status = useQuery<GetMFAStatus['Success'], APIError>({ queryKey: mfaQueryKey, queryFn: fetchMFAStatus, retry: false });
     const invalidateStatus = () => queryClient.invalidateQueries({ queryKey: mfaQueryKey });
 
     const enroll = useMutation<PostMFAEnrollment['Success'], APIError>({
