@@ -1,12 +1,14 @@
 import helmet from 'helmet';
 
-import { basePublicUrl, baseUrl, connectUrlAsDocumentBase } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase } from '@nangohq/utils';
 
 import type { RequestHandler } from 'express';
 
 // CSP source path matching is exact when the path has no trailing slash; with one it's a prefix
-// match, which is what we want when NANGO_PUBLIC_CONNECT_URL includes a base path.
-const connectUrlCspSource = connectUrlAsDocumentBase().toString();
+// match. Carry both forms: the trailing-slash source covers the sub-path's assets and routes, and
+// the verbatim configured value covers the slashless document URL that SDKs without trailing-slash
+// normalization load before Connect UI's in-page retry redirects it.
+const connectUrlCspSources = [...new Set([connectUrl, connectUrlAsDocumentBase().toString()])];
 
 export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;
@@ -28,7 +30,7 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.contentSecurityPolicy({
             reportOnly: reportOnly !== 'false',
             directives: {
-                defaultSrc: ["'self'", hostPublic, hostApi, connectUrlCspSource],
+                defaultSrc: ["'self'", hostPublic, hostApi, ...connectUrlCspSources],
                 childSrc: "'self'",
                 connectSrc: [
                     "'self'",
@@ -37,7 +39,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     hostPublic,
                     hostApi,
                     hostWs.href,
-                    connectUrlCspSource,
+                    ...connectUrlCspSources,
                     'https://*.posthog.com',
                     'https://*.stripe.com',
                     'https://*.plain.com',
@@ -50,7 +52,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://accounts.google.com',
                     hostPublic,
                     hostApi,
-                    connectUrlCspSource,
+                    ...connectUrlCspSources,
                     'https://www.youtube.com',
                     'https://*.stripe.com'
                 ],
