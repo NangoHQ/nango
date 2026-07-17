@@ -5,7 +5,6 @@ import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { useApiGetBillingUsage, useApiGetUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
-import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { MonthSelector } from './MonthSelector';
 import { USAGE_ROW_GRID, UsageLimitRow } from './UsageLimitRow';
@@ -54,7 +53,6 @@ export const FreeUsage: React.FC = () => {
     // pointInTime: connections/records come back as the concurrent daily count (not the billing
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse', { pointInTime: true });
-    const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
     if (usageError || capsError) {
         return <CriticalErrorAlert message="Error loading usage" />;
@@ -93,8 +91,6 @@ export const FreeUsage: React.FC = () => {
                             isLoading={isLoading}
                             env={env}
                             timeframe={timeframe}
-                            isDivergingFromGlobal={isDivergingFromGlobal}
-                            onApplyToAll={applyToAll}
                         />
                     );
                 })}

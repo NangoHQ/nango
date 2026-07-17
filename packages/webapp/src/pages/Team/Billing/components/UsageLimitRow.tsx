@@ -7,7 +7,6 @@ import { cn } from '@/utils/utils';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
 
-import type { GroupFilterSelection } from '../useGlobalGroupFilter';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 /** Shared column template so the header row and each metric row line up. */
@@ -26,28 +25,14 @@ interface UsageLimitRowProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
-    isDivergingFromGlobal: (metric: UsageMetric, selection: GroupFilterSelection) => boolean;
-    onApplyToAll: (selection: GroupFilterSelection) => void;
 }
 
 /**
  * One metric row in the Free-plan caps table: the collapsed row is the gauge (used / limit, a
  * progress bar, and % of limit / "Limit reached"), and expanding it reveals the existing trend +
- * dimension-breakdown drill-in with a month stepper in its header.
+ * dimension-breakdown drill-in for the month selected in the table header.
  */
-export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
-    metric,
-    label,
-    usage,
-    limit,
-    capsLoading,
-    data,
-    isLoading,
-    env,
-    timeframe,
-    isDivergingFromGlobal,
-    onApplyToAll
-}) => {
+export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({ metric, label, usage, limit, capsLoading, data, isLoading, env, timeframe }) => {
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
 
@@ -82,17 +67,7 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
                 </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-                <UsageChartCard
-                    metric={metric}
-                    data={data}
-                    isLoading={isLoading}
-                    env={env}
-                    timeframe={timeframe}
-                    isDivergingFromGlobal={isDivergingFromGlobal}
-                    onApplyToAll={onApplyToAll}
-                    hideHeader
-                    disableApplyToAll
-                />
+                <UsageChartCard metric={metric} data={data} isLoading={isLoading} env={env} timeframe={timeframe} hideHeader disableApplyToAll />
             </CollapsibleContent>
         </Collapsible>
     );
