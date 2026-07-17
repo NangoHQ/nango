@@ -14,6 +14,7 @@
         "directory": "packages/audit"
     },
     "dependencies": {
+        "@clickhouse/client": "1.18.2",
         "@nangohq/utils": "file:../utils"
     },
     "devDependencies": {

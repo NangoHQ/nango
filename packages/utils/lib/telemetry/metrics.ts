@@ -157,6 +157,7 @@ export enum Types {
     AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
 
     AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED = 'nango.audit.target.display_resolution_failed',
+    AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
 
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',
