@@ -15340,6 +15340,30 @@ passportal:
     docs: https://nango.dev/docs/integrations/all/passportal
     docs_connect: https://nango.dev/docs/integrations/all/passportal/connect
 
+pave:
+    display_name: Pave
+    categories:
+        - hr
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.pave.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /ping
+    docs: https://nango.dev/docs/api-integrations/pave
+    docs_connect: https://nango.dev/docs/api-integrations/pave/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pave account
+            example: '3A8F92C4********V4D'
+            doc_section: '#step-1-generating-your-api-key'
+
 paychex:
     display_name: Paychex
     categories:
