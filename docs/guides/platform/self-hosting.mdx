@@ -220,7 +220,7 @@ This URL drives the generated `connect_link`, the dashboard's Content Security P
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
-URLs loading Connect UI at a sub-path must end with a trailing slash (`…/connect/`) — the Nango SDK and the generated links produce this automatically, and Connect UI itself retries with a trailing slash if the initial load fails.
+URLs loading Connect UI at a sub-path must end with a trailing slash (`…/connect/`) — the Nango SDK and the generated links produce this automatically. If the document is served at a slashless URL anyway, Connect UI recovers by retrying with a trailing slash; this requires the host to still serve `index.html` for the slashless URL (it cannot recover a URL the host refuses to serve).
 
 If you serve Connect UI's built `dist` from your own static host, enable SPA fallback (rewrite unknown paths to `index.html`) so in-app refreshes work.
 
