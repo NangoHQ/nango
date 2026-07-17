@@ -7,33 +7,19 @@ import type { ZodCheckpoint, ZodMetadata } from './types.js';
 import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type { Nango } from '@nangohq/node';
 import type {
-    ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     ApiPublicConnectionFull,
-    AppCredentials,
-    AppStoreCredentials,
-    AwsSigV4Credentials,
-    BasicApiCredentials,
-    BillCredentials,
-    CustomCredentials,
-    DeepReplace,
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
-    InstallPluginCredentials,
-    JwtCredentials,
     MaybePromise,
     NangoProps,
     OAuth1Token,
-    OAuth2ClientCredentials,
     Pagination,
     PostPublicTrigger,
     SdkLogger,
     SetMetadata,
-    SignatureCredentials,
-    TbaCredentials,
     TelemetryBag,
-    TwoStepCredentials,
-    UnauthCredentials,
     UpdateMetadata,
     UserLogParameters,
     UserProvidedProxyConfiguration
@@ -231,28 +217,7 @@ export abstract class NangoActionBase<
         });
     }
 
-    public async getToken(): Promise<
-        | string
-        | OAuth1Token
-        | DeepReplace<
-              | OAuth2ClientCredentials
-              | BasicApiCredentials
-              | ApiKeyCredentials
-              | AppCredentials
-              | AppStoreCredentials
-              | UnauthCredentials
-              | CustomCredentials
-              | TbaCredentials
-              | JwtCredentials
-              | BillCredentials
-              | TwoStepCredentials
-              | SignatureCredentials
-              | InstallPluginCredentials
-              | AwsSigV4Credentials,
-              Date,
-              string
-          >
-    > {
+    public async getToken(): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
         this.throwIfAbortedOrKilled();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }

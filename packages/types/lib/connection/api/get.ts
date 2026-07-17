@@ -1,7 +1,7 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
 import type {
-    AllAuthCredentials,
     ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     BasicApiCredentials,
     OAuth1Credentials,
     OAuth2ClientCredentials,
@@ -12,7 +12,7 @@ import type { EndUserInput } from '../../connect/api.js';
 import type { Tags } from '../../db.js';
 import type { ApiEndUser } from '../../endUser/index.js';
 import type { ActiveLog } from '../../notification/active-logs/db.js';
-import type { DeepReplace, ReplaceInObject } from '../../utils.js';
+import type { ReplaceInObject } from '../../utils.js';
 import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
@@ -139,7 +139,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
     tags: Tags;
-    credentials: DeepReplace<AllAuthCredentials, Date, string>;
+    credentials: ApiPublicAllAuthCredentials;
 };
 export type GetPublicConnection = Endpoint<{
     Method: 'GET';

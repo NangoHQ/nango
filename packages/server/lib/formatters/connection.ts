@@ -121,7 +121,7 @@ export function connectionFullToPublicApi({
                   if (_.isDate(value)) {
                       return value.toISOString();
                   }
-                  return value;
+                  return undefined;
               })
             : ({} as ApiPublicConnectionFull['credentials'])
     };

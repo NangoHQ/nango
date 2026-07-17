@@ -17,17 +17,10 @@ import type {
     UpdateSyncFrequencyResponse
 } from './types.js';
 import type {
-    ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     ApiPublicConnection,
     ApiPublicIntegration,
-    AppCredentials,
-    AppStoreCredentials,
-    AwsSigV4Credentials,
-    BasicApiCredentials,
-    BillCredentials,
     CredentialsCommon,
-    CustomCredentials,
-    DeepReplace,
     DeletePublicIntegrationFunction,
     DeleteSyncVariant,
     GetPublicConnection,
@@ -41,11 +34,8 @@ import type {
     GetPublicProvider,
     GetPublicProviders,
     GetPublicProviderTemplates,
-    InstallPluginCredentials,
-    JwtCredentials,
     NangoRecord,
     OAuth1Token,
-    OAuth2ClientCredentials,
     OpenAIFunction,
     PatchPublicConnection,
     PatchPublicIntegration,
@@ -54,11 +44,7 @@ import type {
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
     PostPublicTrigger,
-    PostSyncVariant,
-    SignatureCredentials,
-    TbaCredentials,
-    TwoStepCredentials,
-    UnauthCredentials
+    PostSyncVariant
 } from '@nangohq/types';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
@@ -498,28 +484,7 @@ export class Nango {
         connectionId: string,
         forceRefresh?: boolean,
         refreshGithubAppJwtToken?: boolean
-    ): Promise<
-        | string
-        | OAuth1Token
-        | DeepReplace<
-              | BasicApiCredentials
-              | ApiKeyCredentials
-              | AppCredentials
-              | OAuth2ClientCredentials
-              | AppStoreCredentials
-              | UnauthCredentials
-              | CustomCredentials
-              | TbaCredentials
-              | JwtCredentials
-              | BillCredentials
-              | TwoStepCredentials
-              | SignatureCredentials
-              | InstallPluginCredentials
-              | AwsSigV4Credentials,
-              Date,
-              string
-          >
-    > {
+    ): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 
         switch (response.data.credentials.type) {

@@ -3,7 +3,6 @@ import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { DBIntegrationDecrypted } from '../integration/db.js';
 import type { HTTP_METHOD } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
-import type { DeepReplace } from '../utils.js';
 import type { AxiosResponse } from 'axios';
 
 export interface ProxyFile {
@@ -55,7 +54,7 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 }
 
 export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'metadata'> & {
-    credentials: DeepReplace<AllAuthCredentials, Date, Date | string>;
+    credentials: AllAuthCredentials;
 };
 export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
