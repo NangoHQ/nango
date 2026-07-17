@@ -1,0 +1,69 @@
+---
+title: Microsoft Power BI (Client Credentials) - How do I link my account?
+sidebarTitle: Microsoft Power BI (Client Credentials)
+---
+
+# Overview
+
+To connect Microsoft Power BI in Nango, you need to provide:
+
+1. **Tenant ID** — The unique identifier for your organization that uses Microsoft services.
+2. **Client ID** — The unique identifier that Azure assigns to your application when it's registered.
+3. **Client Secret** — A unique string that enables the client application to access the Power BI API.
+
+This guide will walk you through generating and finding these credentials within Azure, and enabling service principal access in Power BI.
+
+### Prerequisites
+
+- You must have an active Azure account with a Power BI Pro or Premium subscription.
+- You must have permission to register applications and grant admin consent in Microsoft Entra ID.
+- You must have Power BI tenant admin access, to enable service principal API access.
+
+### Instructions
+
+#### Step 1: Finding your Tenant ID
+
+1. Your Tenant ID can be found in the **Tenant ID** field on the [Overview page](https://aad.portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview) within your Azure account.
+<img src="/integrations/all/microsoft-business-central/tenant_id.png" alt="Tenant ID field on the Microsoft Entra ID Overview page" />
+
+#### Step 2: Generating your Client ID
+
+1. Navigate to the [Azure portal home page](https://portal.azure.com/#home) and sign in using the credentials of an administrator.
+2. Select **App registrations**.
+<img src="/integrations/all/microsoft-business-central/app_registration.png" alt="App registrations option in the Azure portal" />
+3. Select **New registration**.
+<img src="/integrations/all/microsoft-business-central/new_registration.png" alt="New registration button in Microsoft Entra ID app registrations" />
+4. In the **Register an application** section, enter a meaningful application name to display to users (e.g. `Nango Power BI`). Under **Supported account types**, leave it to the default one which is **Single tenant Only** and click **Register**.
+5. Once you have registered your application, your **Client ID** will be displayed in the **Application (client) ID** field within the **Essentials**. Your **Tenant ID** is shown in the **Directory (tenant) ID** field.
+
+#### Step 3: Generating your Client Secret
+
+1. After registering a new app in the [step above](#step-2-generating-your-client-id), navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
+2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
+3. Once completed, copy the **Client Secret** from the **Value** field immediately and store it securely; it will not be shown again after you leave this page. Don't confuse it with the **Secret ID** column in the same table — that's just an identifier for the secret entry, not the credential itself.
+4. Skip **API permissions** entirely — Power BI Service doesn't expose any application permission that applies to a service principal. `Tenant.Read.All` and `Tenant.ReadWrite.All` (shown under **Power BI Service**) are delegated-only scopes meant for a signed-in user context, and Microsoft advises against assigning them to an app-only (client-credentials) registration. Access instead comes from adding the service principal to each workspace as a **member**, **contributor**, or **admin**, from that workspace's **Access** settings, or — for tenant-wide reads without per-workspace membership — from the Power BI Admin Portal setting covered in the next step.
+
+#### Step 4: Enabling service principal access in Power BI
+
+A tenant admin must also allow service principals to call the API — the app registration and client secret alone aren't enough:
+
+1. Sign in to the [Power BI Admin Portal](https://app.powerbi.com/admin-portal/tenantSettings) as a Power BI admin.
+2. Under **Developer settings**, enable **Allow service principals to use Power BI APIs**.
+3. If the setting is scoped to specific security groups, add your app's service principal to one of those groups.
+4. To use the [Admin API](https://learn.microsoft.com/en-us/rest/api/power-bi/admin) for tenant-wide reads without per-workspace membership, also enable **Service principals can access read-only admin APIs** under **Admin API settings** — a separate tenant-settings section from Developer settings above. No Microsoft Entra API permission is required for this: it's controlled entirely by this tenant setting (and, if scoped, adding the service principal to the allowed security group).
+
+<Note>
+Without the Developer settings toggle enabled, requests fail with an authorization error even though the app registration and client secret are correct. The Admin API settings toggle is separate and only needed for the tenant-wide Admin API.
+</Note>
+
+#### Step 5: Enter credentials in the Connect UI
+
+Once you have your credentials:
+
+1. Open the form where you need to authenticate with Microsoft Power BI.
+2. Enter the **Tenant ID**, **Client ID**, and **Client Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/microsoft-power-bi-oauth2-cc/form.png" alt="Nango Connect UI form with Tenant ID, Client ID, and Client Secret fields for Microsoft Power BI" style={{maxWidth: "450px" }}/>
+
+You are now connected to Microsoft Power BI.
