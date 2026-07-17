@@ -2,7 +2,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatLimit, formatUsage, getUsageState } from '@/utils/usage';
+import { formatLimit, formatUsage, getUsageState, getUsageStateTextColor } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
@@ -74,18 +74,7 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
                     {capsLoading ? (
                         <Skeleton className="h-4 w-12" />
                     ) : (
-                        <div
-                            className={cn(
-                                'text-body-medium-regular',
-                                limit == null
-                                    ? 'text-text-muted'
-                                    : state === 'over'
-                                      ? 'text-text-danger'
-                                      : state === 'near'
-                                        ? 'text-text-warning'
-                                        : 'text-text-default'
-                            )}
-                        >
+                        <div className={cn('text-body-medium-regular', getUsageStateTextColor(state))}>
                             {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                         </div>
                     )}

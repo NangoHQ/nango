@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NEAR_LIMIT_RATIO, formatLimit, formatUsage, getUsageState } from './usage.js';
+import { NEAR_LIMIT_RATIO, formatLimit, formatUsage, getUsageState, getUsageStateTextColor } from './usage.js';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
@@ -30,6 +30,15 @@ describe('getUsageState', () => {
 
     it('keeps the near threshold at 70%', () => {
         expect(NEAR_LIMIT_RATIO).toBe(0.7);
+    });
+});
+
+describe('getUsageStateTextColor', () => {
+    it('maps each state to its text colour', () => {
+        expect(getUsageStateTextColor('uncapped')).toBe('text-text-muted');
+        expect(getUsageStateTextColor('ok')).toBe('text-text-default');
+        expect(getUsageStateTextColor('near')).toBe('text-text-warning');
+        expect(getUsageStateTextColor('over')).toBe('text-text-danger');
     });
 });
 

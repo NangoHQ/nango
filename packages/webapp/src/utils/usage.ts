@@ -90,3 +90,17 @@ export function getUsageBarStyles(state: UsageState): { track: string; fill: str
             return { track: 'bg-icon-success/20', fill: 'bg-icon-success' };
     }
 }
+
+/** Text colour for a usage figure keyed on state: muted when uncapped, red over, amber near, default ok. */
+export function getUsageStateTextColor(state: UsageState): string {
+    switch (state) {
+        case 'over':
+            return 'text-text-danger';
+        case 'near':
+            return 'text-text-warning';
+        case 'uncapped':
+            return 'text-text-muted';
+        default:
+            return 'text-text-default';
+    }
+}
