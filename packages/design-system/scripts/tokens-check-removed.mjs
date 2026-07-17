@@ -12,7 +12,6 @@
  *      version of tokens.generated.css from git, compares it to the working-tree
  *      version, and exits 1 if any removed tokens are still referenced.
  */
-
 import { execFileSync } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { readdir } from 'fs/promises';
@@ -65,6 +64,8 @@ const TAILWIND_COLOR_PREFIXES = [
     'divide',
     'fill',
     'from',
+    'inset-ring',
+    'inset-shadow',
     'outline',
     'placeholder',
     'ring',
@@ -121,14 +122,26 @@ async function listSourceFiles(dir) {
         .map((e) => path.join(e.parentPath ?? e.path, e.name));
 }
 
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
- * Return the 1-based line numbers in `content` that contain `pattern`.
+ * Return the 1-based line numbers in `content` where `pattern` appears at a
+ * token boundary.
+ *
+ * A plain substring match would flag a removed token inside a longer surviving
+ * one — e.g. removing `text-link` (utility `text-text-link`) would falsely match
+ * `text-text-link-hover`. We require the match to be bounded by a non-`[\w-]`
+ * character on each side, so trailing variants/opacity modifiers (`/50`, followed
+ * by a space or quote) still match but a longer token name does not.
  */
 export function getMatchingLines(content, pattern) {
+    const re = new RegExp(`(?<![\\w-])${escapeRegExp(pattern)}(?![\\w-])`);
     const lines = content.split('\n');
     const result = [];
     for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(pattern)) result.push(i + 1);
+        if (re.test(lines[i])) result.push(i + 1);
     }
     return result;
 }

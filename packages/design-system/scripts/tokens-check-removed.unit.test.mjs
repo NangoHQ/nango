@@ -1,9 +1,18 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { checkRemovedTokens, extractDefinedVars, findRemovedVars, findUsages, getMatchingLines, getSearchPatterns, reportUsages } from './tokens-check-removed.mjs';
+import {
+    checkRemovedTokens,
+    extractDefinedVars,
+    findRemovedVars,
+    findUsages,
+    getMatchingLines,
+    getSearchPatterns,
+    reportUsages
+} from './tokens-check-removed.mjs';
 
 // ─── extractDefinedVars ────────────────────────────────────────────────────────
 
@@ -84,6 +93,12 @@ describe('getSearchPatterns', () => {
         expect(patterns).toContain('to-surface-canvas');
     });
 
+    it('includes Tailwind v4 inset-ring and inset-shadow color utilities', () => {
+        const patterns = getSearchPatterns('--surface-canvas');
+        expect(patterns).toContain('inset-ring-surface-canvas');
+        expect(patterns).toContain('inset-shadow-surface-canvas');
+    });
+
     it('does NOT include Tailwind patterns for --ds-* primitive tokens', () => {
         const patterns = getSearchPatterns('--ds-color-neutral-50');
         expect(patterns).toEqual(['var(--ds-color-neutral-50)']);
@@ -106,6 +121,21 @@ describe('getMatchingLines', () => {
 
     it('returns empty array when pattern is not found', () => {
         expect(getMatchingLines('nothing here', 'missing')).toEqual([]);
+    });
+
+    it('does not match a token name that is a prefix of a longer token', () => {
+        // Removing `text-link` must not flag code using the distinct `text-link-hover`.
+        expect(getMatchingLines('class="text-text-link-hover"', 'text-text-link')).toEqual([]);
+    });
+
+    it('matches the exact utility and its opacity/variant forms', () => {
+        expect(getMatchingLines('class="text-text-link"', 'text-text-link')).toEqual([1]);
+        expect(getMatchingLines('class="text-text-link/50"', 'text-text-link')).toEqual([1]);
+        expect(getMatchingLines('class="hover:text-text-link"', 'text-text-link')).toEqual([1]);
+    });
+
+    it('does not match a longer var() reference', () => {
+        expect(getMatchingLines('color: var(--text-link-hover)', 'var(--text-link)')).toEqual([]);
     });
 });
 
@@ -183,7 +213,11 @@ describe('reportUsages', () => {
     function captureStream() {
         // Use a mutable container so we don't lose the reference after destructuring
         const buf = { output: '' };
-        const stream = { write: (chunk) => { buf.output += String(chunk); } };
+        const stream = {
+            write: (chunk) => {
+                buf.output += String(chunk);
+            }
+        };
         return { stream, buf };
     }
 
