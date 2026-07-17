@@ -14,20 +14,15 @@ This guide explains how Nango receives and routes ConnectWise PSA webhooks.
 
 ## Connection routing
 
-ConnectWise webhook payloads include a `CompanyId` field identifying the tenant the event belongs to. Nango routes each webhook to the connection(s) whose `metadata.companyId` **exactly matches** the payload's `CompanyId`.
-
-This is a 1:1 match:
-
-- A webhook is only dispatched to connections that have `metadata.companyId` set to the payload's `CompanyId`.
-- Connections without a matching `metadata.companyId` do not receive the webhook.
+ConnectWise webhook payloads include a `ProductInstanceId` field identifying the tenant the event belongs to. Nango routes each webhook to the connection(s) whose `metadata.productInstanceId` **exactly matches** the payload's `ProductInstanceId`.
 
 <Warning>
-You must set `metadata.companyId` on each connection for webhook routing to work. If it is unset (or does not match the `CompanyId` in the payload), the connection receives no webhooks. The match is case-sensitive.
+You must set `metadata.productInstanceId` on each connection for webhook routing to work. If it is unset (or does not match the `ProductInstanceId` in the payload), the connection receives no webhooks. The match is case-sensitive.
 </Warning>
 
-### Set `metadata.companyId` on a connection
+### Set `metadata.productInstanceId` on a connection
 
-Set `metadata.companyId` to the ConnectWise Company ID for that tenant — the same Company ID used in the connection's credentials (the value ConnectWise sends as `CompanyId` in the webhook payload).
+Set `metadata.productInstanceId` to the ConnectWise Product Instance ID for that tenant — the same Product Instance ID used in the connection's credentials (the value ConnectWise sends as `ProductInstanceId` in the webhook payload).
 
 Set it via the API:
 
@@ -38,17 +33,13 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
   -d '{
     "connection_id": "<CONNECTION_ID>",
     "provider_config_key": "connectwise-psa",
-    "metadata": { "companyId": "<CONNECTWISE-COMPANY-ID>" }
+    "metadata": { "productInstanceId": "<CONNECTWISE-PRODUCT-INSTANCE-ID>" }
   }'
 ```
 
 `PATCH` merges the key into existing metadata; use `POST` if you want to replace all metadata.
 
-You can also set it from a [post-connection-creation event function](/getting-started/use-cases/implement-event-handler) with `nango.updateMetadata({ companyId })` once you have the Company ID for the connection.
-
-<Note>
-`metadata.companyId` must match the `CompanyId` ConnectWise sends in the webhook payload. Confirm the exact value in an incoming webhook (or the ConnectWise login Company ID) and store that same value.
-</Note>
+You can also set it from a [post-connection-creation event function](/getting-started/use-cases/implement-event-handler) with `nango.updateMetadata({ productInstanceId })` once you have the Product Instance ID for the connection.
 
 ## Handle the webhook
 
