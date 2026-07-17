@@ -42,7 +42,7 @@ interface UsageChartCardProps {
     /** 'cumulative' plots counter metrics as a running month-to-date total (Free caps view). */
     chartMode?: 'daily' | 'cumulative';
     /** Request AVG metrics as point-in-time daily counts instead of the billing running-average. */
-    pointInTime?: boolean;
+    avgPerDay?: boolean;
 }
 
 /**
@@ -66,7 +66,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     disableApplyToAll,
     capLine,
     chartMode,
-    pointInTime
+    avgPerDay
 }) => {
     const showControls = useBreakdownEnabled();
 
@@ -88,7 +88,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     const isDetail = inBreakdownMode || inFilterMode;
 
     // One request covers every detail state (filtered and/or broken down). Fetched lazily.
-    const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail, pointInTime });
+    const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail, avgPerDay });
     const detailMetric = detailQuery.data?.data.usage[metric];
 
     const breakdownEntries = detailMetric?.breakdown;

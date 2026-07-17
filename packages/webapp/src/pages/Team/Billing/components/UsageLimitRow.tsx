@@ -77,7 +77,7 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({ metric, label, usa
                     disableApplyToAll
                     capLine={limit ?? undefined}
                     chartMode="cumulative"
-                    pointInTime
+                    avgPerDay
                 />
             </CollapsibleContent>
         </Collapsible>
