@@ -28,17 +28,6 @@ const METRIC_LABELS: Record<UsageMetric, string> = {
     data_transfer: 'Data transfer'
 };
 
-// Gray sublabels from the Figma Free frame.
-const METRIC_DESCRIPTIONS: Partial<Record<UsageMetric, string>> = {
-    connections: 'Active connections',
-    proxy: 'API calls proxied',
-    function_compute_gbms: 'Function compute time',
-    function_executions: 'Total executions',
-    function_logs: 'Function log entries',
-    records: 'Synced records',
-    webhook_forwards: 'Forwarded webhooks'
-};
-
 /**
  * Free-plan usage view: a per-metric caps table (used / limit, % of limit, near / "Limit reached")
  * with each row collapsing open into the existing trend + dimension-breakdown drill-in. A single
@@ -97,7 +86,6 @@ export const FreeUsage: React.FC = () => {
                             key={metric}
                             metric={metric}
                             label={METRIC_LABELS[metric]}
-                            sublabel={METRIC_DESCRIPTIONS[metric]}
                             usage={used}
                             limit={cap?.limit ?? null}
                             capsLoading={isCurrentMonth ? capsLoading : isLoading}

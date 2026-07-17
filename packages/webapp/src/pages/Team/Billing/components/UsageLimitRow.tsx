@@ -16,7 +16,6 @@ export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_min
 interface UsageLimitRowProps {
     metric: UsageMetric;
     label: string;
-    sublabel?: string;
     /** Live current-period usage (from the plans/usage endpoint), against the plan cap. */
     usage: number;
     limit: number | null;
@@ -39,7 +38,6 @@ interface UsageLimitRowProps {
 export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
     metric,
     label,
-    sublabel,
     usage,
     limit,
     capsLoading,
@@ -59,7 +57,6 @@ export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
                 <div className={USAGE_ROW_GRID}>
                     <div className="flex flex-col min-w-0">
                         <span className="text-text-default text-body-medium-regular truncate">{label}</span>
-                        {sublabel && <span className="text-text-secondary text-body-small-regular truncate">{sublabel}</span>}
                     </div>
                     <div className="flex flex-col gap-1.5">
                         {capsLoading ? (
