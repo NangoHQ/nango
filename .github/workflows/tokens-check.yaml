@@ -64,3 +64,23 @@ jobs:
 
             - name: Check for removed tokens still in use
               run: npm run tokens:check --workspace=@nangohq/design-system
+
+    # Stable required-status-check name. `check-tokens` is path-skipped on PRs that
+    # don't touch tokens, and a skipped required check would hang the PR/merge queue.
+    # This job always runs and translates skipped -> success, so it can be marked
+    # required in branch protection. Mark `token-check` (not `check-tokens`) required.
+    token-check:
+        needs: [should-run, check-tokens]
+        if: always()
+        runs-on: ubuntu-latest
+        permissions: {}
+        steps:
+            - name: Verify token check passed
+              run: |
+                  result="${{ needs.check-tokens.result }}"
+                  if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+                      echo "Token check: $result"
+                      exit 0
+                  fi
+                  echo "Token check did not pass: $result"
+                  exit 1
