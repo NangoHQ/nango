@@ -124,7 +124,7 @@ export interface DBPlan extends Timestamps {
      * Change the applied rate limit for the public API
      * @default "m"
      */
-    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '10xl' | '12xl';
+    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '8xl' | '10xl' | '12xl';
 
     /**
      * Enable or disable machine auto idling
