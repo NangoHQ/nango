@@ -27,7 +27,8 @@ export const TeamBilling: React.FC = () => {
 
     const env = useStore((state) => state.env);
     const { data: environmentData } = useEnvironment(env);
-    // Free uses a per-metric month stepper inside each drill-in, so the shared header stepper is hidden.
+    // Free renders its own month selector in the caps table header, so the shared page-header
+    // selector is hidden to avoid two competing pickers.
     const isFreePlan = environmentData?.plan?.name === 'free';
 
     const { can } = usePermissions();
