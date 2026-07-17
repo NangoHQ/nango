@@ -4172,6 +4172,35 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+cerby:
+    display_name: Cerby
+    categories:
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.workspace}.cerby.com/api
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/cerby
+    docs_connect: https://nango.dev/docs/api-integrations/cerby/connect
+    connection_config:
+        workspace:
+            type: string
+            title: Workspace
+            description: The subdomain of your Cerby workspace
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: my-workspace
+            prefix: https://
+            suffix: .cerby.com
+            doc_section: '#step-1-finding-your-workspace-subdomain'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Cerby workspace
+            doc_section: '#step-2-generating-your-api-key'
+
 certn:
     display_name: Certn
     categories:
