@@ -6683,19 +6683,17 @@ If you are using a custom domain, update `NANGO_PUBLIC_CONNECT_URL` to match it.
 
 #### Hosting under a base path
 
-Connect UI is served at the root of its domain by default, but its prebuilt bundle uses relative asset paths and derives its routing base at runtime, so it works under any base path with no rebuild and no rewrite step. To host it under a non-root path — for example behind a reverse proxy that routes services by path — set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
+Connect UI works under any base path, for example behind a reverse proxy that routes services by path. Set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
 
 ```sh
 NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
 ```
 
-This URL drives the generated `connect_link`, the dashboard's Content Security Policy, and CORS, so it must match what end users load.
+Nango uses this URL when generating links to Connect UI and in the dashboard's security headers, so it must match what end users load in the browser.
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
-URLs loading Connect UI at a sub-path must end with a trailing slash (`…/connect/`) — the Nango SDK and the generated links produce this automatically. If the document is served at a slashless URL anyway, Connect UI recovers by retrying with a trailing slash; this requires the host to still serve `index.html` for the slashless URL (it cannot recover a URL the host refuses to serve).
-
-If you serve Connect UI's built `dist` from your own static host, enable SPA fallback (rewrite unknown paths to `index.html`) so in-app refreshes work.
+Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
