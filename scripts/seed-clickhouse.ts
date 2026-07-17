@@ -126,9 +126,22 @@ async function getDbCounts(accountId: number): Promise<{ connections: number; re
     const environmentIds = envs.map((e) => e.id);
     let recordCount = 0;
     if (environmentIds.length > 0) {
+        // Mirror the gauge (UsageTracker.getRecordsUsage): only count records whose connection
+        // still exists. record_counts can retain rows for deleted connections, which the gauge
+        // excludes (paginateConnections filters deleted=false) — summing them here would push the
+        // mirror above the gauge that --mirror-db-counts is meant to match.
         for await (const page of records.paginateCounts({ environmentIds })) {
             if (page.isErr()) throw new Error(`paginateCounts failed: ${page.error}`);
-            recordCount += page.value.reduce((sum, r) => sum + r.count, 0);
+            if (page.value.length === 0) {
+                continue;
+            }
+            const connectionIds = page.value.map((r) => r.connection_id);
+            for await (const connPage of connectionService.paginateConnections({ connectionIds })) {
+                if (connPage.isErr()) throw new Error(`paginateConnections failed: ${connPage.error}`);
+                for (const conn of connPage.value) {
+                    recordCount += page.value.filter((r) => r.connection_id === conn.connection.id).reduce((sum, r) => sum + r.count, 0);
+                }
+            }
         }
     }
     return { connections, records: recordCount };
