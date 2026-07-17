@@ -7,7 +7,7 @@ import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { useSelectedMonth } from '../useSelectedMonth';
-import { MonthStepper } from './MonthStepper';
+import { MonthSelector } from './MonthSelector';
 import { USAGE_ROW_GRID, UsageLimitRow } from './UsageLimitRow';
 
 import type { UsageMetric } from '@nangohq/types';
@@ -64,7 +64,7 @@ export const FreeUsage: React.FC = () => {
         <div className="w-full flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <span className="text-text-strong text-body-medium-medium">Usage</span>
-                <MonthStepper size="sm" />
+                <MonthSelector />
             </div>
             <div className="rounded border border-border-default overflow-hidden">
                 <div
