@@ -61,8 +61,8 @@ export function getUsageState(usage: number, limit: number | null): UsageState {
 
 /**
  * Badge styling for a usage number (sidebar `UsageCard`): neutral under the warning band,
- * warning at ≥70%, danger at ≥100%. Kept as a single function so the sidebar behaviour is
- * unchanged after the move out of `UsageCard.tsx`.
+ * warning at ≥70%, danger at ≥100%. Now shares `getUsageState`, so the sidebar's warning
+ * threshold moves from 80% to 70% to match the Free caps view (intentional).
  */
 export function getStylesForUsage(usage: number, limit: number | null) {
     switch (getUsageState(usage, limit)) {
@@ -88,17 +88,5 @@ export function getUsageBarStyles(state: UsageState): { track: string; fill: str
             return { track: 'bg-icon-warning/20', fill: 'bg-icon-warning' };
         default:
             return { track: 'bg-icon-success/20', fill: 'bg-icon-success' };
-    }
-}
-
-/** Text colour for the "% of limit" / "Limit reached" label, keyed on state. */
-export function getUsageStateTextColor(state: UsageState): string {
-    switch (state) {
-        case 'over':
-            return 'text-text-danger';
-        case 'near':
-            return 'text-text-warning';
-        default:
-            return 'text-text-success';
     }
 }
