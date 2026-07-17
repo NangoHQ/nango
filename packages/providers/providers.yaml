@@ -23238,6 +23238,83 @@ veeva-vault:
             default_value: ''
             hidden: true
 
+veeva-vault-oauth:
+    display_name: Veeva Vault (OAuth 2.0 / OIDC)
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenUrl}
+    token_params:
+        grant_type: client_credentials
+        scope: ${connectionConfig.scope}
+    token_headers:
+        authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    additional_steps:
+        - body_format: form
+          token_params:
+              vaultDNS: ${connectionConfig.subdomain}
+              client_id: ${credentials.clientId}
+          token_headers:
+              authorization: Bearer ${step1.access_token}
+              content-type: application/x-www-form-urlencoded
+              accept: application/json
+          token_url: https://login.veevavault.com/auth/oauth/session/${connectionConfig.oauthProfileId}
+    token_response:
+        token: sessionId
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.veevavault.com/api
+        headers:
+            authorization: ${accessToken}
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/veeva-vault-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/veeva-vault-oauth/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The client ID of the client credentials application configured in your identity provider.
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: The client secret of the client credentials application configured in your identity provider.
+            secret: true
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+    connection_config:
+        tokenUrl:
+            type: string
+            title: Identity Provider Token Endpoint
+            description: The OAuth 2.0 token endpoint URL of your identity provider.
+            example: '{your-okta-domain}/oauth2/default/v1/token'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+        oauthProfileId:
+            type: string
+            title: OAuth 2.0 / OpenID Connect Profile ID
+            description: The ID of the OAuth 2.0 / OpenID Connect profile configured in Veeva Vault.
+            order: 2
+            doc_section: '#step-2-configuring-an-oauth-20-openid-connect-profile-in-veeva-vault'
+        subdomain:
+            type: string
+            title: Vault DNS (subdomain)
+            description: The Vault DNS subdomain of the Veeva Vault you want to connect to
+            example: myvault
+            prefix: https://
+            suffix: veevavault.com
+            order: 3
+            doc_section: '#step-3-finding-your-vault-dns-subdomain'
+        scope:
+            type: string
+            title: OAuth Scope
+            description: The OAuth scope requested from your identity provider, if required.
+            optional: true
+            order: 4
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+
 vtex:
     display_name: VTEX
     categories:
