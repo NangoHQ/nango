@@ -42,14 +42,16 @@ export function extractDefinedVars(css) {
 /**
  * Return CSS variable names present in `oldCss` but absent in `newCss`.
  *
- * `--color-*` variables are Tailwind @theme aliases always derived from a
- * semantic var — skipped here to avoid noise (the parent semantic var is
- * already in the removed set and generates the Tailwind utility patterns).
+ * Includes `--color-*` and `--shadow-*` @theme aliases: source can reference
+ * them directly (e.g. `var(--color-border-muted, currentcolor)` in index.css),
+ * so a removed alias must still be caught. getSearchPatterns only emits the
+ * direct `var()` reference for those — their utility classes are generated from
+ * the underlying semantic token, which is checked via its own entry.
  */
 export function findRemovedVars(oldCss, newCss) {
     const oldVars = extractDefinedVars(oldCss);
     const newVars = extractDefinedVars(newCss);
-    return [...oldVars].filter((v) => !newVars.has(v) && !v.startsWith('--color-'));
+    return [...oldVars].filter((v) => !newVars.has(v));
 }
 
 // ─── Tailwind pattern generation ───────────────────────────────────────────────
@@ -77,22 +79,55 @@ const TAILWIND_COLOR_PREFIXES = [
     'via'
 ];
 
+// Tailwind v4 @theme primitive namespaces (`--<ns>-ds-*`) → the utility family
+// each one generates, e.g. `--radius-ds-xs` registers `rounded-ds-xs` and
+// `--border-width-ds-hairline` registers `border-ds-hairline`. Unlike semantic
+// color tokens (which take every color prefix), each primitive namespace maps to
+// exactly one utility prefix. Keys are the full namespace before `-ds-`.
+const PRIMITIVE_THEME_UTILITY = {
+    radius: 'rounded',
+    'border-width': 'border',
+    text: 'text',
+    'font-weight': 'font',
+    tracking: 'tracking',
+    leading: 'leading'
+};
+
 /**
  * Return all literal strings to search for when a CSS variable is removed.
  *
- *  • `var(--token)` — direct CSS-variable reference (all tokens)
- *  • `prefix-token-name` — Tailwind utility class patterns for semantic tokens
- *    (i.e. tokens NOT prefixed with `--ds-`, which are primitives kept out of
- *    @theme and therefore have no Tailwind utilities)
+ * The pattern set depends on how the variable is registered with Tailwind:
+ *
+ *  • `var(--token)` — direct reference, always searched for every variable.
+ *  • Raw primitives (`--ds-*`) are kept out of @theme — no utilities.
+ *  • `--color-*` / `--shadow-*` are @theme aliases whose utilities come from the
+ *    underlying semantic token (searched via that token's own entry), so only the
+ *    direct `var()` reference matters here.
+ *  • `--<ns>-ds-*` primitive registrations map to one utility family, e.g.
+ *    `--radius-ds-xs` → `rounded-ds-xs`, `--border-width-ds-hairline` →
+ *    `border-ds-hairline`. The `-ds-` infix distinguishes these from semantic
+ *    color tokens that share the prefix (`--text-strong` → `text-text-strong`,
+ *    not a font-size utility).
+ *  • Everything else is a semantic color token and takes every color prefix.
  */
 export function getSearchPatterns(varName) {
     const name = varName.slice(2); // strip '--'
     const patterns = [`var(${varName})`];
 
-    if (!name.startsWith('ds-')) {
-        for (const prefix of TAILWIND_COLOR_PREFIXES) {
-            patterns.push(`${prefix}-${name}`);
-        }
+    if (name.startsWith('ds-') || name.startsWith('color-') || name.startsWith('shadow-')) {
+        return patterns;
+    }
+
+    // Capture the full namespace before the first `-ds-` (e.g. 'border-width').
+    const nsMatch = name.match(/^(.+?)-ds-/);
+    if (nsMatch && PRIMITIVE_THEME_UTILITY[nsMatch[1]]) {
+        // name.slice(ns.length) keeps the leading '-ds-…', e.g. 'radius-ds-xs' -> '-ds-xs'.
+        patterns.push(`${PRIMITIVE_THEME_UTILITY[nsMatch[1]]}${name.slice(nsMatch[1].length)}`);
+        return patterns;
+    }
+
+    for (const prefix of TAILWIND_COLOR_PREFIXES) {
+        patterns.push(`${prefix}-${name}`);
     }
 
     return patterns;

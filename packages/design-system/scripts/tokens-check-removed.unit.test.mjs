@@ -57,12 +57,11 @@ describe('findRemovedVars', () => {
         expect(findRemovedVars(css, css)).toEqual([]);
     });
 
-    it('ignores --color-* vars (Tailwind @theme aliases)', () => {
+    it('includes removed --color-* aliases so direct var() refs are caught', () => {
         const old = makeCss('--surface-canvas', '--color-surface-canvas');
         const next = makeCss('--surface-canvas-new');
-        // --color-surface-canvas is removed but should be skipped
         const removed = findRemovedVars(old, next);
-        expect(removed).not.toContain('--color-surface-canvas');
+        expect(removed).toContain('--color-surface-canvas');
         expect(removed).toContain('--surface-canvas');
     });
 
@@ -99,15 +98,39 @@ describe('getSearchPatterns', () => {
         expect(patterns).toContain('inset-shadow-surface-canvas');
     });
 
-    it('does NOT include Tailwind patterns for --ds-* primitive tokens', () => {
+    it('does NOT include Tailwind patterns for raw --ds-* primitive tokens', () => {
         const patterns = getSearchPatterns('--ds-color-neutral-50');
         expect(patterns).toEqual(['var(--ds-color-neutral-50)']);
     });
 
-    it('includes exactly var() for a --ds-* token (no Tailwind patterns)', () => {
+    it('includes exactly var() for a raw --ds-* token (no Tailwind patterns)', () => {
         const patterns = getSearchPatterns('--ds-typography-font-size-md');
         expect(patterns.length).toBe(1);
         expect(patterns[0]).toBe('var(--ds-typography-font-size-md)');
+    });
+
+    it('maps --<ns>-ds-* primitive registrations to their single utility', () => {
+        // These are registered in @theme and generate real utilities the webapp uses
+        // (rounded-ds-xs, border-ds-hairline, text-ds-md, font-ds-medium, ...).
+        expect(getSearchPatterns('--radius-ds-xs')).toEqual(['var(--radius-ds-xs)', 'rounded-ds-xs']);
+        expect(getSearchPatterns('--text-ds-md')).toEqual(['var(--text-ds-md)', 'text-ds-md']);
+        expect(getSearchPatterns('--border-width-ds-hairline')).toEqual(['var(--border-width-ds-hairline)', 'border-ds-hairline']);
+        expect(getSearchPatterns('--font-weight-ds-medium')).toEqual(['var(--font-weight-ds-medium)', 'font-ds-medium']);
+        expect(getSearchPatterns('--tracking-ds-tight')).toEqual(['var(--tracking-ds-tight)', 'tracking-ds-tight']);
+        expect(getSearchPatterns('--leading-ds-normal')).toEqual(['var(--leading-ds-normal)', 'leading-ds-normal']);
+    });
+
+    it('treats semantic tokens sharing a primitive prefix as color tokens', () => {
+        // --text-strong is a semantic text color, not a font-size primitive.
+        const patterns = getSearchPatterns('--text-strong');
+        expect(patterns).toContain('text-text-strong');
+        expect(patterns).toContain('bg-text-strong');
+        expect(patterns).not.toContain('text-strong');
+    });
+
+    it('emits only the direct var() reference for --color-*/--shadow-* aliases', () => {
+        expect(getSearchPatterns('--color-border-muted')).toEqual(['var(--color-border-muted)']);
+        expect(getSearchPatterns('--shadow-container-inset')).toEqual(['var(--shadow-container-inset)']);
     });
 });
 
