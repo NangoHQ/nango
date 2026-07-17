@@ -281,7 +281,7 @@ export function buildTypographyBlock(tokens) {
  * Run a Style Dictionary build pass using a named format and return the output as a string.
  * SD requires a real file destination — we write to `outPath` (inside tmpDir) and read it back.
  */
-async function buildWithFormat({ includeFiles = [], sourceFile, outPath, format }) {
+async function buildWithFormat({ includeFiles = [], sourceFile, outPath, format, strict = false }) {
     const sd = new StyleDictionary({
         include: includeFiles,
         source: [sourceFile],
@@ -292,7 +292,9 @@ async function buildWithFormat({ includeFiles = [], sourceFile, outPath, format 
                 files: [{ destination: path.basename(outPath), format }]
             }
         },
-        log: { verbosity: 'silent', errors: { brokenReferences: 'warn' } }
+        // In strict mode a broken alias in the typography set throws instead of
+        // silently emitting invalid type-* CSS, matching resolveTokens' behavior.
+        log: { verbosity: 'silent', errors: { brokenReferences: strict ? 'throw' : 'warn' } }
     });
     await sd.buildAllPlatforms();
     return readFileSync(outPath, 'utf8');
@@ -341,7 +343,8 @@ export async function buildCss(tokensData, { strict = false } = {}) {
                   includeFiles: [primFile],
                   sourceFile: typFile,
                   outPath: path.join(tmpDir, 'typography.css'),
-                  format: 'css/typography-classes'
+                  format: 'css/typography-classes',
+                  strict
               })
             : '';
     } finally {
