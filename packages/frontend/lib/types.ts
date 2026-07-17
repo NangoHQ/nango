@@ -6,6 +6,7 @@ export type AuthErrorType =
     | 'invalid_host_url'
     | 'missing_credentials'
     | 'window_closed'
+    | 'connection_timeout'
     | 'connection_test_failed'
     | 'missing_connect_session_token'
     | 'connection_validation_failed'
