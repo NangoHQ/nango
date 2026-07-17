@@ -135,7 +135,7 @@ export interface GetBillingUsageOpts {
      * the billing running-average. Used by the Free caps view, where the cap is a concurrent
      * maximum. CH path only. Default false (billing running-average).
      */
-    pointInTime?: boolean;
+    avgPerDay?: boolean;
 }
 
 export interface BillingUsageMetric {

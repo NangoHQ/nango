@@ -50,9 +50,9 @@ export const FreeUsage: React.FC = () => {
     const isCurrentMonth = selectedMonth.getUTCFullYear() === now.getUTCFullYear() && selectedMonth.getUTCMonth() === now.getUTCMonth();
 
     const { data: caps, isLoading: capsLoading, error: capsError } = useApiGetUsage(env);
-    // pointInTime: connections/records come back as the concurrent daily count (not the billing
+    // avgPerDay: connections/records come back as the concurrent daily count (not the billing
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse', { pointInTime: true });
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse', { avgPerDay: true });
 
     if (usageError || capsError) {
         return <CriticalErrorAlert message="Error loading usage" />;

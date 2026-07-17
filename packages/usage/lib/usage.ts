@@ -335,7 +335,7 @@ export class UsageTracker implements IUsageTracker {
                     ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
                     ...(opts.top !== undefined ? { top: opts.top } : {}),
                     ...(opts.filter ? { filter: opts.filter } : {}),
-                    ...(opts.pointInTime ? { pointInTime: opts.pointInTime } : {})
+                    ...(opts.avgPerDay ? { avgPerDay: opts.avgPerDay } : {})
                 });
             }
             return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
@@ -384,11 +384,11 @@ export class UsageTracker implements IUsageTracker {
             // same-dim combination.
             filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
             // AVG metrics as point-in-time daily counts instead of the billing running-average.
-            pointInTime?: boolean;
+            avgPerDay?: boolean;
         }
     ): Promise<Result<BillingUsageMetrics>> {
-        const { timeframe, metrics: scopedMetrics, breakdown, top, filter, pointInTime } = opts;
-        const avgToUsage = pointInTime ? toPerDayAvg : toRunningAvgUsage;
+        const { timeframe, metrics: scopedMetrics, breakdown, top, filter, avgPerDay } = opts;
+        const avgToUsage = avgPerDay ? toPerDayAvg : toRunningAvgUsage;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
         const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);

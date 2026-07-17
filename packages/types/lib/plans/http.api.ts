@@ -129,7 +129,7 @@ export type GetBillingUsage = Endpoint<{
         filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
         // AVG metrics (connections, records) as point-in-time daily counts instead of the
         // billing running-average — used by the Free caps view. CH path only.
-        pointInTime?: boolean | undefined;
+        avgPerDay?: boolean | undefined;
     };
     Success: {
         data: {

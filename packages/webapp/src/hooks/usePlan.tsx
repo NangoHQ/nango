@@ -105,12 +105,12 @@ export function useApiGetBillingUsage(
     env: string,
     timeframe?: { start: string; end: string },
     source?: 'clickhouse' | 'orb',
-    options?: { pointInTime?: boolean; enabled?: boolean }
+    options?: { avgPerDay?: boolean; enabled?: boolean }
 ) {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? true),
-        // `env` keeps environments separate; `pointInTime ?? false` so an omitted arg and an explicit false share one cache entry.
-        queryKey: [...GetBillingUsageQueryKey, env, timeframe, source, options?.pointInTime ?? false],
+        // `env` keeps environments separate; `avgPerDay ?? false` so an omitted arg and an explicit false share one cache entry.
+        queryKey: [...GetBillingUsageQueryKey, env, timeframe, source, options?.avgPerDay ?? false],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
@@ -120,8 +120,8 @@ export function useApiGetBillingUsage(
             if (source) {
                 params.append('source', source);
             }
-            if (options?.pointInTime) {
-                params.append('pointInTime', 'true');
+            if (options?.avgPerDay) {
+                params.append('avgPerDay', 'true');
             }
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
@@ -163,11 +163,11 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
         filter?: { dimension: BreakdownDimensions[M]; value: string } | null;
     },
     top: number,
-    options?: { enabled?: boolean; pointInTime?: boolean }
+    options?: { enabled?: boolean; avgPerDay?: boolean }
 ) {
     const dimension = spec.dimension ?? null;
     const filter = spec.filter ?? null;
-    const pointInTime = options?.pointInTime ?? false;
+    const avgPerDay = options?.avgPerDay ?? false;
 
     // Fetch lazily: only once the panel has something to detail — a breakdown or a filter — and
     // the caller hasn't disabled it.
@@ -178,7 +178,7 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
         enabled,
         // `filter` is part of the key so drilling into a different value refetches rather than
         // serving the previous slice.
-        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter, top, pointInTime],
+        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter, top, avgPerDay],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
@@ -195,8 +195,8 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
             if (filter) {
                 params.append(`filter[${metric}]`, `${filter.dimension}:${filter.value}`);
             }
-            if (pointInTime) {
-                params.append('pointInTime', 'true');
+            if (avgPerDay) {
+                params.append('avgPerDay', 'true');
             }
             params.append('top', String(top));
 

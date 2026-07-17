@@ -119,7 +119,7 @@ const querySchema = z
         // the refine below 400s it. CH path only.
         filter: filterSchema,
         // AVG metrics as point-in-time daily counts (Free caps view). Query arrives as a string.
-        pointInTime: z.preprocess((v) => v === true || v === 'true', z.boolean()).optional()
+        avgPerDay: z.stringbool().optional()
     })
     .refine(
         (data) => {
@@ -210,7 +210,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         // zod's transform widens `dimension` to `string`; per-metric whitelist
         // is enforced at parse time, so the cast is safe.
         ...(query.filter ? { filter: query.filter as NonNullable<GetBillingUsageOpts['filter']> } : {}),
-        ...(query.pointInTime ? { pointInTime: true } : {})
+        ...(query.avgPerDay ? { avgPerDay: true } : {})
     });
 
     if (usage.isErr()) {
