@@ -18,7 +18,7 @@ import secretService from './secret.service.js';
 import userService from './user.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, PersistAuthContext, Result } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, PersistAuthContext, Result } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
@@ -85,6 +85,42 @@ const freeEmailDomains = new Set([
 ]);
 
 class AccountService {
+    async findAccountWithSameDomain({ email, currentAccountId }: { email: string; currentAccountId: number }): Promise<Pick<DBTeam, 'id' | 'name'> | null> {
+        const emailDomain = getEmailDomain(email);
+        if (!emailDomain || freeEmailDomains.has(emailDomain)) {
+            return null;
+        }
+
+        // Find eligible accounts with an active user from the same domain and an active administrator,
+        // excluding the user's current team. Prefer paid accounts, then accounts with more active members,
+        // and finally the lowest account ID for a stable tie-breaker.
+        const account = await db.knex
+            .with('candidate_account', (qb) => {
+                qb.from<DBTeam>('_nango_accounts as account')
+                    .innerJoin<DBUser>('_nango_users as same_domain_user', 'same_domain_user.account_id', 'account.id')
+                    .distinct('account.id', 'account.name')
+                    .where('account.id', '!=', currentAccountId)
+                    .where('same_domain_user.suspended', false)
+                    .whereRaw("LOWER(SPLIT_PART(same_domain_user.email, '@', 2)) = ?", [emailDomain])
+                    .whereExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from<DBUser>('_nango_users as administrator')
+                            .whereRaw('administrator.account_id = account.id')
+                            .where('administrator.suspended', false)
+                            .where('administrator.role', 'administrator');
+                    });
+            })
+            .from('candidate_account')
+            .leftJoin<DBPlan>('plans', 'plans.account_id', 'candidate_account.id')
+            .select<Pick<DBTeam, 'id' | 'name'>>('candidate_account.id', 'candidate_account.name')
+            .orderByRaw("CASE WHEN plans.name IS NOT NULL AND plans.name NOT IN ('free', 'free-uncapped') THEN 1 ELSE 0 END DESC")
+            .orderByRaw(`(SELECT COUNT(*) FROM _nango_users AS member WHERE member.account_id = candidate_account.id AND member.suspended = false) DESC`)
+            .orderBy('candidate_account.id', 'asc')
+            .first<Pick<DBTeam, 'id' | 'name'>>();
+
+        return account || null;
+    }
+
     async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
         try {
             const result = await trx.select('*').from<DBTeam>(`_nango_accounts`).where({ id: id }).first();
@@ -818,6 +854,17 @@ class AccountService {
             }
         };
     }
+}
+
+function getEmailDomain(email: string): string | null {
+    const atIndex = email.lastIndexOf('@');
+    const emailDomain = email.slice(atIndex + 1).toLowerCase();
+
+    if (atIndex <= 0 || !emailDomain.includes('.')) {
+        return null;
+    }
+
+    return emailDomain;
 }
 
 function emailToTeamName({ email }: { email?: string | undefined }): string | false {
