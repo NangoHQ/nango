@@ -6,7 +6,9 @@ import { IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nango
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '../ui/CopyButton';
 
-interface SecretInputProps extends React.ComponentProps<'input'> {
+import type { InputProps } from '@nangohq/design-system';
+
+interface SecretInputProps extends InputProps {
     copy?: boolean;
     canRead?: boolean;
 }

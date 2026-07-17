@@ -28,6 +28,7 @@ import { getManagedCallback } from './controllers/v1/account/managed/getCallback
 import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { postManagedEmailVerification } from './controllers/v1/account/managed/postVerification.js';
+import { deleteMFA, getMFAStatus, postMFAActivation, postMFAEnrollment, postMFARecoveryCodes } from './controllers/v1/account/mfa/mfa.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -35,6 +36,8 @@ import { postImpersonate } from './controllers/v1/admin/impersonate/postImperson
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
+import { patchConnection } from './controllers/v1/connections/connectionId/patchConnection.js';
+import { postConnectionMetadata } from './controllers/v1/connections/connectionId/postConnectionMetadata.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
 import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
@@ -66,6 +69,7 @@ import { postIntegration } from './controllers/v1/integrations/postIntegration.j
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
 import { deleteIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/deleteFunction.js';
+import { getIntegrationFunctionCode } from './controllers/v1/integrations/providerConfigKey/functions/getCode.js';
 import { getIntegrationFunction } from './controllers/v1/integrations/providerConfigKey/functions/getFunction.js';
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
@@ -108,6 +112,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { auditConnectionDeleted, auditMemberRoleChanged } from './middleware/audit.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -184,12 +189,16 @@ if (flagHasManagedAuth) {
 web.route('/meta').get(webAuth, getMeta);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
+web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, deleteMFA);
+web.route('/account/mfa/enroll').post(webAuth, postMFAEnrollment);
+web.route('/account/mfa/activate').post(webAuth, postMFAActivation);
+web.route('/account/mfa/recovery-codes').post(webAuth, postMFARecoveryCodes);
 
 // Team
 web.route('/team').get(webAuth, getTeam);
 web.route('/team').put(webAuth, can(p.canManageTeam), putTeam);
 web.route('/team/users/:id').delete(webAuth, can(p.canRemoveTeamMember), deleteTeamUser);
-web.route('/team/users/:id').patch(webAuth, can(p.canUpdateTeamMember), patchTeamUser);
+web.route('/team/users/:id').patch(webAuth, auditMemberRoleChanged, can(p.canUpdateTeamMember), patchTeamUser);
 
 // Invitations
 web.route('/invite').post(webAuth, can(p.canInviteMember), postInvite);
@@ -248,6 +257,11 @@ web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ actio
 web.route('/integrations/:providerConfigKey/functions/:functionName')
     .get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunction)
     .delete(webAuth, can({ action: 'delete', resource: 'flow', scopedBy: envScope }), deleteIntegrationFunction);
+web.route('/integrations/:providerConfigKey/functions/:functionName/code').get(
+    webAuth,
+    can({ action: 'read', resource: 'flow', scopedBy: envScope }),
+    getIntegrationFunctionCode
+);
 web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
@@ -266,7 +280,14 @@ web.route('/connections/:connectionId/records/models').get(
 );
 web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
-web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
+web.route('/connections/:connectionId/metadata').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), postConnectionMetadata);
+web.route('/connections/:connectionId').patch(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), patchConnection);
+web.route('/connections/:connectionId').delete(
+    webAuth,
+    auditConnectionDeleted,
+    can({ action: 'delete', resource: 'connection', scopedBy: envScope }),
+    deleteConnection
+);
 web.route('/connections/admin/:connectionId').delete(
     webAuth,
     can({ action: 'update', resource: 'environment', scopedBy: envScope }),

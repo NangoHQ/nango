@@ -60,7 +60,11 @@ export const Signin: React.FC = () => {
 
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            email: '',
+            password: ''
+        },
+        mode: 'onSubmit'
     });
 
     const onSubmitForm = async (data: SigninFormData) => {
@@ -158,7 +162,7 @@ export const Signin: React.FC = () => {
                                     render={({ field, fieldState }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <InputGroup className="h-11">
+                                                <InputGroup>
                                                     <InputGroupInput placeholder="Email" autoComplete="email" {...field} aria-invalid={!!fieldState.error} />
                                                 </InputGroup>
                                             </FormControl>
@@ -174,7 +178,7 @@ export const Signin: React.FC = () => {
                                         render={({ field, fieldState }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <InputGroup className="h-11">
+                                                    <InputGroup>
                                                         <InputGroupInput
                                                             placeholder="Password"
                                                             type="password"
@@ -196,7 +200,7 @@ export const Signin: React.FC = () => {
                                 </StyledLink>
                             </div>
 
-                            <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="lg" loading={isPending}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>

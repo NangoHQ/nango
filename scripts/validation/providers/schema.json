@@ -298,7 +298,15 @@
                         "body": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "string"
+                                "oneOf": [
+                                    { "type": "string" },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
                             }
                         },
                         "connection_config": {
@@ -498,7 +506,7 @@
                 },
                 "client_registration": {
                     "type": "string",
-                    "enum": ["dynamic", "static", "metadata"]
+                    "enum": ["dynamic", "static", "cimd"]
                 },
                 "request_params": {
                     "type": "object",

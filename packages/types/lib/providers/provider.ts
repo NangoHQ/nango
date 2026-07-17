@@ -44,6 +44,9 @@ export interface SimplifiedJSONSchema {
     visible_when?: { field: string; equals: string };
 }
 
+// A `proxy.body` leaf is a string (interpolated) or a nested object of more leaves, to any depth.
+export type ProxyBodyValue = string | { [key: string]: ProxyBodyValue };
+
 export interface BaseProvider {
     display_name: string;
     auth_mode: AuthModeType;
@@ -53,7 +56,7 @@ export interface BaseProvider {
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;
-        body?: Record<string, string>;
+        body?: Record<string, ProxyBodyValue>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
         forward_headers_on_redirect?: boolean;
@@ -146,7 +149,7 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
 
 // currently MCP supports 3 types of client registration
 // https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#client-registration-approaches
-export type McpOAuth2ClientRegistration = 'dynamic' | 'static' | 'metadata';
+export type McpOAuth2ClientRegistration = 'dynamic' | 'static' | 'cimd';
 
 export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';

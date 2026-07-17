@@ -1,0 +1,99 @@
+---
+title: 'Google Health'
+sidebarTitle: 'Google Health'
+description: 'Integrate your application with the Google Health API'
+---
+
+## Quickstart
+
+Connect to Google Health with Nango and see data flow in 2 minutes.
+
+<Steps>
+  <Step id="create-integration" title="Create the integration">
+    In Nango, open **Integrations** and configure a new **Google Health** integration.
+
+    <Note>
+      Google Health requires your own Google Cloud OAuth client. Follow the setup guide linked below, then add the OAuth client ID, client secret, and Google Health scopes in the integration settings in Nango.
+    </Note>
+  </Step>
+  <Step id="authorize-google-health" title="Authorize Google Health">
+    Open **Connections**, add a test connection, and authorize with a Google account that has granted your app the Google Health scopes you configured.
+
+    For a first test, include at least one read scope such as `https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly`.
+  </Step>
+  <Step id="call-google-health-api" title="Call the Google Health API">
+    Make your first request to get the Google Health identity for the authorized user. Replace the placeholders below with your Nango API key, integration ID, and connection ID:
+
+    <Tabs>
+      <Tab title="cURL">
+
+        ```bash
+        curl "https://api.nango.dev/proxy/v4/users/me/identity" \
+          -H "Authorization: Bearer <NANGO-API-KEY>" \
+          -H "Provider-Config-Key: <INTEGRATION-ID>" \
+          -H "Connection-Id: <CONNECTION-ID>"
+        ```
+
+      </Tab>
+
+      <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v4/users/me/identity',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+
+      </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    Check the **Logs** tab in Nango to inspect requests.
+  </Step>
+
+  <Step id="implement-nango" title="Implement Nango in your app">
+    Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+    To obtain your own production credentials, follow the setup guide linked below.
+  </Step>
+</Steps>
+
+<Note>
+  Migrating from Fitbit Web API requires user re-consent. Legacy Fitbit access tokens and refresh tokens cannot be reused with Google Health, so keep the old Fitbit connection until the Google Health connection is verified.
+</Note>
+
+## Google Health integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Google Health OAuth app](/api-integrations/google-health/how-to-register-your-own-google-health-api-oauth-app)
+  Register an OAuth app with Google and obtain credentials to connect it to Nango
+
+- [Google app and security review](/api-integrations/google-shared/google-security-review)
+  Pass Google's OAuth app verification to go to production
+
+Official docs:
+
+- [Google Health API docs](https://developers.google.com/health)
+- [Google Health API scopes](https://developers.google.com/health/scopes)
+- [Google Health API data types](https://developers.google.com/health/data-types)
+- [Google Health API endpoints](https://developers.google.com/health/endpoints)
+
+## Pre-built syncs and actions for Google Health
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/google-health/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

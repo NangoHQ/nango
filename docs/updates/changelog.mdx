@@ -4,6 +4,100 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Management MCP server (Beta)" description="July 16, 2026">
+  Nango now hosts a Management MCP server at `https://mcp.nango.dev/mcp` that lets MCP-compatible clients, like Claude Code or Cursor, work with your Nango account through tools.
+
+  The first tools cover logs, so an agent can investigate failing syncs or actions by querying your Nango logs directly:
+
+  - **`logs_list_operations`:** List and filter log operations.
+  - **`logs_get_operation`:** Get an operation and its log messages.
+
+  Authenticate with a Nango API key sent as a Bearer token. The logs tools require the `environment:logs:read` scope. More tools are on the way, with the goal of supporting the full public API.
+
+  Learn more in the [Management MCP reference](/reference/backend/management-mcp/overview) and the [coding agent setup page](/getting-started/coding-agent-setup#management-mcp-server-beta).
+
+  ![Claude Code querying Nango logs through the Management MCP server](/images/changelog/nango-management-mcp-logs.png)
+</Update>
+---
+
+<Update label="Editable connection tags and metadata" description="July 16, 2026">
+  Connection tags and metadata are now editable from a connection's Auth tab in the dashboard. Previously, updating them required an API call.
+
+  - **Tags:** Add, edit, or remove a connection's key/value tags.
+  - **Metadata:** Edit the metadata JSON in place. Saving overwrites the connection's existing metadata.
+
+  See the [connection tags, configuration & metadata guide](/guides/auth/connection-tags-configuration-metadata) for how these fields work.
+
+  ![Editing tags and connection metadata on the connection page](/images/changelog/editing-tags-connection-metadata.png)
+</Update>
+---
+
+<Update label="CIMD support for MCP auth" description="July 9, 2026">
+  Nango now supports Client ID Metadata Documents (CIMD) when connecting users to MCP servers through the generic MCP integration. Nango hosts a client metadata document for each integration and uses its URL as the OAuth client ID, so no client registration step is needed. CIMD is used automatically when a server supports it, with dynamic client registration (DCR) as the fallback.
+
+  - **Connect to more MCP servers:** The MCP spec now prefers CIMD over DCR, so your users can connect to servers that only support CIMD.
+  - **More reliable auth flows:** Connecting no longer depends on a registration call that can fail or leave stale client records on the server.
+  - **Your branding on the authorization screen:** The hosted document is built from your integration's OAuth client name, URI, and logo.
+
+  Learn more in the [generic MCP provider docs](/integrations/all/mcp-generic) and the [MCP auth guide](/guides/auth/mcp-auth).
+</Update>
+---
+
+<Update label="June 2026 roundup" description="July 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="37 new APIs in June">
+      - [Acumatica](/api-integrations/acumatica)
+      - [Adyntel](/api-integrations/adyntel)
+      - [Ahrefs](/api-integrations/ahrefs)
+      - [Agiloft](/api-integrations/agiloft)
+      - [Agiloft (Client Credentials)](/api-integrations/agiloft-cc)
+      - [A-Leads](/api-integrations/a-leads)
+      - [Attio (MCP)](/api-integrations/attio-mcp)
+      - [AWS SigV4 Proxy](https://nango.dev/integrations/all/aws-sigv4)
+      - [BoondManager](/api-integrations/boondmanager)
+      - [Chatarmin](/api-integrations/chatarmin)
+      - [Cloudflare (MCP)](/api-integrations/cloudflare-mcp)
+      - [Dialpad WFM](/api-integrations/dialpad-wfm)
+      - [Diffbot](/api-integrations/diffbot)
+      - [DiscoLike](/api-integrations/discolike)
+      - [Dualentry (MCP)](/api-integrations/dualentry-mcp)
+      - [Ironclad (Client Credentials)](/api-integrations/ironclad-cc)
+      - [Jamie](/api-integrations/jamie)
+      - [Leadfeeder](/api-integrations/leadfeeder)
+      - [Mattermost](/api-integrations/mattermost)
+      - [Microsoft (Client Credentials - Certificate)](/api-integrations/microsoft-oauth2-cc-cert)
+      - [N-able N-central](/api-integrations/nable-ncentral)
+      - [NetSuite (Client Credentials)](/api-integrations/netsuite-client-credentials)
+      - [Private API (Generic)](https://nango.dev/integrations/all/private-api-generic)
+      - [Read.ai](/api-integrations/read-ai)
+      - [Raindrop (MCP)](/api-integrations/raindrop-mcp)
+      - [Robinhood (MCP)](/api-integrations/robinhood-mcp)
+      - [Sage Intacct (Client Credentials)](/api-integrations/sage-intacct-cc)
+      - [SAP Ariba](/api-integrations/sap-ariba)
+      - [ShopVox](/api-integrations/shopvox)
+      - [SureContact](/api-integrations/surecontact)
+      - [Swoogo](/api-integrations/swoogo)
+      - [Tempo](/api-integrations/tempo)
+      - [Thomson Reuters Legal Tracker](/api-integrations/thomson-reuters-legal-tracker)
+      - [Thomson Reuters Legal Tracker (TR Account)](/api-integrations/thomson-reuters-legal-tracker-tr-account)
+      - [Walmart Marketplace](/api-integrations/walmart)
+      - [Workday (Client Credentials)](/api-integrations/workday-cc)
+      - [YouCanBookMe](/api-integrations/youcanbook-me)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in June:
+
+  - [How Nango runs untrusted customer code at scale](https://nango.dev/blog/how-nango-runs-untrusted-customer-code-at-scale)
+  - [How ID-JAG helps AI agents authenticate](https://nango.dev/blog/id-jag-agent-authentication)
+  - [Build a GitHub API integration for AI agents using Nango](https://nango.dev/blog/build-a-github-api-integration-for-ai-agents)
+  - [How to build a Google Sheets API integration with Nango and Codex](https://nango.dev/blog/how-to-build-a-google-sheets-api-integration-with-nango-and-codex)
+  - [How to build a Notion API integration with Nango and Claude](https://nango.dev/blog/how-to-build-a-notion-api-integration-using-nango-and-claude)
+</Update>
+---
+
 <Update label="Usage breakdowns" description="June 25, 2026">
   The usage charts on the Billing & usage page can now be broken down by dimension, so you can see what's driving your usage and costs.
 
@@ -13,6 +107,23 @@ description: "Important developer & product updates, including deprecations & br
   - **Shareable views:** The selected month, grouping, and filter are stored in the URL, so you can share or bookmark a link to a specific breakdown.
 
   ![Usage breakdowns on the Billing & usage page](/images/changelog/usage-breakdown.gif)
+</Update>
+---
+
+<Update label="Synced records view" description="June 19, 2026">
+  Each connection now has a **Records** tab that shows the records its syncs have written, so you can see what's being synced without calling the records API.
+
+  - **Records list:** View a connection's records sorted by last modified with the full timestamp on each record.
+  - **Inspect payloads:** Click a record to expand it and view its full payload.
+
+  ![Records tab on the connection page](/images/changelog/connection-records-tab.gif)
+</Update>
+---
+
+<Update label="In-app chat support" description="June 19, 2026">
+  You can now get help without leaving the dashboard. A chat widget answers your questions with the Nango AI agent, grounded in our docs, and you can escalate to a human on our team when you need one.
+
+  ![In-app chat support](/images/changelog/in-app-chat-support.gif)
 </Update>
 ---
 

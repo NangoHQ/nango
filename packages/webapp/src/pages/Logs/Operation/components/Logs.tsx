@@ -210,9 +210,9 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </div>
             </div>
             <header className="flex gap-2 items-center">
-                <InputGroup className="grow border-border-muted">
+                <InputGroup className="grow">
                     <InputGroupAddon>
-                        <Search strokeWidth={1} size={18} />
+                        <Search />
                     </InputGroupAddon>
                     <InputGroupInput value={search} placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} />
                     {search && (
@@ -226,7 +226,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                     setSearch('');
                                 }}
                             >
-                                <X strokeWidth={1} size={16} />
+                                <X />
                             </InputGroupButton>
                         </InputGroupAddon>
                     )}

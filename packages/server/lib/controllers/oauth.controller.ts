@@ -19,6 +19,7 @@ import {
     genericMcpClient,
     getConnectionConfig,
     getConnectionMetadata,
+    getGlobalClientMetadataDocumentUrl,
     getProvider,
     hmacService,
     interpolateObjectValues,
@@ -320,6 +321,7 @@ class OAuthController {
                     res,
                     connectionConfig,
                     callbackUrl,
+                    environment,
                     logCtx
                 });
                 return;
@@ -504,7 +506,7 @@ class OAuthController {
                 void logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errRes(res, 'oauth2_cc_error');
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -592,7 +594,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey!, connection_config: connectionConfig },
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
@@ -1016,6 +1018,7 @@ class OAuthController {
         res,
         connectionConfig,
         callbackUrl,
+        environment,
         logCtx
     }: {
         provider: ProviderMcpOAuth2Generic;
@@ -1025,6 +1028,7 @@ class OAuthController {
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
+        environment: DBEnvironment;
         logCtx: LogContext;
     }) {
         const channel = session.webSocketClientId;
@@ -1064,7 +1068,12 @@ class OAuthController {
             };
 
             let clientInformation: OAuthClientInformation;
-            if (metadata.registration_endpoint) {
+            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
+            const clientIdMethod = genericMcpClient.chooseMcpClientIdMethod(metadata, cimdUrl);
+            metrics.increment(metrics.Types.MCP_CLIENT_ID_METHOD, 1, { method: clientIdMethod, provider: config.provider });
+            if (clientIdMethod === 'cimd' && cimdUrl) {
+                clientInformation = { client_id: cimdUrl };
+            } else if (clientIdMethod === 'dcr') {
                 clientInformation = await registerClient(mcpServerUrl, {
                     metadata,
                     clientMetadata
@@ -1088,7 +1097,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
@@ -1522,7 +1531,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1606,7 +1615,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1733,7 +1742,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2023,7 +2032,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2202,7 +2211,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2363,7 +2372,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2532,7 +2541,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: session.connectionConfig },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,

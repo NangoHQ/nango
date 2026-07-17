@@ -59,8 +59,11 @@ export type GetUsage = Endpoint<{
     };
 }>;
 
-// Top-N seen dimension values for (metric, dimension) over a timeframe.
-// Populates the filter dropdown UI on the billing-usage dashboard.
+// Seen dimension values for (metric, dimension) over a timeframe, ordered by
+// volume DESC. Populates the filter dropdown UI on the billing-usage
+// dashboard. A `search` term narrows to matching values across the customer's
+// FULL set (not just the top page), and `page` walks the long tail so any
+// value is reachable by name/substring without typing it verbatim.
 //
 // Querystring is a per-metric discriminated union so the `dimension` field is
 // constrained to the metric's whitelist at compile time; the controller's zod
@@ -75,8 +78,13 @@ export type GetBillingUsageTopDimensionValues = Endpoint<{
             dimension: BreakdownDimensions[M];
             from: string;
             to: string;
-            // Number of values to return. Defaults to 10, server-capped.
-            limit?: string | undefined;
+            // Case-insensitive substring match on the dimension value. Applied
+            // server-side (ClickHouse) so values below the first page are
+            // reachable. Ignored for `environment_id` (filtered client-side by
+            // label — its set is tiny and always fits the first page).
+            search?: string | undefined;
+            // Zero-based page index; page size is fixed server-side.
+            page?: string | undefined;
         };
     }[UsageMetric];
     Success: {
@@ -85,6 +93,9 @@ export type GetBillingUsageTopDimensionValues = Endpoint<{
             // display string — resolved server-side for `environment_id`,
             // equal to `id` for the other slug-ish dims.
             values: { id: string; label: string }[];
+            // `hasMore` is a page-full heuristic (this page came back full),
+            // so the picker can offer "load more" without a count query.
+            pagination: { page: number; limit: number; hasMore: boolean };
         };
     };
 }>;
@@ -116,6 +127,9 @@ export type GetBillingUsage = Endpoint<{
         // Composes with `breakdown[<metric>]` on the same metric when the
         // dimensions differ; only the same-dimension pairing is rejected.
         filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
+        // AVG metrics (connections, records) as point-in-time daily counts instead of the
+        // billing running-average — used by the Free caps view. CH path only.
+        avgPerDay?: boolean | undefined;
     };
     Success: {
         data: {

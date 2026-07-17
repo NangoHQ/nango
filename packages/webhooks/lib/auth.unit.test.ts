@@ -319,6 +319,59 @@ describe('Webhooks: auth notification tests', () => {
         });
     });
 
+    it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {
+        const overrideUrl = 'https://override.example.com/hook';
+        const connectionWithOverride = { ...connection, connection_config: { webhook_url: overrideUrl } };
+
+        await sendAuth({
+            connection: connectionWithOverride,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1
+            } as DBEnvironment,
+            secret,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: true
+            },
+            providerConfig,
+            account,
+            auth_mode: 'OAUTH2',
+            operation: 'creation'
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
+    });
+
+    it('routes a connection-creation failure webhook to the per-connection override URL', async () => {
+        const overrideUrl = 'https://override.example.com/hook';
+        const connectionWithOverride = { ...connection, connection_config: { webhook_url: overrideUrl } };
+
+        await sendAuth({
+            connection: connectionWithOverride,
+            success: false,
+            error: { type: 'error', description: 'creation failed' },
+            environment: {
+                name: 'dev',
+                id: 1
+            } as DBEnvironment,
+            secret,
+            webhookSettings: {
+                ...webhookSettings,
+                on_auth_creation: true
+            },
+            providerConfig,
+            account,
+            auth_mode: 'OAUTH2',
+            operation: 'creation'
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: overrideUrl, type: 'webhook url' }]);
+    });
+
     describe('tags', () => {
         it('Should include connection tags in webhook body', async () => {
             const tags: Tags = { department: 'engineering', priority: 'high' };

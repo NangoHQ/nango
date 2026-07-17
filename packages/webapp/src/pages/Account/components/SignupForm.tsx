@@ -35,7 +35,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
             email: invitation?.email || '',
             password: ''
         },
-        mode: 'onTouched'
+        mode: 'onSubmit'
     });
 
     const navigate = useNavigate();
@@ -144,7 +144,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput placeholder="Name" autoComplete="name" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
@@ -158,7 +158,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput
                                                 disabled={!!invitation?.email}
                                                 placeholder="Email"
@@ -175,7 +175,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                         <FormField control={form.control} name="password" render={() => <Password autoComplete="new-password" />} />
 
-                        <Button type="submit" size="xl" loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size="lg" loading={isPending}>
                             {isPending ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </form>

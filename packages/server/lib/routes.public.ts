@@ -20,6 +20,8 @@ import { postPublicSignatureAuthorization } from './controllers/auth/postSignatu
 import { postPublicTbaAuthorization } from './controllers/auth/postTba.js';
 import { postPublicTwoStepAuthorization } from './controllers/auth/postTwoStep.js';
 import { postPublicUnauthenticated } from './controllers/auth/postUnauthenticated.js';
+import { postCliTelemetry } from './controllers/cli/postTelemetry.js';
+import { getClientMetadata } from './controllers/clientMetadata/environmentUuid/getClientMetadata.js';
 import configController from './controllers/config.controller.js';
 import { deleteConnectSession } from './controllers/connect/deleteSession.js';
 import { getConnectSession } from './controllers/connect/getSession.js';
@@ -51,7 +53,7 @@ import { getPublicIntegrationFunction } from './controllers/integrations/uniqueK
 import { getPublicIntegrationFunctions } from './controllers/integrations/uniqueKey/functions/getFunctions.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
-import { getMcp, postMcp } from './controllers/mcp/mcp.js';
+import { getConnectionToolsMcp, postConnectionToolsMcp } from './controllers/mcp/connectionTools.js';
 import oauthController from './controllers/oauth.controller.js';
 import { getPublicProvider } from './controllers/providers/getProvider.js';
 import { getPublicProviders } from './controllers/providers/getProviders.js';
@@ -75,6 +77,7 @@ import { postWebhook } from './controllers/webhook/environmentUuid/postWebhook.j
 import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { auditConnectionDeleted } from './middleware/audit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
@@ -166,6 +169,7 @@ publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(cookieParser(), oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(getClientMetadata);
 publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);
@@ -231,7 +235,7 @@ publicAPI
 // @deprecated
 publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 // @deprecated
-publicAPI.route('/connection/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connection/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
@@ -257,7 +261,7 @@ publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
 publicAPI.route('/connections/:connectionId').patch(apiAuth, withScope('environment:connections:update'), patchPublicConnection);
-publicAPI.route('/connections/:connectionId').delete(apiAuth, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connections/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
@@ -268,6 +272,10 @@ publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/deploy').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, withScope('environment:deploy'), postDeployInternal);
+
+// CLI
+publicAPI.use('/cli', jsonContentTypeMiddleware);
+publicAPI.route('/cli/telemetry').post(rateLimiterMiddleware, postCliTelemetry);
 
 // Syncs
 publicAPI.route('/sync/update-connection-frequency').put(apiAuth, withScope('environment:syncs:update'), putSyncConnectionFrequency);
@@ -288,8 +296,8 @@ publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, withScope('envir
 
 // MCP
 publicAPI.use('/mcp', jsonContentTypeMiddleware);
-publicAPI.route('/mcp').post(apiAuth, withScope('environment:mcp'), postMcp);
-publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getMcp);
+publicAPI.route('/mcp').post(apiAuth, withScope('environment:mcp'), postConnectionToolsMcp);
+publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getConnectionToolsMcp);
 
 // Scripts config
 publicAPI.use('/scripts', jsonContentTypeMiddleware);

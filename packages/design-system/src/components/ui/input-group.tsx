@@ -6,39 +6,48 @@ import { IconButton } from './button';
 import { Input } from './input';
 import { Textarea } from './textarea';
 
+import type { InputProps } from './input';
 import type { VariantProps } from 'class-variance-authority';
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
-    return (
-        <div
-            data-slot="input-group"
-            role="group"
-            className={cn(
-                'group/input-group bg-surface-input border-ds-hairline border-border-input text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-sm transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-input-hover',
-                'h-9 min-w-0 has-[>textarea]:h-auto',
+const inputGroupVariants = cva(
+    [
+        'group/input-group bg-surface-input border-ds-hairline border-border-interactive text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-xs transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-interactive-hover',
+        'min-w-0 has-[>textarea]:h-auto',
 
-                // Variants based on alignment.
-                'has-[>[data-align=inline-start]]:[&>input]:pl-2',
-                'has-[>[data-align=inline-end]]:[&>input]:pr-2',
-                'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
-                'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
+        // Variants based on alignment.
+        'has-[>[data-align=inline-start]]:[&>input]:pl-2',
+        'has-[>[data-align=inline-end]]:[&>input]:pr-2',
+        'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
+        'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
-                // Focus state — border darkens when the control is focused (focus ring removed pending design review).
-                'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-border-input-hover',
-                // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
-                'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-input-hover',
+        // Focus state — the hairline border adopts the ring color and 0.5px outset + 0.5px inset shadows draw a 1px ring centered on the field edge (half outside, half inside).
+        'has-[[data-slot=input-group-control]:focus-visible]:outline-none has-[[data-slot=input-group-control]:focus-visible]:border-[var(--focus-ring-default)] has-[[data-slot=input-group-control]:focus-visible]:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
+        // Filled state - different border when input has text (works for both controlled and uncontrolled inputs)
+        'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-interactive-hover',
 
-                // Disabled — dedicated tokens (matches Input), no opacity.
-                'has-[[data-slot=input-group-control]:disabled]:border-border-disabled has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
+        // Disabled — keep the interactive border (matches Input); only the bg switches to the disabled token, no opacity.
+        'has-[[data-slot=input-group-control]:disabled]:border-border-interactive has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
-                // Error state.
-                'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border',
+        // Error state.
+        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]'
+    ],
+    {
+        variants: {
+            size: {
+                // Default control height (matches Input).
+                default: 'h-8',
+                // Hug-content — for in-popover search fields. Pair with `size="auto"` on the inner InputGroupInput.
+                auto: 'h-auto'
+            }
+        },
+        defaultVariants: {
+            size: 'default'
+        }
+    }
+);
 
-                className
-            )}
-            {...props}
-        />
-    );
+function InputGroup({ className, size, ...props }: Omit<React.ComponentProps<'div'>, 'size'> & VariantProps<typeof inputGroupVariants>) {
+    return <div data-slot="input-group" role="group" className={cn(inputGroupVariants({ size }), className)} {...props} />;
 }
 
 export const inputGroupAddonVariants = cva(
@@ -96,7 +105,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
     );
 }
 
-const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(({ className, value, defaultValue, onChange, ...props }, ref) => {
+const InputGroupInput = React.forwardRef<HTMLInputElement, InputProps>(({ className, size, value, defaultValue, onChange, ...props }, ref) => {
     const [isFilled, setIsFilled] = React.useState(() => {
         // Check initial state for both controlled and uncontrolled inputs
         if (value !== undefined) {
@@ -126,9 +135,13 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
     return (
         <Input
             ref={ref}
+            size={size}
             data-slot="input-group-control"
             data-filled={isFilled}
-            className={cn('flex-1 rounded-none border-0 bg-transparent shadow-none disabled:bg-transparent focus-visible:ring-0', className)}
+            className={cn(
+                'flex-1 rounded-none border-0 bg-transparent shadow-none focus:shadow-none aria-invalid:focus:shadow-none disabled:bg-transparent focus-visible:ring-0',
+                className
+            )}
             value={value}
             defaultValue={defaultValue}
             onChange={handleChange}
@@ -172,7 +185,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
                 data-slot="input-group-control"
                 data-filled={isFilled}
                 className={cn(
-                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none disabled:bg-transparent focus-visible:ring-0',
+                    'flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none focus:shadow-none aria-invalid:focus:shadow-none disabled:bg-transparent focus-visible:ring-0',
                     className
                 )}
                 value={value}

@@ -26,13 +26,23 @@ export const ENVS = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    NANGO_CONTROL_PLANE_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
     NANGO_SERVER_WEBSOCKETS_PATH: z.string().optional(),
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
+    NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(16 * 1024),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    SERVER_EGRESS_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().default(1_000),
+    SERVER_EGRESS_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
+    SERVER_EGRESS_TELEMETRY_MAX_QUEUE_SIZE: z.coerce.number().int().positive().default(100_000),
     NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: z.stringbool().optional().default(true),
     NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: z
         .string()
@@ -121,6 +131,8 @@ export const ENVS = z.object({
     // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
     // snapshot it.
     CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
+    // Triggers the count of files in BILLING_EVENTS_S3_DLQ_BUCKET (must also be set). -1 disables.
+    CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Metering
     METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
@@ -150,10 +162,12 @@ export const ENVS = z.object({
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
+    NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
 
     // Orchestrator
     ORCHESTRATOR_SERVICE_URL: z.url().optional(),
     NANGO_ORCHESTRATOR_PORT: z.coerce.number().optional().default(3008),
+    NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     ORCHESTRATOR_DATABASE_URL: z.url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
     ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
@@ -180,6 +194,7 @@ export const ENVS = z.object({
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
+    NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     PROVIDERS_URL: z.url().optional(),
     PROVIDERS_RELOAD_INTERVAL: z.coerce.number().optional().default(60000),
     JOBS_PROCESSOR_CONFIG: z
@@ -247,6 +262,7 @@ export const ENVS = z.object({
         .default([]),
     RUNNER_SERVICE_URL: z.url().optional(),
     NANGO_RUNNER_PATH: z.string().optional(),
+    NANGO_RUNNER_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     RUNNER_OWNER_ID: z.string().optional(),
     IDLE_MAX_DURATION_MS: z.coerce.number().default(0),
     RUNNER_NODE_ID: z.coerce.number().default(1),
@@ -336,8 +352,18 @@ export const ENVS = z.object({
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
+    // authoritative for billing. Before this instant, S3 events ship as
+    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
+    // and after this instant, the two swap roles — HTTP events pick up
+    // the "_http" suffix and S3 events become canonical. Unset (or set
+    // to a future date) to defer or roll back the cutover. Remove once
+    // the HTTP emission path is retired.
+    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
+    // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
+    // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
+    BILLING_EVENTS_S3_DLQ_BUCKET: z.string().optional(),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
@@ -514,6 +540,9 @@ export const ENVS = z.object({
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
+
+    // Deploy
+    DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),

@@ -4,7 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { Search, X } from 'lucide-react';
 import { parseAsArrayOf, parseAsBoolean, parseAsString, parseAsStringEnum, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
+import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@nangohq/design-system';
 
@@ -14,8 +14,8 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
-import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
+import { computeLogsColumnSizing, getLogsColumnStyle } from '../column-sizing';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
 import { OperationRow } from './OperationRow';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
@@ -44,7 +44,6 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     // The virtualizer will need a reference to the scrollable container element
     const tableContainerRef = useRef<HTMLDivElement>(null);
-    const windowSize = useWindowSize();
 
     // --- Data fetch
     const [search, setSearch] = useQueryState('search', parseSearch);
@@ -183,14 +182,13 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         getCoreRowModel: getCoreRowModel()
     });
 
-    // auto compute headers width
-    const headers = table.getFlatHeaders();
+    // Measure the width of a single monospace character in the cell font, once. Column widths are derived
+    // from character counts, so this lets us size columns to their content without measuring every cell.
+    // Size the variable columns to fit their widest value. Flexbox (see getLogsColumnStyle) then handles
+    // filling leftover space and shrinking/truncating when the row is too narrow, so no width math here.
     useLayoutEffect(() => {
-        if (tableContainerRef.current) {
-            const initialColumnSizing = calculateTableSizing(headers, tableContainerRef.current?.clientWidth);
-            table.setColumnSizing(initialColumnSizing);
-        }
-    }, [headers, windowSize.width]);
+        table.setColumnSizing(computeLogsColumnSizing(flatData));
+    }, [table, flatData]);
 
     // --- Infinite scroll
     const totalFetched = flatData.length;
@@ -253,15 +251,15 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         <div className="flex h-full min-h-0 flex-col gap-3">
             <div className="flex gap-2 justify-between">
                 <div className="flex-1 min-w-0">
-                    <InputGroup className="border-border-muted">
+                    <InputGroup>
                         <InputGroupAddon>
-                            <Search strokeWidth={1} size={16} />
+                            <Search />
                         </InputGroupAddon>
                         <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
                         {search && (
                             <InputGroupAddon align="inline-end">
                                 <InputGroupButton label="Clear search" variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
-                                    <X strokeWidth={1} size={18} />
+                                    <X />
                                 </InputGroupButton>
                             </InputGroupAddon>
                         )}
@@ -303,10 +301,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                                         return (
                                             <th
                                                 key={header.id}
-                                                className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
-                                                style={{
-                                                    width: header.getSize() ? header.getSize() : 'auto'
-                                                }}
+                                                className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold overflow-hidden"
+                                                style={getLogsColumnStyle(header.column)}
                                             >
                                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                             </th>

@@ -3,6 +3,7 @@ export interface GlobalOptions {
     debug: boolean;
     interactive: boolean;
     dependencyUpdate: boolean;
+    telemetry?: boolean;
 }
 
 export type ENV = 'local' | 'cloud';
@@ -22,6 +23,6 @@ export interface InternalDeployOptions {
     integration?: string;
 }
 
-export const FUNCTION_TYPES = ['sync', 'action', 'on-event', 'webhook'] as const;
+export const FUNCTION_TYPES = ['sync', 'action', 'on-event'] as const;
 
 export type FunctionType = (typeof FUNCTION_TYPES)[number];

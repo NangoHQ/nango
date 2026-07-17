@@ -3,6 +3,12 @@ import { metrics } from '@nangohq/utils';
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
 
+function getCallsite(req: Request): string {
+    const method = req.method.toLowerCase();
+    const path = req.route?.path ?? '';
+    return `${method}_${path}`;
+}
+
 export const egressMeterMiddleware = (req: Request, res: Response<any, RequestLocals>, next: NextFunction) => {
     if (res.locals['apiKeyAuthSource'] !== 'customer_key') {
         next();
@@ -15,7 +21,7 @@ export const egressMeterMiddleware = (req: Request, res: Response<any, RequestLo
     const meterEgressedBytes = () => {
         if (recorded) return;
         const bytes = (req.socket?.bytesWritten ?? 0) - baseline;
-        metrics.increment(metrics.Types.EGRESS_BYTES, bytes);
+        metrics.increment(metrics.Types.EGRESS_BYTES, bytes, { callsite: getCallsite(req) });
         recorded = true;
     };
 

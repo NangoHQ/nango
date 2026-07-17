@@ -1,0 +1,78 @@
+---
+title: 'Microsoft Dynamics 365 Finance and Operations (Client Credentials) - How do I link my account?'
+sidebarTitle: 'Microsoft Dynamics 365 F&O (Client Credentials) Connect'
+---
+
+# Overview
+
+To connect Microsoft Dynamics 365 Finance and Operations (Client Credentials) in Nango, you need to provide:
+
+1. **Tenant ID** — The unique identifier for your organization that uses Microsoft services.
+2. **Environment URL** — The domain of your Finance and Operations environment.
+3. **Client ID** — The unique identifier that Azure assigns to your application when it's registered.
+4. **Client Secret** — A unique string that enables the application to access Microsoft Dynamics 365 Finance and Operations without a signed-in user.
+
+This guide will walk you through generating and finding these credentials within Azure.
+
+### Prerequisites
+
+- You must have an active Microsoft Entra ID (Azure AD) account with access to a Finance and Operations environment, and permission to grant admin consent for application permissions.
+
+### Step 1: Finding your Tenant ID
+
+1. Your Tenant ID can be found in the **Tenant ID** field on the [Overview page](https://aad.portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview) within your Azure account.
+<img src="/integrations/all/microsoft-business-central/tenant_id.png" />
+
+### Step 2: Finding your Environment URL
+
+Sign in to your Finance and Operations environment, then copy its domain from the browser's address bar — everything after `https://` and before the first `/` (for example, `mycompany.operations.dynamics.com`).
+
+### Step 3: Generating your Client ID
+
+1. Navigate to the [Azure portal home page](https://portal.azure.com/#home) and sign in using the credentials of an administrator.
+2. Select **App registrations**.
+<img src="/integrations/all/microsoft-business-central/app_registration.png" />
+3. Select **New registration**.
+<img src="/integrations/all/microsoft-business-central/new_registration.png" />
+4. In the **Register an application** section, enter a meaningful application name to display to users. Select who can use this application based on your environment and click **Register**.
+<img src="/integrations/all/sharepoint-online-oauth2-cc/register_new_app.png" />
+5. Once you have registered your application, your **Client ID** will be displayed in the **Application (client) ID** field within the **Essentials**.
+<img src="/integrations/all/sharepoint-online-oauth2-cc/client_id.png" />
+
+### Step 4: Generating your Client Secret
+
+1. After registering a new app in the [step above](#step-3-generating-your-client-id), navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
+2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
+<img src="/integrations/all/sharepoint-online-oauth2-cc/client_secret.png" />
+3. Once completed, your **Client Secret** will be generated. This value can be found in the **Value** field within the **Client Secrets** table.
+<img src="/integrations/all/sharepoint-online-oauth2-cc/gen_client_secret.png" />
+4. After generating the **Client Secret**, you must grant the registered application the necessary permissions. Navigate to **API permissions**, select **Add a permission**, select **APIs my organization uses**, and search for **Microsoft Dynamics ERP** (app ID URI `Microsoft.ERP`).
+5. From the displayed list, choose **Application permissions** (not Delegated permissions — there is no signed-in user in this flow), select the required permissions, click **Add permissions**, then select **Grant admin consent for [tenant]**.
+<img src="/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/permissions.png" />
+
+### Step 5: Registering the application inside Finance and Operations
+
+1. Sign in to your Finance and Operations environment as an administrator.
+2. In the search bar, search for **Microsoft Entra ID applications** and open it.
+
+<img src="/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/dashboard.png" />
+
+
+3. Select **New**, then enter the **Client ID** from the step above and set **User ID** to `Admin`.
+
+<img src="/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/setting_client.png" />
+
+4. Save the record, then select it and enable it.
+
+### Step 6: Enter credentials in the Connect UI
+
+Once you have your credentials:
+
+1. Open the form where you need to authenticate with Microsoft Dynamics 365 Finance and Operations (Client Credentials).
+2. Enter the **Tenant ID**, **Environment URL**, **Client ID**, and **Client Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/microsoft-dynamics-365-finance-and-operations-cc/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Microsoft Dynamics 365 Finance and Operations (Client Credentials).

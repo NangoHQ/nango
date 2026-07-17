@@ -137,7 +137,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                 <InvoicingTaxIdFields />
 
                 <div className="flex justify-start">
-                    <Button type="submit" variant="primary" size="xl" loading={isPending}>
+                    <Button type="submit" variant="primary" size="md" loading={isPending}>
                         Save changes
                     </Button>
                 </div>

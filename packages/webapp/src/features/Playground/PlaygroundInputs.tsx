@@ -1,6 +1,6 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { Input } from '@nangohq/design-system';
+import { FieldLabel, Input } from '@nangohq/design-system';
 
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -36,12 +36,12 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
     if (isSync) {
         return (
             <div className="grid grid-cols-[110px_1fr] gap-x-4">
-                <label className="text-text-strong text-label-large">Metadata</label>
+                <FieldLabel>Metadata</FieldLabel>
                 <div className="min-w-0 flex flex-col gap-3">
                     <Alert variant="info" className="px-3 py-2" actionsBelow>
                         <Info />
                         <AlertDescription className="text-body-small-regular">
-                            Sync inputs are read from the connection metadata, edited via the Nango API.
+                            Sync inputs are read from the connection metadata. Edit metadata via the Nango API or on the connection&apos;s Auth tab.
                         </AlertDescription>
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
@@ -111,7 +111,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
 
     return (
         <div className="grid grid-cols-[110px_1fr] gap-x-4">
-            <label className="text-text-strong text-label-large">Inputs</label>
+            <FieldLabel>Inputs</FieldLabel>
             <div className="min-w-0 flex flex-col gap-3">
                 {inputFields.map((field) => (
                     <div key={field.name} className="flex flex-col gap-1">

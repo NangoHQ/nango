@@ -261,6 +261,18 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "role_arn" must be defined for AWS_SIGV4 providers`);
             error = true;
         }
+    } else if (provider.auth_mode === 'APP_STORE') {
+        if (!provider.credentials) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" must be defined for APP_STORE providers`);
+            error = true;
+        } else {
+            for (const field of ['issuerId', 'privateKeyId', 'privateKey']) {
+                if (!provider.credentials[field]) {
+                    console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "${field}" must be defined for APP_STORE providers`);
+                    error = true;
+                }
+            }
+        }
     } else {
         if (provider.credentials) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" is defined but not required`);

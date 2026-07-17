@@ -540,6 +540,33 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
+    public async getConnectionConfigByConnectionIds({
+        connectionIds,
+        provider_config_key,
+        environment_id
+    }: {
+        connectionIds: string[];
+        provider_config_key: string;
+        environment_id: number;
+    }): Promise<Map<string, ConnectionConfig>> {
+        const configByConnectionId = new Map<string, ConnectionConfig>();
+        if (connectionIds.length === 0) {
+            return configByConnectionId;
+        }
+
+        const result = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .select('connection_id', 'connection_config')
+            .whereIn('connection_id', connectionIds)
+            .where({ provider_config_key, environment_id, deleted: false });
+
+        for (const row of result) {
+            configByConnectionId.set(row.connection_id, row.connection_config);
+        }
+
+        return configByConnectionId;
+    }
+
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
@@ -627,7 +654,7 @@ class ConnectionService {
         return result || [];
     }
 
-    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
         await trx.from<DBConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
@@ -1369,7 +1396,8 @@ class ConnectionService {
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
         if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
-            const error = new NangoError('client_credentials_fetch_error');
+            const errorPayload = fetchRes.isOk() ? stringifyError({ response: { data: fetchRes.value.body } }) : stringifyError(fetchRes.error);
+            const error = new NangoError('client_credentials_fetch_error', errorPayload);
             return { success: false, error, response: null };
         }
 
@@ -1388,8 +1416,12 @@ class ConnectionService {
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
         connectionConfig: Record<string, string>,
-        refreshToken?: boolean
+        refreshToken?: boolean,
+        integrationConfig?: Record<string, string> | null
     ): Promise<ServiceResponse<TwoStepCredentials>> {
+        const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+        dynamicCredentials = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, integrationConfig);
+
         if (provider.signature) {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
@@ -1405,35 +1437,33 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        // Regenerate the assertion on initial auth or when no refresh_token exists.
+        // Regenerate the assertion on initial auth or when no refresh_token exists and when the assertion expires.
         if (provider.assertion && (refreshToken === false || refreshToken === undefined || !dynamicCredentials['refresh_token'])) {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
             const assertionType = provider.assertion.type;
-            const create =
-                assertionType === 'jwt'
-                    ? assertionClient.generateJwtAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      })
-                    : assertionClient.generateSamlAssertion({
-                          provider,
-                          dynamicCredentials: credentials,
-                          connectionConfig,
-                          ...(assertionOption && { assertionOption })
-                      });
+            const existingAssertion = credentials['assertion'] as string | undefined;
+            const assertionArgs = { provider, dynamicCredentials: credentials, connectionConfig, ...(assertionOption && { assertionOption }) };
 
-            if (create.isErr()) {
-                console.log(create.error);
-                return { success: false, error: create.error, response: null };
+            let create;
+            if (assertionType === 'jwt') {
+                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                    create = assertionClient.generateJwtAssertion(assertionArgs);
+                }
+            } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {
+                create = assertionClient.generateSamlAssertion(assertionArgs);
             }
 
-            credentials['assertion'] = create.value;
+            if (create) {
+                if (create.isErr()) {
+                    return { success: false, error: create.error, response: null };
+                }
 
-            Object.assign(dynamicCredentials, credentials);
+                credentials['assertion'] = create.value;
+
+                Object.assign(dynamicCredentials, credentials);
+            }
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1510,7 +1540,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status !== 200) {
+            if (response.status !== 200 && response.status !== 201) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
@@ -1629,7 +1659,7 @@ class ConnectionService {
             const RESERVED_CRED_KEYS = new Set(['type', 'token', 'refresh_token', 'expires_at', 'raw']);
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
-                if (value !== undefined) {
+                if (value !== undefined && !preconfiguredFields.has(key)) {
                     parsedCreds[key] = value;
                 }
             }
@@ -1778,7 +1808,8 @@ class ConnectionService {
                 provider as ProviderTwoStep,
                 dynamicCredentials,
                 connection.connection_config,
-                true
+                true,
+                providerConfig.custom
             );
 
             if (!success || !credentials) {
@@ -2069,6 +2100,34 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+}
+
+// Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
+// these take precedence over anything submitted per-connection and must never be persisted onto a connection.
+export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
+    if (!integrationConfig || !provider.integration_config) {
+        return new Set();
+    }
+
+    return new Set(Object.keys(provider.integration_config).filter((field) => Boolean(integrationConfig[field])));
+}
+
+export function applyIntegrationConfigToTwoStepCredentials(
+    provider: ProviderTwoStep,
+    dynamicCredentials: Record<string, any>,
+    integrationConfig: Record<string, string> | null | undefined
+): Record<string, any> {
+    const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+    if (preconfiguredFields.size === 0) {
+        return dynamicCredentials;
+    }
+
+    const overrides: Record<string, string> = {};
+    for (const field of preconfiguredFields) {
+        overrides[field] = integrationConfig![field]!;
+    }
+
+    return { ...dynamicCredentials, ...overrides };
 }
 
 export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {

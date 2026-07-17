@@ -1,10 +1,9 @@
 import { RefreshCwIcon } from 'lucide-react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Label } from '@/components/ui/Label';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 
 import type { ApiConnectionFull, OAuth2Credentials } from '@nangohq/types';
@@ -20,13 +19,13 @@ export const OAuth2CredentialsComponent: React.FC<{
     return (
         <>
             <div className="flex flex-col gap-2">
-                <Label htmlFor="access_token">Access token</Label>
+                <FieldLabel htmlFor="access_token">Access token</FieldLabel>
                 <div className="flex gap-2 items-center">
                     <SecretInput id="access_token" value={credentials.access_token} disabled copy canRead={canRead} />
                     {credentials.refresh_token && (
                         <PermissionGate condition={canRead} asChild>
                             {(allowed) => (
-                                <Button variant="outline" size="lg" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
+                                <Button variant="outline" size="md" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
                                     <RefreshCwIcon />
                                     Refresh
                                 </Button>
@@ -38,7 +37,7 @@ export const OAuth2CredentialsComponent: React.FC<{
 
             {credentials.refresh_token && (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="refresh_token">Refresh token</Label>
+                    <FieldLabel htmlFor="refresh_token">Refresh token</FieldLabel>
                     <SecretInput id="refresh_token" value={credentials.refresh_token} disabled copy canRead={canRead} />
                 </div>
             )}
@@ -47,14 +46,14 @@ export const OAuth2CredentialsComponent: React.FC<{
                 <>
                     {credentials.config_override.client_id && (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_id_override">Client ID override</Label>
+                            <FieldLabel htmlFor="client_id_override">Client ID override</FieldLabel>
                             <SecretInput id="client_id_override" value={credentials.config_override.client_id} disabled copy canRead={canRead} />
                         </div>
                     )}
 
                     {credentials.config_override.client_secret && (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_secret_override">Client secret override</Label>
+                            <FieldLabel htmlFor="client_secret_override">Client secret override</FieldLabel>
                             <SecretInput id="client_secret_override" value={credentials.config_override.client_secret} disabled copy canRead={canRead} />
                         </div>
                     )}

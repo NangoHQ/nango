@@ -62,7 +62,7 @@ export function getOrchestratorUrl() {
     return process.env['ORCHESTRATOR_SERVICE_URL'] || `http://localhost:${process.env['NANGO_ORCHESTRATOR_PORT'] || 3008}`;
 }
 
-export function isValidHttpUrl(str: string) {
+export function isValidUrl(str: string) {
     try {
         new URL(str);
         return true;
@@ -171,6 +171,22 @@ export function getGlobalOAuthCallbackUrl() {
 export function getGlobalWebhookReceiveUrl() {
     const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/webhook';
+}
+
+/**
+ * Public URL of the per-integration OAuth Client ID Metadata Document (CIMD).
+ * The URL is used as the OAuth client_id and must match the hosted document's
+ * client_id byte-for-byte, so this helper is the single source of that string.
+ * Returns null when NANGO_SERVER_URL is unset or not https: the authorization
+ * server fetches this URL server-side, so the redirectmeto local-dev fallback
+ * cannot work and callers must fall back to dynamic client registration.
+ */
+export function getGlobalClientMetadataDocumentUrl(environmentUuid: string, providerConfigKey: string): string | null {
+    const baseUrl = process.env['NANGO_SERVER_URL'];
+    if (!baseUrl || !baseUrl.startsWith('https://')) {
+        return null;
+    }
+    return `${baseUrl.replace(/\/+$/, '')}/oauth/client-metadata/${environmentUuid}/${encodeURIComponent(providerConfigKey)}`;
 }
 
 /**
@@ -495,8 +511,14 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
     return str;
 }
 
+// Connection config keys a client is not allowed to supply: they are privileged and only set by the backend.
+const CLIENT_FORBIDDEN_CONNECTION_CONFIG_KEYS = new Set([
+    // `webhook_url` routes a connection's webhooks, so it is only honored from trusted actors (connect session, public API, dashboard).
+    'webhook_url'
+]);
+
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    const arr = Object.entries(queryParams).filter(([, v]) => typeof v === 'string'); // Filter strings
+    const arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && !CLIENT_FORBIDDEN_CONNECTION_CONFIG_KEYS.has(k));
     return Object.fromEntries(arr) as Record<string, string>;
 }
 
@@ -624,6 +646,16 @@ function resolveNowExpression(expression: string, replacers: Record<string, any>
     if (expression === 'now') {
         const isoNow = replacers['now'] as string | undefined;
         return isoNow ?? new Date().toISOString();
+    }
+
+    // `${now+7:days:YYYY-MM-DD}` -> now offset by the amount/unit, formatted.
+    const offsetMatch = expression.match(/^now([+-]\d+):([a-zA-Z]+):(.+)$/);
+    if (offsetMatch) {
+        const [, amount, unit, format] = offsetMatch;
+        return dayjs
+            .utc(getNowDate(replacers))
+            .add(Number(amount), unit as dayjs.ManipulateType)
+            .format(format);
     }
 
     const formatMatch = expression.match(/^now:(.+)$/);

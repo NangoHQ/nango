@@ -2634,6 +2634,99 @@ databricks-account:
 databricks-workspace:
     - all-apis
 
+# source: https://docs.datadoghq.com/api/latest/scopes/
+datadog-oauth:
+    - apm_api_catalog_read
+    - apm_api_catalog_write
+    - apm_read
+    - apm_service_catalog_read
+    - apm_service_catalog_write
+    - billing_read
+    - bits_investigations_read
+    - bits_investigations_write
+    - built_in_features
+    - cases_read
+    - cases_shared_settings_write
+    - cases_write
+    - ci_visibility_read
+    - cloud_cost_management_read
+    - cloud_cost_management_write
+    - code_analysis_read
+    - code_coverage_read
+    - create_webhooks
+    - dashboards_embed_share
+    - dashboards_invite_share
+    - dashboards_public_share
+    - dashboards_read
+    - dashboards_write
+    - data_observability_monitors_write
+    - error_tracking_read
+    - error_tracking_write
+    - event_correlation_config_read
+    - event_correlation_config_write
+    - events_read
+    - hosts_read
+    - incident_notification_settings_read
+    - incident_notification_settings_write
+    - incident_read
+    - incident_settings_write
+    - incident_write
+    - integrations
+    - integrations_read
+    - logs_modify_indexes
+    - logs_read_index_data
+    - manage_integrations
+    - metric_tags_write
+    - metrics_read
+    - monitors_downtime
+    - monitors_read
+    - monitors_write
+    - org_authorized_apps_read
+    - org_authorized_apps_write
+    - org_connections_read
+    - org_connections_write
+    - org_management
+    - security_monitoring_critical_assets_read
+    - security_monitoring_critical_assets_write
+    - security_monitoring_filters_read
+    - security_monitoring_filters_write
+    - security_monitoring_findings_read
+    - security_monitoring_findings_write
+    - security_monitoring_notification_profiles_write
+    - security_monitoring_rules_read
+    - security_monitoring_rules_write
+    - security_monitoring_signals_read
+    - security_monitoring_signals_write
+    - security_monitoring_suppressions_read
+    - security_monitoring_suppressions_write
+    - siem_entities_read
+    - slos_corrections
+    - slos_read
+    - slos_write
+    - status_pages_incident_write
+    - status_pages_internal_page_publish
+    - status_pages_public_page_publish
+    - status_pages_settings_read
+    - status_pages_settings_write
+    - synthetics_global_variable_read
+    - synthetics_global_variable_write
+    - synthetics_private_location_read
+    - synthetics_private_location_write
+    - synthetics_read
+    - synthetics_write
+    - teams_manage
+    - teams_read
+    - test_optimization_read
+    - test_optimization_settings_write
+    - test_optimization_write
+    - timeseries_query
+    - usage_read
+    - user_access_invite
+    - user_access_manage
+    - user_access_read
+    - workflows_read
+    - workflows_run
+
 # source: https://developer.datev.de/en/guides/authentication (no comprehensive scopes list or discovery endpoint found)
 datev:
     - account_id
@@ -3583,6 +3676,24 @@ google-forms:
     - https://www.googleapis.com/auth/forms.responses.readonly
     - openid
     - profile
+
+# source: https://developers.google.com/health/scopes
+google-health:
+    - https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly
+    - https://www.googleapis.com/auth/googlehealth.activity_and_fitness.writeonly
+    - https://www.googleapis.com/auth/googlehealth.ecg.readonly
+    - https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly
+    - https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.writeonly
+    - https://www.googleapis.com/auth/googlehealth.irn.readonly
+    - https://www.googleapis.com/auth/googlehealth.location.readonly
+    - https://www.googleapis.com/auth/googlehealth.nutrition.readonly
+    - https://www.googleapis.com/auth/googlehealth.nutrition.writeonly
+    - https://www.googleapis.com/auth/googlehealth.profile.readonly
+    - https://www.googleapis.com/auth/googlehealth.profile.writeonly
+    - https://www.googleapis.com/auth/googlehealth.settings.readonly
+    - https://www.googleapis.com/auth/googlehealth.settings.writeonly
+    - https://www.googleapis.com/auth/googlehealth.sleep.readonly
+    - https://www.googleapis.com/auth/googlehealth.sleep.writeonly
 
 # source: https://developers.google.com/identity/protocols/oauth2/scopes (Gmail API scopes)
 google-mail:
@@ -6225,6 +6336,14 @@ microsoft-ads:
 microsoft-business-central:
     - https://api.businesscentral.dynamics.com/.default
 
+# source: Azure Portal API permissions picker for "Dynamics ERP" (Microsoft.ERP)
+microsoft-dynamics-365-finance-and-operations:
+    - .default
+    - AX.FullAccess
+    - CustomService.FullAccess
+    - mcp.tools
+    - Odata.FullAccess
+
 # source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Entra ID uses standard Microsoft Graph permissions)
 microsoft-entra-id:
     - .default
@@ -6257,6 +6376,11 @@ microsoft-excel:
     - Files.ReadWrite.All
     - offline_access
     - openid
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-excel-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml base_url (Microsoft client credentials resource scope pattern)
@@ -6594,6 +6718,11 @@ microsoft-power-bi:
     - Workspace.ReadWrite.All
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Power BI's required OAuth resource/audience is analysis.windows.net, a separate identifier from the api.powerbi.com REST host it's used to call; still current, no newer replacement)
+microsoft-power-bi-oauth2-cc:
+    - https://analysis.windows.net/powerbi/api/.default
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
 microsoft-powerpoint:
     - AuditLogsQuery-OneDrive.Read.All
@@ -6644,6 +6773,11 @@ microsoft-powerpoint:
     - UserAuthMethod-Email.ReadWrite.All
     - VerifiedId-Profile.Read.All
     - VerifiedId-Profile.ReadWrite.All
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-powerpoint-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
@@ -8017,6 +8151,11 @@ microsoft-word:
     - UserAuthMethod-Email.ReadWrite.All
     - VerifiedId-Profile.Read.All
     - VerifiedId-Profile.ReadWrite.All
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-word-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 mimecast: []
