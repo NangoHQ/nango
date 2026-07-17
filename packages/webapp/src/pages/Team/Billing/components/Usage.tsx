@@ -48,8 +48,10 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const source = breakdownEnabled ? 'clickhouse' : undefined;
 
     // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
-    // Free — it would double-fetch and can briefly hit Orb before `breakdownEnabled` resolves.
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source, { enabled: !isFree });
+    // Free — it would double-fetch. Gate on `plan` being resolved too: until it loads `isFree` is
+    // false, so a bare `!isFree` would fire one request (and can briefly hit Orb) before we know
+    // the plan. Paid accounts have `plan` cached from the app shell, so this adds no real delay.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source, { enabled: plan != null && !isFree });
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
