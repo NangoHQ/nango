@@ -147,6 +147,20 @@ async function getDbCounts(accountId: number): Promise<{ connections: number; re
     return { connections, records: recordCount };
 }
 
+// --- Free-cap shaping helpers (shared by scaleCountersForFreeDemo + capUsageAtFreeLimits) ---
+
+/** YYYY-MM bucket for a timestamp — caps and scaling are per calendar month. */
+const monthOf = (ts: number): string => new Date(ts).toISOString().slice(0, 7);
+
+/** Accumulate `n` into `map[key]`, starting from 0. */
+const bump = (map: Map<string, number>, key: string, n: number): void => {
+    map.set(key, (map.get(key) ?? 0) + n);
+};
+
+/** function_executions telemetry: derived logs (customLogs) and compute (durationMs). */
+type FnAttrs = { telemetryBag?: { customLogs?: number; durationMs?: number } };
+const fnBag = (ev: ClickhouseRawUsageEvent): FnAttrs['telemetryBag'] => (ev.attributes as FnAttrs).telemetryBag;
+
 /**
  * Scale counter metrics so their monthly totals land at a realistic fraction of the Free caps: a
  * couple just over (so they hit the cap late in the month, then plateau) and the function group
@@ -156,19 +170,15 @@ async function getDbCounts(accountId: number): Promise<{ connections: number; re
  */
 function scaleCountersForFreeDemo(events: ClickhouseRawUsageEvent[]): ClickhouseRawUsageEvent[] {
     const flags = freePlan.flags;
-    const monthOf = (ts: number): string => new Date(ts).toISOString().slice(0, 7);
 
     const proxyTotal = new Map<string, number>();
     const webhookTotal = new Map<string, number>();
     const logsTotal = new Map<string, number>();
     for (const ev of events) {
         const m = monthOf(ev.ts);
-        if (ev.type === 'usage.proxy') proxyTotal.set(m, (proxyTotal.get(m) ?? 0) + ev.value);
-        else if (ev.type === 'usage.webhook_forward') webhookTotal.set(m, (webhookTotal.get(m) ?? 0) + ev.value);
-        else if (ev.type === 'usage.function_executions') {
-            const bag = (ev.attributes as { telemetryBag?: { customLogs?: number } }).telemetryBag;
-            logsTotal.set(m, (logsTotal.get(m) ?? 0) + (bag?.customLogs ?? 0));
-        }
+        if (ev.type === 'usage.proxy') bump(proxyTotal, m, ev.value);
+        else if (ev.type === 'usage.webhook_forward') bump(webhookTotal, m, ev.value);
+        else if (ev.type === 'usage.function_executions') bump(logsTotal, m, fnBag(ev)?.customLogs ?? 0);
     }
     const scaleFor =
         (totals: Map<string, number>, cap: number | null | undefined, target: number) =>
@@ -187,7 +197,7 @@ function scaleCountersForFreeDemo(events: ClickhouseRawUsageEvent[]): Clickhouse
         if (ev.type === 'usage.webhook_forward') return { ...ev, value: scaled(ev.value, webhookScale(m)) };
         if (ev.type === 'usage.function_executions') {
             const f = fnScale(m);
-            const attrs = ev.attributes as { telemetryBag?: { customLogs?: number; durationMs?: number } };
+            const attrs = ev.attributes as FnAttrs;
             const bag = attrs.telemetryBag;
             return {
                 ...ev,
@@ -218,7 +228,6 @@ function capUsageAtFreeLimits(events: ClickhouseRawUsageEvent[]): ClickhouseRawU
     const execCap = flags.function_executions_max ?? Infinity;
     const logsCap = flags.function_logs_max ?? Infinity;
     const computeCap = flags.function_compute_gbms_max ?? Infinity;
-    const monthOf = (ts: number): string => new Date(ts).toISOString().slice(0, 7);
 
     const proxy = new Map<string, number>();
     const webhook = new Map<string, number>();
@@ -226,30 +235,35 @@ function capUsageAtFreeLimits(events: ClickhouseRawUsageEvent[]): ClickhouseRawU
     const logs = new Map<string, number>();
     const compute = new Map<string, number>();
 
+    // Fill this month's cap, trimming the event to what still fits; returns null once it's exhausted.
+    const capCounter = (used: Map<string, number>, cap: number, ev: ClickhouseRawUsageEvent): ClickhouseRawUsageEvent | null => {
+        const m = monthOf(ev.ts);
+        const soFar = used.get(m) ?? 0;
+        if (soFar >= cap) return null;
+        const value = Math.min(ev.value, cap - soFar);
+        used.set(m, soFar + value);
+        return value === ev.value ? ev : { ...ev, value };
+    };
+
     const kept: ClickhouseRawUsageEvent[] = [];
     // Chronological so each month's cap fills from its first day.
     for (const ev of [...events].sort((a, b) => a.ts - b.ts)) {
-        const m = monthOf(ev.ts);
         if (ev.type === 'usage.proxy') {
-            const used = proxy.get(m) ?? 0;
-            if (used >= proxyCap) continue;
-            const value = Math.min(ev.value, proxyCap - used);
-            proxy.set(m, used + value);
-            kept.push(value === ev.value ? ev : { ...ev, value });
+            const trimmed = capCounter(proxy, proxyCap, ev);
+            if (trimmed) kept.push(trimmed);
         } else if (ev.type === 'usage.webhook_forward') {
-            const used = webhook.get(m) ?? 0;
-            if (used >= webhookCap) continue;
-            const value = Math.min(ev.value, webhookCap - used);
-            webhook.set(m, used + value);
-            kept.push(value === ev.value ? ev : { ...ev, value });
+            const trimmed = capCounter(webhook, webhookCap, ev);
+            if (trimmed) kept.push(trimmed);
         } else if (ev.type === 'usage.function_executions') {
+            // Function runs, logs, and compute all stop together once the first of their caps is hit.
+            const m = monthOf(ev.ts);
             if ((exec.get(m) ?? 0) >= execCap || (logs.get(m) ?? 0) >= logsCap || (compute.get(m) ?? 0) >= computeCap) {
-                continue; // function runs blocked once any function cap is hit
+                continue;
             }
-            const bag = (ev.attributes as { telemetryBag?: { customLogs?: number; durationMs?: number } }).telemetryBag;
-            exec.set(m, (exec.get(m) ?? 0) + ev.value);
-            logs.set(m, (logs.get(m) ?? 0) + (bag?.customLogs ?? 0));
-            compute.set(m, (compute.get(m) ?? 0) + (bag?.durationMs ?? 0));
+            const bag = fnBag(ev);
+            bump(exec, m, ev.value);
+            bump(logs, m, bag?.customLogs ?? 0);
+            bump(compute, m, bag?.durationMs ?? 0);
             kept.push(ev);
         } else {
             kept.push(ev);
