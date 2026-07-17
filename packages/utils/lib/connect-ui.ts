@@ -7,6 +7,9 @@ import { connectUrl } from './environment/detection.js';
  */
 export function connectUrlAsDocumentBase(raw: string = connectUrl): URL {
     const url = new URL(raw);
+    // The value is a base URL: a stray query or fragment on it would leak into every derived URL.
+    url.search = '';
+    url.hash = '';
     if (!url.pathname.endsWith('/')) {
         url.pathname += '/';
     }

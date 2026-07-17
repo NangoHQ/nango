@@ -14,6 +14,10 @@ describe('connectUrlAsDocumentBase', () => {
     it('should be idempotent for a sub-path URL that already ends with a slash', () => {
         expect(connectUrlAsDocumentBase('https://example.com/nango/connect/').toString()).toBe('https://example.com/nango/connect/');
     });
+
+    it('should drop a stray query and fragment', () => {
+        expect(connectUrlAsDocumentBase('https://example.com/nango/connect?foo=1#bar').toString()).toBe('https://example.com/nango/connect/');
+    });
 });
 
 describe('buildConnectUiSessionLink', () => {
