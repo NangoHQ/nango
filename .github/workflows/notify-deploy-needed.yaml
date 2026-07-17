@@ -1,0 +1,60 @@
+name: 'Notify deploy needed'
+run-name: 'Notify deploy needed for ${{ github.sha }}'
+
+# When a change lands on master, tell #deploys which services it affects so they don't get
+# forgotten. This only reports what the merge touched — it does not look at what's currently
+# live on any environment.
+on:
+    push:
+        branches:
+            - master
+
+# Least privilege: only checkout needs the token.
+permissions:
+    contents: read
+
+# Coalesce bursts of merges; we only care about announcing the latest landed change.
+concurrency:
+    group: notify-deploy-needed
+    cancel-in-progress: false
+
+jobs:
+    notify:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  # Need both `before` and `after` commits to diff the merged change, and the
+                  # package.json graph at HEAD to map changed files to services.
+                  fetch-depth: 0
+            - name: Setup Node.js
+              uses: ./.github/actions/setup-node
+            - name: Compute affected services
+              id: affected
+              env:
+                  BASE_SHA: ${{ github.event.before }}
+                  HEAD_SHA: ${{ github.sha }}
+                  DEPLOY_REPO: ${{ github.repository }}
+              run: |
+                  message="$(npx --yes tsx@4.20.3 scripts/deploy-status/affected.ts --format slack)"
+                  # Forward the multi-line Slack message to later steps; empty means nothing to announce.
+                  {
+                      echo "message<<__DEPLOY_MSG__"
+                      echo "$message"
+                      echo "__DEPLOY_MSG__"
+                  } >> "$GITHUB_OUTPUT"
+            - name: 'Post to #deploys'
+              if: steps.affected.outputs.message != ''
+              uses: slackapi/slack-github-action@v2.0.0
+              with:
+                  method: chat.postMessage
+                  token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  errors: true
+                  payload: |
+                      channel: "${{ vars.SLACK_DEPLOYS_CHANNEL_ID }}"
+                      unfurl_links: false
+                      attachments:
+                        - color: "#ECB22E"
+                          mrkdwn_in: ["text"]
+                          text: ${{ toJSON(steps.affected.outputs.message) }}

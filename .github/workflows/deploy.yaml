@@ -77,6 +77,8 @@ jobs:
             - name: Install dependencies
               run: npm ci
             - name: Build Webapp
+              env:
+                  GIT_HASH: ${{ github.sha }} # baked into dist/version.json so the deployed bundle reports its own commit
               run: npm run ts-build && npm run -w @nangohq/webapp build
             - name: Inject API origin into dist/index.html
               run: |
@@ -134,6 +136,8 @@ jobs:
             - name: Install dependencies
               run: npm ci
             - name: Build Connect UI
+              env:
+                  GIT_HASH: ${{ github.sha }} # baked into dist/version.json so the deployed bundle reports its own commit
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
             - name: configure aws credentials
               if: inputs.stage != 'replit'
