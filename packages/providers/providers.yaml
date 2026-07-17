@@ -13078,6 +13078,7 @@ microsoft-excel-oauth2-cc:
         - productivity
         - analytics
     alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
     docs: https://nango.dev/docs/api-integrations/microsoft-excel-oauth2-cc
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-excel-oauth2-cc/connect
 
@@ -13088,6 +13089,7 @@ microsoft-power-bi-oauth2-cc:
     alias: microsoft-oauth2-cc
     proxy:
         base_url: https://api.powerbi.com
+    webhook_routing_script: ''
     docs: https://nango.dev/docs/api-integrations/microsoft-power-bi-oauth2-cc
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-power-bi-oauth2-cc/connect
 
@@ -13096,6 +13098,7 @@ microsoft-powerpoint-oauth2-cc:
     categories:
         - productivity
     alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
     docs: https://nango.dev/docs/api-integrations/microsoft-powerpoint-oauth2-cc
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-powerpoint-oauth2-cc/connect
 
@@ -13104,6 +13107,7 @@ microsoft-word-oauth2-cc:
     categories:
         - productivity
     alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
     docs: https://nango.dev/docs/api-integrations/microsoft-word-oauth2-cc
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-word-oauth2-cc/connect
 
