@@ -41,13 +41,13 @@ This guide will walk you through generating and finding these credentials within
 1. After registering a new app in the [step above](#step-2-generating-your-client-id), navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
 2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
 3. Once completed, copy the **Client Secret** from the **Value** field immediately and store it securely; it will not be shown again after you leave this page. Don't confuse it with the **Secret ID** column in the same table — that's just an identifier for the secret entry, not the credential itself.
-4. Skip **API permissions** entirely — Power BI Service doesn't expose any application permission that applies to a service principal. `Tenant.Read.All` and `Tenant.ReadWrite.All` (shown under **Power BI Service**) are delegated-only scopes meant for a signed-in user context, and Microsoft advises against assigning them to an app-only (client-credentials) registration. Access instead comes from adding the service principal to each workspace as a **member**, **contributor**, or **admin**, from that workspace's **Access** settings, or — for tenant-wide reads without per-workspace membership — from the Power BI Admin Portal setting covered in the next step.
+4. Skip **API permissions** entirely — Power BI Service doesn't expose any application permission that applies to a service principal. `Tenant.Read.All` and `Tenant.ReadWrite.All` (shown under **Power BI Service**) are delegated-only scopes meant for a signed-in user context, and Microsoft advises against assigning them to an app-only (client-credentials) registration. Access instead comes from adding the service principal to each workspace as a **viewer**, **contributor**, **member**, or **admin**, from that workspace's **Access** settings, or — for tenant-wide reads without per-workspace membership — from the Fabric admin portal setting covered in the next step.
 
 #### Step 4: Enabling service principal access in Power BI
 
 A tenant admin must also allow service principals to call the API — the app registration and client secret alone aren't enough:
 
-1. Sign in to the [Power BI Admin Portal](https://app.powerbi.com/admin-portal/tenantSettings) as a Power BI admin.
+1. Sign in to the [Fabric admin portal](https://app.powerbi.com/admin-portal/tenantSettings) as a Power BI admin.
 2. Under **Developer settings**, enable **Allow service principals to use Power BI APIs**.
 3. If the setting is scoped to specific security groups, add your app's service principal to one of those groups.
 4. To use the [Admin API](https://learn.microsoft.com/en-us/rest/api/power-bi/admin) for tenant-wide reads without per-workspace membership, also enable **Service principals can access read-only admin APIs** under **Admin API settings** — a separate tenant-settings section from Developer settings above. No Microsoft Entra API permission is required for this: it's controlled entirely by this tenant setting (and, if scoped, adding the service principal to the allowed security group).

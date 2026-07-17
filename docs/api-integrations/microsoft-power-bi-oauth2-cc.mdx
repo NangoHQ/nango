@@ -16,13 +16,13 @@ Connect to Microsoft Power BI with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Connect_, then enter your **Tenant ID**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Microsoft Power BI API">
-    Let's make your first request to the Power BI API (list the workspaces your service principal can access). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Power BI API (list the workspaces your service principal can access). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/v1.0/myorg/groups" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Microsoft Power BI with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/v1.0/myorg/groups',
@@ -80,7 +80,7 @@ import PreBuiltUseCases from "/snippets/generated/microsoft-power-bi-oauth2-cc/P
 
 ## API gotchas
 
-- Unlike Word/Excel/PowerPoint, Power BI's app-only auth isn't gated by Microsoft Graph permissions alone — a Power BI tenant admin must also enable **Allow service principals to use Power BI APIs** (and, if scoping to a security group, add the app to that group) in the Power BI Admin Portal's tenant settings. Without this, requests fail even with a valid token and correct application permissions.
-- A service principal only sees workspaces it's been added to as a member, contributor, or admin (`/v1.0/myorg/groups`). To read tenant-wide without per-workspace membership, use the [Admin API](https://learn.microsoft.com/en-us/rest/api/power-bi/admin) (`/v1.0/myorg/admin/groups`) — this requires enabling **Service principals can access read-only admin APIs** in the Power BI Admin Portal (separate from the base tenant setting above). No Microsoft Entra API permission is needed: `Tenant.Read.All`/`Tenant.ReadWrite.All` are delegated-only scopes and don't apply to service principals.
+- Power BI's app-only auth isn't gated by Microsoft Graph permissions alone — a Power BI tenant admin must also enable **Allow service principals to use Power BI APIs** (and, if scoping to a security group, add the app to that group) in the Fabric admin portal's tenant settings. Without this, requests fail even with a valid token and correct application permissions.
+- A service principal only sees workspaces it's been added to as a viewer, contributor, member, or admin (`/v1.0/myorg/groups`). To read tenant-wide without per-workspace membership, use the [Admin API](https://learn.microsoft.com/en-us/rest/api/power-bi/admin) (`/v1.0/myorg/admin/groups`) — this requires enabling **Service principals can access read-only admin APIs** in the Fabric admin portal (separate from the base tenant setting above). No Microsoft Entra API permission is needed: `Tenant.Read.All`/`Tenant.ReadWrite.All` are delegated-only scopes and don't apply to service principals.
 
 ---
