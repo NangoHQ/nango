@@ -1,13 +1,13 @@
 import crypto from 'node:crypto';
 
-import type { AwsSigV4Credentials, DeepReplace } from '@nangohq/types';
+import type { AwsSigV4Credentials } from '@nangohq/types';
 
 interface SignRequestInput {
     url: string;
     method: string;
     headers: Record<string, string>;
     body?: string | Buffer | null;
-    credentials: DeepReplace<AwsSigV4Credentials, Date, Date | string>;
+    credentials: AwsSigV4Credentials;
     now?: Date;
 }
 
