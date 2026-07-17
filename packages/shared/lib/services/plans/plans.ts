@@ -329,7 +329,9 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                     '3xl': 6,
                     '4xl': 7,
                     '5xl': 8,
-                    '6xl': 9
+                    '6xl': 9,
+                    '10xl': 10,
+                    '12xl': 11
                 };
                 const currentIndex = sizeIndex[currentPlan[key]];
                 const newIndex = sizeIndex[newPlanDefinition.flags[key]];
