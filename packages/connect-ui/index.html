@@ -3,11 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <script>
-            // Built assets use relative paths ("./assets/…"), which resolve against the document
-            // URL — a slashless base URL like "https://host/nango/connect" makes the entry script
-            // 404 (it resolves to /nango/assets/…). Wired to `onerror` on the entry script below:
-            // retry with a trailing slash only when the asset load actually failed, so documents
-            // served at real routes (deep-route refresh via SPA fallback) are never misredirected.
+            // Assets are relative to the document URL, so a slashless base URL ("…/nango/connect")
+            // breaks them. Wired to `onerror` on the entry script: retry with a trailing slash.
             window.__nangoBasePathRetry = function () {
                 var path = location.pathname;
                 if (!path.endsWith('/')) {

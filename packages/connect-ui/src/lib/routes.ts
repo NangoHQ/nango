@@ -31,14 +31,10 @@ export const goRouter = createRoute({
 
 export const routeTree = rootRoute.addChildren([indexRoute, integrationsRoute, goRouter]);
 
-// Connect UI is built with a relative base (vite `base: './'`) so a prebuilt bundle can be served
-// under any path without rewriting. The basepath therefore can't come from import.meta.env.BASE_URL
-// (it's the literal './'); derive it from the document URL instead. The document is always loaded at
-// the base root ('{base}/') or at a depth-1 route under it ('{base}/integrations'), and no route ends
-// with a trailing slash, so resolving '.' against document.baseURI yields the base path.
+// With a relative base (vite `base: './'`) the basepath can't come from import.meta.env.BASE_URL.
+// The document always loads at the base root or a depth-1 route, so '.' resolves to the base path.
 export function basepathFromDocumentBaseURI(baseURI: string): string | undefined {
     const pathname = new URL('.', baseURI).pathname;
-    // TanStack Router wants the basepath without a trailing slash; root stays default.
     return pathname === '/' ? undefined : pathname.replace(/\/$/, '');
 }
 

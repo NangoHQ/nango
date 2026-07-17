@@ -7,8 +7,7 @@ import svgr from 'vite-plugin-svgr';
 
 import type { Plugin, UserConfig } from 'vite';
 
-// Vite drops extra attributes when it rewrites the entry <script> tag at build, so re-attach the
-// onerror hook that drives the trailing-slash retry (see the inline script in index.html).
+// Vite drops extra attributes when rewriting the entry script tag; re-attach the retry hook (see index.html).
 function basePathRetry(): Plugin {
     return {
         name: 'connect-ui:base-path-retry',
@@ -22,11 +21,8 @@ function basePathRetry(): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
-    // Build with a relative base so the prebuilt bundle is servable under any path with no rewrite
-    // step. Correctness requires the document URL to end in '/' at the base root (guarded by the
-    // inline script in index.html) and all routes staying depth-1 without trailing slashes — from a
-    // deep-route document ('{base}/integrations'), relative assets resolve one level up, back to the
-    // base. The dev server stays at root.
+    // Relative base so the prebuilt bundle can be served under any path. Requires a trailing slash
+    // on the document URL (retried via index.html) and depth-1 routes. Dev stays at root.
     base: command === 'build' ? './' : '/',
     plugins: [react(), svgr(), tailwindcss(), basePathRetry()] as UserConfig['plugins'],
     resolve: {

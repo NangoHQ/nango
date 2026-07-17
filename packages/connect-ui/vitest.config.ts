@@ -3,13 +3,9 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config';
 
-// vite.config is a function of Vite's `command` — its base differs between `build` (relative) and
-// `serve` (root). Call it with command: 'serve' to get a plain config object for mergeConfig (so we
-// inherit plugins and aliases) and the root base, which is what tests want.
-const resolvedViteConfig = viteConfig({ command: 'serve', mode: 'test' });
-
 export default mergeConfig(
-    resolvedViteConfig,
+    // Resolve the vite config function with 'serve' so tests get the root base, not the relative build base.
+    viteConfig({ command: 'serve', mode: 'test' }),
     defineConfig({
         test: {
             include: ['src/**/*.test.tsx'],

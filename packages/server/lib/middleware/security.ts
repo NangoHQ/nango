@@ -4,10 +4,7 @@ import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase } from '@n
 
 import type { RequestHandler } from 'express';
 
-// CSP source path matching is exact when the path has no trailing slash; with one it's a prefix
-// match. Carry both forms: the trailing-slash source covers the sub-path's assets and routes, and
-// the verbatim configured value covers the slashless document URL that SDKs without trailing-slash
-// normalization load before Connect UI's in-page retry redirects it.
+// CSP path matching: no trailing slash = exact match (URL older SDKs load), with = prefix match (assets/routes).
 const connectUrlCspSources = [...new Set([connectUrl, connectUrlAsDocumentBase().toString()])];
 
 export function securityMiddlewares(): RequestHandler[] {
