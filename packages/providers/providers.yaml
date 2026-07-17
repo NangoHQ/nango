@@ -14148,6 +14148,30 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+neon:
+    display_name: Neon
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.neon.tech/api/v2
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /users/me
+    docs: https://nango.dev/docs/api-integrations/neon
+    docs_connect: https://nango.dev/docs/api-integrations/neon/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Neon API key.
+            pattern: '^(napi_)?[a-z0-9]{64}$'
+            example: napi_1a2b3c4d5e6f****************************************************
+            doc_section: '#step-1-creating-an-api-key'
+
 nerdio:
     display_name: Nerdio
     categories:
