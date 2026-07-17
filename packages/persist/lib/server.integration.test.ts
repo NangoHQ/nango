@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
@@ -18,6 +19,7 @@ import {
     SyncJobsType,
     SyncStatus
 } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { server } from './server.js';
 
@@ -50,17 +52,18 @@ describe('Persist API', () => {
         seed = await initDb();
         server.listen(port);
 
-        vi.spyOn(accountService, 'getAccountContextByApiKey').mockImplementation((opts) => {
-            const key = 'internalSecretKey' in opts ? opts.internalSecretKey : 'secretKey' in opts ? opts.secretKey : '';
+        vi.spyOn(getFlags(), 'shouldUseLightPersistAuthContext').mockResolvedValue(true);
+        vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
-                return Promise.resolve({
-                    account: seed.account,
-                    environment: seed.env,
-                    secret: seed.secret,
-                    plan: seed.plan
-                });
+                return Promise.resolve(
+                    Ok({
+                        account: { id: seed.account.id },
+                        environment: { id: seed.env.id, name: seed.env.name },
+                        plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
+                    })
+                );
             }
-            return Promise.resolve(null);
+            return Promise.resolve(Ok(null));
         });
     });
 
@@ -72,6 +75,30 @@ describe('Persist API', () => {
         const response = await fetch(`${serverUrl}/health`);
         expect(response.status).toEqual(200);
         expect(await response.json()).toEqual({ status: 'ok' });
+    });
+
+    it('should authenticate through the legacy lookup when the flag is off', async () => {
+        vi.mocked(getFlags().shouldUseLightPersistAuthContext).mockResolvedValueOnce(false);
+        const legacySpy = vi.spyOn(accountService, 'getAccountContextByApiKey').mockResolvedValueOnce({
+            account: seed.account,
+            environment: seed.env,
+            secret: seed.secret,
+            plan: seed.plan
+        });
+
+        const response = await fetch(`${serverUrl}/environment/${seed.env.id}/log`, {
+            method: 'POST',
+            body: JSON.stringify({
+                activityLogId: seed.activityLogId,
+                log: { type: 'log', level: 'info', message: 'Hello from the legacy path!', createdAt: new Date().toISOString() }
+            }),
+            headers: {
+                Authorization: `Bearer ${mockSecretKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        expect(response.status).toEqual(204);
+        expect(legacySpy).toHaveBeenCalledOnce();
     });
 
     it('should log', async () => {

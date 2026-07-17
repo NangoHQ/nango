@@ -13,6 +13,7 @@ export type * from './keystore/index.js';
 export type * from './action/api.js';
 export type * from './admin/http.api.js';
 export type * from './account/api.js';
+export type * from './account/context.js';
 export type * from './user/api.js';
 export type * from './user/db.js';
 export type * from './plain/api.js';
@@ -102,6 +103,8 @@ export type * from './checkpoint/types.js';
 export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
+export type * from './mfa/api.js';
+export type * from './mfa/db.js';
 export type * from './functions/api.js';
 export type * from './functions/capabilities.js';
 export type * from './functions/domain.js';

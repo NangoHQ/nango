@@ -32,7 +32,7 @@ export async function persistRecords({
 }: {
     persistType: PersistType;
     accountId: number;
-    environment: DBEnvironment;
+    environment: Pick<DBEnvironment, 'id' | 'name'>;
     connectionId: number;
     providerConfigKey: string;
     syncId: string;
@@ -41,7 +41,7 @@ export async function persistRecords({
     records: Record<string, any>[];
     activityLogId: string;
     merging?: MergingStrategy;
-    plan: DBPlan | null;
+    plan: Pick<DBPlan, 'records_store'> | null;
 }): Promise<Result<MergingStrategy>> {
     const active = tracer.scope().active();
     const span = tracer.startSpan('persistRecords', {
