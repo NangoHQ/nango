@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
-import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report } from '@nangohq/utils';
+import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report, TTLFixedSizeMap } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -21,7 +22,17 @@ import type { Knex } from '@nangohq/database';
 import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, Result } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
+// Serves stale contexts (keys/accounts/plans) for up to the TTL — keep it very short.
+// Full staleness contract: AUTH_ACCOUNT_CONTEXT_CACHE_TTL_MS in @nangohq/utils parse.ts.
+const accountContextLocalCache = new TTLFixedSizeMap<string, AccountContext>(10_000, envs.AUTH_ACCOUNT_CONTEXT_CACHE_TTL_MS);
 const logger = getLogger('AccountService');
+
+function getCachedAccountContext({ hash, mode }: { hash: string | undefined; mode: 'dry' | 'on' }): AccountContext | undefined {
+    // hash is only recorded after a successful lookup, so an unseen (never validated) key can never hit
+    const cached = hash === undefined ? undefined : accountContextLocalCache.get(hash);
+    metrics.increment(metrics.Types.AUTH_ACCOUNT_CONTEXT_CACHE, 1, { result: cached ? 'hit' : 'miss', mode });
+    return cached;
+}
 
 interface AccountContext {
     account: DBTeam;
@@ -650,6 +661,14 @@ class AccountService {
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
     private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
+        const cacheMode = envs.AUTH_ACCOUNT_CONTEXT_CACHE_MODE;
+        if (cacheMode !== 'off') {
+            const cached = getCachedAccountContext({ hash: hashLocalCache.get(secretKey), mode: cacheMode });
+            if (cached !== undefined && cacheMode === 'on') {
+                return cached;
+            }
+        }
+
         const hash = await this.hashSecretWithCache(secretKey);
 
         const row = await db.readOnly
@@ -691,7 +710,7 @@ class AccountService {
         const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
 
-        return {
+        const context: AccountContext = {
             account: {
                 ...row.account,
                 created_at: new Date(row.account.created_at),
@@ -723,6 +742,17 @@ class AccountService {
                 scopes: ['environment:*']
             }
         };
+
+        if (cacheMode !== 'off') {
+            // dry: don't refresh fresh entries — 'on' never reaches this path on a hit, so
+            // refreshing here would inflate the measured hit ratio over what 'on' would serve.
+            if (cacheMode === 'on' || accountContextLocalCache.get(hash) === undefined) {
+                // The cached instance is shared across requests; callers must not mutate it
+                accountContextLocalCache.set(hash, context);
+            }
+        }
+
+        return context;
     }
 }
 

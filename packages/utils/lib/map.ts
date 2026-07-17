@@ -26,7 +26,7 @@ export class FixedSizeMap<K, V> {
     private maxSize: number;
 
     constructor(maxSize: number) {
-        if (maxSize <= 0) {
+        if (!Number.isInteger(maxSize) || maxSize <= 0) {
             throw new Error('maxSize must be a positive integer.');
         }
         this.map = new Map<K, V>();
@@ -63,6 +63,47 @@ export class FixedSizeMap<K, V> {
 
     clear(): void {
         this.map.clear();
+    }
+
+    get size(): number {
+        return this.map.size;
+    }
+}
+
+/**
+ * A FixedSizeMap whose entries also expire after a TTL.
+ *
+ * Expiry uses a monotonic clock, so wall-clock jumps cannot extend or shorten
+ * an entry's life.
+ */
+export class TTLFixedSizeMap<K, V> {
+    private map: FixedSizeMap<K, { value: V; setAtNs: bigint }>;
+    private ttlNs: bigint;
+
+    constructor(maxSize: number, ttlMs: number) {
+        if (!Number.isFinite(ttlMs) || ttlMs < 0) {
+            throw new Error('ttlMs must be a finite, non-negative number.');
+        }
+        this.map = new FixedSizeMap(maxSize);
+        // trunc: BigInt() throws on non-integers
+        this.ttlNs = BigInt(Math.trunc(ttlMs)) * 1_000_000n;
+    }
+
+    /** Entries written more than the TTL ago are treated as absent and evicted on read. */
+    get(key: K): V | undefined {
+        const entry = this.map.get(key);
+        if (!entry) {
+            return undefined;
+        }
+        if (process.hrtime.bigint() - entry.setAtNs >= this.ttlNs) {
+            this.map.delete(key);
+            return undefined;
+        }
+        return entry.value;
+    }
+
+    set(key: K, value: V): void {
+        this.map.set(key, { value, setAtNs: process.hrtime.bigint() });
     }
 
     get size(): number {
