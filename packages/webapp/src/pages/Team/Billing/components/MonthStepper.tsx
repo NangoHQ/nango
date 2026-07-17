@@ -20,7 +20,7 @@ const SIZES = {
     // Compact contexts (e.g. the Free caps table header).
     sm: {
         container: 'flex items-center gap-1',
-        label: 'text-text-secondary text-body-small-regular min-w-28 text-center'
+        label: 'text-text-secondary text-body-medium-regular min-w-28 text-center'
     }
 } as const;
 
