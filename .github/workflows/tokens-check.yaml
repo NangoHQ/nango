@@ -8,6 +8,10 @@ on:
     pull_request:
     merge_group:
 
+# Least privilege: every job only reads the repo. token-check narrows further to {}.
+permissions:
+    contents: read
+
 jobs:
     should-run:
         runs-on: ubuntu-latest
