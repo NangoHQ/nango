@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 import { endUserToApi } from './endUser.js';
 
 import type {
@@ -114,7 +116,14 @@ export function connectionFullToPublicApi({
                 ? data.last_fetched_at.toISOString()
                 : String(data.last_fetched_at)
             : null,
-        credentials: includeCredentials ? data.credentials : ({} as DBConnectionDecrypted['credentials'])
+        credentials: includeCredentials
+            ? _.cloneDeepWith(data.credentials, (value) => {
+                  if (_.isDate(value)) {
+                      return value.toISOString();
+                  }
+                  return value;
+              })
+            : ({} as ApiPublicConnectionFull['credentials'])
     };
 }
 

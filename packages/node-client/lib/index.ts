@@ -27,6 +27,7 @@ import type {
     BillCredentials,
     CredentialsCommon,
     CustomCredentials,
+    DeepReplace,
     DeletePublicIntegrationFunction,
     DeleteSyncVariant,
     GetPublicConnection,
@@ -500,20 +501,24 @@ export class Nango {
     ): Promise<
         | string
         | OAuth1Token
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | OAuth2ClientCredentials
-        | AppStoreCredentials
-        | UnauthCredentials
-        | CustomCredentials
-        | TbaCredentials
-        | JwtCredentials
-        | BillCredentials
-        | TwoStepCredentials
-        | SignatureCredentials
-        | InstallPluginCredentials
-        | AwsSigV4Credentials
+        | DeepReplace<
+              | BasicApiCredentials
+              | ApiKeyCredentials
+              | AppCredentials
+              | OAuth2ClientCredentials
+              | AppStoreCredentials
+              | UnauthCredentials
+              | CustomCredentials
+              | TbaCredentials
+              | JwtCredentials
+              | BillCredentials
+              | TwoStepCredentials
+              | SignatureCredentials
+              | InstallPluginCredentials
+              | AwsSigV4Credentials,
+              Date,
+              string
+          >
     > {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 

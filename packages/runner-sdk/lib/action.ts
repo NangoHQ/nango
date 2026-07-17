@@ -15,6 +15,7 @@ import type {
     BasicApiCredentials,
     BillCredentials,
     CustomCredentials,
+    DeepReplace,
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
@@ -157,7 +158,7 @@ export abstract class NangoActionBase<
             ...config,
             providerConfigKey: config.providerConfigKey || this.providerConfigKey,
             headers: {
-                ...(config.headers || {}),
+                ...config.headers,
                 'user-agent': this.nango.userAgent
             }
         };
@@ -233,20 +234,24 @@ export abstract class NangoActionBase<
     public async getToken(): Promise<
         | string
         | OAuth1Token
-        | OAuth2ClientCredentials
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | AppStoreCredentials
-        | UnauthCredentials
-        | CustomCredentials
-        | TbaCredentials
-        | JwtCredentials
-        | BillCredentials
-        | TwoStepCredentials
-        | SignatureCredentials
-        | InstallPluginCredentials
-        | AwsSigV4Credentials
+        | DeepReplace<
+              | OAuth2ClientCredentials
+              | BasicApiCredentials
+              | ApiKeyCredentials
+              | AppCredentials
+              | AppStoreCredentials
+              | UnauthCredentials
+              | CustomCredentials
+              | TbaCredentials
+              | JwtCredentials
+              | BillCredentials
+              | TwoStepCredentials
+              | SignatureCredentials
+              | InstallPluginCredentials
+              | AwsSigV4Credentials,
+              Date,
+              string
+          >
     > {
         this.throwIfAbortedOrKilled();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
@@ -405,8 +410,8 @@ export abstract class NangoActionBase<
         }
 
         const paginationConfig = {
-            ...(templatePaginationConfig || {}),
-            ...(config.paginate || {})
+            ...templatePaginationConfig,
+            ...config.paginate
         } as Pagination;
 
         paginateService.validateConfiguration(paginationConfig);

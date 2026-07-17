@@ -23,3 +23,22 @@ export type Jsonable = string | number | boolean | null | undefined | readonly J
 export type ReplaceInObject<T, From, To> = {
     [K in keyof T]: T[K] extends infer U ? (U extends From ? Exclude<U, From> | To : U) : never;
 };
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+/**
+ * Recursively replaces every occurrence of `From` with `To` within `T`, including nested
+ * objects and arrays. Unlike {@link ReplaceInObject} (which only rewrites top-level keys),
+ * this walks the whole shape. Useful for describing JSON-serialized API payloads where e.g.
+ * `Date` values are emitted as ISO strings over the wire.
+ */
+export type DeepReplace<T, From, To> =
+    IsAny<T> extends true
+        ? T
+        : T extends From
+          ? Exclude<T, From> | To
+          : T extends (infer U)[]
+            ? DeepReplace<U, From, To>[]
+            : T extends object
+              ? { [K in keyof T]: DeepReplace<T[K], From, To> }
+              : T;
