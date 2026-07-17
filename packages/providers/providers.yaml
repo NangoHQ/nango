@@ -11289,6 +11289,7 @@ jobber:
     auth_mode: OAUTH2
     authorization_url: https://api.getjobber.com/api/oauth/authorize
     token_url: https://api.getjobber.com/api/oauth/token
+    disable_pkce: true
     authorization_params:
         response_type: code
     proxy:
