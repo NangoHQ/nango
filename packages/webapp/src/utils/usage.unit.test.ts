@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NEAR_LIMIT_RATIO, formatLimit, formatUsage, getUsageState, getUsageStateTextColor } from './usage.js';
+import { formatLimit, formatUsage, getUsageState, getUsageStateTextColor, NEAR_LIMIT_RATIO } from './usage.js';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
