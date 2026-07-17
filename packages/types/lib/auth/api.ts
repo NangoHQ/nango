@@ -1,5 +1,5 @@
 import type { DBConnection } from '../connection/db.js';
-import type { ReplaceInObject } from '../utils.js';
+import type { ReplaceInObjectDeep } from '../utils.js';
 
 export interface AuthModes {
     OAuth1: 'OAUTH1';
@@ -241,4 +241,4 @@ export type AllAuthCredentials =
     | InstallPluginCredentials
     | AwsSigV4Credentials;
 
-export type ApiPublicAllAuthCredentials = ReplaceInObject<AllAuthCredentials, Date, string>;
+export type ApiPublicAllAuthCredentials = ReplaceInObjectDeep<AllAuthCredentials, Date, string>;
