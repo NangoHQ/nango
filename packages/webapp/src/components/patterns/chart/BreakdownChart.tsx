@@ -17,24 +17,20 @@ const dayOfMonth = (date: string) => new Date(date).getUTCDate();
 const formatTooltipDate = (date: string | number) =>
     new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-/** Nearest "nice" number (1, 2, 2.5, 5, 10 × 10ⁿ) at or above x — for round tick steps. */
+/** Nearest "nice" number (1, 2, 2.5, 5, 10 × 10ⁿ) ≥ x — for round tick steps. */
 function niceStep(x: number): number {
     const base = 10 ** Math.floor(Math.log10(x));
     const frac = x / base;
     return (frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10) * base;
 }
 
-/**
- * Round, evenly-spaced Y-axis ticks (0, step, …, cap) for the cap-line chart so the axis reads
- * "0, 50K, 100K" rather than a ragged "0, 3, 6, 11.2". The cap is always a labelled tick; the plot
- * ceiling is only ~10% above the data/cap (unlabelled) so the chart isn't shrunk by dead headroom.
- */
+/** Round Y-axis ticks (0…top) so the axis reads "0, 50K, 100K", with the cap always a labelled tick and ~10% headroom above. */
 function niceCapAxis(dataMax: number, capLine: number): { max: number; ticks: number[] } {
     const top = Math.max(dataMax, capLine, 1);
     const step = niceStep(top / 5);
     const ticks: number[] = [];
     for (let t = 0; t <= top + step / 2; t += step) ticks.push(t);
-    // The cap is the key reference — make sure it's a labelled tick even if off the step grid.
+    // Force the cap in as a tick even if it's off the step grid.
     if (!ticks.some((t) => Math.abs(t - capLine) < step / 100)) {
         ticks.push(capLine);
         ticks.sort((a, b) => a - b);
