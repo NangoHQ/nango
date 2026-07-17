@@ -1416,8 +1416,12 @@ class ConnectionService {
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
         connectionConfig: Record<string, string>,
-        refreshToken?: boolean
+        refreshToken?: boolean,
+        integrationConfig?: Record<string, string> | null
     ): Promise<ServiceResponse<TwoStepCredentials>> {
+        const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+        dynamicCredentials = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, integrationConfig);
+
         if (provider.signature) {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
@@ -1655,7 +1659,7 @@ class ConnectionService {
             const RESERVED_CRED_KEYS = new Set(['type', 'token', 'refresh_token', 'expires_at', 'raw']);
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
-                if (value !== undefined) {
+                if (value !== undefined && !preconfiguredFields.has(key)) {
                     parsedCreds[key] = value;
                 }
             }
@@ -1804,7 +1808,8 @@ class ConnectionService {
                 provider as ProviderTwoStep,
                 dynamicCredentials,
                 connection.connection_config,
-                true
+                true,
+                providerConfig.custom
             );
 
             if (!success || !credentials) {
@@ -2095,6 +2100,34 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+}
+
+// Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
+// these take precedence over anything submitted per-connection and must never be persisted onto a connection.
+export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
+    if (!integrationConfig || !provider.integration_config) {
+        return new Set();
+    }
+
+    return new Set(Object.keys(provider.integration_config).filter((field) => Boolean(integrationConfig[field])));
+}
+
+export function applyIntegrationConfigToTwoStepCredentials(
+    provider: ProviderTwoStep,
+    dynamicCredentials: Record<string, any>,
+    integrationConfig: Record<string, string> | null | undefined
+): Record<string, any> {
+    const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+    if (preconfiguredFields.size === 0) {
+        return dynamicCredentials;
+    }
+
+    const overrides: Record<string, string> = {};
+    for (const field of preconfiguredFields) {
+        overrides[field] = integrationConfig![field]!;
+    }
+
+    return { ...dynamicCredentials, ...overrides };
 }
 
 export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {

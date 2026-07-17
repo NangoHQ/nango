@@ -21,7 +21,7 @@ import { telemetry } from '@/lib/telemetry';
 import { cn, compactErrorDisplay, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, SimplifiedJSONSchema } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
 
@@ -116,6 +116,17 @@ export const Go: React.FC = () => {
     const [connectionFailed, setConnectionFailed] = useState(false);
     const [showErrorDetails, setShowErrorDetails] = useState(false);
 
+    const integrationConfigFallbackFields = useMemo<Record<string, SimplifiedJSONSchema>>(() => {
+        if (!provider || provider.auth_mode !== 'TWO_STEP') {
+            return {};
+        }
+        return Object.fromEntries(
+            Object.entries(provider.integration_config ?? {})
+                .filter(([name]) => !(provider.credentials && name in provider.credentials))
+                .map(([name, schema]) => [name, { ...schema, optional: false }])
+        );
+    }, [provider]);
+
     const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
     const initialExternalId = useMemo(() => {
         const value = preconfiguredParams['external_id'] as string | undefined;
@@ -194,6 +205,7 @@ export const Go: React.FC = () => {
         }
 
         const baseForm = formSchema[provider.auth_mode];
+        const credentialsShape: Record<string, z.ZodType> = { ...baseForm.shape };
 
         // To order fields we use incremented int starting high because we don't know yet which fields will be sorted
         // It's a lazy algorithm that works most of the time
@@ -202,12 +214,12 @@ export const Go: React.FC = () => {
         let order = 99;
 
         // Base credentials are usually the first in the list so we start here
-        for (const name of Object.keys(baseForm.shape)) {
+        for (const name of Object.keys(credentialsShape)) {
             if ((name === 'client_certificate' || name === 'client_private_key') && provider.require_client_certificate !== true) {
                 continue;
             }
             if (name === 'client_secret' && provider.token_request_auth_method === 'private_key_jwt') {
-                baseForm.shape['client_secret'] = z.string().optional();
+                credentialsShape['client_secret'] = z.string().optional();
                 continue;
             }
             order += 1;
@@ -215,12 +227,17 @@ export const Go: React.FC = () => {
         }
 
         // Modify base form with credentials specific
-        for (const [name, schema] of Object.entries(provider.credentials || [])) {
+        for (const [name, schema] of Object.entries({ ...provider.credentials, ...integrationConfigFallbackFields })) {
             if (schema.automated) {
                 continue;
             }
 
-            baseForm.shape[name] = jsonSchemaToZod(schema);
+            // Already set at the integration level (integration_config) — don't ask the end user for it.
+            if (integration?.preconfigured_credentials?.includes(name)) {
+                continue;
+            }
+
+            credentialsShape[name] = jsonSchemaToZod(schema);
 
             // In case the field only exists in provider.yaml (TWO_STEP)
             const fullName = `credentials.${name}`;
@@ -274,8 +291,8 @@ export const Go: React.FC = () => {
             // For OAUTH2, allow users to override client credentials if preconfigured with empty values
             const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override', 'oauth_refresh_token_override'];
             for (const key of allowedOverrides) {
-                if (key in preconfiguredParams && !additionalFields[key] && !(key in baseForm.shape)) {
-                    baseForm.shape[key] = z.string().optional();
+                if (key in preconfiguredParams && !additionalFields[key] && !(key in credentialsShape)) {
+                    credentialsShape[key] = z.string().optional();
                     order += 1;
                     orderedFields[`credentials.${key}`] = order;
                 }
@@ -284,7 +301,7 @@ export const Go: React.FC = () => {
 
         // Only add objects if they have something otherwise it breaks react-form
         const fields = z.object({
-            ...(Object.keys(baseForm.shape).length > 0 ? { credentials: baseForm } : {}),
+            ...(Object.keys(credentialsShape).length > 0 ? { credentials: z.object(credentialsShape) } : {}),
             ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {}),
             ...(Object.keys(assertionOptionFields).length > 0 ? { assertion_option: z.object(assertionOptionFields) } : {})
         });
@@ -299,7 +316,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider, preconfiguredParams]);
+    }, [provider, integration, preconfiguredParams, integrationConfigFallbackFields]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -636,7 +653,9 @@ export const Go: React.FC = () => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params' | 'assertion_option', string];
 
                                     const definition =
-                                        provider[type === 'credentials' ? 'credentials' : type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
+                                        type === 'credentials'
+                                            ? (provider.credentials?.[key] ?? integrationConfigFallbackFields[key])
+                                            : provider[type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
                                     const labelOverride = type === 'credentials' ? integration?.credentials_label?.[key] : undefined;

@@ -18,8 +18,10 @@ interface ChartCardProps {
     isLoading: boolean;
     data?: ApiBillingUsageMetric;
     timeframe: { start: string; end: string };
-    /** Right-aligned controls in the header (e.g. the breakdown dropdown). */
+    /** Right-aligned controls in the header (e.g. the breakdown dropdown). Hidden in the empty state. */
     headerActions?: React.ReactNode;
+    /** Always-visible right-aligned controls (e.g. the month stepper) — kept even when empty so the user can navigate away. */
+    extraHeaderActions?: React.ReactNode;
     /** When provided, the chart renders these stacked series instead of the single total. */
     breakdownSeries?: ChartSeries[];
     /** Loading/error of the per-panel detail fetch (breakdown or filtered slice), shown in the chart body. */
@@ -35,6 +37,8 @@ interface ChartCardProps {
     onSeriesIsolate?: () => void;
     /** Fired when a series is hidden/shown (legend swatch click). For analytics only. */
     onSeriesToggle?: () => void;
+    /** Drop the label + total header (e.g. when an outer row already shows them); the controls move atop the chart body. */
+    hideHeader?: boolean;
 }
 
 /**
@@ -48,6 +52,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     data,
     timeframe,
     headerActions,
+    extraHeaderActions,
     breakdownSeries,
     detailLoading,
     detailError,
@@ -55,7 +60,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     globalTotal,
     singleSeries,
     onSeriesIsolate,
-    onSeriesToggle
+    onSeriesToggle,
+    hideHeader
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
@@ -126,38 +132,52 @@ export const ChartCard: React.FC<ChartCardProps> = ({
 
     return (
         <div className={cn('bg-surface-panel rounded border border-transparent flex flex-col', showEmpty ? 'h-[140px]' : 'h-[424px]')}>
-            <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
-                <div className="flex flex-col items-start justify-center h-11">
-                    {isLoading || !data ? (
-                        <Skeleton className="bg-surface-panel-inset h-4 w-32" />
-                    ) : (
-                        <>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-text-strong text-body-large-semi">{data.label}</span>
-                                {isCumulative && (
-                                    <InfoTooltip>
-                                        This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
-                                        than a cumulative total.
-                                        {filtered && " For a filtered slice this is the slice's contribution to the monthly average, not a standalone average."}
-                                    </InfoTooltip>
-                                )}
-                            </div>
-                            {/* Hidden while the detail slice loads: `data` falls back to the unfiltered
-                                base then, so showing it would flash the wrong number (e.g. "100% of X"). */}
-                            {headlineTotal !== undefined && !showDetailSpinner && (
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
-                                    {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
-                                    {shareLabel && <span className="text-text-muted text-body-small-regular">{shareLabel}</span>}
+            {!hideHeader && (
+                <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
+                    <div className="flex flex-col items-start justify-center h-11">
+                        {isLoading || !data ? (
+                            <Skeleton className="bg-surface-panel-inset h-4 w-32" />
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-text-strong text-body-large-semi">{data.label}</span>
+                                    {isCumulative && (
+                                        <InfoTooltip>
+                                            This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
+                                            than a cumulative total.
+                                            {filtered &&
+                                                " For a filtered slice this is the slice's contribution to the monthly average, not a standalone average."}
+                                        </InfoTooltip>
+                                    )}
                                 </div>
-                            )}
-                        </>
+                                {/* Hidden while the detail slice loads: `data` falls back to the unfiltered
+                                    base then, so showing it would flash the wrong number (e.g. "100% of X"). */}
+                                {headlineTotal !== undefined && !showDetailSpinner && (
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
+                                        {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
+                                        {shareLabel && <span className="text-text-muted text-body-small-regular">{shareLabel}</span>}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                    {(headerActions || extraHeaderActions) && (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            {(!showEmpty || filtered) && headerActions}
+                            {extraHeaderActions}
+                        </div>
                     )}
-                </div>
-                {headerActions && (!showEmpty || filtered) && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
-            </header>
+                </header>
+            )}
 
             <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+                {hideHeader && (headerActions || extraHeaderActions) && (
+                    <div className="flex items-center justify-end gap-2 flex-shrink-0 pb-4">
+                        {(!showEmpty || filtered) && headerActions}
+                        {extraHeaderActions}
+                    </div>
+                )}
                 {showChart && (
                     <>
                         <BreakdownChart

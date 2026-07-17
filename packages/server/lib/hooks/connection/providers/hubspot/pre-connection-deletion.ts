@@ -8,6 +8,12 @@ export default async function execute(nango: InternalNango) {
         const connection = await nango.getConnection();
         const credentials = connection.credentials as OAuth2Credentials;
 
+        // Some customers share a single HubSpot portal (and refresh token) across multiple Nango connections.
+        // Revoking the token when one connection is deleted would break the others, so allow opting out via metadata.
+        if (connection.metadata?.['skipTokenRevocation'] === true) {
+            return;
+        }
+
         if (!credentials.refresh_token) {
             return;
         }
