@@ -118,6 +118,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // response's top-level total); otherwise the single series' total. `effectiveEmpty` (not
     // `isEmpty`) so a breakdown with empty top-level `usage` still shows a number.
     const visibleKeys = (breakdownSeries ?? []).filter((s) => !interactions.isSeriesHidden(s.key)).map((s) => s.key);
+    // The cap applies to the whole metric, so hide the cap line whenever the chart is scoped to a
+    // slice — a filter, or an isolated/hidden breakdown series — otherwise the full cap dwarfs the
+    // slice and squishes its data flat.
+    const isSliced = Boolean(filtered) || (isBreakdown && visibleKeys.length < (breakdownSeries?.length ?? 0));
     let headlineTotal: number | undefined;
     if (effectiveEmpty) {
         headlineTotal = undefined;
@@ -200,7 +204,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                             interactions={interactions}
                             // Cap line only on the cumulative/point-in-time (area) view; on daily bars the
                             // monthly cap dwarfs the per-day values and would flatten the bars.
-                            capLine={renderAsArea ? capLine : undefined}
+                            capLine={renderAsArea && !isSliced ? capLine : undefined}
                         />
                         {breakdownSeries && breakdownSeries.length > 0 && <ChartLegend series={breakdownSeries} interactions={interactions} />}
                         {!isBreakdown && singleSeries && (
