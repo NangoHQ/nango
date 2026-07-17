@@ -1492,6 +1492,7 @@
               "integrations/all/pagerduty",
               "api-integrations/paligo",
               "integrations/all/passportal",
+              "api-integrations/pave",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
               "api-integrations/paddle",
