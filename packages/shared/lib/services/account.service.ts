@@ -18,7 +18,7 @@ import secretService from './secret.service.js';
 import userService from './user.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, Result } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, PersistAuthContext, Result } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
@@ -32,6 +32,7 @@ interface AccountContext {
         source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
         scopes?: string[];
         apiKeyId?: number;
+        apiKeyDisplayName?: string;
         purpose?: 'dryrun' | 'deploy';
         dryrunId?: string;
         deploymentId?: string;
@@ -208,36 +209,51 @@ class AccountService {
         const key = 'secretKey' in opts ? opts.secretKey : opts.internalSecretKey;
 
         if (!isCloud) {
-            const environmentVariables = Object.keys(process.env).filter((k) => k.startsWith('NANGO_SECRET_KEY_'));
-            for (const environmentVariable of environmentVariables) {
-                const envSecretKey = process.env[environmentVariable] as string;
-                if (envSecretKey !== key) {
-                    continue;
-                }
-                const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
-                const env = await db.knex
-                    .select<Pick<DBEnvironment, 'account_id'>>('account_id')
-                    .from<DBEnvironment>('_nango_environments')
-                    .where({ name: envName, deleted: false })
-                    .first();
-                if (!env) {
-                    return null;
-                }
-                const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
-                if (!accountContext) {
-                    return null;
-                }
-                return {
+            const envMatch = await this.getAccountContextFromEnvVar(key);
+            if (envMatch) {
+                return envMatch.context;
+            }
+        }
+
+        return this.getAccountContext(opts);
+    }
+
+    /**
+     * Self-hosted keys can be provisioned via NANGO_SECRET_KEY_* env vars and may not
+     * exist in api_secrets. Returns null when no env var matches the key; when one
+     * matches, resolution failures are terminal (context: null, no hashed lookup).
+     */
+    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AccountContext | null } | null> {
+        const environmentVariables = Object.keys(process.env).filter((k) => k.startsWith('NANGO_SECRET_KEY_'));
+        for (const environmentVariable of environmentVariables) {
+            const envSecretKey = process.env[environmentVariable] as string;
+            if (envSecretKey !== key) {
+                continue;
+            }
+            const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+            const env = await db.knex
+                .select<Pick<DBEnvironment, 'account_id'>>('account_id')
+                .from<DBEnvironment>('_nango_environments')
+                .where({ name: envName, deleted: false })
+                .first();
+            if (!env) {
+                return { context: null };
+            }
+            const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
+            if (!accountContext) {
+                return { context: null };
+            }
+            return {
+                context: {
                     ...accountContext,
                     auth: {
                         source: 'env_var' as const,
                         scopes: ['environment:*']
                     }
-                };
-            }
+                }
+            };
         }
-
-        return this.getAccountContext(opts);
+        return null;
     }
 
     async getAccountContextByPublicKey(publicKey: string): Promise<AccountContext | null> {
@@ -552,11 +568,12 @@ class AccountService {
                 pending_secret: DBAPISecret | null;
                 auth_scopes: string[] | null;
                 auth_api_key_id: number;
+                auth_display_name: string;
             }[];
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes
+                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes, ck.display_name
                     FROM customer_keys ck
                     JOIN customer_keys_relations ckr ON ckr.customer_key_id = ck.id
                     WHERE ck.hashed = ?
@@ -580,7 +597,8 @@ class AccountService {
                     row_to_json(default_secret.*) AS default_secret,
                     row_to_json(pending_secret.*) AS pending_secret,
                     matched_customer_key.scopes AS auth_scopes,
-                    matched_customer_key.id AS auth_api_key_id
+                    matched_customer_key.id AS auth_api_key_id,
+                    matched_customer_key.display_name AS auth_display_name
                 FROM matched_customer_key
                 JOIN _nango_environments ON _nango_environments.id = matched_customer_key.environment_id
                 JOIN _nango_accounts ON _nango_accounts.id = _nango_environments.account_id
@@ -635,8 +653,88 @@ class AccountService {
             auth: {
                 source: 'customer_key' as const,
                 scopes: row.auth_scopes ?? [],
-                apiKeyId: row.auth_api_key_id
+                apiKeyId: row.auth_api_key_id,
+                apiKeyDisplayName: row.auth_display_name
             }
+        };
+    }
+
+    /**
+     * Authenticates persist requests by internal secret key. Persist authenticates every
+     * request it receives (thousands per second in production), and only reads a handful
+     * of fields from the resolved context, so this lookup is deliberately minimal: it
+     * selects six scalar columns across api_secrets/environments/accounts/plans and
+     * returns them as a PersistAuthContext. Unlike getAccountContextByApiKey it does not
+     * fetch whole rows, join the secret tables a second time, or decrypt any secret.
+     *
+     * Ok(null) means the key is unknown; Err carries unexpected failures.
+     */
+    async getPersistAuthContext(secretKey: string): Promise<Result<PersistAuthContext | null>> {
+        try {
+            return Ok(await this.resolvePersistAuthContext(secretKey));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_persist_auth_context', { cause: err }));
+        }
+    }
+
+    private async resolvePersistAuthContext(secretKey: string): Promise<PersistAuthContext | null> {
+        if (!isCloud) {
+            // Mirror getAccountContextByApiKey: env-var keys resolve before any hashing or DB lookup
+            const envMatch = await this.getAccountContextFromEnvVar(secretKey);
+            if (envMatch) {
+                if (!envMatch.context) {
+                    return null;
+                }
+                return {
+                    account: { id: envMatch.context.account.id },
+                    environment: { id: envMatch.context.environment.id, name: envMatch.context.environment.name },
+                    plan: envMatch.context.plan
+                        ? { id: envMatch.context.plan.id, name: envMatch.context.plan.name, records_store: envMatch.context.plan.records_store }
+                        : null
+                };
+            }
+        }
+
+        const hash = await this.hashSecretWithCache(secretKey);
+
+        const row = await db.readOnly
+            .select<{
+                environment_id: number;
+                environment_name: string;
+                account_id: number;
+                plan_id: number | null;
+                plan_name: DBPlan['name'] | null;
+                records_store: DBPlan['records_store'] | null;
+            }>(
+                '_nango_environments.id as environment_id',
+                '_nango_environments.name as environment_name',
+                '_nango_accounts.id as account_id',
+                'plans.id as plan_id',
+                'plans.name as plan_name',
+                'plans.records_store as records_store'
+            )
+            .from<DBAPISecret>('api_secrets')
+            .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('api_secrets.hashed', hash)
+            .where('api_secrets.is_default', true)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (!row) {
+            return null;
+        }
+
+        // Store only successful lookups to avoid polluting the cache
+        hashLocalCache.set(secretKey, hash);
+        return {
+            account: { id: row.account_id },
+            environment: { id: row.environment_id, name: row.environment_name },
+            plan:
+                row.plan_id !== null && row.plan_name !== null && row.records_store !== null
+                    ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
+                    : null
         };
     }
 

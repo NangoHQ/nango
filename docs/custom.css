@@ -451,6 +451,19 @@ html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:ho
   border-radius: 4px !important;
 }
 
+/* Render the custom MCP logo with the surrounding navigation item's color. */
+div:has(> img[src="/images/mcp.svg"]) > img {
+  display: none;
+}
+div:has(> img[src="/images/mcp.svg"])::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  background-color: currentColor;
+  -webkit-mask: url("/images/mcp.svg") center / contain no-repeat;
+  mask: url("/images/mcp.svg") center / contain no-repeat;
+}
+
 /* Consistent padding on all sidebar nav items */
 #sidebar-group a, #sidebar-group button {
   padding: 3px 8px !important;

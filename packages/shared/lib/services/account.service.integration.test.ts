@@ -4,6 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
+import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
@@ -79,7 +80,8 @@ describe('Account service', () => {
             auth: {
                 source: 'customer_key',
                 scopes: ['environment:*'],
-                apiKeyId: expect.any(Number)
+                apiKeyId: expect.any(Number),
+                apiKeyDisplayName: 'Default - Full access'
             }
         });
     });
@@ -114,7 +116,8 @@ describe('Account service', () => {
         expect(bySecretKey?.auth).toStrictEqual({
             source: 'customer_key',
             scopes: ['environment:deploy'],
-            apiKeyId: expect.any(Number)
+            apiKeyId: expect.any(Number),
+            apiKeyDisplayName: 'Default - Full access'
         });
     });
 
@@ -331,6 +334,44 @@ describe('Account service', () => {
         expect(result?.auth).toStrictEqual({
             source: 'api_secret',
             scopes: ['environment:*']
+        });
+    });
+
+    describe('getPersistAuthContext', () => {
+        it('should return exactly the narrow context fields', async () => {
+            const { account, env, plan, secret } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for an unknown key', async () => {
+            const result = (await accountService.getPersistAuthContext(`nango_secret_key_${uuid()}`)).unwrap();
+            expect(result).toBeNull();
+        });
+
+        it('should resolve env-var keys before the DB lookup', async () => {
+            const account = await createTestAccount();
+            const envName = uuid();
+            const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
+            await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+            const envVarName = `NANGO_SECRET_KEY_${envName.toUpperCase()}`;
+            const envVarKey = `nango_secret_key_${uuid()}`;
+            process.env[envVarName] = envVarKey;
+            try {
+                const result = (await accountService.getPersistAuthContext(envVarKey)).unwrap();
+                expect(result?.environment.id).toBe(environment!.id);
+                expect(result?.account.id).toBe(account.id);
+            } finally {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete process.env[envVarName];
+            }
         });
     });
 

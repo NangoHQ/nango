@@ -372,9 +372,12 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
     try {
         const groupKeyLikePattern = groupKeyPattern.replace(/\*/g, '%');
         const tasks = await db.transaction(async (trx) => {
-            // Acquire a lock to prevent concurrent dequeueing of the same group
-            // in order to ensure max concurrency is respected
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_dequeue_${groupKeyPattern}"`, [stringToHash(groupKeyPattern)]);
+            // Try to acquire a lock to prevent concurrent dequeueing of the same group in order to ensure max concurrency is respected.
+            // If it is already held, another process is already dequeueing this group, so we skip the expensive query and return early.
+            const { rows } = await trx.raw<{ rows: { lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?) as lock`, [stringToHash(groupKeyPattern)]);
+            if (!rows?.[0]?.lock) {
+                return [];
+            }
             return (
                 trx
                     // 1. select created tasks that are ready to be started alongside their group
