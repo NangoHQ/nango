@@ -1,8 +1,10 @@
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { accountService, userService } from '@nangohq/shared';
-import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { DeleteTeamUser } from '@nangohq/types';
@@ -12,6 +14,8 @@ const validation = z
         id: z.coerce.number()
     })
     .strict();
+
+const logger = getLogger('DeleteTeamUser');
 
 export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -52,14 +56,29 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
         return;
     }
 
-    const updated = await userService.update({ id: user.id, account_id: newTeam.id });
+    const updated = await db.knex.transaction(async (trx) => {
+        const movedUser = await userService.update({ id: user.id, account_id: newTeam.id }, trx);
+        if (!movedUser) {
+            return null;
+        }
+
+        // Force re-authentication so the removed member does not keep using an old team-scoped session.
+        await deleteUserSessions(user.id, { trx });
+
+        return movedUser;
+    });
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;
     }
 
-    // TODO: destroy this user session to avoid desync
-    // TODO: last user removed from a team should (soft) delete the team
+    const remainingUsers = await userService.countUsers(account.id);
+    if (remainingUsers === 0) {
+        logger.warning('team has no active users after member removal', {
+            accountId: account.id,
+            removedUserId: user.id
+        });
+    }
 
     res.status(200).send({
         data: { success: true }
