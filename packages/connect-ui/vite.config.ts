@@ -9,12 +9,20 @@ import type { Plugin, UserConfig } from 'vite';
 
 // Vite drops extra attributes when rewriting the entry script tag; re-attach the retry hook (see index.html).
 function basePathRetry(): Plugin {
+    const entryTag = '<script type="module" crossorigin';
     return {
         name: 'connect-ui:base-path-retry',
         apply: 'build',
         transformIndexHtml: {
             order: 'post',
-            handler: (html) => html.replace('<script type="module" crossorigin', '<script type="module" crossorigin onerror="__nangoBasePathRetry()"')
+            handler: (html) => {
+                if (!html.includes(entryTag)) {
+                    throw new Error(
+                        `[connect-ui] base-path-retry: entry script tag "${entryTag}" not found in built index.html — Vite changed its output shape, update the marker`
+                    );
+                }
+                return html.replace(entryTag, `${entryTag} onerror="__nangoBasePathRetry()"`);
+            }
         }
     };
 }
