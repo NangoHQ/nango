@@ -6,7 +6,7 @@ import { InfoTooltip } from '../../ui/InfoTooltip';
 import { Skeleton } from '../../ui/Skeleton';
 import { BreakdownChart } from './BreakdownChart';
 import { formatExact, formatShare } from './chartFormat';
-import { ChartLegend } from './ChartLegend';
+import { ChartLegend, ChartStaticLegend } from './ChartLegend';
 import { useChartData, visibleBreakdownTotal } from './useChartData';
 import { useChartInteractions } from './useChartInteractions';
 
@@ -209,12 +209,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                         {breakdownSeries && breakdownSeries.length > 0 && <ChartLegend series={breakdownSeries} interactions={interactions} />}
                         {!isBreakdown && singleSeries && (
                             // Static, non-interactive: with one series there's nothing to isolate or hide.
-                            <div className="flex items-center gap-1.5 pt-3 text-xs flex-shrink-0">
-                                <span className="block size-2.5 rounded-[2px]" aria-hidden style={{ backgroundColor: singleSeries.color }} />
-                                <span className="text-text-secondary truncate" title={singleSeries.label}>
-                                    {singleSeries.label}
-                                </span>
-                            </div>
+                            <ChartStaticLegend series={[{ key: 'total', ...singleSeries }]} />
                         )}
                     </>
                 )}

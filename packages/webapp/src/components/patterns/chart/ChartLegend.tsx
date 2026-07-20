@@ -10,11 +10,15 @@ interface ChartLegendProps {
     interactions: ChartInteractions;
 }
 
+interface ChartStaticLegendProps {
+    series: Pick<ChartSeries, 'key' | 'label' | 'color'>[];
+}
+
 /** Interactive legend: hover a row to highlight its band, click the label to isolate, click the swatch to hide/show. */
 export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }) => {
     const { hidden, isSeriesHidden, toggleIsolate, toggleHidden, hoverSeries, unhoverSeries, hoveredKey } = interactions;
     return (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-2 gap-y-0.5 pt-3 pb-1 max-h-[96px] overflow-y-auto flex-shrink-0 text-[13px]">
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5 pt-3 pb-1 max-h-[96px] overflow-y-auto flex-shrink-0 text-[13px]">
             {series.map((s) => {
                 const dimmed = isSeriesHidden(s.key);
                 // `active` = this series is the hovered one. It's set both by hovering the legend row and by
@@ -36,13 +40,11 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                     title: `Toggle ${s.label}`
                 };
                 return (
-                    // The grid cell keeps column alignment; the inner pill hugs swatch + label so the
-                    // hover background only covers the content, not the empty space across the cell.
-                    <div key={s.key} className="flex min-w-0">
+                    <div key={s.key} className="flex min-w-0 max-w-full">
                         <div
                             className={cn(
-                                'group/row inline-flex min-w-0 max-w-full cursor-pointer items-center gap-1.5 rounded-md px-1 py-0.5 transition-colors hover:bg-state-selected-muted',
-                                active && 'bg-state-selected-muted'
+                                'group/row inline-flex min-w-0 max-w-full cursor-pointer items-center gap-1.5 rounded-md px-1 py-0.5 transition-colors hover:bg-state-hover',
+                                active && 'bg-state-hover'
                             )}
                         >
                             {/* Checkbox-style swatch: a color-filled square with a ring (a darker shade of its own color)
@@ -75,7 +77,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                                 onMouseEnter={onEnter}
                                 onMouseLeave={onLeave}
                                 className={cn(
-                                    'relative min-w-0 truncate transition-colors',
+                                    'relative min-w-0 max-w-full overflow-x-auto whitespace-nowrap text-left transition-colors',
                                     dimmed
                                         ? 'text-text-muted line-through hover:text-text-secondary'
                                         : cn('text-text-secondary group-hover/row:text-text-strong', active && 'text-text-strong')
@@ -88,6 +90,29 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                     </div>
                 );
             })}
+        </div>
+    );
+};
+
+/** Static legend: same visual rhythm as ChartLegend, without hide/isolate interactions. */
+export const ChartStaticLegend: React.FC<ChartStaticLegendProps> = ({ series }) => {
+    return (
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5 pt-3 pb-1 max-h-[96px] overflow-y-auto flex-shrink-0 text-[13px]">
+            {series.map((s) => (
+                <div key={s.key} className="flex min-w-0 max-w-full">
+                    <div className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-md px-1 py-0.5">
+                        <span className="relative flex size-[18px] shrink-0 items-center justify-center" aria-hidden>
+                            <span
+                                className="block size-3.5 rounded-[3px] border [border-color:color-mix(in_srgb,var(--swatch),#000_28%)]"
+                                style={{ backgroundColor: s.color, ['--swatch']: s.color } as React.CSSProperties}
+                            />
+                        </span>
+                        <span className="text-text-secondary min-w-0 max-w-full overflow-x-auto whitespace-nowrap" title={s.label}>
+                            {s.label}
+                        </span>
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };
