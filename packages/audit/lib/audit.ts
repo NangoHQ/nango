@@ -11,10 +11,20 @@ export class InvalidAuditCursorError extends Error {
     }
 }
 
+// The cursor mirrors what `toString(occurred_at)`/`toString(id)` produce; validate the shape here so a
+// malformed value fails as InvalidAuditCursorError (400) instead of blowing up the ClickHouse bind (500).
+const CURSOR_OCCURRED_AT_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/;
+const CURSOR_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function decodeCursor(cursor: string): AuditTrailCursor | null {
     try {
         const decoded = JSON.parse(Buffer.from(cursor, 'base64').toString('utf8')) as { occurredAt?: unknown; id?: unknown };
-        if (typeof decoded.occurredAt === 'string' && typeof decoded.id === 'string') {
+        if (
+            typeof decoded.occurredAt === 'string' &&
+            typeof decoded.id === 'string' &&
+            CURSOR_OCCURRED_AT_RE.test(decoded.occurredAt) &&
+            CURSOR_ID_RE.test(decoded.id)
+        ) {
             return { occurredAt: decoded.occurredAt, id: decoded.id };
         }
         return null;

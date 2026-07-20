@@ -49,9 +49,16 @@ describe('GET /api/v1/audit-trail', () => {
     // RBAC (403 for development_full_access, allowed for administrator + production_support) is covered
     // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
 
-    it('rejects an invalid cursor with 400', async () => {
+    it('rejects a non-decodable cursor with 400', async () => {
         const { session, env } = await authAdmin();
         const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, cursor: 'not-a-valid-cursor' } });
+        expect(res.res.status).toBe(400);
+    });
+
+    it('rejects a JSON-shaped cursor with invalid values with 400, not 500', async () => {
+        const { session, env } = await authAdmin();
+        const cursor = Buffer.from(JSON.stringify({ occurredAt: 'garbage', id: 'not-a-uuid' })).toString('base64');
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, cursor } });
         expect(res.res.status).toBe(400);
     });
 
@@ -61,7 +68,17 @@ describe('GET /api/v1/audit-trail', () => {
         expect(res.res.status).toBe(400);
     });
 
-    it("returns the account's events in the response envelope", async () => {
+    it('rejects an inverted from/to range with 400', async () => {
+        const { session, env } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', {
+            method: 'GET',
+            session,
+            query: { env: env.name, from: '2026-07-16T10:00:00.000Z', to: '2026-07-16T09:00:00.000Z' }
+        });
+        expect(res.res.status).toBe(400);
+    });
+
+    it("returns the account's events in the response envelope, most-recent first", async () => {
         const { session, account, env } = await authAdmin();
         (await store.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
         (await store.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
@@ -72,6 +89,8 @@ describe('GET /api/v1/audit-trail', () => {
         isSuccess(res.json);
         expect(res.json.data).toHaveLength(2);
         expect(res.json.pagination.nextCursor).toBeNull();
+        // Most-recent first: the 10:00:01 event precedes the 10:00:00 one.
+        expect(res.json.data.map((e) => e.occurredAt)).toEqual(['2026-07-16T10:00:01.000Z', '2026-07-16T10:00:00.000Z']);
         const event = res.json.data[0]!;
         expect(event.accountId).toBe(account.id);
         expect(event.version).toBe('2026-07-16');

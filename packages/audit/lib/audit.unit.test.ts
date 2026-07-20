@@ -83,7 +83,7 @@ describe('Audit.listAuditTrailEvents', () => {
         expect(result.unwrap()).toEqual({ events: [], nextCursor: null });
     });
 
-    it('rejects a malformed cursor before hitting the store', async () => {
+    it('rejects a non-decodable cursor before hitting the store', async () => {
         const store = new RecordingStore();
         const result = await new Audit(store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor: 'not-a-valid-cursor' });
         expect(result.isErr()).toBe(true);
@@ -93,10 +93,22 @@ describe('Audit.listAuditTrailEvents', () => {
         expect(store.listCalls).toHaveLength(0);
     });
 
-    it('round-trips the opaque cursor to the store as (occurredAt, id)', async () => {
+    it('rejects a JSON-shaped cursor with invalid timestamp/id values (would 500 at the CH bind otherwise)', async () => {
         const store = new RecordingStore();
-        const cursor = Buffer.from(JSON.stringify({ occurredAt: '2026-01-01T00:00:00.000Z', id: 'abc' })).toString('base64');
+        const cursor = Buffer.from(JSON.stringify({ occurredAt: 'garbage', id: 'not-a-uuid' })).toString('base64');
+        const result = await new Audit(store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(InvalidAuditCursorError);
+        }
+        expect(store.listCalls).toHaveLength(0);
+    });
+
+    it('round-trips a valid opaque cursor to the store as (occurredAt, id)', async () => {
+        const store = new RecordingStore();
+        const before = { occurredAt: '2026-01-01 00:00:00.000', id: '11111111-1111-1111-1111-111111111111' };
+        const cursor = Buffer.from(JSON.stringify(before)).toString('base64');
         await new Audit(store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor });
-        expect(store.listCalls[0]?.before).toEqual({ occurredAt: '2026-01-01T00:00:00.000Z', id: 'abc' });
+        expect(store.listCalls[0]?.before).toEqual(before);
     });
 });
