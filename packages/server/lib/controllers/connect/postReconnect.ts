@@ -9,6 +9,7 @@ import { connectUrl, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nan
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 import { checkIntegrationsExist, bodySchema as originalBodySchema } from './postSessions.js';
 
 import type { PostPublicConnectSessionsReconnect } from '@nangohq/types';
@@ -45,7 +46,12 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
     }
 
     const { account, environment, plan } = res.locals;
-    const body: PostPublicConnectSessionsReconnect['Body'] = val.data;
+    const mapped = mapDeprecatedConnectionConfigWebhookUrl(val.data);
+    if (!mapped.ok) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: mapped.issues }) } });
+        return;
+    }
+    const body: PostPublicConnectSessionsReconnect['Body'] = mapped.body;
 
     const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
         const connection = await connectionService.checkIfConnectionExists(trx, {
