@@ -18,9 +18,11 @@ interface ChartStaticLegendProps {
 export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }) => {
     const { hidden, isSeriesHidden, toggleIsolate, toggleHidden, hoverSeries, unhoverSeries, hoveredKey } = interactions;
     return (
-        <div className="flex flex-wrap gap-x-2 gap-y-0.5 pt-3 pb-1 max-h-[96px] overflow-y-auto flex-shrink-0 text-[13px]">
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5 pt-3 pb-1 flex-shrink-0 text-[13px]">
             {series.map((s) => {
                 const dimmed = isSeriesHidden(s.key);
+                // Render UUID values (connection ids, etc.) monospace so their equal-width rows line up as a grid.
+                const isUuid = Boolean(s.value) && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s.value ?? '');
                 // `active` = this series is the hovered one. It's set both by hovering the legend row and by
                 // hovering the series' chart band (BreakdownChart calls hoverSeries on band enter), so highlight
                 // stays in sync in both directions.
@@ -78,6 +80,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
                                 onMouseLeave={onLeave}
                                 className={cn(
                                     'relative min-w-0 max-w-full overflow-x-auto whitespace-nowrap text-left transition-colors',
+                                    isUuid && 'font-mono text-[12px]',
                                     dimmed
                                         ? 'text-text-muted line-through hover:text-text-secondary'
                                         : cn('text-text-secondary group-hover/row:text-text-strong', active && 'text-text-strong')
@@ -97,7 +100,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions }
 /** Static legend: same visual rhythm as ChartLegend, without hide/isolate interactions. */
 export const ChartStaticLegend: React.FC<ChartStaticLegendProps> = ({ series }) => {
     return (
-        <div className="flex flex-wrap gap-x-2 gap-y-0.5 pt-3 pb-1 max-h-[96px] overflow-y-auto flex-shrink-0 text-[13px]">
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5 pt-3 pb-1 flex-shrink-0 text-[13px]">
             {series.map((s) => (
                 <div key={s.key} className="flex min-w-0 max-w-full">
                     <div className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-md px-1 py-0.5">
