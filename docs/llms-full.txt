@@ -13,7 +13,7 @@ Nango is the integration layer for AI-built, code-owned product integrations.
 
 Your users connect external APIs through Nango. You generate and customize TypeScript functions with your favorite coding agent. Your app, backend jobs, or agents then consume those functions through Nango's API, SDKs, or MCP server.
 
-Nango supports [800+ APIs](/integrations/overview) and handles auth, credentials, execution, retries, rate limits, observability, environments, and tenant isolation so you can ship integrations without rebuilding the same infrastructure for every provider.
+Nango supports [900+ APIs](/integrations/overview) and handles auth, credentials, execution, retries, rate limits, observability, environments, and tenant isolation so you can ship integrations without rebuilding the same infrastructure for every provider.
 
 ## Why it matters
 
@@ -123,7 +123,7 @@ For skills, the docs MCP server, and other agent setup options, see [Coding agen
 
 ## Manual quickstart
 
-The steps below show the flow end to end. This quickstart uses the GitHub API as an example, but you can choose any of the [800+ APIs](/integrations/overview).
+The steps below show the flow end to end. This quickstart uses the GitHub API as an example, but you can choose any of the [900+ APIs](/integrations/overview).
 
 <Steps>
   <Step id="create-integration" title="Create an integration">
@@ -1061,7 +1061,7 @@ Description: Let your users connect external APIs to your agents & apps.
 
 ## Overview
 
-Nango Auth lets your users connect 800+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
+Nango Auth lets your users connect 900+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
 
 A **Connection** is created after each successful authorization. It stores one user's credentials for one external API and keeps them valid over time. Credentials can be retrieved at scale or used directly by other Nango primitives — without ever passing through your codebase.
 
@@ -1092,7 +1092,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Capabilities
 
-- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 800+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
+- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 900+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
 - **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
@@ -6162,13 +6162,7 @@ const session = await nango.createConnectSession({
         end_user_id: '<END-USER-ID>'
     },
     allowed_integrations: ['<INTEGRATION-ID>'],
-    ...(webhookUrl && {
-        integrations_config_defaults: {
-            '<INTEGRATION-ID>': {
-                connection_config: { webhook_url: webhookUrl }
-            }
-        }
-    })
+    ...(webhookUrl && { webhook_url_override: webhookUrl })
 });
 ```
 
@@ -7211,24 +7205,18 @@ To test webhooks locally, use a webhook forwarding service like [ngrok](https://
 
 ## Override webhook URLs per connection
 
-A single connection can override the environment's webhook URLs with its own `webhook_url`. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
+A single connection can override the environment's webhook URLs with its own URL. The connection still receives all the same [webhook types](#types-of-nango-webhooks), with the same signing, retries, and logs.
 
-When a connection sets `webhook_url`, its webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
+When this override is set, the connection's webhooks are sent **only** to that URL — the environment's primary and secondary webhook URLs are both bypassed for that connection. It does not add a third destination.
 
-Set `webhook_url` when creating a [connect session](/reference/backend/http-api/connect/sessions/create), under `integrations_config_defaults.<integration>.connection_config`:
+Set `webhook_url_override` when creating a [connect session](/reference/backend/http-api/connect/sessions/create). It applies to the connection created by that session:
 
 <Tabs>
   <Tab title="Node">
     ```ts
     const session = await nango.createConnectSession({
         allowed_integrations: ['<INTEGRATION-ID>'],
-        integrations_config_defaults: {
-            '<INTEGRATION-ID>': {
-                connection_config: {
-                    webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
-                }
-            }
-        }
+        webhook_url_override: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
     });
     ```
   </Tab>
@@ -7240,26 +7228,20 @@ Set `webhook_url` when creating a [connect session](/reference/backend/http-api/
       --header 'Content-Type: application/json' \
       --data '{
         "allowed_integrations": ["<INTEGRATION-ID>"],
-        "integrations_config_defaults": {
-          "<INTEGRATION-ID>": {
-            "connection_config": {
-              "webhook_url": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
-            }
-          }
-        }
+        "webhook_url_override": "https://<your-tunnel>.ngrok.app/webhooks-from-nango"
       }'
     ```
   </Tab>
 </Tabs>
 
-You can also set `webhook_url` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
+You can also set `webhook_url_override` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
 
 <Note>
-    `webhook_url` can only be set at connect-session creation time — the trusted actor that creates the session. The same key passed to `nango.auth()` `params` from the client is ignored.
+    `webhook_url_override` is set by the trusted backend that creates the connect session. A `webhook_url` passed to `nango.auth()` `params` from the client is ignored.
 </Note>
 
 <Tip>
-    **Local development:** create a connection with `webhook_url` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
+    **Local development:** create a connection with `webhook_url_override` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
 </Tip>
 
 ## Verifying webhooks from Nango
@@ -10605,21 +10587,17 @@ const { data } = await nango.createConnectSession({
     }
     ```
     When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+  </ResponseField>
 
-    `connection_config` also accepts `webhook_url` to override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
+  <ResponseField name="webhook_url_override" type="string">
+    Override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
     ```js
-    integrations_config_defaults: {
-      '<INTEGRATION-ID>': {
-        connection_config: {
-          webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
-        }
-      }
-    }
+    webhook_url_override: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
     ```
   </ResponseField>
 
   <ResponseField name="overrides" type="object">
-    Override Connect UI settings per integration. The key is your integration's unique ID (e.g. `jira`, `slack`, `github`) and the value is an object with the settings to override. Currently supports overriding the documentation URL shown in info icons during the connect flow:
+    Per-integration overrides. The key is your integration's unique ID (e.g. `jira`, `slack`, `github`) and the value is an object with the settings to override. Currently supports overriding the documentation URL shown in info icons during the connect flow:
     ```js
     overrides: {
       '<INTEGRATION-ID>': {
@@ -13937,7 +13915,7 @@ Nango is the leading provider of **API access for AI agents & apps**. It is desi
 
 <CardGroup cols={1}>
 <Card title="All APIs & integrations" icon="list" href="https://www.nango.dev/api-integrations">
-800+ APIs & thousands of integrations.
+900+ APIs & thousands of integrations.
 </Card>
 <Card title="Request or contribute a new API" icon="circle-question" href="/integrations/contribute-or-request-api">
 We deliver them in &lt;48h.
@@ -14535,7 +14513,7 @@ If all goes well, you should see your new connection in the _Connections_ tab. C
 
 Add a `<api>.mdx` file (e.g. `github.mdx`) for your API to the `docs/integrations/all` folder. Check out [other examples](/integrations/overview) to fill out the content of the documentation page.
 
-Reference the page in the `docs/docs.json` file in the `800+ APIs & Integrations` group in alphabetical order.
+Reference the page in the `docs/docs.json` file in the `900+ APIs & Integrations` group in alphabetical order.
 
 ### Submit a pull request
 

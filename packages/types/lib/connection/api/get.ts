@@ -87,6 +87,7 @@ export type PostPublicConnection = Endpoint<{
         provider_config_key: string;
         metadata?: Record<string, unknown> | undefined;
         connection_config?: ConnectionConfig | undefined;
+        webhook_url_override?: string | undefined;
         credentials:
             | Omit<OAuth2Credentials, 'raw'>
             | Omit<OAuth2ClientCredentials, 'raw'>
@@ -129,7 +130,7 @@ export type GetConnection = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config'> & {
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config' | 'webhook_url_override'> & {
     provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created_at: string;
     updated_at: string;

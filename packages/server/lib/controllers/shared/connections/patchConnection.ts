@@ -83,12 +83,9 @@ export async function handlePatchConnection({
         }
     }
 
+    // webhook_url is stored in the per-connection webhook_url_override column (not connection_config). An empty string clears it.
     if (typeof body.webhook_url === 'string') {
-        if (body.webhook_url === '') {
-            await connectionService.unsetConnectionConfigAttributes(connection, ['webhook_url']);
-        } else {
-            await connectionService.updateConnectionConfig(connection, { webhook_url: body.webhook_url });
-        }
+        await connectionService.updateWebhookUrlOverride(connection, body.webhook_url === '' ? null : body.webhook_url);
     }
 
     res.status(200).send({ success: true });
