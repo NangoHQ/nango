@@ -13148,6 +13148,45 @@ microsoft-intune:
     docs: https://nango.dev/docs/api-integrations/microsoft-intune
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-intune/connect
 
+microsoft-excel-oauth2-cc:
+    display_name: Microsoft Excel (Client Credentials)
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-excel-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-excel-oauth2-cc/connect
+
+microsoft-power-bi-oauth2-cc:
+    display_name: Microsoft Power BI (Client Credentials)
+    categories:
+        - productivity
+    alias: microsoft-oauth2-cc
+    proxy:
+        base_url: https://api.powerbi.com
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-power-bi-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-power-bi-oauth2-cc/connect
+
+microsoft-powerpoint-oauth2-cc:
+    display_name: Microsoft PowerPoint (Client Credentials)
+    categories:
+        - productivity
+    alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-powerpoint-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-powerpoint-oauth2-cc/connect
+
+microsoft-word-oauth2-cc:
+    display_name: Microsoft Word (Client Credentials)
+    categories:
+        - productivity
+    alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-word-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-word-oauth2-cc/connect
+
 microsoft-planner:
     display_name: Microsoft Planner
     categories:
@@ -15455,6 +15494,30 @@ passportal:
             doc_section: '#step-3-generate-hmac-token'
     docs: https://nango.dev/docs/integrations/all/passportal
     docs_connect: https://nango.dev/docs/integrations/all/passportal/connect
+
+pave:
+    display_name: Pave
+    categories:
+        - hr
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.pave.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /ping
+    docs: https://nango.dev/docs/api-integrations/pave
+    docs_connect: https://nango.dev/docs/api-integrations/pave/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pave account
+            example: '3A8F92C4********V4D'
+            doc_section: '#step-1-generating-your-api-key'
 
 paychex:
     display_name: Paychex

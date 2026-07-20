@@ -6378,6 +6378,11 @@ microsoft-excel:
     - openid
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-excel-oauth2-cc:
+    - https://graph.microsoft.com/.default
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml base_url (Microsoft client credentials resource scope pattern)
 microsoft-oauth2-cc:
     - https://graph.microsoft.com/.default
@@ -6713,6 +6718,11 @@ microsoft-power-bi:
     - Workspace.ReadWrite.All
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Power BI's required OAuth resource/audience is analysis.windows.net, a separate identifier from the api.powerbi.com REST host it's used to call; still current, no newer replacement)
+microsoft-power-bi-oauth2-cc:
+    - https://analysis.windows.net/powerbi/api/.default
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
 microsoft-powerpoint:
     - AuditLogsQuery-OneDrive.Read.All
@@ -6763,6 +6773,11 @@ microsoft-powerpoint:
     - UserAuthMethod-Email.ReadWrite.All
     - VerifiedId-Profile.Read.All
     - VerifiedId-Profile.ReadWrite.All
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-powerpoint-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
@@ -8136,6 +8151,11 @@ microsoft-word:
     - UserAuthMethod-Email.ReadWrite.All
     - VerifiedId-Profile.Read.All
     - VerifiedId-Profile.ReadWrite.All
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-word-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 mimecast: []
