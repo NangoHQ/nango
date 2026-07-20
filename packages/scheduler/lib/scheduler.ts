@@ -433,7 +433,7 @@ export class Scheduler {
         const newState: TaskState = 'SUCCEEDED';
         const succeeded: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(trx, { taskId, newState, output });
-            if (res.isOk() && res.value.scheduleId !== null) {
+            if (res.isOk() && this.isSchedulable(res.value)) {
                 const scheduleRes = await schedules.scheduleNextExecution(trx, {
                     taskIds: [taskId],
                     taskState: newState,
@@ -484,7 +484,7 @@ export class Scheduler {
 
             const failed = await tasks.transitionState(trx, { taskId, newState, output: error });
             if (failed.isOk()) {
-                if (failed.value.scheduleId !== null) {
+                if (this.isSchedulable(failed.value)) {
                     const scheduleRes = await schedules.scheduleNextExecution(trx, {
                         taskIds: [taskId],
                         taskState: newState,
@@ -545,7 +545,7 @@ export class Scheduler {
                 newState,
                 output: { reason }
             });
-            if (res.isOk() && res.value.scheduleId !== null) {
+            if (res.isOk() && this.isSchedulable(res.value)) {
                 const scheduleRes = await schedules.scheduleNextExecution(trx, {
                     taskIds: [taskId],
                     taskState: newState,
@@ -750,5 +750,13 @@ export class Scheduler {
             return Err(abortTask.error);
         }
         return abortTask;
+    }
+
+    /**
+     * A task is schedulable if it links back to a `schedule` (i.e., it has a schedule id).
+     * Attempting to reschedule an unschedulable task (i.e., actions, webhooks, on-events) is a no-op that would only waste database resources.
+     */
+    private isSchedulable(task: Task): boolean {
+        return task.scheduleId !== null;
     }
 }
