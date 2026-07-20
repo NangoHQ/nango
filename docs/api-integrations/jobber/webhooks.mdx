@@ -1,0 +1,62 @@
+---
+title: 'How to set up webhooks with Jobber on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Jobber events in your app using Nango webhooks'
+---
+
+This guide shows you how to receive real-time Jobber events in Nango by registering a webhook in your Jobber app settings.
+
+## How it works
+
+1. When a connection is created, Nango automatically fetches the connected Jobber account's ID and stores it for webhook routing — no setup needed on your end.
+2. Jobber sends a signed POST request to your Nango webhook URL when a subscribed event occurs.
+3. Nango verifies the signature, matches the payload's `accountId` to the correct connection, and forwards the event to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Jobber integration and copy the **Webhook URL**.
+
+### 2. Register the webhook in Jobber
+
+1. Go to [Manage Apps](https://developer.getjobber.com/apps) and open your app.
+2. Add a webhook pointing to your Nango webhook URL, and select the topics you want to subscribe to.
+
+There's no separate webhook secret to configure — Jobber signs webhook payloads with your app's OAuth Client Secret, which Nango already has from the integration setup.
+
+### 3. Handle forwarded webhooks
+
+Every request from Jobber includes an `X-Jobber-Hmac-SHA256` header — a Base64-encoded HMAC-SHA256 of the raw request body, signed with your app's OAuth client secret. Nango verifies this automatically before forwarding the event. Example payload:
+
+```json
+{
+  "data": {
+    "webHookEvent": {
+      "topic": "CLIENT_CREATE",
+      "appId": "3ef22a50-072d-430c-a78f-b7646657560b",
+      "accountId": "MQ==",
+      "itemId": "MQ==",
+      "occurredAt": "2021-08-12T16:31:36-06:00"
+    }
+  }
+}
+```
+
+<Note>
+Jobber provides at-least-once delivery. Your webhook handler should be idempotent and respond within 1 second — process payloads asynchronously to stay within this limit.
+</Note>
+
+## Supported topics
+
+Webhooks fire for any topic configured in your Jobber app. Examples:
+
+| Topic | Description |
+| --- | --- |
+| `CLIENT_CREATE` | A new client was created |
+| `CLIENT_UPDATE` | A client was updated |
+| `CLIENT_DESTROY` | A client was deleted |
+
+For the full list, see `WebHookTopicEnum` in the [Jobber GraphQL schema](https://developer.getjobber.com/docs/).
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

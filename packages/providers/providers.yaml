@@ -11289,13 +11289,17 @@ jobber:
     auth_mode: OAUTH2
     authorization_url: https://api.getjobber.com/api/oauth/authorize
     token_url: https://api.getjobber.com/api/oauth/token
+    disable_pkce: true
     authorization_params:
         response_type: code
     proxy:
         headers:
             x-jobber-graphql-version: ${connectionConfig.version} || 2025-01-20
         base_url: https://api.getjobber.com/api
-    docs: https://nango.dev/docs/integrations/all/jobber
+    webhook_routing_script: jobberWebhookRouting
+    post_connection_script: jobberPostConnection
+    docs: https://nango.dev/docs/api-integrations/jobber
+    setup_guide_url: https://nango.dev/docs/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app
     connection_config:
         version:
             type: string
