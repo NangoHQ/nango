@@ -71,8 +71,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
-    // Counter metrics can render as a running month-to-date total (Free caps view); AVG metrics
-    // (connections/records) are already a level series. renderAsArea decides area vs bars.
+    // AVG metrics (connections/records) arrive as a running-average level series (view_mode
+    // 'cumulative') and always draw as an area. Counter metrics draw as daily bars by default,
+    // but the Free caps view can plot them as a cumulative month-to-date area (chartMode
+    // 'cumulative'). `renderAsArea` is the single "area, not bars" answer for either case.
     const cumulativeCounter = chartMode === 'cumulative' && !isCumulative;
     const renderAsArea = isCumulative || cumulativeCounter;
 
