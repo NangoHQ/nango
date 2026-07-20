@@ -126,7 +126,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         const webhookUrl = overrideWebhookUrl?.trim() ? overrideWebhookUrl.trim() : undefined;
         const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
 
-        // OAuth client/scope overrides only apply to OAuth flows; webhook URL overrides apply to every auth type.
+        // OAuth client/scope overrides only apply to OAuth flows and live in connection_config;
         const oauthConfigOverrides =
             isOauth2 && (overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined)
                 ? {
@@ -135,8 +135,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                       oauth_scopes_override: oauthScopesOverride
                   }
                 : undefined;
-        const connectionConfig =
-            oauthConfigOverrides || webhookUrl ? { ...oauthConfigOverrides, ...(webhookUrl ? { webhook_url: webhookUrl } : {}) } : undefined;
+        const connectionConfig = oauthConfigOverrides ? { ...oauthConfigOverrides } : undefined;
 
         return await apiConnectSessions(env, {
             allowed_integrations: integration ? [integration.unique_key] : undefined,
@@ -155,7 +154,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                           docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
                       }
                   }
-                : undefined
+                : undefined,
+            webhook_url_override: webhookUrl
         });
     }, [
         integration,

@@ -45,3 +45,4 @@ export { default as zohoPostConnection } from './providers/zoho/post-connection.
 export { default as sophosCentralPostConnection } from './providers/sophos-central/post-connection.js';
 export { default as procorePostConnection } from './providers/procore/post-connection.js';
 export { default as sage200PostConnection } from './providers/sage-200/post-connection.js';
+export { default as vantageApparelCredentialsVerification } from './providers/vantage-apparel/credentials-verification.js';

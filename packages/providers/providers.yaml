@@ -23227,6 +23227,30 @@ vanta:
     docs: https://nango.dev/docs/api-integrations/vanta
     docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
 
+vantage-apparel:
+    display_name: Vantage Apparel
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: BASIC
+    credentials_verification_script: vantageApparelCredentialsVerification
+    proxy:
+        base_url: https://brandedpromoapparel.com/WebServices
+    docs: https://nango.dev/docs/api-integrations/vantage-apparel
+    docs_connect: https://nango.dev/docs/api-integrations/vantage-apparel/connect
+    credentials:
+        username:
+            type: string
+            title: PromoStandards ID
+            description: The PromoStandards ID used to authenticate SOAP requests.
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password paired with the PromoStandards ID.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+
 veed:
     display_name: VEED (via fal.ai)
     categories:
