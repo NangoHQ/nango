@@ -15195,6 +15195,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `valley` | Valley (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/valley.md) | [connect](https://nango.dev/docs/integrations/all/valley/connect.md) |  | marketing |
 | `valley-api-key` | Valley (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/valley-api-key.md) | [connect](https://nango.dev/docs/integrations/all/valley-api-key/connect.md) |  | marketing |
 | `vanta` | Vanta | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/vanta.md) | [connect](https://nango.dev/docs/api-integrations/vanta/connect.md) |  | dev-tools |
+| `vantage-apparel` | Vantage Apparel | BASIC | [docs](https://nango.dev/docs/api-integrations/vantage-apparel.md) | [connect](https://nango.dev/docs/api-integrations/vantage-apparel/connect.md) |  | e-commerce, crm |
 | `veed` | VEED (via fal.ai) | API_KEY | [docs](https://nango.dev/docs/api-integrations/veed.md) | [connect](https://nango.dev/docs/api-integrations/veed/connect.md) |  | video, dev-tools |
 | `veeva-vault` | Veeva Vault | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/veeva-vault.md) | [connect](https://nango.dev/docs/api-integrations/veeva-vault/connect.md) |  | crm |
 | `vercel` | Vercel | API_KEY | [docs](https://nango.dev/docs/api-integrations/vercel.md) | [connect](https://nango.dev/docs/api-integrations/vercel/connect.md) |  | dev-tools |
