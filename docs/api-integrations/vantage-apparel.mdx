@@ -42,17 +42,27 @@ Official docs: [PromoStandards Order Status 2.0.0 specification](https://www.pro
 This action calls Customer Lookup's `getAccountsByEmail` operation. It fetches the connection's raw `id`/`password`, embeds them in the SOAP envelope, and sends it via `nango.proxy()` with the matching `SOAPAction` header:
 
 ```typescript
-import type { NangoAction, GetAccountsByEmailInput, GetAccountsByEmailOutput } from '../../models';
+import { createAction } from 'nango';
+import * as z from 'zod';
 
 function escapeXml(value: string): string {
     return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
-export default async function runAction(nango: NangoAction, input: GetAccountsByEmailInput): Promise<GetAccountsByEmailOutput> {
-    const { credentials } = await nango.getConnection();
-    const { username, password } = credentials as { username: string; password: string };
+export default createAction({
+    description: "Look up a Vantage Apparel customer account by email via PromoStandards' getAccountsByEmail operation",
+    version: '1.0.0',
+    input: z.object({
+        email: z.string()
+    }),
+    output: z.object({
+        raw: z.string()
+    }),
+    exec: async (nango, input) => {
+        const { credentials } = await nango.getConnection();
+        const { username, password } = credentials as { username: string; password: string };
 
-    const body = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="https://brandedpromoapparel.com/Schema/CustomerLookupService/">
+        const body = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="https://brandedpromoapparel.com/Schema/CustomerLookupService/">
   <soapenv:Body>
     <ns:GetAccountsByEmailRequest>
       <ns:wsVersion>1.0.0</ns:wsVersion>
@@ -63,18 +73,19 @@ export default async function runAction(nango: NangoAction, input: GetAccountsBy
   </soapenv:Body>
 </soapenv:Envelope>`;
 
-    const response = await nango.proxy<string>({
-        method: 'POST',
-        endpoint: '/CustomerLookupService.svc',
-        headers: {
-            'content-type': 'text/xml; charset=utf-8',
-            soapaction: '"getAccountsByEmail"'
-        },
-        data: body
-    });
+        const response = await nango.proxy<string>({
+            method: 'POST',
+            endpoint: '/CustomerLookupService.svc',
+            headers: {
+                'content-type': 'text/xml; charset=utf-8',
+                soapaction: '"getAccountsByEmail"'
+            },
+            data: body
+        });
 
-    return { raw: response.data };
-}
+        return { raw: response.data };
+    }
+});
 ```
 
 The same pattern applies to Order Status (`GetOrderStatusRequest`, `soapaction: '"getOrderStatus"'`, endpoint `/OrderStatusService.svc`) and Shipment Notification — swap the request element, `SOAPAction`, and endpoint for the operation you need.
