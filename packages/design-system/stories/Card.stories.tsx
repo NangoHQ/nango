@@ -1,5 +1,5 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '../src/components/ui/button';
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../src/components/ui/card';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -12,35 +12,39 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     render: () => (
-        <div className="flex gap-4 flex-wrap">
-            <Card className="w-72">
-                <CardHeader>
-                    <CardTitle>GitHub Integration</CardTitle>
-                    <CardDescription>Sync pull requests and issues from your repos.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-body-small-regular text-text-secondary">Connected · Last synced 2 min ago</p>
-                </CardContent>
-                <CardFooter>
-                    <Button variant="secondary" size="md">
-                        Manage
-                    </Button>
-                </CardFooter>
-            </Card>
-            <Card className="w-72">
-                <CardHeader>
-                    <CardTitle>Slack Integration</CardTitle>
-                    <CardDescription>Post notifications to channels on sync events.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-body-small-regular text-text-secondary">Not connected</p>
-                </CardContent>
-                <CardFooter>
-                    <Button variant="primary" size="md">
-                        Connect
-                    </Button>
-                </CardFooter>
-            </Card>
+        <div className="flex flex-wrap gap-4">
+            <div className="w-72">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>GitHub Integration</CardTitle>
+                        <CardDescription>Sync pull requests and issues from your repos.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-text-secondary text-ds-md">Connected · Last synced 2 min ago</p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button variant="secondary" size="md">
+                            Manage
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+            <div className="w-72">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Slack Integration</CardTitle>
+                        <CardDescription>Post notifications to channels on sync events.</CardDescription>
+                        <CardAction>
+                            <Button variant="primary" size="md">
+                                Connect
+                            </Button>
+                        </CardAction>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-text-secondary text-ds-md">Not connected</p>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     )
 };
