@@ -101,9 +101,14 @@ describe('mapDeprecatedConnectionConfigWebhookUrl', () => {
             }
         });
 
-        expect(result.ok).toBe(true);
-        if (!result.ok) return;
-        expect(result.body.integrations_config_defaults?.['github']?.connection_config).toBeUndefined();
-        expect(result.body.webhook_url_override).toBe('https://tunnel.example.com/hook');
+        expect(result).toEqual({
+            ok: true,
+            body: {
+                webhook_url_override: 'https://tunnel.example.com/hook',
+                integrations_config_defaults: {
+                    github: {}
+                }
+            }
+        });
     });
 });

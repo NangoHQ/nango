@@ -3,11 +3,6 @@ import { webhookUrlSchema } from '../../helpers/validation.js';
 import type { ConnectSessionInput } from '@nangohq/types';
 import type * as z from 'zod';
 
-type BodyWithDeprecatedWebhookUrl = {
-    webhook_url_override?: string | undefined;
-    integrations_config_defaults?: ConnectSessionInput['integrations_config_defaults'];
-};
-
 /**
  * Backward-compat for the deprecated
  * `integrations_config_defaults.<provider>.connection_config.webhook_url` field.
@@ -17,7 +12,7 @@ type BodyWithDeprecatedWebhookUrl = {
  *   when that field was not already set
  * - Explicit `webhook_url_override` (including empty string) always wins
  */
-export function mapDeprecatedConnectionConfigWebhookUrl<T extends BodyWithDeprecatedWebhookUrl>(
+export function mapDeprecatedConnectionConfigWebhookUrl<T extends Pick<ConnectSessionInput, 'webhook_url_override' | 'integrations_config_defaults'>>(
     body: T
 ): { ok: true; body: T } | { ok: false; issues: z.core.$ZodIssue[] } {
     const defaults = body.integrations_config_defaults;
