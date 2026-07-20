@@ -1768,6 +1768,7 @@
               "integrations/all/valley",
               "integrations/all/valley-api-key",
               "api-integrations/vanta",
+              "api-integrations/vantage-apparel",
               "api-integrations/veed",
               "api-integrations/veeva-vault",
               "api-integrations/veeva-vault-oauth",
