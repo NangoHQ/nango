@@ -27,6 +27,8 @@ export interface AnalyticsEvents {
     };
     'web:usage:series_isolated': { metric: UsageMetric };
     'web:usage:series_toggled': { metric: UsageMetric };
+    'web:usage:value_copied': { metric: UsageMetric; dimension: AnyBreakdownDimension };
+    'web:usage:value_opened': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:invoice_details_clicked': Record<string, never>;
     'web:usage:billing_portal_clicked': Record<string, never>;
 
