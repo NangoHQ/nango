@@ -108,6 +108,7 @@ class ConnectionService {
         providerConfigKey,
         parsedRawCredentials,
         connectionConfig,
+        webhookUrlOverride,
         environmentId,
         metadata,
         tags
@@ -116,6 +117,7 @@ class ConnectionService {
         providerConfigKey: string;
         parsedRawCredentials: AllAuthCredentials;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         environmentId: number;
         metadata?: Metadata | null;
         tags?: Tags | undefined;
@@ -130,6 +132,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig || storedConnection.connection_config,
+                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
                 environment_id: environmentId,
                 config_id: config_id as number,
                 metadata: metadata || storedConnection.metadata || null,
@@ -156,6 +159,7 @@ class ConnectionService {
             config_id: config_id as number,
             credentials: parsedRawCredentials,
             connection_config: connectionConfig || {},
+            webhook_url_override: webhookUrlOverride ?? null,
             environment_id: environmentId,
             metadata: metadata || null,
             created_at: new Date(),
@@ -181,6 +185,7 @@ class ConnectionService {
         providerConfigKey,
         credentials,
         connectionConfig,
+        webhookUrlOverride,
         metadata,
         config,
         environment,
@@ -198,6 +203,7 @@ class ConnectionService {
             | SignatureCredentials
             | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
@@ -212,6 +218,7 @@ class ConnectionService {
                 config_id: config.id as number,
                 credentials,
                 connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (exists?.webhook_url_override ?? null),
                 environment_id: environment.id,
                 metadata: metadata || null,
                 created_at: new Date(),
@@ -240,6 +247,7 @@ class ConnectionService {
                     credentials_iv: encryptedConnection.credentials_iv,
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
+                    webhook_url_override: encryptedConnection.webhook_url_override,
                     environment_id: encryptedConnection.environment_id,
                     metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
@@ -261,6 +269,7 @@ class ConnectionService {
         providerConfigKey,
         metadata,
         connectionConfig,
+        webhookUrlOverride,
         environment,
         tags
     }: {
@@ -268,6 +277,7 @@ class ConnectionService {
         providerConfigKey: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         environment: DBEnvironment;
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
@@ -285,6 +295,7 @@ class ConnectionService {
                     config_id: config_id as number,
                     updated_at: new Date(),
                     connection_config: connectionConfig || storedConnection.connection_config,
+                    webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
                     metadata: metadata || storedConnection.metadata || null,
                     credentials_expires_at: expiresAt,
                     last_refresh_success: new Date(),
@@ -304,6 +315,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride ?? null,
                 metadata: metadata || {},
                 environment_id: environment.id,
                 config_id: config_id!,
@@ -325,6 +337,7 @@ class ConnectionService {
         environment,
         metadata = null,
         connectionConfig = {},
+        webhookUrlOverride,
         parsedRawCredentials,
         connectionCreatedHook,
         tags
@@ -334,6 +347,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -343,6 +357,7 @@ class ConnectionService {
             providerConfigKey,
             parsedRawCredentials,
             connectionConfig,
+            webhookUrlOverride,
             environmentId: environment.id,
             metadata,
             tags
@@ -361,6 +376,7 @@ class ConnectionService {
         metadata = null,
         environment,
         connectionConfig = {},
+        webhookUrlOverride,
         credentials,
         connectionCreatedHook,
         tags
@@ -370,6 +386,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -386,6 +403,7 @@ class ConnectionService {
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata,
             config,
             environment,
@@ -540,7 +558,18 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
-    public async getConnectionConfigByConnectionIds({
+    public async getWebhookUrlOverride(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<string | null> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('webhook_url_override').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        return result[0]?.webhook_url_override ?? null;
+    }
+
+    public async getWebhookUrlOverridesByConnectionIds({
         connectionIds,
         provider_config_key,
         environment_id
@@ -548,23 +577,25 @@ class ConnectionService {
         connectionIds: string[];
         provider_config_key: string;
         environment_id: number;
-    }): Promise<Map<string, ConnectionConfig>> {
-        const configByConnectionId = new Map<string, ConnectionConfig>();
+    }): Promise<Map<string, string>> {
+        const webhookUrlOverrideByConnectionId = new Map<string, string>();
         if (connectionIds.length === 0) {
-            return configByConnectionId;
+            return webhookUrlOverrideByConnectionId;
         }
 
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
-            .select('connection_id', 'connection_config')
+            .select('connection_id', 'webhook_url_override')
             .whereIn('connection_id', connectionIds)
             .where({ provider_config_key, environment_id, deleted: false });
 
         for (const row of result) {
-            configByConnectionId.set(row.connection_id, row.connection_config);
+            if (row.webhook_url_override) {
+                webhookUrlOverrideByConnectionId.set(row.connection_id, row.webhook_url_override);
+            }
         }
 
-        return configByConnectionId;
+        return webhookUrlOverrideByConnectionId;
     }
 
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
@@ -654,12 +685,19 @@ class ConnectionService {
         return result || [];
     }
 
-    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
         await trx.from<DBConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
     public async replaceConnectionConfig(connection: Pick<DBConnection, 'id'>, config: ConnectionConfig) {
         await db.knex.from<DBConnection>(`_nango_connections`).where({ id: connection.id, deleted: false }).update({ connection_config: config });
+    }
+
+    public async updateWebhookUrlOverride(connection: Pick<DBConnection, 'id'>, webhookUrlOverride: string | null): Promise<void> {
+        await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ id: connection.id, deleted: false })
+            .update({ webhook_url_override: webhookUrlOverride });
     }
 
     public async updateMetadata(connections: Pick<DBConnection, 'id' | 'metadata'>[], metadata: Metadata): Promise<void> {
@@ -1154,7 +1192,8 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
-        tags?: Tags
+        tags?: Tags,
+        webhookUrlOverride?: string | null | undefined
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
@@ -1173,6 +1212,7 @@ class ConnectionService {
             providerConfigKey: integration.unique_key,
             parsedRawCredentials: create.value,
             connectionConfig,
+            webhookUrlOverride,
             environmentId: integration.environment_id,
             tags
         });
@@ -1416,8 +1456,12 @@ class ConnectionService {
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
         connectionConfig: Record<string, string>,
-        refreshToken?: boolean
+        refreshToken?: boolean,
+        integrationConfig?: Record<string, string> | null
     ): Promise<ServiceResponse<TwoStepCredentials>> {
+        const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+        dynamicCredentials = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, integrationConfig);
+
         if (provider.signature) {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
@@ -1536,7 +1580,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status !== 200) {
+            if (response.status !== 200 && response.status !== 201) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
@@ -1655,7 +1699,7 @@ class ConnectionService {
             const RESERVED_CRED_KEYS = new Set(['type', 'token', 'refresh_token', 'expires_at', 'raw']);
 
             for (const [key, value] of Object.entries(dynamicCredentials)) {
-                if (value !== undefined) {
+                if (value !== undefined && !preconfiguredFields.has(key)) {
                     parsedCreds[key] = value;
                 }
             }
@@ -1804,7 +1848,8 @@ class ConnectionService {
                 provider as ProviderTwoStep,
                 dynamicCredentials,
                 connection.connection_config,
-                true
+                true,
+                providerConfig.custom
             );
 
             if (!success || !credentials) {
@@ -2095,6 +2140,34 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+}
+
+// Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
+// these take precedence over anything submitted per-connection and must never be persisted onto a connection.
+export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
+    if (!integrationConfig || !provider.integration_config) {
+        return new Set();
+    }
+
+    return new Set(Object.keys(provider.integration_config).filter((field) => Boolean(integrationConfig[field])));
+}
+
+export function applyIntegrationConfigToTwoStepCredentials(
+    provider: ProviderTwoStep,
+    dynamicCredentials: Record<string, any>,
+    integrationConfig: Record<string, string> | null | undefined
+): Record<string, any> {
+    const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+    if (preconfiguredFields.size === 0) {
+        return dynamicCredentials;
+    }
+
+    const overrides: Record<string, string> = {};
+    for (const field of preconfiguredFields) {
+        overrides[field] = integrationConfig![field]!;
+    }
+
+    return { ...dynamicCredentials, ...overrides };
 }
 
 export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {

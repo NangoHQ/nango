@@ -79,6 +79,14 @@
   },
   "redirects": [
     {
+      "source": "/reference/backend/control-plane-mcp/overview",
+      "destination": "/reference/backend/management-mcp/overview"
+    },
+    {
+      "source": "/reference/backend/control-plane-mcp/logs",
+      "destination": "/reference/backend/management-mcp/overview"
+    },
+    {
       "source": "/integrations/all/snowflake",
       "destination": "/api-integrations/snowflake"
     },
@@ -89,6 +97,10 @@
     {
       "source": "/integrations/all/google-gemini/connect",
       "destination": "/api-integrations/google-gemini/connect"
+    },
+    {
+      "source": "/integrations/all/apple-app-store",
+      "destination": "/api-integrations/apple-app-store"
     },
     {
       "source": "/introduction",
@@ -694,7 +706,8 @@
                   "guides/auth/share-connect-link",
                   "guides/auth/connection-tags-configuration-metadata",
                   "guides/auth/customize-connect-ui",
-                  "guides/auth/token-refreshing"
+                  "guides/auth/token-refreshing",
+                  "guides/auth/mcp-auth"
                 ]
               },
               {
@@ -883,6 +896,11 @@
                       "reference/backend/backend-sdk/rust",
                       "reference/backend/backend-sdk/php"
                     ]
+                  },
+                  {
+                    "group": "Management MCP (Beta)",
+                    "icon": "/images/mcp.svg",
+                    "pages": ["reference/backend/management-mcp/overview"]
                   }
                 ]
               },
@@ -963,7 +981,7 @@
               "integrations/all/apify",
               "api-integrations/apollo",
               "integrations/all/apollo-oauth",
-              "integrations/all/apple-app-store",
+              "api-integrations/apple-app-store",
               "api-integrations/apple-business-manager",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
@@ -1003,6 +1021,7 @@
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
+              "api-integrations/baserow",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
@@ -1049,6 +1068,7 @@
               "api-integrations/canva-mcp",
               "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
+              "api-integrations/cerby",
               "integrations/all/certn",
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
@@ -1113,6 +1133,7 @@
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
               "api-integrations/datadog",
+              "api-integrations/datadog-oauth",
               "integrations/all/datev",
               "api-integrations/dayforce",
               "integrations/all/datto-rmm",
@@ -1390,13 +1411,17 @@
               "api-integrations/microsoft-dynamics-365-finance-and-operations-cc",
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
+              "api-integrations/microsoft-excel-oauth2-cc",
               "api-integrations/microsoft-planner",
               "api-integrations/microsoft-powerpoint",
+              "api-integrations/microsoft-powerpoint-oauth2-cc",
               "integrations/all/microsoft-power-bi",
+              "api-integrations/microsoft-power-bi-oauth2-cc",
               "api-integrations/microsoft-people",
               "api-integrations/microsoft-teams",
               "api-integrations/microsoft-teams-bot",
               "api-integrations/microsoft-word",
+              "api-integrations/microsoft-word-oauth2-cc",
               "api-integrations/microsoft-intune",
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
@@ -1446,6 +1471,7 @@
               "api-integrations/ocean-io",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
+              "api-integrations/odoo-api-key",
               "integrations/all/okta",
               "api-integrations/okta-cc",
               "integrations/all/okta-preview",
@@ -1470,6 +1496,7 @@
               "integrations/all/pagerduty",
               "api-integrations/paligo",
               "integrations/all/passportal",
+              "api-integrations/pave",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
               "api-integrations/paddle",
@@ -1512,6 +1539,7 @@
               "api-integrations/podscribe",
               "api-integrations/posthog",
               "api-integrations/posthog-oauth",
+              "api-integrations/postscript",
               "api-integrations/practicefusion",
               "api-integrations/printful",
               "integrations/all/prive",
@@ -1577,6 +1605,7 @@
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
               "api-integrations/sage-intacct-cc",
+              "api-integrations/sage-member",
               "integrations/all/sage-people",
               "api-integrations/sap-ariba",
               "api-integrations/salesforce",
@@ -1713,6 +1742,7 @@
               "integrations/all/trello-scim",
               "integrations/all/tremendous",
               "integrations/all/tremendous-sandbox",
+              "api-integrations/tripletex",
               "integrations/all/tsheetsteam",
               "integrations/all/tumblr",
               "integrations/all/twenty-crm",
@@ -1740,6 +1770,7 @@
               "api-integrations/vanta",
               "api-integrations/veed",
               "api-integrations/veeva-vault",
+              "api-integrations/veeva-vault-oauth",
               "api-integrations/vercel",
               "api-integrations/vercel-mcp",
               "api-integrations/videoask",

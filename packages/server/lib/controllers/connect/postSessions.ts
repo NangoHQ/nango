@@ -9,6 +9,7 @@ import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
@@ -35,8 +36,7 @@ export const bodySchema = z
                         authorization_params: z.record(z.string(), z.string()).optional(),
                         connection_config: z
                             .looseObject({
-                                oauth_scopes_override: z.string().optional(),
-                                webhook_url: webhookUrlSchema
+                                oauth_scopes_override: z.string().optional()
                             })
                             .optional()
                     })
@@ -51,6 +51,7 @@ export const bodySchema = z
                 })
             )
             .optional(),
+        webhook_url_override: webhookUrlSchema,
         tags: connectionTagsSchema.optional()
     })
     .strict();
@@ -130,6 +131,13 @@ export function checkIntegrationsExist(
 }
 
 export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
+    const mapped = mapDeprecatedConnectionConfigWebhookUrl(body);
+    if (!mapped.ok) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: mapped.issues }) } });
+        return;
+    }
+    body = mapped.body;
+
     const { account, environment } = res.locals;
     const { status, response }: Reply = await db.knex.transaction(async (trx) => {
         if (body.allowed_integrations || body.integrations_config_defaults || body.overrides) {
@@ -212,6 +220,7 @@ export async function generateSession(res: Response<any, Required<RequestLocals>
                 : null,
             operationId: logCtx.id,
             overrides: body.overrides || null,
+            webhookUrlOverride: body.webhook_url_override || null,
             endUser,
             tags
         });

@@ -22,7 +22,7 @@ import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { useAnalyticsTrack } from '../../../utils/analytics';
+import { track } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
 import { IntegrationDropdown } from './IntegrationDropdown';
@@ -67,7 +67,6 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const toast = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
@@ -127,7 +126,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         const webhookUrl = overrideWebhookUrl?.trim() ? overrideWebhookUrl.trim() : undefined;
         const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
 
-        // OAuth client/scope overrides only apply to OAuth flows; webhook URL overrides apply to every auth type.
+        // OAuth client/scope overrides only apply to OAuth flows and live in connection_config;
         const oauthConfigOverrides =
             isOauth2 && (overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined)
                 ? {
@@ -136,8 +135,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                       oauth_scopes_override: oauthScopesOverride
                   }
                 : undefined;
-        const connectionConfig =
-            oauthConfigOverrides || webhookUrl ? { ...oauthConfigOverrides, ...(webhookUrl ? { webhook_url: webhookUrl } : {}) } : undefined;
+        const connectionConfig = oauthConfigOverrides ? { ...oauthConfigOverrides } : undefined;
 
         return await apiConnectSessions(env, {
             allowed_integrations: integration ? [integration.unique_key] : undefined,
@@ -156,7 +154,8 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                           docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
                       }
                   }
-                : undefined
+                : undefined,
+            webhook_url_override: webhookUrl
         });
     }, [
         integration,
@@ -176,7 +175,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return;
         }
 
-        analyticsTrack('web:create_connection_button:clicked', {
+        track('web:create_connection_button:clicked', {
             provider: integration?.provider || 'unknown'
         });
 
@@ -208,7 +207,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return;
         }
 
-        analyticsTrack('web:share_connection_link_button:clicked', {
+        track('web:share_connection_link_button:clicked', {
             provider: integration?.provider || 'unknown'
         });
 
@@ -252,16 +251,15 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
-                analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
+                track('web:connection_created', { provider: integration?.provider || 'unknown' });
             } else if (event.type === 'error') {
-                analyticsTrack('web:connection_failed', {
+                track('web:connection_failed', {
                     provider: integration?.provider || 'unknown',
-                    errorType: event.payload.errorType,
-                    errorMessage: event.payload.errorMessage
+                    errorType: event.payload.errorType
                 });
             }
         },
-        [toast, queryClient, env, navigate, integration, cache, mutate, analyticsTrack]
+        [toast, queryClient, env, navigate, integration, cache, mutate]
     );
 
     useUnmount(() => {

@@ -24,3 +24,20 @@ export type UpdateMetadata = Endpoint<{
     Error: MetadataError;
     Success: MetadataBody;
 }>;
+
+export type PostConnectionMetadata = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/connections/:connectionId/metadata';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Body: {
+        metadata: Metadata;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_body'>;
+}>;
