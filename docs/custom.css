@@ -592,3 +592,13 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 #content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
+
+/* ══ ASK AI ASSISTANT PANEL — above navbar ═══════════════════════ */
+/*
+ * Raise the panel (Mintlify z-22) above the fixed opaque NAVBAR (z-30)
+ * so its header/Close button and first message aren't hidden behind it.
+ * Stays below the z-200 search / Ask AI dialogs. See NAN-6370.
+ */
+.sticky:has(> #chat-assistant-sheet) {
+  z-index: 40 !important;
+}
