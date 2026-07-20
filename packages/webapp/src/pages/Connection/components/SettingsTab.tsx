@@ -7,6 +7,7 @@ import { Button, FieldLabel } from '@nangohq/design-system';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection, usePatchConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -67,7 +68,17 @@ export const SettingsTab = () => {
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">
                             <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
-                            <InfoTooltip>Deliver this connection&apos;s webhooks to a different URL than the environment-wide webhook URL.</InfoTooltip>
+                            <InfoTooltip>
+                                Override the environment-wide webhook URL for this connection. Use this for local development. See{' '}
+                                <StyledLink
+                                    to="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
+                                    type="external"
+                                    className="text-s"
+                                >
+                                    Engineering collaboration
+                                </StyledLink>
+                                .
+                            </InfoTooltip>
                         </div>
                         <EditableInput
                             id="webhook_url_override"
