@@ -4,7 +4,8 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config';
 
 export default mergeConfig(
-    viteConfig,
+    // Resolve the vite config function with 'serve' so tests get the root base, not the relative build base.
+    viteConfig({ command: 'serve', mode: 'test' }),
     defineConfig({
         test: {
             include: ['src/**/*.test.tsx'],
