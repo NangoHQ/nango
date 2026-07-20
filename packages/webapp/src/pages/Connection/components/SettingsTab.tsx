@@ -38,7 +38,7 @@ export const SettingsTab = () => {
             await patchConnection({
                 params: { connectionId: connection.connection_id },
                 query: { provider_config_key: providerConfigKey, env },
-                body: { webhook_url: webhook_url_override }
+                body: { webhook_url_override }
             });
             toast({ title: 'Successfully updated', variant: 'success' });
         } catch {

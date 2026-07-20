@@ -170,7 +170,7 @@ export type PatchPublicConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
-        webhook_url?: string | undefined;
+        webhook_url_override?: string | undefined;
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
@@ -189,7 +189,7 @@ export type PatchConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
-        webhook_url?: string | undefined;
+        webhook_url_override?: string | undefined;
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;

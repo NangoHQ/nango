@@ -62,7 +62,7 @@ Set `webhook_url_override` when creating a [connect session](/reference/backend/
 You can also set or edit `webhook_url_override` from:
 
 - The **Create connection** flow in the Nango dashboard (advanced configuration), or later on the connection's **Settings** tab
-- `PATCH /connections/{connectionId}` with a `webhook_url` field (see [Patch a connection](/reference/backend/http-api/connections/patch))
+- `PATCH /connections/{connectionId}` with a `webhook_url_override` field (see [Patch a connection](/reference/backend/http-api/connections/patch))
 
 <Note>
     `webhook_url_override` is set by a trusted actor — via connect-session creation, the public API with an API key, or the dashboard. A `webhook_url` passed to `nango.auth()` `params` from the client is ignored.
