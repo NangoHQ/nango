@@ -3,6 +3,8 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
+import { getProvider } from '@nangohq/providers';
+
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import {
     absoluteUrlFromRedirectRequestOptions,
@@ -2182,5 +2184,416 @@ describe('buildProxyBody', () => {
         });
         const result = buildProxyBody({ config, connection: getTestConnection() });
         expect(result).toEqual({ label: 'static' });
+    });
+
+    it('builds a nested object from a nested proxy.body map', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        auth: {
+                            acctId: '${connectionConfig.acctId}',
+                            loginId: '${connectionConfig.loginId}',
+                            key: '${apiKey}'
+                        }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'my-secret-key' },
+                connection_config: { acctId: '26878', loginId: 'TestUser' }
+            })
+        });
+        expect(result).toEqual({ auth: { acctId: '26878', loginId: 'TestUser', key: 'my-secret-key' } });
+    });
+
+    it('drops unresolved keys from a nested proxy.body map but keeps the resolved ones', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        auth: {
+                            acctId: '${connectionConfig.acctId}',
+                            key: '${apiKey}'
+                        }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' }, connection_config: {} })
+        });
+        expect(result).toEqual({ auth: { key: 'my-secret-key' } });
+    });
+
+    it('omits a nested map entirely when none of its keys resolve', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: { auth: { acctId: '${connectionConfig.acctId}' } }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ connection_config: {} })
+        });
+        expect(result).toBeNull();
+    });
+
+    it('mixes flat and nested values in the same proxy.body map', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        serviceId: '101',
+                        auth: { key: '${apiKey}' }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+        expect(result).toEqual({ serviceId: '101', auth: { key: 'my-secret-key' } });
+    });
+
+    it('builds a value nested more than one level deep', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        request: {
+                            control: {
+                                senderid: '${connectionConfig.senderId}',
+                                password: '${apiKey}'
+                            },
+                            operation: {
+                                authentication: {
+                                    login: {
+                                        userid: '${connectionConfig.userId}'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'my-secret-key' },
+                connection_config: { senderId: 'sender-1', userId: 'user-1' }
+            })
+        });
+        expect(result).toEqual({
+            request: {
+                control: { senderid: 'sender-1', password: 'my-secret-key' },
+                operation: { authentication: { login: { userid: 'user-1' } } }
+            }
+        });
+    });
+
+    it('drops an unresolved leaf several levels deep but keeps its siblings', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        a: {
+                            b: {
+                                c: '${connectionConfig.missing}',
+                                d: '${apiKey}'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' }, connection_config: {} })
+        });
+        expect(result).toEqual({ a: { b: { d: 'my-secret-key' } } });
+    });
+
+    it('omits a deeply nested map entirely when every leaf under it fails to resolve', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    body: {
+                        a: { b: { c: '${connectionConfig.missing}' } }
+                    }
+                }
+            }
+        });
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({ connection_config: {} })
+        });
+        expect(result).toBeNull();
+    });
+});
+
+describe('buildProxyBody merged into an existing request body', () => {
+    const provider = {
+        auth_mode: 'API_KEY' as const,
+        proxy: {
+            base_url: 'https://example.com',
+            body: {
+                auth: {
+                    nested: {
+                        key: '${apiKey}'
+                    }
+                }
+            }
+        }
+    };
+
+    it('injects a value nested more than one level deep into an existing URLSearchParams body using bracket notation', () => {
+        const config = getDefaultProxy({
+            provider,
+            method: 'POST',
+            data: new URLSearchParams({ existing: 'value' })
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        expect((axiosConfig.data as URLSearchParams).toString()).toBe('existing=value&auth%5Bnested%5D%5Bkey%5D=my-secret-key');
+    });
+
+    it('injects a value nested more than one level deep into an existing FormData body using bracket notation', () => {
+        const form = new FormData();
+        form.append('existing', 'value');
+        const config = getDefaultProxy({
+            provider,
+            method: 'POST',
+            data: form
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        const resultForm = axiosConfig.data as FormData;
+        expect(resultForm).toBe(form);
+        const buffer = resultForm.getBuffer().toString('utf8');
+        expect(buffer).toContain('name="existing"');
+        expect(buffer).toContain('name="auth[nested][key]"');
+        expect(buffer).toContain('my-secret-key');
+    });
+
+    const providerDepth1 = {
+        auth_mode: 'API_KEY' as const,
+        proxy: {
+            base_url: 'https://example.com',
+            body: {
+                auth: {
+                    key: '${apiKey}'
+                }
+            }
+        }
+    };
+
+    it('injects a value nested exactly one level deep into an existing URLSearchParams body using bracket notation', () => {
+        const config = getDefaultProxy({
+            provider: providerDepth1,
+            method: 'POST',
+            data: new URLSearchParams({ existing: 'value' })
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        expect((axiosConfig.data as URLSearchParams).toString()).toBe('existing=value&auth%5Bkey%5D=my-secret-key');
+    });
+
+    it('injects a value nested exactly one level deep into an existing FormData body using bracket notation', () => {
+        const form = new FormData();
+        form.append('existing', 'value');
+        const config = getDefaultProxy({
+            provider: providerDepth1,
+            method: 'POST',
+            data: form
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        const resultForm = axiosConfig.data as FormData;
+        expect(resultForm).toBe(form);
+        const buffer = resultForm.getBuffer().toString('utf8');
+        expect(buffer).toContain('name="existing"');
+        expect(buffer).toContain('name="auth[key]"');
+        expect(buffer).toContain('my-secret-key');
+    });
+
+    const providerDepth3 = {
+        auth_mode: 'API_KEY' as const,
+        proxy: {
+            base_url: 'https://example.com',
+            body: {
+                auth: {
+                    a: {
+                        b: {
+                            key: '${apiKey}'
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    it('injects a value nested three levels deep into an existing URLSearchParams body using bracket notation', () => {
+        const config = getDefaultProxy({
+            provider: providerDepth3,
+            method: 'POST',
+            data: new URLSearchParams({ existing: 'value' })
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        expect((axiosConfig.data as URLSearchParams).toString()).toBe('existing=value&auth%5Ba%5D%5Bb%5D%5Bkey%5D=my-secret-key');
+    });
+
+    it('injects a value nested three levels deep into an existing FormData body using bracket notation', () => {
+        const form = new FormData();
+        form.append('existing', 'value');
+        const config = getDefaultProxy({
+            provider: providerDepth3,
+            method: 'POST',
+            data: form
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        const resultForm = axiosConfig.data as FormData;
+        expect(resultForm).toBe(form);
+        const buffer = resultForm.getBuffer().toString('utf8');
+        expect(buffer).toContain('name="existing"');
+        expect(buffer).toContain('name="auth[a][b][key]"');
+        expect(buffer).toContain('my-secret-key');
+    });
+});
+
+describe('sage-member (real provider config)', () => {
+    const provider = getProvider('sage-member');
+
+    it('is defined in providers.yaml with the expected nested auth body', () => {
+        // Guards against providers.yaml drifting out of sync with the nested-body test scenarios below.
+        expect(provider).toMatchObject({
+            auth_mode: 'API_KEY',
+            proxy: {
+                base_url: 'https://www.promoplace.com/ws/ws.dll',
+                body: {
+                    auth: {
+                        acctId: '${connectionConfig.acctId}',
+                        loginId: '${connectionConfig.loginId}',
+                        key: '${apiKey}'
+                    }
+                }
+            }
+        });
+    });
+
+    const connection = getTestConnection({
+        provider_config_key: 'sage-member',
+        credentials: { type: 'API_KEY', apiKey: 'deadbeefdeadbeefdeadbeefdeadbeef' },
+        connection_config: { acctId: '4353478', loginId: 'TestUser' }
+    });
+
+    it('injects account credentials into the auth object', () => {
+        const config = getDefaultProxy({ providerConfigKey: 'sage-member', providerName: 'sage-member', provider: provider! });
+
+        const result = buildProxyBody({ config, connection });
+
+        expect(result).toEqual({
+            auth: { acctId: '4353478', loginId: 'TestUser', key: 'deadbeefdeadbeefdeadbeefdeadbeef' }
+        });
+    });
+
+    it('drops the injected auth entirely when connectionConfig is missing (no leaked ${...} placeholders)', () => {
+        const config = getDefaultProxy({ providerConfigKey: 'sage-member', providerName: 'sage-member', provider: provider! });
+
+        const result = buildProxyBody({
+            config,
+            connection: getTestConnection({
+                provider_config_key: 'sage-member',
+                credentials: { type: 'API_KEY', apiKey: 'deadbeefdeadbeefdeadbeefdeadbeef' },
+                connection_config: {}
+            })
+        });
+
+        expect(result).toEqual({ auth: { key: 'deadbeefdeadbeefdeadbeefdeadbeef' } });
+    });
+
+    it('builds the full axios request: merges caller-supplied JSON body with the injected auth object, no auth header added', () => {
+        const config = getDefaultProxy({
+            providerConfigKey: 'sage-member',
+            providerName: 'sage-member',
+            provider: provider!,
+            endpoint: '/ConnectAPI',
+            method: 'POST',
+            data: { serviceId: 101, apiVer: 130 }
+        });
+
+        const axiosConfig = getAxiosConfiguration({ proxyConfig: config, connection });
+
+        expect(axiosConfig.url).toBe('https://www.promoplace.com/ws/ws.dll/ConnectAPI');
+        expect(axiosConfig.data).toEqual({
+            serviceId: 101,
+            apiVer: 130,
+            auth: { acctId: '4353478', loginId: 'TestUser', key: 'deadbeefdeadbeefdeadbeefdeadbeef' }
+        });
+        // API_KEY has no dedicated header template for this provider, so no default authorization header is added —
+        // the key only ever travels inside the JSON body's `auth` object.
+        expect(axiosConfig.headers).toEqual({});
+    });
+
+    it('does not inject the body for GET requests (methodDataAllowed excludes GET)', () => {
+        const config = getDefaultProxy({
+            providerConfigKey: 'sage-member',
+            providerName: 'sage-member',
+            provider: provider!,
+            endpoint: '/ConnectAPI',
+            method: 'GET'
+        });
+
+        const axiosConfig = getAxiosConfiguration({ proxyConfig: config, connection });
+
+        expect(axiosConfig.data).toBeUndefined();
     });
 });
