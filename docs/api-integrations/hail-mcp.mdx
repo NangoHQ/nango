@@ -19,7 +19,7 @@ Connect to the Hail MCP server with Nango and call MCP tools in minutes. Hail MC
     Make your first MCP request (initialize handshake). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
     ```bash
-    curl "https://api.nango.dev/proxy/" \
+    curl "https://api.nango.dev/proxy/mcp" \
       -X POST \
       -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
       -H "Provider-Config-Key: <INTEGRATION-ID>" \
