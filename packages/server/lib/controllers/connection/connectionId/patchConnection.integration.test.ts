@@ -274,7 +274,8 @@ describe(`PATCH ${endpoint}`, () => {
             expect(res.json).toStrictEqual({ success: true });
 
             const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
-            expect(updatedConn?.connection_config).toMatchObject({ webhook_url: 'https://example.com/webhooks-from-nango' });
+            expect(updatedConn?.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
+            expect(updatedConn?.connection_config).not.toHaveProperty('webhook_url');
         });
 
         it('should clear webhook_url override with empty string', async () => {
@@ -283,7 +284,7 @@ describe(`PATCH ${endpoint}`, () => {
             const conn = await seeders.createConnectionSeed({
                 env,
                 provider: 'github',
-                connectionConfig: { webhook_url: 'https://example.com/webhooks-from-nango' }
+                webhook_url_override: 'https://example.com/webhooks-from-nango'
             });
 
             const res = await api.fetch(endpoint, {
@@ -297,7 +298,7 @@ describe(`PATCH ${endpoint}`, () => {
             isSuccess(res.json);
 
             const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
-            expect(updatedConn?.connection_config).not.toHaveProperty('webhook_url');
+            expect(updatedConn?.webhook_url_override).toBeNull();
         });
 
         it('should reject invalid webhook_url', async () => {
