@@ -3,8 +3,8 @@ import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditResource
 
 // The audit event returned to the dashboard — the stored blob, parsed. Typed strictly for the current
 // schema `version` (a literal discriminant). At a breaking version this becomes a `version`-discriminated
-// union (or transform-to-latest on read) with runtime validation — TBD (NAN-6279). `metadata` stays loose
-// until then.
+// union (or transform-to-latest on read) with runtime validation, deferred to the contract-versioning
+// work. `metadata` stays loose until then.
 export interface ApiAuditTrailEvent {
     id: string;
     version: AuditTrailVersion;

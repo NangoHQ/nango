@@ -7,8 +7,8 @@ import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 
 // `audit_trail_events` currently lives in the `usage` ClickHouse DB, created by the usage migration
-// (NAN-6339 will move it to a dedicated audit DB + migration owned here). To keep this package's tests
-// self-contained, the test owns a throwaway DB and mirrors that migration's DDL rather than depending
+// (a future change will move it to a dedicated audit DB + migration owned here). To keep this package's
+// tests self-contained, the test owns a throwaway DB and mirrors that migration's DDL rather than depending
 // on @nangohq/usage. Keep in sync with:
 //   packages/usage/lib/clickhouse/migrations/20260715000009_create_audit_trail_events.ts
 const database = 'audit_store_test';
