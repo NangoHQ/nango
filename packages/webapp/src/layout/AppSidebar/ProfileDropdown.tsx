@@ -1,4 +1,4 @@
-import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, LogOut, ScrollText, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ export const ProfileDropdown: React.FC = () => {
     const signout = useSignout();
     const { user } = useUser();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const env = useStore((state) => state.env);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
     const isDevToolsEnabled = useIsDevToolsEnabled();
 
@@ -53,8 +54,16 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
+        if (meta?.auditTrail) {
+            list.push({
+                label: 'Audit log',
+                icon: ScrollText,
+                href: `/${env}/audit`
+            });
+        }
+
         return list;
-    }, [meta, showGettingStarted]);
+    }, [meta, showGettingStarted, env]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 
