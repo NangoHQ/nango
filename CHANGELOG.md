@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.2] - 2026-07-21
+
+### Added
+
+- *(webapp)* Free usage charts as progress toward the cap (#6790) by @macko911
+- *(design-system)* Lift Card into design system (#6835) by @macko911
+- *(webapp)* Alert Free accounts nearing or hitting plan limits (#6791) by @macko911
+- *(webhooks)* Add jobber webhook support (#6836) by @hassan254-prog
+- *(webapp)* Edit connection webhook URL override in Settings (#6740) by @kaposke
+
+### Changed
+
+- Flatten management mcp reference (#6843) by @bastienbeurier
+- *(billing)* Retire the parity-phase getUsage source toggle (#6764) by @pfreixes
+- *(jobs)* Log underlying cause of 'runner unable to execute' error (#6851) by @pfreixes
+- *(scheduler)* Avoid unnecessary db roundtrip on task retirement (#6810) by @ErickRDev
+
+### Fixed
+
+- *(server)* Stop proxy integration test hitting real GitHub API (#6844) by @macko911
+- *(providers/zendesk)* Request expires_in so tokens can be refreshed (#6763) by @jovinual
+- *(server/node-sdk/runner-sdk)* Fix types at API boundary to account for dates in credentials being serialized to strings (#6820) by @rbwest
+
 ## [v0.71.1] - 2026-07-20
 
 ### Added
@@ -7388,6 +7411,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.2]: https://github.com/NangoHQ/nango/compare/v0.71.1..v0.71.2
 [v0.71.1]: https://github.com/NangoHQ/nango/compare/v0.70.9..v0.71.1
 [v0.70.9]: https://github.com/NangoHQ/nango/compare/v0.70.8..v0.70.9
 [v0.70.8]: https://github.com/NangoHQ/nango/compare/v0.70.7..v0.70.8
