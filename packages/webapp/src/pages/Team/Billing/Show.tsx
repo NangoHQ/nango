@@ -57,24 +57,28 @@ export const TeamBilling: React.FC = () => {
             {/* max-w: the old 1280 cap plus the 228px (184px side panel + 44px gap) the tabbed
                 NavigationList side panel used to take up, now that the sections stack instead */}
             <div className="flex flex-col gap-8 max-w-[1508px]">
-                <header className="flex justify-end items-center">
-                    {!isFreePlan && (
+                {!isFreePlan && (
+                    <header className="flex justify-end items-center">
                         <div className="flex items-center gap-4">
                             <MonthSelector onMonthChange={setSelectedMonth} />
                         </div>
-                    )}
-                </header>
+                    </header>
+                )}
                 <div id="usage">
                     <Usage selectedMonth={selectedMonth} />
                 </div>
                 <Separator />
-                <div id="plans" className="w-full overflow-x-auto">
-                    <Plans />
+                <div id="plans" className="flex flex-col gap-4">
+                    <span className="text-text-strong text-body-medium-medium">Plans</span>
+                    <div className="w-full overflow-x-auto">
+                        <Plans />
+                    </div>
                 </div>
                 {canManageBilling && (
                     <>
                         <Separator />
-                        <div id="payment-and-invoices">
+                        <div id="payment-and-invoices" className="flex flex-col gap-4">
+                            <span className="text-text-strong text-body-medium-medium">Billing information</span>
                             <Payment />
                         </div>
                     </>
