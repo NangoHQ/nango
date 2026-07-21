@@ -12401,7 +12401,6 @@ meilisearch:
             type: string
             title: API Key
             description: A Meilisearch API key (not the master key), e.g. the Default Admin API Key or a custom key covering the actions you need. The keys.get action enables automatic tenant-token uid resolution.
-            secret: true
     docs: https://nango.dev/docs/integrations/all/meilisearch
 
 metabase:
