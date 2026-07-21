@@ -1,10 +1,10 @@
-import { Button } from '../src/components/ui/button';
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../src/components/ui/card';
+import { Button } from './button';
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Components/UI/Card',
+    title: 'Design System/Components/Card',
     parameters: { layout: 'padded' }
 };
 export default meta;
