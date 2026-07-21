@@ -42,7 +42,6 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
 
             return Ok(res);
         } catch (err) {
-            // Surface the cause internally: the wrapper below carries it only as `cause`, which nothing downstream logs.
             logger.error('Nango runner was unable to execute the function', {
                 error: err,
                 taskId: params.taskId,
