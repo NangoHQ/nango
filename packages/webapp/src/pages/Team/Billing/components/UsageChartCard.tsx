@@ -7,7 +7,6 @@ import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
@@ -57,8 +56,6 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     extraHeaderActions,
     disableApplyToAll
 }) => {
-    const showControls = useBreakdownEnabled();
-
     const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
 
     // Each panel owns its breakdown + filter explicitly via URL params.
@@ -66,14 +63,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     const [filterParam, setFilterParam] = useQueryState(`${metric}.filter`, parseAsString.withDefault('').withOptions({ history: 'replace' }));
 
     const rawDimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
-    const filter = showControls ? parseFilterParam(filterParam, dimensions) : null;
+    const filter = parseFilterParam(filterParam, dimensions);
 
     // Group + filter on the same dimension collide; the filter wins for the query (see
     // resolveBreakdownDimension), while rawDimension keeps the grouping in the URL.
     const dimension = resolveBreakdownDimension(rawDimension, filter);
 
-    const inBreakdownMode = showControls && dimension !== null;
-    const inFilterMode = showControls && filter !== null;
+    const inBreakdownMode = dimension !== null;
+    const inFilterMode = filter !== null;
     const isDetail = inBreakdownMode || inFilterMode;
 
     // One request covers every detail state (filtered and/or broken down). Fetched lazily.
@@ -124,29 +121,28 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     // No data at all for this metric (ignoring filters) → nothing to slice, so hide the controls.
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
-    const breakdownControl =
-        showControls && !baseEmpty ? (
-            <BreakdownFilterControl
-                metric={metric}
-                env={env}
-                timeframe={timeframe}
-                dimensions={dimensions}
-                breakdownDimension={rawDimension}
-                filter={filter}
-                onSetBreakdown={(d) => void setDimParam(d)}
-                onApplyFilter={applyFilter}
-                onClearFilter={clearFilter}
-                canApplyToAll={canApplyToAll}
-                onApplyToAll={() => {
-                    track('web:usage:applied_to_all', {
-                        metric,
-                        group_dimension: rawDimension ?? 'none',
-                        filter_dimension: filter?.dimension ?? 'none'
-                    });
-                    onApplyToAll?.(selection);
-                }}
-            />
-        ) : null;
+    const breakdownControl = !baseEmpty ? (
+        <BreakdownFilterControl
+            metric={metric}
+            env={env}
+            timeframe={timeframe}
+            dimensions={dimensions}
+            breakdownDimension={rawDimension}
+            filter={filter}
+            onSetBreakdown={(d) => void setDimParam(d)}
+            onApplyFilter={applyFilter}
+            onClearFilter={clearFilter}
+            canApplyToAll={canApplyToAll}
+            onApplyToAll={() => {
+                track('web:usage:applied_to_all', {
+                    metric,
+                    group_dimension: rawDimension ?? 'none',
+                    filter_dimension: filter?.dimension ?? 'none'
+                });
+                onApplyToAll?.(selection);
+            }}
+        />
+    ) : null;
     return (
         <ChartCard
             data={live}
