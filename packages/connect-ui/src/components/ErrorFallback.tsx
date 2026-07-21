@@ -18,7 +18,9 @@ const ErrorMsg: React.FC<{ error?: unknown; message?: string }> = ({ error, mess
 
 export const ErrorFallback: React.FC<{ error?: unknown; message?: string }> = ({ error, message }) => {
     useMount(() => {
-        telemetry('view:unknown_error');
+        if (!message) {
+            telemetry('view:unknown_error');
+        }
     });
     return (
         <div className="h-full w-full">
