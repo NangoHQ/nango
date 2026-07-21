@@ -1194,6 +1194,7 @@
               "api-integrations/fathom-oauth",
               "integrations/all/figjam",
               "integrations/all/figma",
+              "api-integrations/figma-mcp",
               "integrations/all/figma-scim",
               "integrations/all/findymail",
               "integrations/all/fillout",

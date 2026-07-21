@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 901
+Provider count: 902
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -283,6 +283,7 @@ URL patterns:
 | `fiber-ai` | Fiber AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/fiber-ai.md) | [connect](https://nango.dev/docs/api-integrations/fiber-ai/connect.md) |  | analytics |
 | `figjam` | FigJam | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/figjam.md) |  |  | design, productivity |
 | `figma` | Figma | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/figma.md) |  |  | design, productivity |
+| `figma-mcp` | Figma (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/figma-mcp.md) |  |  | design, productivity, mcp |
 | `figma-scim` | Figma (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/figma-scim.md) | [connect](https://nango.dev/docs/integrations/all/figma-scim/connect.md) |  | design, productivity |
 | `fillout` | Fillout (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fillout.md) |  |  | surveys |
 | `fillout-api-key` | Fillout (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fillout-api-key.md) | [connect](https://nango.dev/docs/integrations/all/fillout-api-key/connect.md) |  | surveys |

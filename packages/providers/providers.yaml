@@ -7742,6 +7742,29 @@ figma:
         base_url: https://api.figma.com
     docs: https://nango.dev/docs/integrations/all/figma
 
+figma-mcp:
+    display_name: Figma (MCP)
+    categories:
+        - design
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://www.figma.com/oauth/mcp
+    token_url: https://api.figma.com/v1/oauth/token
+    registration_url: https://api.figma.com/v1/oauth/mcp/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.figma.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/figma-mcp
+
 figma-scim:
     display_name: Figma (SCIM)
     categories:
