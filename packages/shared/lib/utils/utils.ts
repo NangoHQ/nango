@@ -513,7 +513,7 @@ export function interpolateIfNeeded(str: string, replacers: Record<string, any>)
 
 // Connection config keys a client is not allowed to supply: they are privileged and only set by the backend.
 const CLIENT_FORBIDDEN_CONNECTION_CONFIG_KEYS = new Set([
-    // `webhook_url` routes a connection's webhooks, so it is only honored from the backend-set connect session.
+    // `webhook_url` routes a connection's webhooks, so it is only honored from trusted actors (connect session, public API, dashboard).
     'webhook_url'
 ]);
 
@@ -646,6 +646,16 @@ function resolveNowExpression(expression: string, replacers: Record<string, any>
     if (expression === 'now') {
         const isoNow = replacers['now'] as string | undefined;
         return isoNow ?? new Date().toISOString();
+    }
+
+    // `${now+7:days:YYYY-MM-DD}` -> now offset by the amount/unit, formatted.
+    const offsetMatch = expression.match(/^now([+-]\d+):([a-zA-Z]+):(.+)$/);
+    if (offsetMatch) {
+        const [, amount, unit, format] = offsetMatch;
+        return dayjs
+            .utc(getNowDate(replacers))
+            .add(Number(amount), unit as dayjs.ManipulateType)
+            .format(format);
     }
 
     const formatMatch = expression.match(/^now:(.+)$/);

@@ -26,8 +26,8 @@ describe('getConnectionConfig', () => {
         expect(utils.getConnectionConfig({ subdomain: 'acme', count: 5, flag: true })).toEqual({ subdomain: 'acme' });
     });
 
-    // webhook_url is a privileged routing directive: it must only be settable by the backend via the
-    // connect session, never by an untrusted client passing it as a connection param. Stripping it here
+    // webhook_url is a privileged routing directive: it must only be settable by trusted actors (connect session, public API, dashboard),
+    // never by an untrusted client passing it as a connection param. Stripping it here
     // closes every client-param entry point (auth endpoints + OAuth) in one place.
     it('strips webhook_url so an untrusted client cannot route webhooks', () => {
         expect(utils.getConnectionConfig({ subdomain: 'acme', webhook_url: 'https://attacker.example.com/hook' })).toEqual({ subdomain: 'acme' });
@@ -202,6 +202,24 @@ describe('interpolateString', () => {
         const input = 'Timestamp: ${now:YYYY-MM-DDTHH:mm:ss}';
         const output = utils.interpolateString(input, replacers);
         expect(output).toBe('Timestamp: 2026-03-02T14:30:55');
+        vi.useRealTimers();
+    });
+
+    it('should interpolate ${now+7:days:YYYY-MM-DD} with a future date', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
+        const input = 'Date: ${now+7:days:YYYY-MM-DD}';
+        const output = utils.interpolateString(input, replacers);
+        expect(output).toBe('Date: 2026-03-09');
+        vi.useRealTimers();
+    });
+
+    it('should interpolate ${now-1:day:YYYY-MM-DD} with a past date', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-03-02T14:30:55.000Z'));
+        const input = 'Date: ${now-1:day:YYYY-MM-DD}';
+        const output = utils.interpolateString(input, replacers);
+        expect(output).toBe('Date: 2026-03-01');
         vi.useRealTimers();
     });
 

@@ -25,6 +25,7 @@ describe('hasScope', () => {
         expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:deploy' })).toBe(true);
         expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:integrations:list' })).toBe(true);
         expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:connections:read_credentials' })).toBe(true);
+        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:logs:read' })).toBe(true);
     });
 
     it('group wildcard matches scopes within the group', () => {

@@ -43,6 +43,8 @@ export const apiKeyScopes = [
     'environment:records:read',
     'environment:records:write',
     'environment:records:*',
+    // Logs
+    'environment:logs:read',
     // Actions
     'environment:actions:execute',
     'environment:actions:*',

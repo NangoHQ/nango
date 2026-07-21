@@ -20,7 +20,7 @@ const route: WebhookHandler = async (nango, headers) => {
             const { connectionIds } = await nango.executeScriptForWebhooks({
                 ...baseArgs,
                 connectionIdentifierValue: resourceId,
-                propName: 'googleDriveWatchResourceId'
+                propName: 'metadata.googleDriveWatchResourceIds'
             });
             if (connectionIds.length > 0) {
                 return connectionIds;

@@ -39,7 +39,7 @@ export const webhookUrlSchema = z
     );
 
 // Connection params come from untrusted clients. `webhook_url` is intentionally NOT accepted here: it is a
-// privileged routing directive set only by the backend via the connect session (see postSessions). Any
+// privileged routing directive set only by trusted actors (connect session, public API, dashboard). Any
 // client-supplied `webhook_url` is stripped in getConnectionConfig.
 export const connectionConfigParamsSchema = z.looseObject({}).optional();
 
@@ -164,7 +164,7 @@ export const connectionCredentialsOauth2Schema = z.strictObject({
 });
 
 export const connectionCredentialsOauth2CCSchema = z.strictObject({
-    token: z.string().min(1).max(2048),
+    token: z.string().min(1).max(4096),
     client_id: z.string().min(1).max(255),
     client_secret: z.string().min(1).max(2048),
     client_certificate: z.string().min(1).max(10000).optional(),

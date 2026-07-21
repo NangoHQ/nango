@@ -7,7 +7,9 @@ import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
+import { FreeUsage } from './FreeUsage';
 import { UsageChartCard } from './UsageChartCard';
 
 import type { DBPlan, UsageMetric } from '@nangohq/types';
@@ -27,6 +29,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const env = useStore((state) => state.env);
     const { data: environmentData } = useEnvironment(env);
     const plan = environmentData?.plan;
+    const isFree = plan?.name === 'free';
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
@@ -38,12 +41,22 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe);
+    // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
+    // Free — it would double-fetch. Gate on `plan` being resolved too: until it loads `isFree` is
+    // false, so a bare `!isFree` would fire one request before we know the plan. Paid accounts
+    // have `plan` cached from the app shell, so this adds no real delay.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { enabled: plan != null && !isFree });
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;
+    }
+
+    // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
+    // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
+    if (isFree) {
+        return <FreeUsage />;
     }
 
     const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
@@ -59,7 +72,13 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <StyledLink icon to={usage?.data.customer.portalUrl} type="external" variant="info">
+                                <StyledLink
+                                    icon
+                                    to={usage?.data.customer.portalUrl}
+                                    type="external"
+                                    variant="info"
+                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                >
                                     billing portal
                                 </StyledLink>
                             </>
@@ -82,7 +101,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
             ))}
 
             {usage?.data.customer.portalUrl && (
-                <StyledLink icon to={usage.data.customer.portalUrl} type="external">
+                <StyledLink icon to={usage.data.customer.portalUrl} type="external" onClick={() => track('web:usage:invoice_details_clicked', {})}>
                     View invoice details
                 </StyledLink>
             )}

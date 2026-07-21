@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { acceptInvitation, getInvitation, userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { normalizeEmail, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -31,7 +31,7 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
     const { user } = res.locals;
     const data: AcceptInvite['Params'] = val.data;
     const invitation = await getInvitation(data.id);
-    if (!invitation || invitation.email !== user.email) {
+    if (!invitation || normalizeEmail(invitation.email) !== normalizeEmail(user.email)) {
         res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
         return;
     }

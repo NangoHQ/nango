@@ -326,7 +326,8 @@ export class UsageTracker implements IUsageTracker {
                 ...(opts.metrics ? { metrics: opts.metrics } : {}),
                 ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
                 ...(opts.top !== undefined ? { top: opts.top } : {}),
-                ...(opts.filter ? { filter: opts.filter } : {})
+                ...(opts.filter ? { filter: opts.filter } : {}),
+                ...(opts.avgPerDay ? { avgPerDay: opts.avgPerDay } : {})
             });
         }
         return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
@@ -352,9 +353,12 @@ export class UsageTracker implements IUsageTracker {
             // same metric when the dimensions differ; the controller rejects the
             // same-dim combination.
             filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
+            // AVG metrics as point-in-time daily counts instead of the billing running-average.
+            avgPerDay?: boolean;
         }
     ): Promise<Result<BillingUsageMetrics>> {
-        const { timeframe, metrics: scopedMetrics, breakdown, top, filter } = opts;
+        const { timeframe, metrics: scopedMetrics, breakdown, top, filter, avgPerDay } = opts;
+        const avgToUsage = avgPerDay ? toPerDayAvg : toRunningAvgUsage;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
         const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
@@ -508,7 +512,7 @@ export class UsageTracker implements IUsageTracker {
             // emit a zero-valued cumulative metric so the downstream API
             // formatter doesn't fall back to its generic `view_mode: 'periodic'`
             // shape, which is wrong for AVG metrics.
-            result[metric] = toRunningAvgUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
+            result[metric] = avgToUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
         }
 
         // Breakdown-requested metrics: top-level `usage` is empty (per-day points
@@ -529,7 +533,7 @@ export class UsageTracker implements IUsageTracker {
         }
         for (const [metric, br] of avgBreakdowns) {
             if (br.isErr()) return Err(br.error);
-            const series = toRunningAvgUsage(br.value);
+            const series = avgToUsage(br.value);
             result[metric] = {
                 externalId: metric,
                 total: series.reduce((sum, s) => sum + s.total, 0),
@@ -647,10 +651,20 @@ const sources: Record<UsageMetric, string> = {
  * `getDailySumAndBatches`' docstring.
  */
 export function toRunningAvgUsage(result: GetDailySumAndBatchesResult): BillingUsageMetric[] {
-    return result.series.map((series) => seriesToCumulativeAvg(result.metric, series)).filter((m): m is BillingUsageMetric => m !== null);
+    return result.series.map((series) => seriesToAvg(result.metric, series, false)).filter((m): m is BillingUsageMetric => m !== null);
 }
 
-function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], series: GetDailySumAndBatchesSeries): BillingUsageMetric | null {
+/**
+ * Per-day value (the point-in-time count each day) rather than the month's running average.
+ * The Free caps view uses this: connections/records are capped as a point-in-time maximum, so
+ * plotting the concurrent daily count (with its cap line) is meaningful, unlike the billing
+ * running-average. Keeps `view_mode: 'cumulative'` so the chart still renders it as an area.
+ */
+export function toPerDayAvg(result: GetDailySumAndBatchesResult): BillingUsageMetric[] {
+    return result.series.map((series) => seriesToAvg(result.metric, series, true)).filter((m): m is BillingUsageMetric => m !== null);
+}
+
+function seriesToAvg(metric: GetDailySumAndBatchesResult['metric'], series: GetDailySumAndBatchesSeries, perDay: boolean): BillingUsageMetric | null {
     if (series.days.length === 0) {
         return null;
     }
@@ -663,7 +677,11 @@ function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], se
     for (const day of sorted) {
         runningSum += day.sum;
         runningBatches += day.batches;
-        if (runningBatches === 0) {
+        // Running average over the month (billing view) vs the day's own value (point-in-time
+        // view for the Free caps chart, where the cap is a concurrent maximum).
+        const sum = perDay ? day.sum : runningSum;
+        const batches = perDay ? day.batches : runningBatches;
+        if (batches === 0) {
             // Defensive: a series shouldn't appear with batches=0 (the SQL filters
             // empty-day groups out), but if it does we skip rather than divide by zero.
             continue;
@@ -675,7 +693,7 @@ function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], se
         usage.push({
             timeframeStart: day.day,
             timeframeEnd: addOneDay(day.day),
-            quantity: runningSum / runningBatches
+            quantity: sum / batches
         });
     }
 

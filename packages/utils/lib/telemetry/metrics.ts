@@ -90,6 +90,7 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
+    ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
     TASKS_RETRIED = 'nango.tasks.retried',
@@ -144,6 +145,7 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT = 'nango.billing.usage.clickhouse.s3_export.file.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT = 'nango.billing.usage.clickhouse.s3_export.run.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS = 'nango.billing.usage.clickhouse.s3_export.rows',
     BILLING_USAGE_TRACKER_CALLS = 'nango.billing.usage.tracker.calls',
     BILLING_EVENTS_S3_DLQ_FILES = 'nango.billing.events.s3.dlq.files',
     BILLING_EVENTS_S3_DLQ_MONITOR_RUN_RESULT = 'nango.billing.events.s3.dlq.monitor.run.result',
@@ -153,6 +155,9 @@ export enum Types {
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
     AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
+
+    AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED = 'nango.audit.target.display_resolution_failed',
+    AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
 
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',

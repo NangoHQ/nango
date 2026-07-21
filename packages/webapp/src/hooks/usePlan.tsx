@@ -82,7 +82,7 @@ export const GetUsageQueryKey = ['plans', 'usage'];
 export function useApiGetUsage(env: string) {
     return useQuery<GetUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: GetUsageQueryKey,
+        queryKey: [...GetUsageQueryKey, env],
         queryFn: async (): Promise<GetUsage['Success']> => {
             const res = await apiFetch(`/api/v1/plans/usage?env=${env}`, {
                 method: 'GET'
@@ -101,15 +101,19 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, options?: { avgPerDay?: boolean; enabled?: boolean }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
-        enabled: Boolean(env),
-        queryKey: [...GetBillingUsageQueryKey, timeframe],
+        enabled: Boolean(env) && (options?.enabled ?? true),
+        // `env` keeps environments separate; `avgPerDay ?? false` so an omitted arg and an explicit false share one cache entry.
+        queryKey: [...GetBillingUsageQueryKey, env, timeframe, options?.avgPerDay ?? false],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
+            }
+            if (options?.avgPerDay) {
+                params.append('avgPerDay', 'true');
             }
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
@@ -149,10 +153,11 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
         filter?: { dimension: BreakdownDimensions[M]; value: string } | null;
     },
     top: number,
-    options?: { enabled?: boolean }
+    options?: { enabled?: boolean; avgPerDay?: boolean }
 ) {
     const dimension = spec.dimension ?? null;
     const filter = spec.filter ?? null;
+    const avgPerDay = options?.avgPerDay ?? false;
 
     // Fetch lazily: only once the panel has something to detail — a breakdown or a filter — and
     // the caller hasn't disabled it.
@@ -163,7 +168,7 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
         enabled,
         // `filter` is part of the key so drilling into a different value refetches rather than
         // serving the previous slice.
-        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter, top],
+        queryKey: [...GetBillingUsageQueryKey, 'detail', timeframe, metric, dimension, filter, top, avgPerDay],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
@@ -176,6 +181,9 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
             }
             if (filter) {
                 params.append(`filter[${metric}]`, `${filter.dimension}:${filter.value}`);
+            }
+            if (avgPerDay) {
+                params.append('avgPerDay', 'true');
             }
             params.append('top', String(top));
 
