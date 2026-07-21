@@ -1,32 +1,23 @@
 import type { Endpoint } from '../api.js';
+import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditResource, AuditTarget, AuditTrailVersion } from './event.js';
 
-export interface ApiAuditTrailActor {
-    type: string;
-    id: string;
-    display?: string;
-}
-
-export interface ApiAuditTrailTarget {
-    type: string;
-    id: string;
-    display?: string;
-}
-
-// The audit event as returned to the dashboard — the stored blob, parsed. Kept as a flat display
-// shape here (resource/action are plain strings) rather than reusing @nangohq/audit's strict union.
+// The audit event returned to the dashboard — the stored blob, parsed. Typed strictly for the current
+// schema `version` (a literal discriminant). At a breaking version this becomes a `version`-discriminated
+// union (or transform-to-latest on read) with runtime validation — TBD (NAN-6279). `metadata` stays loose
+// until then.
 export interface ApiAuditTrailEvent {
     id: string;
-    version: string;
+    version: AuditTrailVersion;
     occurredAt: string;
     accountId: number;
     environment: { id: number; display: string } | null;
-    actor: ApiAuditTrailActor;
-    via?: ApiAuditTrailActor[];
-    targets: ApiAuditTrailTarget[];
-    context: { ip?: string; userAgent?: string };
-    outcome: string;
-    resource: string;
-    action: string;
+    actor: AuditActor;
+    via?: AuditActor[];
+    targets: AuditTarget[];
+    context: AuditContext;
+    outcome: AuditOutcome;
+    resource: AuditResource;
+    action: AuditAction;
     metadata?: Record<string, unknown>;
 }
 
