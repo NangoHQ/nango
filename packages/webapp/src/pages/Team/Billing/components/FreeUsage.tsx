@@ -1,4 +1,5 @@
 import { Info } from 'lucide-react';
+import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -56,6 +57,13 @@ export const FreeUsage: React.FC = () => {
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true });
 
+    // Persist which rows are expanded in the URL (comma-joined metric keys) so an opened drill-in
+    // survives navigating into an integration and coming back.
+    const [expanded, setExpanded] = useQueryState('expanded', parseAsArrayOf(parseAsString).withDefault([]).withOptions({ history: 'replace' }));
+    const setRowOpen = (metric: UsageMetric, open: boolean) => {
+        void setExpanded(open ? [...expanded.filter((m) => m !== metric), metric] : expanded.filter((m) => m !== metric));
+    };
+
     if (usageError || capsError) {
         return <CriticalErrorAlert message="Error loading usage" />;
     }
@@ -94,6 +102,8 @@ export const FreeUsage: React.FC = () => {
                             isLoading={isLoading}
                             env={env}
                             timeframe={timeframe}
+                            open={expanded.includes(metric)}
+                            onOpenChange={(open) => setRowOpen(metric, open)}
                         />
                     );
                 })}

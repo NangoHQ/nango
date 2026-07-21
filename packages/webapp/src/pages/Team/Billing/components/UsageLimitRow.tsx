@@ -25,6 +25,9 @@ interface UsageLimitRowProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
+    /** Controlled expand state — the parent persists it in the URL so it survives navigation. */
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 /**
@@ -32,12 +35,24 @@ interface UsageLimitRowProps {
  * progress bar, and % of limit / "Limit reached"), and expanding it reveals the existing trend +
  * dimension-breakdown drill-in for the month selected in the table header.
  */
-export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({ metric, label, usage, limit, capsLoading, data, isLoading, env, timeframe }) => {
+export const UsageLimitRow: React.FC<UsageLimitRowProps> = ({
+    metric,
+    label,
+    usage,
+    limit,
+    capsLoading,
+    data,
+    isLoading,
+    env,
+    timeframe,
+    open,
+    onOpenChange
+}) => {
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
 
     return (
-        <Collapsible className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
+        <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
             <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-surface-panel">
                 <div className={USAGE_ROW_GRID}>
                     <div className="flex flex-col min-w-0">
