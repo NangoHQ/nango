@@ -45,8 +45,6 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
             logger.error('Nango runner was unable to execute the function', {
                 error: err,
                 taskId: params.taskId,
-                teamId: params.nangoProps.team.id,
-                runnerId: runner.value.id,
                 runnerUrl: runner.value.url
             });
             return Err(new Error(`Nango runner was unable to execute the function`, { cause: err }));
