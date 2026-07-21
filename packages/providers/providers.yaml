@@ -18170,7 +18170,7 @@ rydership:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.environment}/api/v2
+        base_url: https://${connectionConfig.environment}/api
     docs: https://nango.dev/docs/api-integrations/rydership
     setup_guide_url: https://nango.dev/docs/api-integrations/rydership/how-to-register-your-own-rydership-oauth-app
     connection_config:
