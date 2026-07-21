@@ -8,6 +8,7 @@ import { useStore } from '@/store';
 import { getAggregateUsageState } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { useSelectedMonth } from '../useSelectedMonth';
+import { toggleExpandedMetric } from './expandedMetrics';
 import { MonthSelector } from './MonthSelector';
 import { UsageLimitBanner } from './UsageLimitBanner';
 import { USAGE_ROW_GRID, UsageLimitRow } from './UsageLimitRow';
@@ -61,7 +62,7 @@ export const FreeUsage: React.FC = () => {
     // survives navigating into an integration and coming back.
     const [expanded, setExpanded] = useQueryState('expanded', parseAsArrayOf(parseAsString).withDefault([]).withOptions({ history: 'replace' }));
     const setRowOpen = (metric: UsageMetric, open: boolean) => {
-        void setExpanded(open ? [...expanded.filter((m) => m !== metric), metric] : expanded.filter((m) => m !== metric));
+        void setExpanded(toggleExpandedMetric(expanded, metric, open));
     };
 
     if (usageError || capsError) {
