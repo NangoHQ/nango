@@ -8,6 +8,7 @@ import { AuthCredentials } from './AuthCredentials/AuthCredentials';
 import { ConnectionExtras } from './ConnectionExtras';
 import { ConnectionTabLayout } from './ConnectionTabLayout';
 import { EditableConnectionTags } from './EditableConnectionTags';
+import { ReconnectPanel } from './ReconnectPanel';
 
 export const AuthTab = () => {
     const env = useStore((state) => state.env);
@@ -19,13 +20,15 @@ export const AuthTab = () => {
     return (
         <ConnectionTabLayout connectionData={connectionData}>
             <div className="flex flex-col gap-8 w-full max-w-2xl">
+                <ReconnectPanel />
+
                 {errorLog && (
                     <Alert variant="error">
                         <Info />
                         <AlertDescription>
                             {credentials.type === 'BASIC' || credentials.type === 'API_KEY'
-                                ? 'There was an error while testing credentials validity.'
-                                : 'There was an error refreshing the credentials.'}
+                                ? "Nango couldn't automatically verify these credentials. Reconnect above to restore this connection."
+                                : "Nango couldn't automatically refresh these credentials. Reconnect above to restore this connection."}
                         </AlertDescription>
                         <AlertActions>
                             <AlertButtonLink
