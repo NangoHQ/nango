@@ -336,6 +336,43 @@ describe('refreshOrTestCredentials', () => {
         expect(onTest).not.toHaveBeenCalled();
     });
 
+    it('should return early with connection_refresh_exhausted even when instantRefresh (force_refresh) is true', async () => {
+        const { env, account } = await seedAccountEnvAndUser();
+        const integration = await createConfigSeed(env, 'algolia', 'algolia');
+        const connection = await createConnectionSeed({ env, provider: 'algolia', rawCredentials: { type: 'API_KEY', apiKey: 'foobar' } });
+        const decryptedConnection = encryptionManager.decryptConnection(connection);
+        if (!decryptedConnection) {
+            throw new Error('Failed to decrypt connection');
+        }
+
+        const exhaustedConnection = await connectionService.updateConnection({ ...decryptedConnection, refresh_exhausted: true });
+
+        await wait(2);
+        const onFailed = vi.fn();
+        const onSuccess = vi.fn();
+        const onTest = vi.fn();
+        const res = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: true,
+            connection: exhaustedConnection,
+            onRefreshFailed: onFailed,
+            onRefreshSuccess: onSuccess,
+            connectionTestHook: onTest,
+            logContextGetter: logContextGetter
+        });
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.type).toBe('connection_refresh_exhausted');
+        }
+
+        expect(onFailed).not.toHaveBeenCalled();
+        expect(onSuccess).not.toHaveBeenCalled();
+        expect(onTest).not.toHaveBeenCalled();
+    });
+
     it('should return early if refresh failed within the cooldown window (non-instant refresh)', async () => {
         const { env, account } = await seedAccountEnvAndUser();
         const integration = await createConfigSeed(env, 'algolia', 'algolia');

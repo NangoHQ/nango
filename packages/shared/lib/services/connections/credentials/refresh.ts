@@ -90,11 +90,12 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         props.connection = { ...props.connection, last_fetched_at: new Date() };
 
         // short-circuit if we know the refresh will fail
-        if (!props.instantRefresh) {
-            if (props.connection.refresh_exhausted) {
-                return Err(new NangoError('connection_refresh_exhausted'));
-            }
+        // this applies even to instantRefresh (force_refresh): once exhausted, only a reconnect can clear it
+        if (props.connection.refresh_exhausted) {
+            return Err(new NangoError('connection_refresh_exhausted'));
+        }
 
+        if (!props.instantRefresh) {
             // Fail early if the last refresh attempt failed within the cooldown window.
             // Manual refreshes (instantRefresh=true) always bypass this check.
             if (props.connection.last_refresh_failure && Date.now() - props.connection.last_refresh_failure.getTime() < REFRESH_FAILURE_COOLDOWN_MS) {
