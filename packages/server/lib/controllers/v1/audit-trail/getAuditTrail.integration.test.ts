@@ -98,4 +98,35 @@ describe('GET /api/v1/audit-trail', () => {
         expect(event.resource).toBe('connection');
         expect(event.action).toBe('deleted');
     });
+
+    it('paginates via the opaque cursor', async () => {
+        const { session, account, env } = await authAdmin();
+        // 26 events one second apart (oldest → newest) — one more than the fixed page size of 25.
+        const base = Date.parse('2026-07-16T10:00:00.000Z');
+        for (let i = 0; i < 26; i++) {
+            (await store.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
+        }
+
+        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name } });
+        expect(page1.res.status).toBe(200);
+        isSuccess(page1.json);
+        expect(page1.json.data).toHaveLength(25);
+        expect(page1.json.pagination.nextCursor).not.toBeNull();
+        expect(page1.json.data[0]!.occurredAt).toBe(new Date(base + 25 * 1000).toISOString()); // newest first
+
+        const page2 = await api.fetch('/api/v1/audit-trail', {
+            method: 'GET',
+            session,
+            query: { env: env.name, cursor: page1.json.pagination.nextCursor! }
+        });
+        expect(page2.res.status).toBe(200);
+        isSuccess(page2.json);
+        expect(page2.json.data).toHaveLength(1);
+        expect(page2.json.pagination.nextCursor).toBeNull();
+        expect(page2.json.data[0]!.occurredAt).toBe(new Date(base).toISOString()); // the oldest event
+
+        // pages don't overlap
+        const page1Ids = new Set(page1.json.data.map((e) => e.id));
+        expect(page1Ids.has(page2.json.data[0]!.id)).toBe(false);
+    });
 });

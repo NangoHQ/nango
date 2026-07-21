@@ -1,4 +1,4 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err } from '@nangohq/utils';
 
 import type { AuditEvent } from './event.js';
 import type { AuditStore, AuditTrailCursor } from './store.js';
@@ -11,8 +11,9 @@ export class InvalidAuditCursorError extends Error {
     }
 }
 
-// The cursor mirrors what `toString(occurred_at)`/`toString(id)` produce; validate the shape here so a
-// malformed value fails as InvalidAuditCursorError (400) instead of blowing up the ClickHouse bind (500).
+// The cursor mirrors ClickHouse's `toString(occurred_at)` / `toString(id)` output — a space-separated
+// datetime `YYYY-MM-DD HH:MM:SS.mmm` (UTC, no `T`/`Z`) and a UUID, not ISO 8601. Validate the shape here so
+// a malformed value fails as InvalidAuditCursorError (400) instead of blowing up the ClickHouse bind (500).
 const CURSOR_OCCURRED_AT_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/;
 const CURSOR_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,9 +54,11 @@ export class Audit {
         }
     }
 
-    // Account-scoped, most-recent-first. `cursor` is the opaque `nextCursor` of a previous page;
-    // `from`/`to` optionally bound the window and combine with the cursor. Empty when audit isn't wired
-    // to a backend.
+    /**
+     * Account-scoped, most-recent-first. `cursor` is the opaque `nextCursor` of a previous page;
+     * `from`/`to` optionally bound the window and combine with the cursor. Empty when audit isn't wired
+     * to a backend.
+     */
     async listAuditTrailEvents({
         accountId,
         limit,
@@ -78,13 +81,9 @@ export class Audit {
             before = decoded;
         }
 
-        const result = await this.store.list({ accountId, limit, before, from, to });
-        if (result.isErr()) {
-            return Err(result.error);
-        }
-        return Ok({
-            events: result.value.events,
-            nextCursor: result.value.nextCursor ? encodeCursor(result.value.nextCursor) : null
-        });
+        return (await this.store.list({ accountId, limit, before, from, to })).map((page) => ({
+            events: page.events,
+            nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null
+        }));
     }
 }
