@@ -380,10 +380,6 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // Dev-only override: allows the `source` query param on `getBillingUsage`
-    // to pin a request to Orb for parity checks. Default is ClickHouse; when
-    // OFF (prod default), the `source` param is ignored.
-    FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS

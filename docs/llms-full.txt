@@ -255,7 +255,7 @@ It is public and does not require authentication.
 
 ## Management MCP server (Beta)
 
-Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
+Add Nango's Management MCP server to let your coding agent manage your Nango environment. Today, it can explore logs, and we are progressively adding capabilities so that everything you can do in the Nango UI can also be done from an LLM interface. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp#tools).
 
 Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below.
 
@@ -6068,7 +6068,9 @@ We recommend exploring the logs in your own Nango account under **Logs**.
 
 ## Logs MCP tools (Beta)
 
-The [Management MCP server](/reference/backend/management-mcp/overview#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
+The [Management MCP server](/reference/backend/management-mcp#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
+
+This helps LLMs investigate and fix integration issues automatically.
 
 ## OpenTelemetry export
 
@@ -6870,6 +6872,20 @@ Nango Connect is available by default at `http://localhost:3009`.
 <Note>
 If you are using a custom domain, update `NANGO_PUBLIC_CONNECT_URL` to match it.
 </Note>
+
+#### Hosting under a base path
+
+Connect UI works under any base path, for example behind a reverse proxy that routes services by path. Set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
+
+```sh
+NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
+```
+
+Nango uses this URL when generating links to Connect UI and in the dashboard's security headers, so it must match what end users load in the browser.
+
+Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
+
+Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
@@ -9104,7 +9120,7 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:logs:read` | Read log operations and messages |
 
 <Note>
-    The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp/overview#logs).
+    The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
 ### Actions
@@ -12623,9 +12639,9 @@ Source: https://nango.dev/docs/reference/backend/backend-sdk/php.md
 
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
-## Management MCP overview (Beta)
+## Management MCP (Beta)
 
-Source: https://nango.dev/docs/reference/backend/management-mcp/overview.md
+Source: https://nango.dev/docs/reference/backend/management-mcp.md
 Description: Manage a Nango environment from an MCP client.
 
 <Note>

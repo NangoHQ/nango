@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatLimit, formatUsage, getUsageState, getUsageStateTextColor, NEAR_LIMIT_RATIO } from './usage.js';
+import { formatLimit, formatUsage, getAggregateUsageState, getUsageState, getUsageStateTextColor, NEAR_LIMIT_RATIO } from './usage.js';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
@@ -39,6 +39,33 @@ describe('getUsageStateTextColor', () => {
         expect(getUsageStateTextColor('ok')).toBe('text-text-default');
         expect(getUsageStateTextColor('near')).toBe('text-text-warning');
         expect(getUsageStateTextColor('over')).toBe('text-text-danger');
+    });
+});
+
+describe('getAggregateUsageState', () => {
+    it('returns ok for no metrics', () => {
+        expect(getAggregateUsageState({})).toBe('ok');
+    });
+
+    it('returns ok when every capped metric is comfortably under its limit', () => {
+        expect(getAggregateUsageState({ a: { usage: 1, limit: 10 }, b: { usage: 2, limit: 100 } })).toBe('ok');
+    });
+
+    it('returns near when a metric is close to its limit', () => {
+        expect(getAggregateUsageState({ a: { usage: 1, limit: 10 }, b: { usage: 9, limit: 10 } })).toBe('near');
+    });
+
+    it('returns over when a metric is at or above its limit', () => {
+        expect(getAggregateUsageState({ a: { usage: 9, limit: 10 }, b: { usage: 10, limit: 10 } })).toBe('over');
+    });
+
+    it('prefers over to near when both are present', () => {
+        expect(getAggregateUsageState({ near: { usage: 9, limit: 10 }, over: { usage: 20, limit: 10 } })).toBe('over');
+    });
+
+    it('ignores uncapped metrics (null limit)', () => {
+        expect(getAggregateUsageState({ uncapped: { usage: 999_999, limit: null } })).toBe('ok');
+        expect(getAggregateUsageState({ uncapped: { usage: 999_999, limit: null }, near: { usage: 9, limit: 10 } })).toBe('near');
     });
 });
 
