@@ -669,6 +669,10 @@
     {
       "source": "/integrations/all/prospeo/connect",
       "destination": "/api-integrations/prospeo/connect"
+    },
+    {
+      "source": "/integrations/all/jobber",
+      "destination": "/api-integrations/jobber"
     }
   ],
   "navigation": {
@@ -1341,7 +1345,7 @@
               "integrations/all/jira-data-center",
               "integrations/all/jira-data-center-basic",
               "integrations/all/jobadder",
-              "integrations/all/jobber",
+              "api-integrations/jobber",
               "integrations/all/jobdiva",
               "integrations/all/jobvite",
               "integrations/all/jotform",
