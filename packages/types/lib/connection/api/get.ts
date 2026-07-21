@@ -1,7 +1,7 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
 import type {
-    AllAuthCredentials,
     ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     BasicApiCredentials,
     OAuth1Credentials,
     OAuth2ClientCredentials,
@@ -140,7 +140,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
     tags: Tags;
-    credentials: AllAuthCredentials;
+    credentials: ApiPublicAllAuthCredentials;
 };
 export type GetPublicConnection = Endpoint<{
     Method: 'GET';
