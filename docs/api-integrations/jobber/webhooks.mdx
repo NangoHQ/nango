@@ -47,6 +47,13 @@ Every request from Jobber includes an `X-Jobber-Hmac-SHA256` header — a Base64
 Jobber provides at-least-once delivery. Your webhook handler should be idempotent and respond within 1 second — process payloads asynchronously to stay within this limit.
 </Note>
 
+## Handle the webhook
+
+Once routed to a connection, you have two options:
+
+- **Forward it to your app** — Nango verifies the signature and forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
 ## Supported topics
 
 Webhooks fire for any topic configured in your Jobber app. Examples:
