@@ -221,6 +221,13 @@ html:not(.dark) #navbar {
 html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
 #sidebar-content .pointer-events-none.sticky { display: none !important; }
 #navigation-items { padding-top: 20px !important; }
+#navigation-items img[src$="/images/mcp.svg"] {
+  opacity: 0.38;
+}
+.dark #navigation-items img[src$="/images/mcp.svg"] {
+  filter: invert(1);
+  opacity: 0.58;
+}
 
 /* ══ TOC — hide scrollbar until hover ════════════════════════════ */
 /*
