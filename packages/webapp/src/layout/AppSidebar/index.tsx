@@ -16,9 +16,11 @@ import {
 } from '@/components/ui/Sidebar';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
+import { useApiGetOverdueInvoices } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
+import OverdueInvoiceCard from './OverdueInvoiceCard';
 import { ProfileDropdown } from './ProfileDropdown';
 import UsageCard from './UsageCard';
 
@@ -66,6 +68,12 @@ export const AppSidebar: React.FC = () => {
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageCard = plan?.name === 'free';
 
+    // Overdue-invoice warning: shown on overdue state for paying plans (the hook
+    // skips the request for free/non-paying plans). It's a payment concern, so it
+    // is not gated on the usage card above.
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
+    const showOverdueCard = Boolean(overdue?.data.hasOverdue);
+
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
             <SidebarHeader className="p-0">
@@ -103,6 +111,11 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
+                {showOverdueCard && (
+                    <div className="px-3 mb-4">
+                        <OverdueInvoiceCard portalUrl={overdue?.data.portalUrl ?? null} />
+                    </div>
+                )}
                 {showUsageCard && (
                     <div className="px-3 mb-8">
                         <UsageCard />

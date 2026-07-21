@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fromOrbAddress, fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { fromOrbAddress, fromOrbCustomer, isOverdueInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
 import type Orb from 'orb-billing';
@@ -297,5 +297,35 @@ describe('orbMetricToUsageMetric', () => {
     it('is case-insensitive', () => {
         expect(orbMetricToUsageMetric('PROXY CALLS')).toBe('proxy');
         expect(orbMetricToUsageMetric('function logs')).toBe('function_logs');
+    });
+});
+
+// ─── isOverdueInvoice ───────────────────────────────────────────────────────────
+
+describe('isOverdueInvoice', () => {
+    const now = new Date('2026-07-14T00:00:00Z');
+    const past = '2026-07-01T00:00:00Z';
+    const future = '2026-08-01T00:00:00Z';
+
+    it('flags an issued, past-due invoice that still owes money', () => {
+        expect(isOverdueInvoice({ status: 'issued', due_date: past, amount_due: '42.00' }, now)).toBe(true);
+    });
+
+    it('ignores invoices not in the issued state', () => {
+        expect(isOverdueInvoice({ status: 'paid', due_date: past, amount_due: '42.00' }, now)).toBe(false);
+        expect(isOverdueInvoice({ status: 'void', due_date: past, amount_due: '42.00' }, now)).toBe(false);
+        expect(isOverdueInvoice({ status: 'draft', due_date: past, amount_due: '42.00' }, now)).toBe(false);
+    });
+
+    it('ignores invoices whose due date has not passed', () => {
+        expect(isOverdueInvoice({ status: 'issued', due_date: future, amount_due: '42.00' }, now)).toBe(false);
+    });
+
+    it('ignores invoices with no due date', () => {
+        expect(isOverdueInvoice({ status: 'issued', due_date: null, amount_due: '42.00' }, now)).toBe(false);
+    });
+
+    it('ignores fully-paid/credited invoices with nothing due', () => {
+        expect(isOverdueInvoice({ status: 'issued', due_date: past, amount_due: '0.00' }, now)).toBe(false);
     });
 });

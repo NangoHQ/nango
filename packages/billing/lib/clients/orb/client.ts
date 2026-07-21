@@ -3,13 +3,14 @@ import Orb from 'orb-billing';
 import { Err, metrics, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { fromOrbCustomer, isOverdueInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type {
     BillingClient,
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
     BillingSubscription,
     BillingUsageMetrics,
     DBTeam,
@@ -158,6 +159,33 @@ export class OrbClient implements BillingClient {
             });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
+        }
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        try {
+            // Orb has no "overdue" status — an invoice is overdue when it's still
+            // `issued` (not paid/void) and its due_date has passed. `due_date[lt]`
+            // filters to past-due server-side; `isOverdueInvoice` re-checks and
+            // drops any that owe nothing (e.g. fully credited). The count is the
+            // first page only, which is enough for the boolean flag and the
+            // "Invoice(s) overdue" copy.
+            const now = new Date();
+            const page = await this.orbSDK.invoices.list({
+                external_customer_id: String(accountId),
+                status: ['issued'],
+                'due_date[lt]': now.toISOString()
+            });
+
+            const overdue = page.data.filter((invoice) => isOverdueInvoice(invoice, now));
+            return Ok({ hasOverdue: overdue.length > 0, count: overdue.length });
+        } catch (err) {
+            // A paying account should always have an Orb customer, but guard the
+            // not-found case (e.g. never linked) as "nothing overdue" rather than error.
+            if (isOrbNotFoundError(err)) {
+                return Ok({ hasOverdue: false, count: 0 });
+            }
+            return Err(new Error('failed_to_get_overdue_invoices', { cause: err }));
         }
     }
 

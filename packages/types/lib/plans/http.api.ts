@@ -136,6 +136,23 @@ export type GetBillingUsage = Endpoint<{
     };
 }>;
 
+// Overdue-invoice summary for the current org, backing the in-app warning
+// alerts (sidebar card + billing-usage banner). Non-paying plans (free /
+// free-uncapped) short-circuit to `hasOverdue: false` without hitting Orb.
+// `portalUrl` is the Orb billing portal — the "Edit payment method" CTA target.
+export type GetOverdueInvoices = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/overdue';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            hasOverdue: boolean;
+            count: number;
+            portalUrl: string | null;
+        };
+    };
+}>;
+
 export type PutBillingInvoicingDetails = Endpoint<{
     Method: 'PUT';
     Path: '/api/v1/plans/billing/invoicing';

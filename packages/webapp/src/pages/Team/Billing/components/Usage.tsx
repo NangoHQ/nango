@@ -1,11 +1,11 @@
-import { Info } from 'lucide-react';
+import { Info, TriangleAlert } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
-import { useApiGetBillingUsage } from '@/hooks/usePlan';
+import { useApiGetBillingUsage, useApiGetOverdueInvoices } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
@@ -45,6 +45,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const source = breakdownEnabled ? 'clickhouse' : undefined;
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source);
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
@@ -55,6 +56,24 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
     return (
         <div className="w-full flex flex-col gap-6">
+            {overdue?.data.hasOverdue && (
+                <Alert variant="warning">
+                    <TriangleAlert />
+                    <AlertTitle>Invoice(s) overdue</AlertTitle>
+                    <AlertDescription>
+                        Edit payment method to avoid interruption.
+                        {overdue.data.portalUrl && (
+                            <>
+                                {' '}
+                                <StyledLink icon to={overdue.data.portalUrl} type="external" variant="warning">
+                                    Edit payment method
+                                </StyledLink>
+                            </>
+                        )}
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {isLegacyPlan && (
                 <Alert variant="info">
                     <Info />

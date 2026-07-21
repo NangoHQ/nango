@@ -9,6 +9,7 @@ export interface BillingClient {
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
@@ -64,6 +65,16 @@ export interface BillingSubscription {
     id: string;
     pendingChangeId?: string | undefined;
     planExternalId: string;
+}
+
+/**
+ * Summary of a customer's overdue invoices. An invoice is overdue when it is
+ * issued, still owes money (`amount_due > 0`), and its `due_date` is in the past.
+ * Kept as a small summary — the full list lives in the Orb billing portal.
+ */
+export interface BillingOverdueInvoices {
+    hasOverdue: boolean;
+    count: number;
 }
 
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
