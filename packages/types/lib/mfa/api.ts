@@ -1,4 +1,5 @@
 import type { ApiError, Endpoint } from '../api.js';
+import type { ApiUser } from '../user/api.js';
 
 type MFAError = ApiError<'invalid_mfa_code'> | ApiError<'mfa_already_enabled'> | ApiError<'mfa_enrollment_not_found'> | ApiError<'mfa_not_enabled'>;
 
@@ -40,3 +41,11 @@ export type DeleteMFA = Endpoint<{
 }>;
 
 export type MFAEndpointError = MFAError;
+
+export type PostMFALoginVerification = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/mfa/login/verify';
+    Body: { type: 'code'; code: string } | { type: 'recoveryCode'; recoveryCode: string };
+    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_login_expired'>;
+    Success: { data: { user: ApiUser; url: string } };
+}>;

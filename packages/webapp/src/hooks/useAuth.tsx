@@ -30,12 +30,12 @@ export function useSigninAPI() {
               status: 401;
           },
         APIError,
-        { email: string; password: string }
+        PostSignin['Body']
     >({
-        mutationFn: async ({ email, password }) => {
+        mutationFn: async ({ email, password, returnTo }) => {
             const res = await apiFetch('/api/v1/account/signin', {
                 method: 'POST',
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password, returnTo })
             });
 
             if (res.status === 200) {
