@@ -22,14 +22,7 @@ export default async function execute(nango: Nango) {
         return;
     }
 
-    const globalId = Buffer.from(response.data.data.account.id, 'base64').toString('utf-8');
-    const numericId = globalId.split('/').pop();
-
-    if (!numericId || !/^\d+$/.test(numericId)) {
-        return;
-    }
-
-    const accountId = Buffer.from(numericId, 'utf-8').toString('base64');
+    const accountId = response.data.data.account.id;
 
     await nango.updateConnectionConfig({ accountId });
 }
