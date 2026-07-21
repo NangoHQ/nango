@@ -1,10 +1,12 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getRunner, getRunners } from '../runner/runner.js';
 
 import type { RuntimeAdapter } from './adapter.js';
 import type { NangoProps } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+const logger = getLogger('RunnerRuntimeAdapter');
 
 export class RunnerRuntimeAdapter implements RuntimeAdapter {
     async cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
@@ -40,6 +42,14 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
 
             return Ok(res);
         } catch (err) {
+            // Surface the cause internally: the wrapper below carries it only as `cause`, which nothing downstream logs.
+            logger.error('Nango runner was unable to execute the function', {
+                error: err,
+                taskId: params.taskId,
+                teamId: params.nangoProps.team.id,
+                runnerId: runner.value.id,
+                runnerUrl: runner.value.url
+            });
             return Err(new Error(`Nango runner was unable to execute the function`, { cause: err }));
         }
     }
