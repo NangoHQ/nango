@@ -137,7 +137,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     const isCounter = data?.view_mode === 'periodic';
 
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
-    const viewToggle = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
+    const viewToggleControl = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
     const breakdownControl = !baseEmpty ? (
         <BreakdownFilterControl
             metric={metric}
@@ -166,10 +166,10 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             isLoading={isLoading}
             timeframe={timeframe}
             headerActions={
-                breakdownControl || viewToggle ? (
+                breakdownControl || viewToggleControl ? (
                     <>
                         {breakdownControl}
-                        {viewToggle}
+                        {viewToggleControl}
                     </>
                 ) : undefined
             }

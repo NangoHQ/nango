@@ -1,12 +1,16 @@
 import { Info } from 'lucide-react';
+import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { useApiGetBillingUsage, useApiGetUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
+import { getAggregateUsageState } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { useSelectedMonth } from '../useSelectedMonth';
+import { toggleExpandedMetric } from './expandedMetrics';
 import { MonthSelector } from './MonthSelector';
+import { UsageLimitBanner } from './UsageLimitBanner';
 import { USAGE_ROW_GRID, UsageLimitRow } from './UsageLimitRow';
 
 import type { UsageMetric } from '@nangohq/types';
@@ -54,12 +58,20 @@ export const FreeUsage: React.FC = () => {
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true });
 
+    // Persist which rows are expanded in the URL (comma-joined metric keys) so an opened drill-in
+    // survives navigating into an integration and coming back.
+    const [expanded, setExpanded] = useQueryState('expanded', parseAsArrayOf(parseAsString).withDefault([]).withOptions({ history: 'replace' }));
+    const setRowOpen = (metric: UsageMetric, open: boolean) => {
+        void setExpanded(toggleExpandedMetric(expanded, metric, open));
+    };
+
     if (usageError || capsError) {
         return <CriticalErrorAlert message="Error loading usage" />;
     }
 
     return (
         <div className="w-full flex flex-col gap-4">
+            <UsageLimitBanner state={getAggregateUsageState(caps?.data ?? {})} />
             <div className="flex justify-between items-center">
                 <span className="text-text-strong text-body-medium-medium">Usage</span>
                 <MonthSelector />
@@ -91,6 +103,8 @@ export const FreeUsage: React.FC = () => {
                             isLoading={isLoading}
                             env={env}
                             timeframe={timeframe}
+                            open={expanded.includes(metric)}
+                            onOpenChange={(open) => setRowOpen(metric, open)}
                         />
                     );
                 })}
