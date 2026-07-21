@@ -49,30 +49,39 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 
+    // Overdue-payment warning. Rendered independently of the usage query so a
+    // usage-fetch failure can't hide it — customers can still reach the portal.
+    const overdueBanner = overdue?.data.hasOverdue && (
+        <Alert variant="warning">
+            <TriangleAlert />
+            <AlertTitle>Invoice(s) overdue</AlertTitle>
+            <AlertDescription>
+                Edit payment method to avoid interruption.
+                {overdue.data.portalUrl && (
+                    <>
+                        {' '}
+                        <StyledLink icon to={overdue.data.portalUrl} type="external" variant="warning">
+                            Edit payment method
+                        </StyledLink>
+                    </>
+                )}
+            </AlertDescription>
+        </Alert>
+    );
+
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                {overdueBanner}
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
     const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
     return (
         <div className="w-full flex flex-col gap-6">
-            {overdue?.data.hasOverdue && (
-                <Alert variant="warning">
-                    <TriangleAlert />
-                    <AlertTitle>Invoice(s) overdue</AlertTitle>
-                    <AlertDescription>
-                        Edit payment method to avoid interruption.
-                        {overdue.data.portalUrl && (
-                            <>
-                                {' '}
-                                <StyledLink icon to={overdue.data.portalUrl} type="external" variant="warning">
-                                    Edit payment method
-                                </StyledLink>
-                            </>
-                        )}
-                    </AlertDescription>
-                </Alert>
-            )}
+            {overdueBanner}
 
             {isLegacyPlan && (
                 <Alert variant="info">

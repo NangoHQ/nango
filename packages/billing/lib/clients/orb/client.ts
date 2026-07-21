@@ -167,18 +167,22 @@ export class OrbClient implements BillingClient {
             // Orb has no "overdue" status — an invoice is overdue when it's still
             // `issued` (not paid/void) and its due_date has passed. `due_date[lt]`
             // filters to past-due server-side; `isOverdueInvoice` re-checks and
-            // drops any that owe nothing (e.g. fully credited). The count is the
-            // first page only, which is enough for the boolean flag and the
-            // "Invoice(s) overdue" copy.
+            // drops any that owe nothing (e.g. fully credited). We paginate the
+            // whole (naturally small) result set so a page of fully-credited
+            // invoices can't hide a still-owed one further down.
             const now = new Date();
-            const page = await this.orbSDK.invoices.list({
+            let count = 0;
+            for await (const invoice of this.orbSDK.invoices.list({
                 external_customer_id: String(accountId),
                 status: ['issued'],
                 'due_date[lt]': now.toISOString()
-            });
+            })) {
+                if (isOverdueInvoice(invoice, now)) {
+                    count++;
+                }
+            }
 
-            const overdue = page.data.filter((invoice) => isOverdueInvoice(invoice, now));
-            return Ok({ hasOverdue: overdue.length > 0, count: overdue.length });
+            return Ok({ hasOverdue: count > 0, count });
         } catch (err) {
             // A paying account should always have an Orb customer, but guard the
             // not-found case (e.g. never linked) as "nothing overdue" rather than error.

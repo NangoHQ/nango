@@ -1,5 +1,5 @@
 import { billing } from '@nangohq/billing';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer } from '../../../../utils/billing.js';
@@ -33,27 +33,37 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
     if (!plan.orb_customer_id) {
         const linkRes = await linkBillingCustomer(account, user);
         if (linkRes.isErr()) {
+            report(linkRes.error);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to link billing customer' } });
             return;
         }
     }
 
-    const [overdueRes, customerRes] = await Promise.all([billing.getOverdueInvoices(account.id), billing.getCustomer(account.id)]);
-
+    const overdueRes = await billing.getOverdueInvoices(account.id);
     if (overdueRes.isErr()) {
+        report(overdueRes.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get overdue invoices' } });
         return;
     }
-    if (customerRes.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
-        return;
+
+    // Only fetch the customer for the portal CTA when there's actually something
+    // overdue — the common (no overdue) case skips the extra Orb call.
+    let portalUrl: string | null = null;
+    if (overdueRes.value.hasOverdue) {
+        const customerRes = await billing.getCustomer(account.id);
+        if (customerRes.isErr()) {
+            report(customerRes.error);
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
+            return;
+        }
+        portalUrl = customerRes.value.portalUrl;
     }
 
     res.status(200).send({
         data: {
             hasOverdue: overdueRes.value.hasOverdue,
             count: overdueRes.value.count,
-            portalUrl: customerRes.value.portalUrl
+            portalUrl
         }
     });
 });

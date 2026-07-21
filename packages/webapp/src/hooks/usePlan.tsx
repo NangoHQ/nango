@@ -120,7 +120,10 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
     return useQuery<GetOverdueInvoices['Success'], APIError>({
         enabled: Boolean(env) && isPayingPlan,
         staleTime: OVERDUE_INVOICES_STALE_TIME,
-        queryKey: [...GetOverdueInvoicesQueryKey, env],
+        // planName is in the key so switching to a free plan in-session abandons
+        // the old paying-plan cache entry (which the disabled query would otherwise
+        // keep returning), instead of briefly showing a stale overdue warning.
+        queryKey: [...GetOverdueInvoicesQueryKey, env, planName],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
             const res = await apiFetch(`/api/v1/plans/billing/overdue?env=${env}`, {
                 method: 'GET'
