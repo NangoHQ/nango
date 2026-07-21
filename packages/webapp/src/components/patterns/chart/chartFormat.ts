@@ -29,12 +29,15 @@ export function niceStep(x: number): number {
 export function niceCapAxis(dataMax: number, capLine: number): { max: number; ticks: number[] } {
     const top = Math.max(dataMax, capLine, 1);
     const step = niceStep(top / 5);
+    const max = top * 1.1;
     const ticks: number[] = [];
-    for (let t = 0; t <= top + step / 2; t += step) ticks.push(t);
-    // Force the cap in as a tick even if it's off the step grid.
+    // Stay within the domain (≤ max) so recharts never renders a tick/gridline above the plotted
+    // scale — e.g. dataMax 130 / cap 100 would otherwise emit a 150 tick past a 143 ceiling.
+    for (let t = 0; t <= max; t += step) ticks.push(t);
+    // Force the cap in as a tick even if it's off the step grid (the cap is always ≤ top < max).
     if (!ticks.some((t) => Math.abs(t - capLine) < step / 100)) {
         ticks.push(capLine);
         ticks.sort((a, b) => a - b);
     }
-    return { max: top * 1.1, ticks };
+    return { max, ticks };
 }

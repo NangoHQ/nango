@@ -73,4 +73,11 @@ describe('niceCapAxis', () => {
         expect(ticks.length).toBeGreaterThan(1);
         expect(ticks[0]).toBe(0);
     });
+
+    it('keeps every tick within the domain when the step overshoots', () => {
+        // Regression: dataMax 130 / cap 100 → step 50 used to emit a 150 tick past the 143 ceiling.
+        const { max, ticks } = niceCapAxis(130, 100);
+        expect(Math.max(...ticks)).toBeLessThanOrEqual(max);
+        expect(ticks).toContain(100); // cap still labelled
+    });
 });
