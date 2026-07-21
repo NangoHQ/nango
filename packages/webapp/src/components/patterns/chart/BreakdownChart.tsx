@@ -38,6 +38,10 @@ function niceCapAxis(dataMax: number, capLine: number): { max: number; ticks: nu
     return { max: top * 1.1, ticks };
 }
 
+/** Only frame the chart against the cap once usage reaches this fraction of it. Below that the cap
+ *  dwarfs the data and the trend collapses to a sliver, so we drop the cap line and auto-scale. */
+const CAP_VISIBILITY_RATIO = 0.25;
+
 interface BreakdownChartProps {
     /** Per-day rows: `{ date, total }` for the single series, or `{ date, [seriesKey]: value }` stacked. */
     chartData: Record<string, string | number | null | undefined>[];
@@ -156,6 +160,9 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
             }
             if (rowSum > dataMax) dataMax = rowSum;
         }
+        // Below the visibility threshold the cap would dwarf the data — drop it and let the axis
+        // auto-scale to the trend, so a barely-used metric still shows a legible curve.
+        if (dataMax < capLine * CAP_VISIBILITY_RATIO) return null;
         return niceCapAxis(dataMax, capLine);
     }, [chartData, capLine, isSeriesHidden]);
 
@@ -234,7 +241,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                 />
                 <ChartTooltip content={renderTooltip} isAnimationActive={false} />
                 {seriesElements}
-                {capLine !== undefined && (
+                {capAxis && capLine !== undefined && (
                     <ReferenceLine
                         y={capLine}
                         stroke="var(--color-icon-danger)"
