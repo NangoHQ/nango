@@ -256,8 +256,8 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
-    describe('webhook_url', () => {
-        it('should set webhook_url override', async () => {
+    describe('webhook_url_override', () => {
+        it('should set webhook_url_override', async () => {
             const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
@@ -267,7 +267,7 @@ describe(`PATCH ${endpoint}`, () => {
                 token: apiKey.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
-                body: { webhook_url: 'https://example.com/webhooks-from-nango' }
+                body: { webhook_url_override: 'https://example.com/webhooks-from-nango' }
             });
 
             isSuccess(res.json);
@@ -278,7 +278,7 @@ describe(`PATCH ${endpoint}`, () => {
             expect(updatedConn?.connection_config).not.toHaveProperty('webhook_url');
         });
 
-        it('should clear webhook_url override with empty string', async () => {
+        it('should clear webhook_url_override with empty string', async () => {
             const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({
@@ -292,7 +292,7 @@ describe(`PATCH ${endpoint}`, () => {
                 token: apiKey.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
-                body: { webhook_url: '' }
+                body: { webhook_url_override: '' }
             });
 
             isSuccess(res.json);
@@ -301,7 +301,7 @@ describe(`PATCH ${endpoint}`, () => {
             expect(updatedConn?.webhook_url_override).toBeNull();
         });
 
-        it('should reject invalid webhook_url', async () => {
+        it('should reject invalid webhook_url_override', async () => {
             const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
@@ -311,7 +311,7 @@ describe(`PATCH ${endpoint}`, () => {
                 token: apiKey.secret,
                 params: { connectionId: conn.connection_id },
                 query: { provider_config_key: 'github' },
-                body: { webhook_url: 'not-a-url' }
+                body: { webhook_url_override: 'not-a-url' }
             });
 
             isError(res.json);
