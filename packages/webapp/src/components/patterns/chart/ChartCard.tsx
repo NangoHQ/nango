@@ -39,6 +39,10 @@ interface ChartCardProps {
     onSeriesToggle?: () => void;
     /** Drop the label + total header (e.g. when an outer row already shows them); the controls move atop the chart body. */
     hideHeader?: boolean;
+    /** Draw a horizontal cap reference line at the metric's plan limit (Free caps view). */
+    capLine?: number;
+    /** 'cumulative' plots counter metrics as a running month-to-date total so the curve climbs to the cap. */
+    chartMode?: 'daily' | 'cumulative';
 }
 
 /**
@@ -61,10 +65,16 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     singleSeries,
     onSeriesIsolate,
     onSeriesToggle,
-    hideHeader
+    hideHeader,
+    capLine,
+    chartMode
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
+    // Counter metrics can render as a running month-to-date total (Free caps view); AVG metrics
+    // (connections/records) are already a level series. renderAsArea decides area vs bars.
+    const cumulativeCounter = chartMode === 'cumulative' && !isCumulative;
+    const renderAsArea = isCumulative || cumulativeCounter;
 
     // Series labels identify the current dataset; interaction state resets when they change.
     const seriesSignature = (breakdownSeries ?? []).map((s) => s.label).join(' ');
@@ -82,7 +92,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
             onSeriesToggle?.();
         }
     };
-    const { todayDateKey, baseChartData, breakdownChartData, isEmpty } = useChartData(data, breakdownSeries, timeframe);
+    const { todayDateKey, baseChartData, breakdownChartData, isEmpty } = useChartData(data, breakdownSeries, timeframe, cumulativeCounter);
 
     const chartConfig = useMemo<ChartConfig>(() => {
         if (isBreakdown) {
@@ -108,11 +118,15 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // response's top-level total); otherwise the single series' total. `effectiveEmpty` (not
     // `isEmpty`) so a breakdown with empty top-level `usage` still shows a number.
     const visibleKeys = (breakdownSeries ?? []).filter((s) => !interactions.isSeriesHidden(s.key)).map((s) => s.key);
+    // The cap applies to the whole metric, so hide the cap line whenever the chart is scoped to a
+    // slice — a filter, or an isolated/hidden breakdown series — otherwise the full cap dwarfs the
+    // slice and squishes its data flat.
+    const isSliced = Boolean(filtered) || (isBreakdown && visibleKeys.length < (breakdownSeries?.length ?? 0));
     let headlineTotal: number | undefined;
     if (effectiveEmpty) {
         headlineTotal = undefined;
     } else if (isBreakdown) {
-        headlineTotal = visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey);
+        headlineTotal = visibleBreakdownTotal(breakdownChartData, visibleKeys, renderAsArea, todayDateKey);
     } else {
         headlineTotal = data?.total;
     }
@@ -183,11 +197,14 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                         <BreakdownChart
                             chartData={isBreakdown ? breakdownChartData : baseChartData}
                             config={chartConfig}
-                            isCumulative={isCumulative}
+                            isCumulative={renderAsArea}
                             isBreakdown={isBreakdown}
                             series={breakdownSeries ?? []}
                             todayDateKey={todayDateKey}
                             interactions={interactions}
+                            // Cap line only on the cumulative/point-in-time (area) view; on daily bars the
+                            // monthly cap dwarfs the per-day values and would flatten the bars.
+                            capLine={renderAsArea && !isSliced ? capLine : undefined}
                         />
                         {breakdownSeries && breakdownSeries.length > 0 && <ChartLegend series={breakdownSeries} interactions={interactions} />}
                         {!isBreakdown && singleSeries && (

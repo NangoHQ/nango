@@ -1,5 +1,5 @@
 import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
@@ -8,9 +8,11 @@ import { track } from '@/utils/analytics';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
+import { ChartModeToggle } from './ChartModeToggle';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
 import type { GroupFilterSelection } from '../useGlobalGroupFilter';
+import type { ChartMode } from './ChartModeToggle';
 import type { ChartSeries } from '@/components/patterns/chart';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
@@ -34,6 +36,12 @@ interface UsageChartCardProps {
     extraHeaderActions?: React.ReactNode;
     /** Hide the "Apply to all" affordance (e.g. the Free caps view, where panels are independent). */
     disableApplyToAll?: boolean;
+    /** Draw a cap reference line at the metric's plan limit (Free caps view). */
+    capLine?: number;
+    /** 'cumulative' plots counter metrics as a running month-to-date total (Free caps view). */
+    chartMode?: 'daily' | 'cumulative';
+    /** Request AVG metrics as point-in-time daily counts instead of the billing running-average. */
+    avgPerDay?: boolean;
 }
 
 /**
@@ -54,7 +62,10 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     onApplyToAll,
     hideHeader,
     extraHeaderActions,
-    disableApplyToAll
+    disableApplyToAll,
+    capLine,
+    chartMode,
+    avgPerDay
 }) => {
     const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
 
@@ -74,7 +85,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     const isDetail = inBreakdownMode || inFilterMode;
 
     // One request covers every detail state (filtered and/or broken down). Fetched lazily.
-    const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail });
+    const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail, avgPerDay });
     const detailMetric = detailQuery.data?.data.usage[metric];
 
     const breakdownEntries = detailMetric?.breakdown;
@@ -120,7 +131,13 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
 
     // No data at all for this metric (ignoring filters) → nothing to slice, so hide the controls.
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
+    // Counter metrics can toggle cumulative ↔ daily; AVG metrics (view_mode 'cumulative') are a
+    // level series with no daily equivalent, so they don't get the toggle. Defaults from the prop.
+    const [chartModeState, setChartModeState] = useState<ChartMode>(chartMode ?? 'daily');
+    const isCounter = data?.view_mode === 'periodic';
+
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
+    const viewToggle = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
     const breakdownControl = !baseEmpty ? (
         <BreakdownFilterControl
             metric={metric}
@@ -148,7 +165,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             data={live}
             isLoading={isLoading}
             timeframe={timeframe}
-            headerActions={breakdownControl}
+            headerActions={
+                breakdownControl || viewToggle ? (
+                    <>
+                        {breakdownControl}
+                        {viewToggle}
+                    </>
+                ) : undefined
+            }
             extraHeaderActions={extraHeaderActions}
             hideHeader={hideHeader}
             breakdownSeries={breakdownSeries}
@@ -159,6 +183,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             singleSeries={singleSeries}
             onSeriesIsolate={() => track('web:usage:series_isolated', { metric })}
             onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
+            capLine={capLine}
+            chartMode={chartModeState}
         />
     );
 };
