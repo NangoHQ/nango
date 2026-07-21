@@ -4,11 +4,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 
-import { Button, buttonVariants } from '@nangohq/design-system';
+import { Badge, Button, buttonVariants } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
-import { Badge } from '@/components/ui/Badge';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
@@ -416,12 +415,12 @@ function getRecordScrollContainerHeight(recordCount: number, hasNextPage: boolea
 function RecordActionBadge({ action }: { action: string }) {
     switch (action.toUpperCase()) {
         case 'ADDED':
-            return <Badge variant="green">Added</Badge>;
+            return <Badge variant="success">Added</Badge>;
         case 'UPDATED':
-            return <Badge variant="yellow">Updated</Badge>;
+            return <Badge variant="warning">Updated</Badge>;
         case 'DELETED':
-            return <Badge variant="gray">Deleted</Badge>;
+            return <Badge>Deleted</Badge>;
         default:
-            return <Badge variant="gray">{action}</Badge>;
+            return <Badge>{action}</Badge>;
     }
 }

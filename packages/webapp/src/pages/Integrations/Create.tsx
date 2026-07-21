@@ -2,8 +2,9 @@ import { BookOpen } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Badge } from '@nangohq/design-system';
+
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePostIntegration } from '@/hooks/useIntegration';
@@ -85,12 +86,12 @@ export const CreateIntegration = () => {
                             </div>
                             <div className="flex flex-wrap gap-3 gap-y-2">
                                 {provider.authMode !== 'NONE' && (
-                                    <Badge variant="brand" className="uppercase">
+                                    <Badge variant="brand" case="upper">
                                         {getDisplayName(provider.authMode)}
                                     </Badge>
                                 )}
                                 {provider.categories?.map((category) => (
-                                    <Badge key={category} variant="ghost" className="uppercase">
+                                    <Badge key={category} variant="outline" case="upper">
                                         {category}
                                     </Badge>
                                 ))}

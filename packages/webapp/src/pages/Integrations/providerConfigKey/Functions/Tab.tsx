@@ -3,11 +3,10 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Badge, Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -224,17 +223,15 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="gray" className="uppercase">
-                                                {TYPE_BADGE_LABEL[fn.type]}
-                                            </Badge>
+                                            <Badge case="upper">{TYPE_BADGE_LABEL[fn.type]}</Badge>
                                         </TableCell>
                                         <TableCell>
                                             {fn.source === 'repo' ? (
-                                                <Badge variant="gray" className="uppercase">
+                                                <Badge case="upper">
                                                     <FolderGit2 /> Your repo
                                                 </Badge>
                                             ) : (
-                                                <Badge variant="gray" className="uppercase">
+                                                <Badge case="upper">
                                                     <Cloud /> Nango
                                                 </Badge>
                                             )}

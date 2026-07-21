@@ -4,12 +4,11 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Badge, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { AlertButton } from '@/components/ui/Alert';
-import { Badge } from '@/components/ui/Badge';
 import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -226,9 +225,7 @@ export const Templates: React.FC = () => {
                                             >
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-text-strong text-body-medium-medium truncate">{t.name}</span>
-                                                    <Badge variant="gray" className="uppercase shrink-0">
-                                                        {t.type}
-                                                    </Badge>
+                                                    <Badge case="upper">{t.type}</Badge>
                                                 </div>
                                                 {t.description && (
                                                     <span className="text-text-secondary text-body-small-regular line-clamp-1">{t.description}</span>
