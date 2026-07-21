@@ -8,7 +8,6 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { FreeUsage } from './FreeUsage';
 import { UsageChartCard } from './UsageChartCard';
@@ -42,16 +41,11 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    // Pin the whole dashboard to ClickHouse when breakdown is active so headline
-    // totals match the per-panel breakdowns (which always query ClickHouse).
-    const breakdownEnabled = useBreakdownEnabled();
-    const source = breakdownEnabled ? 'clickhouse' : undefined;
-
     // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
     // Free — it would double-fetch. Gate on `plan` being resolved too: until it loads `isFree` is
-    // false, so a bare `!isFree` would fire one request (and can briefly hit Orb) before we know
-    // the plan. Paid accounts have `plan` cached from the app shell, so this adds no real delay.
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source, { enabled: plan != null && !isFree });
+    // false, so a bare `!isFree` would fire one request before we know the plan. Paid accounts
+    // have `plan` cached from the app shell, so this adds no real delay.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { enabled: plan != null && !isFree });
 
     const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
 

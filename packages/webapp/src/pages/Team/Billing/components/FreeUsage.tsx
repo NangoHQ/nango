@@ -52,7 +52,7 @@ export const FreeUsage: React.FC = () => {
     const { data: caps, isLoading: capsLoading, error: capsError } = useApiGetUsage(env);
     // avgPerDay: connections/records come back as the concurrent daily count (not the billing
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, 'clickhouse', { avgPerDay: true });
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true });
 
     if (usageError || capsError) {
         return <CriticalErrorAlert message="Error loading usage" />;

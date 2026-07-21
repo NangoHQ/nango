@@ -544,15 +544,12 @@ export class Clickhouse {
         }
     }
 
-    // CH-backed equivalent of `UsageBillingClient.getUsage(subscriptionId)` (no
-    // timeframe) — month-to-date COUNTER totals scoped to the calendar month
-    // containing `now`. Returned shape mirrors what Orb returns so the two are
-    // swappable at the caller. `records` / `connections` are not included;
-    // capping reads those from Postgres.
+    // Month-to-date COUNTER totals scoped to the calendar month containing
+    // `now`. Returns all five COUNTER billing metrics in one call. `records` /
+    // `connections` are not included; capping reads those from Postgres.
     //
-    // Returns all five COUNTER billing metrics in one call (matches Orb's
-    // shape). One revalidate amortises the cache refresh across every billing
-    // metric — keep this fanned-out even though the trigger is per-metric.
+    // One revalidate amortises the cache refresh across every billing metric
+    // — keep this fanned-out even though the trigger is per-metric.
     async getCurrentMonthBillingMetrics(accountId: number, now: Date, opts?: { maxExecutionSeconds?: number }): Promise<Result<BillingUsageMetrics>> {
         const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
         const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));

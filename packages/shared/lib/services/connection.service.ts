@@ -1193,7 +1193,7 @@ class ConnectionService {
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
         tags?: Tags,
-        webhookUrlOverride?: string | null | undefined
+        webhookUrlOverride?: string | null
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,

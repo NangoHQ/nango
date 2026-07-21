@@ -7,7 +7,6 @@ import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
 import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
 import { ChartModeToggle } from './ChartModeToggle';
 
@@ -68,8 +67,6 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     chartMode,
     avgPerDay
 }) => {
-    const showControls = useBreakdownEnabled();
-
     const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
 
     // Each panel owns its breakdown + filter explicitly via URL params.
@@ -77,14 +74,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     const [filterParam, setFilterParam] = useQueryState(`${metric}.filter`, parseAsString.withDefault('').withOptions({ history: 'replace' }));
 
     const rawDimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
-    const filter = showControls ? parseFilterParam(filterParam, dimensions) : null;
+    const filter = parseFilterParam(filterParam, dimensions);
 
     // Group + filter on the same dimension collide; the filter wins for the query (see
     // resolveBreakdownDimension), while rawDimension keeps the grouping in the URL.
     const dimension = resolveBreakdownDimension(rawDimension, filter);
 
-    const inBreakdownMode = showControls && dimension !== null;
-    const inFilterMode = showControls && filter !== null;
+    const inBreakdownMode = dimension !== null;
+    const inFilterMode = filter !== null;
     const isDetail = inBreakdownMode || inFilterMode;
 
     // One request covers every detail state (filtered and/or broken down). Fetched lazily.
@@ -140,33 +137,29 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     const isCounter = data?.view_mode === 'periodic';
 
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
-    // The daily/cumulative toggle is a chart-mode control, not a breakdown feature — show it whenever
-    // a chartMode is explicitly supplied (Free), independent of the breakdown rollout flag.
-    const canToggleMode = chartMode !== undefined || showControls;
-    const viewToggle = canToggleMode && isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
-    const breakdownControl =
-        showControls && !baseEmpty ? (
-            <BreakdownFilterControl
-                metric={metric}
-                env={env}
-                timeframe={timeframe}
-                dimensions={dimensions}
-                breakdownDimension={rawDimension}
-                filter={filter}
-                onSetBreakdown={(d) => void setDimParam(d)}
-                onApplyFilter={applyFilter}
-                onClearFilter={clearFilter}
-                canApplyToAll={canApplyToAll}
-                onApplyToAll={() => {
-                    track('web:usage:applied_to_all', {
-                        metric,
-                        group_dimension: rawDimension ?? 'none',
-                        filter_dimension: filter?.dimension ?? 'none'
-                    });
-                    onApplyToAll?.(selection);
-                }}
-            />
-        ) : null;
+    const viewToggle = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
+    const breakdownControl = !baseEmpty ? (
+        <BreakdownFilterControl
+            metric={metric}
+            env={env}
+            timeframe={timeframe}
+            dimensions={dimensions}
+            breakdownDimension={rawDimension}
+            filter={filter}
+            onSetBreakdown={(d) => void setDimParam(d)}
+            onApplyFilter={applyFilter}
+            onClearFilter={clearFilter}
+            canApplyToAll={canApplyToAll}
+            onApplyToAll={() => {
+                track('web:usage:applied_to_all', {
+                    metric,
+                    group_dimension: rawDimension ?? 'none',
+                    filter_dimension: filter?.dimension ?? 'none'
+                });
+                onApplyToAll?.(selection);
+            }}
+        />
+    ) : null;
     return (
         <ChartCard
             data={live}
