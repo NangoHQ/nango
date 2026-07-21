@@ -18177,7 +18177,7 @@ rydership:
         environment:
             type: string
             title: Environment
-            description: The RyderShip environment to connect to. Use Production for live accounts, or Sandbox for testing.
+            description: The RyderShip environment to connect to.
             order: 1
             default_value: www.getwhiplash.com
             enum:
