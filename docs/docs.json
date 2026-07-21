@@ -80,11 +80,15 @@
   "redirects": [
     {
       "source": "/reference/backend/control-plane-mcp/overview",
-      "destination": "/reference/backend/management-mcp/overview"
+      "destination": "/reference/backend/management-mcp"
     },
     {
       "source": "/reference/backend/control-plane-mcp/logs",
-      "destination": "/reference/backend/management-mcp/overview"
+      "destination": "/reference/backend/management-mcp"
+    },
+    {
+      "source": "/reference/backend/management-mcp/overview",
+      "destination": "/reference/backend/management-mcp"
     },
     {
       "source": "/integrations/all/snowflake",
@@ -897,11 +901,7 @@
                       "reference/backend/backend-sdk/php"
                     ]
                   },
-                  {
-                    "group": "Management MCP (Beta)",
-                    "icon": "/images/mcp.svg",
-                    "pages": ["reference/backend/management-mcp/overview"]
-                  }
+                  "reference/backend/management-mcp"
                 ]
               },
               {
