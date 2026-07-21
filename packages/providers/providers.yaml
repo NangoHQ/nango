@@ -24608,6 +24608,12 @@ zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
+    token_params:
+        grant_type: authorization_code
+        expires_in: '1800'
+    refresh_params:
+        grant_type: refresh_token
+        expires_in: '1800'
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
         retry:
