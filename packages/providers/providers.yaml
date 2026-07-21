@@ -18179,7 +18179,6 @@ rydership:
             title: Environment
             description: The RyderShip environment to connect to.
             order: 1
-            default_value: www.getwhiplash.com
             enum:
                 - www.getwhiplash.com
                 - sandbox.whiplash.app
