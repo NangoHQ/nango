@@ -43,7 +43,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
     return (
         <Card>
             <Collapsible>
-                <CollapsibleTrigger className="w-full cursor-pointer [&[data-state=open]_svg]:rotate-90">
+                <CollapsibleTrigger className="w-full cursor-pointer text-left [&[data-state=open]_svg]:rotate-90" asChild>
                     <CardHeader>
                         <CardTitle>Advanced configuration</CardTitle>
                         <CardDescription>Configure advanced settings for your connection</CardDescription>
