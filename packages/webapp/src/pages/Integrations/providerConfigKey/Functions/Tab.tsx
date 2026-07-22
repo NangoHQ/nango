@@ -223,7 +223,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge>{TYPE_BADGE_LABEL[fn.type]}</Badge>
+                                            <Badge case="capitalize">{TYPE_BADGE_LABEL[fn.type]}</Badge>
                                         </TableCell>
                                         <TableCell>
                                             {fn.source === 'repo' ? (
