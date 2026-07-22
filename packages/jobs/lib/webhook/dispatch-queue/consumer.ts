@@ -5,7 +5,7 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
-import { getPlanSafe } from '@nangohq/shared';
+import { getPlan } from '@nangohq/shared';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
@@ -199,9 +199,14 @@ export class DispatchQueueConsumer {
         const planByAccount = new Map<number, DBPlan>();
         await Promise.all(
             [...accountIds].map(async (accountId) => {
-                const plan = await getPlanSafe(db.knex, { accountId });
-                if (plan) {
-                    planByAccount.set(accountId, plan);
+                const plan = await getPlan(db.knex, { accountId });
+                if (plan.isOk()) {
+                    planByAccount.set(accountId, plan.value);
+                    return;
+                }
+                // Only a genuine lookup error is worth flagging; a missing plan just falls back to the global limit.
+                if (plan.error.message === 'failed_to_get_plan') {
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PLAN_LOOKUP_ERROR);
                 }
             })
         );

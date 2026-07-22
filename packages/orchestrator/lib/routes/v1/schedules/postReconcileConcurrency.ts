@@ -34,7 +34,10 @@ const bodySchema = z
             )
             .default([])
     })
-    .strict();
+    .strict()
+    .refine((body) => body.overrides.every((o) => o.groupKey.startsWith(body.groupKeyPrefix)), {
+        message: 'every override groupKey must start with groupKeyPrefix'
+    });
 
 const validate = validateRequest<PostReconcileConcurrency>({
     parseBody: (data: any) => bodySchema.parse(data)

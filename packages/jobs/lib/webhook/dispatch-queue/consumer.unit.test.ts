@@ -16,9 +16,9 @@ vi.mock('../../env.js', () => ({
     }
 }));
 
-const mocks = vi.hoisted(() => ({ getPlanSafe: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getPlan: vi.fn() }));
 vi.mock('@nangohq/database', () => ({ default: { knex: {} } }));
-vi.mock('@nangohq/shared', () => ({ getPlanSafe: mocks.getPlanSafe }));
+vi.mock('@nangohq/shared', () => ({ getPlan: mocks.getPlan }));
 
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
@@ -134,8 +134,8 @@ async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise
 describe('DispatchQueueConsumer', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
-        mocks.getPlanSafe.mockReset();
-        mocks.getPlanSafe.mockResolvedValue(null);
+        mocks.getPlan.mockReset();
+        mocks.getPlan.mockResolvedValue(Err(new Error('unknown_plan_for_condition')));
     });
 
     it('sends all received messages in a single executeWebhookBatch call', async () => {
@@ -162,17 +162,32 @@ describe('DispatchQueueConsumer', () => {
     });
 
     it('uses the account plan webhook concurrency override when present', async () => {
-        mocks.getPlanSafe.mockResolvedValue({ webhook_max_concurrency_override: 12 });
+        mocks.getPlan.mockResolvedValue(Ok({ webhook_max_concurrency_override: 12 }));
         const h = makeHarness({ messages: [buildMessage({ taskName: 'webhook:1', accountId: 7 })] });
 
         await runOnce(h, () => {
             expect(getDeleteCalls(h)).toHaveLength(1);
         });
 
-        expect(mocks.getPlanSafe).toHaveBeenCalledWith(expect.anything(), { accountId: 7 });
+        expect(mocks.getPlan).toHaveBeenCalledWith(expect.anything(), { accountId: 7 });
         const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
         expect(calledWith?.[0]).toMatchObject({
             group: { key: 'webhook:environment:2', maxConcurrency: 12 }
+        });
+    });
+
+    it('falls back to the configured limit when the plan lookup errors', async () => {
+        mocks.getPlan.mockResolvedValue(Err(new Error('failed_to_get_plan')));
+        const h = makeHarness({ messages: [buildMessage({ taskName: 'webhook:1', accountId: 7 })] });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
+
+        // A lookup error must not stall dispatch: it fails open to the global webhookMaxConcurrency.
+        const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
+        expect(calledWith?.[0]).toMatchObject({
+            group: { key: 'webhook:environment:2', maxConcurrency: 500 }
         });
     });
 

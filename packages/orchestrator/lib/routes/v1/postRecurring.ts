@@ -47,7 +47,7 @@ const bodySchemaBase = z
         frequencyMs: z.number().int().positive(),
         group: z.object({
             key: z.string().min(1),
-            maxConcurrency: z.coerce.number()
+            maxConcurrency: z.coerce.number().int().nonnegative()
         }),
         retry: z.object({
             max: z.number().int()

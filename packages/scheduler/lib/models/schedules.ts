@@ -170,6 +170,7 @@ export async function reconcileGroupMaxConcurrency(
                 const changed = await trx
                     .from<DbSchedule>(SCHEDULES_TABLE)
                     .where('group_key', groupKey)
+                    .where('group_key', 'like', `${groupKeyPrefix}%`)
                     .whereNull('deleted_at')
                     .whereNot('group_max_concurrency', maxConcurrency)
                     .update({ group_max_concurrency: maxConcurrency, updated_at: new Date() });

@@ -321,14 +321,14 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 }
                 break;
             }
-            // CONCURRENCY OVERRIDES - operator-set per account, keep whatever is on the plan across plan changes
+            // CONCURRENCY OVERRIDES - operator-set directly on the plan row, not a plan-tier flag.
+            // mergeFlags must never emit them: leaving them out of the returned flags keeps the existing
+            // column values untouched by the plan update, so an override survives any plan change.
             case 'sync_max_concurrency_override':
             case 'action_max_concurrency_override':
             case 'webhook_max_concurrency_override':
-            case 'on_event_max_concurrency_override': {
-                overrides[key] = currentPlan[key];
+            case 'on_event_max_concurrency_override':
                 break;
-            }
             // NUMBER FLAGS - keep override if lower
             case 'sync_frequency_secs_min': {
                 const currentValue = currentPlan[key];
