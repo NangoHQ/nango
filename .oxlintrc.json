@@ -175,6 +175,7 @@
                                 "disallowedFor": [
                                     "Button",
                                     "IconButton",
+                                    "Badge",
                                     "Card",
                                     "CardHeader",
                                     "CardTitle",
@@ -190,6 +191,7 @@
                                 "disallowedFor": [
                                     "Button",
                                     "IconButton",
+                                    "Badge",
                                     "Card",
                                     "CardHeader",
                                     "CardTitle",
