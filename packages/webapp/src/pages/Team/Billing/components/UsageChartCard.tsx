@@ -11,7 +11,6 @@ import { BreakdownFilterControl } from './BreakdownFilterControl';
 import { ChartModeToggle } from './ChartModeToggle';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
-import type { GroupFilterSelection } from '../useGlobalGroupFilter';
 import type { ChartMode } from './ChartModeToggle';
 import type { ChartSeries } from '@/components/patterns/chart';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
@@ -25,20 +24,13 @@ interface UsageChartCardProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
-    /** Returns true if applying this panel's group + filter would change at least one other applicable panel.
-     *  Optional: the Free caps view sets `disableApplyToAll`, so its panels don't wire this up. */
-    isDivergingFromGlobal?: (metric: UsageMetric, selection: GroupFilterSelection) => boolean;
-    /** Apply this panel's group + filter to every applicable metric. Optional alongside `disableApplyToAll`. */
-    onApplyToAll?: (selection: GroupFilterSelection) => void;
     /** Drop the ChartCard's own label + total header (an outer row already shows them). */
     hideHeader?: boolean;
     /** Extra controls placed after the breakdown Group/Filter cluster (e.g. a month stepper). */
     extraHeaderActions?: React.ReactNode;
-    /** Hide the "Apply to all" affordance (e.g. the Free caps view, where panels are independent). */
-    disableApplyToAll?: boolean;
-    /** Draw a cap reference line at the metric's plan limit (Free caps view). */
+    /** Draw a cap reference line at the metric's plan limit, when one exists. */
     capLine?: number;
-    /** 'cumulative' plots counter metrics as a running month-to-date total (Free caps view). */
+    /** 'cumulative' plots counter metrics as a running month-to-date total. */
     chartMode?: 'daily' | 'cumulative';
     /** Request AVG metrics as point-in-time daily counts instead of the billing running-average. */
     avgPerDay?: boolean;
@@ -58,11 +50,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     isLoading,
     env,
     timeframe,
-    isDivergingFromGlobal,
-    onApplyToAll,
     hideHeader,
     extraHeaderActions,
-    disableApplyToAll,
     capLine,
     chartMode,
     avgPerDay
@@ -107,11 +96,6 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
         void setFilterParam(`${dim}:${value}`);
     };
 
-    // "Apply to all" uses the raw (URL) grouping, not the collision-resolved one, so a panel
-    // grouped-and-filtered on the same dimension still propagates and keeps its grouping.
-    const selection = { group: rawDimension, filter };
-    const canApplyToAll = !disableApplyToAll && (isDivergingFromGlobal?.(metric, selection) ?? false);
-
     // Show the detail response (filtered and/or broken down) when there is one, else the base
     // metric. Both are full ApiBillingUsageMetrics, so the headline needs no per-state override.
     const live = detailMetric ?? data;
@@ -149,15 +133,6 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             onSetBreakdown={(d) => void setDimParam(d)}
             onApplyFilter={applyFilter}
             onClearFilter={clearFilter}
-            canApplyToAll={canApplyToAll}
-            onApplyToAll={() => {
-                track('web:usage:applied_to_all', {
-                    metric,
-                    group_dimension: rawDimension ?? 'none',
-                    filter_dimension: filter?.dimension ?? 'none'
-                });
-                onApplyToAll?.(selection);
-            }}
         />
     ) : null;
     return (

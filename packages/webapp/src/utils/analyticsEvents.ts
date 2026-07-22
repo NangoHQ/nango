@@ -20,11 +20,6 @@ export interface AnalyticsEvents {
     'web:usage:filtered': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:filter_cleared': { metric: UsageMetric };
     'web:usage:filter_opened': { metric: UsageMetric };
-    'web:usage:applied_to_all': {
-        metric: UsageMetric;
-        group_dimension: AnyBreakdownDimension | 'none';
-        filter_dimension: AnyBreakdownDimension | 'none';
-    };
     'web:usage:series_isolated': { metric: UsageMetric };
     'web:usage:series_toggled': { metric: UsageMetric };
     'web:usage:invoice_details_clicked': Record<string, never>;
