@@ -1,17 +1,25 @@
 import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
-import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
+import {
+    BREAKDOWN_DIMENSIONS,
+    breakdownSeriesCopyValue,
+    breakdownSeriesHref,
+    DEFAULT_TOP_N,
+    formatDimensionValue,
+    parseFilterParam,
+    resolveBreakdownDimension
+} from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
+import { ChartModeToggle } from './ChartModeToggle';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
-import type { GroupFilterSelection } from '../useGlobalGroupFilter';
+import type { ChartMode } from './ChartModeToggle';
 import type { ChartSeries } from '@/components/patterns/chart';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
@@ -24,10 +32,16 @@ interface UsageChartCardProps {
     isLoading: boolean;
     env: string;
     timeframe: { start: string; end: string };
-    /** Returns true if applying this panel's group + filter would change at least one other applicable panel. */
-    isDivergingFromGlobal: (metric: UsageMetric, selection: GroupFilterSelection) => boolean;
-    /** Apply this panel's group + filter to every applicable metric. */
-    onApplyToAll: (selection: GroupFilterSelection) => void;
+    /** Drop the ChartCard's own label + total header (an outer row already shows them). */
+    hideHeader?: boolean;
+    /** Extra controls placed after the breakdown Group/Filter cluster (e.g. a month stepper). */
+    extraHeaderActions?: React.ReactNode;
+    /** Draw a cap reference line at the metric's plan limit, when one exists. */
+    capLine?: number;
+    /** 'cumulative' plots counter metrics as a running month-to-date total. */
+    chartMode?: 'daily' | 'cumulative';
+    /** Request AVG metrics as point-in-time daily counts instead of the billing running-average. */
+    avgPerDay?: boolean;
 }
 
 /**
@@ -38,9 +52,18 @@ interface UsageChartCardProps {
  * breakdown live in the URL (`${metric}.breakdown`, `${metric}.filter`) so the state
  * is deep-linkable and survives month changes. One filter + one breakdown per panel.
  */
-export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, isDivergingFromGlobal, onApplyToAll }) => {
-    const showControls = useBreakdownEnabled();
-
+export const UsageChartCard: React.FC<UsageChartCardProps> = ({
+    metric,
+    data,
+    isLoading,
+    env,
+    timeframe,
+    hideHeader,
+    extraHeaderActions,
+    capLine,
+    chartMode,
+    avgPerDay
+}) => {
     const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
 
     // Each panel owns its breakdown + filter explicitly via URL params.
@@ -48,18 +71,18 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const [filterParam, setFilterParam] = useQueryState(`${metric}.filter`, parseAsString.withDefault('').withOptions({ history: 'replace' }));
 
     const rawDimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
-    const filter = showControls ? parseFilterParam(filterParam, dimensions) : null;
+    const filter = parseFilterParam(filterParam, dimensions);
 
     // Group + filter on the same dimension collide; the filter wins for the query (see
     // resolveBreakdownDimension), while rawDimension keeps the grouping in the URL.
     const dimension = resolveBreakdownDimension(rawDimension, filter);
 
-    const inBreakdownMode = showControls && dimension !== null;
-    const inFilterMode = showControls && filter !== null;
+    const inBreakdownMode = dimension !== null;
+    const inFilterMode = filter !== null;
     const isDetail = inBreakdownMode || inFilterMode;
 
     // One request covers every detail state (filtered and/or broken down). Fetched lazily.
-    const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail });
+    const detailQuery = useApiGetBillingUsageDetail(env, timeframe, metric, { dimension, filter }, DEFAULT_TOP_N, { enabled: isDetail, avgPerDay });
     const detailMetric = detailQuery.data?.data.usage[metric];
 
     const breakdownEntries = detailMetric?.breakdown;
@@ -81,11 +104,6 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         void setFilterParam(`${dim}:${value}`);
     };
 
-    // "Apply to all" uses the raw (URL) grouping, not the collision-resolved one, so a panel
-    // grouped-and-filtered on the same dimension still propagates and keeps its grouping.
-    const selection = { group: rawDimension, filter };
-    const canApplyToAll = isDivergingFromGlobal(metric, selection);
-
     // Show the detail response (filtered and/or broken down) when there is one, else the base
     // metric. Both are full ApiBillingUsageMetrics, so the headline needs no per-state override.
     const live = detailMetric ?? data;
@@ -105,37 +123,41 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
 
     // No data at all for this metric (ignoring filters) → nothing to slice, so hide the controls.
     // If it's only empty because of the active filter, keep them in so the filter can be cleared.
-    const baseEmpty = !data || data.usage.every((u) => !u.quantity);
-    const headerActions =
-        showControls && !baseEmpty ? (
-            <BreakdownFilterControl
-                metric={metric}
-                env={env}
-                timeframe={timeframe}
-                dimensions={dimensions}
-                breakdownDimension={rawDimension}
-                filter={filter}
-                onSetBreakdown={(d) => void setDimParam(d)}
-                onApplyFilter={applyFilter}
-                onClearFilter={clearFilter}
-                canApplyToAll={canApplyToAll}
-                onApplyToAll={() => {
-                    track('web:usage:applied_to_all', {
-                        metric,
-                        group_dimension: rawDimension ?? 'none',
-                        filter_dimension: filter?.dimension ?? 'none'
-                    });
-                    onApplyToAll(selection);
-                }}
-            />
-        ) : undefined;
+    // Counter metrics can toggle cumulative ↔ daily; AVG metrics (view_mode 'cumulative') are a
+    // level series with no daily equivalent, so they don't get the toggle. Defaults from the prop.
+    const [chartModeState, setChartModeState] = useState<ChartMode>(chartMode ?? 'daily');
+    const isCounter = data?.view_mode === 'periodic';
 
+    const baseEmpty = !data || data.usage.every((u) => !u.quantity);
+    const viewToggleControl = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
+    const breakdownControl = !baseEmpty ? (
+        <BreakdownFilterControl
+            metric={metric}
+            env={env}
+            timeframe={timeframe}
+            dimensions={dimensions}
+            breakdownDimension={rawDimension}
+            filter={filter}
+            onSetBreakdown={(d) => void setDimParam(d)}
+            onApplyFilter={applyFilter}
+            onClearFilter={clearFilter}
+        />
+    ) : null;
     return (
         <ChartCard
             data={live}
             isLoading={isLoading}
             timeframe={timeframe}
-            headerActions={headerActions}
+            headerActions={
+                breakdownControl || viewToggleControl ? (
+                    <>
+                        {breakdownControl}
+                        {viewToggleControl}
+                    </>
+                ) : undefined
+            }
+            extraHeaderActions={extraHeaderActions}
+            hideHeader={hideHeader}
             breakdownSeries={breakdownSeries}
             detailLoading={isDetail ? detailQuery.isLoading : false}
             detailError={isDetail ? detailQuery.isError : false}
@@ -144,6 +166,12 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             singleSeries={singleSeries}
             onSeriesIsolate={() => track('web:usage:series_isolated', { metric })}
             onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
+            capLine={capLine}
+            chartMode={chartModeState}
+            seriesHref={(s) => (dimension && s.value ? breakdownSeriesHref(env, dimension, s.value) : undefined)}
+            seriesCopyValue={(s) => (dimension && s.value ? breakdownSeriesCopyValue(dimension, s.value) : undefined)}
+            onSeriesCopy={() => dimension && track('web:usage:value_copied', { metric, dimension })}
+            onSeriesGoTo={() => dimension && track('web:usage:value_opened', { metric, dimension })}
         />
     );
 };

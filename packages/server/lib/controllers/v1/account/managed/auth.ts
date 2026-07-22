@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
+import { basePublicUrl, flagHasUsage, nanoid, normalizeEmail, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
@@ -133,7 +133,7 @@ export async function finalizeManagedAuthentication({
     let invitation: DBInvitation | null = null;
     if (state?.token) {
         invitation = await getInvitation(state.token);
-        if (!invitation || invitation.email !== authorizedUser.email) {
+        if (!invitation || normalizeEmail(invitation.email) !== normalizeEmail(authorizedUser.email)) {
             res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
             return;
         }

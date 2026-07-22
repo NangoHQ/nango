@@ -14,6 +14,7 @@ import type {
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
+import type { GetAuditTrail } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
@@ -104,6 +105,7 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
 import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
@@ -186,6 +188,7 @@ export type PublicApiEndpoints =
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
+    | GetAuditTrail
     | PostSignup
     | PostSignin
     | PostLogout
@@ -266,6 +269,12 @@ export type PrivateApiEndpoints =
     | GetProviders
     | GetProvider
     | PostInternalTriggerFunction
+    | GetMFAStatus
+    | PostMFAEnrollment
+    | PostMFAActivation
+    | PostMFARecoveryCodes
+    | PostMFALoginVerification
+    | DeleteMFA
     | GetPlainHmac;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;

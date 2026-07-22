@@ -1,8 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
-
-import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 const route = '/api/v1/meta';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -20,15 +18,5 @@ describe(`GET ${route}`, () => {
         // @ts-expect-error type declares `env` but the controller rejects any query param
         const res = await api.fetch(route, { method: 'GET' });
         shouldBeProtected(res);
-    });
-
-    it('returns billingUsageSource=clickhouse', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-        // @ts-expect-error type declares `env` but the controller rejects any query param
-        const res = await api.fetch(route, { method: 'GET', session });
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-        expect(res.json.data.billingUsageSource).toBe('clickhouse');
     });
 });

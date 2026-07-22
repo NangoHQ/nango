@@ -192,4 +192,85 @@ describe('Webhook route unit tests', () => {
             webhookType: 'subscriptionType'
         });
     });
+
+    it('Should skip events triggered by an import', async () => {
+        const integration = getTestConfig({ provider: 'hubspot', oauth_client_secret: 'abcdef' });
+
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const body: HubSpotWebhook[] = [
+            {
+                eventId: 1,
+                subscriptionId: 2426762,
+                portalId: 143553137,
+                occurredAt: 1705422467780,
+                subscriptionType: 'contact.creation',
+                attemptNumber: 0,
+                objectId: 1801,
+                changeSource: 'CRM_UI'
+            },
+            {
+                eventId: 2,
+                subscriptionId: 2426762,
+                portalId: 143553137,
+                occurredAt: 1705422467780,
+                subscriptionType: 'contact.creation',
+                attemptNumber: 0,
+                objectId: 1802,
+                changeSource: 'IMPORT'
+            }
+        ];
+        const combinedSignature = `${integration.oauth_client_secret}${JSON.stringify(body)}`;
+        const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
+        const headers = { 'x-hubspot-signature': createdHash };
+
+        await HubspotWebhookRouting.default(nangoMock as unknown as InternalNango, headers, body, '');
+
+        expect(mock).toHaveBeenCalledTimes(1);
+        expect(mock).toHaveBeenCalledWith({
+            body: body[0],
+            connectionIdentifier: 'portalId',
+            webhookType: 'subscriptionType'
+        });
+    });
+
+    it('Should skip a single import event', async () => {
+        const integration = getTestConfig({ provider: 'hubspot', oauth_client_secret: 'abcdef' });
+
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const body: HubSpotWebhook = {
+            eventId: 1,
+            subscriptionId: 2426762,
+            portalId: 143553137,
+            occurredAt: 1705422467780,
+            subscriptionType: 'contact.creation',
+            attemptNumber: 0,
+            objectId: 1801,
+            changeSource: 'IMPORT'
+        };
+        const combinedSignature = `${integration.oauth_client_secret}${JSON.stringify(body)}`;
+        const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
+        const headers = { 'x-hubspot-signature': createdHash };
+
+        await HubspotWebhookRouting.default(nangoMock as unknown as InternalNango, headers, body, '');
+
+        expect(mock).not.toHaveBeenCalled();
+    });
 });
