@@ -29,7 +29,6 @@ export const Casing: Story = {
     render: () => (
         <div className="flex flex-wrap items-center gap-3">
             <Badge>normal</Badge>
-            <Badge case="upper">upper</Badge>
             <Badge case="capitalize">capitalize</Badge>
         </div>
     )

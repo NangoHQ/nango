@@ -20,10 +20,9 @@ export const badgeVariants = cva(
                 warning: 'bg-status-warning-bg text-status-warning-text',
                 danger: 'bg-status-danger-bg text-status-danger-text'
             },
-            // Text casing. Figma renders labels as-authored; `upper`/`capitalize` are opt-in.
+            // Text casing. Figma renders labels as-authored; `capitalize` is opt-in.
             case: {
                 normal: '',
-                upper: 'uppercase',
                 capitalize: 'capitalize'
             }
         },
