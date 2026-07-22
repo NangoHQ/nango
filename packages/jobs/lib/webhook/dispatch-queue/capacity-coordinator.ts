@@ -149,6 +149,15 @@ redis.call('HSET', KEYS[1], 'pausedUntil', math.max(pausedUntil, now + retryAfte
 return {limit, previousLimit}
 `;
 
+const ENVIRONMENT_COOLDOWN_SCRIPT = `
+local currentTtl = redis.call('PTTL', KEYS[1])
+local requestedTtl = tonumber(ARGV[1])
+if currentTtl < requestedTtl then
+  redis.call('SET', KEYS[1], '1', 'PX', requestedTtl)
+end
+return math.max(currentTtl, requestedTtl)
+`;
+
 export interface DispatchCapacityPermit {
     isValid(): boolean;
     release(): Promise<void>;
@@ -159,6 +168,8 @@ export interface DispatchCapacityCoordinator {
     recordSuccess(durationMs: number): Promise<void>;
     recordCongestion(retryAfterMs: number): Promise<void>;
     recordFailure(): Promise<void>;
+    getEnvironmentCooldown?(environmentId: number): Promise<number>;
+    recordEnvironmentCongestion?(environmentId: number, retryAfterMs: number): Promise<void>;
 }
 
 interface RedisDispatchCapacityCoordinatorOptions {
@@ -267,6 +278,17 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
         await this.recordDecrease(this.controlIntervalMs);
     }
 
+    async getEnvironmentCooldown(environmentId: number): Promise<number> {
+        return Math.max(0, await this.redis.pTTL(this.environmentCooldownKey(environmentId)));
+    }
+
+    async recordEnvironmentCongestion(environmentId: number, retryAfterMs: number): Promise<void> {
+        await this.redis.eval(ENVIRONMENT_COOLDOWN_SCRIPT, {
+            keys: [this.environmentCooldownKey(environmentId)],
+            arguments: [String(Math.max(1, retryAfterMs))]
+        });
+    }
+
     private async recordDecrease(retryAfterMs: number): Promise<void> {
         const response = await this.redis.eval(CONGESTION_SCRIPT, {
             keys: [this.stateKey],
@@ -279,6 +301,10 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
         if (limit < previousLimit) {
             metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_CHANGE, 1, { direction: 'decrease' });
         }
+    }
+
+    private environmentCooldownKey(environmentId: number): string {
+        return `${this.stateKey}:environment:${environmentId}:cooldown`;
     }
 }
 

@@ -1,4 +1,4 @@
-import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { ChangeMessageVisibilityBatchCommand, DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
@@ -68,6 +68,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
+        visibilityTimeoutSeconds?: number;
         sqsSend?: Mock<SqsSendFn>;
         capacityCoordinator?: DispatchCapacityCoordinator;
     } = {}
@@ -92,6 +93,9 @@ function makeHarness(
             if (command instanceof DeleteMessageCommand) {
                 return {};
             }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
+                return {};
+            }
             throw new Error(`unexpected command ${String(command)}`);
         });
 
@@ -112,8 +116,10 @@ function makeHarness(
         consumerConcurrency: opts.consumerConcurrency ?? 1,
         maxMessages: 10,
         waitTimeSeconds: 0,
-        visibilityTimeoutSeconds: 30,
+        visibilityTimeoutSeconds: opts.visibilityTimeoutSeconds ?? 30,
         maxAgeMs: opts.maxAgeMs ?? 0,
+        backoffBaseSeconds: 5,
+        backoffMaxSeconds: 900,
         ...(opts.capacityCoordinator ? { capacityCoordinator: opts.capacityCoordinator } : {})
     });
 
@@ -122,6 +128,10 @@ function makeHarness(
 
 function getDeleteCalls(h: Harness) {
     return h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+}
+
+function getVisibilityCalls(h: Harness) {
+    return h.sqsSend.mock.calls.filter((c) => c[0] instanceof ChangeMessageVisibilityBatchCommand);
 }
 
 async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise<void> {
@@ -188,7 +198,7 @@ describe('DispatchQueueConsumer', () => {
         expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
     });
 
-    it('drops (deletes) messages whose per-entry result is task_cap_exceeded', async () => {
+    it('defers messages whose per-entry result is task_cap_exceeded', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
         const h = makeHarness({ messages: msgs });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
@@ -199,9 +209,10 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        // A saturated group can't accept the task, so the message is shed (deleted) rather than
-        // redelivered — both the successful entry and the capped one get deleted.
-        expect(getDeleteCalls(h)).toHaveLength(2);
+        expect(getDeleteCalls(h)).toHaveLength(1);
+        expect(getVisibilityCalls(h)).toHaveLength(1);
+        const command = getVisibilityCalls(h)[0]?.[0] as ChangeMessageVisibilityBatchCommand;
+        expect(command.input.Entries).toEqual([expect.objectContaining({ ReceiptHandle: 'rh-1', VisibilityTimeout: expect.any(Number) })]);
     });
 
     it('does not delete messages whose per-entry result is a generic error', async () => {
@@ -228,6 +239,23 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(getDeleteCalls(h)).toHaveLength(0);
+    });
+
+    it('defers the batch and reports congestion when webhook admission is exhausted', async () => {
+        const recordCongestion = vi.fn(() => Promise.resolve());
+        const coordinator: DispatchCapacityCoordinator = {
+            acquire: vi.fn(() => Promise.resolve({ isValid: () => true, release: () => Promise.resolve() })),
+            recordSuccess: vi.fn(),
+            recordCongestion,
+            recordFailure: vi.fn()
+        };
+        const h = makeHarness({ messages: [buildMessage()], capacityCoordinator: coordinator });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Err({ name: 'webhook_admission_exceeded', message: 'busy', payload: { retryAfterMs: 2000 } }));
+
+        await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(2000));
+
+        expect(getDeleteCalls(h)).toHaveLength(0);
+        expect(getVisibilityCalls(h)).toHaveLength(1);
     });
 
     it('deletes a poison-pill message without calling orchestrator', async () => {
@@ -293,6 +321,21 @@ describe('DispatchQueueConsumer', () => {
         expect(getDeleteCalls(h)).toHaveLength(1);
     });
 
+    it('extends visibility while orchestrator admission is in flight', async () => {
+        const h = makeHarness({ messages: [buildMessage()], visibilityTimeoutSeconds: 2 });
+        const gate = deferred<undefined>();
+        h.orchestratorExecuteWebhookBatch.mockImplementationOnce(async (props: unknown[]) => {
+            await gate.promise;
+            return Ok(props.map((_, i) => Ok({ taskId: `t${i}`, retryKey: `r${i}` })));
+        });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(getVisibilityCalls(h)).toHaveLength(1), { timeout: 2000 });
+        gate.resolve(undefined);
+        await vi.waitFor(() => expect(getDeleteCalls(h)).toHaveLength(1));
+        await h.consumer.stop();
+    });
+
     it('starts one poll loop per configured consumerConcurrency', async () => {
         let receiveCalls = 0;
         const firstReceives = [deferred<void>(), deferred<void>()];
@@ -315,6 +358,9 @@ describe('DispatchQueueConsumer', () => {
             }
 
             if (command instanceof DeleteMessageCommand) {
+                return {};
+            }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
                 return {};
             }
 
@@ -372,6 +418,9 @@ describe('DispatchQueueConsumer', () => {
             }
             if (command instanceof DeleteMessageCommand) {
                 events.push('delete');
+                return {};
+            }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
                 return {};
             }
             throw new Error(`unexpected command ${String(command)}`);

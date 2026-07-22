@@ -92,6 +92,8 @@ try {
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
               visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
               maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
+              backoffBaseSeconds: envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS,
+              backoffMaxSeconds: envs.NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS,
               ...(dispatchCapacityCoordinator ? { capacityCoordinator: dispatchCapacityCoordinator } : {})
           })
         : undefined;

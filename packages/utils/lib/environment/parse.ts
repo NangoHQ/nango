@@ -698,6 +698,8 @@ const envSchema = z.object({
     NANGO_TASK_DISPATCH_ADAPTIVE_ACQUIRE_RETRY_MS: z.coerce.number().int().positive().optional().default(250),
     NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: z.coerce.number().int().positive().optional().default(250),
     NANGO_TASK_DISPATCH_ADAPTIVE_CONTROL_INTERVAL_MS: z.coerce.number().int().positive().optional().default(1000),
+    NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS: z.coerce.number().int().positive().max(43_200).optional().default(5),
+    NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS: z.coerce.number().int().positive().max(43_200).optional().default(900),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
