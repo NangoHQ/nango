@@ -16,6 +16,10 @@ vi.mock('../../env.js', () => ({
     }
 }));
 
+const mocks = vi.hoisted(() => ({ getPlanSafe: vi.fn() }));
+vi.mock('@nangohq/database', () => ({ default: { knex: {} } }));
+vi.mock('@nangohq/shared', () => ({ getPlanSafe: mocks.getPlanSafe }));
+
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
         version: 1,
@@ -130,6 +134,8 @@ async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise
 describe('DispatchQueueConsumer', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        mocks.getPlanSafe.mockReset();
+        mocks.getPlanSafe.mockResolvedValue(null);
     });
 
     it('sends all received messages in a single executeWebhookBatch call', async () => {
@@ -147,10 +153,26 @@ describe('DispatchQueueConsumer', () => {
         expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
         expect(calledWith).toHaveLength(3);
+        // No plan override → falls back to the configured webhookMaxConcurrency
         expect(calledWith?.[0]).toMatchObject({
             name: 'webhook:1',
             group: { key: 'webhook:environment:2', maxConcurrency: 500 },
             args: { webhookName: msgs[0]!.webhookName, activityLogId: 'log-1' }
+        });
+    });
+
+    it('uses the account plan webhook concurrency override when present', async () => {
+        mocks.getPlanSafe.mockResolvedValue({ webhook_max_concurrency_override: 12 });
+        const h = makeHarness({ messages: [buildMessage({ taskName: 'webhook:1', accountId: 7 })] });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
+
+        expect(mocks.getPlanSafe).toHaveBeenCalledWith(expect.anything(), { accountId: 7 });
+        const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
+        expect(calledWith?.[0]).toMatchObject({
+            group: { key: 'webhook:environment:2', maxConcurrency: 12 }
         });
     });
 

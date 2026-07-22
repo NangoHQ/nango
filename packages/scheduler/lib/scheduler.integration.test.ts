@@ -422,6 +422,7 @@ async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler
         frequencyMs: 900_000,
         payload: { foo: 'bar' },
         groupKey: nanoid(),
+        groupMaxConcurrency: 0,
         retryMax: 0,
         retryCount: 0,
         createdToStartedTimeoutSecs: 3600,

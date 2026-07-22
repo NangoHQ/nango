@@ -6,7 +6,6 @@ import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
 import { Err, metrics, Ok, truncateJson } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -140,7 +139,6 @@ function callToolRequestHandler(
             input,
             async: false,
             retryMax: 3,
-            maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
 

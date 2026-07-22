@@ -241,7 +241,7 @@ export class Scheduler {
                 name: `${schedule.name}:${uuidv7()}`,
                 payload: { ...schedule.payload, ...props.extra },
                 groupKey: schedule.groupKey,
-                groupMaxConcurrency: 0,
+                groupMaxConcurrency: schedule.groupMaxConcurrency,
                 retryMax: schedule.retryMax,
                 retryCount: 0,
                 createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
@@ -384,6 +384,20 @@ export class Scheduler {
      */
     public async recurring(props: ScheduleProps): Promise<Result<Schedule>> {
         return schedules.create(this.db, props);
+    }
+
+    /**
+     * Reconcile the per-group max concurrency for every schedule whose group_key starts with `groupKeyPrefix`.
+     * Groups in `overrides` get their value; all other matching groups are reset to 0 (scheduler default).
+     */
+    public async reconcileGroupMaxConcurrency({
+        groupKeyPrefix,
+        overrides
+    }: {
+        groupKeyPrefix: string;
+        overrides: { groupKey: string; maxConcurrency: number }[];
+    }): Promise<Result<{ updated: number }>> {
+        return schedules.reconcileGroupMaxConcurrency(this.db, { groupKeyPrefix, overrides });
     }
 
     /**

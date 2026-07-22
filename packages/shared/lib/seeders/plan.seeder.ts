@@ -50,6 +50,10 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         records_store: 'default',
         lambda_tenant_isolation: true,
         export_runner_telemetry: true,
+        sync_max_concurrency_override: null,
+        action_max_concurrency_override: null,
+        webhook_max_concurrency_override: null,
+        on_event_max_concurrency_override: null,
         ...override
     };
 }

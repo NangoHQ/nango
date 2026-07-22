@@ -82,7 +82,8 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     name: `${schedule.name}:${now.toISOString()}`,
                                     payload: schedule.payload,
                                     groupKey: schedule.groupKey,
-                                    groupMaxConcurrency: this.recurringGroupMaxConcurrency,
+                                    // 0 (no per-account override) falls back to the env-derived global default
+                                    groupMaxConcurrency: schedule.groupMaxConcurrency || this.recurringGroupMaxConcurrency,
                                     retryCount: 0,
                                     retryMax: schedule.retryMax,
                                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,

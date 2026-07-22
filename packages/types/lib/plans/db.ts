@@ -228,4 +228,32 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     lambda_tenant_isolation: boolean;
+
+    /**
+     * Per-account max concurrency for syncs.
+     * null inherits the SYNC_ENVIRONMENT_MAX_CONCURRENCY env default.
+     * @default null
+     */
+    sync_max_concurrency_override: number | null;
+
+    /**
+     * Per-account max concurrency for actions.
+     * null inherits the ACTION_ENVIRONMENT_MAX_CONCURRENCY env default.
+     * @default null
+     */
+    action_max_concurrency_override: number | null;
+
+    /**
+     * Per-account max concurrency for webhooks.
+     * null inherits the WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY env default.
+     * @default null
+     */
+    webhook_max_concurrency_override: number | null;
+
+    /**
+     * Per-account max concurrency for on-event scripts.
+     * null inherits the ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY env default.
+     * @default null
+     */
+    on_event_max_concurrency_override: number | null;
 }

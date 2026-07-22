@@ -7,10 +7,12 @@ import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { hardDeleteCheckpoints } from '../index.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
+import { getPlanSafe } from '../services/plans/plans.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
@@ -21,6 +23,7 @@ import type { NangoIntegrationData, Sync } from '../models/index.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
+    ClientError,
     ExecuteActionProps,
     ExecuteAsyncReturn,
     ExecuteOnEventProps,
@@ -66,6 +69,7 @@ export interface OrchestratorClientInterface {
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
+    reconcileSyncConcurrency({ overrides }: { overrides: { groupKey: string; maxConcurrency: number }[] }): Promise<Result<{ updated: number }, ClientError>>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
     getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn>;
@@ -114,7 +118,6 @@ export class Orchestrator {
         input,
         retryMax,
         async,
-        maxConcurrency,
         logCtx
     }: {
         accountId: number;
@@ -123,7 +126,6 @@ export class Orchestrator {
         input: unknown;
         retryMax: number;
         async: boolean;
-        maxConcurrency: number;
         logCtx: LogContext;
     }): Promise<Result<AsyncActionResponse | { data: T }, NangoError>> {
         const activeSpan = tracer.scope().active();
@@ -188,6 +190,8 @@ export class Orchestrator {
                 return Ok({ id: retryKey, statusUrl: `/action/${retryKey}` });
             }
 
+            const plan = await getPlanSafe(db.knex, { accountId });
+            const maxConcurrency = plan?.action_max_concurrency_override ?? envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY;
             const actionResult = await this.client.executeAction({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency },
@@ -234,14 +238,12 @@ export class Orchestrator {
         webhookName,
         syncConfig,
         input,
-        maxConcurrency,
         logCtx
     }: {
         connection: ConnectionJobs;
         webhookName: string;
         syncConfig: DBSyncConfig;
         input: object;
-        maxConcurrency: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
@@ -281,6 +283,8 @@ export class Orchestrator {
                 input: parsedInput,
                 activityLogId: logCtx.id
             };
+            const plan = await getPlanSafe(db.knex, { environmentId: connection.environment_id });
+            const maxConcurrency = plan?.webhook_max_concurrency_override ?? envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY;
             const webhookResult = await this.client.executeWebhook({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency },
@@ -348,7 +352,6 @@ export class Orchestrator {
         fileLocation,
         sdkVersion,
         async,
-        maxConcurrency,
         logCtx
     }: {
         accountId: number;
@@ -358,7 +361,6 @@ export class Orchestrator {
         fileLocation: string;
         sdkVersion: string | null;
         async: boolean;
-        maxConcurrency: number;
         logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
@@ -375,7 +377,7 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
-            const groupKey = 'on-event:environment:${connection.environment_id}';
+            const groupKey = `on-event:environment:${connection.environment_id}`;
             const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
@@ -390,6 +392,8 @@ export class Orchestrator {
                 fileLocation,
                 sdkVersion: sdkVersion
             };
+            const plan = await getPlanSafe(db.knex, { accountId });
+            const maxConcurrency = plan?.on_event_max_concurrency_override ?? envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY;
             const result = await this.client.executeOnEvent({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency },
@@ -515,6 +519,23 @@ export class Orchestrator {
             void logCtx?.info(`Sync frequency for "${syncName}" is ${interval}`);
         }
         return res;
+    }
+
+    /**
+     * Push the per-account sync concurrency overrides to the scheduler. Every environment listed gets its
+     * value; any sync group without an override is reset to the scheduler default. Idempotent.
+     */
+    async reconcileSyncConcurrency(overrides: { environmentId: number; maxConcurrency: number }[]): Promise<Result<{ updated: number }>> {
+        const res = await this.client.reconcileSyncConcurrency({
+            overrides: overrides.map(({ environmentId, maxConcurrency }) => ({
+                groupKey: `sync:environment:${environmentId}`,
+                maxConcurrency
+            }))
+        });
+        if (res.isErr()) {
+            return Err(new NangoError('failed_to_reconcile_sync_concurrency', { error: res.error }));
+        }
+        return Ok(res.value);
     }
 
     async runSyncCommand({
@@ -686,6 +707,7 @@ export class Orchestrator {
             }
 
             const { account, environment } = (await accountService.getAccountContext({ environmentId: nangoConnection.environment_id }))!;
+            const plan = await getPlanSafe(db.knex, { accountId: account.id });
 
             logCtx = await logContextGetter.create(
                 { operation: { type: 'sync', action: 'init' } },
@@ -730,8 +752,9 @@ export class Orchestrator {
                 state: syncData.auto_start ? 'STARTED' : 'PAUSED',
                 frequencyMs: frequencyMs.value,
                 group: {
+                    // 0 (no per-account override) lets the scheduler fall back to the env-derived global default
                     key: `sync:environment:${nangoConnection.environment_id}`,
-                    maxConcurrency: 0
+                    maxConcurrency: plan?.sync_max_concurrency_override ?? 0
                 },
                 retry: { max: 0 },
                 timeoutSettingsInSecs: {

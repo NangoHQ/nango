@@ -2,7 +2,6 @@ import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq
 import { configService, connectionService, errorManager, getSyncConfigRaw, pubsub } from '@nangohq/shared';
 import { truncateJson } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
@@ -90,7 +89,6 @@ export async function runAction({
             input,
             async: isAsync,
             retryMax,
-            maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
 

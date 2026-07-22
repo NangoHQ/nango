@@ -28,6 +28,7 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     deleteSync: () => Promise.resolve({}) as any,
     deleteSyncs: () => Promise.resolve({}) as any,
     updateSyncFrequency: () => Promise.resolve({}) as any,
+    reconcileSyncConcurrency: () => Promise.resolve({}) as any,
     searchSchedules: () => Promise.resolve({}) as any,
     getOutput: () => Promise.resolve({}) as any
 };

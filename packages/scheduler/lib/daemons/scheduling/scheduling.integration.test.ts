@@ -129,6 +129,26 @@ describe('SchedulingDaemon', () => {
         expect(created).toHaveLength(1);
         expect(created[0]?.groupMaxConcurrency).toBe(defaultSchedulerConfig.limits.recurringGroupMaxConcurrency);
     });
+
+    it('should stamp materialized tasks with the schedule per-group override when set', async () => {
+        const schedule = await addSchedule(db, { groupMaxConcurrency: 7 });
+        const daemon = new SchedulingDaemon({
+            db,
+            abortSignal: new AbortController().signal,
+            tickIntervalMs: defaultSchedulerConfig.daemons.schedulingTickIntervalMs,
+            groupTaskCap: defaultSchedulerConfig.limits.groupTaskCap,
+            recurringGroupMaxConcurrency: defaultSchedulerConfig.limits.recurringGroupMaxConcurrency,
+            onScheduling: () => {},
+            onEvent: () => {},
+            onError: () => {}
+        });
+
+        await daemon.run();
+
+        const created = (await tasks.search(db, { scheduleId: schedule.id })).unwrap();
+        expect(created).toHaveLength(1);
+        expect(created[0]?.groupMaxConcurrency).toBe(7);
+    });
 });
 
 const Seconds = {
@@ -140,7 +160,10 @@ const Seconds = {
     }
 };
 
-async function addSchedule(db: knex.Knex, params?: { state?: ScheduleState; startsAt?: Date; frequency?: string }): Promise<Schedule> {
+async function addSchedule(
+    db: knex.Knex,
+    params?: { state?: ScheduleState; startsAt?: Date; frequency?: string; groupMaxConcurrency?: number }
+): Promise<Schedule> {
     const schedule: DbSchedule = {
         id: uuidv7(),
         name: Math.random().toString(36).substring(7),
@@ -149,6 +172,7 @@ async function addSchedule(db: knex.Knex, params?: { state?: ScheduleState; star
         frequency: params?.frequency || '5 minutes',
         payload: {},
         group_key: Math.random().toString(36).substring(7),
+        group_max_concurrency: params?.groupMaxConcurrency ?? 0,
         retry_max: 0,
         created_to_started_timeout_secs: 1,
         started_to_completed_timeout_secs: 1,

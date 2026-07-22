@@ -106,6 +106,25 @@ describe('mergeFlags', () => {
             });
         });
     });
+
+    it('never manages concurrency overrides, leaving them on the plan row across plan changes', () => {
+        const currentPlan = makePlan({ code: 'starter-v2', flagOverrides: {} });
+        currentPlan.sync_max_concurrency_override = 3;
+        currentPlan.action_max_concurrency_override = 4;
+        currentPlan.webhook_max_concurrency_override = 5;
+        currentPlan.on_event_max_concurrency_override = 6;
+
+        // Concurrency overrides are not plan-tier flags, so mergeFlags must not emit them (upgrade or downgrade)
+        const upgraded = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('growth-v2')! });
+        const downgraded = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('free')! });
+
+        for (const flags of [upgraded, downgraded]) {
+            expect(flags).not.toHaveProperty('sync_max_concurrency_override');
+            expect(flags).not.toHaveProperty('action_max_concurrency_override');
+            expect(flags).not.toHaveProperty('webhook_max_concurrency_override');
+            expect(flags).not.toHaveProperty('on_event_max_concurrency_override');
+        }
+    });
 });
 
 function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides: PlanDefinition['flags'] }): DBPlan {
@@ -155,6 +174,10 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         on_event_function_runtime: 'runner',
         has_records_autopruning: true,
         variants_per_sync_max: 100,
+        sync_max_concurrency_override: null,
+        action_max_concurrency_override: null,
+        webhook_max_concurrency_override: null,
+        on_event_max_concurrency_override: null,
         fleet_node_routing_override: null,
         records_store: 'default',
         lambda_tenant_isolation: defaultPlanDefinition.flags.lambda_tenant_isolation ?? false,
