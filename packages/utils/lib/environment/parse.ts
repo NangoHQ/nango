@@ -21,6 +21,7 @@ export const ENVS = z.object({
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
+    AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?

@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { metrics } from '@nangohq/utils';
 
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
@@ -372,6 +373,25 @@ describe('Account service', () => {
                 // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete process.env[envVarName];
             }
+        });
+
+        it('should record a shadow-cache miss then hit without ever serving from the shadow cache', async () => {
+            const { env, secret } = await seedAccountEnvAndUser();
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+
+            // First lookup: nothing seen yet -> miss
+            const first = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(first?.environment.id).toBe(env.id);
+            expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_SHADOW_CACHE, 1, { cache: 'persist_internal_secret', result: 'miss' });
+
+            // Break the DB row: a real cache would still serve the stale context, the shadow must not
+            await db.knex('api_secrets').where({ environment_id: env.id }).update({ hashed: uuid() });
+            incrementSpy.mockClear();
+
+            // Second lookup within the TTL: recorded as a hit, but the value comes from the DB (now broken) -> null
+            const second = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_SHADOW_CACHE, 1, { cache: 'persist_internal_secret', result: 'hit' });
+            expect(second).toBeNull();
         });
     });
 
