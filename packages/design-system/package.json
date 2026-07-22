@@ -6,6 +6,7 @@
     "scripts": {
         "tokens:fetch": "node scripts/tokens-fetch.mjs",
         "tokens:build": "node scripts/tokens-fetch.mjs --build-only",
+        "tokens:check": "node scripts/tokens-check-removed.mjs",
         "test": "vitest run --config vitest.config.mjs",
         "storybook": "NODE_PATH=./node_modules storybook dev -p 6006 --ci",
         "build-storybook": "NODE_PATH=./node_modules storybook build"
