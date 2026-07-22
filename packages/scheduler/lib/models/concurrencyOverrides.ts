@@ -37,12 +37,3 @@ export async function remove(db: knex.Knex, groupKey: string): Promise<Result<vo
         return Err(new Error(`Error removing concurrency override for '${groupKey}': ${stringifyError(err)}`));
     }
 }
-
-export async function getAll(db: knex.Knex): Promise<Result<ConcurrencyOverride[]>> {
-    try {
-        const rows = await db.from<ConcurrencyOverride>(CONCURRENCY_OVERRIDES_TABLE).select('group_key', 'max_concurrency');
-        return Ok(rows);
-    } catch (err) {
-        return Err(new Error(`Error getting concurrency overrides: ${stringifyError(err)}`));
-    }
-}
