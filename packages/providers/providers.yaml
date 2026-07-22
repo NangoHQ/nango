@@ -6115,6 +6115,38 @@ deel-sandbox:
         base_url: https://api-sandbox.demo.deel.com
     docs: https://nango.dev/docs/integrations/all/deel-sandbox
 
+dentally:
+    display_name: Dentally
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/oauth/authorize
+    token_url: https://${connectionConfig.domain}/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/dentally
+    setup_guide_url: https://nango.dev/docs/api-integrations/dentally/how-to-register-your-own-dentally-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/dentally/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Dentally API host to connect to.
+            format: hostname
+            order: 1
+            enum:
+                - api.dentally.co
+                - api.sandbox.dentally.co
+                - api.apac.dentally.com
+                - api.ca.dentally.com
+            doc_section: '#step-1-choose-your-environment'
+
 devin:
     display_name: Devin
     categories:
