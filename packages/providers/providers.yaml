@@ -4013,8 +4013,8 @@ callrail:
             type: string
             title: API Key
             description: The API key for your Callrail account
-            pattern: '^[a-f0-9]{32}$'
-            example: '4f3c12efb9659a0b5c123b568745dbf9'
+            pattern: '^(ctrk_)?[a-f0-9]{32,}$'
+            example: 'ctrk_1234567890abcdef1234567890abcdef1234567890ab'
             doc_section: '#step-1-finding-your-api-key'
     docs: https://nango.dev/docs/integrations/all/callrail
 
@@ -4171,6 +4171,35 @@ canva-scim:
             title: API Key
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
+
+cerby:
+    display_name: Cerby
+    categories:
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.workspace}.cerby.com/api
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/cerby
+    docs_connect: https://nango.dev/docs/api-integrations/cerby/connect
+    connection_config:
+        workspace:
+            type: string
+            title: Workspace
+            description: The subdomain of your Cerby workspace
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: my-workspace
+            prefix: https://
+            suffix: .cerby.com
+            doc_section: '#step-1-finding-your-workspace-subdomain'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Cerby workspace
+            doc_section: '#step-2-generating-your-api-key'
 
 certn:
     display_name: Certn
@@ -5845,6 +5874,53 @@ datadog:
             pattern: '^[a-f0-9]{32}$'
             example: '4f3c12efb9659a0b5c123b568745dbf9'
             doc_section: '#step-2-datadog-api-key'
+
+datadog-oauth:
+    display_name: Datadog (OAuth)
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authorizeHost}/oauth2/v1/authorize
+    token_url: https://api.${connectionConfig.siteParameter}/oauth2/v1/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.siteParameter}/api
+    docs: https://nango.dev/docs/api-integrations/datadog-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/datadog-oauth/how-to-register-your-own-datadog-oauth-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/datadog-oauth/connect
+    connection_config:
+        siteParameter:
+            type: string
+            title: Site Parameter
+            description: The Datadog site for your account.
+            enum:
+                - datadoghq.com
+                - us3.datadoghq.com
+                - us5.datadoghq.com
+                - datadoghq.eu
+                - ddog-gov.com
+                - ap1.datadoghq.com
+            order: 1
+            doc_section: '#step-1-finding-your-datadog-site'
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The web application host for your Datadog site.
+            enum:
+                - app.datadoghq.com
+                - us3.datadoghq.com
+                - us5.datadoghq.com
+                - app.datadoghq.eu
+                - app.ddog-gov.com
+                - ap1.datadoghq.com
+            order: 2
+            doc_section: '#step-1-finding-your-datadog-site'
 
 dayforce:
     display_name: Dayforce
@@ -11213,13 +11289,17 @@ jobber:
     auth_mode: OAUTH2
     authorization_url: https://api.getjobber.com/api/oauth/authorize
     token_url: https://api.getjobber.com/api/oauth/token
+    disable_pkce: true
     authorization_params:
         response_type: code
     proxy:
         headers:
             x-jobber-graphql-version: ${connectionConfig.version} || 2025-01-20
         base_url: https://api.getjobber.com/api
-    docs: https://nango.dev/docs/integrations/all/jobber
+    webhook_routing_script: jobberWebhookRouting
+    post_connection_script: jobberPostConnection
+    docs: https://nango.dev/docs/api-integrations/jobber
+    setup_guide_url: https://nango.dev/docs/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app
     connection_config:
         version:
             type: string
@@ -13072,6 +13152,45 @@ microsoft-intune:
     docs: https://nango.dev/docs/api-integrations/microsoft-intune
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-intune/connect
 
+microsoft-excel-oauth2-cc:
+    display_name: Microsoft Excel (Client Credentials)
+    categories:
+        - productivity
+        - analytics
+    alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-excel-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-excel-oauth2-cc/connect
+
+microsoft-power-bi-oauth2-cc:
+    display_name: Microsoft Power BI (Client Credentials)
+    categories:
+        - productivity
+    alias: microsoft-oauth2-cc
+    proxy:
+        base_url: https://api.powerbi.com
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-power-bi-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-power-bi-oauth2-cc/connect
+
+microsoft-powerpoint-oauth2-cc:
+    display_name: Microsoft PowerPoint (Client Credentials)
+    categories:
+        - productivity
+    alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-powerpoint-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-powerpoint-oauth2-cc/connect
+
+microsoft-word-oauth2-cc:
+    display_name: Microsoft Word (Client Credentials)
+    categories:
+        - productivity
+    alias: microsoft-oauth2-cc
+    webhook_routing_script: ''
+    docs: https://nango.dev/docs/api-integrations/microsoft-word-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-word-oauth2-cc/connect
+
 microsoft-planner:
     display_name: Microsoft Planner
     categories:
@@ -14627,6 +14746,46 @@ odoo-cc:
             order: 1
             doc_section: '#step-1-finding-your-odoo-domain'
 
+odoo-api-key:
+    display_name: Odoo (API Key)
+    categories:
+        - erp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/json
+        headers:
+            authorization: bearer ${apiKey}
+            content-type: application/json
+            x-odoo-database: ${connectionConfig.database}
+    docs: https://nango.dev/docs/api-integrations/odoo-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/odoo-api-key/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Domain
+            description: The domain of your Odoo instance.
+            format: hostname
+            example: mycompany.odoo.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-odoo-domain'
+        database:
+            type: string
+            title: Database Name
+            description: Your Odoo database name.
+            optional: true
+            order: 2
+            doc_section: '#step-2-finding-your-database-name-if-applicable'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Odoo API key.
+            secret: true
+            pattern: '^[a-f0-9]{40}$'
+            example: 20d6113f****************************2921
+            doc_section: '#step-3-generating-an-api-key'
+
 okta:
     display_name: Okta
     auth_mode: OAUTH2
@@ -14982,6 +15141,44 @@ open-hands:
             pattern: '^[A-Za-z0-9]{32}$'
             example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
             doc_section: '#step-1-finding-your-api-key'
+
+optum-real:
+    display_name: Optum Real
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.domain}/apip/auth/sntl/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/optum-real
+    docs_connect: https://nango.dev/docs/api-integrations/optum-real/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Optum Real API environment to connect to.
+            order: 1
+            format: hostname
+            doc_section: '#step-1-choose-your-environment'
+            enum:
+                - sandbox-apigw.optum.com
+                - apigw.optum.com
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID issued via the Optum AI Marketplace for this environment.
+            doc_section: '#step-2-get-your-credentials'
+            format: uuid
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret issued via the Optum AI Marketplace for this environment.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
 
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
@@ -15339,6 +15536,30 @@ passportal:
             doc_section: '#step-3-generate-hmac-token'
     docs: https://nango.dev/docs/integrations/all/passportal
     docs_connect: https://nango.dev/docs/integrations/all/passportal/connect
+
+pave:
+    display_name: Pave
+    categories:
+        - hr
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.pave.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /ping
+    docs: https://nango.dev/docs/api-integrations/pave
+    docs_connect: https://nango.dev/docs/api-integrations/pave/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Pave account
+            example: '3A8F92C4********V4D'
+            doc_section: '#step-1-generating-your-api-key'
 
 paychex:
     display_name: Paychex
@@ -16460,6 +16681,31 @@ posthog-oauth:
                 - eu.i
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
+
+postscript:
+    display_name: Postscript
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.postscript.io
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/me
+    docs: https://nango.dev/docs/api-integrations/postscript
+    docs_connect: https://nango.dev/docs/api-integrations/postscript/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Private API Key
+            description: The private API key for your Postscript account.
+            pattern: '^sk_.+$'
+            example: 'sk_12********abc'
+            doc_section: '#step-1-finding-your-private-api-key'
 
 prive:
     display_name: Prive
@@ -18120,16 +18366,21 @@ sage-intacct-cc:
     docs: https://nango.dev/docs/api-integrations/sage-intacct-cc
     docs_connect: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/sage-intacct-cc/connect
-    credentials:
+    integration_config:
         clientId:
             type: string
             title: Client ID
             description: Your Sage Intacct application Client ID.
+            order: 1
+            optional: true
         clientSecret:
             type: string
             title: Client Secret
             description: Your Sage Intacct application Client Secret.
             secret: true
+            order: 2
+            optional: true
+    credentials:
         username:
             type: string
             title: Username
@@ -18206,6 +18457,46 @@ sage-intacct:
             title: User Password
             description: Your Sage Intacct User Password
             secret: true
+
+sage-member:
+    display_name: SAGE Member
+    categories:
+        - marketing
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.promoplace.com/ws/ws.dll
+        body:
+            auth:
+                acctId: ${connectionConfig.acctId}
+                loginId: ${connectionConfig.loginId}
+                key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/sage-member
+    docs_connect: https://nango.dev/docs/api-integrations/sage-member/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Key
+            example: 56edbbe3********************141a
+            pattern: '^[a-f0-9]{32}$'
+            description: The authentication key for your SAGE Member user.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+    connection_config:
+        acctId:
+            type: string
+            title: Account Number
+            description: Your SAGE Member account number.
+            pattern: '^[0-9]+$'
+            example: '4353478'
+            order: 1
+            doc_section: '#step-1-finding-your-credentials'
+        loginId:
+            type: string
+            title: Login ID
+            description: The login ID for your SAGE Member user.
+            order: 2
+            doc_section: '#step-1-finding-your-credentials'
 
 sage-people:
     display_name: Sage People
@@ -23007,6 +23298,30 @@ vanta:
     docs: https://nango.dev/docs/api-integrations/vanta
     docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
 
+vantage-apparel:
+    display_name: Vantage Apparel
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: BASIC
+    credentials_verification_script: vantageApparelCredentialsVerification
+    proxy:
+        base_url: https://brandedpromoapparel.com/WebServices
+    docs: https://nango.dev/docs/api-integrations/vantage-apparel
+    docs_connect: https://nango.dev/docs/api-integrations/vantage-apparel/connect
+    credentials:
+        username:
+            type: string
+            title: PromoStandards ID
+            description: The PromoStandards ID used to authenticate SOAP requests.
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password paired with the PromoStandards ID.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+
 veed:
     display_name: VEED (via fal.ai)
     categories:
@@ -23084,6 +23399,83 @@ veeva-vault:
             description: ''
             default_value: ''
             hidden: true
+
+veeva-vault-oauth:
+    display_name: Veeva Vault (OAuth 2.0 / OIDC)
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.tokenUrl}
+    token_params:
+        grant_type: client_credentials
+        scope: ${connectionConfig.scope}
+    token_headers:
+        authorization: Basic ${base64(${credentials.clientId}:${credentials.clientSecret})}
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    additional_steps:
+        - body_format: form
+          token_params:
+              vaultDNS: ${connectionConfig.subdomain}
+              client_id: ${credentials.clientId}
+          token_headers:
+              authorization: Bearer ${step1.access_token}
+              content-type: application/x-www-form-urlencoded
+              accept: application/json
+          token_url: https://login.veevavault.com/auth/oauth/session/${connectionConfig.oauthProfileId}
+    token_response:
+        token: sessionId
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.veevavault.com/api
+        headers:
+            authorization: ${accessToken}
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/veeva-vault-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/veeva-vault-oauth/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The client ID of the client credentials application configured in your identity provider.
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: The client secret of the client credentials application configured in your identity provider.
+            secret: true
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+    connection_config:
+        tokenUrl:
+            type: string
+            title: Identity Provider Token Endpoint
+            description: The OAuth 2.0 token endpoint URL of your identity provider.
+            example: '{your-okta-domain}/oauth2/default/v1/token'
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
+        oauthProfileId:
+            type: string
+            title: OAuth 2.0 / OpenID Connect Profile ID
+            description: The ID of the OAuth 2.0 / OpenID Connect profile configured in Veeva Vault.
+            order: 2
+            doc_section: '#step-2-configuring-an-oauth-20-openid-connect-profile-in-veeva-vault'
+        subdomain:
+            type: string
+            title: Vault DNS (subdomain)
+            description: The Vault DNS subdomain of the Veeva Vault you want to connect to
+            example: myvault
+            prefix: https://
+            suffix: veevavault.com
+            order: 3
+            doc_section: '#step-3-finding-your-vault-dns-subdomain'
+        scope:
+            type: string
+            title: OAuth Scope
+            description: The OAuth scope requested from your identity provider, if required.
+            optional: true
+            order: 4
+            doc_section: '#step-1-configuring-a-client-credentials-application-in-your-identity-provider'
 
 vtex:
     display_name: VTEX
@@ -24291,6 +24683,12 @@ zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
+    token_params:
+        grant_type: authorization_code
+        expires_in: '1800'
+    refresh_params:
+        grant_type: refresh_token
+        expires_in: '1800'
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
         retry:

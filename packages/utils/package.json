@@ -17,7 +17,6 @@
     "dependencies": {
         "@colors/colors": "1.6.0",
         "@nangohq/egress": "file:../egress",
-        "@sentry/node": "9.3.0",
         "axios": "1.18.0",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",

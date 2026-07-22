@@ -3,3 +3,11 @@
 | Function name | Description | Type | Source code |
 | - | - | - | - |
 | `transactions` | List all transactions with a default backfill date of one year. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/syncs/transactions.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `commit-transaction` | Marks a transaction by changing its status to Committed | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/commit-transaction.ts) |
+| `create-transaction` | Creates a new transaction | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/create-transaction.ts) |
+| `void-transaction` | Voids the current transaction uniquely identified by the transactionCode | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/avalara/actions/void-transaction.ts) |

@@ -552,7 +552,7 @@ class ProviderClient {
 
             throw new NangoError('sentry_oauth_token_request_error', response.data);
         } catch (err: any) {
-            throw new NangoError('sentry_oauth_token_request_error', err);
+            throw new NangoError('sentry_oauth_token_request_error', stringifyError(err));
         }
     }
 
@@ -594,7 +594,7 @@ class ProviderClient {
 
             throw new NangoError('bullhorn_session_request_error', { cause: response.data });
         } catch (err: any) {
-            throw new NangoError('bullhorn_session_request_error', { cause: err });
+            throw new NangoError('bullhorn_session_request_error', { cause: stringifyError(err) });
         }
     }
 
@@ -636,7 +636,7 @@ class ProviderClient {
 
             throw new NangoError('bullhorn_session_refresh_error', { cause: response.data });
         } catch (err: any) {
-            throw new NangoError('bullhorn_session_refresh_error', { cause: err });
+            throw new NangoError('bullhorn_session_refresh_error', { cause: stringifyError(err) });
         }
     }
 
@@ -663,7 +663,7 @@ class ProviderClient {
 
             throw new NangoError('jobber_token_request_error', response.data);
         } catch (err: any) {
-            throw new NangoError('jobber_token_request_error', err);
+            throw new NangoError('jobber_token_request_error', stringifyError(err));
         }
     }
 
@@ -691,7 +691,7 @@ class ProviderClient {
 
             throw new NangoError('jobber_refresh_token_request_error', response.data);
         } catch (err: any) {
-            throw new NangoError('jobber_refresh_token_request_error', err);
+            throw new NangoError('jobber_refresh_token_request_error', stringifyError(err));
         }
     }
 
@@ -719,7 +719,7 @@ class ProviderClient {
 
             throw new NangoError('sentry_oauth_refresh_token_request_error', response.data);
         } catch (err: any) {
-            throw new NangoError('sentry_oauth_refresh_token_request_error', err);
+            throw new NangoError('sentry_oauth_refresh_token_request_error', stringifyError(err));
         }
     }
 

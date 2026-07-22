@@ -5,6 +5,7 @@ import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
 import { ManagedEmailVerification } from '@/pages/Account/ManagedEmailVerification';
+import { MFALogin } from '@/pages/Account/MFALogin';
 import ResetPassword from '@/pages/Account/ResetPassword';
 import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
@@ -91,6 +92,10 @@ const publicAuthRoutes = (() => {
         {
             path: '/signin',
             element: <Signin />
+        },
+        {
+            path: '/signin/mfa',
+            element: <MFALogin />
         }
     ];
 
