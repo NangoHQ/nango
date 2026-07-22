@@ -5,7 +5,15 @@ import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
-import { BREAKDOWN_DIMENSIONS, DEFAULT_TOP_N, formatDimensionValue, parseFilterParam, resolveBreakdownDimension } from '../usageBreakdown';
+import {
+    BREAKDOWN_DIMENSIONS,
+    breakdownSeriesCopyValue,
+    breakdownSeriesHref,
+    DEFAULT_TOP_N,
+    formatDimensionValue,
+    parseFilterParam,
+    resolveBreakdownDimension
+} from '../usageBreakdown';
 import { toChartSeries } from '../usageChartSeries';
 import { BreakdownFilterControl } from './BreakdownFilterControl';
 import { ChartModeToggle } from './ChartModeToggle';
@@ -185,6 +193,10 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
             capLine={capLine}
             chartMode={chartModeState}
+            seriesHref={(s) => (dimension && s.value ? breakdownSeriesHref(env, dimension, s.value) : undefined)}
+            seriesCopyValue={(s) => (dimension && s.value ? breakdownSeriesCopyValue(dimension, s.value) : undefined)}
+            onSeriesCopy={() => dimension && track('web:usage:value_copied', { metric, dimension })}
+            onSeriesGoTo={() => dimension && track('web:usage:value_opened', { metric, dimension })}
         />
     );
 };

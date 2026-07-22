@@ -6,7 +6,7 @@ import { InfoTooltip } from '../../ui/InfoTooltip';
 import { Skeleton } from '../../ui/Skeleton';
 import { BreakdownChart } from './BreakdownChart';
 import { formatExact, formatShare } from './chartFormat';
-import { ChartLegend } from './ChartLegend';
+import { ChartLegend, ChartStaticLegend } from './ChartLegend';
 import { useChartData, visibleBreakdownTotal } from './useChartData';
 import { useChartInteractions } from './useChartInteractions';
 
@@ -43,6 +43,14 @@ interface ChartCardProps {
     capLine?: number;
     /** 'cumulative' plots counter metrics as a running month-to-date total so the curve climbs to the cap. */
     chartMode?: 'daily' | 'cumulative';
+    /** In-app route for a breakdown series, when it points somewhere navigable — adds a "go to" link to its legend row. */
+    seriesHref?: (series: ChartSeries) => string | undefined;
+    /** The value to copy for a breakdown series, when it's worth copying — adds a copy button to its legend row. */
+    seriesCopyValue?: (series: ChartSeries) => string | undefined;
+    /** Fired when a series' value is copied from the legend. For analytics only. */
+    onSeriesCopy?: (series: ChartSeries) => void;
+    /** Fired when a series' "go to" link is followed from the legend. For analytics only. */
+    onSeriesGoTo?: (series: ChartSeries) => void;
 }
 
 /**
@@ -67,7 +75,11 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     onSeriesToggle,
     hideHeader,
     capLine,
-    chartMode
+    chartMode,
+    seriesHref,
+    seriesCopyValue,
+    onSeriesCopy,
+    onSeriesGoTo
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
@@ -208,15 +220,19 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                             // monthly cap dwarfs the per-day values and would flatten the bars.
                             capLine={renderAsArea && !isSliced ? capLine : undefined}
                         />
-                        {breakdownSeries && breakdownSeries.length > 0 && <ChartLegend series={breakdownSeries} interactions={interactions} />}
+                        {breakdownSeries && breakdownSeries.length > 0 && (
+                            <ChartLegend
+                                series={breakdownSeries}
+                                interactions={interactions}
+                                seriesHref={seriesHref}
+                                seriesCopyValue={seriesCopyValue}
+                                onSeriesCopy={onSeriesCopy}
+                                onSeriesGoTo={onSeriesGoTo}
+                            />
+                        )}
                         {!isBreakdown && singleSeries && (
                             // Static, non-interactive: with one series there's nothing to isolate or hide.
-                            <div className="flex items-center gap-1.5 pt-3 text-xs flex-shrink-0">
-                                <span className="block size-2.5 rounded-[2px]" aria-hidden style={{ backgroundColor: singleSeries.color }} />
-                                <span className="text-text-secondary truncate" title={singleSeries.label}>
-                                    {singleSeries.label}
-                                </span>
-                            </div>
+                            <ChartStaticLegend series={[{ key: 'total', ...singleSeries }]} />
                         )}
                     </>
                 )}
