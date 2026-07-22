@@ -11,6 +11,7 @@
         "test": "vitest run"
     },
     "dependencies": {
+        "@vitest/browser-playwright": "4.1.10",
         "serve": "14.2.6"
     },
     "devDependencies": {
@@ -27,7 +28,6 @@
         "@types/react": "18.3.3",
         "@types/react-dom": "18.3.0",
         "@vitejs/plugin-react-swc": "4.3.1",
-        "@vitest/browser-playwright": "4.1.8",
         "axe-core": "4.12.0",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
@@ -47,7 +47,7 @@
         "typescript": "5.8.3",
         "vite": "8.0.16",
         "vite-plugin-svgr": "5.2.0",
-        "vitest": "4.1.8",
+        "vitest": "4.1.10",
         "vitest-browser-react": "2.2.0",
         "zod": "4.0.5",
         "zustand": "5.0.3"
