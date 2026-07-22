@@ -68,7 +68,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                 <div className="flex flex-col gap-2">
                     <div className="inline-flex items-center gap-2">
                         <span className="text-text-strong text-body-large-semi">{template.name}</span>
-                        <Badge case="upper">{template.type}</Badge>
+                        <Badge case="capitalize">{template.type}</Badge>
                     </div>
                     {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
                 </div>

@@ -225,7 +225,7 @@ export const Templates: React.FC = () => {
                                             >
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-text-strong text-body-medium-medium truncate">{t.name}</span>
-                                                    <Badge case="upper">{t.type}</Badge>
+                                                    <Badge case="capitalize">{t.type}</Badge>
                                                 </div>
                                                 {t.description && (
                                                     <span className="text-text-secondary text-body-small-regular line-clamp-1">{t.description}</span>
