@@ -419,7 +419,7 @@ function RecordActionBadge({ action }: { action: string }) {
         case 'UPDATED':
             return <Badge variant="warning">Updated</Badge>;
         case 'DELETED':
-            return <Badge>Deleted</Badge>;
+            return <Badge variant="danger">Deleted</Badge>;
         default:
             return <Badge>{action}</Badge>;
     }
