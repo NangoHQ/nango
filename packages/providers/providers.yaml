@@ -15142,6 +15142,44 @@ open-hands:
             example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
             doc_section: '#step-1-finding-your-api-key'
 
+optum-real:
+    display_name: Optum Real
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.domain}/apip/auth/sntl/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/optum-real
+    docs_connect: https://nango.dev/docs/api-integrations/optum-real/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Optum Real API environment to connect to.
+            order: 1
+            format: hostname
+            doc_section: '#step-1-choose-your-environment'
+            enum:
+                - sandbox-apigw.optum.com
+                - apigw.optum.com
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID issued via the Optum AI Marketplace for this environment.
+            doc_section: '#step-2-get-your-credentials'
+            format: uuid
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret issued via the Optum AI Marketplace for this environment.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
+
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
     categories:

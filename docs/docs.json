@@ -1489,6 +1489,7 @@
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
+              "api-integrations/optum-real",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
               "api-integrations/ordinal",
