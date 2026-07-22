@@ -10,6 +10,7 @@ import Nango from '@nangohq/frontend';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { apiConnectSessionsReconnect } from '@/hooks/useConnect';
 import { clearConnectionsCache } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -166,6 +167,7 @@ export const ReconnectPanel = () => {
                         </Button>
                     )}
                 </PermissionGate>
+                <InfoTooltip side="top">Anyone with this link can open Connect UI and finish reconnecting. The link expires in 30 minutes.</InfoTooltip>
             </div>
 
             {!isDashboardOrigin && (
