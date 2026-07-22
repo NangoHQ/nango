@@ -14,22 +14,12 @@ const VARIANTS = ['default', 'secondary', 'outline', 'brand', 'success', 'warnin
 
 export const Default: Story = {
     render: () => (
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-6">
             {VARIANTS.map((variant) => (
-                <Badge key={variant} variant={variant}>
+                <Badge key={variant} variant={variant} case="capitalize">
                     {variant}
                 </Badge>
             ))}
-        </div>
-    )
-};
-
-// Text is monospace by default (Figma "code/regular/xs"); `case="capitalize"` is opt-in.
-export const Casing: Story = {
-    render: () => (
-        <div className="flex flex-wrap items-center gap-3">
-            <Badge>normal</Badge>
-            <Badge case="capitalize">capitalize</Badge>
         </div>
     )
 };
