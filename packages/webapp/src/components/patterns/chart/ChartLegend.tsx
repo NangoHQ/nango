@@ -112,7 +112,7 @@ export const ChartLegend: React.FC<ChartLegendProps> = ({ series, interactions, 
                                 // width is reserved at rest (they're laid out but transparent) so fading them in never
                                 // changes the row's width — otherwise, in this content-sized wrap layout, the row would
                                 // grow on hover and reflow the wrapped rows below it.
-                                <div className="flex shrink-0 items-center gap-0.5 text-text-secondary opacity-0 transition-opacity duration-150 group-hover/row:opacity-100 focus-within:opacity-100">
+                                <div className="flex shrink-0 items-center gap-0.5 text-text-secondary opacity-0 transition-opacity duration-150 group-hover/row:opacity-100 group-focus-within/row:opacity-100">
                                     {copyValue && <CopyButton text={copyValue} className="size-5 p-0" onCopy={() => onSeriesCopy?.(s)} />}
                                     {href && (
                                         <Link
