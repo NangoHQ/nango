@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
@@ -13,6 +13,10 @@ function createController({ maxConcurrency = 2 } = {}) {
 }
 
 describe('WebhookAdmissionController', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('limits concurrent webhook admissions', () => {
         const controller = createController({ maxConcurrency: 1 });
 

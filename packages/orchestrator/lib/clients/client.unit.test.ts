@@ -82,6 +82,35 @@ describe('OrchestratorClient immediate', () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
+    it('does not retry webhook admission rejections', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    error: {
+                        code: 'webhook_admission_exceeded',
+                        message: 'busy',
+                        payload: { acquired: false, reason: 'concurrency', retryAfterMs: 1200 }
+                    }
+                }),
+                { status: 429, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhook(buildWebhookProps('webhook-1'));
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({
+                name: 'webhook_admission_exceeded',
+                message: 'busy',
+                payload: { reason: 'concurrency', retryAfterMs: 1200 }
+            });
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('preserves existing retries on non-immediate route errors', async () => {
         const fetchMock = vi.fn().mockResolvedValue(
             new Response(JSON.stringify({ error: { code: 'schedule_not_found', message: 'missing schedule' } }), {

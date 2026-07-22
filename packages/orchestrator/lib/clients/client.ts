@@ -65,8 +65,23 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({ body: props });
+        const res = await this.routeFetch(postImmediateRoute, {
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res && getWebhookAdmissionError(res.error.payload) === null
+            }
+        })({ body: props });
         if ('error' in res) {
+            const admission = getWebhookAdmissionError(res.error.payload);
+            if (admission) {
+                return Err({
+                    name: 'webhook_admission_exceeded',
+                    message: admission.message,
+                    payload: admission.payload
+                });
+            }
+
             const duplicateMessage = getDuplicateTaskNameMessage(res.error.payload);
             if (duplicateMessage !== null) {
                 return Err({
@@ -595,6 +610,20 @@ export class OrchestratorClient {
             }));
         }
     }
+}
+
+function getWebhookAdmissionError(payload: unknown): { message: string; payload: JsonValue } | null {
+    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+        return null;
+    }
+    const error = payload.error;
+    if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'webhook_admission_exceeded') {
+        return null;
+    }
+    return {
+        message: 'message' in error && typeof error.message === 'string' ? error.message : 'Webhook admission capacity is temporarily exhausted',
+        payload: 'payload' in error ? (error.payload as JsonValue) : {}
+    };
 }
 
 function getDuplicateTaskNameMessage(payload: unknown): string | null {
