@@ -15,13 +15,13 @@ export class KnexDatabase {
     knex: Knex;
     readOnly: Knex;
 
-    constructor({ timeoutMs } = { timeoutMs: 60000 }) {
-        const dbConfig = getDbConfig({ timeoutMs });
+    constructor({ timeoutMs = 60000, pool }: { timeoutMs?: number; pool?: Partial<Knex.PoolConfig> | undefined } = {}) {
+        const dbConfig = getDbConfig({ timeoutMs, pool });
         this.knex = knex(dbConfig);
 
         const readOnlyURL = process.env['NANGO_DB_READ_URL'];
         if (readOnlyURL) {
-            const readConfig = getDbConfig({ timeoutMs });
+            const readConfig = getDbConfig({ timeoutMs, pool });
             (readConfig.connection as knex.Knex.PgConnectionConfig).connectionString = readOnlyURL;
             this.readOnly = knex(readConfig);
         } else {
