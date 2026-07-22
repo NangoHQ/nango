@@ -9,10 +9,10 @@ import { UsageChartCard } from './UsageChartCard';
 
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
-/** Shared column templates so the header row and each metric row line up. */
+/** Shared column template so the header row and each metric row line up, on both Free and paid —
+ *  paid just leaves the used/limit slot blank and puts its usage figure in the % of limit slot, so
+ *  it lands in the exact same spot (rather than recomputing a different set of column widths). */
 export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_minmax(0,1fr)_20px] items-center gap-4 px-6';
-/** No percent column — used while a plan has no limit to show a percent of. */
-export const USAGE_ROW_GRID_COMPACT = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_20px] items-center gap-4 px-6';
 
 interface UsageRowProps {
     metric: UsageMetric;
@@ -65,31 +65,36 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     return (
         <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
             <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-surface-panel data-[state=open]:border-b data-[state=open]:border-border-muted">
-                <div className={showLimits ? USAGE_ROW_GRID : USAGE_ROW_GRID_COMPACT}>
+                <div className={USAGE_ROW_GRID}>
                     <div className="flex flex-col min-w-0">
                         <span className="text-text-default text-body-medium-regular truncate">{label}</span>
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                        {capsLoading ? (
-                            <Skeleton className="h-5 w-32" />
-                        ) : (
-                            <>
-                                <span className="text-text-default text-body-medium-regular">
-                                    {formatUsage(usage)}
-                                    {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
-                                </span>
-                                {limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
-                            </>
-                        )}
-                    </div>
-                    {showLimits &&
-                        (capsLoading ? (
-                            <Skeleton className="h-4 w-12" />
-                        ) : (
-                            <div className={cn('text-body-medium-regular', getUsageStateTextColor(state))}>
-                                {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
-                            </div>
-                        ))}
+                    {showLimits ? (
+                        <div className="flex flex-col gap-1.5">
+                            {capsLoading ? (
+                                <Skeleton className="h-5 w-32" />
+                            ) : (
+                                <>
+                                    <span className="text-text-default text-body-medium-regular">
+                                        {formatUsage(usage)}
+                                        {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
+                                    </span>
+                                    {limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div />
+                    )}
+                    {capsLoading ? (
+                        <Skeleton className="h-4 w-12" />
+                    ) : showLimits ? (
+                        <div className={cn('text-body-medium-regular', getUsageStateTextColor(state))}>
+                            {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
+                        </div>
+                    ) : (
+                        <div className="text-text-default text-body-medium-regular">{formatUsage(usage)}</div>
+                    )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>
             </CollapsibleTrigger>

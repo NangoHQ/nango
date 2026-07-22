@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react';
 
 import { cn } from '@/utils/utils';
-import { USAGE_ROW_GRID, USAGE_ROW_GRID_COMPACT, UsageRow } from './UsageRow';
+import { USAGE_ROW_GRID, UsageRow } from './UsageRow';
 
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
@@ -40,13 +40,13 @@ export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, ti
             <div className="rounded border border-border-default overflow-hidden">
                 <div
                     className={cn(
-                        showLimits ? USAGE_ROW_GRID : USAGE_ROW_GRID_COMPACT,
+                        USAGE_ROW_GRID,
                         'bg-surface-panel py-3 border-b border-border-default text-text-secondary text-body-extra-small-semi uppercase'
                     )}
                 >
                     <span>Metric</span>
-                    <span>{showLimits ? 'Used / Limit' : 'This period'}</span>
-                    {showLimits && <span>% of limit</span>}
+                    {showLimits ? <span>Used / Limit</span> : <span />}
+                    <span>{showLimits ? '% of limit' : 'This period'}</span>
                     <span />
                 </div>
                 {rows.map((row) => (
