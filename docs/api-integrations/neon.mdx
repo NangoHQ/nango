@@ -21,7 +21,7 @@ Connect to Neon with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/users/me" \
+            curl "https://api.nango.dev/proxy/v2/users/me" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Neon with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/users/me',
+            endpoint: '/v2/users/me',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -61,7 +61,7 @@ Connect to Neon with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-## 📚 Neon Integration Guides
+## 📚 Neon integration guides
 
 - [Connect to Neon](/api-integrations/neon/connect)  
   Create an API key in the Neon console, then enter it in the Connect UI
@@ -69,8 +69,6 @@ Connect to Neon with Nango and see data flow in 2 minutes.
 Official docs: [Neon API](https://api-docs.neon.tech)
 
 ## 🧩 Pre-built syncs & actions for Neon
-
-None are available yet. Build your own on top of the Neon proxy.
 
 import PreBuiltUseCases from "/snippets/generated/neon/PreBuiltUseCases.mdx"
 
