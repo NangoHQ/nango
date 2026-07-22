@@ -70,7 +70,7 @@
         "semver": "7.6.3",
         "serialize-error": "11.0.3",
         "simple-oauth2": "5.1.0",
-        "ua-parser-js": "2.0.2",
+        "ua-parser-js": "2.0.10",
         "uuid": "14.0.0",
         "ws": "8.21.0",
         "zod": "4.0.5"
