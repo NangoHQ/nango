@@ -44,7 +44,7 @@
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",
         "axios": "1.18.0",
-        "body-parser": "2.2.1",
+        "body-parser": "2.3.0",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.7",
         "cors": "2.8.5",
