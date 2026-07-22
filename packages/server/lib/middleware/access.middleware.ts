@@ -42,6 +42,7 @@ const ignoreEnvPaths = [
     '/api/v1/account/mfa',
     '/api/v1/account/mfa/enroll',
     '/api/v1/account/mfa/activate',
+    '/api/v1/account/mfa/recovery-codes',
     '/api/v1/plain'
 ];
 

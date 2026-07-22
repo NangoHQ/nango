@@ -16,6 +16,7 @@ import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { APIError } from '../../utils/api';
+import { RecoveryCodes } from './components/RecoveryCodes';
 import { getMFAErrorMessage } from './mfaErrors';
 
 import type { Theme } from '@/lib/theme';
@@ -109,13 +110,20 @@ export const UserSettings: React.FC = () => {
 const MFASettings: React.FC = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
-    const { enabled, loading, error, disable } = useMFA();
+    const { enabled, loading, error, regenerateRecoveryCodes, disable } = useMFA();
     const [disableOpen, setDisableOpen] = useState(false);
+    const [regenOpen, setRegenOpen] = useState(false);
+    const [newCodes, setNewCodes] = useState<string[] | null>(null);
     const [code, setCode] = useState('');
     const hasValidCode = /^\d{6}$/.test(code);
 
     const closeDisable = () => {
         setDisableOpen(false);
+        setCode('');
+    };
+
+    const closeRegen = () => {
+        setRegenOpen(false);
         setCode('');
     };
 
@@ -137,6 +145,17 @@ const MFASettings: React.FC = () => {
         }
     };
 
+    const confirmRegen = async () => {
+        try {
+            const result = await regenerateRecoveryCodes.mutateAsync({ code });
+            closeRegen();
+            setNewCodes(result.data.recoveryCodes);
+        } catch (err) {
+            setCode('');
+            toast({ title: getMFAErrorMessage(err), variant: 'error' });
+        }
+    };
+
     return (
         <>
             <div className="col-span-2 mt-2 border-t border-border-muted pt-8" />
@@ -148,9 +167,14 @@ const MFASettings: React.FC = () => {
                     ) : error ? (
                         <p className="text-text-danger text-ds-sm">Unable to load two-factor authentication settings.</p>
                     ) : enabled ? (
-                        <Button variant="danger" onClick={() => setDisableOpen(true)}>
-                            Disable 2FA
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="danger" onClick={() => setDisableOpen(true)}>
+                                Disable 2FA
+                            </Button>
+                            <Button variant="outline" onClick={() => setRegenOpen(true)}>
+                                Generate recovery codes
+                            </Button>
+                        </div>
                     ) : (
                         <Button onClick={() => navigate('/user-settings/enable-2fa')}>Enable 2FA</Button>
                     )}
@@ -180,6 +204,48 @@ const MFASettings: React.FC = () => {
                         <Button variant="danger" onClick={() => void confirmDisable()} loading={disable.isPending} disabled={!hasValidCode}>
                             Disable 2FA
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={regenOpen} onOpenChange={(open) => !open && closeRegen()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Generate new recovery codes</DialogTitle>
+                        <DialogDescription>
+                            Enter the 6-digit code from your authenticator app. Your existing recovery codes will stop working.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center gap-3 py-2">
+                        <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
+                        <InputOTP maxLength={6} value={code} onChange={setCode} onComplete={() => void confirmRegen()} autoFocus>
+                            <InputOTPGroup>
+                                {[0, 1, 2, 3, 4, 5].map((i) => (
+                                    <InputOTPSlot key={i} index={i} />
+                                ))}
+                            </InputOTPGroup>
+                        </InputOTP>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={closeRegen}>
+                            Cancel
+                        </Button>
+                        <Button onClick={() => void confirmRegen()} loading={regenerateRecoveryCodes.isPending} disabled={!hasValidCode}>
+                            Generate codes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={newCodes !== null} onOpenChange={(open) => !open && setNewCodes(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Save your recovery codes</DialogTitle>
+                        <DialogDescription>Your previous codes no longer work. Each of these works once, so store them somewhere safe.</DialogDescription>
+                    </DialogHeader>
+                    {newCodes && <RecoveryCodes codes={newCodes} />}
+                    <DialogFooter>
+                        <Button onClick={() => setNewCodes(null)}>Done</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
