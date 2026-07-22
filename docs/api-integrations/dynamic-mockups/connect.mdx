@@ -1,0 +1,43 @@
+---
+title: Dynamic Mockups - How do I link my account?
+sidebarTitle: Dynamic Mockups
+---
+
+# Overview
+
+To authenticate with Dynamic Mockups, you need:
+
+1. **API Key** — A key that grants Nango permission to interact with the Dynamic Mockups API.
+
+This guide will walk you through generating your API key in Dynamic Mockups.
+
+### Prerequisites
+
+- A Dynamic Mockups account. You can create one for free.
+
+### Step 1: Generating your API key
+
+1. Log in to Dynamic Mockups, then go to `https://app.dynamicmockups.com/?settings=api-integration`.
+2. Click **+ Create API Key**.
+
+<img src="/api-integrations/dynamic-mockups/create_api_key.png"/>
+
+3. Enter a name for the key and confirm.
+4. Copy the generated key, formatted as `<uuid>:<secret>` (e.g. `375e11d6-b18f-40eb-b4ab-bc6c85abfb48:...`).
+
+<Note>
+Treat this key as a password: never put it in source code, URLs, logs, or client-side applications.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+Once you have your API key:
+
+1. Open the form where you need to authenticate with Dynamic Mockups.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/dynamic-mockups/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Dynamic Mockups.
