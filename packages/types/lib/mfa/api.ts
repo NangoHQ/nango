@@ -24,14 +24,6 @@ export type PostMFAActivation = Endpoint<{
     Success: { data: { recoveryCodes: string[] } };
 }>;
 
-export type PostMFARecoveryCodes = Endpoint<{
-    Method: 'POST';
-    Path: '/api/v1/account/mfa/recovery-codes';
-    Body: { code: string };
-    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_not_enabled'>;
-    Success: { data: { recoveryCodes: string[] } };
-}>;
-
 export type DeleteMFA = Endpoint<{
     Method: 'DELETE';
     Path: '/api/v1/account/mfa';

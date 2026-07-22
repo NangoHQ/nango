@@ -45,17 +45,12 @@ describe('MFA service', () => {
         expect((await mfaService.consumeRecoveryCode(user.id, activated.recoveryCodes[0]!)).unwrap()).toBe(false);
     });
 
-    it('replaces recovery codes and disables the factor', async () => {
+    it('disables the factor', async () => {
         const account = await createAccount();
         const user = await seedUser(account.id);
         const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
         const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
-        const activated = (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
-
-        const replacement = (await mfaService.regenerateRecoveryCodes(user.id)).unwrap();
-        expect(replacement).toHaveLength(10);
-        expect((await mfaService.consumeRecoveryCode(user.id, activated.recoveryCodes[0]!)).unwrap()).toBe(false);
-        expect((await mfaService.consumeRecoveryCode(user.id, replacement[0]!)).unwrap()).toBe(true);
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
 
         (await mfaService.disable(user.id)).unwrap();
         expect(await mfaService.hasActiveFactor(user.id)).toBe(false);

@@ -16,7 +16,7 @@ const RECOVERY_CODE_COUNT = 10;
 const TOTP_ISSUER = 'Nango';
 const TOTP_WINDOW = 1;
 
-export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code' | 'not_enabled';
+export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code';
 
 export class MFAError extends Error {
     constructor(
@@ -162,24 +162,6 @@ class MFAService {
                 return updated === 1;
             });
             return Ok(consumed);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    public async regenerateRecoveryCodes(userId: number): Promise<Result<string[]>> {
-        try {
-            const recoveryCodes = await db.knex.transaction(async (trx) => {
-                const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
-                if (!factor) {
-                    throw new MFAError('not_enabled');
-                }
-
-                const recoveryCodes = this.createRecoveryCodes();
-                await this.replaceRecoveryCodes(trx, userId, recoveryCodes);
-                return recoveryCodes;
-            });
-            return Ok(recoveryCodes);
         } catch (err) {
             return Err(err);
         }

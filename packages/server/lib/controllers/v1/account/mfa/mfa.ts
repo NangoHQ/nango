@@ -9,7 +9,7 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { verifyPendingMfaLogin } from './login.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
-import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from '@nangohq/types';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification } from '@nangohq/types';
 import type { Request, Response } from 'express';
 
 const codeValidation = z
@@ -131,41 +131,6 @@ export const postMFAActivation = asyncWrapper<PostMFAActivation>(async (req, res
         throw activation.error;
     }
     res.status(200).send({ data: activation.value });
-});
-
-export const postMFARecoveryCodes = asyncWrapper<PostMFARecoveryCodes>(async (req, res) => {
-    if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
-        return;
-    }
-
-    const code = validateCode(req, res);
-    if (!code) {
-        return;
-    }
-
-    const user = getAuthenticatedUser(res);
-    if (!(await mfaService.hasActiveFactor(user.id))) {
-        res.status(400).send({ error: { code: 'mfa_not_enabled' } });
-        return;
-    }
-    const verified = await mfaService.verifyTotp(user.id, code);
-    if (verified.isErr()) {
-        throw verified.error;
-    }
-    if (!verified.value) {
-        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
-        return;
-    }
-
-    const recoveryCodes = await mfaService.regenerateRecoveryCodes(user.id);
-    if (recoveryCodes.isErr()) {
-        throw recoveryCodes.error;
-    }
-    res.status(200).send({ data: { recoveryCodes: recoveryCodes.value } });
 });
 
 export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {

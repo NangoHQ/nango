@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '@/utils/api';
 
-import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFARecoveryCodes } from '@nangohq/types';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment } from '@nangohq/types';
 
 export const mfaQueryKey = ['mfa'] as const;
 
@@ -43,17 +43,6 @@ export function useMFA() {
         onSuccess: invalidateStatus
     });
 
-    const regenerateRecoveryCodes = useMutation<PostMFARecoveryCodes['Success'], APIError, { code: string }>({
-        mutationFn: async (body) => {
-            const res = await apiFetch('/api/v1/account/mfa/recovery-codes', { method: 'POST', body: JSON.stringify(body) });
-            const json = (await res.json()) as PostMFARecoveryCodes['Reply'];
-            if (!res.ok || 'error' in json) {
-                throw new APIError({ res, json });
-            }
-            return json;
-        }
-    });
-
     const disable = useMutation<DeleteMFA['Success'], APIError, { code: string }>({
         mutationFn: async (body) => {
             const res = await apiFetch('/api/v1/account/mfa', { method: 'DELETE', body: JSON.stringify(body) });
@@ -72,7 +61,6 @@ export function useMFA() {
         error: status.error,
         enroll,
         activate,
-        regenerateRecoveryCodes,
         disable
     };
 }

@@ -28,14 +28,7 @@ import { getManagedCallback } from './controllers/v1/account/managed/getCallback
 import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
 import { postManagedEmailVerification } from './controllers/v1/account/managed/postVerification.js';
-import {
-    deleteMFA,
-    getMFAStatus,
-    postMFAActivation,
-    postMFAEnrollment,
-    postMFALoginVerification,
-    postMFARecoveryCodes
-} from './controllers/v1/account/mfa/mfa.js';
+import { deleteMFA, getMFAStatus, postMFAActivation, postMFAEnrollment, postMFALoginVerification } from './controllers/v1/account/mfa/mfa.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -200,7 +193,6 @@ web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearA
 web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, deleteMFA);
 web.route('/account/mfa/enroll').post(webAuth, postMFAEnrollment);
 web.route('/account/mfa/activate').post(webAuth, postMFAActivation);
-web.route('/account/mfa/recovery-codes').post(webAuth, postMFARecoveryCodes);
 web.route('/account/mfa/login/verify').post(rateLimiterMiddleware, postMFALoginVerification);
 
 // Team

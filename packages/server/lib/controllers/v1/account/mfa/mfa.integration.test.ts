@@ -24,7 +24,7 @@ describe('MFA settings', () => {
         vi.restoreAllMocks();
     });
 
-    it('enrolls, activates, and regenerates recovery codes', async () => {
+    it('enrolls and activates, returning recovery codes', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const cookie = await authenticateUser(api, user);
 
@@ -46,16 +46,6 @@ describe('MFA settings', () => {
         expect(status.res.status).toBe(200);
         isSuccess(status.json);
         expect(status.json.data.enabled).toBe(true);
-
-        const nextCode = totp.generate({ timestamp: Date.now() + 30_000 });
-        const recoveryCodes = await api.fetch(`${mfaRoute}/recovery-codes`, {
-            method: 'POST',
-            session: cookie,
-            body: { code: nextCode }
-        });
-        expect(recoveryCodes.res.status).toBe(200);
-        isSuccess(recoveryCodes.json);
-        expect(recoveryCodes.json.data.recoveryCodes).toHaveLength(10);
     });
 
     it('requires a valid code to activate MFA', async () => {

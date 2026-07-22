@@ -105,7 +105,7 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
 import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
@@ -272,7 +272,6 @@ export type PrivateApiEndpoints =
     | GetMFAStatus
     | PostMFAEnrollment
     | PostMFAActivation
-    | PostMFARecoveryCodes
     | PostMFALoginVerification
     | DeleteMFA
     | GetPlainHmac;
