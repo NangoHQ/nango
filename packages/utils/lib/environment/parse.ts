@@ -517,7 +517,6 @@ export const ENVS = z.object({
 
     // Sentry
     PUBLIC_SENTRY_KEY: z.string().optional(),
-    SENTRY_DSN: z.url().optional(),
 
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
