@@ -131,7 +131,7 @@ export class DispatchQueueConsumer {
 
                 let outcome: BatchOutcome;
                 try {
-                    outcome = await this.processBatch(messages);
+                    outcome = await this.processBatch(messages, permit);
                 } catch (err) {
                     await this.recordCapacityOutcome({ result: 'failure' });
                     throw err;
@@ -147,7 +147,7 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private async processBatch(messages: Message[]): Promise<BatchOutcome> {
+    private async processBatch(messages: Message[], permit?: DispatchCapacityPermit): Promise<BatchOutcome> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('jobs.webhook.dispatch_queue.process_batch', {
             ...(active ? { childOf: active } : {}),
@@ -212,6 +212,9 @@ export class DispatchQueueConsumer {
                     return { result: 'failure', durationMs };
                 }
 
+                if (permit && !permit.isValid()) {
+                    return { result: 'failure', durationMs };
+                }
                 await this.handleBatchResult(groupedEntries, res.value);
                 return { result: 'success', durationMs };
             } finally {

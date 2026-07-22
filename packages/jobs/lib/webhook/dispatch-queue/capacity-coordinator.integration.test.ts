@@ -7,6 +7,9 @@ import { RedisDispatchCapacityCoordinator } from './capacity-coordinator.js';
 import type { NangoRedisClient } from '@nangohq/kvstore';
 
 describe('RedisDispatchCapacityCoordinator', () => {
+    const keyPrefix = 'test:webhook-dispatch:{capacity}';
+    const leasesKey = `${keyPrefix}:leases`;
+    const stateKey = `${keyPrefix}:state`;
     let redis: NangoRedisClient;
 
     beforeAll(async () => {
@@ -24,7 +27,7 @@ describe('RedisDispatchCapacityCoordinator', () => {
     function createCoordinator() {
         return new RedisDispatchCapacityCoordinator({
             redis,
-            keyPrefix: 'test:webhook-dispatch:{capacity}',
+            keyPrefix,
             initialLimit: 1,
             hardMaximum: 2,
             leaseTtlMs: 1000,
@@ -58,14 +61,14 @@ describe('RedisDispatchCapacityCoordinator', () => {
         const permit = await coordinator.acquire(new AbortController().signal);
         await permit.release();
         await redis.eval("return redis.call('ZADD', KEYS[1], 0, 'expired')", {
-            keys: ['test:webhook-dispatch:{capacity}:leases'],
+            keys: [leasesKey],
             arguments: []
         });
 
         await coordinator.recordSuccess(10);
 
         const limit = await redis.eval("return redis.call('HGET', KEYS[1], 'limit')", {
-            keys: ['test:webhook-dispatch:{capacity}:state'],
+            keys: [stateKey],
             arguments: []
         });
         expect(Number(limit)).toBe(1);
@@ -79,7 +82,7 @@ describe('RedisDispatchCapacityCoordinator', () => {
         await coordinator.recordSuccess(10);
 
         const limit = await redis.eval("return redis.call('HGET', KEYS[1], 'limit')", {
-            keys: ['test:webhook-dispatch:{capacity}:state'],
+            keys: [stateKey],
             arguments: []
         });
         expect(Number(limit)).toBe(1);

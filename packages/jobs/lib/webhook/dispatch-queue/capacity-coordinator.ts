@@ -177,6 +177,7 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
         const startedAt = Date.now();
         while (!signal.aborted) {
             try {
+                const leaseStartedAt = Date.now();
                 const response = await this.redis.eval(ACQUIRE_SCRIPT, {
                     keys: [this.leasesKey, this.stateKey],
                     arguments: [token, String(this.leaseTtlMs), String(this.initialLimit), String(this.hardMaximum)]
@@ -190,7 +191,8 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
                         redis: this.redis,
                         leasesKey: this.leasesKey,
                         token,
-                        leaseTtlMs: this.leaseTtlMs
+                        leaseTtlMs: this.leaseTtlMs,
+                        leaseExpiresAt: leaseStartedAt + this.leaseTtlMs
                     });
                 }
 
@@ -249,20 +251,37 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
     private readonly leasesKey: string;
     private readonly token: string;
     private readonly leaseTtlMs: number;
+    private leaseExpiresAt: number;
     private readonly abortController = new AbortController();
     private readonly renewalPromise: Promise<void>;
     private valid = true;
     private released = false;
 
-    constructor({ redis, leasesKey, token, leaseTtlMs }: { redis: NangoRedisClient; leasesKey: string; token: string; leaseTtlMs: number }) {
+    constructor({
+        redis,
+        leasesKey,
+        token,
+        leaseTtlMs,
+        leaseExpiresAt
+    }: {
+        redis: NangoRedisClient;
+        leasesKey: string;
+        token: string;
+        leaseTtlMs: number;
+        leaseExpiresAt: number;
+    }) {
         this.redis = redis;
         this.leasesKey = leasesKey;
         this.token = token;
         this.leaseTtlMs = leaseTtlMs;
+        this.leaseExpiresAt = leaseExpiresAt;
         this.renewalPromise = this.renewLoop();
     }
 
     isValid(): boolean {
+        if (Date.now() >= this.leaseExpiresAt) {
+            this.valid = false;
+        }
         return this.valid && !this.released;
     }
 
@@ -284,9 +303,12 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
     private async renewLoop(): Promise<void> {
         const signal = this.abortController.signal;
         const intervalMs = Math.max(100, Math.floor(this.leaseTtlMs / 3));
+        const retryIntervalMs = Math.min(1000, intervalMs);
+        let waitMs = intervalMs;
         while (!signal.aborted) {
             try {
-                await setTimeout(intervalMs, undefined, { signal });
+                await setTimeout(waitMs, undefined, { signal });
+                const renewalStartedAt = Date.now();
                 const renewed = await this.redis.eval(RENEW_SCRIPT, {
                     keys: [this.leasesKey],
                     arguments: [this.token, String(this.leaseTtlMs)]
@@ -295,13 +317,19 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
                     this.valid = false;
                     return;
                 }
+                this.leaseExpiresAt = renewalStartedAt + this.leaseTtlMs;
+                waitMs = intervalMs;
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') {
                     return;
                 }
-                this.valid = false;
                 logger.error(`Failed to renew webhook dispatch capacity permit: ${stringifyError(err)}`);
-                return;
+                const remainingLeaseMs = this.leaseExpiresAt - Date.now();
+                if (remainingLeaseMs <= 0) {
+                    this.valid = false;
+                    return;
+                }
+                waitMs = Math.min(retryIntervalMs, remainingLeaseMs);
             }
         }
     }

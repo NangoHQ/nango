@@ -408,7 +408,7 @@ describe('DispatchQueueConsumer', () => {
         await h.consumer.stop();
 
         expect(coordinator.recordSuccess).not.toHaveBeenCalled();
-        expect(getDeleteCalls(h)).toHaveLength(1);
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('records a capacity failure when batch processing throws', async () => {
