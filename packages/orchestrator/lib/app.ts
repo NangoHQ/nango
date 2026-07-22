@@ -76,13 +76,9 @@ try {
     backpressureMonitor.start();
 
     const webhookAdmission = new WebhookAdmissionController({
-        scheduler,
         maxConcurrency: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY,
-        createdCountMax: envs.ORCHESTRATOR_WEBHOOK_CREATED_COUNT_MAX,
-        refreshIntervalMs: envs.ORCHESTRATOR_WEBHOOK_BACKLOG_REFRESH_INTERVAL_MS,
         retryAfterMs: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_RETRY_AFTER_MS
     });
-    await webhookAdmission.start();
 
     // default max listener is 10
     // but we need more listeners
@@ -103,7 +99,6 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
-            await webhookAdmission.stop();
             await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();

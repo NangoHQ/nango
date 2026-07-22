@@ -95,7 +95,6 @@ export enum Types {
     ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
     ORCH_WEBHOOK_ADMISSION = 'nango.orch.webhook_admission',
     ORCH_WEBHOOK_ADMISSION_INFLIGHT = 'nango.orch.webhook_admission.inflight',
-    ORCH_WEBHOOK_BACKLOG = 'nango.orch.webhook_backlog',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
     TASKS_RETRIED = 'nango.tasks.retried',

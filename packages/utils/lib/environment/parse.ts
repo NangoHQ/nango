@@ -182,8 +182,6 @@ const envSchema = z.object({
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: z.coerce.number().int().positive().optional().default(5),
     ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: z.coerce.number().int().nonnegative().optional().default(10),
-    ORCHESTRATOR_WEBHOOK_CREATED_COUNT_MAX: z.coerce.number().int().positive().optional().default(10_000),
-    ORCHESTRATOR_WEBHOOK_BACKLOG_REFRESH_INTERVAL_MS: z.coerce.number().int().positive().optional().default(1000),
     ORCHESTRATOR_WEBHOOK_ADMISSION_RETRY_AFTER_MS: z.coerce.number().int().positive().optional().default(1000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),

@@ -1,12 +1,6 @@
-import { setTimeout } from 'node:timers/promises';
+import { metrics } from '@nangohq/utils';
 
-import { metrics, stringifyError } from '@nangohq/utils';
-
-import { logger } from './utils.js';
-
-import type { Scheduler } from '@nangohq/scheduler';
-
-export type WebhookAdmissionRejectionReason = 'concurrency' | 'backlog' | 'backlog_unavailable';
+export type WebhookAdmissionRejectionReason = 'concurrency';
 
 export interface WebhookAdmissionRejection {
     acquired: false;
@@ -16,85 +10,47 @@ export interface WebhookAdmissionRejection {
 
 export interface WebhookAdmissionPermit {
     acquired: true;
-    release: (createdCount: number) => void;
+    release: () => void;
 }
 
 export type WebhookAdmissionResult = WebhookAdmissionPermit | WebhookAdmissionRejection;
 
 export interface WebhookAdmission {
-    acquire(requestedCount: number): WebhookAdmissionResult;
+    acquire(): WebhookAdmissionResult;
 }
 
 interface WebhookAdmissionOptions {
-    scheduler: Scheduler;
     maxConcurrency: number;
-    createdCountMax: number;
-    refreshIntervalMs: number;
     retryAfterMs: number;
 }
 
 export class WebhookAdmissionController implements WebhookAdmission {
-    private readonly scheduler: Scheduler;
     private readonly maxConcurrency: number;
-    private readonly createdCountMax: number;
-    private readonly refreshIntervalMs: number;
     private readonly retryAfterMs: number;
-    private readonly abortController = new AbortController();
-    private refreshPromise: Promise<void> | null = null;
     private active = 0;
-    private createdCount = 0;
-    private pendingCreatedCount = 0;
-    private backlogAvailable = false;
 
     constructor(options: WebhookAdmissionOptions) {
-        this.scheduler = options.scheduler;
         this.maxConcurrency = options.maxConcurrency;
-        this.createdCountMax = options.createdCountMax;
-        this.refreshIntervalMs = options.refreshIntervalMs;
         this.retryAfterMs = options.retryAfterMs;
     }
 
-    async start(): Promise<void> {
-        if (this.refreshPromise) {
-            return;
-        }
-        await this.refreshBacklog();
-        this.refreshPromise = this.refreshLoop();
-    }
-
-    async stop(): Promise<void> {
-        this.abortController.abort();
-        await this.refreshPromise;
-        this.refreshPromise = null;
-    }
-
-    acquire(requestedCount: number): WebhookAdmissionResult {
-        if (!this.backlogAvailable) {
-            return this.reject('backlog_unavailable');
-        }
+    acquire(): WebhookAdmissionResult {
         if (this.active >= this.maxConcurrency) {
             return this.reject('concurrency');
         }
-        // This mirrors the scheduler's per-group cap: it is a process-local safeguard, not an atomic global limit.
-        if (this.createdCount + this.pendingCreatedCount + requestedCount > this.createdCountMax) {
-            return this.reject('backlog');
-        }
 
         this.active++;
-        this.pendingCreatedCount += requestedCount;
         metrics.increment(metrics.Types.ORCH_WEBHOOK_ADMISSION, 1, { result: 'accepted' });
         metrics.gauge(metrics.Types.ORCH_WEBHOOK_ADMISSION_INFLIGHT, this.active);
         let released = false;
         return {
             acquired: true,
-            release: (createdCount: number) => {
+            release: () => {
                 if (released) {
                     return;
                 }
                 released = true;
                 this.active--;
-                this.pendingCreatedCount -= requestedCount;
-                this.createdCount += createdCount;
                 metrics.gauge(metrics.Types.ORCH_WEBHOOK_ADMISSION_INFLIGHT, this.active);
             }
         };
@@ -103,31 +59,5 @@ export class WebhookAdmissionController implements WebhookAdmission {
     private reject(reason: WebhookAdmissionRejectionReason): WebhookAdmissionRejection {
         metrics.increment(metrics.Types.ORCH_WEBHOOK_ADMISSION, 1, { result: 'rejected', reason });
         return { acquired: false, reason, retryAfterMs: this.retryAfterMs };
-    }
-
-    private async refreshLoop(): Promise<void> {
-        const signal = this.abortController.signal;
-        while (!signal.aborted) {
-            try {
-                await setTimeout(this.refreshIntervalMs, undefined, { signal });
-                await this.refreshBacklog();
-            } catch (err) {
-                if (err instanceof Error && err.name === 'AbortError') {
-                    return;
-                }
-                logger.error(`Failed to refresh webhook scheduler backlog: ${stringifyError(err)}`);
-            }
-        }
-    }
-
-    private async refreshBacklog(): Promise<void> {
-        const result = await this.scheduler.monitoring.createdCountForGroupPrefix({ groupKeyPrefix: 'webhook:' });
-        if (result.isErr()) {
-            this.backlogAvailable = false;
-            throw result.error;
-        }
-        this.createdCount = result.value;
-        this.backlogAvailable = true;
-        metrics.gauge(metrics.Types.ORCH_WEBHOOK_BACKLOG, this.createdCount);
     }
 }

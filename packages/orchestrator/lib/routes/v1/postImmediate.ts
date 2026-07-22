@@ -6,7 +6,7 @@ import { validateRequest } from '@nangohq/utils';
 import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
-import type { WebhookAdmission, WebhookAdmissionPermit, WebhookAdmissionRejection } from '../../webhook-admission.js';
+import type { WebhookAdmission, WebhookAdmissionRejection } from '../../webhook-admission.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
@@ -83,7 +83,7 @@ const validate = validateRequest<PostImmediate>({
 
 const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
-        const admission = res.locals.parsedBody.args.type === 'webhook' ? webhookAdmission.acquire(1) : undefined;
+        const admission = res.locals.parsedBody.args.type === 'webhook' ? webhookAdmission.acquire() : undefined;
         if (admission && !admission.acquired) {
             res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
             res.status(429).json({
@@ -95,8 +95,7 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
             });
             return;
         }
-        const permit: WebhookAdmissionPermit | undefined = admission?.acquired ? admission : undefined;
-        let createdCount = 0;
+        const permit = admission?.acquired ? admission : undefined;
         try {
             const task = await scheduler.immediate({
                 name: res.locals.parsedBody.name,
@@ -125,11 +124,10 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
                 return;
             }
 
-            createdCount = 1;
             res.status(200).json({ taskId: task.value.id, retryKey: task.value.retryKey! });
             return;
         } finally {
-            permit?.release(createdCount);
+            permit?.release();
         }
     };
 };

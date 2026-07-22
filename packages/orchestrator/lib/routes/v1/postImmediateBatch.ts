@@ -4,7 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
-import type { WebhookAdmission, WebhookAdmissionPermit, WebhookAdmissionRejection } from '../../webhook-admission.js';
+import type { WebhookAdmission, WebhookAdmissionRejection } from '../../webhook-admission.js';
 import type { ImmediateSuccess } from './postImmediate.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -65,8 +65,7 @@ const validate = validateRequest<PostImmediateBatch>({
 const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
-        const webhookNames = new Set(entries.filter((entry) => entry.args.type === 'webhook').map((entry) => entry.name));
-        const admission = webhookNames.size > 0 ? webhookAdmission.acquire(webhookNames.size) : undefined;
+        const admission = entries.some((entry) => entry.args.type === 'webhook') ? webhookAdmission.acquire() : undefined;
         if (admission && !admission.acquired) {
             res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
             res.status(429).json({
@@ -78,8 +77,7 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
             });
             return;
         }
-        const permit: WebhookAdmissionPermit | undefined = admission?.acquired ? admission : undefined;
-        let createdCount = 0;
+        const permit = admission?.acquired ? admission : undefined;
         try {
             const propsList = entries.map((entry) => ({
                 name: entry.name,
@@ -99,8 +97,6 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
                 res.status(500).json({ error: { code: 'immediate_batch_failed', message: batch.error.message } });
                 return;
             }
-            createdCount = batch.value.created.filter((task) => webhookNames.has(task.name)).length;
-
             // The scheduler returns created tasks + discards (capped/duplicate) with their props; the
             // orchestrator maps them back to per-entry results. Names are unique within a batch (the
             // validator rejects repeats), so a name keys exactly one outcome.
@@ -126,7 +122,7 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
             );
             res.status(200).json({ results });
         } finally {
-            permit?.release(createdCount);
+            permit?.release();
         }
     };
 };
