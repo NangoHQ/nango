@@ -4,6 +4,7 @@ import { basePublicUrl, flagHasUsage, nanoid, normalizeEmail, report } from '@na
 
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { setPendingAccountDiscovery } from '../onboarding/accountDiscoverySession.js';
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
@@ -220,14 +221,16 @@ export async function finalizeManagedAuthentication({
 
     try {
         if (invitation && isNewUser) {
-            // New user: created directly in the invited team, auto-accept and proceed
+            // New user with an invitation: created directly in the invited team, auto-accept and proceed
             await acceptInvitation(invitation.token);
             respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
         } else if (invitation) {
-            // Existing user: log them in and let them explicitly accept or decline on the invite page
+            // Existing user with an invitation: log them in and let them explicitly accept or decline on the invite page
             respondWithSuccess(res, `${basePublicUrl}/signup/${invitation.token}`, responseMode);
         } else if (isNewUser) {
-            respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
+            // New user without an invitation: redirect to account discovery onboarding
+            await setPendingAccountDiscovery(req, user.id).catch((err) => report(err));
+            respondWithSuccess(res, `${basePublicUrl}/onboarding/account-discovery`, responseMode);
         } else {
             respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
         }

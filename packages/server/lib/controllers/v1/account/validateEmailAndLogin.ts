@@ -1,11 +1,11 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { accountService, userService } from '@nangohq/shared';
+import { userService } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { setPendingAccountDiscovery } from './onboarding/accountDiscoverySession.js';
 
 import type { ValidateEmailAndLogin } from '@nangohq/types';
 
@@ -68,19 +68,14 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
 
     await userService.verifyUserEmail(user.id);
 
-    let showHearAboutUs = false;
-    const account = await accountService.getAccountById(db.knex, user.account_id);
-    if (account) {
-        showHearAboutUs = await accountService.shouldShowHearAboutUs(account);
-    }
-
-    req.login(user, function (err) {
+    req.login(user, async function (err) {
         if (err) {
             logger.error('Error logging in user');
             res.status(500).send({ error: { code: 'error_logging_in', message: 'There was a problem logging in the user. Please reach out to support.' } });
             return;
         }
 
-        res.status(200).send({ user: userToAPI(user), showHearAboutUs });
+        await setPendingAccountDiscovery(req, user.id).catch((err) => logger.error('Error saving account discovery onboarding session', err));
+        res.status(200).send({ user: userToAPI(user) });
     });
 });

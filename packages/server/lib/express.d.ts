@@ -27,6 +27,14 @@ declare module 'express-session' {
             returnTo: string;
             createdAt: number;
         };
+        pendingAccountDiscovery?: {
+            userId: number;
+            expiresAt: number;
+            recommendation?: {
+                accountId: number;
+                accountName: string;
+            };
+        };
     }
 }
 
