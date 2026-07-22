@@ -42,7 +42,7 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
-import { assertSafeOAuthUrl, findOutboundUrlError, getOAuthSafeHttpAgents, getOAuthSafeUndiciDispatcher } from './proxy/outbound-policy.js';
+import { assertSafeOAuthUrl, findOutboundUrlError, getOAuthAxiosRequestConfig, getOAuthSafeUndiciDispatcher } from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -1505,7 +1505,7 @@ class ConnectionService {
         try {
             await assertSafeOAuthUrl(url);
 
-            const requestOptions = { headers, ...getOAuthSafeHttpAgents() };
+            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
 
             const bodyContent =
                 bodyFormat === 'xml'
@@ -1602,7 +1602,7 @@ class ConnectionService {
                         }
                     }
 
-                    const stepRequestOptions = { headers: stepHeaders, ...getOAuthSafeHttpAgents() };
+                    const stepRequestOptions = { headers: stepHeaders, ...getOAuthAxiosRequestConfig() };
 
                     let stepResponse: any;
 

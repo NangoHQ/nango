@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import { axiosInstance as axios, Err, Ok } from '@nangohq/utils';
 
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
+import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { formatPem, interpolateObject, interpolateString, stripCredential } from '../utils/utils.js';
 
@@ -164,7 +164,7 @@ export async function createCredentialsFromURL({
             {},
             {
                 headers,
-                ...getOAuthSafeHttpAgents()
+                ...getOAuthAxiosRequestConfig()
             }
         );
 
