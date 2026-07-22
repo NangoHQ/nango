@@ -1369,6 +1369,7 @@
               "integrations/all/lastpass",
               "integrations/all/lemlist",
               "integrations/all/lattice",
+              "api-integrations/launchdarkly",
               "integrations/all/leadmagic",
               "integrations/all/lessonly",
               "integrations/all/lever",

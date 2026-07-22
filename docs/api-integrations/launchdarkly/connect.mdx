@@ -1,0 +1,38 @@
+---
+title: LaunchDarkly - How do I link my account?
+sidebarTitle: LaunchDarkly
+---
+
+
+# Overview
+
+To authenticate with LaunchDarkly, you will need:
+1. **API Access Token** – A LaunchDarkly access token with read permission.
+
+This guide will walk you through generating an **API access token** in LaunchDarkly.
+
+### Prerequisites
+
+- You must be an Admin in your LaunchDarkly account, or a member with permission to create access tokens.
+
+### Instructions
+
+#### Step 1: Generating your LaunchDarkly API access token
+
+1. Sign in to your [LaunchDarkly](https://app.launchdarkly.com/) account.
+2. Go to **Account settings** → [**Authorization**](https://app.launchdarkly.com/settings/authorization).
+3. Click **Create token**.
+4. Give the token a descriptive name (e.g. `Nango`).
+5. Under **Role**, select **Reader** (sufficient for read-only access). Choose a more permissive role only if you intend to write through the integration.
+6. Click **Save token**.
+7. Copy the generated token (starts with `api-`). It will only be shown once — store it securely.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API access token**:
+1. Open the form where you need to authenticate with LaunchDarkly.
+2. Paste the **API access token** in the respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+
+You are now connected to LaunchDarkly.
