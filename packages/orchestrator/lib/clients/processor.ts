@@ -59,11 +59,12 @@ export class OrchestratorProcessor {
 
     private async processingLoop(): Promise<void> {
         while (this.status === 'running') {
-            // wait for the queue to have space before dequeuing more tasks
-            await this.queue.onSizeLessThan(this.queue.concurrency);
-            const available = this.queue.concurrency - this.queue.size;
-            const limit = available + this.queue.concurrency; // fetching more than available to keep the queue full
-            const tasks = await this.orchestratorClient.dequeue({ groupKeyPattern: this.groupKeyPattern, limit, longPolling: true });
+            const free = this.queue.concurrency - this.queue.pending - this.queue.size;
+            if (free <= 0) {
+                await this.waitForCapacity();
+                continue;
+            }
+            const tasks = await this.orchestratorClient.dequeue({ groupKeyPattern: this.groupKeyPattern, limit: free, longPolling: true });
             if (tasks.isErr()) {
                 logger.error(`failed to dequeue tasks: ${stringifyError(tasks.error)}`);
                 await setTimeout(1000); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
@@ -83,6 +84,26 @@ export class OrchestratorProcessor {
         }
         this.status = 'stopped';
         return;
+    }
+
+    private waitForCapacity(): Promise<void> {
+        return new Promise<void>((resolve) => {
+            let settled = false;
+            const onCapacity = () => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                this.queue.off('completed', onCapacity);
+                this.queue.off('next', onCapacity);
+                resolve();
+            };
+            this.queue.on('completed', onCapacity);
+            this.queue.on('next', onCapacity);
+            if (this.queue.pending + this.queue.size < this.queue.concurrency) {
+                onCapacity();
+            }
+        });
     }
 
     private async processTask(task: OrchestratorTask, parentSpan: Span): Promise<void> {
