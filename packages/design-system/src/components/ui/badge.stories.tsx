@@ -24,7 +24,7 @@ export const Default: Story = {
     )
 };
 
-// Text is monospace by default (Figma "code/regular/xs"); `case` opts into upper/capitalize.
+// Text is monospace by default (Figma "code/regular/xs"); `case="capitalize"` is opt-in.
 export const Casing: Story = {
     render: () => (
         <div className="flex flex-wrap items-center gap-3">
