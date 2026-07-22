@@ -466,6 +466,9 @@ export class NangoError extends NangoInternalError {
             case 'two_step_credentials_fetch_error':
                 this.status = 400;
                 this.message = `Error fetching Two Step credentials`;
+                if (typeof this.payload === 'string') {
+                    this.message += ` Error: ${this.payload}`;
+                }
                 break;
 
             case 'invalid_two_step_credentials_second_request':

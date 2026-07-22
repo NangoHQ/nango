@@ -154,7 +154,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'jwt_error');
+            errorManager.errResFromNangoErr(res, create.error);
 
             return;
         }

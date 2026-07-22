@@ -471,7 +471,7 @@ export const Go: React.FC = () => {
                 setConnectionFailed(true);
                 const errorMsg = err instanceof Error ? err.message : 'Unknown error';
                 setError(errorMsg);
-                triggerError('unknown_error', errorMsg);
+                triggerError(err instanceof AuthError ? err.type : 'unknown_error', errorMsg);
             } finally {
                 setLoading(false);
             }
