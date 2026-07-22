@@ -14154,13 +14154,13 @@ neon:
         - dev-tools
     auth_mode: API_KEY
     proxy:
-        base_url: https://console.neon.tech/api/v2
+        base_url: https://console.neon.tech/api
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /users/me
+                - /v2/users/me
     docs: https://nango.dev/docs/api-integrations/neon
     docs_connect: https://nango.dev/docs/api-integrations/neon/connect
     credentials:
