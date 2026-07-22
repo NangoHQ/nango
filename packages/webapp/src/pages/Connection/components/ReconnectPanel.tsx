@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Link2, Plug, TriangleAlert } from 'lucide-react';
+import { Link2, Plug } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
@@ -122,11 +122,15 @@ export const ReconnectPanel = () => {
 
         void confirm({
             title: 'Reconnect this connection?',
-            description:
-                "This connection wasn't created from this dashboard. Reconnecting here will authenticate as whoever completes the popup in this browser, which may not be the original account. If someone else needs to reconnect, use Share reconnect link instead.",
-            confirmButtonText: 'Reconnect anyway',
+            description: (
+                <div className="flex flex-col gap-2">
+                    <p>This connection was not created from this dashboard.</p>
+                    <p>Reconnecting here will authenticate as whoever completes the popup in this browser, which may not be the original account.</p>
+                    <p>If someone else needs to reconnect, use Share reconnect link instead.</p>
+                </div>
+            ),
+            confirmButtonText: 'Reconnect',
             confirmVariant: 'primary',
-            icon: <TriangleAlert />,
             onConfirm: startReconnect
         });
     };

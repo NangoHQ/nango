@@ -7,7 +7,7 @@ import { StyledLink } from '../ui/StyledLink';
 
 export interface ConfirmDialogOptions {
     title: string;
-    description: string;
+    description: React.ReactNode;
     confirmButtonText?: string;
     cancelButtonText?: string;
     confirmVariant?: 'primary' | 'danger' | 'secondary' | 'outline';
