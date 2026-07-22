@@ -73,10 +73,42 @@ export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: h
     return getSafeHttpAgents(getOAuthOutboundUrlPolicy());
 }
 
+/** Headers that may be retained on OAuth token redirects; everything else is treated as credential material. */
+const SAFE_OAUTH_REDIRECT_HEADERS = new Set(['accept', 'accept-encoding', 'content-type', 'user-agent']);
+
+function isSameOriginOAuthRedirect(redirectOptions: Record<string, unknown>, requestDetails: { url?: string } | undefined): boolean {
+    if (!requestDetails?.url) {
+        return false;
+    }
+    const absolute = absoluteUrlFromRedirectRequestOptions(redirectOptions);
+    if (!absolute) {
+        return false;
+    }
+    try {
+        return new URL(requestDetails.url).origin === new URL(absolute).origin;
+    } catch {
+        return false;
+    }
+}
+
+function stripUnsafeOAuthRedirectHeaders(headers: Record<string, unknown> | undefined): void {
+    if (!headers) {
+        return;
+    }
+    for (const key of Object.keys(headers)) {
+        if (!SAFE_OAUTH_REDIRECT_HEADERS.has(key.toLowerCase())) {
+            delete headers[key];
+        }
+    }
+}
+
 /**
  * Axios request options for OAuth token egress: pinned agents, policy maxRedirects,
  * and sync validation of each redirect hop (IP literals / denied hosts).
  * DNS rebinding on redirect hostnames is still caught by the safe agent lookup.
+ *
+ * Credential header forwarding is opt-in for the proxy and never enabled here. follow-redirects
+ * only strips Authorization/Cookie; this also drops caller-defined API-key headers on cross-origin hops.
  */
 export function getOAuthAxiosRequestConfig(): Pick<AxiosRequestConfig, 'httpAgent' | 'httpsAgent' | 'maxRedirects' | 'beforeRedirect'> {
     const policy = getOAuthOutboundUrlPolicy();
@@ -87,11 +119,14 @@ export function getOAuthAxiosRequestConfig(): Pick<AxiosRequestConfig, 'httpAgen
         httpAgent: agents.httpAgent,
         httpsAgent: agents.httpsAgent,
         maxRedirects: policy.maxRedirects,
-        beforeRedirect: (options) => {
+        beforeRedirect: (options, _responseDetails, requestDetails) => {
             const absolute = absoluteUrlFromRedirectRequestOptions(options);
             // Block redirect hops to blocked IP literals / denied hosts; hostname rebinding is caught by the safe agent.
             if (absolute) {
                 redirectValidator(absolute);
+            }
+            if (!isSameOriginOAuthRedirect(options, requestDetails)) {
+                stripUnsafeOAuthRedirectHeaders(options['headers'] as Record<string, unknown> | undefined);
             }
         }
     };
