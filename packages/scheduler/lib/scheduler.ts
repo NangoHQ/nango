@@ -189,6 +189,9 @@ export class Scheduler {
                 return Err(res.error);
             }
             return Ok(res.value.map(({ group_key, queued }) => ({ groupKey: group_key, queued })));
+        },
+        createdCountForGroupPrefix: async ({ groupKeyPrefix }: { groupKeyPrefix: string }): Promise<Result<number>> => {
+            return tasks.createdCountForGroupPrefix(this.db, { groupKeyPrefix });
         }
     };
 

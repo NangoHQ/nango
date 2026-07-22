@@ -4,6 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
+import type { WebhookAdmissionController, WebhookAdmissionPermit, WebhookAdmissionRejection } from '../../webhook-admission.js';
 import type { ImmediateSuccess } from './postImmediate.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -25,7 +26,7 @@ export type PostImmediateBatch = Endpoint<{
     Body: {
         tasks: ImmediateInput[];
     };
-    Error: ApiError<'immediate_batch_failed' | 'invalid_request'>;
+    Error: ApiError<'immediate_batch_failed' | 'invalid_request' | 'webhook_admission_exceeded', undefined, WebhookAdmissionRejection>;
     Success: { results: ImmediateBatchResult[] };
 }>;
 
@@ -61,61 +62,81 @@ const validate = validateRequest<PostImmediateBatch>({
     }
 });
 
-const handler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionController) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
-        const propsList = entries.map((entry) => ({
-            name: entry.name,
-            payload: entry.args as unknown as JsonObject,
-            groupKey: entry.group.key,
-            groupMaxConcurrency: entry.group.maxConcurrency,
-            retryMax: entry.retry.max,
-            retryCount: entry.retry.count,
-            ownerKey: entry.ownerKey || null,
-            createdToStartedTimeoutSecs: entry.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: entry.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: entry.timeoutSettingsInSecs.heartbeat
-        }));
-
-        const batch = await scheduler.immediateBatch(propsList);
-        if (batch.isErr()) {
-            res.status(500).json({ error: { code: 'immediate_batch_failed', message: batch.error.message } });
+        const webhookNames = new Set(entries.filter((entry) => entry.args.type === 'webhook').map((entry) => entry.name));
+        const admission = webhookNames.size > 0 ? webhookAdmission?.acquire(webhookNames.size) : undefined;
+        if (admission && !admission.acquired) {
+            res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
+            res.status(429).json({
+                error: {
+                    code: 'webhook_admission_exceeded',
+                    message: 'Webhook admission capacity is temporarily exhausted',
+                    payload: admission
+                }
+            });
             return;
         }
+        const permit: WebhookAdmissionPermit | undefined = admission?.acquired ? admission : undefined;
+        let createdCount = 0;
+        try {
+            const propsList = entries.map((entry) => ({
+                name: entry.name,
+                payload: entry.args as unknown as JsonObject,
+                groupKey: entry.group.key,
+                groupMaxConcurrency: entry.group.maxConcurrency,
+                retryMax: entry.retry.max,
+                retryCount: entry.retry.count,
+                ownerKey: entry.ownerKey || null,
+                createdToStartedTimeoutSecs: entry.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: entry.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: entry.timeoutSettingsInSecs.heartbeat
+            }));
 
-        // The scheduler returns created tasks + discards (capped/duplicate) with their props; the
-        // orchestrator maps them back to per-entry results. Names are unique within a batch (the
-        // validator rejects repeats), so a name keys exactly one outcome.
-        const resultByName = new Map<string, ImmediateBatchResult>();
-        for (const task of batch.value.created) {
-            resultByName.set(task.name, { taskId: task.id, retryKey: task.retryKey! });
-        }
-        let duplicateCount = 0;
-        for (const { props, reason } of batch.value.discarded) {
-            if (reason === 'duplicate') {
-                duplicateCount++;
-                resultByName.set(props.name, { error: { code: 'duplicate_task_name', message: 'Task with this name already exists' } });
-            } else {
-                resultByName.set(props.name, { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } });
+            const batch = await scheduler.immediateBatch(propsList);
+            if (batch.isErr()) {
+                res.status(500).json({ error: { code: 'immediate_batch_failed', message: batch.error.message } });
+                return;
             }
-        }
-        if (duplicateCount > 0) {
-            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, duplicateCount, { reason: 'duplicate' });
-        }
+            createdCount = batch.value.created.filter((task) => webhookNames.has(task.name)).length;
 
-        const results: ImmediateBatchResult[] = entries.map(
-            (entry) => resultByName.get(entry.name) ?? { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } }
-        );
-        res.status(200).json({ results });
+            // The scheduler returns created tasks + discards (capped/duplicate) with their props; the
+            // orchestrator maps them back to per-entry results. Names are unique within a batch (the
+            // validator rejects repeats), so a name keys exactly one outcome.
+            const resultByName = new Map<string, ImmediateBatchResult>();
+            for (const task of batch.value.created) {
+                resultByName.set(task.name, { taskId: task.id, retryKey: task.retryKey! });
+            }
+            let duplicateCount = 0;
+            for (const { props, reason } of batch.value.discarded) {
+                if (reason === 'duplicate') {
+                    duplicateCount++;
+                    resultByName.set(props.name, { error: { code: 'duplicate_task_name', message: 'Task with this name already exists' } });
+                } else {
+                    resultByName.set(props.name, { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } });
+                }
+            }
+            if (duplicateCount > 0) {
+                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, duplicateCount, { reason: 'duplicate' });
+            }
+
+            const results: ImmediateBatchResult[] = entries.map(
+                (entry) => resultByName.get(entry.name) ?? { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } }
+            );
+            res.status(200).json({ results });
+        } finally {
+            permit?.release(createdCount);
+        }
     };
 };
 
 export const route: Route<PostImmediateBatch> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler): RouteHandler<PostImmediateBatch> => {
+export const routeHandler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionController): RouteHandler<PostImmediateBatch> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler)
+        handler: handler(scheduler, webhookAdmission)
     };
 };

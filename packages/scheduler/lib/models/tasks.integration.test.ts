@@ -67,6 +67,15 @@ describe('Task', () => {
         const res = (await tasks.create(db, taskProps)).unwrap();
         expect(res.created).toHaveLength(n);
     });
+    it('should count created tasks by group prefix', async () => {
+        await tasks.create(db, [
+            { ...props, name: 'Webhook 1', groupKey: 'webhook:environment:1' },
+            { ...props, name: 'Webhook 2', groupKey: 'webhook:environment:2' },
+            { ...props, name: 'Action', groupKey: 'action:environment:1' }
+        ]);
+
+        expect((await tasks.createdCountForGroupPrefix(db, { groupKeyPrefix: 'webhook:' })).unwrap()).toBe(2);
+    });
     it('should not create tasks exceeding the cap', async () => {
         const groupTaskCap = 1;
         const res = (

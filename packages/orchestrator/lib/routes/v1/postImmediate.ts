@@ -6,6 +6,7 @@ import { validateRequest } from '@nangohq/utils';
 import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
+import type { WebhookAdmissionController, WebhookAdmissionPermit, WebhookAdmissionRejection } from '../../webhook-admission.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
@@ -61,7 +62,7 @@ export type PostImmediate = Endpoint<{
         };
         args: JsonObject & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed' | 'duplicate_task_name'>;
+    Error: ApiError<'immediate_failed' | 'duplicate_task_name' | 'webhook_admission_exceeded', undefined, WebhookAdmissionRejection>;
     Success: ImmediateSuccess;
 }>;
 
@@ -80,45 +81,65 @@ const validate = validateRequest<PostImmediate>({
     }
 });
 
-const handler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionController) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
-        const task = await scheduler.immediate({
-            name: res.locals.parsedBody.name,
-            payload: res.locals.parsedBody.args,
-            groupKey: res.locals.parsedBody.group.key,
-            groupMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
-            retryMax: res.locals.parsedBody.retry.max,
-            retryCount: res.locals.parsedBody.retry.count,
-            ownerKey: res.locals.parsedBody.ownerKey || null,
-            createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
-        });
-        if (task.isErr()) {
-            if (isDuplicateTaskNameError(task.error)) {
-                res.status(409).json({
-                    error: {
-                        code: 'duplicate_task_name',
-                        message: task.error.message
-                    }
-                });
+        const admission = res.locals.parsedBody.args.type === 'webhook' ? webhookAdmission?.acquire(1) : undefined;
+        if (admission && !admission.acquired) {
+            res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
+            res.status(429).json({
+                error: {
+                    code: 'webhook_admission_exceeded',
+                    message: 'Webhook admission capacity is temporarily exhausted',
+                    payload: admission
+                }
+            });
+            return;
+        }
+        const permit: WebhookAdmissionPermit | undefined = admission?.acquired ? admission : undefined;
+        let createdCount = 0;
+        try {
+            const task = await scheduler.immediate({
+                name: res.locals.parsedBody.name,
+                payload: res.locals.parsedBody.args,
+                groupKey: res.locals.parsedBody.group.key,
+                groupMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
+                retryMax: res.locals.parsedBody.retry.max,
+                retryCount: res.locals.parsedBody.retry.count,
+                ownerKey: res.locals.parsedBody.ownerKey || null,
+                createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
+            });
+            if (task.isErr()) {
+                if (isDuplicateTaskNameError(task.error)) {
+                    res.status(409).json({
+                        error: {
+                            code: 'duplicate_task_name',
+                            message: task.error.message
+                        }
+                    });
+                    return;
+                }
+
+                res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
                 return;
             }
 
-            res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
+            createdCount = 1;
+            res.status(200).json({ taskId: task.value.id, retryKey: task.value.retryKey! });
             return;
+        } finally {
+            permit?.release(createdCount);
         }
-        res.status(200).json({ taskId: task.value.id, retryKey: task.value.retryKey! });
-        return;
     };
 };
 
 export const route: Route<PostImmediate> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler): RouteHandler<PostImmediate> => {
+export const routeHandler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionController): RouteHandler<PostImmediate> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler)
+        handler: handler(scheduler, webhookAdmission)
     };
 };

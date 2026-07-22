@@ -18,12 +18,13 @@ import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
 import { routeHandler as getOutputHandler } from './routes/v1/tasks/taskId/getOutput.js';
 import { routeHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/postHeartbeat.js';
 
+import type { WebhookAdmissionController } from './webhook-admission.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
 import type { Express, NextFunction, Request, Response } from 'express';
 import type EventEmitter from 'node:events';
 
-export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Express => {
+export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter, options: { webhookAdmission?: WebhookAdmissionController } = {}): Express => {
     const server = express();
 
     server.use(express.json({ limit: serverRequestSizeLimit }));
@@ -31,8 +32,8 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     //TODO: add auth middleware
 
     createRoute(server, getHealthHandler);
-    createRoute(server, postImmediateHandler(scheduler));
-    createRoute(server, postImmediateBatchHandler(scheduler));
+    createRoute(server, postImmediateHandler(scheduler, options.webhookAdmission));
+    createRoute(server, postImmediateBatchHandler(scheduler, options.webhookAdmission));
     createRoute(server, postRecurringHandler(scheduler));
     createRoute(server, postScheduleRunHandler(scheduler));
     createRoute(server, putRecurringHandler(scheduler));

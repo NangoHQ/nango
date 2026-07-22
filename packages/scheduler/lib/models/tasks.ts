@@ -254,6 +254,15 @@ async function queueSizesQuery(db: knex.Knex, opts: { groupKeys?: string[] | und
     }
 }
 
+export async function createdCountForGroupPrefix(db: knex.Knex, { groupKeyPrefix }: { groupKeyPrefix: string }): Promise<Result<number>> {
+    try {
+        const row = await db.from(TASKS_TABLE).where('state', 'CREATED').whereLike('group_key', `${groupKeyPrefix}%`).count('id as count').first();
+        return Ok(Number(row?.['count'] ?? 0));
+    } catch (err) {
+        return Err(new Error(`Error counting created tasks for group prefix '${groupKeyPrefix}': ${stringifyError(err)}`));
+    }
+}
+
 export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> {
     const task = await db.from<DBTask>(TASKS_TABLE).where('id', taskId).first();
     if (!task) {

@@ -10,6 +10,7 @@ import { TaskEventsHandler } from './events.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
+import { WebhookAdmissionController } from './webhook-admission.js';
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
@@ -74,12 +75,28 @@ try {
     });
     backpressureMonitor.start();
 
+    const availableWebhookConnections = envs.ORCHESTRATOR_DB_POOL_MAX - envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE;
+    if (envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY > availableWebhookConnections) {
+        throw new Error(
+            `ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY (${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY}) must not exceed ` +
+                `ORCHESTRATOR_DB_POOL_MAX - ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE (${availableWebhookConnections})`
+        );
+    }
+    const webhookAdmission = new WebhookAdmissionController({
+        scheduler,
+        maxConcurrency: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY,
+        createdCountMax: envs.ORCHESTRATOR_WEBHOOK_CREATED_COUNT_MAX,
+        refreshIntervalMs: envs.ORCHESTRATOR_WEBHOOK_BACKLOG_REFRESH_INTERVAL_MS,
+        retryAfterMs: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_RETRY_AFTER_MS
+    });
+    await webhookAdmission.start();
+
     // default max listener is 10
     // but we need more listeners
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
     eventsHandler.setMaxListeners(Infinity);
 
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, eventsHandler, { webhookAdmission });
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
@@ -93,6 +110,7 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
+            await webhookAdmission.stop();
             await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
