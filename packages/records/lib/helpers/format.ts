@@ -35,12 +35,14 @@ export const formatRecords = ({
     const formattedRecords: FormattedRecord[] = [];
     const now = new Date();
     for (const datum of data) {
+        // Skip empty entries instead of breaking, otherwise a single null/undefined
+        // datum would silently drop every remaining record in the batch.
+        if (!datum) {
+            continue;
+        }
+
         const str = JSON.stringify(datum);
         const data_hash = createHash('md5').update(str).digest('hex');
-
-        if (!datum) {
-            break;
-        }
 
         if (!datum['id']) {
             const error = new Error(`Missing id field in record: ${JSON.stringify(datum)}. Model: ${model}`);
