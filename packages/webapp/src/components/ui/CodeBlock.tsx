@@ -162,7 +162,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 <div className="flex gap-2 items-center">
                     {headerElement}
                     {displayLanguage && (
-                        <Badge case="upper">
+                        <Badge>
                             {icon && icon}
                             {displayLanguage}
                         </Badge>

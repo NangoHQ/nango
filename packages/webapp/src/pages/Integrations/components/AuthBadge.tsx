@@ -9,5 +9,5 @@ interface AuthBadgeProps {
 }
 
 export const AuthBadge: React.FC<AuthBadgeProps> = ({ authMode }) => {
-    return <Badge variant="secondary">{getDisplayName(authMode)}</Badge>;
+    return <Badge variant="brand">{getDisplayName(authMode)}</Badge>;
 };

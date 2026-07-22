@@ -199,9 +199,7 @@ const Provider = ({
             <div className="inline-flex gap-1.5 items-center justify-end">
                 <AuthBadge authMode={provider.authMode} />
                 {provider.categories?.map((category) => (
-                    <Badge key={category} variant="outline" case="upper">
-                        {category}
-                    </Badge>
+                    <Badge key={category}>{category}</Badge>
                 ))}
             </div>
         </div>

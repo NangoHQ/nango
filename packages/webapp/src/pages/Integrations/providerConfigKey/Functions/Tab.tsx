@@ -223,15 +223,15 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge case="upper">{TYPE_BADGE_LABEL[fn.type]}</Badge>
+                                            <Badge>{TYPE_BADGE_LABEL[fn.type]}</Badge>
                                         </TableCell>
                                         <TableCell>
                                             {fn.source === 'repo' ? (
-                                                <Badge case="upper">
+                                                <Badge variant="outline">
                                                     <FolderGit2 /> Your repo
                                                 </Badge>
                                             ) : (
-                                                <Badge case="upper">
+                                                <Badge variant="outline">
                                                     <Cloud /> Nango
                                                 </Badge>
                                             )}
