@@ -11,6 +11,13 @@ import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
 import type { Mock } from 'vitest';
 
+const { reportMock } = vi.hoisted(() => ({ reportMock: vi.fn() }));
+
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal();
+    return { ...(actual as Record<string, unknown>), report: reportMock };
+});
+
 vi.mock('../../env.js', () => ({
     envs: {
         AWS_REGION: undefined
@@ -143,6 +150,11 @@ async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise
 describe('DispatchQueueConsumer', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        reportMock.mockClear();
+    });
+
+    it('rejects visibility timeouts too short to heartbeat', () => {
+        expect(() => makeHarness({ visibilityTimeoutSeconds: 1 })).toThrow('Webhook dispatch visibility timeout must be at least 2 seconds');
     });
 
     it('sends all received messages in a single executeWebhookBatch call', async () => {
@@ -213,6 +225,43 @@ describe('DispatchQueueConsumer', () => {
         expect(getVisibilityCalls(h)).toHaveLength(1);
         const command = getVisibilityCalls(h)[0]?.[0] as ChangeMessageVisibilityBatchCommand;
         expect(command.input.Entries).toEqual([expect.objectContaining({ ReceiptHandle: 'rh-1', VisibilityTimeout: expect.any(Number) })]);
+    });
+
+    it('reports details for partial visibility update failures', async () => {
+        let delivered = false;
+        const sqsSend = vi.fn(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
+            if (command instanceof ReceiveMessageCommand) {
+                if (delivered) {
+                    return await new Promise((_, reject) => {
+                        options?.abortSignal?.addEventListener('abort', () => reject(abortError()), { once: true });
+                    });
+                }
+                delivered = true;
+                return {
+                    Messages: [
+                        {
+                            Body: JSON.stringify(buildMessage()),
+                            ReceiptHandle: 'sensitive-receipt-handle',
+                            Attributes: { SentTimestamp: String(Date.now()), ApproximateReceiveCount: '1' }
+                        }
+                    ]
+                };
+            }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
+                return { Failed: [{ Id: '0', Code: 'ReceiptHandleIsInvalid', Message: 'expired', SenderFault: true }] };
+            }
+            throw new Error(`unexpected command ${String(command)}`);
+        }) as Mock<SqsSendFn>;
+        const h = makeHarness({ sqsSend });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })]));
+
+        await runOnce(h, () => expect(reportMock).toHaveBeenCalledOnce());
+
+        const error = reportMock.mock.calls[0]?.[0] as Error;
+        expect(error.message).toContain('ReceiptHandleIsInvalid');
+        expect(error.message).toContain('expired');
+        expect(error.message).toContain('"senderFault":true');
+        expect(error.message).not.toContain('sensitive-receipt-handle');
     });
 
     it('does not delete messages whose per-entry result is a generic error', async () => {

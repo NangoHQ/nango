@@ -44,6 +44,10 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS: '299' })).toThrow('NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS');
     });
 
+    it('should reject task dispatch visibility timeouts that cannot be heartbeated', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '1' })).toThrow('NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS');
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');

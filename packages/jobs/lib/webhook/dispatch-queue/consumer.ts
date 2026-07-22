@@ -81,6 +81,9 @@ export class DispatchQueueConsumer {
     private loopPromises: Promise<void>[] = [];
 
     constructor(props: DispatchQueueConsumerProps) {
+        if (props.visibilityTimeoutSeconds < 2) {
+            throw new Error('Webhook dispatch visibility timeout must be at least 2 seconds');
+        }
         this.queueUrl = props.queueUrl;
         this.orchestratorClient = props.orchestratorClient;
         this.webhookMaxConcurrency = props.webhookMaxConcurrency;
@@ -220,6 +223,7 @@ export class DispatchQueueConsumer {
                     if (res.error.name === 'webhook_admission_exceeded') {
                         const retryAfterMs = getRetryAfterMs(res.error.payload);
                         await this.deferEntries(entries, retryAfterMs ?? 1000);
+                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DEFERRED, entries.length, { reason: 'global_admission' });
                         return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
                     }
                     return { result: 'failure', durationMs };
@@ -286,6 +290,7 @@ export class DispatchQueueConsumer {
             if (cooldownMs && cooldownMs > 0) {
                 await this.deferEntries([{ msg, parsed: message }], cooldownMs);
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, 1, { result: 'environment_cooldown', provider: message.provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DEFERRED, 1, { reason: 'environment_cooldown', provider: message.provider });
                 continue;
             }
 
@@ -329,6 +334,7 @@ export class DispatchQueueConsumer {
                 await this.capacityCoordinator?.recordEnvironmentCongestion?.(group[0]!.parsed.connection.environment_id, delaySeconds * 1000);
                 await this.changeVisibility(group, () => delaySeconds);
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap_deferred', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DEFERRED, count, { reason: 'task_cap', provider });
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider });
             }
@@ -340,9 +346,6 @@ export class DispatchQueueConsumer {
     }
 
     private startVisibilityHeartbeat(entries: ParsedEntry[]): () => Promise<void> {
-        if (this.visibilityTimeoutSeconds <= 1) {
-            return () => Promise.resolve();
-        }
         const abortController = new AbortController();
         const intervalMs = Math.max(1000, Math.floor((this.visibilityTimeoutSeconds * 1000) / 2));
         const promise = (async () => {
@@ -391,7 +394,13 @@ export class DispatchQueueConsumer {
         try {
             const result = await this.sqs.send(new ChangeMessageVisibilityBatchCommand({ QueueUrl: this.queueUrl, Entries: commandEntries }));
             if (result.Failed && result.Failed.length > 0) {
-                report(new Error(`webhook dispatch visibility update failed for ${result.Failed.length} message(s)`));
+                const failures = result.Failed.map(({ Id, Code, Message, SenderFault }) => ({
+                    id: Id,
+                    code: Code,
+                    message: Message,
+                    senderFault: SenderFault
+                }));
+                report(new Error(`webhook dispatch visibility update failed: ${JSON.stringify(failures)}`));
             }
         } catch (err) {
             report(new Error('webhook dispatch visibility update failed', { cause: err }));
