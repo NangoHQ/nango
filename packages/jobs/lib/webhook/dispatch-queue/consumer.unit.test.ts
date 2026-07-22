@@ -384,4 +384,47 @@ describe('DispatchQueueConsumer', () => {
 
         expect(events.slice(0, 5)).toEqual(['acquire', 'receive', 'delete', 'success', 'release']);
     });
+
+    it('records a capacity failure instead of success when the permit expires during processing', async () => {
+        let valid = true;
+        const gate = deferred<void>();
+        const coordinator: DispatchCapacityCoordinator = {
+            acquire: vi.fn(() => Promise.resolve({ isValid: () => valid, release: vi.fn(() => Promise.resolve()) })),
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn(() => Promise.resolve())
+        };
+        const h = makeHarness({ messages: [buildMessage()], capacityCoordinator: coordinator });
+        h.orchestratorExecuteWebhookBatch.mockImplementationOnce(async (props: unknown[]) => {
+            await gate.promise;
+            return Ok(props.map((_, i) => Ok({ taskId: `task-${i}`, retryKey: `rk-${i}` })));
+        });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce());
+        valid = false;
+        gate.resolve();
+        await vi.waitFor(() => expect(coordinator.recordFailure).toHaveBeenCalledOnce());
+        await h.consumer.stop();
+
+        expect(coordinator.recordSuccess).not.toHaveBeenCalled();
+        expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
+    it('records a capacity failure when batch processing throws', async () => {
+        const coordinator: DispatchCapacityCoordinator = {
+            acquire: vi.fn(() => Promise.resolve({ isValid: () => true, release: vi.fn(() => Promise.resolve()) })),
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn(() => Promise.resolve())
+        };
+        const h = makeHarness({ messages: [buildMessage()], capacityCoordinator: coordinator });
+        h.orchestratorExecuteWebhookBatch.mockRejectedValueOnce(new Error('orchestrator unavailable'));
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(coordinator.recordFailure).toHaveBeenCalledOnce());
+        await h.consumer.stop();
+
+        expect(coordinator.recordSuccess).not.toHaveBeenCalled();
+    });
 });

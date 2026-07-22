@@ -31,6 +31,19 @@ describe('parse', () => {
         );
     });
 
+    it('should reject adaptive dispatch concurrency above its maximum', () => {
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY: '11',
+                NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY: '10'
+            })
+        ).toThrow('NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY (11) must not exceed NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY (10)');
+    });
+
+    it('should reject adaptive dispatch lease TTLs below the renewal floor', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS: '299' })).toThrow('NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS');
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');

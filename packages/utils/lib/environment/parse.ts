@@ -694,7 +694,7 @@ const envSchema = z.object({
     NANGO_TASK_DISPATCH_REDIS_COORDINATION_ENABLED: z.stringbool().optional().default(false),
     NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY: z.coerce.number().int().positive().optional().default(1),
     NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY: z.coerce.number().int().positive().optional().default(10),
-    NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000),
+    NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS: z.coerce.number().int().min(300).optional().default(60_000),
     NANGO_TASK_DISPATCH_ADAPTIVE_ACQUIRE_RETRY_MS: z.coerce.number().int().positive().optional().default(250),
     NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: z.coerce.number().int().positive().optional().default(250),
     NANGO_TASK_DISPATCH_ADAPTIVE_CONTROL_INTERVAL_MS: z.coerce.number().int().positive().optional().default(1000),
@@ -740,6 +740,16 @@ export const ENVS = envSchema.check((payload) => {
                 `ORCHESTRATOR_DB_POOL_MAX - ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE (${availableWebhookConnections})`,
             path: ['ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY'],
             input: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY
+        });
+    }
+    if (envs.NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY > envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY) {
+        payload.issues.push({
+            code: 'custom',
+            message:
+                `NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY (${envs.NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY}) must not exceed ` +
+                `NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY (${envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY})`,
+            path: ['NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY'],
+            input: envs.NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY
         });
     }
 });

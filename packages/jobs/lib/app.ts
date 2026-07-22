@@ -8,7 +8,7 @@ import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore, getRedis, getRedisUrl } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { getLogger, once, report, stringifyError } from '@nangohq/utils';
+import { getLogger, metrics, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
@@ -72,6 +72,9 @@ try {
         });
     }
     if (envs.NANGO_TASK_DISPATCH_QUEUE_URL) {
+        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_MODE, 1, {
+            mode: dispatchCapacityCoordinator ? 'redis_adaptive' : 'per_instance'
+        });
         logger.info('webhook dispatch capacity coordination configured', {
             mode: dispatchCapacityCoordinator ? 'redis_adaptive' : 'per_instance',
             localConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,

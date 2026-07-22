@@ -83,6 +83,11 @@ export enum Types {
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
+    WEBHOOK_DISPATCH_CAPACITY_MODE = 'nango.webhook.dispatch_queue.capacity.mode',
+    WEBHOOK_DISPATCH_CAPACITY_LIMIT = 'nango.webhook.dispatch_queue.capacity.limit',
+    WEBHOOK_DISPATCH_CAPACITY_ACTIVE = 'nango.webhook.dispatch_queue.capacity.active',
+    WEBHOOK_DISPATCH_CAPACITY_CHANGE = 'nango.webhook.dispatch_queue.capacity.change',
+    WEBHOOK_DISPATCH_CAPACITY_PERMIT_WAIT_MS = 'nango.webhook.dispatch_queue.capacity.permit_wait_ms',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',

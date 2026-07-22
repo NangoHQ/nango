@@ -124,10 +124,19 @@ export class DispatchQueueConsumer {
 
                 const messages = result.Messages ?? [];
                 if (messages.length === 0) continue;
-                if (permit && !permit.isValid()) continue;
+                if (permit && !permit.isValid()) {
+                    await this.recordCapacityOutcome({ result: 'failure' });
+                    continue;
+                }
 
-                const outcome = await this.processBatch(messages);
-                await this.recordCapacityOutcome(outcome);
+                let outcome: BatchOutcome;
+                try {
+                    outcome = await this.processBatch(messages);
+                } catch (err) {
+                    await this.recordCapacityOutcome({ result: 'failure' });
+                    throw err;
+                }
+                await this.recordCapacityOutcome(permit && !permit.isValid() ? { result: 'failure' } : outcome);
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') break;
                 report(new Error('webhook dispatch consumer receive failed', { cause: err }));

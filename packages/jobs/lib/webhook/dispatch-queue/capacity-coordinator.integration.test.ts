@@ -52,4 +52,37 @@ describe('RedisDispatchCapacityCoordinator', () => {
         await firstPermit.release();
         await secondPermit.release();
     });
+
+    it('does not count expired leases as active healthy work', async () => {
+        const coordinator = createCoordinator();
+        const permit = await coordinator.acquire(new AbortController().signal);
+        await permit.release();
+        await redis.eval("return redis.call('ZADD', KEYS[1], 0, 'expired')", {
+            keys: ['test:webhook-dispatch:{capacity}:leases'],
+            arguments: []
+        });
+
+        await coordinator.recordSuccess(10);
+
+        const limit = await redis.eval("return redis.call('HGET', KEYS[1], 'limit')", {
+            keys: ['test:webhook-dispatch:{capacity}:state'],
+            arguments: []
+        });
+        expect(Number(limit)).toBe(1);
+    });
+
+    it('requires healthy recent latency before growing capacity', async () => {
+        const coordinator = createCoordinator();
+        const permit = await coordinator.acquire(new AbortController().signal);
+
+        await coordinator.recordSuccess(1000);
+        await coordinator.recordSuccess(10);
+
+        const limit = await redis.eval("return redis.call('HGET', KEYS[1], 'limit')", {
+            keys: ['test:webhook-dispatch:{capacity}:state'],
+            arguments: []
+        });
+        expect(Number(limit)).toBe(1);
+        await permit.release();
+    });
 });

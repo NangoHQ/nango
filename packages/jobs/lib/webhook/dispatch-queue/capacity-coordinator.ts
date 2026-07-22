@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 
-import { getLogger, stringifyError } from '@nangohq/utils';
+import { getLogger, metrics, stringifyError } from '@nangohq/utils';
 
 import type { NangoRedisClient } from '@nangohq/kvstore';
 
@@ -18,7 +18,7 @@ redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
 local existingLease = redis.call('ZSCORE', KEYS[1], ARGV[1])
 if existingLease then
   redis.call('ZADD', KEYS[1], 'XX', now + leaseTtl, ARGV[1])
-  return {1, tonumber(redis.call('HGET', KEYS[2], 'limit') or tostring(initialLimit)), 0}
+  return {1, tonumber(redis.call('HGET', KEYS[2], 'limit') or tostring(initialLimit)), 0, redis.call('ZCARD', KEYS[1])}
 end
 redis.call('HSETNX', KEYS[2], 'limit', initialLimit)
 redis.call('HSETNX', KEYS[2], 'slowStartThreshold', hardMaximum)
@@ -30,18 +30,18 @@ local limit = math.min(tonumber(redis.call('HGET', KEYS[2], 'limit')), hardMaxim
 redis.call('HSET', KEYS[2], 'limit', limit, 'hardMaximum', hardMaximum)
 local pausedUntil = tonumber(redis.call('HGET', KEYS[2], 'pausedUntil'))
 if pausedUntil > now then
-  return {0, limit, pausedUntil - now}
+  return {0, limit, pausedUntil - now, redis.call('ZCARD', KEYS[1])}
 end
 
 local active = tonumber(redis.call('ZCARD', KEYS[1]))
 if active >= limit then
-  return {0, limit, 0}
+  return {0, limit, 0, active}
 end
 
 redis.call('ZADD', KEYS[1], 'NX', now + leaseTtl, ARGV[1])
 redis.call('PEXPIRE', KEYS[1], leaseTtl * 2)
 redis.call('PEXPIRE', KEYS[2], 604800000)
-return {1, limit, 0}
+return {1, limit, 0, active + 1}
 `;
 
 const RENEW_SCRIPT = `
@@ -58,7 +58,11 @@ return 1
 `;
 
 const RELEASE_SCRIPT = `
-return redis.call('ZREM', KEYS[1], ARGV[1])
+local time = redis.call('TIME')
+local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
+redis.call('ZREM', KEYS[1], ARGV[1])
+return redis.call('ZCARD', KEYS[1])
 `;
 
 const SUCCESS_SCRIPT = `
@@ -68,13 +72,15 @@ local duration = tonumber(ARGV[1])
 local healthyLatency = tonumber(ARGV[2])
 local hardMaximum = tonumber(ARGV[3])
 local limit = math.min(tonumber(redis.call('HGET', KEYS[2], 'limit') or '1'), hardMaximum)
+local previousLimit = limit
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
 local active = tonumber(redis.call('ZCARD', KEYS[1]))
 
 local previousEwma = tonumber(redis.call('HGET', KEYS[2], 'latencyEwmaMs') or tostring(duration))
 local ewma = math.floor((previousEwma * 7 + duration) / 8)
 redis.call('HSET', KEYS[2], 'latencyEwmaMs', ewma)
 
-if duration <= healthyLatency and active >= limit then
+if duration <= healthyLatency and ewma <= healthyLatency and active >= limit then
   local successes = tonumber(redis.call('HINCRBY', KEYS[2], 'successes', 1))
   if successes >= limit and limit < hardMaximum then
     local threshold = tonumber(redis.call('HGET', KEYS[2], 'slowStartThreshold') or tostring(hardMaximum))
@@ -85,10 +91,12 @@ if duration <= healthyLatency and active >= limit then
     end
     redis.call('HSET', KEYS[2], 'limit', limit, 'successes', 0)
   end
+elseif duration > healthyLatency or ewma > healthyLatency then
+  redis.call('HSET', KEYS[2], 'successes', 0)
 end
 
 redis.call('HSET', KEYS[2], 'lastSuccessAt', now)
-return limit
+return {limit, previousLimit, ewma}
 `;
 
 const CONGESTION_SCRIPT = `
@@ -99,6 +107,7 @@ local hardMaximum = tonumber(ARGV[2])
 local controlInterval = tonumber(ARGV[3])
 local retryAfter = tonumber(ARGV[4])
 local limit = math.min(tonumber(redis.call('HGET', KEYS[1], 'limit') or tostring(minimum)), hardMaximum)
+local previousLimit = limit
 local lastDecrease = tonumber(redis.call('HGET', KEYS[1], 'lastDecreaseAt') or '0')
 
 if now - lastDecrease >= controlInterval then
@@ -108,7 +117,7 @@ end
 
 local pausedUntil = tonumber(redis.call('HGET', KEYS[1], 'pausedUntil') or '0')
 redis.call('HSET', KEYS[1], 'pausedUntil', math.max(pausedUntil, now + retryAfter))
-return limit
+return {limit, previousLimit}
 `;
 
 export interface DispatchCapacityPermit {
@@ -149,6 +158,9 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
         if (options.initialLimit > options.hardMaximum) {
             throw new Error('Initial dispatch capacity must not exceed its hard maximum');
         }
+        if (options.leaseTtlMs < 300) {
+            throw new Error('Dispatch capacity lease TTL must be at least 300 ms');
+        }
         this.redis = options.redis;
         this.leasesKey = `${options.keyPrefix}:leases`;
         this.stateKey = `${options.keyPrefix}:state`;
@@ -162,14 +174,18 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
 
     async acquire(signal: AbortSignal): Promise<DispatchCapacityPermit> {
         const token = randomUUID();
+        const startedAt = Date.now();
         while (!signal.aborted) {
             try {
                 const response = await this.redis.eval(ACQUIRE_SCRIPT, {
                     keys: [this.leasesKey, this.stateKey],
                     arguments: [token, String(this.leaseTtlMs), String(this.initialLimit), String(this.hardMaximum)]
                 });
-                const [acquired, , retryAfterMs] = response as number[];
+                const [acquired, limit, retryAfterMs, active] = response as number[];
+                metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_LIMIT, limit);
+                metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_ACTIVE, active);
                 if (acquired === 1) {
+                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_PERMIT_WAIT_MS, Date.now() - startedAt);
                     return new RedisDispatchCapacityPermit({
                         redis: this.redis,
                         leasesKey: this.leasesKey,
@@ -192,10 +208,17 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
     }
 
     async recordSuccess(durationMs: number): Promise<void> {
-        await this.redis.eval(SUCCESS_SCRIPT, {
+        const response = await this.redis.eval(SUCCESS_SCRIPT, {
             keys: [this.leasesKey, this.stateKey],
             arguments: [String(Math.max(0, Math.round(durationMs))), String(this.healthyLatencyMs), String(this.hardMaximum)]
         });
+        const values = response as number[];
+        const limit = Number(values[0] ?? this.initialLimit);
+        const previousLimit = Number(values[1] ?? limit);
+        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_LIMIT, limit);
+        if (limit > previousLimit) {
+            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_CHANGE, 1, { direction: 'increase' });
+        }
     }
 
     async recordCongestion(retryAfterMs: number): Promise<void> {
@@ -207,10 +230,17 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
     }
 
     private async recordDecrease(retryAfterMs: number): Promise<void> {
-        await this.redis.eval(CONGESTION_SCRIPT, {
+        const response = await this.redis.eval(CONGESTION_SCRIPT, {
             keys: [this.stateKey],
             arguments: ['1', String(this.hardMaximum), String(this.controlIntervalMs), String(retryAfterMs)]
         });
+        const values = response as number[];
+        const limit = Number(values[0] ?? 1);
+        const previousLimit = Number(values[1] ?? limit);
+        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_LIMIT, limit);
+        if (limit < previousLimit) {
+            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_CHANGE, 1, { direction: 'decrease' });
+        }
     }
 }
 
@@ -244,7 +274,8 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
         this.abortController.abort();
         await this.renewalPromise;
         try {
-            await this.redis.eval(RELEASE_SCRIPT, { keys: [this.leasesKey], arguments: [this.token] });
+            const active = await this.redis.eval(RELEASE_SCRIPT, { keys: [this.leasesKey], arguments: [this.token] });
+            metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_ACTIVE, Number(active));
         } catch (err) {
             logger.error(`Failed to release webhook dispatch capacity permit: ${stringifyError(err)}`);
         }
