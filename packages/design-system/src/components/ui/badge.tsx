@@ -12,9 +12,10 @@ export const badgeVariants = cva(
     {
         variants: {
             variant: {
-                default: 'border-ds-hairline border-border-default bg-status-neutral-bg text-status-neutral-text',
-                secondary: 'border-ds-hairline border-border-default bg-surface-panel-inset text-status-neutral-text',
-                outline: 'border-ds-hairline border-border-default text-status-neutral-text',
+                default: 'border-ds-hairline border-border-default bg-interactive-disabled text-text-default',
+                secondary: 'border-ds-hairline border-border-default bg-surface-raised text-text-secondary',
+                outline: 'border-ds-hairline border-border-input text-text-secondary',
+                ghost: 'border-ds-hairline border-transparent text-text-secondary',
                 brand: 'bg-status-info-bg text-text-brand',
                 success: 'bg-status-success-bg text-status-success-text',
                 warning: 'bg-status-warning-bg text-status-warning-text',
