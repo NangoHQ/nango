@@ -5,6 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { DispatchQueueConsumer } from './consumer.js';
 
+import type { DispatchCapacityCoordinator } from './capacity-coordinator.js';
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
@@ -68,6 +69,7 @@ function makeHarness(
         consumerConcurrency?: number;
         maxAgeMs?: number;
         sqsSend?: Mock<SqsSendFn>;
+        capacityCoordinator?: DispatchCapacityCoordinator;
     } = {}
 ): Harness {
     const messages = opts.messages ?? [];
@@ -111,7 +113,8 @@ function makeHarness(
         maxMessages: 10,
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
-        maxAgeMs: opts.maxAgeMs ?? 0
+        maxAgeMs: opts.maxAgeMs ?? 0,
+        ...(opts.capacityCoordinator ? { capacityCoordinator: opts.capacityCoordinator } : {})
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
@@ -327,5 +330,58 @@ describe('DispatchQueueConsumer', () => {
 
         await h.consumer.stop();
         expect(h.sqsDestroy).toHaveBeenCalledOnce();
+    });
+
+    it('holds global capacity from before receive through acknowledgement', async () => {
+        const events: string[] = [];
+        const release = vi.fn(() => {
+            events.push('release');
+            return Promise.resolve();
+        });
+        const coordinator: DispatchCapacityCoordinator = {
+            acquire: vi.fn(() => {
+                events.push('acquire');
+                return Promise.resolve({ isValid: () => true, release });
+            }),
+            recordSuccess: vi.fn(() => {
+                events.push('success');
+                return Promise.resolve();
+            }),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn()
+        };
+        let delivered = false;
+        const sqsSend = vi.fn(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
+            if (command instanceof ReceiveMessageCommand) {
+                if (delivered) {
+                    return await new Promise((_, reject) => {
+                        options?.abortSignal?.addEventListener('abort', () => reject(abortError()), { once: true });
+                    });
+                }
+                delivered = true;
+                events.push('receive');
+                return {
+                    Messages: [
+                        {
+                            Body: JSON.stringify(buildMessage()),
+                            ReceiptHandle: 'rh-1',
+                            Attributes: { SentTimestamp: String(Date.now()) }
+                        }
+                    ]
+                };
+            }
+            if (command instanceof DeleteMessageCommand) {
+                events.push('delete');
+                return {};
+            }
+            throw new Error(`unexpected command ${String(command)}`);
+        }) as Mock<SqsSendFn>;
+        const h = makeHarness({ sqsSend, capacityCoordinator: coordinator });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(release).toHaveBeenCalled());
+        await h.consumer.stop();
+
+        expect(events.slice(0, 5)).toEqual(['acquire', 'receive', 'delete', 'success', 'release']);
     });
 });

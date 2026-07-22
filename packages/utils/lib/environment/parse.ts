@@ -691,6 +691,13 @@ const envSchema = z.object({
     // so peak orchestrator connections from webhook dispatch ≈ jobs_replicas × this. Keep it well
     // under ORCHESTRATOR_DB_POOL_MAX so bulk webhook ingress can't starve the orchestrator's core work.
     NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    NANGO_TASK_DISPATCH_REDIS_COORDINATION_ENABLED: z.stringbool().optional().default(false),
+    NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY: z.coerce.number().int().positive().optional().default(1),
+    NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY: z.coerce.number().int().positive().optional().default(10),
+    NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000),
+    NANGO_TASK_DISPATCH_ADAPTIVE_ACQUIRE_RETRY_MS: z.coerce.number().int().positive().optional().default(250),
+    NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: z.coerce.number().int().positive().optional().default(250),
+    NANGO_TASK_DISPATCH_ADAPTIVE_CONTROL_INTERVAL_MS: z.coerce.number().int().positive().optional().default(1000),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),

@@ -8,6 +8,7 @@ import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 
+import type { DispatchCapacityCoordinator, DispatchCapacityPermit } from './capacity-coordinator.js';
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
@@ -44,7 +45,14 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
+    capacityCoordinator?: DispatchCapacityCoordinator;
     sqs?: SQSClient;
+}
+
+interface BatchOutcome {
+    result: 'success' | 'congestion' | 'failure' | 'noop';
+    durationMs?: number;
+    retryAfterMs?: number;
 }
 
 interface ParsedEntry {
@@ -62,6 +70,7 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
+    private readonly capacityCoordinator: DispatchCapacityCoordinator | undefined;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -74,6 +83,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
+        this.capacityCoordinator = props.capacityCoordinator;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -97,7 +107,9 @@ export class DispatchQueueConsumer {
     private async pollLoop(): Promise<void> {
         const signal = this.abortController.signal;
         while (!signal.aborted) {
+            let permit: DispatchCapacityPermit | undefined;
             try {
+                permit = await this.capacityCoordinator?.acquire(signal);
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.queueUrl,
@@ -112,17 +124,21 @@ export class DispatchQueueConsumer {
 
                 const messages = result.Messages ?? [];
                 if (messages.length === 0) continue;
+                if (permit && !permit.isValid()) continue;
 
-                await this.processBatch(messages);
+                const outcome = await this.processBatch(messages);
+                await this.recordCapacityOutcome(outcome);
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') break;
                 report(new Error('webhook dispatch consumer receive failed', { cause: err }));
                 await new Promise((resolve) => setTimeout(resolve, 1000));
+            } finally {
+                await permit?.release();
             }
         }
     }
 
-    private async processBatch(messages: Message[]): Promise<void> {
+    private async processBatch(messages: Message[]): Promise<BatchOutcome> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('jobs.webhook.dispatch_queue.process_batch', {
             ...(active ? { childOf: active } : {}),
@@ -133,7 +149,7 @@ export class DispatchQueueConsumer {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
-                    return;
+                    return { result: 'noop' };
                 }
 
                 // SQS might deliver the same message multiple times, so we guard against duplicates
@@ -167,7 +183,9 @@ export class DispatchQueueConsumer {
                     };
                 });
 
+                const startedAt = Date.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                const durationMs = Date.now() - startedAt;
                 if (res.isErr()) {
                     span.setTag('error', true);
                     span.setTag('error.type', res.error.name);
@@ -178,14 +196,36 @@ export class DispatchQueueConsumer {
                     }
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
                     report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
-                    return;
+                    if (res.error.name === 'webhook_admission_exceeded') {
+                        const retryAfterMs = getRetryAfterMs(res.error.payload);
+                        return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
+                    }
+                    return { result: 'failure', durationMs };
                 }
 
                 await this.handleBatchResult(groupedEntries, res.value);
+                return { result: 'success', durationMs };
             } finally {
                 span.finish();
             }
         });
+    }
+
+    private async recordCapacityOutcome(outcome: BatchOutcome): Promise<void> {
+        if (!this.capacityCoordinator) {
+            return;
+        }
+        try {
+            if (outcome.result === 'success') {
+                await this.capacityCoordinator.recordSuccess(outcome.durationMs ?? 0);
+            } else if (outcome.result === 'congestion') {
+                await this.capacityCoordinator.recordCongestion(outcome.retryAfterMs ?? 1000);
+            } else if (outcome.result === 'failure') {
+                await this.capacityCoordinator.recordFailure();
+            }
+        } catch (err) {
+            report(new Error('webhook dispatch capacity feedback failed', { cause: err }));
+        }
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -299,4 +339,12 @@ function getClientErrorResponsePayload(err: { payload?: unknown }): string | nul
     }
 
     return JSON.stringify(responsePayload);
+}
+
+function getRetryAfterMs(payload: unknown): number | undefined {
+    if (!payload || typeof payload !== 'object' || !('retryAfterMs' in payload)) {
+        return undefined;
+    }
+    const retryAfterMs = payload.retryAfterMs;
+    return typeof retryAfterMs === 'number' && retryAfterMs >= 0 ? retryAfterMs : undefined;
 }

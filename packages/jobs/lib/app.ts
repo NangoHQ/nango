@@ -1,9 +1,11 @@
 import './tracer.js';
 
+import { createHash } from 'node:crypto';
+
 import db from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { generateImage } from '@nangohq/fleet';
-import { destroy as destroyKvstore } from '@nangohq/kvstore';
+import { destroy as destroyKvstore, getRedis, getRedisUrl } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { getLogger, once, report, stringifyError } from '@nangohq/utils';
@@ -16,6 +18,7 @@ import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.j
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
+import { RedisDispatchCapacityCoordinator } from './webhook/dispatch-queue/capacity-coordinator.js';
 import { DispatchQueueConsumer } from './webhook/dispatch-queue/consumer.js';
 
 const logger = getLogger('Jobs');
@@ -47,6 +50,35 @@ try {
     const invocationsProcessor = new LambdaInvocationsProcessor();
     const lambdaKeepWarmProcessor = new LambdaKeepWarmProcessor({ transport: pubsub.transport });
 
+    let dispatchCapacityCoordinator: RedisDispatchCapacityCoordinator | undefined;
+    if (envs.NANGO_TASK_DISPATCH_QUEUE_URL && envs.NANGO_TASK_DISPATCH_REDIS_COORDINATION_ENABLED) {
+        const redisUrl = getRedisUrl();
+        if (!redisUrl) {
+            throw new Error('Redis must be configured when NANGO_TASK_DISPATCH_REDIS_COORDINATION_ENABLED is enabled');
+        }
+        const queueIdentity = createHash('sha256')
+            .update(envs.NANGO_TASK_DISPATCH_QUEUE_URL ?? 'unconfigured')
+            .digest('hex')
+            .slice(0, 16);
+        dispatchCapacityCoordinator = new RedisDispatchCapacityCoordinator({
+            redis: await getRedis(redisUrl),
+            keyPrefix: `${envs.JOBS_NAMESPACE}:webhook-dispatch:{${queueIdentity}}`,
+            initialLimit: envs.NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY,
+            hardMaximum: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY,
+            leaseTtlMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS,
+            acquireRetryMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_ACQUIRE_RETRY_MS,
+            healthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS,
+            controlIntervalMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_CONTROL_INTERVAL_MS
+        });
+    }
+    if (envs.NANGO_TASK_DISPATCH_QUEUE_URL) {
+        logger.info('webhook dispatch capacity coordination configured', {
+            mode: dispatchCapacityCoordinator ? 'redis_adaptive' : 'per_instance',
+            localConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,
+            adaptiveMaximum: dispatchCapacityCoordinator ? envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY : undefined
+        });
+    }
+
     const webhookDispatchConsumer = envs.NANGO_TASK_DISPATCH_QUEUE_URL
         ? new DispatchQueueConsumer({
               queueUrl: envs.NANGO_TASK_DISPATCH_QUEUE_URL,
@@ -56,7 +88,8 @@ try {
               maxMessages: envs.NANGO_TASK_DISPATCH_MAX_MESSAGES,
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
               visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
-              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000
+              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
+              ...(dispatchCapacityCoordinator ? { capacityCoordinator: dispatchCapacityCoordinator } : {})
           })
         : undefined;
 
