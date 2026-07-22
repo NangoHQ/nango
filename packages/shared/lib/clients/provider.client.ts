@@ -5,7 +5,7 @@ import qs from 'qs';
 
 import { axiosInstance, getLogger, stringifyError } from '@nangohq/utils';
 
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
+import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
@@ -32,8 +32,8 @@ const logger = getLogger('Provider.Client');
 
 const axios = {
     post: (url: string, data?: unknown, config?: Parameters<typeof axiosInstance.post>[2]) =>
-        axiosInstance.post(url, data, { ...config, ...getOAuthSafeHttpAgents() }),
-    get: (url: string, config?: Parameters<typeof axiosInstance.get>[1]) => axiosInstance.get(url, { ...config, ...getOAuthSafeHttpAgents() })
+        axiosInstance.post(url, data, { ...config, ...getOAuthAxiosRequestConfig() }),
+    get: (url: string, config?: Parameters<typeof axiosInstance.get>[1]) => axiosInstance.get(url, { ...config, ...getOAuthAxiosRequestConfig() })
 };
 
 class ProviderClient {

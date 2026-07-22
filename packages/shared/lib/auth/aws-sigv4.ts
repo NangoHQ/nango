@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { signAwsSigV4Request } from '../services/proxy/aws-sigv4.js';
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
+import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -186,7 +186,7 @@ async function fetchAwsTemporaryCredentialsBuiltin({
         const response = await axios.post(stsUrl, body, {
             headers: signedHeaders,
             transformResponse: [(data: unknown) => data], // keep raw XML
-            ...getOAuthSafeHttpAgents()
+            ...getOAuthAxiosRequestConfig()
         });
 
         const creds = parseAssumeRoleResponse(response.data as string);
@@ -240,7 +240,7 @@ async function fetchAwsTemporaryCredentialsCustom({
 
     try {
         await assertSafeOAuthUrl(settings.stsEndpoint.url);
-        const response = await axios.post(settings.stsEndpoint.url, payload, { headers, ...getOAuthSafeHttpAgents() });
+        const response = await axios.post(settings.stsEndpoint.url, payload, { headers, ...getOAuthAxiosRequestConfig() });
         const creds = normalizeStsResponse(response.data);
         if (!creds) {
             return Err(
