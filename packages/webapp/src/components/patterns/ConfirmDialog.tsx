@@ -1,8 +1,7 @@
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@nangohq/design-system';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { StyledLink } from '../ui/StyledLink';
 
 export interface ConfirmDialogOptions {
