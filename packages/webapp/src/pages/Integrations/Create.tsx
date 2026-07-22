@@ -87,7 +87,9 @@ export const CreateIntegration = () => {
                             <div className="flex flex-wrap gap-3 gap-y-2">
                                 {provider.authMode !== 'NONE' && <Badge variant="brand">{getDisplayName(provider.authMode)}</Badge>}
                                 {provider.categories?.map((category) => (
-                                    <Badge key={category}>{category}</Badge>
+                                    <Badge key={category} case="capitalize">
+                                        {category}
+                                    </Badge>
                                 ))}
                             </div>
                         </div>
