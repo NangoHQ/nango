@@ -1303,6 +1303,8 @@
               "integrations/all/gusto",
               "integrations/all/gusto-demo",
               "integrations/all/hackerrank-work",
+              "api-integrations/hail",
+              "api-integrations/hail-mcp",
               "api-integrations/haileyhr",
               "api-integrations/halo-psa",
               "integrations/all/harvest",
