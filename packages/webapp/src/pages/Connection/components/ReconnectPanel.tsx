@@ -9,8 +9,8 @@ import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiConnectSessionsReconnect } from '@/hooks/useConnect';
 import { clearConnectionsCache } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -41,6 +41,8 @@ export const ReconnectPanel = () => {
     const canReconnect = can(permissions.canWriteProdConnections) || !environmentAndAccount?.environment.is_production;
 
     const isDashboardOrigin = connection.tags.origin === 'nango_dashboard';
+
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
@@ -73,7 +75,7 @@ export const ReconnectPanel = () => {
         [toast, invalidateConnectionQueries]
     );
 
-    const onClickReconnect = () => {
+    const startReconnect = () => {
         if (!environmentAndAccount) {
             return;
         }
@@ -110,6 +112,23 @@ export const ReconnectPanel = () => {
                 ui.close();
             }
         }, 0);
+    };
+
+    const onClickReconnect = () => {
+        if (isDashboardOrigin) {
+            startReconnect();
+            return;
+        }
+
+        void confirm({
+            title: 'Reconnect this connection?',
+            description:
+                "This connection wasn't created from this dashboard. Reconnecting here will authenticate as whoever completes the popup in this browser, which may not be the original account. If someone else needs to reconnect, use Share reconnect link instead.",
+            confirmButtonText: 'Reconnect anyway',
+            confirmVariant: 'primary',
+            icon: <TriangleAlert />,
+            onConfirm: startReconnect
+        });
     };
 
     const onClickShareReconnectLink = async () => {
@@ -150,6 +169,7 @@ export const ReconnectPanel = () => {
 
     return (
         <div className="flex flex-col gap-3">
+            {DialogComponent}
             <div className="flex flex-row items-center gap-2">
                 <PermissionGate condition={canReconnect}>
                     {(allowed) => (
@@ -169,16 +189,6 @@ export const ReconnectPanel = () => {
                 </PermissionGate>
                 <InfoTooltip side="top">Anyone with this link can open Connect UI and finish reconnecting. The link expires in 30 minutes.</InfoTooltip>
             </div>
-
-            {!isDashboardOrigin && (
-                <Alert variant="warning">
-                    <TriangleAlert />
-                    <AlertDescription>
-                        This connection was not created from this dashboard. Reconnecting here will authenticate as whoever completes the popup in this browser,
-                        which may not be the original account. If someone else needs to reconnect, use the Share reconnect link option instead.
-                    </AlertDescription>
-                </Alert>
-            )}
         </div>
     );
 };
