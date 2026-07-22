@@ -38,9 +38,10 @@ export interface BadgeProps extends React.ComponentProps<'span'>, VariantProps<t
     asChild?: boolean;
 }
 
-function Badge({ className, variant, case: textCase, asChild = false, ...props }: BadgeProps) {
+const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({ className, variant, case: textCase, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'span';
-    return <Comp data-slot="badge" className={cn(badgeVariants({ variant, case: textCase }), className)} {...props} />;
-}
+    return <Comp ref={ref} data-slot="badge" className={cn(badgeVariants({ variant, case: textCase }), className)} {...props} />;
+});
+Badge.displayName = 'Badge';
 
 export { Badge };
