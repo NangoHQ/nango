@@ -5,10 +5,21 @@ import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { permissions } from '@nangohq/authz';
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    InputGroup,
+    InputGroupInput
+} from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { usePostInvite } from '@/hooks/useInvite';
@@ -76,42 +87,44 @@ export const AddTeamMemberButton = () => {
                     <DialogTitle>Invite a team member</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-4">
-                    <Form {...form}>
-                        <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)}>
-                            <div className="flex items-start gap-2">
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field, fieldState }) => (
-                                        <FormItem className="flex-1">
-                                            <FormControl>
-                                                <InputGroup>
-                                                    <InputGroupInput
-                                                        placeholder="name@company.com"
-                                                        autoComplete="off"
-                                                        {...field}
-                                                        aria-invalid={!!fieldState.error}
-                                                    />
-                                                </InputGroup>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Controller
-                                    control={form.control}
-                                    name="role"
-                                    render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} hasRBAC={hasRBAC} />}
-                                />
-                            </div>
-                        </form>
-                    </Form>
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <Form {...form}>
+                            <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)}>
+                                <div className="flex items-start gap-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field, fieldState }) => (
+                                            <FormItem className="flex-1">
+                                                <FormControl>
+                                                    <InputGroup>
+                                                        <InputGroupInput
+                                                            placeholder="name@company.com"
+                                                            autoComplete="off"
+                                                            {...field}
+                                                            aria-invalid={!!fieldState.error}
+                                                        />
+                                                    </InputGroup>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <Controller
+                                        control={form.control}
+                                        name="role"
+                                        render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} hasRBAC={hasRBAC} />}
+                                    />
+                                </div>
+                            </form>
+                        </Form>
 
-                    <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
-                        Learn more about roles and permissions
-                    </StyledLink>
-                </div>
+                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
+                            Learn more about roles and permissions
+                        </StyledLink>
+                    </div>
+                </DialogBody>
 
                 <DialogFooter>
                     <DialogClose asChild>

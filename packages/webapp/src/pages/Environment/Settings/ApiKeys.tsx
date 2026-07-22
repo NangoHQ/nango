@@ -2,12 +2,11 @@ import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, IconButton, Input } from '@nangohq/design-system';
+import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -281,15 +280,22 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
                 <DialogHeader>
                     <DialogTitle>Create API Key</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="api-key-name" className="text-body-medium-semi text-text-strong">
-                            Display name<span className="text-status-danger-text">*</span>
-                        </label>
-                        <Input id="api-key-name" placeholder="e.g. Production backend" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="api-key-name" className="text-body-medium-semi text-text-strong">
+                                Display name<span className="text-status-danger-text">*</span>
+                            </label>
+                            <Input
+                                id="api-key-name"
+                                placeholder="e.g. Production backend"
+                                value={displayName}
+                                onChange={(e) => setDisplayName(e.target.value)}
+                            />
+                        </div>
+                        <ScopeSelector selectedScopes={selectedScopes} onChange={setSelectedScopes} />
                     </div>
-                    <ScopeSelector selectedScopes={selectedScopes} onChange={setSelectedScopes} />
-                </div>
+                </DialogBody>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)}>
                         Cancel

@@ -3,12 +3,22 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { Dialog } from '@/components/ui/Dialog.js';
 import { StyledLink } from '@/components/ui/StyledLink.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/Table';
 import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
@@ -18,7 +28,6 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/Dialog.jsx';
 import { Dot } from '../../../../components/ui/Dot.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 
@@ -397,22 +406,26 @@ const PlanChangeDialog: React.FC<{
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-            <DialogContent className="text-text-secondary text-sm">
+            <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
                         Confirm {selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to {selectedPlan.plan.title} plan
                     </DialogTitle>
                     <DialogDescription className="sr-only">{description}</DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-1">
-                    <p>{description}</p>
-                    {longWait && <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>}
-                </div>
-                {error && (
-                    <Alert variant="error">
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
+                <DialogBody>
+                    <div className="flex flex-col gap-1 text-text-secondary text-sm">
+                        <p>{description}</p>
+                        {longWait && (
+                            <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
+                        )}
+                    </div>
+                    {error && (
+                        <Alert variant="error">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
