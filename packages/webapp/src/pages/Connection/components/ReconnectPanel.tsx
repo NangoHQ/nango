@@ -77,26 +77,37 @@ export const ReconnectPanel = () => {
             return;
         }
 
+        hasConnected.current = undefined;
+
         const nango = new Nango({
             host: globalEnv.apiUrl,
             websocketsPath: environmentAndAccount.environment.websockets_path || ''
         });
 
-        connectUI.current = nango.openConnectUI({
+        // Captured locally (not just via the connectUI ref) so a stale callback from a
+        // prior click can't apply its session token to a newer popup instance.
+        const ui = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
             onEvent,
             themeOverride: isDarkMode ? 'dark' : 'light'
         });
+        connectUI.current = ui;
 
         // Defer session creation so the popup can open and show a loading state immediately.
         setTimeout(async () => {
-            const res = await createReconnectSession();
-            if ('error' in res.json) {
+            try {
+                const res = await createReconnectSession();
+                if ('error' in res.json) {
+                    toast.toast({ title: 'Failed to start reconnect', variant: 'error' });
+                    ui.close();
+                    return;
+                }
+                ui.setSessionToken(res.json.data.token);
+            } catch {
                 toast.toast({ title: 'Failed to start reconnect', variant: 'error' });
-                return;
+                ui.close();
             }
-            connectUI.current!.setSessionToken(res.json.data.token);
         }, 0);
     };
 
@@ -123,6 +134,8 @@ export const ReconnectPanel = () => {
             } catch (_) {
                 toast.toast({ title: 'Failed to copy link', variant: 'error' });
             }
+        } catch (_) {
+            toast.toast({ title: 'Failed to create shareable link', variant: 'error' });
         } finally {
             setIsShareLinkLoading(false);
         }

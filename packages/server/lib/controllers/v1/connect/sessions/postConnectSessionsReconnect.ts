@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import { endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { connectionService, getEndUser } from '@nangohq/shared';
 import { buildConnectUiSessionLink, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -60,7 +60,11 @@ export const postInternalConnectSessionsReconnect = asyncWrapper<PostInternalCon
         }
 
         const logCtx = await logContextGetter.create(
-            { operation: { type: 'auth', action: 'create_connection' }, meta: { authType: 'unauth', connectSession: endUserToMeta(endUser) } },
+            {
+                operation: { type: 'auth', action: 'create_connection' },
+                meta: { authType: 'unauth', connectSession: endUserToMeta(endUser) },
+                expiresAt: defaultOperationExpiration.auth()
+            },
             { account, environment }
         );
 
