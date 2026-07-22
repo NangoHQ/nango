@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -22,6 +23,48 @@ import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, PersistAuthContext, Re
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
+
+/**
+ * Measurement-only auth cache: emits a hit/miss metric to estimate the hit ratio
+ * a real per-process cache would achieve. Serves nothing and stores nothing derived
+ * from the auth context — the value is only a TTL timestamp.
+ */
+class ShadowAuthCache {
+    private seenAtNs = new FixedSizeMap<string, bigint>(10_000);
+    private readonly ttlNs: bigint;
+
+    constructor(
+        private readonly name: string,
+        ttlMs: number
+    ) {
+        this.ttlNs = BigInt(ttlMs) * 1_000_000n;
+    }
+
+    /** Emits hit/miss for this hash, evicting the entry when its TTL has passed. */
+    wouldHit(hash: string): boolean {
+        const seenAt = this.seenAtNs.get(hash);
+        let hit = false;
+        if (seenAt !== undefined) {
+            if (process.hrtime.bigint() - seenAt < this.ttlNs) {
+                hit = true;
+            } else {
+                this.seenAtNs.delete(hash);
+            }
+        }
+        metrics.increment(metrics.Types.AUTH_SHADOW_CACHE, 1, { cache: this.name, result: hit ? 'hit' : 'miss' });
+        return hit;
+    }
+
+    /** Marks a successful lookup as would-be-cached. Skips fresh entries so their TTL is not extended. */
+    populate(hash: string, wasHit: boolean): void {
+        if (!wasHit) {
+            this.seenAtNs.set(hash, process.hrtime.bigint());
+        }
+    }
+}
+
+const persistAuthShadowCache = new ShadowAuthCache('persist_internal_secret', envs.AUTH_SHADOW_CACHE_TTL_MS);
+const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
 
 interface AccountContext {
     account: DBTeam;
@@ -553,6 +596,7 @@ class AccountService {
 
     private async getAccountContextByCustomerKey(secretKey: string): Promise<AccountContext | null> {
         const hash = await this.hashSecretWithCache(secretKey);
+        const wouldHit = customerKeyShadowCache.wouldHit(hash);
 
         // This query debounces last_used_at in the same statement, so it must run on the primary.
         // If we later introduce real read replicas for auth lookups, split this into:
@@ -619,6 +663,7 @@ class AccountService {
         }
 
         hashLocalCache.set(secretKey, hash);
+        customerKeyShadowCache.populate(hash, wouldHit);
 
         const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
@@ -696,6 +741,7 @@ class AccountService {
         }
 
         const hash = await this.hashSecretWithCache(secretKey);
+        const wouldHit = persistAuthShadowCache.wouldHit(hash);
 
         const row = await db.readOnly
             .select<{
@@ -728,6 +774,7 @@ class AccountService {
 
         // Store only successful lookups to avoid polluting the cache
         hashLocalCache.set(secretKey, hash);
+        persistAuthShadowCache.populate(hash, wouldHit);
         return {
             account: { id: row.account_id },
             environment: { id: row.environment_id, name: row.environment_name },
