@@ -30,8 +30,11 @@ const PROD_WRITES: Permission[] = [
 
 const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials];
 
+// Reserved to administrator + production_support (denied to every other role).
+const ADMIN_AND_PROD_SUPPORT: Permission[] = [p.canReadAuditTrail];
+
 export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
     administrator: [],
     production_support: [...ADMIN_ONLY, ...PROD_WRITES, ...PROD_SECRETS],
-    development_full_access: [...ADMIN_ONLY, { action: '*', resource: '*', scope: 'production' }]
+    development_full_access: [...ADMIN_ONLY, { action: '*', resource: '*', scope: 'production' }, ...ADMIN_AND_PROD_SUPPORT]
 };

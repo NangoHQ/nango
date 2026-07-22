@@ -389,6 +389,7 @@ export async function credentialsTest({
         connection_id: connectionId,
         credentials,
         connection_config: connectionConfig,
+        webhook_url_override: null,
         environment_id: config.environment_id,
         created_at: new Date(),
         updated_at: new Date(),

@@ -4,11 +4,12 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
 import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, getEndUser } from '@nangohq/shared';
-import { connectUrl, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { buildConnectUiSessionLink, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 import { checkIntegrationsExist, bodySchema as originalBodySchema } from './postSessions.js';
 
 import type { PostPublicConnectSessionsReconnect } from '@nangohq/types';
@@ -21,6 +22,7 @@ const bodySchema = z
         organization: originalBodySchema.shape.organization,
         integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
         overrides: originalBodySchema.shape.overrides.optional(),
+        webhook_url_override: originalBodySchema.shape.webhook_url_override,
         tags: originalBodySchema.shape.tags
     })
     .strict();
@@ -44,7 +46,12 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
     }
 
     const { account, environment, plan } = res.locals;
-    const body: PostPublicConnectSessionsReconnect['Body'] = val.data;
+    const mapped = mapDeprecatedConnectionConfigWebhookUrl(val.data);
+    if (!mapped.ok) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: mapped.issues }) } });
+        return;
+    }
+    const body: PostPublicConnectSessionsReconnect['Body'] = mapped.body;
 
     const { status, response }: Reply = await db.knex.transaction<Reply>(async (trx) => {
         const connection = await connectionService.checkIfConnectionExists(trx, {
@@ -125,6 +132,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
                 : null,
             operationId: logCtx.id,
             overrides: body.overrides || null,
+            webhookUrlOverride: body.webhook_url_override || null,
             tags
         });
         if (createConnectSession.isErr()) {
@@ -145,7 +153,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         }
 
         const [token, privateKey] = createPrivateKey.value;
-        const connect_link = new URL(`${connectUrl}?session_token=${token}`).toString();
+        const connect_link = buildConnectUiSessionLink(token);
         return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
     });
 

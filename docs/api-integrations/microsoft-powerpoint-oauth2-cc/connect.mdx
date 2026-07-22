@@ -1,0 +1,65 @@
+---
+title: Microsoft PowerPoint (Client Credentials) - How do I link my account?
+sidebarTitle: Microsoft PowerPoint (Client Credentials)
+---
+
+# Overview
+
+To connect Microsoft PowerPoint in Nango, you need to provide:
+
+1. **Tenant ID** — The unique identifier for your organization that uses Microsoft services.
+2. **Client ID** — The unique identifier that Azure assigns to your application when it's registered.
+3. **Client Secret** — A unique string that enables the client application to access Microsoft Graph.
+
+This guide will walk you through generating and finding these credentials within Azure.
+
+### Prerequisites
+
+- You must have an active Azure account with a Microsoft 365 subscription (OneDrive/SharePoint).
+- You must have permission to register applications and grant admin consent in Microsoft Entra ID.
+
+### Instructions
+
+#### Step 1: Finding your Tenant ID
+
+1. Your Tenant ID can be found in the **Tenant ID** field on the [Overview page](https://aad.portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview) within your Azure account.
+<img src="/integrations/all/microsoft-business-central/tenant_id.png" alt="Tenant ID field on the Microsoft Entra ID Overview page" />
+
+#### Step 2: Generating your Client ID
+
+1. Navigate to the [Azure portal home page](https://portal.azure.com/#home) and sign in using the credentials of an administrator.
+2. Select **App registrations**.
+<img src="/integrations/all/microsoft-business-central/app_registration.png" alt="App registrations option in the Azure portal" />
+3. Select **New registration**.
+<img src="/integrations/all/microsoft-business-central/new_registration.png" alt="New registration button in Microsoft Entra ID app registrations" />
+4. In the **Register an application** section, enter a meaningful application name to display to users (e.g. `Nango PowerPoint`). Under **Supported account types**, leave it to the default one which is **Single tenant Only** and click **Register**.
+5. Once you have registered your application, your **Client ID** will be displayed in the **Application (client) ID** field within the **Essentials**. Your **Tenant ID** is shown in the **Directory (tenant) ID** field.
+
+#### Step 3: Generating your Client Secret
+
+1. After registering a new app in the [step above](#step-2-generating-your-client-id), navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
+2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
+3. Once completed, copy the **Client Secret** from the **Value** field immediately and store it securely; it will not be shown again after you leave this page. Don't confuse it with the **Secret ID** column in the same table — that's just an identifier for the secret entry, not the credential itself.
+4. After generating the **Client Secret**, you must grant the registered application the necessary permissions. Navigate to **API permissions**, select **Add a permission**, and choose **Microsoft Graph**.
+5. From the displayed list, choose **Application permissions**, select the required permissions, and click **Add permissions**. Common permissions include:
+   - `Files.Read.All` — read all files across the tenant
+   - `Files.ReadWrite.All` — read and write all files across the tenant
+   - `Sites.Read.All` — read SharePoint sites, needed to resolve a site ID before reading its files
+
+6. Select **Grant admin consent for [your organization]** and confirm. Admin consent is required for application permissions.
+
+<Note>
+Application (client credentials) permissions have no signed-in user — the token can read or write across the whole tenant, scoped only by the permissions you grant. Grant the narrowest set your integration needs.
+</Note>
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your credentials:
+
+1. Open the form where you need to authenticate with Microsoft PowerPoint.
+2. Enter the **Tenant ID**, **Client ID**, and **Client Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/microsoft-powerpoint-oauth2-cc/form.png" alt="Nango Connect UI form with Tenant ID, Client ID, and Client Secret fields for Microsoft PowerPoint" style={{maxWidth: "450px" }}/>
+
+You are now connected to Microsoft PowerPoint.

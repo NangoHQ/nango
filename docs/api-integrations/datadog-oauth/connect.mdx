@@ -1,0 +1,36 @@
+---
+title: Datadog (OAuth) - How do I link my account?
+sidebarTitle: Datadog (OAuth)
+---
+
+# Overview
+
+To connect with Datadog OAuth, you need:
+
+1. **Site Parameter** - The Datadog site your account lives on.
+2. **Authorization Host** - The web application host for that same site. This is a separate value because Datadog's API host (`api.<site parameter>`) and its web application host don't follow the same pattern for every site.
+
+This guide walks you through finding both values.
+
+### Step 1: Finding your Datadog site
+
+Match your Datadog URL (in your browser) to the corresponding site, then use the **Site parameter** and **Authorization host** columns to fill in the two fields in Nango:
+
+| Site | Site URL | Site parameter | Authorization host |
+|------|----------|-----------------|---------------------|
+| US1 | app.datadoghq.com | `datadoghq.com` | `app.datadoghq.com` |
+| US3 | us3.datadoghq.com | `us3.datadoghq.com` | `us3.datadoghq.com` |
+| US5 | us5.datadoghq.com | `us5.datadoghq.com` | `us5.datadoghq.com` |
+| EU1 | app.datadoghq.eu | `datadoghq.eu` | `app.datadoghq.eu` |
+| US1-FED | app.ddog-gov.com | `ddog-gov.com` | `app.ddog-gov.com` |
+| AP1 | ap1.datadoghq.com | `ap1.datadoghq.com` | `ap1.datadoghq.com` |
+
+### Step 2: Enter your site parameter and authorization host in Nango
+
+1. Open the Datadog (OAuth) connection form in Nango.
+2. Select your **Site Parameter** and matching **Authorization Host** from the table above.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/datadog-oauth/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Datadog (OAuth).
