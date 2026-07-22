@@ -19002,6 +19002,39 @@ salesloft:
         base_url: https://api.salesloft.com
     docs: https://nango.dev/docs/integrations/all/salesloft
 
+semble:
+    display_name: Semble
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://open.semble.io/graphql
+    token_params:
+        query: 'mutation { signIn(email: "${credentials.email}", password: "${credentials.password}") { token } }'
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: data.signIn.token
+    proxy:
+        base_url: https://open.semble.io
+        headers:
+            x-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/semble
+    docs_connect: https://nango.dev/docs/api-integrations/semble/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: The email address of the Semble user to authenticate as.
+            format: email
+            doc_section: '#step-1-authenticating-with-email-and-password'
+        password:
+            type: string
+            title: Password
+            description: The password for the Semble user.
+            secret: true
+            doc_section: '#step-1-authenticating-with-email-and-password'
+
 sendgrid:
     display_name: SendGrid
     categories:
