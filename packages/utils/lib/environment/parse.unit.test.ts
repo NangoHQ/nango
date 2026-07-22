@@ -19,6 +19,18 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
+    it('should reject webhook admission concurrency that consumes the database reserve', () => {
+        expect(() =>
+            parseEnvs(ENVS, {
+                ORCHESTRATOR_DB_POOL_MAX: '10',
+                ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: '4',
+                ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: '7'
+            })
+        ).toThrow(
+            'ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY (7) must not exceed ORCHESTRATOR_DB_POOL_MAX - ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE (6)'
+        );
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');

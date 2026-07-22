@@ -4,7 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
-import type { WebhookAdmissionController, WebhookAdmissionPermit, WebhookAdmissionRejection } from '../../webhook-admission.js';
+import type { WebhookAdmission, WebhookAdmissionPermit, WebhookAdmissionRejection } from '../../webhook-admission.js';
 import type { ImmediateSuccess } from './postImmediate.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -62,11 +62,11 @@ const validate = validateRequest<PostImmediateBatch>({
     }
 });
 
-const handler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionController) => {
+const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
         const webhookNames = new Set(entries.filter((entry) => entry.args.type === 'webhook').map((entry) => entry.name));
-        const admission = webhookNames.size > 0 ? webhookAdmission?.acquire(webhookNames.size) : undefined;
+        const admission = webhookNames.size > 0 ? webhookAdmission.acquire(webhookNames.size) : undefined;
         if (admission && !admission.acquired) {
             res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
             res.status(429).json({
@@ -133,7 +133,7 @@ const handler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionContro
 
 export const route: Route<PostImmediateBatch> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler, webhookAdmission?: WebhookAdmissionController): RouteHandler<PostImmediateBatch> => {
+export const routeHandler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission): RouteHandler<PostImmediateBatch> => {
     return {
         ...route,
         validate,

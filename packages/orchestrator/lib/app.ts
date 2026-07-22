@@ -75,13 +75,6 @@ try {
     });
     backpressureMonitor.start();
 
-    const availableWebhookConnections = envs.ORCHESTRATOR_DB_POOL_MAX - envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE;
-    if (envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY > availableWebhookConnections) {
-        throw new Error(
-            `ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY (${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY}) must not exceed ` +
-                `ORCHESTRATOR_DB_POOL_MAX - ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE (${availableWebhookConnections})`
-        );
-    }
     const webhookAdmission = new WebhookAdmissionController({
         scheduler,
         maxConcurrency: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY,
@@ -96,7 +89,7 @@ try {
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
     eventsHandler.setMaxListeners(Infinity);
 
-    const server = getServer(scheduler, eventsHandler, { webhookAdmission });
+    const server = getServer(scheduler, eventsHandler, webhookAdmission);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);

@@ -7,6 +7,7 @@ import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { Err, nanoid, Ok } from '@nangohq/utils';
 
 import { TaskEventsHandler } from '../events.js';
+import { allowWebhookAdmission } from '../helpers.test.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
@@ -26,7 +27,7 @@ const port = await getPort();
 const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
 describe('OrchestratorProcessor', () => {
-    const server = getServer(scheduler, taskEventsHandler);
+    const server = getServer(scheduler, taskEventsHandler, allowWebhookAdmission);
 
     beforeAll(async () => {
         await dbClient.migrate();

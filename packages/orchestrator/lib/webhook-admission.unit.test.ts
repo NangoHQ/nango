@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { WebhookAdmissionController } from './webhook-admission.js';
 
@@ -52,5 +52,25 @@ describe('WebhookAdmissionController', () => {
 
         await expect(controller.start()).rejects.toThrow('database unavailable');
         expect(controller.acquire(1)).toEqual({ acquired: false, reason: 'backlog_unavailable', retryAfterMs: 1500 });
+    });
+
+    it('records admission decisions and backlog state', async () => {
+        const increment = vi.spyOn(metrics, 'increment').mockImplementation(() => {});
+        const gauge = vi.spyOn(metrics, 'gauge').mockImplementation(() => {});
+        const { controller } = createController({ createdCount: 9, createdCountMax: 10 });
+        await controller.start();
+
+        const permit = controller.acquire(1);
+        expect(controller.acquire(1)).toEqual({ acquired: false, reason: 'backlog', retryAfterMs: 1500 });
+        if (permit.acquired) {
+            permit.release(1);
+        }
+
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_WEBHOOK_ADMISSION, 1, { result: 'accepted' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_WEBHOOK_ADMISSION, 1, { result: 'rejected', reason: 'backlog' });
+        expect(gauge).toHaveBeenCalledWith(metrics.Types.ORCH_WEBHOOK_BACKLOG, 9);
+        expect(gauge).toHaveBeenCalledWith(metrics.Types.ORCH_WEBHOOK_ADMISSION_INFLIGHT, 1);
+        expect(gauge).toHaveBeenCalledWith(metrics.Types.ORCH_WEBHOOK_ADMISSION_INFLIGHT, 0);
+        await controller.stop();
     });
 });

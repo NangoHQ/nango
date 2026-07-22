@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { stringifyError } from '@nangohq/utils';
+import { metrics, stringifyError } from '@nangohq/utils';
 
 import { logger } from './utils.js';
 
@@ -21,6 +21,10 @@ export interface WebhookAdmissionPermit {
 
 export type WebhookAdmissionResult = WebhookAdmissionPermit | WebhookAdmissionRejection;
 
+export interface WebhookAdmission {
+    acquire(requestedCount: number): WebhookAdmissionResult;
+}
+
 interface WebhookAdmissionOptions {
     scheduler: Scheduler;
     maxConcurrency: number;
@@ -29,7 +33,7 @@ interface WebhookAdmissionOptions {
     retryAfterMs: number;
 }
 
-export class WebhookAdmissionController {
+export class WebhookAdmissionController implements WebhookAdmission {
     private readonly scheduler: Scheduler;
     private readonly maxConcurrency: number;
     private readonly createdCountMax: number;
@@ -71,12 +75,15 @@ export class WebhookAdmissionController {
         if (this.active >= this.maxConcurrency) {
             return this.reject('concurrency');
         }
+        // This mirrors the scheduler's per-group cap: it is a process-local safeguard, not an atomic global limit.
         if (this.createdCount + this.pendingCreatedCount + requestedCount > this.createdCountMax) {
             return this.reject('backlog');
         }
 
         this.active++;
         this.pendingCreatedCount += requestedCount;
+        metrics.increment(metrics.Types.ORCH_WEBHOOK_ADMISSION, 1, { result: 'accepted' });
+        metrics.gauge(metrics.Types.ORCH_WEBHOOK_ADMISSION_INFLIGHT, this.active);
         let released = false;
         return {
             acquired: true,
@@ -88,11 +95,13 @@ export class WebhookAdmissionController {
                 this.active--;
                 this.pendingCreatedCount -= requestedCount;
                 this.createdCount += createdCount;
+                metrics.gauge(metrics.Types.ORCH_WEBHOOK_ADMISSION_INFLIGHT, this.active);
             }
         };
     }
 
     private reject(reason: WebhookAdmissionRejectionReason): WebhookAdmissionRejection {
+        metrics.increment(metrics.Types.ORCH_WEBHOOK_ADMISSION, 1, { result: 'rejected', reason });
         return { acquired: false, reason, retryAfterMs: this.retryAfterMs };
     }
 
@@ -119,5 +128,6 @@ export class WebhookAdmissionController {
         }
         this.createdCount = result.value;
         this.backlogAvailable = true;
+        metrics.gauge(metrics.Types.ORCH_WEBHOOK_BACKLOG, this.createdCount);
     }
 }

@@ -5,7 +5,12 @@ import { TaskEventsHandler } from './events.js';
 import { handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 
+import type { WebhookAdmission } from './webhook-admission.js';
 import type { DatabaseClient } from '@nangohq/scheduler';
+
+export const allowWebhookAdmission: WebhookAdmission = {
+    acquire: () => ({ acquired: true, release: () => {} })
+};
 
 export class TestOrchestratorService {
     private orchestratorClient: OrchestratorClient;
@@ -30,7 +35,7 @@ export class TestOrchestratorService {
             onError: () => {},
             onEvent: handleSchedulerEvent
         });
-        const server = getServer(this.scheduler, this.eventsHandler);
+        const server = getServer(this.scheduler, this.eventsHandler, allowWebhookAdmission);
         server.listen(this.port);
     }
 

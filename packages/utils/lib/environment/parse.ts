@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
-export const ENVS = z.object({
+const envSchema = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
     CI: z.coerce.boolean().default(false),
@@ -722,6 +722,21 @@ export const ENVS = z.object({
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
+});
+
+export const ENVS = envSchema.check((payload) => {
+    const envs = payload.value;
+    const availableWebhookConnections = envs.ORCHESTRATOR_DB_POOL_MAX - envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE;
+    if (envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY > availableWebhookConnections) {
+        payload.issues.push({
+            code: 'custom',
+            message:
+                `ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY (${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY}) must not exceed ` +
+                `ORCHESTRATOR_DB_POOL_MAX - ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE (${availableWebhookConnections})`,
+            path: ['ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY'],
+            input: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY
+        });
+    }
 });
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
