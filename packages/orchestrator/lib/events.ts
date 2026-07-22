@@ -159,7 +159,7 @@ class PgEventEmitter extends EventEmitter {
         }
 
         try {
-            await this.client.query(`NOTIFY ${this.channel}, '${payload}'`);
+            await this.client.query('SELECT pg_notify($1, $2)', [this.channel, payload]);
         } catch (err: any) {
             if (err.code === 'ECONNRESET' || err.code === 'ENOTCONN') {
                 this.connected = false;
