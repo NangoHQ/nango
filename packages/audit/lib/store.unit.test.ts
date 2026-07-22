@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { ClickhouseAuditSink } from './sink.js';
+import { ClickhouseAuditStore, DropAuditStore } from './store.js';
 
 import type { AuditEvent } from './event.js';
+import type { AuditStore } from './store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 
 const event: AuditEvent = {
@@ -19,15 +20,15 @@ const event: AuditEvent = {
     outcome: 'success'
 };
 
-describe('ClickhouseAuditSink.record', () => {
+describe('ClickhouseAuditStore.record', () => {
     afterEach(() => vi.restoreAllMocks());
 
     it('inserts the event as a blob with a stamped id + version and the retention tier', async () => {
         const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
         const insert = vi.fn().mockResolvedValue({});
-        const sink = new ClickhouseAuditSink({ insert } as unknown as ClickHouseClient, 90);
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
 
-        const result = await sink.record(event);
+        const result = await store.record(event);
 
         expect(result.isOk()).toBe(true);
         expect(insert).toHaveBeenCalledOnce();
@@ -50,11 +51,19 @@ describe('ClickhouseAuditSink.record', () => {
     it('returns Err and reports a failure metric when the insert fails', async () => {
         const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
         const insert = vi.fn().mockRejectedValue(new Error('clickhouse unavailable'));
-        const sink = new ClickhouseAuditSink({ insert } as unknown as ClickHouseClient, 90);
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
 
-        const result = await sink.record(event);
+        const result = await store.record(event);
 
         expect(result.isErr()).toBe(true);
         expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false' });
+    });
+});
+
+describe('DropAuditStore', () => {
+    it('drops writes and returns empty reads', async () => {
+        const store: AuditStore = new DropAuditStore();
+        expect((await store.record(event)).isOk()).toBe(true);
+        expect((await store.list({ accountId: 1, limit: 25 })).unwrap()).toEqual({ events: [], nextCursor: null });
     });
 });
