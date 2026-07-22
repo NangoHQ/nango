@@ -48,6 +48,15 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '1' })).toThrow('NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS');
     });
 
+    it('should reject task dispatch backoff bases above the maximum', () => {
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS: '10',
+                NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS: '5'
+            })
+        ).toThrow('NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS (10) must not exceed NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS (5)');
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');

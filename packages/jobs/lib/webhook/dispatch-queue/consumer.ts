@@ -207,33 +207,37 @@ export class DispatchQueueConsumer {
                     return { result: 'failure' };
                 }
                 const stopVisibilityHeartbeat = this.startVisibilityHeartbeat(entries);
-                const startedAt = Date.now();
-                const res = await this.orchestratorClient.executeWebhookBatch(propsList).finally(stopVisibilityHeartbeat);
-                const durationMs = Date.now() - startedAt;
-                if (res.isErr()) {
-                    span.setTag('error', true);
-                    span.setTag('error.type', res.error.name);
-                    span.setTag('error.message', res.error.message);
-                    const responsePayload = getClientErrorResponsePayload(res.error);
-                    if (responsePayload) {
-                        span.setTag('error.details', responsePayload);
+                try {
+                    const startedAt = Date.now();
+                    const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                    const durationMs = Date.now() - startedAt;
+                    if (res.isErr()) {
+                        span.setTag('error', true);
+                        span.setTag('error.type', res.error.name);
+                        span.setTag('error.message', res.error.message);
+                        const responsePayload = getClientErrorResponsePayload(res.error);
+                        if (responsePayload) {
+                            span.setTag('error.details', responsePayload);
+                        }
+                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
+                        report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
+                        if (res.error.name === 'webhook_admission_exceeded') {
+                            const retryAfterMs = getRetryAfterMs(res.error.payload);
+                            await this.deferEntries(entries, retryAfterMs ?? 1000);
+                            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DEFERRED, entries.length, { reason: 'global_admission' });
+                            return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
+                        }
+                        return { result: 'failure', durationMs };
                     }
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
-                    report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
-                    if (res.error.name === 'webhook_admission_exceeded') {
-                        const retryAfterMs = getRetryAfterMs(res.error.payload);
-                        await this.deferEntries(entries, retryAfterMs ?? 1000);
-                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DEFERRED, entries.length, { reason: 'global_admission' });
-                        return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
-                    }
-                    return { result: 'failure', durationMs };
-                }
 
-                if (permit && !permit.isValid()) {
-                    return { result: 'failure', durationMs };
+                    if (permit && !permit.isValid()) {
+                        return { result: 'failure', durationMs };
+                    }
+                    await this.handleBatchResult(groupedEntries, res.value);
+                    return { result: 'success', durationMs };
+                } finally {
+                    await stopVisibilityHeartbeat();
                 }
-                await this.handleBatchResult(groupedEntries, res.value);
-                return { result: 'success', durationMs };
             } finally {
                 span.finish();
             }
@@ -331,7 +335,11 @@ export class DispatchQueueConsumer {
                 await this.deleteGroup(group);
             } else if (result.error.name === 'task_cap_exceeded') {
                 const delaySeconds = this.visibilityDelaySeconds(group[0]!.msg);
-                await this.capacityCoordinator?.recordEnvironmentCongestion?.(group[0]!.parsed.connection.environment_id, delaySeconds * 1000);
+                try {
+                    await this.capacityCoordinator?.recordEnvironmentCongestion?.(group[0]!.parsed.connection.environment_id, delaySeconds * 1000);
+                } catch (err) {
+                    report(new Error('webhook dispatch environment congestion feedback failed', { cause: err }));
+                }
                 await this.changeVisibility(group, () => delaySeconds);
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap_deferred', provider });
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DEFERRED, count, { reason: 'task_cap', provider });

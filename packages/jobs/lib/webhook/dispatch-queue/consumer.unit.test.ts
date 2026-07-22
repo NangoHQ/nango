@@ -385,6 +385,63 @@ describe('DispatchQueueConsumer', () => {
         await h.consumer.stop();
     });
 
+    it('extends visibility while acknowledgement is in flight', async () => {
+        const deleteGate = deferred<undefined>();
+        let delivered = false;
+        const sqsSend = vi.fn(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
+            if (command instanceof ReceiveMessageCommand) {
+                if (delivered) {
+                    return await new Promise((_, reject) => {
+                        options?.abortSignal?.addEventListener('abort', () => reject(abortError()), { once: true });
+                    });
+                }
+                delivered = true;
+                return {
+                    Messages: [
+                        {
+                            Body: JSON.stringify(buildMessage()),
+                            ReceiptHandle: 'rh-1',
+                            Attributes: { SentTimestamp: String(Date.now()) }
+                        }
+                    ]
+                };
+            }
+            if (command instanceof DeleteMessageCommand) {
+                await deleteGate.promise;
+                return {};
+            }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
+                return {};
+            }
+            throw new Error(`unexpected command ${String(command)}`);
+        }) as Mock<SqsSendFn>;
+        const h = makeHarness({ sqsSend, visibilityTimeoutSeconds: 2 });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(getDeleteCalls(h)).toHaveLength(1));
+        await vi.waitFor(() => expect(getVisibilityCalls(h)).toHaveLength(1), { timeout: 2000 });
+        deleteGate.resolve(undefined);
+        await h.consumer.stop();
+    });
+
+    it('still defers task-cap messages when environment congestion feedback fails', async () => {
+        const recordEnvironmentCongestion = vi.fn(() => Promise.reject(new Error('Redis unavailable')));
+        const coordinator: DispatchCapacityCoordinator = {
+            acquire: vi.fn(() => Promise.resolve({ isValid: () => true, release: () => Promise.resolve() })),
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn(),
+            recordEnvironmentCongestion
+        };
+        const h = makeHarness({ messages: [buildMessage()], capacityCoordinator: coordinator });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })]));
+
+        await runOnce(h, () => expect(getVisibilityCalls(h)).toHaveLength(1));
+
+        expect(recordEnvironmentCongestion).toHaveBeenCalledOnce();
+        expect(reportMock).toHaveBeenCalledWith(expect.objectContaining({ message: 'webhook dispatch environment congestion feedback failed' }));
+    });
+
     it('starts one poll loop per configured consumerConcurrency', async () => {
         let receiveCalls = 0;
         const firstReceives = [deferred<void>(), deferred<void>()];

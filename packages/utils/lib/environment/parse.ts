@@ -754,6 +754,16 @@ export const ENVS = envSchema.check((payload) => {
             input: envs.NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY
         });
     }
+    if (envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS > envs.NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS) {
+        payload.issues.push({
+            code: 'custom',
+            message:
+                `NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS (${envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS}) must not exceed ` +
+                `NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS (${envs.NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS})`,
+            path: ['NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS'],
+            input: envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS
+        });
+    }
 });
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
