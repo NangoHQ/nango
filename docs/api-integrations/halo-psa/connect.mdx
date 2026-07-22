@@ -9,6 +9,7 @@ To authenticate with Halo PSA, you need:
 1. **Hostname** - Your Halo PSA hostname.
 2. **Client ID** - The client ID from your Halo API application.
 3. **Client Secret** - The client secret from your Halo API application.
+4. **Scopes** - The OAuth scopes to request. Nango defaults this to `all,all:teams`.
 
 This guide will walk you through finding your Halo API details and creating an API application that uses OAuth 2.0 Client Credentials.
 
@@ -62,6 +63,11 @@ Halo uses agent team, department, and permission settings when returning API dat
 
 In the API application's permissions tab, enable the API permissions your application needs.
 
+Nango requests `all,all:teams` by default so the access token includes the permissions granted to the API application, including team access. You can replace this default with a narrower comma-separated scope list when your integration needs less access.
+
+<Warning>
+  Do not leave the scopes field empty. Halo PSA can issue an access token without a `scope` value, but API requests made with that token will fail with `401` or `403` responses.
+</Warning>
 
 <img src="/api-integrations/halo-psa/api-permissions.png" />
 
@@ -71,9 +77,10 @@ Once you have your **Hostname**, **Client ID**, and **Client Secret**:
 
 1. Open the form where you need to authenticate with Halo PSA.
 2. Enter your **Hostname**.
-3. Enter your **Client ID**.
-4. Enter your **Client Secret**.
-5. Submit the form.
+3. Keep the prefilled **Scopes** value (`all,all:teams`), or enter a narrower comma-separated scope list.
+4. Enter your **Client ID**.
+5. Enter your **Client Secret**.
+6. Submit the form.
 
 <img src="/api-integrations/halo-psa/form.png" style={{maxWidth: "450px" }} />
 

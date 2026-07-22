@@ -10149,6 +10149,14 @@ halo-psa:
             prefix: https://
             doc_section: '#step-1-find-your-halo-api-details'
             order: 1
+        oauth_scopes:
+            type: string
+            title: Scopes
+            description: Comma-separated OAuth scopes to request from Halo PSA. The default requests the permissions granted to the API application, including team access.
+            example: all,all:teams
+            default_value: all,all:teams
+            doc_section: '#step-4-set-application-permissions'
+            order: 2
     credentials:
         client_id:
             type: string
