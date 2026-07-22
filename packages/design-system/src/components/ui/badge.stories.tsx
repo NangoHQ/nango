@@ -1,11 +1,12 @@
-import { Badge } from '../src/components/ui/badge';
+import { Badge } from './badge';
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Components/UI/Badge',
+    title: 'Design System/Components/Badge',
     parameters: { layout: 'padded' }
 };
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 
