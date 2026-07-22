@@ -12,9 +12,6 @@
         "url": "git+https://github.com/NangoHQ/nango.git",
         "directory": "packages/providers"
     },
-    "dependencies": {
-        "js-yaml": "4.3.0"
-    },
     "devDependencies": {
         "@nangohq/types": "0.71.2",
         "vitest": "4.1.9"
@@ -23,5 +20,8 @@
         "dist/**/*",
         "providers.yaml",
         "providers.scopes.yaml"
-    ]
+    ],
+    "dependencies": {
+        "js-yaml": "4.1.1"
+    }
 }
