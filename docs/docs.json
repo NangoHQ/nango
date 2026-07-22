@@ -1303,6 +1303,7 @@
               "api-integrations/huntress",
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
+              "api-integrations/hubstaff",
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "integrations/all/incident-io",

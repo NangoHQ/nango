@@ -4763,6 +4763,16 @@ hubspot:
     - timeline
     - transactional-email
 
+# source: https://account.hubstaff.com/.well-known/openid-configuration (scopes_supported)
+hubstaff:
+    - email
+    - hubstaff:read
+    - hubstaff:write
+    - openid
+    - profile
+    - tasks:read
+    - tasks:write
+
 # source: https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions
 instagram:
     - user_media
