@@ -351,9 +351,14 @@ export async function transitionState(
         }
     };
 
+    // Guard the update with the state we validated against so a concurrent
+    // transition (e.g. a worker succeeding a task while the monitor expires it)
+    // cannot silently overwrite it. If the row already moved on, the update
+    // matches no rows and we surface a conflict instead of clobbering state.
     const updated = await db
         .from<DBTask>(TASKS_TABLE)
         .where('id', props.taskId)
+        .where('state', transition.value.from)
         .update({
             state: transition.value.to,
             last_state_transition_at: new Date(),
@@ -362,7 +367,7 @@ export async function transitionState(
         })
         .returning('*');
     if (!updated?.[0]) {
-        return Err(new Error(`Task with id '${props.taskId}' not found`));
+        return Err(new Error(`Task '${props.taskId}' is no longer in state '${transition.value.from}' (concurrent transition)`));
     }
 
     return Ok(DbTask.from(updated[0]));
