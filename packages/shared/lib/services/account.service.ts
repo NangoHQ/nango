@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report } from '@nangohq/utils';
+import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report, TTLFixedSizeMap } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -63,8 +63,38 @@ class ShadowAuthCache {
     }
 }
 
-const persistAuthShadowCache = new ShadowAuthCache('persist_internal_secret', envs.AUTH_SHADOW_CACHE_TTL_MS);
 const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
+
+/**
+ * In-process cache of the persist auth context, keyed by the secret's hash. The cached
+ * PersistAuthContext holds no secret material (account/environment ids, environment name,
+ * and a few plan fields), so the only trade-off is staleness: a served entry can be up to
+ * the TTL old, delaying visibility of revoked keys, deleted environments, and plan changes.
+ * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
+ */
+class PersistAuthContextCache {
+    // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
+    private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+
+    get(hash: string): PersistAuthContext | undefined {
+        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+            return undefined;
+        }
+        const cached = this.cache.get(hash);
+        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: cached ? 'hit' : 'miss' });
+        return cached;
+    }
+
+    set(hash: string, context: PersistAuthContext): void {
+        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+            return;
+        }
+        // The cached instance is shared across requests; callers must not mutate it.
+        this.cache.set(hash, context);
+    }
+}
+
+const persistAuthContextCache = new PersistAuthContextCache();
 
 interface AccountContext {
     account: DBTeam;
@@ -741,7 +771,11 @@ class AccountService {
         }
 
         const hash = await this.hashSecretWithCache(secretKey);
-        const wouldHit = persistAuthShadowCache.wouldHit(hash);
+
+        const cached = persistAuthContextCache.get(hash);
+        if (cached) {
+            return cached;
+        }
 
         const row = await db.readOnly
             .select<{
@@ -774,8 +808,7 @@ class AccountService {
 
         // Store only successful lookups to avoid polluting the cache
         hashLocalCache.set(secretKey, hash);
-        persistAuthShadowCache.populate(hash, wouldHit);
-        return {
+        const context: PersistAuthContext = {
             account: { id: row.account_id },
             environment: { id: row.environment_id, name: row.environment_name },
             plan:
@@ -783,6 +816,8 @@ class AccountService {
                     ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
                     : null
         };
+        persistAuthContextCache.set(hash, context);
+        return context;
     }
 
     /**
