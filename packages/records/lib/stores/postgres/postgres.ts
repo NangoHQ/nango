@@ -945,24 +945,41 @@ export class PostgresStore implements RecordsStore {
 
                     const oldRecords = await getRecordsToUpdate({ trx, records: chunk, connectionId, model });
 
+                    // Index the input chunk by external_id so matching an old record to its input is O(1)
+                    // rather than an O(n) scan per old record (O(n^2) over the chunk).
+                    const inputByExternalId = new Map(chunk.map((record) => [record.external_id, record]));
+
+                    // decryptRecordData offloads AES-GCM to the libuv threadpool, so awaiting one record at a
+                    // time leaves the other threads idle. Decrypt in bounded concurrency chunks (matching the
+                    // getRecords read path) so the threadpool is saturated without holding every decrypted
+                    // blob live at once.
+                    const concurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
                     const recordsToUpdate: FormattedRecord[] = [];
-                    for (const oldRecord of oldRecords) {
-                        const oldRecordData = await decryptRecordData(oldRecord);
+                    for (let start = 0; start < oldRecords.length; start += concurrency) {
+                        const decryptChunk = oldRecords.slice(start, start + concurrency);
+                        const merged = await Promise.all(
+                            decryptChunk.map(async (oldRecord) => {
+                                const inputRecord = inputByExternalId.get(oldRecord.external_id);
+                                if (!inputRecord) {
+                                    return null;
+                                }
 
-                        const inputRecord = chunk.find((record) => record.external_id === oldRecord.external_id);
-                        if (!inputRecord) {
-                            continue;
+                                const [oldRecordData, newRecordData] = await Promise.all([decryptRecordData(oldRecord), decryptRecordData(inputRecord)]);
+
+                                const { json, ...newRecordRest } = inputRecord;
+                                const newRecord: FormattedRecord = {
+                                    ...newRecordRest,
+                                    json: deepMergeRecordData(oldRecordData, newRecordData),
+                                    updated_at: new Date()
+                                };
+                                return newRecord;
+                            })
+                        );
+                        for (const newRecord of merged) {
+                            if (newRecord) {
+                                recordsToUpdate.push(newRecord);
+                            }
                         }
-
-                        const { json, ...newRecordRest } = inputRecord;
-                        const newRecordData = await decryptRecordData(inputRecord);
-
-                        const newRecord: FormattedRecord = {
-                            ...newRecordRest,
-                            json: deepMergeRecordData(oldRecordData, newRecordData),
-                            updated_at: new Date()
-                        };
-                        recordsToUpdate.push(newRecord);
                     }
                     if (recordsToUpdate.length > 0) {
                         const encryptedRecords = encryptRecords(recordsToUpdate);

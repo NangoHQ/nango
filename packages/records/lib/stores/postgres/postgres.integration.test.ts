@@ -470,6 +470,45 @@ describe('PostgresStore', () => {
             });
         });
 
+        it('should merge each record to its own value across decrypt-concurrency chunk boundaries', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            // More records than RECORDS_DECRYPT_CONCURRENCY (default 10) so the update loop spans
+            // multiple decrypt chunks; each record must still merge against its own old value.
+            const count = 25;
+            const ids = Array.from({ length: count }, (_, i) => `${i}`);
+
+            const inserted = await upsertRecords({
+                records: ids.map((id) => ({ id, name: `name-${id}`, keep: `keep-${id}` })),
+                connectionId,
+                environmentId,
+                model,
+                syncId,
+                syncJobId: 1
+            });
+            expect(inserted.addedKeys.sort()).toStrictEqual([...ids].sort());
+
+            await updateRecords({
+                records: ids.map((id) => ({ id, name: `updated-${id}` })),
+                connectionId,
+                environmentId,
+                model,
+                syncId,
+                syncJobId: 2
+            });
+
+            const { records: found } = (await store.getRecords({ connectionId, model })).unwrap();
+            expect(found.length).toBe(count);
+            for (const id of ids) {
+                const record = found.find((r) => r.id === id);
+                // name overwritten by the update, keep retained from the original via deep merge
+                expect(record).toMatchObject({ id, name: `updated-${id}`, keep: `keep-${id}` });
+            }
+        });
+
         describe('should respect merging strategy', () => {
             it('when strategy = override', async () => {
                 const connectionId = rnd.number();
