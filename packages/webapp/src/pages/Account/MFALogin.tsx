@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useMFALoginVerification } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';

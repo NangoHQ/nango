@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/useToast';
