@@ -84,6 +84,6 @@ describe('getConnectSession', () => {
 
         expect(mockGetWebsocketsPath).not.toHaveBeenCalled();
         const sent = send.mock.calls[0]?.[0] as { data: Record<string, unknown> } | undefined;
-        expect(sent?.data.websockets_path).toBeUndefined();
+        expect(sent?.data['websockets_path']).toBeUndefined();
     });
 });
