@@ -15,6 +15,7 @@ function InputOTP({
             data-slot="input-otp"
             inputMode="numeric"
             pattern={REGEXP_ONLY_DIGITS}
+            aria-label="One-time password"
             containerClassName={cn('flex items-center gap-2 has-disabled:opacity-50', containerClassName)}
             className={cn('disabled:cursor-not-allowed', className)}
             {...props}

@@ -15,7 +15,7 @@ export const MfaStepper: React.FC<{ current: MfaStep }> = ({ current }) => {
     const currentIndex = STEPS.findIndex((step) => step.id === current);
 
     return (
-        <div className="flex items-start justify-center">
+        <div role="list" aria-label="Two-factor setup progress" className="flex items-start justify-center">
             {STEPS.map((step, index) => {
                 const isCompleted = index < currentIndex;
                 const isActive = index === currentIndex;
@@ -23,8 +23,14 @@ export const MfaStepper: React.FC<{ current: MfaStep }> = ({ current }) => {
 
                 return (
                     <Fragment key={step.id}>
-                        <div className="flex flex-col items-center gap-2">
+                        <div
+                            role="listitem"
+                            aria-current={isActive ? 'step' : undefined}
+                            aria-label={`${step.label}${isCompleted ? ' (completed)' : isActive ? ' (current)' : ''}`}
+                            className="flex flex-col items-center gap-2"
+                        >
                             <div
+                                aria-hidden="true"
                                 className={cn(
                                     'flex size-5 items-center justify-center rounded-full border transition-colors',
                                     isCompleted && 'border-interactive-primary text-interactive-primary',
@@ -39,11 +45,19 @@ export const MfaStepper: React.FC<{ current: MfaStep }> = ({ current }) => {
                                     <div className="size-2 rounded-full bg-interactive-primary" />
                                 ) : null}
                             </div>
-                            <span className={cn('whitespace-nowrap text-ds-xs', isActive || isCompleted ? 'text-text-default' : 'text-text-muted')}>
+                            <span
+                                aria-hidden="true"
+                                className={cn('whitespace-nowrap text-ds-xs', isActive || isCompleted ? 'text-text-default' : 'text-text-muted')}
+                            >
                                 {step.label}
                             </span>
                         </div>
-                        {!isLast && <div className={cn('mt-2.5 h-px min-w-12 flex-1', isCompleted ? 'bg-interactive-primary' : 'bg-border-default')} />}
+                        {!isLast && (
+                            <div
+                                aria-hidden="true"
+                                className={cn('mt-2.5 h-px min-w-12 flex-1', isCompleted ? 'bg-interactive-primary' : 'bg-border-default')}
+                            />
+                        )}
                     </Fragment>
                 );
             })}

@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
-export const RecoveryCodes: React.FC<{ codes: string[] }> = ({ codes }) => {
+import { useToast } from '@/hooks/useToast';
+import { track } from '@/utils/analytics';
+
+export const RecoveryCodes: React.FC<{ codes: string[]; context: 'enroll' | 'regenerate' }> = ({ codes, context }) => {
+    const { toast } = useToast();
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
@@ -15,8 +19,13 @@ export const RecoveryCodes: React.FC<{ codes: string[] }> = ({ codes }) => {
     }, [copied]);
 
     const copyAll = async () => {
-        await navigator.clipboard.writeText(codes.join('\n'));
-        setCopied(true);
+        try {
+            await navigator.clipboard.writeText(codes.join('\n'));
+            setCopied(true);
+            track('web:2fa:recovery_codes_copied', { context });
+        } catch {
+            toast({ title: 'Could not copy to clipboard. Copy the codes manually.', variant: 'error' });
+        }
     };
 
     const downloadAll = () => {
@@ -27,6 +36,7 @@ export const RecoveryCodes: React.FC<{ codes: string[] }> = ({ codes }) => {
         link.download = 'nango-recovery-codes.txt';
         link.click();
         URL.revokeObjectURL(url);
+        track('web:2fa:recovery_codes_downloaded', { context });
     };
 
     return (
@@ -46,6 +56,9 @@ export const RecoveryCodes: React.FC<{ codes: string[] }> = ({ codes }) => {
                     {copied ? 'Copied' : 'Copy all'}
                 </Button>
             </div>
+            <span className="sr-only" role="status" aria-live="polite">
+                {copied ? 'Recovery codes copied to clipboard' : ''}
+            </span>
         </div>
     );
 };

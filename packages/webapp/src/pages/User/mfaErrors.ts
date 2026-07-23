@@ -14,7 +14,7 @@ export function getMFAErrorMessage(error: unknown): string {
             const apiError = (json as { error: unknown }).error;
             if (typeof apiError === 'object' && apiError !== null) {
                 const { code, message } = apiError as { code?: unknown; message?: unknown };
-                if (typeof code === 'string' && code in mfaErrorMessages) {
+                if (typeof code === 'string' && Object.prototype.hasOwnProperty.call(mfaErrorMessages, code)) {
                     return mfaErrorMessages[code]!;
                 }
                 if (typeof message === 'string') {

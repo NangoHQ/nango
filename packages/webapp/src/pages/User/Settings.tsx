@@ -11,6 +11,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
+import { track } from '@/utils/analytics';
 import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
@@ -137,6 +138,7 @@ const MFASettings: React.FC = () => {
     const confirmDisable = async () => {
         try {
             await disable.mutateAsync({ code });
+            track('web:2fa:disabled', {});
             toast({ title: 'Two-factor authentication is disabled', variant: 'success' });
             closeDisable();
         } catch (err) {
@@ -148,6 +150,7 @@ const MFASettings: React.FC = () => {
     const confirmRegen = async () => {
         try {
             const result = await regenerateRecoveryCodes.mutateAsync({ code });
+            track('web:2fa:recovery_codes_regenerated', {});
             closeRegen();
             setNewCodes(result.data.recoveryCodes);
         } catch (err) {
@@ -185,11 +188,11 @@ const MFASettings: React.FC = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Disable two-factor authentication</DialogTitle>
-                        <DialogDescription>Enter the 6-digit code from your authenticator app to disable multi-factor auth</DialogDescription>
+                        <DialogDescription>Enter the 6-digit code from your authenticator app to disable two-factor authentication</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col items-center gap-3 py-2">
                         <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
-                        <InputOTP maxLength={6} value={code} onChange={setCode} onComplete={() => void confirmDisable()} autoFocus>
+                        <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
                             <InputOTPGroup>
                                 {[0, 1, 2, 3, 4, 5].map((i) => (
                                     <InputOTPSlot key={i} index={i} />
@@ -218,7 +221,7 @@ const MFASettings: React.FC = () => {
                     </DialogHeader>
                     <div className="flex flex-col items-center gap-3 py-2">
                         <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
-                        <InputOTP maxLength={6} value={code} onChange={setCode} onComplete={() => void confirmRegen()} autoFocus>
+                        <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
                             <InputOTPGroup>
                                 {[0, 1, 2, 3, 4, 5].map((i) => (
                                     <InputOTPSlot key={i} index={i} />
@@ -237,13 +240,18 @@ const MFASettings: React.FC = () => {
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={newCodes !== null} onOpenChange={(open) => !open && setNewCodes(null)}>
-                <DialogContent>
+            <Dialog open={newCodes !== null}>
+                <DialogContent
+                    showCloseButton={false}
+                    onEscapeKeyDown={(event) => event.preventDefault()}
+                    onPointerDownOutside={(event) => event.preventDefault()}
+                    onInteractOutside={(event) => event.preventDefault()}
+                >
                     <DialogHeader>
                         <DialogTitle>Save your recovery codes</DialogTitle>
                         <DialogDescription>Your previous codes no longer work. Each of these works once, so store them somewhere safe.</DialogDescription>
                     </DialogHeader>
-                    {newCodes && <RecoveryCodes codes={newCodes} />}
+                    {newCodes && <RecoveryCodes codes={newCodes} context="regenerate" />}
                     <DialogFooter>
                         <Button onClick={() => setNewCodes(null)}>Done</Button>
                     </DialogFooter>

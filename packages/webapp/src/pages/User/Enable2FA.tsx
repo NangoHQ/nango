@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
+import { track } from '@/utils/analytics';
 import { MfaStepper } from './components/MfaStepper';
 import { RecoveryCodes } from './components/RecoveryCodes';
 import { getMFAErrorMessage } from './mfaErrors';
@@ -42,6 +43,11 @@ export const Enable2FA: React.FC = () => {
 
     const goToSettings = () => navigate('/user-settings');
 
+    const cancel = (fromStep: 'scan' | 'save') => {
+        track('web:2fa:enable_cancelled', { step: fromStep });
+        goToSettings();
+    };
+
     useEffect(() => {
         if (enrollmentStarted.current) {
             return;
@@ -52,6 +58,7 @@ export const Enable2FA: React.FC = () => {
             try {
                 const result = await enroll.mutateAsync();
                 setOtpauthUri(result.data.otpauthUri);
+                track('web:2fa:enable_started', {});
             } catch (err) {
                 toast({ title: getMFAErrorMessage(err), variant: 'error' });
                 goToSettings();
@@ -63,6 +70,7 @@ export const Enable2FA: React.FC = () => {
     const verifyAndContinue = async () => {
         try {
             const result = await activate.mutateAsync({ code });
+            track('web:2fa:enabled', {});
             setRecoveryCodes(result.data.recoveryCodes);
             setStep('save');
         } catch (err) {
@@ -126,7 +134,7 @@ export const Enable2FA: React.FC = () => {
                                 )}
                             </div>
                             <div className="flex justify-end gap-2 border-t border-border-muted px-6 py-4">
-                                <Button variant="outline" onClick={goToSettings}>
+                                <Button variant="outline" onClick={() => cancel('scan')}>
                                     Cancel
                                 </Button>
                                 <Button onClick={() => void verifyAndContinue()} loading={activate.isPending} disabled={!hasValidCode}>
@@ -146,7 +154,7 @@ export const Enable2FA: React.FC = () => {
                                     </p>
                                 </div>
 
-                                <RecoveryCodes codes={recoveryCodes} />
+                                <RecoveryCodes codes={recoveryCodes} context="enroll" />
 
                                 <label className="flex items-center gap-2 text-body-small-regular text-text-default">
                                     <Checkbox checked={savedConfirmed} onCheckedChange={(value) => setSavedConfirmed(value === true)} />
@@ -154,7 +162,7 @@ export const Enable2FA: React.FC = () => {
                                 </label>
                             </div>
                             <div className="flex justify-end gap-2 border-t border-border-muted px-6 py-4">
-                                <Button variant="outline" onClick={goToSettings}>
+                                <Button variant="outline" onClick={() => cancel('save')}>
                                     Cancel
                                 </Button>
                                 <Button onClick={() => setStep('done')} disabled={!savedConfirmed}>
