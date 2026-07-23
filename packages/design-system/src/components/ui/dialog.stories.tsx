@@ -12,7 +12,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Header + body + footer — the baseline composition. */
+/** Header + body + footer — the baseline composition. Footer buttons use `size="sm"`. */
 export const Default: Story = {
     render: () => (
         <Dialog defaultOpen>
@@ -29,9 +29,13 @@ export const Default: Story = {
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary">Save changes</Button>
+                    <Button variant="primary" size="sm">
+                        Save changes
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -64,9 +68,13 @@ export const WithForm: Story = {
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary">Send invite</Button>
+                    <Button variant="primary" size="sm">
+                        Send invite
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -87,9 +95,13 @@ export const Confirmation: Story = {
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary">Revoke</Button>
+                    <Button variant="primary" size="sm">
+                        Revoke
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -116,9 +128,13 @@ export const Destructive: Story = {
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="danger">Delete integration</Button>
+                    <Button variant="danger" size="sm">
+                        Delete integration
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -175,9 +191,13 @@ export const Scrolling: Story = {
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary">Create API key</Button>
+                    <Button variant="primary" size="sm">
+                        Create API key
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -202,7 +222,9 @@ export const NonDismissable: Story = {
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="primary">I saved my codes</Button>
+                        <Button variant="primary" size="sm">
+                            I saved my codes
+                        </Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>

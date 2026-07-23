@@ -119,7 +119,7 @@ const DialogFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'
     <div
         ref={ref}
         data-slot="dialog-footer"
-        className={cn('bg-surface-panel border-t-ds-1 border-border-muted flex items-center justify-end gap-2 p-4', className)}
+        className={cn('bg-surface-panel border-t border-border-default flex items-center justify-end gap-2 p-4', className)}
         {...props}
     />
 ));
