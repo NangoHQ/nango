@@ -147,6 +147,53 @@ export function getSafeHttpAgents(policy: OutboundUrlPolicy): { httpAgent: http.
 
 const safeUndiciCache = new Map<string, UndiciAgent>();
 
+/**
+ * Connect options that are safe to accept from callers. Anything that could change the
+ * connection target (socketPath, path, host, hostname, port, localAddress, family, …) or
+ * replace the DNS resolver (lookup) is intentionally excluded, otherwise a caller could
+ * bypass the policy-enforcing safe lookup — e.g. by connecting directly to a Unix socket.
+ */
+const SAFE_UNDICI_CONNECT_OPTION_KEYS = new Set<string>([
+    // TLS material / verification
+    'ca',
+    'cert',
+    'key',
+    'pfx',
+    'passphrase',
+    'rejectUnauthorized',
+    'servername',
+    'ciphers',
+    'minVersion',
+    'maxVersion',
+    'secureProtocol',
+    'secureOptions',
+    'ALPNProtocols',
+    'ecdhCurve',
+    'crl',
+    'dhparam',
+    'honorCipherOrder',
+    'sigalgs',
+    'sessionTimeout',
+    'sessionIdContext',
+    'ticketKeys',
+    // Connection tuning that does not affect the destination
+    'maxCachedSessions',
+    'timeout',
+    'keepAlive',
+    'keepAliveInitialDelay',
+    'allowH2'
+]);
+
+function sanitizeConnectOverrides(connectOverrides: buildConnector.BuildOptions): buildConnector.BuildOptions {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(connectOverrides)) {
+        if (SAFE_UNDICI_CONNECT_OPTION_KEYS.has(key)) {
+            sanitized[key] = value;
+        }
+    }
+    return sanitized as buildConnector.BuildOptions;
+}
+
 export function getSafeUndiciDispatcher(policy: OutboundUrlPolicy, connectOverrides?: buildConnector.BuildOptions): UndiciAgent {
     const lookup = getSafeLookup(policy) as unknown as LookupFunction;
     if (!connectOverrides) {
@@ -158,5 +205,7 @@ export function getSafeUndiciDispatcher(policy: OutboundUrlPolicy, connectOverri
         }
         return agent;
     }
-    return new UndiciAgent({ connect: { ...connectOverrides, lookup } as buildConnector.BuildOptions });
+    // Drop any caller-supplied option that could redirect the socket or replace the resolver;
+    // lookup is always set last so it cannot be overridden.
+    return new UndiciAgent({ connect: { ...sanitizeConnectOverrides(connectOverrides), lookup } as buildConnector.BuildOptions });
 }
