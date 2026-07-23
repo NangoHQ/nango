@@ -1190,6 +1190,7 @@
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
               "integrations/all/epic-games",
+              "api-integrations/ergo",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
               "api-integrations/everflow",
