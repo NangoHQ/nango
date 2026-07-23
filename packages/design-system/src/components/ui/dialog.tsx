@@ -81,6 +81,8 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                         'bg-surface-overlay border-ds-1 border-border-default rounded-ds-sm shadow-container-sheet',
                         'fixed top-[50%] left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden sm:max-w-md',
                         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200',
+                        // Reserve header space so a long title doesn't run under the absolute close button.
+                        showCloseButton && '[&_[data-slot=dialog-header]]:pr-10',
                         className
                     )}
                     {...props}
