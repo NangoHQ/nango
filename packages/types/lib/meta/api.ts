@@ -13,7 +13,6 @@ export type GetMeta = Endpoint<{
             baseUrl: string;
             debugMode: boolean;
             gettingStartedClosed: boolean;
-            billingUsageSource: 'clickhouse' | 'orb';
         };
     };
 }>;

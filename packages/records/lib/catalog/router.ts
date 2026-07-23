@@ -9,7 +9,9 @@ import type { RecordCount } from '../types.js';
 import type { DBPlan } from '@nangohq/types';
 
 // Augments a store method signature with a plan parameter for routing purposes.
-type Routed<F> = F extends (params: infer P) => infer R ? (params: P & { plan: DBPlan | null }) => R : never;
+// Only the routing-relevant field is required so narrowed auth contexts qualify.
+type RoutingPlan = Pick<DBPlan, 'records_store'> | null;
+type Routed<F> = F extends (params: infer P) => infer R ? (params: P & { plan: RoutingPlan }) => R : never;
 
 type RoutedRecordsStore = Omit<RecordsStore, 'getRecords' | 'getCursor' | 'upsert' | 'update' | 'deleteRecords' | 'deleteOutdatedRecords'> & {
     getRecords: Routed<RecordsStore['getRecords']>;
@@ -21,7 +23,7 @@ type RoutedRecordsStore = Omit<RecordsStore, 'getRecords' | 'getCursor' | 'upser
 };
 
 interface RoutingContext {
-    plan: DBPlan | null;
+    plan: RoutingPlan;
     connectionId: number;
     model: string;
 }

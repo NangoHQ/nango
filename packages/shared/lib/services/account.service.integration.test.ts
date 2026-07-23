@@ -2,8 +2,11 @@ import { v4 as uuid } from 'uuid';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { metrics } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
+import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
@@ -333,6 +336,83 @@ describe('Account service', () => {
         expect(result?.auth).toStrictEqual({
             source: 'api_secret',
             scopes: ['environment:*']
+        });
+    });
+
+    describe('getPersistAuthContext', () => {
+        it('should return exactly the narrow context fields', async () => {
+            const { account, env, plan, secret } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for an unknown key', async () => {
+            const result = (await accountService.getPersistAuthContext(`nango_secret_key_${uuid()}`)).unwrap();
+            expect(result).toBeNull();
+        });
+
+        it('should resolve env-var keys before the DB lookup', async () => {
+            const account = await createTestAccount();
+            const envName = uuid();
+            const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
+            await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+            const envVarName = `NANGO_SECRET_KEY_${envName.toUpperCase()}`;
+            const envVarKey = `nango_secret_key_${uuid()}`;
+            process.env[envVarName] = envVarKey;
+            try {
+                const result = (await accountService.getPersistAuthContext(envVarKey)).unwrap();
+                expect(result?.environment.id).toBe(environment!.id);
+                expect(result?.account.id).toBe(account.id);
+            } finally {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete process.env[envVarName];
+            }
+        });
+
+        it('should serve from cache within the TTL when enabled', async () => {
+            const previous = envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED;
+            (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = true;
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            try {
+                const { env, secret } = await seedAccountEnvAndUser();
+
+                // First lookup: miss -> resolved from the DB and cached
+                const first = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+                expect(first?.environment.id).toBe(env.id);
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: 'miss' });
+
+                // Break the DB row; a cache hit must still resolve, proving it is served from the cache
+                await db.knex('api_secrets').where({ environment_id: env.id }).update({ hashed: uuid() });
+                incrementSpy.mockClear();
+
+                const second = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: 'hit' });
+                expect(second).toStrictEqual(first);
+            } finally {
+                (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = previous;
+            }
+        });
+
+        it('should not cache when disabled (default)', async () => {
+            expect(envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED).toBe(false);
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            const { env, secret } = await seedAccountEnvAndUser();
+
+            const first = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(first?.environment.id).toBe(env.id);
+
+            // With caching off, the next lookup goes to the (now broken) DB and returns null
+            await db.knex('api_secrets').where({ environment_id: env.id }).update({ hashed: uuid() });
+            const second = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(second).toBeNull();
+            expect(incrementSpy).not.toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, expect.anything());
         });
     });
 

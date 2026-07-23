@@ -2,10 +2,9 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, IconButton, Input } from '@nangohq/design-system';
+import { Badge, Button, IconButton, Input } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Dot } from '@/components/ui/Dot';
@@ -256,5 +255,5 @@ export const RoleBadge: React.FC<{ role: Role }> = ({ role }) => {
         }
     }, [role]);
 
-    return <Badge variant="ghost">{roleLabel}</Badge>;
+    return <Badge variant="outline">{roleLabel}</Badge>;
 };

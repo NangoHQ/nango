@@ -25,7 +25,7 @@ import type {
     WebhookDispatchMessage
 } from '@nangohq/types';
 
-const LARGE_FANOUT_THRESHOLD = 200;
+const LARGE_FANOUT_THRESHOLD = 10;
 const LOG_CONTEXT_CREATE_CONCURRENCY = 25;
 
 interface MatchedExecution {
