@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { connectUISettingsService, seeders, updatePlan } from '@nangohq/shared';
@@ -17,6 +17,9 @@ describe(`GET ${endpoint}`, () => {
     });
     afterAll(() => {
         api.server.close();
+    });
+    afterEach(() => {
+        vi.unstubAllEnvs();
     });
 
     it('should be protected', async () => {
@@ -88,6 +91,39 @@ describe(`GET ${endpoint}`, () => {
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
                 websockets_path: '/'
+            }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should get a session with the custom server websockets path when NANGO_SERVER_WEBSOCKETS_PATH is set', async () => {
+        vi.stubEnv('NANGO_SERVER_WEBSOCKETS_PATH', '/ws');
+
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        // Create session
+        const endUserId = 'knownId';
+        const resCreate = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
+        });
+        isSuccess(resCreate.json);
+
+        // Get session
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: resCreate.json.data.token
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
+                allowed_integrations: ['github'],
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websockets_path: '/ws'
             }
         });
         expect(res.res.status).toBe(200);
