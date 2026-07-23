@@ -4316,6 +4316,40 @@ chatarmin:
             title: API Key
             description: Your Chatarmin API key.
 
+chatgpt-enterprise:
+    display_name: ChatGPT Enterprise (SCIM API)
+    categories:
+        - productivity
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.scimEndpoint}
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/scim+json
+            content-type: application/scim+json
+        verification:
+            method: GET
+            endpoints:
+                - /Users
+    docs: https://nango.dev/docs/api-integrations/chatgpt-enterprise
+    docs_connect: https://nango.dev/docs/api-integrations/chatgpt-enterprise/connect
+    credentials:
+        apiKey:
+            type: string
+            title: SCIM Token
+            description: Your SCIM API token.
+            doc_section: '#step-1-generate-your-scim-endpoint-and-token'
+    connection_config:
+        scimEndpoint:
+            type: string
+            title: SCIM Endpoint
+            description: The SCIM endpoint URL.
+            example: api.workos.com/scim/v2.0/acme
+            pattern: '^[a-zA-Z0-9.-]+\/scim\/.+$'
+            prefix: https://
+            doc_section: '#step-1-generate-your-scim-endpoint-and-token'
+
 chattermill:
     display_name: Chattermill
     categories:
@@ -15112,6 +15146,7 @@ openai-admin:
             title: Admin Key
             description: The Admin API key for your OpenAI account
             doc_section: '#step-1-retrieve-your-openai-admin-key'
+
 open-hands:
     display_name: Open Hands
     categories:

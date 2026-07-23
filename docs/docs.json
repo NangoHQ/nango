@@ -1073,6 +1073,7 @@
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
               "api-integrations/chatarmin",
+              "api-integrations/chatgpt-enterprise",
               "integrations/all/chattermill",
               "integrations/all/checkhq",
               "integrations/all/checkout-com",
