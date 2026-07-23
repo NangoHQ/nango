@@ -428,9 +428,11 @@ const PlanChangeDialog: React.FC<{
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
+                    <Button variant="primary" size="sm" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
                         {loading && <Loader className="size-4 animate-spin" />}
                         {selectedPlan.isUpgrade ? 'Upgrade' : 'Downgrade'}
                     </Button>

@@ -128,9 +128,11 @@ export const AddTeamMemberButton = () => {
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button type="submit" form="invite-form" variant="primary" loading={isPending}>
+                    <Button type="submit" form="invite-form" variant="primary" size="sm" loading={isPending}>
                         Invite
                     </Button>
                 </DialogFooter>

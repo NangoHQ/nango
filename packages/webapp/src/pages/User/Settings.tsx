@@ -276,10 +276,10 @@ const MFASettings: React.FC = () => {
                         </label>
                     </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" onClick={closeEnrollment}>
+                        <Button variant="outline" size="sm" onClick={closeEnrollment}>
                             Cancel
                         </Button>
-                        <Button onClick={() => void activateEnrollment()} loading={activate.isPending} disabled={!hasValidCode}>
+                        <Button size="sm" onClick={() => void activateEnrollment()} loading={activate.isPending} disabled={!hasValidCode}>
                             Confirm and continue
                         </Button>
                     </DialogFooter>
@@ -306,11 +306,12 @@ const MFASettings: React.FC = () => {
                         </label>
                     </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" onClick={closeAction}>
+                        <Button variant="outline" size="sm" onClick={closeAction}>
                             Cancel
                         </Button>
                         <Button
                             variant={action === 'disable' ? 'danger' : 'primary'}
+                            size="sm"
                             onClick={() => void confirmAction()}
                             loading={disable.isPending || regenerateRecoveryCodes.isPending}
                             disabled={!hasValidCode}
@@ -346,7 +347,9 @@ const MFASettings: React.FC = () => {
                         )}
                     </DialogBody>
                     <DialogFooter>
-                        <Button onClick={() => setRecoveryCodes(null)}>I saved my codes</Button>
+                        <Button size="sm" onClick={() => setRecoveryCodes(null)}>
+                            I saved my codes
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -65,9 +65,11 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary" onClick={onSubmit} loading={isPending}>
+                    <Button variant="primary" size="sm" onClick={onSubmit} loading={isPending}>
                         Save
                     </Button>
                 </DialogFooter>

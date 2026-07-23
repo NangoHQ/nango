@@ -70,9 +70,11 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">{cancelButtonText}</Button>
+                        <Button variant="outline" size="sm">
+                            {cancelButtonText}
+                        </Button>
                     </DialogClose>
-                    <Button variant="danger" onClick={onConfirm} disabled={!isConfirmed}>
+                    <Button variant="danger" size="sm" onClick={onConfirm} disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

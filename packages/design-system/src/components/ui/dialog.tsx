@@ -114,7 +114,11 @@ const DialogBody = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>
 ));
 DialogBody.displayName = 'DialogBody';
 
-/** Actions bar with a top border on the panel surface (Figma "Dialog Footer"). */
+/**
+ * Actions bar with a top border on the panel surface (Figma "Dialog Footer").
+ * Buttons placed here should use `size="sm"` by default (Figma footer spec).
+ * The only sanctioned exception is the Stripe payment-method dialog, which keeps `lg`.
+ */
 const DialogFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
     <div
         ref={ref}

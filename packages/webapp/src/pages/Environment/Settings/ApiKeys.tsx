@@ -297,10 +297,10 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
                     </div>
                 </DialogBody>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
+                    <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>
-                    <Button onClick={handleCreate} loading={isPending} disabled={hasNoScopes}>
+                    <Button size="sm" onClick={handleCreate} loading={isPending} disabled={hasNoScopes}>
                         Create API Key
                     </Button>
                 </DialogFooter>
