@@ -149,6 +149,11 @@ redis.call('HSET', KEYS[1], 'pausedUntil', math.max(pausedUntil, now + retryAfte
 return {limit, previousLimit}
 `;
 
+/**
+ * 1. Read the environment's current cooldown.
+ * 2. Replace it only when the requested cooldown lasts longer.
+ * 3. Return the longest cooldown for consistency across jobs instances.
+ */
 const ENVIRONMENT_COOLDOWN_SCRIPT = `
 local currentTtl = redis.call('PTTL', KEYS[1])
 local requestedTtl = tonumber(ARGV[1])
