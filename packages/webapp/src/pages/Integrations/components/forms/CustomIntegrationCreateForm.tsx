@@ -11,7 +11,7 @@ import { SecretInput } from '@/components/patterns/SecretInput';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
+import { getVisibleIntegrationConfigValues, isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
 
 import type { ApiProviderListItem, PostIntegration, SimplifiedJSONSchema } from '@nangohq/types';
 import type { Resolver } from 'react-hook-form';
@@ -117,11 +117,7 @@ export const CustomIntegrationCreateForm: React.FC<{
         setLoading(true);
         try {
             // Only submit fields that apply to the chosen configuration; hidden ones don't belong.
-            const integrationConfig = Object.fromEntries(
-                Object.entries(formData).filter(
-                    (entry): entry is [string, string] => entry[1] !== undefined && isIntegrationConfigFieldVisible(entry[0], schemaMap, formData)
-                )
-            );
+            const integrationConfig = getVisibleIntegrationConfigValues(schemaMap, formData);
             await onSubmit?.({
                 provider: provider.name,
                 useSharedCredentials: false,

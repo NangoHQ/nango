@@ -146,6 +146,29 @@ describe('buildProxyHeaders', () => {
         expect(headers['X-API-Key']).toBeUndefined();
     });
 
+    it('preserves the provider casing when protecting a secret-backed header', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://example.com', headers: { 'X-API-Key': '${integrationConfig.apiKey}' } },
+                integration_config: {
+                    apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                }
+            },
+            headers: { 'x-api-key': 'caller-controlled' }
+        });
+
+        const headers = buildProxyHeaders({
+            config,
+            url: 'https://example.com',
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+            integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: { apiKey: 'provider-controlled' } }
+        });
+
+        expect(headers['X-API-Key']).toBe('provider-controlled');
+        expect(headers['x-api-key']).toBeUndefined();
+    });
+
     it('should correctly construct headers for Basic auth', () => {
         const config = getDefaultProxy({
             provider: {
