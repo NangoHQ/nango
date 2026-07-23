@@ -86,15 +86,17 @@ describe('OAuth outbound url policy', () => {
             expect(headers['user-agent']).toBe('Nango');
         });
 
-        it('keeps credential headers on same-origin redirects', () => {
+        it('strips credential headers on same-origin redirects too (no forward-on-redirect opt-in)', () => {
             const cfg = getOAuthAxiosRequestConfig();
             const headers: Record<string, string> = {
                 authorization: 'Bearer secret-jwt',
-                'x-api-key': 'sts-secret'
+                'x-api-key': 'sts-secret',
+                'content-type': 'application/json'
             };
             cfg.beforeRedirect!({ href: 'https://sts.example.com/oauth/token?next=1', headers } as any, responseDetails, requestDetails);
-            expect(headers['authorization']).toBe('Bearer secret-jwt');
-            expect(headers['x-api-key']).toBe('sts-secret');
+            expect(headers['authorization']).toBeUndefined();
+            expect(headers['x-api-key']).toBeUndefined();
+            expect(headers['content-type']).toBe('application/json');
         });
     });
 });

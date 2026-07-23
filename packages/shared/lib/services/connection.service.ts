@@ -42,7 +42,13 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
-import { assertSafeOAuthUrl, findOutboundUrlError, getOAuthAxiosRequestConfig, getOAuthSafeUndiciDispatcher } from './proxy/outbound-policy.js';
+import {
+    assertSafeOAuthUrl,
+    findOutboundUrlError,
+    getOAuthAxiosRequestConfig,
+    getOAuthRedirectPolicy,
+    getOAuthSafeUndiciDispatcher
+} from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -1378,7 +1384,8 @@ class ConnectionService {
                 method: 'POST',
                 headers,
                 body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                agent
+                agent,
+                redirect: getOAuthRedirectPolicy()
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );

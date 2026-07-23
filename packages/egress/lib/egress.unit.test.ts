@@ -2,7 +2,7 @@ import dns from 'node:dns/promises';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.js';
+import { clearPinnedAddressCacheForTests, createSafeHttpAgents, getSafeUndiciDispatcher } from './agent.js';
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -359,5 +359,28 @@ describe('egress safe lookup pinning', () => {
 
         await lookupVia(lookupFn, 'host-2.example');
         expect(lookupSpy).toHaveBeenCalledTimes(1_004);
+    });
+});
+
+describe('getSafeUndiciDispatcher connect overrides', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        clearPinnedAddressCacheForTests();
+    });
+
+    it('drops socketPath so callers cannot bypass the safe lookup via a unix socket', async () => {
+        // Resolve to a loopback address so validation rejects before any real socket connect is attempted.
+        const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const permissive = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { mode: 'permissive', blockPrivateIps: false, blockLinkLocal: false }
+        });
+
+        // A honored socketPath would connect straight to the unix socket and never invoke the safe lookup.
+        const dispatcher = getSafeUndiciDispatcher(permissive, { socketPath: '/tmp/nango-egress-should-not-be-used.sock' } as never);
+
+        await expect(fetch('http://nango-egress-test.example/', { dispatcher } as never)).rejects.toThrow();
+        // The safe lookup ran, proving socketPath was stripped and the connection stayed policy-controlled.
+        expect(lookupSpy).toHaveBeenCalled();
     });
 });
