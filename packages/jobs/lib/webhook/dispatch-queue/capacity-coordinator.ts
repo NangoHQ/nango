@@ -19,12 +19,13 @@ local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
 local leaseTtl = tonumber(ARGV[2])
 local initialLimit = tonumber(ARGV[3])
 local hardMaximum = tonumber(ARGV[4])
+local leaseExpiresAt = now + leaseTtl
 
 redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
 local existingLease = redis.call('ZSCORE', KEYS[1], ARGV[1])
 if existingLease then
-  redis.call('ZADD', KEYS[1], 'XX', now + leaseTtl, ARGV[1])
-  return {1, tonumber(redis.call('HGET', KEYS[2], 'limit') or tostring(initialLimit)), 0, redis.call('ZCARD', KEYS[1])}
+  redis.call('ZADD', KEYS[1], 'XX', leaseExpiresAt, ARGV[1])
+  return {1, tonumber(redis.call('HGET', KEYS[2], 'limit') or tostring(initialLimit)), 0, redis.call('ZCARD', KEYS[1]), leaseExpiresAt}
 end
 redis.call('HSETNX', KEYS[2], 'limit', initialLimit)
 redis.call('HSETNX', KEYS[2], 'slowStartThreshold', hardMaximum)
@@ -36,18 +37,18 @@ local limit = math.min(tonumber(redis.call('HGET', KEYS[2], 'limit')), hardMaxim
 redis.call('HSET', KEYS[2], 'limit', limit, 'hardMaximum', hardMaximum)
 local pausedUntil = tonumber(redis.call('HGET', KEYS[2], 'pausedUntil'))
 if pausedUntil > now then
-  return {0, limit, pausedUntil - now, redis.call('ZCARD', KEYS[1])}
+  return {0, limit, pausedUntil - now, redis.call('ZCARD', KEYS[1]), 0}
 end
 
 local active = tonumber(redis.call('ZCARD', KEYS[1]))
 if active >= limit then
-  return {0, limit, 0, active}
+  return {0, limit, 0, active, 0}
 end
 
-redis.call('ZADD', KEYS[1], 'NX', now + leaseTtl, ARGV[1])
+redis.call('ZADD', KEYS[1], 'NX', leaseExpiresAt, ARGV[1])
 redis.call('PEXPIRE', KEYS[1], leaseTtl * 2)
 redis.call('PEXPIRE', KEYS[2], 604800000)
-return {1, limit, 0, active + 1}
+return {1, limit, 0, active + 1, leaseExpiresAt}
 `;
 
 /**
@@ -63,9 +64,10 @@ if not expiresAt or tonumber(expiresAt) <= now then
   redis.call('ZREM', KEYS[1], ARGV[1])
   return 0
 end
-redis.call('ZADD', KEYS[1], 'XX', now + tonumber(ARGV[2]), ARGV[1])
+local renewedUntil = now + tonumber(ARGV[2])
+redis.call('ZADD', KEYS[1], 'XX', renewedUntil, ARGV[1])
 redis.call('PEXPIRE', KEYS[1], tonumber(ARGV[2]) * 2)
-return 1
+return renewedUntil
 `;
 
 /**
@@ -203,22 +205,25 @@ export class RedisDispatchCapacityCoordinator implements DispatchCapacityCoordin
         const startedAt = Date.now();
         while (!signal.aborted) {
             try {
-                const leaseStartedAt = Date.now();
                 const response = await this.redis.eval(ACQUIRE_SCRIPT, {
                     keys: [this.leasesKey, this.stateKey],
                     arguments: [token, String(this.leaseTtlMs), String(this.initialLimit), String(this.hardMaximum)]
                 });
-                const [acquired, limit, retryAfterMs, active] = response as number[];
+                const [acquired, limit, retryAfterMs, active, leaseExpiresAt] = response as number[];
                 metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_LIMIT, limit);
                 metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_ACTIVE, active);
                 if (acquired === 1) {
+                    const redisLeaseExpiresAt = Number(leaseExpiresAt);
+                    if (!Number.isFinite(redisLeaseExpiresAt) || redisLeaseExpiresAt <= 0) {
+                        throw new Error('Redis returned an invalid webhook dispatch capacity lease expiration');
+                    }
                     metrics.duration(metrics.Types.WEBHOOK_DISPATCH_CAPACITY_PERMIT_WAIT_MS, Date.now() - startedAt);
                     return new RedisDispatchCapacityPermit({
                         redis: this.redis,
                         leasesKey: this.leasesKey,
                         token,
                         leaseTtlMs: this.leaseTtlMs,
-                        leaseExpiresAt: leaseStartedAt + this.leaseTtlMs
+                        leaseExpiresAt: redisLeaseExpiresAt
                     });
                 }
 
@@ -277,7 +282,8 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
     private readonly leasesKey: string;
     private readonly token: string;
     private readonly leaseTtlMs: number;
-    private leaseExpiresAt: number;
+    private readonly leaseSafetyMarginMs: number;
+    private leaseValidUntil: number;
     private readonly abortController = new AbortController();
     private readonly renewalPromise: Promise<void>;
     private valid = true;
@@ -300,15 +306,13 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
         this.leasesKey = leasesKey;
         this.token = token;
         this.leaseTtlMs = leaseTtlMs;
-        this.leaseExpiresAt = leaseExpiresAt;
+        this.leaseSafetyMarginMs = Math.max(100, Math.floor(leaseTtlMs / 3));
+        this.leaseValidUntil = leaseExpiresAt - this.leaseSafetyMarginMs;
         this.renewalPromise = this.renewLoop();
     }
 
     isValid(): boolean {
-        if (Date.now() >= this.leaseExpiresAt) {
-            this.valid = false;
-        }
-        return this.valid && !this.released;
+        return this.valid && !this.released && Date.now() < this.leaseValidUntil;
     }
 
     async release(): Promise<void> {
@@ -334,23 +338,22 @@ class RedisDispatchCapacityPermit implements DispatchCapacityPermit {
         while (!signal.aborted) {
             try {
                 await setTimeout(waitMs, undefined, { signal });
-                const renewalStartedAt = Date.now();
-                const renewed = await this.redis.eval(RENEW_SCRIPT, {
+                const renewedUntil = await this.redis.eval(RENEW_SCRIPT, {
                     keys: [this.leasesKey],
                     arguments: [this.token, String(this.leaseTtlMs)]
                 });
-                if (renewed !== 1) {
+                if (typeof renewedUntil !== 'number' || renewedUntil <= 0) {
                     this.valid = false;
                     return;
                 }
-                this.leaseExpiresAt = renewalStartedAt + this.leaseTtlMs;
+                this.leaseValidUntil = renewedUntil - this.leaseSafetyMarginMs;
                 waitMs = intervalMs;
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') {
                     return;
                 }
                 logger.error(`Failed to renew webhook dispatch capacity permit: ${stringifyError(err)}`);
-                const remainingLeaseMs = this.leaseExpiresAt - Date.now();
+                const remainingLeaseMs = this.leaseValidUntil - Date.now();
                 if (remainingLeaseMs <= 0) {
                     this.valid = false;
                     return;

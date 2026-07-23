@@ -192,6 +192,9 @@ export class DispatchQueueConsumer {
                     };
                 });
 
+                if (permit && !permit.isValid()) {
+                    return { result: 'failure' };
+                }
                 const startedAt = Date.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
                 const durationMs = Date.now() - startedAt;

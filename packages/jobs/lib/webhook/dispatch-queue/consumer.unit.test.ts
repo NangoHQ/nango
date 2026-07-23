@@ -411,6 +411,29 @@ describe('DispatchQueueConsumer', () => {
         expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
+    it('does not dispatch when the permit expires during batch preparation', async () => {
+        const isValid = vi
+            .fn(() => true)
+            .mockReturnValueOnce(true)
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(false);
+        const recordFailure = vi.fn(() => Promise.resolve());
+        const coordinator: DispatchCapacityCoordinator = {
+            acquire: vi.fn(() => Promise.resolve({ isValid, release: vi.fn(() => Promise.resolve()) })),
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure
+        };
+        const h = makeHarness({ messages: [buildMessage()], capacityCoordinator: coordinator });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(recordFailure).toHaveBeenCalledOnce());
+        await h.consumer.stop();
+
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
+        expect(getDeleteCalls(h)).toHaveLength(0);
+    });
+
     it('records a capacity failure when batch processing throws', async () => {
         const coordinator: DispatchCapacityCoordinator = {
             acquire: vi.fn(() => Promise.resolve({ isValid: () => true, release: vi.fn(() => Promise.resolve()) })),
