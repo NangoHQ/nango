@@ -621,12 +621,12 @@ describe('Scope enforcement on public API routes', () => {
                     'Nango-Is-Script': 'true'
                 }
             });
-            const json = await res.json();
+            const json = (await res.json()) as Record<string, any>;
 
             expect(res.status).toBe(200);
             // Internal keys get environment:* scopes — credentials included
-            expect(json.credentials).toBeDefined();
-            expect(json.credentials.access_token).toBeTruthy();
+            expect(json['credentials']).toBeDefined();
+            expect(json['credentials'].access_token).toBeTruthy();
         });
     });
 

@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 
-import type { CipherGCMTypes } from 'crypto';
+import type { CipherGCMTypes, webcrypto } from 'crypto';
+
+type CryptoKey = webcrypto.CryptoKey;
 
 export class Encryption {
     protected key: string;
