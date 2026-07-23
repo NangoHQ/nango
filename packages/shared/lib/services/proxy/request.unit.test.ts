@@ -50,6 +50,41 @@ describe('call', () => {
         expect(fn).toHaveBeenCalledTimes(1);
     });
 
+    it('redacts secret integration configuration values from proxy logs', async () => {
+        const fn = vi.fn();
+        const proxy = new ProxyRequest({
+            logger: fn,
+            proxyConfig: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: { base_url: 'https://example.com', headers: { 'x-provider-code': '${integrationConfig.apiKey}' } },
+                    integration_config: {
+                        apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                    }
+                },
+                endpoint: '/messages'
+            }),
+            getConnection: () => getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null, custom: { apiKey: 'integration-secret' } })
+        });
+        vi.spyOn(proxy, 'httpCall').mockResolvedValue({
+            status: 200,
+            data: {},
+            headers: {},
+            config: {} as InternalAxiosRequestConfig,
+            statusText: 'OK'
+        });
+
+        (await proxy.request()).unwrap();
+
+        expect(fn).toHaveBeenCalledWith(
+            expect.objectContaining({
+                request: expect.objectContaining({ headers: expect.objectContaining({ 'x-provider-code': 'REDACTED' }) })
+            })
+        );
+        expect(JSON.stringify(fn.mock.calls)).not.toContain('integration-secret');
+    });
+
     it('should make a single failed http call', async () => {
         const fn = vi.fn();
         const proxy = new ProxyRequest({

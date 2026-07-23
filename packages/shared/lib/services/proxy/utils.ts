@@ -42,6 +42,8 @@ type ProxyErrorCode =
     | 'unknown_error'
     | 'failed_to_get_connection'
     | 'invalid_certificate_or_key_format'
+    | 'invalid_integration_config'
+    | 'missing_integration_config'
     | 'proxy_redirect_to_denied_host'
     | 'base_url_override_disabled'
     | 'base_url_override_not_allowed';
@@ -62,6 +64,48 @@ export class ProxyError extends Error {
 
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
 const providedHeaders: Lowercase<string>[] = ['user-agent'];
+const integrationConfigHeaderPattern = /\$\{integrationConfig\.([^{}]+)}/g;
+
+function resolveIntegrationConfigHeader({
+    value,
+    provider,
+    integrationConfig
+}: {
+    value: string;
+    provider: ApplicationConstructedProxyConfiguration['provider'];
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}): string {
+    const fields = [...value.matchAll(integrationConfigHeaderPattern)].map((match) => match[1]!);
+    if (fields.length === 0) {
+        return value;
+    }
+
+    for (const field of fields) {
+        if (!provider.integration_config?.[field]) {
+            throw new ProxyError('invalid_integration_config', `Proxy header references undeclared integration configuration field "${field}".`);
+        }
+
+        const configuredValue = integrationConfig?.custom?.[field];
+        if (!configuredValue) {
+            throw new ProxyError('missing_integration_config', `Proxy header requires integration configuration field "${field}".`);
+        }
+    }
+
+    return value.replace(integrationConfigHeaderPattern, (_match, field: string) => integrationConfig!.custom![field]!);
+}
+
+function getSecretIntegrationConfigHeaderNames(provider: ApplicationConstructedProxyConfiguration['provider']): string[] {
+    if (!provider.proxy?.headers || !provider.integration_config) {
+        return [];
+    }
+
+    return Object.entries(provider.proxy.headers)
+        .filter(([, value]) => {
+            const fields = [...value.matchAll(integrationConfigHeaderPattern)].map((match) => match[1]!);
+            return fields.some((field) => Boolean(provider.integration_config?.[field]?.secret));
+        })
+        .map(([key]) => key);
+}
 
 /**
  * Absolute URL for the upcoming redirect request, from Node `follow-redirects` options
@@ -551,6 +595,15 @@ export function buildProxyBody({
         }
     }
 
+    // An explicitly declared empty proxy.body is meaningful: it lets a provider
+    // force bodyless Axios POST/PUT/PATCH requests to serialize as an empty JSON
+    // object instead of Axios's default application/x-www-form-urlencoded shape.
+    // Preserve the existing null behavior when a non-empty declaration only
+    // contained unresolved placeholders.
+    if (Object.keys(config.provider.proxy.body).length === 0) {
+        return body;
+    }
+
     return Object.keys(body).length > 0 ? body : null;
 }
 
@@ -799,8 +852,10 @@ export function buildProxyHeaders({
         };
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
-            if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value, {
+            const resolvedValue = resolveIntegrationConfigHeader({ value, provider: config.provider, integrationConfig });
+
+            if (resolvedValue.includes('connectionConfig')) {
+                headers[key] = interpolateIfNeeded(resolvedValue, {
                     connectionConfig: connection.connection_config,
                     credentials: connection.credentials,
                     ...(connection.credentials as Record<string, string>),
@@ -813,7 +868,7 @@ export function buildProxyHeaders({
 
             switch (connection.credentials.type) {
                 case 'OAUTH2': {
-                    headers[key] = interpolateIfNeeded(value, {
+                    headers[key] = interpolateIfNeeded(resolvedValue, {
                         accessToken: connection.credentials.access_token,
                         clientId: integrationConfig?.oauth_client_id || '',
                         clientSecret: integrationConfig?.oauth_client_secret || ''
@@ -823,11 +878,11 @@ export function buildProxyHeaders({
                 case 'JWT':
                 case 'OAUTH2_CC':
                 case 'SIGNATURE': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
+                    headers[key] = interpolateIfNeeded(resolvedValue, { accessToken: connection.credentials.token || '' });
                     break;
                 }
                 case 'TWO_STEP': {
-                    headers[key] = interpolateIfNeeded(value, {
+                    headers[key] = interpolateIfNeeded(resolvedValue, {
                         accessToken: connection.credentials.token || '',
                         credentials: connection.credentials,
                         ...stableReplacers,
@@ -836,7 +891,7 @@ export function buildProxyHeaders({
                     break;
                 }
                 default:
-                    headers[key] = interpolateIfNeeded(value, {
+                    headers[key] = interpolateIfNeeded(resolvedValue, {
                         credentials: connection.credentials,
                         ...(connection.credentials as Record<string, string>),
                         method: config.method,
@@ -849,14 +904,24 @@ export function buildProxyHeaders({
     }
 
     if (config.headers) {
+        const callerHeaders = { ...config.headers };
+
         // Headers set in scripts should override the default ones except for special headers like 'user-agent'
         for (const key of providedHeaders) {
             if (headers[key]) {
-                config.headers[key] = headers[key];
+                removeExistingHeaders(callerHeaders, [key]);
+                callerHeaders[key] = headers[key];
             }
         }
 
-        headers = { ...headers, ...config.headers };
+        // A caller must not be able to replace a provider header backed by a secret integration field.
+        for (const key of getSecretIntegrationConfigHeaderNames(config.provider)) {
+            const protectedKey = key.toLowerCase() as Lowercase<string>;
+            removeExistingHeaders(callerHeaders, [key]);
+            callerHeaders[protectedKey] = headers[protectedKey]!;
+        }
+
+        headers = { ...headers, ...callerHeaders };
     }
 
     if (connection.credentials.type === 'AWS_SIGV4') {

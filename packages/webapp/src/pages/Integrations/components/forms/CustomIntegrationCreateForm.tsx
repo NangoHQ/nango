@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
+import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
@@ -13,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
 
 import type { ApiProviderListItem, PostIntegration, SimplifiedJSONSchema } from '@nangohq/types';
+import type { Resolver } from 'react-hook-form';
 
 type FieldEntry = [string, SimplifiedJSONSchema];
 
@@ -25,6 +27,8 @@ export const CustomIntegrationCreateForm: React.FC<{
     provider: ApiProviderListItem;
     onSubmit?: (data: PostIntegration['Body']) => Promise<void>;
 }> = ({ provider, onSubmit }) => {
+    const isOAuth = provider.authMode === 'OAUTH1' || provider.authMode === 'OAUTH2' || provider.authMode === 'TBA';
+    const showScopes = isOAuth && provider.authMode !== 'TBA' && (provider.preConfiguredScopes.length > 0 || Boolean(provider.availableScopes?.length));
     const fields = useMemo<FieldEntry[]>(
         () => Object.entries(provider.integration_config ?? {}).sort((a, b) => (a[1].order ?? 0) - (b[1].order ?? 0)),
         [provider.integration_config]
@@ -37,60 +41,75 @@ export const CustomIntegrationCreateForm: React.FC<{
     // required-but-hidden field (e.g. built-in credentials in custom mode) isn't enforced.
     const schema = useMemo(
         () =>
-            z.object(Object.fromEntries(fields.map(([name]) => [name, z.string().optional()]))).superRefine((data, ctx) => {
-                const values = data as Record<string, string | undefined>;
-                for (const [name, def] of fields) {
-                    if (!isIntegrationConfigFieldVisible(name, schemaMap, values)) {
-                        continue;
-                    }
-                    const value = values[name] ?? '';
-                    if (!value) {
-                        if (!def.optional) {
-                            ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'This field is required' });
-                        }
-                        continue;
-                    }
-                    if (def.enum && def.enum.length > 0 && !def.enum.includes(value)) {
-                        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: `Must be one of: ${def.enum.join(', ')}` });
-                        continue;
-                    }
-                    if (def.format === 'uri') {
-                        let protocol: string | undefined;
-                        try {
-                            protocol = new URL(value).protocol;
-                        } catch {
-                            ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be a valid URL' });
+            z
+                .object({
+                    ...Object.fromEntries(fields.map(([name]) => [name, z.string().optional()])),
+                    ...(isOAuth && {
+                        oauthClientId: z.string().min(1, 'This field is required'),
+                        oauthClientSecret: z.string().min(1, 'This field is required'),
+                        ...(showScopes && { oauthScopes: z.string().optional() })
+                    })
+                })
+                .superRefine((data, ctx) => {
+                    const values = data as Record<string, string | undefined>;
+                    for (const [name, def] of fields) {
+                        if (!isIntegrationConfigFieldVisible(name, schemaMap, values)) {
                             continue;
                         }
-                        if (protocol !== 'http:' && protocol !== 'https:') {
-                            ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be an http(s) URL' });
-                            continue;
-                        }
-                    }
-                    if (def.pattern) {
-                        try {
-                            if (!new RegExp(def.pattern).test(value)) {
-                                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: `Invalid ${def.title}` });
+                        const value = values[name] ?? '';
+                        if (!value) {
+                            if (!def.optional) {
+                                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'This field is required' });
                             }
-                        } catch {
-                            // Ignore an invalid pattern in the provider schema.
+                            continue;
+                        }
+                        if (def.enum && def.enum.length > 0 && !def.enum.includes(value)) {
+                            ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: `Must be one of: ${def.enum.join(', ')}` });
+                            continue;
+                        }
+                        if (def.format === 'uri') {
+                            let protocol: string | undefined;
+                            try {
+                                protocol = new URL(value).protocol;
+                            } catch {
+                                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be a valid URL' });
+                                continue;
+                            }
+                            if (protocol !== 'http:' && protocol !== 'https:') {
+                                ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: 'Must be an http(s) URL' });
+                                continue;
+                            }
+                        }
+                        if (def.pattern) {
+                            try {
+                                if (!new RegExp(def.pattern).test(value)) {
+                                    ctx.addIssue({ code: z.ZodIssueCode.custom, path: [name], message: `Invalid ${def.title}` });
+                                }
+                            } catch {
+                                // Ignore an invalid pattern in the provider schema.
+                            }
                         }
                     }
-                }
-            }),
-        [fields, schemaMap]
+                }),
+        [fields, isOAuth, schemaMap, showScopes]
     );
 
     const defaultValues = useMemo(
-        () =>
-            Object.fromEntries(fields.map(([name, def]) => [name, def.default_value ?? (def.enum && !def.optional ? (def.enum[0] ?? '') : '')])) as Record<
-                string,
-                string
-            >,
-        [fields]
+        () => ({
+            ...Object.fromEntries(fields.map(([name, def]) => [name, def.default_value ?? (def.enum && !def.optional ? (def.enum[0] ?? '') : '')])),
+            ...(isOAuth && {
+                oauthClientId: '',
+                oauthClientSecret: '',
+                ...(showScopes && { oauthScopes: provider.defaultScopes?.join(',') ?? '' })
+            })
+        }),
+        [fields, isOAuth, provider.defaultScopes, showScopes]
     );
 
-    const form = useForm({ resolver: zodResolver(schema), defaultValues });
+    const form = useForm<Record<string, string | undefined>>({
+        resolver: zodResolver(schema) as Resolver<Record<string, string | undefined>>,
+        defaultValues
+    });
 
     const [loading, setLoading] = useState(false);
 
@@ -106,6 +125,14 @@ export const CustomIntegrationCreateForm: React.FC<{
             await onSubmit?.({
                 provider: provider.name,
                 useSharedCredentials: false,
+                ...(isOAuth && {
+                    auth: {
+                        authType: provider.authMode as Extract<typeof provider.authMode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
+                        clientId: formData.oauthClientId,
+                        clientSecret: formData.oauthClientSecret,
+                        ...(showScopes && { scopes: formData.oauthScopes })
+                    }
+                }),
                 integrationConfig
             });
         } finally {
@@ -121,6 +148,57 @@ export const CustomIntegrationCreateForm: React.FC<{
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmitForm)} className="flex flex-col gap-8">
                     <div className="flex flex-col gap-5">
+                        {isOAuth && (
+                            <>
+                                <FormField
+                                    control={form.control}
+                                    name="oauthClientId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client ID</FormLabel>
+                                            <FormControl>
+                                                <InputGroup>
+                                                    <InputGroupInput {...field} />
+                                                </InputGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="oauthClientSecret"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Client Secret</FormLabel>
+                                            <FormControl>
+                                                <SecretInput {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {showScopes && (
+                                    <FormField
+                                        control={form.control}
+                                        name="oauthScopes"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Scopes</FormLabel>
+                                                <FormControl>
+                                                    <ScopesInput
+                                                        scopesString={field.value}
+                                                        onChange={(scopes) => Promise.resolve(field.onChange(scopes))}
+                                                        availableScopes={provider.availableScopes}
+                                                        showAvailableScopesDropdown={true}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
+                            </>
+                        )}
                         {fields
                             .filter(([name]) => isIntegrationConfigFieldVisible(name, schemaMap, watched as Record<string, string | undefined>))
                             .map(([name, definition]) => (
