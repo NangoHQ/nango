@@ -35,6 +35,7 @@ import type {
     GetConnectSession,
     PostConnectSessions,
     PostInternalConnectSessions,
+    PostInternalConnectSessionsReconnect,
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
@@ -214,6 +215,7 @@ export type PrivateApiEndpoints =
     | SearchMessages
     | SearchFilters
     | PostInternalConnectSessions
+    | PostInternalConnectSessionsReconnect
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions

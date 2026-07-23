@@ -42,6 +42,7 @@ import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
+import { postInternalConnectSessionsReconnect } from './controllers/v1/connect/sessions/postConnectSessionsReconnect.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { patchConnection } from './controllers/v1/connections/connectionId/patchConnection.js';
@@ -250,6 +251,11 @@ web.route('/environment/admin-auth').get(
 
 // Connect
 web.route('/connect/sessions').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), postInternalConnectSessions);
+web.route('/connect/sessions/reconnect').post(
+    webAuth,
+    can({ action: 'update', resource: 'connection', scopedBy: envScope }),
+    postInternalConnectSessionsReconnect
+);
 
 // Connect UI settings
 web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);

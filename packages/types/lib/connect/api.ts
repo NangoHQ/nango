@@ -114,6 +114,16 @@ export type PostInternalConnectSessions = Endpoint<{
     >;
 }>;
 
+export type PostInternalConnectSessionsReconnect = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/connect/sessions/reconnect';
+    Success: PostConnectSessions['Success'];
+    Body: {
+        connection_id: string;
+        provider_config_key: string;
+    };
+}>;
+
 export type PostPublicConnectTelemetry = Endpoint<{
     Method: 'POST';
     Path: '/connect/telemetry';
