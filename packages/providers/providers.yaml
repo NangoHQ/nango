@@ -6883,6 +6883,33 @@ dualentry-mcp:
         base_url: https://api.dualentry.com
     docs: https://nango.dev/docs/api-integrations/dualentry-mcp
 
+dynamic-mockups:
+    display_name: Dynamic Mockups
+    categories:
+        - design
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.dynamicmockups.com/api
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/mockups
+    docs: https://nango.dev/docs/api-integrations/dynamic-mockups
+    docs_connect: https://nango.dev/docs/api-integrations/dynamic-mockups/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Dynamic Mockups account.
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]+$'
+            example: 375e11d6-b18f-40eb-b4ab-bc6c85abfb48:************************************************************a481
+            doc_section: '#step-1-generating-your-api-key'
+
 dynatrace:
     display_name: Dynatrace
     categories:
