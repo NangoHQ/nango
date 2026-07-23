@@ -5,6 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { DispatchQueueConsumer } from './consumer.js';
 
+import type { DispatchPollPacer } from './adaptive-polling.js';
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
@@ -68,6 +69,7 @@ function makeHarness(
         consumerConcurrency?: number;
         maxAgeMs?: number;
         sqsSend?: Mock<SqsSendFn>;
+        pollPacer?: DispatchPollPacer;
     } = {}
 ): Harness {
     const messages = opts.messages ?? [];
@@ -111,7 +113,8 @@ function makeHarness(
         maxMessages: 10,
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
-        maxAgeMs: opts.maxAgeMs ?? 0
+        maxAgeMs: opts.maxAgeMs ?? 0,
+        ...(opts.pollPacer ? { pollPacer: opts.pollPacer } : {})
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
@@ -224,6 +227,57 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
+        expect(getDeleteCalls(h)).toHaveLength(0);
+    });
+
+    it('waits for the shared pacer before receiving messages', async () => {
+        const gate = deferred<void>();
+        const wait = vi.fn(() => gate.promise);
+        const pollPacer: DispatchPollPacer = { wait, recordSuccess: vi.fn(), recordCongestion: vi.fn(), recordFailure: vi.fn() };
+        const h = makeHarness({ pollPacer });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(wait).toHaveBeenCalledOnce());
+        expect(h.sqsSend).not.toHaveBeenCalled();
+
+        gate.resolve();
+        await vi.waitFor(() => expect(h.sqsSend).toHaveBeenCalled());
+        await h.consumer.stop();
+    });
+
+    it('records successful orchestrator latency with the pod-local pacer', async () => {
+        const recordSuccess = vi.fn();
+        const pollPacer: DispatchPollPacer = { wait: vi.fn(), recordSuccess, recordCongestion: vi.fn(), recordFailure: vi.fn() };
+        const h = makeHarness({ messages: [buildMessage()], pollPacer });
+
+        await runOnce(h, () => expect(recordSuccess).toHaveBeenCalledOnce());
+
+        expect(recordSuccess).toHaveBeenCalledWith(expect.any(Number));
+        expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
+    it('backs off the pod without deleting messages when webhook admission is exhausted', async () => {
+        const recordCongestion = vi.fn();
+        const pollPacer: DispatchPollPacer = { wait: vi.fn(), recordSuccess: vi.fn(), recordCongestion, recordFailure: vi.fn() };
+        const h = makeHarness({ messages: [buildMessage()], pollPacer });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Err({ name: 'webhook_admission_exceeded', message: 'busy', payload: { reason: 'concurrency', retryAfterMs: 2000 } })
+        );
+
+        await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(2000));
+
+        expect(getDeleteCalls(h)).toHaveLength(0);
+    });
+
+    it('paces the next poll after a generic batch failure', async () => {
+        const recordFailure = vi.fn();
+        const pollPacer: DispatchPollPacer = { wait: vi.fn(), recordSuccess: vi.fn(), recordCongestion: vi.fn(), recordFailure };
+        const h = makeHarness({ messages: [buildMessage()], pollPacer });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Err({ name: 'server_error', message: 'boom', payload: null }));
+
+        await runOnce(h, () => expect(recordFailure).toHaveBeenCalledOnce());
+
+        expect(recordFailure).toHaveBeenCalledWith(expect.any(Number));
         expect(getDeleteCalls(h)).toHaveLength(0);
     });
 

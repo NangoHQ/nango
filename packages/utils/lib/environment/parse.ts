@@ -691,6 +691,10 @@ const envSchema = z.object({
     // so peak orchestrator connections from webhook dispatch ≈ jobs_replicas × this. Keep it well
     // under ORCHESTRATOR_DB_POOL_MAX so bulk webhook ingress can't starve the orchestrator's core work.
     NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    // Per-pod pacing ceiling. Zero disables latency-based delay, but explicit admission backoff is still honored.
+    NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: z.coerce.number().int().nonnegative().optional().default(500),
+    // Start pacing above the normal postImmediateBatch tail latency.
+    NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: z.coerce.number().int().positive().optional().default(100),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),

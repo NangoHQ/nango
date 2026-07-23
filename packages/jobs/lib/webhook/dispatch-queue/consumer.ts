@@ -1,3 +1,5 @@
+import { performance } from 'node:perf_hooks';
+
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import tracer from 'dd-trace';
 import * as z from 'zod';
@@ -8,6 +10,7 @@ import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 
+import type { DispatchPollPacer } from './adaptive-polling.js';
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
@@ -44,7 +47,14 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
+    pollPacer?: DispatchPollPacer;
     sqs?: SQSClient;
+}
+
+interface BatchOutcome {
+    result: 'success' | 'congestion' | 'failure' | 'noop';
+    durationMs?: number;
+    retryAfterMs?: number;
 }
 
 interface ParsedEntry {
@@ -62,6 +72,7 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
+    private readonly pollPacer: DispatchPollPacer | undefined;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -74,6 +85,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
+        this.pollPacer = props.pollPacer;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -98,6 +110,7 @@ export class DispatchQueueConsumer {
         const signal = this.abortController.signal;
         while (!signal.aborted) {
             try {
+                await this.pollPacer?.wait(signal);
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.queueUrl,
@@ -113,7 +126,14 @@ export class DispatchQueueConsumer {
                 const messages = result.Messages ?? [];
                 if (messages.length === 0) continue;
 
-                await this.processBatch(messages);
+                const outcome = await this.processBatch(messages);
+                if (outcome.result === 'success') {
+                    this.pollPacer?.recordSuccess(outcome.durationMs ?? 0);
+                } else if (outcome.result === 'congestion') {
+                    this.pollPacer?.recordCongestion(outcome.retryAfterMs ?? 1000);
+                } else if (outcome.result === 'failure') {
+                    this.pollPacer?.recordFailure(outcome.durationMs ?? 0);
+                }
             } catch (err) {
                 if (err instanceof Error && err.name === 'AbortError') break;
                 report(new Error('webhook dispatch consumer receive failed', { cause: err }));
@@ -122,7 +142,7 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private async processBatch(messages: Message[]): Promise<void> {
+    private async processBatch(messages: Message[]): Promise<BatchOutcome> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('jobs.webhook.dispatch_queue.process_batch', {
             ...(active ? { childOf: active } : {}),
@@ -133,7 +153,7 @@ export class DispatchQueueConsumer {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
-                    return;
+                    return { result: 'noop' };
                 }
 
                 // SQS might deliver the same message multiple times, so we guard against duplicates
@@ -167,7 +187,9 @@ export class DispatchQueueConsumer {
                     };
                 });
 
+                const startedAt = performance.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                const durationMs = performance.now() - startedAt;
                 if (res.isErr()) {
                     span.setTag('error', true);
                     span.setTag('error.type', res.error.name);
@@ -177,11 +199,16 @@ export class DispatchQueueConsumer {
                         span.setTag('error.details', responsePayload);
                     }
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
+                    if (res.error.name === 'webhook_admission_exceeded') {
+                        const retryAfterMs = getRetryAfterMs(res.error.payload);
+                        return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
+                    }
                     report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
-                    return;
+                    return { result: 'failure', durationMs };
                 }
 
                 await this.handleBatchResult(groupedEntries, res.value);
+                return { result: 'success', durationMs };
             } finally {
                 span.finish();
             }
@@ -299,4 +326,12 @@ function getClientErrorResponsePayload(err: { payload?: unknown }): string | nul
     }
 
     return JSON.stringify(responsePayload);
+}
+
+function getRetryAfterMs(payload: unknown): number | undefined {
+    if (!payload || typeof payload !== 'object' || !('retryAfterMs' in payload)) {
+        return undefined;
+    }
+    const retryAfterMs = payload.retryAfterMs;
+    return typeof retryAfterMs === 'number' && Number.isFinite(retryAfterMs) && retryAfterMs >= 0 ? retryAfterMs : undefined;
 }

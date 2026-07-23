@@ -341,9 +341,20 @@ export class OrchestratorClient {
             };
         });
 
-        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+        const res = await this.routeFetch(postImmediateBatchRoute, {
+            timeoutMs: 10_000,
+            retryConfig: { maxAttempts: 1, delayMs: 0 }
+        })({ body: { tasks: entries } });
 
         if ('error' in res) {
+            const admission = getWebhookAdmissionError(res.error.payload);
+            if (admission) {
+                return Err({
+                    name: 'webhook_admission_exceeded',
+                    message: admission.message,
+                    payload: admission.payload
+                });
+            }
             return Err({
                 name: res.error.code,
                 message: res.error.message || 'Error scheduling immediate batch',
