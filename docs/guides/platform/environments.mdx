@@ -52,13 +52,7 @@ const session = await nango.createConnectSession({
         end_user_id: '<END-USER-ID>'
     },
     allowed_integrations: ['<INTEGRATION-ID>'],
-    ...(webhookUrl && {
-        integrations_config_defaults: {
-            '<INTEGRATION-ID>': {
-                connection_config: { webhook_url: webhookUrl }
-            }
-        }
-    })
+    ...(webhookUrl && { webhook_url_override: webhookUrl })
 });
 ```
 

@@ -1812,9 +1812,11 @@ describe('PostgresStore', () => {
             await db(RECORDS_TABLE).where({ external_id: '1', connection_id: connectionId, model }).update({ updated_at: oneDayAgo });
 
             // Try to find a stale record
-            // Since we're picking a random partition, we might need to try multiple times
+            // Since we're picking a random partition (1/256 chance per try), we need enough attempts to make
+            // the odds of never hitting it negligible: (255/256)^1000 ≈ 2%, which was flaky in CI;
+            // (255/256)^3000 ≈ 0.0008%.
             const staleAfterMs = 60 * 60 * 1000; // 1 hour
-            for (let i = 0; i < 1000; i++) {
+            for (let i = 0; i < 3000; i++) {
                 const candidate = (await store.autoPruningCandidate({ staleAfterMs })).unwrap();
                 if (candidate) {
                     expect(candidate.connectionId).toBe(connectionId);
@@ -1830,7 +1832,7 @@ describe('PostgresStore', () => {
                 }
             }
             throw new Error('No candidate found. Expecting one');
-        });
+        }, 30000);
 
         it('should return null when no stale records exist', async () => {
             const connectionId = rnd.number();

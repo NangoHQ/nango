@@ -76,6 +76,15 @@ describe('authz integration', () => {
 
     // ── Administrator — always allowed ──────────────────────
     describe('administrator', () => {
+        it('should allow GET audit-trail', async () => {
+            const { user } = await seedAccountWithProdEnv();
+            const session = await authenticateUser(api, user);
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', query: { env: 'dev' }, session });
+
+            expect(res.res.status).not.toBe(403);
+        });
+
         it('should allow DELETE prod environments', async () => {
             const { user } = await seedAccountWithProdEnv();
             const session = await authenticateUser(api, user);
@@ -138,6 +147,16 @@ describe('authz integration', () => {
 
     // ── production_support — denied writes on prod ──────────
     describe('production_support', () => {
+        it('should allow GET audit-trail', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', query: { env: 'dev' }, session });
+
+            expect(res.res.status).not.toBe(403);
+        });
+
         it('should deny DELETE prod environments', async () => {
             const { account } = await seedAccountWithProdEnv();
             const supportUser = await createUserWithRole(account.id, 'production_support');
@@ -454,6 +473,16 @@ describe('authz integration', () => {
 
     // ── development_full_access — denied all prod access ────
     describe('development_full_access', () => {
+        it('should deny GET audit-trail', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', query: { env: 'dev' }, session });
+
+            expect(res.res.status).toBe(403);
+        });
+
         it('should deny GET prod integrations', async () => {
             const { account } = await seedAccountWithProdEnv();
             const devUser = await createUserWithRole(account.id, 'development_full_access');

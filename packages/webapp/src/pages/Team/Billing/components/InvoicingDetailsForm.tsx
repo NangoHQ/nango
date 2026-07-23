@@ -3,9 +3,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button, Input } from '@nangohq/design-system';
+import { Button, Card, CardContent, CardHeader, CardTitle, Input } from '@nangohq/design-system';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { usePutBillingInvoicingDetails } from '@/hooks/usePlan';
@@ -95,41 +94,43 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                <Card className="bg-surface-page rounded border border-border-muted py-0 gap-0">
-                    <CardHeader className="bg-surface-panel h-10 flex items-center px-6">
-                        <CardTitle className="text-text-strong !text-heading-sm">Billing information</CardTitle>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Billing information</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-row gap-5 items-start [&>*]:flex-1 px-6 py-9">
-                        <FormField
-                            control={form.control}
-                            name="legalEntityName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="flex gap-1 items-center">
-                                        Legal entity name <span className="text-text-danger">*</span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Acme Inc." {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="flex gap-1 items-center">
-                                        Billing email <span className="text-text-danger">*</span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input type="email" placeholder="billing@company.com" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <CardContent>
+                        <div className="flex flex-row items-start gap-5 [&>*]:flex-1">
+                            <FormField
+                                control={form.control}
+                                name="legalEntityName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex gap-1 items-center">
+                                            Legal entity name <span className="text-text-danger">*</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Acme Inc." {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex gap-1 items-center">
+                                            Billing email <span className="text-text-danger">*</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="billing@company.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
 

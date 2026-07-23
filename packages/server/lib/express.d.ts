@@ -22,6 +22,11 @@ declare module 'express-session' {
             pendingAuthenticationToken: string;
             state?: string | undefined;
         };
+        pendingMfaLogin?: {
+            userId: number;
+            returnTo: string;
+            createdAt: number;
+        };
     }
 }
 

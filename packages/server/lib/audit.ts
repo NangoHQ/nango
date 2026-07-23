@@ -1,26 +1,26 @@
-import { Audit, auditClickhouseClient, ClickhouseAuditSink, DropSink } from '@nangohq/audit';
+import { Audit, auditClickhouseClient, ClickhouseAuditStore, DropAuditStore } from '@nangohq/audit';
 import { getLogger } from '@nangohq/utils';
 
 import { envs } from './env.js';
 
-import type { AuditSink } from '@nangohq/audit';
+import type { AuditStore } from '@nangohq/audit';
 
 const logger = getLogger('audit');
 
-// Writes to ClickHouse when CLICKHOUSE_URL is configured (Cloud); otherwise drops. Built once and
-// shared across the server — the sink is fixed at construction, never swapped at runtime.
-function buildSink(): AuditSink {
+// Reads from and writes to ClickHouse when CLICKHOUSE_URL is configured (Cloud); otherwise drops
+// writes and returns empty reads. Built once and shared across the server.
+function buildStore(): AuditStore {
     if (!envs.CLICKHOUSE_URL) {
-        return new DropSink();
+        return new DropAuditStore();
     }
     try {
-        const sink = new ClickhouseAuditSink(auditClickhouseClient(envs.CLICKHOUSE_URL));
-        logger.info('Audit: writing events to ClickHouse');
-        return sink;
+        const store = new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
+        logger.info('Audit: reading and writing events to ClickHouse');
+        return store;
     } catch (err) {
-        logger.error('Audit: failed to configure the ClickHouse sink, dropping events', err);
-        return new DropSink();
+        logger.error('Audit: failed to create the ClickHouse store, events are dropped', err);
+        return new DropAuditStore();
     }
 }
 
-export const audit = new Audit(buildSink());
+export const audit = new Audit(buildStore());

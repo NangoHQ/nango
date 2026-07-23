@@ -10,6 +10,7 @@ export interface DBOAuthSession extends Timestamps {
     authMode: AuthModeType;
     connect_session_id: number | null;
     connection_config: Record<string, string>;
+    webhook_url_override: string | null;
     environment_id: number;
     web_socket_client_id: string | undefined;
     activity_log_id: string;
@@ -30,6 +31,7 @@ export interface OAuthSession {
     authMode: AuthModeType;
     connectSessionId: number | null;
     connectionConfig: Record<string, string>;
+    webhookUrlOverride: string | null;
     environmentId: number;
     webSocketClientId: string | undefined;
     activityLogId: string;
