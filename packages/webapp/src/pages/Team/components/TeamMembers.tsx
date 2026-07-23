@@ -22,7 +22,7 @@ import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/use
 import { useStore } from '../../../store';
 import { RoleSelect } from './RoleSelect';
 
-import type { ApiInvitation, ApiUser, Role } from '@nangohq/types';
+import type { ApiInvitation, ApiTeamUser, ApiUser, Role } from '@nangohq/types';
 
 const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user, onClose }) => {
     const env = useStore((state) => state.env);
@@ -89,7 +89,9 @@ export const TeamMembers: React.FC = () => {
 
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
-    const allUsers: ((ApiUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
+    const mfaFeatureEnabled = data?.data.mfaFeatureEnabled ?? false;
+
+    const allUsers: ((ApiTeamUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
         () =>
             [
                 ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
@@ -136,6 +138,7 @@ export const TeamMembers: React.FC = () => {
                             </div>
                         </TableHead>
                         <TableHead>Status</TableHead>
+                        {mfaFeatureEnabled && <TableHead>2FA</TableHead>}
                         <TableHead className="text-right">{/* Actions */}</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -179,6 +182,18 @@ export const TeamMembers: React.FC = () => {
                                     </div>
                                 )}
                             </TableCell>
+
+                            {mfaFeatureEnabled && (
+                                <TableCell>
+                                    {user.is_invitation ? (
+                                        <span className="text-text-secondary">—</span>
+                                    ) : user.mfaEnabled ? (
+                                        <Badge variant="success">Enabled</Badge>
+                                    ) : (
+                                        <Badge variant="ghost">Disabled</Badge>
+                                    )}
+                                </TableCell>
+                            )}
 
                             <TableCell className="text-right">
                                 {me?.email === user.email ? null : (

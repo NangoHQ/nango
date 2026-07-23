@@ -113,6 +113,15 @@ class MFAService {
         return Boolean(await this.getActiveFactor(userId));
     }
 
+    public async getEnabledUserIds(userIds: number[]): Promise<Set<number>> {
+        if (userIds.length === 0) {
+            return new Set();
+        }
+
+        const rows = await db.knex<DBMFAFactor>(FACTORS_TABLE).select('user_id').whereIn('user_id', userIds).whereNotNull('enabled_at');
+        return new Set(rows.map((row) => row.user_id));
+    }
+
     public async verifyTotp(userId: number, token: string): Promise<Result<boolean>> {
         try {
             const verified = await db.knex.transaction(async (trx) => {
