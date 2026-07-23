@@ -84,6 +84,9 @@ export class TTLFixedSizeMap<K, V> {
         if (!Number.isFinite(ttlMs) || ttlMs < 0) {
             throw new Error('ttlMs must be a finite, non-negative number.');
         }
+        if (!Number.isInteger(maxSize) || maxSize <= 0) {
+            throw new Error('maxSize must be a positive integer.');
+        }
         this.map = new FixedSizeMap(maxSize);
         // trunc: BigInt() throws on non-integers
         this.ttlNs = BigInt(Math.trunc(ttlMs)) * 1_000_000n;

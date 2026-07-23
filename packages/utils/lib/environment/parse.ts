@@ -27,7 +27,7 @@ export const ENVS = z.object({
     // Cached entries are served for up to this long, so revoked keys, deleted environments, and plan
     // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
     // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
-    AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
+    AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
