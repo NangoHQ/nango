@@ -12,7 +12,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
+const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link', 'link-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 // IconButton supports 2xs (20px) through lg.
