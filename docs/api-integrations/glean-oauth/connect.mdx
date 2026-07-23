@@ -1,0 +1,35 @@
+---
+title: 'Glean (OAuth) - How do I link my account?'
+sidebarTitle: 'Glean (OAuth)'
+---
+
+# Overview
+
+To authenticate with Glean (OAuth), you need to select which **Server URL** to connect to. Nango exchanges the authorization through Glean's own OAuth Authorization Server — users are directed through their organization's existing SSO login automatically, with no separate identity provider setup required.
+
+### Prerequisites
+
+- A static OAuth client registered with Glean for this integration (see [how to register your own Glean OAuth app](/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app)).
+
+### Instructions
+
+#### Step 1: Finding your server URL
+
+1. In the Glean admin console, go to [About Glean](https://app.glean.com/admin/about-glean).
+2. Find the **Server instance (QE)** field — this is your server URL.
+
+For example, if the field shows `https://acme-prod-be.glean.com/`, your server URL is `acme-prod-be.glean.com`.
+
+<Note>This is the same regardless of whether Glean runs in Glean's cloud or in your own cloud (cloud-prem) — only the underlying infrastructure location differs, not how you find or use the server URL.</Note>
+
+When someone logs in to Glean directly, the app resolves the correct server automatically from their email domain, so end users never see this URL. Nango isn't logging in through that flow, so you (an admin) still need to look it up manually once and enter it here.
+
+#### Step 2: Authorize Glean
+
+1. Open the form where you need to authenticate with Glean.
+2. Enter your **Server URL**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/glean-oauth/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Glean (OAuth).
