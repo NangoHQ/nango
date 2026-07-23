@@ -917,7 +917,7 @@ export function buildProxyHeaders({
         // A caller must not be able to replace a provider header backed by a secret integration field.
         for (const key of getSecretIntegrationConfigHeaderNames(config.provider)) {
             removeExistingHeaders(callerHeaders, [key]);
-            callerHeaders[key] = headers[key]!;
+            callerHeaders[key] = headers[key as Lowercase<string>]!;
         }
 
         headers = { ...headers, ...callerHeaders };
