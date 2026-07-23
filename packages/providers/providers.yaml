@@ -20568,6 +20568,24 @@ snowflake-jwt:
             secret: true
             doc_section: '#step-4-generating-your-private-key'
 
+spendesk:
+    display_name: Spendesk
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://public-api.spendesk.com/v1/oauth2/authorize
+    token_url: https://public-api.spendesk.com/v1/oauth2/token/create
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://public-api.spendesk.com
+    docs: https://nango.dev/docs/api-integrations/spendesk
+    setup_guide_url: https://nango.dev/docs/api-integrations/spendesk/how-to-register-your-own-spendesk-api-oauth-app
+
 splitwise:
     display_name: Splitwise
     categories:

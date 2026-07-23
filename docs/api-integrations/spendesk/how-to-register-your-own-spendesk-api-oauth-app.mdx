@@ -1,0 +1,35 @@
+---
+title: 'How to register your own Spendesk OAuth app'
+sidebarTitle: 'Spendesk setup'
+description: 'Register an OAuth app with Spendesk and connect it to Nango'
+---
+
+Spendesk's OAuth app flow is for partners building an integration that a Spendesk user authorizes. It uses the authorization-code grant with PKCE, which Nango handles automatically — you only need to provision the app and its credentials.
+
+<Steps>
+  <Step title="Request OAuth app credentials from Spendesk">
+    Spendesk issues OAuth app `client_id`/`client_secret` pairs to partners rather than through self-serve signup. Contact the [Spendesk partnerships team](https://www.spendesk.com) to request access and describe your integration.
+  </Step>
+  <Step title="Get your redirect URI and client credentials">
+    Spendesk will ask for the redirect URI to register on your OAuth app. Use Nango's callback URL:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    Spendesk will then provide your **Client ID** and, for confidential apps, a **Client Secret**.
+  </Step>
+  <Step title="Confirm your scopes">
+    Spendesk restricts the token to the scope(s) agreed with your partnership contact. Ask which scope string(s) to request, then set them as the scopes on your integration in the Nango dashboard.
+  </Step>
+  <Step title="Configure the integration in Nango">
+    In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Spendesk_, and enter the **Client ID** and **Client Secret** you received.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For endpoint-level details, see [Spendesk's OAuth2 reference](https://developer.spendesk.com/reference).
+
+---

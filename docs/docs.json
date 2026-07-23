@@ -1690,6 +1690,7 @@
               "api-integrations/snowflake",
               "integrations/all/snowflake-jwt",
               "api-integrations/sophos-central",
+              "api-integrations/spendesk",
               "integrations/all/splitwise",
               "integrations/all/spotify",
               "integrations/all/spotify-oauth2-cc",
