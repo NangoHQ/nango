@@ -1,3 +1,5 @@
+import { performance } from 'node:perf_hooks';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { RedisDispatchCapacityCoordinator } from './capacity-coordinator.js';
@@ -34,13 +36,8 @@ describe('RedisDispatchCapacityCoordinator', () => {
     });
 
     it('does not extend the Redis lease when acquisition is slow', async () => {
-        const evalMock = vi
-            .fn()
-            .mockImplementationOnce(async () => {
-                await new Promise((resolve) => setTimeout(resolve, 350));
-                return [1, 1, 0, 1, 1300, 1000];
-            })
-            .mockResolvedValueOnce(0);
+        const performanceNow = vi.spyOn(performance, 'now').mockReturnValueOnce(1000).mockReturnValue(1350);
+        const evalMock = vi.fn().mockResolvedValueOnce([1, 1, 0, 1, 1300, 1000]).mockResolvedValueOnce(0);
         const coordinator = new RedisDispatchCapacityCoordinator({
             redis: { eval: evalMock } as unknown as NangoRedisClient,
             keyPrefix: 'test:webhook-dispatch:{capacity}',
@@ -52,10 +49,16 @@ describe('RedisDispatchCapacityCoordinator', () => {
             controlIntervalMs: 10
         });
 
-        const permit = await coordinator.acquire(new AbortController().signal);
-
-        expect(permit.isValid()).toBe(false);
-        await permit.release();
+        try {
+            const permit = await coordinator.acquire(new AbortController().signal);
+            try {
+                expect(permit.isValid()).toBe(false);
+            } finally {
+                await permit.release();
+            }
+        } finally {
+            performanceNow.mockRestore();
+        }
     });
 
     it('can become valid again after a renewal extends the Redis lease', async () => {
