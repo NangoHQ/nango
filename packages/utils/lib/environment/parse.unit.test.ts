@@ -200,6 +200,16 @@ describe('parse', () => {
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
     });
 
+    it('should default and parse NANGO_LOGS_ES_RETENTION_PERIOD', () => {
+        expect(parseEnvs(ENVS, {}).NANGO_LOGS_ES_RETENTION_PERIOD).toBe('15d');
+        expect(parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_PERIOD: '3d' }).NANGO_LOGS_ES_RETENTION_PERIOD).toBe('3d');
+    });
+
+    it('should reject invalid NANGO_LOGS_ES_RETENTION_PERIOD', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_PERIOD: 'not-a-duration' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_PERIOD: '0d' })).toThrow();
+    });
+
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(true);
