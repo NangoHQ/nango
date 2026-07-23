@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import * as endUserService from '@nangohq/shared';
-import { connectUISettingsService } from '@nangohq/shared';
-import { report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { connectUISettingsService, getWebsocketsPath } from '@nangohq/shared';
+import { isCloud, report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -98,6 +98,9 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     }
     if (connectSession.overrides) {
         data.overrides = connectSession.overrides;
+    }
+    if (!isCloud) {
+        data.websockets_path = getWebsocketsPath();
     }
 
     res.status(200).send({ data });

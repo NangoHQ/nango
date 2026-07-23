@@ -86,7 +86,8 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websockets_path: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -115,7 +116,8 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: null,
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websockets_path: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -144,7 +146,8 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: null,
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websockets_path: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -191,7 +194,8 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: customConnectUISettings
+                connectUISettings: customConnectUISettings,
+                websockets_path: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -236,7 +240,8 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websockets_path: '/'
             }
         });
         expect(res.res.status).toBe(200);
