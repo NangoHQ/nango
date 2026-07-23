@@ -10626,7 +10626,8 @@ hubstaff:
     proxy:
         base_url: https://api.hubstaff.com
         retry:
-            at: 'x-rate-limit-reset'
+            at:
+                - 'x-rate-limit-reset'
     docs: https://nango.dev/docs/api-integrations/hubstaff
     setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
 
