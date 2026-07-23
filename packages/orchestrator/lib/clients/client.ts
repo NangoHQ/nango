@@ -344,11 +344,8 @@ export class OrchestratorClient {
         });
 
         const res = await this.routeFetch(postImmediateBatchRoute, {
-            retryConfig: {
-                maxAttempts: 3,
-                delayMs: 50,
-                retryIf: (res) => 'error' in res && getWebhookAdmissionError(getResponseStatus(res.error), res.error.payload) === null
-            }
+            timeoutMs: 10_000,
+            retryConfig: { maxAttempts: 1, delayMs: 0 }
         })({ body: { tasks: entries } });
 
         if ('error' in res) {

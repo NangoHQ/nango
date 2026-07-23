@@ -16,6 +16,7 @@ import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.j
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
+import { LocalAdaptivePollPacer } from './webhook/dispatch-queue/adaptive-polling.js';
 import { DispatchQueueConsumer } from './webhook/dispatch-queue/consumer.js';
 
 const logger = getLogger('Jobs');
@@ -56,7 +57,11 @@ try {
               maxMessages: envs.NANGO_TASK_DISPATCH_MAX_MESSAGES,
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
               visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
-              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000
+              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
+              pollPacer: new LocalAdaptivePollPacer({
+                  maxDelayMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS,
+                  healthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS
+              })
           })
         : undefined;
 
@@ -138,7 +143,11 @@ try {
 
     if (webhookDispatchConsumer) {
         webhookDispatchConsumer.start();
-        logger.info('webhook dispatch queue consumer started');
+        logger.info('webhook dispatch queue consumer started', {
+            consumerConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,
+            adaptiveMaxPollDelayMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS,
+            adaptiveHealthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS
+        });
     }
 
     void otlp.register(getOtlpRoutes);

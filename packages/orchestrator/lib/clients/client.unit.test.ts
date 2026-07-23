@@ -194,34 +194,49 @@ describe('OrchestratorClient executeWebhookBatch', () => {
         }
     });
 
-    it('retries transient 5xx responses on the batch path', async () => {
-        const fetchMock = vi
-            .fn()
-            .mockResolvedValueOnce(
-                new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
-                    status: 500,
-                    headers: { 'content-type': 'application/json' }
-                })
-            )
-            .mockResolvedValueOnce(
-                new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
-                    status: 500,
-                    headers: { 'content-type': 'application/json' }
-                })
-            )
-            .mockResolvedValueOnce(
-                new Response(JSON.stringify({ results: [{ taskId: 't1', retryKey: 'r1' }] }), {
-                    status: 200,
-                    headers: { 'content-type': 'application/json' }
-                })
-            );
+    it('does not retry failed batches because SQS owns durable retries', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
+                status: 500,
+                headers: { 'content-type': 'application/json' }
+            })
+        );
         vi.stubGlobal('fetch', fetchMock);
 
         const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
         const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
 
-        expect(res.isOk()).toBe(true);
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(res.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns explicit webhook admission feedback', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    error: {
+                        code: 'webhook_admission_exceeded',
+                        message: 'busy',
+                        payload: { acquired: false, reason: 'concurrency', retryAfterMs: 1200 }
+                    }
+                }),
+                { status: 429, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({
+                name: 'webhook_admission_exceeded',
+                message: 'busy',
+                payload: { reason: 'concurrency', retryAfterMs: 1200 }
+            });
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('returns batch admission overload without retrying', async () => {

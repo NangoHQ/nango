@@ -16,7 +16,17 @@ describe('parse', () => {
 
     it('should have some default', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
+        expect(res).toMatchObject({
+            NANGO_DB_SSL: false,
+            NANGO_PERSIST_PORT: 3007,
+            NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: 500,
+            NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: 100
+        });
+    });
+
+    it('should allow disabling latency-based poll delays while retaining admission backoff', () => {
+        const res = parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: '0' });
+        expect(res.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS).toBe(0);
     });
 
     it('should parse the sandbox compiler template', () => {
