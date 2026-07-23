@@ -1792,6 +1792,7 @@
               "integrations/all/yandex",
               "integrations/all/yotpo",
               "api-integrations/youcanbook-me",
+              "api-integrations/youcanbook-me-public",
               "api-integrations/youtube",
               "api-integrations/zapier",
               "integrations/all/zapier-nla",
