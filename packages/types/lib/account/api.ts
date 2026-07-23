@@ -26,20 +26,17 @@ export type PostSignup = Endpoint<{
     };
 }>;
 
-export type ValidateEmailAndLogin = Endpoint<{
+export type ConfirmEmail = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/account/verify/code';
     Body: {
         token: string;
     };
-    Error:
-        | ApiError<'error_logging_in'>
-        | ApiError<'error_validating_user'>
-        | ApiError<'invalid_token'>
-        | ApiError<'token_expired'>
-        | ApiError<'error_refreshing_token'>;
+    Error: ApiError<'error_validating_user'> | ApiError<'invalid_token'> | ApiError<'token_expired'>;
     Success: {
-        user: ApiUser;
+        email: string;
+        userId: number;
+        accountId: number;
         showHearAboutUs?: boolean;
     };
 }>;
