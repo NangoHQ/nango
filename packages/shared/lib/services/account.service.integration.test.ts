@@ -2,14 +2,20 @@ import { v4 as uuid } from 'uuid';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { metrics } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
+import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
 import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.js';
 import secretService from './secret.service.js';
+import userService from './user.service.js';
+
+import type { DBTeam, DBUser, Role } from '@nangohq/types';
 
 describe('Account service', () => {
     beforeAll(async () => {
@@ -18,6 +24,112 @@ describe('Account service', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    async function createAccountWithUser({
+        email,
+        role = 'administrator',
+        suspended = false
+    }: {
+        email: string;
+        role?: Role;
+        suspended?: boolean;
+    }): Promise<{ account: DBTeam; user: DBUser }> {
+        const account = await createTestAccount();
+        const user = await userService.createUser({
+            email,
+            name: email,
+            account_id: account.id,
+            email_verified: true,
+            role
+        });
+
+        if (!user) {
+            throw new Error('Failed to create test user');
+        }
+
+        if (suspended) {
+            const updated = await userService.update({ id: user.id, suspended: true, suspended_at: new Date() });
+            if (!updated) {
+                throw new Error('Failed to suspend test user');
+            }
+            return { account, user: updated };
+        }
+
+        return { account, user };
+    }
+
+    async function createPlan(accountId: number, name: 'free' | 'growth-v2') {
+        const result = await plans.createPlan(db.knex, { account_id: accountId, name });
+        return result.unwrap();
+    }
+
+    describe('findAccountWithSameDomain', () => {
+        it('does not suggest accounts for a free email domain', async () => {
+            const current = await createAccountWithUser({ email: `${uuid()}@gmail.com` });
+            await createAccountWithUser({ email: `${uuid()}@gmail.com` });
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toBeNull();
+        });
+
+        it('suggests the only eligible account with a matching custom domain', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const candidate = await createAccountWithUser({ email: `admin@${domain}` });
+            await createPlan(candidate.account.id, 'free');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: candidate.account.id,
+                name: candidate.account.name
+            });
+        });
+
+        it('prefers a paid matching account over a free account', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const freeCandidate = await createAccountWithUser({ email: `free@${domain}` });
+            const paidCandidate = await createAccountWithUser({ email: `paid@${domain}` });
+            await createPlan(freeCandidate.account.id, 'free');
+            await createPlan(paidCandidate.account.id, 'growth-v2');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: paidCandidate.account.id,
+                name: paidCandidate.account.name
+            });
+        });
+
+        it('uses active member count to rank matching accounts with the same plan', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const smallerCandidate = await createAccountWithUser({ email: `small@${domain}` });
+            const largerCandidate = await createAccountWithUser({ email: `large@${domain}` });
+            await createPlan(smallerCandidate.account.id, 'free');
+            await createPlan(largerCandidate.account.id, 'free');
+            const additionalMember = await userService.createUser({
+                email: `${uuid()}@another.example.com`,
+                name: 'Additional member',
+                account_id: largerCandidate.account.id,
+                email_verified: true,
+                role: 'development_full_access'
+            });
+            expect(additionalMember).not.toBeNull();
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: largerCandidate.account.id,
+                name: largerCandidate.account.name
+            });
+        });
+
+        it('excludes the current account, suspended matching users, and accounts without an active administrator', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const suspendedCandidate = await createAccountWithUser({ email: `suspended@${domain}`, suspended: true });
+            const noAdministrator = await createAccountWithUser({ email: `member@${domain}`, role: 'development_full_access' });
+            await createPlan(suspendedCandidate.account.id, 'growth-v2');
+            await createPlan(noAdministrator.account.id, 'growth-v2');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toBeNull();
+        });
     });
 
     it('should create an account with default environments and a free plan', async () => {
@@ -79,7 +191,8 @@ describe('Account service', () => {
             auth: {
                 source: 'customer_key',
                 scopes: ['environment:*'],
-                apiKeyId: expect.any(Number)
+                apiKeyId: expect.any(Number),
+                apiKeyDisplayName: 'Default - Full access'
             }
         });
     });
@@ -114,7 +227,8 @@ describe('Account service', () => {
         expect(bySecretKey?.auth).toStrictEqual({
             source: 'customer_key',
             scopes: ['environment:deploy'],
-            apiKeyId: expect.any(Number)
+            apiKeyId: expect.any(Number),
+            apiKeyDisplayName: 'Default - Full access'
         });
     });
 
@@ -331,6 +445,83 @@ describe('Account service', () => {
         expect(result?.auth).toStrictEqual({
             source: 'api_secret',
             scopes: ['environment:*']
+        });
+    });
+
+    describe('getPersistAuthContext', () => {
+        it('should return exactly the narrow context fields', async () => {
+            const { account, env, plan, secret } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for an unknown key', async () => {
+            const result = (await accountService.getPersistAuthContext(`nango_secret_key_${uuid()}`)).unwrap();
+            expect(result).toBeNull();
+        });
+
+        it('should resolve env-var keys before the DB lookup', async () => {
+            const account = await createTestAccount();
+            const envName = uuid();
+            const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
+            await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+            const envVarName = `NANGO_SECRET_KEY_${envName.toUpperCase()}`;
+            const envVarKey = `nango_secret_key_${uuid()}`;
+            process.env[envVarName] = envVarKey;
+            try {
+                const result = (await accountService.getPersistAuthContext(envVarKey)).unwrap();
+                expect(result?.environment.id).toBe(environment!.id);
+                expect(result?.account.id).toBe(account.id);
+            } finally {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete process.env[envVarName];
+            }
+        });
+
+        it('should serve from cache within the TTL when enabled', async () => {
+            const previous = envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED;
+            (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = true;
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            try {
+                const { env, secret } = await seedAccountEnvAndUser();
+
+                // First lookup: miss -> resolved from the DB and cached
+                const first = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+                expect(first?.environment.id).toBe(env.id);
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: 'miss' });
+
+                // Break the DB row; a cache hit must still resolve, proving it is served from the cache
+                await db.knex('api_secrets').where({ environment_id: env.id }).update({ hashed: uuid() });
+                incrementSpy.mockClear();
+
+                const second = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+                expect(incrementSpy).toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: 'hit' });
+                expect(second).toStrictEqual(first);
+            } finally {
+                (envs as { AUTH_PERSIST_CONTEXT_CACHE_ENABLED: boolean }).AUTH_PERSIST_CONTEXT_CACHE_ENABLED = previous;
+            }
+        });
+
+        it('should not cache when disabled (default)', async () => {
+            expect(envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED).toBe(false);
+            const incrementSpy = vi.spyOn(metrics, 'increment');
+            const { env, secret } = await seedAccountEnvAndUser();
+
+            const first = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(first?.environment.id).toBe(env.id);
+
+            // With caching off, the next lookup goes to the (now broken) DB and returns null
+            await db.knex('api_secrets').where({ environment_id: env.id }).update({ hashed: uuid() });
+            const second = (await accountService.getPersistAuthContext(secret.secret)).unwrap();
+            expect(second).toBeNull();
+            expect(incrementSpy).not.toHaveBeenCalledWith(metrics.Types.AUTH_CONTEXT_CACHE, 1, expect.anything());
         });
     });
 

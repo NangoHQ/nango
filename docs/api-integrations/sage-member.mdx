@@ -1,0 +1,87 @@
+---
+title: 'SAGE Member'
+sidebarTitle: 'SAGE Member'
+description: 'Integrate your application with the SAGE Member API'
+---
+
+## Quickstart
+
+Connect to SAGE Member with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _SAGE Member_.
+    </Step>
+    <Step id="authorize-sage-member" title="Authorize SAGE Member">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Account Number, Login ID, and Authentication Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the SAGE Member API">
+    Let's make your first request to the SAGE Member API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/ConnectAPI" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"serviceId": 101, "apiVer": 130}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/ConnectAPI',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                serviceId: 101,
+                apiVer: 130
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Nango automatically injects your Account Number, Login ID, and Authentication Key into the `auth` object of every proxied request body — you only need to supply the `serviceId` and other fields for the specific SAGE Member module you're calling.
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## SAGE Member Integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/sage-member/connect)
+Connect your SAGE Member account using the Connect UI
+
+## Pre-built syncs & actions for SAGE Member
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/sage-member/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

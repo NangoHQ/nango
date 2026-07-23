@@ -14,6 +14,7 @@ import type {
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
+import type { GetAuditTrail } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAppStoreAuthorization,
@@ -27,6 +28,7 @@ import type {
     PostPublicTwoStepAuthorization,
     PostPublicUnauthenticatedAuthorization
 } from './auth/http.api.js';
+import type { PostCliTelemetry } from './cli/api.js';
 import type { GetPublicClientMetadata } from './clientMetadata/http.api.js';
 import type {
     DeleteConnectSession,
@@ -37,6 +39,7 @@ import type {
     PostPublicConnectTelemetry
 } from './connect/api.js';
 import type {
+    DeleteConnection,
     DeletePublicConnection,
     GetConnection,
     GetConnections,
@@ -48,7 +51,7 @@ import type {
     PostConnectionRefresh,
     PostPublicConnection
 } from './connection/api/get.js';
-import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { PostConnectionMetadata, SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
 import type {
@@ -102,6 +105,7 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
 import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
@@ -145,6 +149,7 @@ export type PublicApiEndpoints =
     | PostDeployInternal
     | PostPublicBillAuthorization
     | DeletePublicConnection
+    | DeleteConnection
     | PostPublicSignatureAuthorization
     | PostPublicTwoStepAuthorization
     | PostPublicWebhook
@@ -153,6 +158,7 @@ export type PublicApiEndpoints =
     | PatchPublicPruneRecords
     | GetPublicScriptsConfig
     | PostPublicConnectTelemetry
+    | PostCliTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
     | PostPublicQuickstartIntegration
@@ -182,6 +188,7 @@ export type PublicApiEndpoints =
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
+    | GetAuditTrail
     | PostSignup
     | PostSignin
     | PostLogout
@@ -221,6 +228,8 @@ export type PrivateApiEndpoints =
     | GetConnections
     | GetConnectionsCount
     | GetConnection
+    | PatchConnection
+    | PostConnectionMetadata
     | GetConnectionRecordModels
     | GetConnectionRecords
     | GetInvite
@@ -234,7 +243,6 @@ export type PrivateApiEndpoints =
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
-    | PatchConnection
     | PostManagedEmailVerification
     | PostManagedSignup
     | PostPreBuiltDeploy
@@ -261,6 +269,12 @@ export type PrivateApiEndpoints =
     | GetProviders
     | GetProvider
     | PostInternalTriggerFunction
+    | GetMFAStatus
+    | PostMFAEnrollment
+    | PostMFAActivation
+    | PostMFARecoveryCodes
+    | PostMFALoginVerification
+    | DeleteMFA
     | GetPlainHmac;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;

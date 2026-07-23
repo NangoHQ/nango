@@ -21,6 +21,13 @@ export const ENVS = z.object({
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
+    AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
+    // In-process cache of the persist auth context (persist internal-secret route).
+    AUTH_PERSIST_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
+    // Cached entries are served for up to this long, so revoked keys, deleted environments, and plan
+    // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
+    // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
+    AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -352,7 +359,14 @@ export const ENVS = z.object({
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
+    // authoritative for billing. Before this instant, S3 events ship as
+    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
+    // and after this instant, the two swap roles — HTTP events pick up
+    // the "_http" suffix and S3 events become canonical. Unset (or set
+    // to a future date) to defer or roll back the cutover. Remove once
+    // the HTTP emission path is retired.
+    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
     // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
     // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
@@ -373,10 +387,6 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // Dev-only override: allows the `source` query param on `getBillingUsage`
-    // to pin a request to Orb for parity checks. Default is ClickHouse; when
-    // OFF (prod default), the `source` param is ignored.
-    FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS
@@ -513,7 +523,6 @@ export const ENVS = z.object({
 
     // Sentry
     PUBLIC_SENTRY_KEY: z.string().optional(),
-    SENTRY_DSN: z.url().optional(),
 
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
@@ -533,6 +542,9 @@ export const ENVS = z.object({
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
+
+    // Deploy
+    DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),

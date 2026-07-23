@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { userService } from '@nangohq/shared';
-import { nanoid } from '@nangohq/utils';
+import { nanoid, normalizeEmail } from '@nangohq/utils';
 
 import type { runServer as runServerType } from '../../../../utils/tests.js';
 
@@ -65,7 +65,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should complete the pending WorkOS email verification flow and create the local user', async () => {
-        const email = `${nanoid()}@example.com`;
+        const email = `MixedCase-${nanoid()}@Example.com`;
         const verificationCode = '123456';
 
         workosMocks.authenticateWithCode.mockRejectedValue({
@@ -136,7 +136,7 @@ describe(`POST ${route}`, () => {
 
         const createdUser = await userService.getUserByEmail(email);
         expect(createdUser).toMatchObject({
-            email,
+            email: normalizeEmail(email),
             email_verified: true,
             name: 'Managed User'
         });

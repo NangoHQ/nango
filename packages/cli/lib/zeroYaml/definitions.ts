@@ -2,6 +2,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
+import { deriveFunctionCapabilities } from '@nangohq/runner-sdk';
 
 import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
@@ -16,15 +17,31 @@ import {
     TrackDeletesDefinitionError
 } from './utils.js';
 
-import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
+import type { CreateActionResponse, CreateFunctionResponse, CreateOnEventResponse, CreateSyncResponse, Requires, TriggerDefinition } from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
-import type { NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
+import type { FunctionCapabilities, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 import type * as z from 'zod';
 
-const allowed = ['action', 'sync', 'onEvent'];
+export interface FunctionConfig {
+    name: string;
+    integrationId: string;
+    description: string;
+    trigger: TriggerDefinition | null;
+    capabilities: FunctionCapabilities;
+    input: string | null;
+    output: string | null;
+    json_schema: JSONSchema7;
+}
 
-export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
-    const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
+export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
+    functions: FunctionConfig[];
+}
+
+const allowed = ['action', 'sync', 'onEvent', 'function'];
+
+export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<ParsedIntegrationDefinitions>> {
+    const parsed: ParsedIntegrationDefinitions = { yamlVersion: 'v2', integrations: [], models: new Map(), functions: [] };
 
     printDebug('Rebuilding parsed from js files', debug);
 
@@ -45,6 +62,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             return Err(new Error(`Script should have a default export ${modulePath}`));
         }
         if (!moduleContent.default.default.type || !allowed.includes(moduleContent.default.default.type)) {
+            // createFunction intentionally omitted from this message while experimental. Add on GA
             return Err(new Error(`Script should be declared using utility function (createSync, createAction, createOnEvent) ${modulePath}`));
         }
 
@@ -53,7 +71,8 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
         const script = moduleContent.default.default as
             | CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>
             | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
-            | CreateOnEventResponse;
+            | CreateOnEventResponse
+            | CreateFunctionResponse;
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace('.js', '.ts');
@@ -94,6 +113,19 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 } else if (script.event === 'validate-connection') {
                     integration.onEventScripts['validate-connection'].push(basename);
                 }
+                break;
+            }
+            case 'function': {
+                const validationRes = validateFunction({ params: script, integrationId, basename });
+                if (validationRes.isErr()) {
+                    return Err(validationRes.error);
+                }
+                if (parsed.functions.some((fn) => fn.integrationId === integrationId && fn.name === basename)) {
+                    return Err(
+                        new Error(`Function '${integrationId}/functions/${basename}.ts' is already defined. Function names must be unique per integration.`)
+                    );
+                }
+                parsed.functions.push(parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }));
                 break;
             }
         }
@@ -228,6 +260,81 @@ export function parseAction({
         version: params.version || '',
         json_schema: jsonSchema,
         features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+    };
+}
+
+export function validateFunction({
+    params,
+    integrationId,
+    basename
+}: {
+    params: { trigger?: TriggerDefinition | undefined; data?: unknown; requires?: Requires | undefined };
+    integrationId: string;
+    basename: string;
+}): Result<void> {
+    const fnPath = `${integrationId}/functions/${basename}.ts`;
+
+    // For now only trigger-less functions (triggered manually) are supported, with no data (records, checkpoints or metadata).
+    // TODO: Add support for http, schedule and event triggers, and data
+    const supportedFunctionTriggerKinds: TriggerDefinition['kind'][] = [];
+
+    if (params.trigger && !supportedFunctionTriggerKinds.includes(params.trigger.kind)) {
+        const supported = supportedFunctionTriggerKinds.map((kind) => `'${kind}'`).join(', ');
+        const allowedText = supported ? `${supported} or no trigger` : 'no trigger';
+        return Err(new Error(`Function '${fnPath}' uses an unsupported trigger kind '${params.trigger.kind}'. Only ${allowedText} is supported for now.`));
+    }
+    if (params.data) {
+        return Err(new Error(`Function '${fnPath}' declares 'data' (records, checkpoint or metadata) which is not supported yet. Remove 'data' for now.`));
+    }
+    if (params.requires?.connection === false) {
+        return Err(new Error(`Function '${fnPath}' is connection-less (requires.connection = false) which is not supported yet.`));
+    }
+    if (params.requires?.invoke === true) {
+        return Err(new Error(`Function '${fnPath}' declares requires.invoke which is not supported yet.`));
+    }
+
+    return Ok(undefined);
+}
+
+export function parseFunction({
+    params,
+    integrationId,
+    integrationIdClean,
+    basename,
+    basenameClean
+}: {
+    params: CreateFunctionResponse;
+    integrationId: string;
+    integrationIdClean: string;
+    basename: string;
+    basenameClean: string;
+}): FunctionConfig {
+    const inputName = params.input ? `FunctionInput_${integrationIdClean}_${basenameClean}` : null;
+    const outputName = params.output ? `FunctionOutput_${integrationIdClean}_${basenameClean}` : null;
+
+    const allZodModels: Record<string, z.ZodType> = {};
+    if (inputName) {
+        allZodModels[inputName] = params.input as z.ZodType;
+    }
+    if (outputName) {
+        allZodModels[outputName] = params.output as z.ZodType;
+    }
+    const models = params.data?.models;
+    if (models) {
+        for (const [name, model] of Object.entries(models)) {
+            allZodModels[name] = model as z.ZodType;
+        }
+    }
+
+    return {
+        name: basename,
+        integrationId,
+        description: params.description,
+        trigger: params.trigger ?? null,
+        capabilities: deriveFunctionCapabilities(params),
+        input: inputName,
+        output: outputName,
+        json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
     };
 }
 

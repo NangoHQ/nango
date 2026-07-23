@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { FixedSizeMap } from './map.js';
+import { FixedSizeMap, TTLFixedSizeMap } from './map.js';
 
 describe('FixedSizeMap', () => {
     describe('basic operations', () => {
@@ -192,5 +192,61 @@ describe('FixedSizeMap', () => {
             expect(map.has('key3')).toBe(false); // evicted
             expect(map.has('key4')).toBe(true);
         });
+    });
+});
+
+describe('TTLFixedSizeMap', () => {
+    beforeEach(() => {
+        vi.useFakeTimers({ toFake: ['hrtime'] });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('should throw on invalid TTL', () => {
+        expect(() => new TTLFixedSizeMap<string, number>(10, NaN)).toThrow('ttlMs must be a finite, non-negative number.');
+        expect(() => new TTLFixedSizeMap<string, number>(10, Infinity)).toThrow('ttlMs must be a finite, non-negative number.');
+        expect(() => new TTLFixedSizeMap<string, number>(10, -1)).toThrow('ttlMs must be a finite, non-negative number.');
+    });
+
+    it('should return entries younger than the TTL', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        map.set('a', 1);
+        vi.advanceTimersByTime(59_999);
+        expect(map.get('a')).toBe(1);
+    });
+
+    it('should return undefined for missing keys', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        expect(map.get('missing')).toBeUndefined();
+    });
+
+    it('should expire and evict entries once the TTL elapses', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        map.set('a', 1);
+        vi.advanceTimersByTime(60_000);
+        expect(map.get('a')).toBeUndefined();
+        expect(map.size).toBe(0);
+    });
+
+    it('should reset the TTL when an entry is rewritten', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        map.set('a', 1);
+        vi.advanceTimersByTime(50_000);
+        map.set('a', 2);
+        vi.advanceTimersByTime(30_000);
+        expect(map.get('a')).toBe(2);
+    });
+
+    it('should evict the least recently written entry at capacity', () => {
+        const map = new TTLFixedSizeMap<string, number>(2, 60_000);
+        map.set('a', 1);
+        map.set('b', 2);
+        map.set('c', 3);
+        expect(map.get('a')).toBeUndefined();
+        expect(map.get('b')).toBe(2);
+        expect(map.get('c')).toBe(3);
+        expect(map.size).toBe(2);
     });
 });
