@@ -14,17 +14,17 @@ Beetexting API requests use two forms of authentication together:
 Nango stores the API key as secret integration configuration and automatically adds it to proxied requests as `x-api-key`. The OAuth access and refresh tokens are stored on each connection. Callers should not send either authentication header themselves.
 
 <Steps>
-  <Step title="Create an API Connect application">
+  <Step id="create-api-connect-application" title="Create an API Connect application">
     In Beetexting, open **Settings**, locate **API Connect**, and create an application using the **CODE** grant type.
 
     Add your Nango OAuth callback URL to the application, then copy the generated **Client ID**, **Client Secret**, and **API Key** into the Beetexting integration settings in Nango.
   </Step>
 
-  <Step title="Authorize the connection">
+  <Step id="authorize-connection" title="Authorize the connection">
     Start a Nango Connect session and authorize Beetexting. Beetexting assigns scopes to the API Connect client, so Nango does not send an explicit `scope` parameter.
   </Step>
 
-  <Step title="Add organization routing details when using webhooks">
+  <Step id="configure-webhook-routing" title="Add organization routing details when using webhooks">
     Copy the **Organization ID** from **Settings > Organization**.
 
     For the primary **Department ID**, open **Settings > Numbers**, enable **Display Number IDs**, and copy the displayed number ID. Store these values on the Nango connection when your application creates organization- and department-scoped webhook subscriptions.
