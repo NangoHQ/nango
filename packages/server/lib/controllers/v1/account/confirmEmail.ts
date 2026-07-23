@@ -4,12 +4,11 @@ import db from '@nangohq/database';
 import { accountService, userService } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { ValidateEmailAndLogin } from '@nangohq/types';
+import type { ConfirmEmail } from '@nangohq/types';
 
-const logger = getLogger('Server.ValidateEmailAndLogin');
+const logger = getLogger('Server.ConfirmEmail');
 
 const validation = z
     .object({
@@ -17,7 +16,7 @@ const validation = z
     })
     .strict();
 
-export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (req, res) => {
+export const confirmEmail = asyncWrapper<ConfirmEmail>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -44,7 +43,7 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
             res.status(400).send({
                 error: {
                     code: 'token_expired',
-                    message: 'The token has expired. An email has been sent with a new token.'
+                    message: 'The token has expired.'
                 }
             });
         } else if (error.message === 'user_not_found') {
@@ -74,13 +73,5 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
         showHearAboutUs = await accountService.shouldShowHearAboutUs(account);
     }
 
-    req.login(user, function (err) {
-        if (err) {
-            logger.error('Error logging in user');
-            res.status(500).send({ error: { code: 'error_logging_in', message: 'There was a problem logging in the user. Please reach out to support.' } });
-            return;
-        }
-
-        res.status(200).send({ user: userToAPI(user), showHearAboutUs });
-    });
+    res.status(200).send({ email: user.email, userId: user.id, accountId: user.account_id, showHearAboutUs });
 });
