@@ -5,11 +5,9 @@ import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
-import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
 import { Clickhouse } from './clickhouse/clickhouse.js';
 import { AVG_METRICS, COUNTER_METRICS } from './clickhouse/clickhouse.query.js';
-import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
@@ -120,12 +118,10 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
-    public billingClient: UsageBillingClient;
     private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
-        this.billingClient = new UsageBillingClient(redis);
     }
 
     private getClickhouse(): Clickhouse {
@@ -323,44 +319,18 @@ export class UsageTracker implements IUsageTracker {
         return this.getClickhouse().getTopDimensionValues(params as GetTopDimensionValuesQuery);
     }
 
-    public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
-        // ClickHouse is the default. `?source=orb` only takes effect when
-        // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev-only parity checks).
-        const orbOverride = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE && opts?.source === 'orb';
-        if (!orbOverride) {
-            if (opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end) {
-                return this.getBillingUsageFromClickhouse(accountId, {
-                    timeframe: opts.timeframe,
-                    ...(opts.metrics ? { metrics: opts.metrics } : {}),
-                    ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
-                    ...(opts.top !== undefined ? { top: opts.top } : {}),
-                    ...(opts.filter ? { filter: opts.filter } : {}),
-                    ...(opts.avgPerDay ? { avgPerDay: opts.avgPerDay } : {})
-                });
-            }
-            return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
+    public async getBillingUsage(_subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
+        if (opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end) {
+            return this.getBillingUsageFromClickhouse(accountId, {
+                timeframe: opts.timeframe,
+                ...(opts.metrics ? { metrics: opts.metrics } : {}),
+                ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
+                ...(opts.top !== undefined ? { top: opts.top } : {}),
+                ...(opts.filter ? { filter: opts.filter } : {}),
+                ...(opts.avgPerDay ? { avgPerDay: opts.avgPerDay } : {})
+            });
         }
-
-        // Strip CH-only fields so they don't pollute the Orb client's Redis
-        // cache key. Orb ignores them, but the cache key hashes the full opts
-        // and would miss on otherwise-identical queries.
-        const orbOpts: GetBillingUsageOpts | undefined = opts
-            ? {
-                  ...(opts.timeframe ? { timeframe: opts.timeframe } : {}),
-                  ...(opts.granularity ? { granularity: opts.granularity } : {}),
-                  ...(opts.billingMetric ? { billingMetric: opts.billingMetric } : {})
-              }
-            : undefined;
-        const orbResult = await this.billingClient.getUsage(subscriptionId, orbOpts);
-        if (orbResult.isErr()) {
-            return Err(orbResult.error);
-        }
-        const orbValue = orbResult.value;
-        return Ok({
-            ...orbValue,
-            connections: orbValue.connections ? toCumulativeUsage(orbValue.connections) : undefined,
-            records: orbValue.records ? toCumulativeUsage(orbValue.records) : undefined
-        });
+        return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
     }
 
     /**
@@ -660,46 +630,16 @@ const sources: Record<UsageMetric, string> = {
     data_transfer: 'billing:subscription:usage'
 };
 
-function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {
-    const orderedPeriodicUsage = periodicUsage.usage.sort((a, b) => new Date(a.timeframeStart).getTime() - new Date(b.timeframeStart).getTime());
-    const cumulativeUsage: BillingUsageMetric['usage'] = [];
-    let previousQuantity = 0;
-
-    for (const usage of orderedPeriodicUsage) {
-        if (usage?.quantity === undefined) {
-            cumulativeUsage.push(usage);
-            continue;
-        }
-        const quantity = usage.quantity + previousQuantity;
-
-        cumulativeUsage.push({
-            timeframeStart: usage.timeframeStart,
-            timeframeEnd: usage.timeframeEnd,
-            quantity: Math.floor(quantity)
-        });
-
-        previousQuantity = quantity;
-    }
-    return {
-        ...periodicUsage,
-        view_mode: 'cumulative',
-        total: Math.floor(previousQuantity),
-        usage: cumulativeUsage
-    };
-}
-
 /**
- * CH-path sibling of `toCumulativeUsage`. Turns the per-day `(sum, batches)`
- * accumulators returned by `Clickhouse.getDailySumAndBatches` into
- * `BillingUsageMetric[]` with `view_mode='cumulative'` — the same wire shape
- * the dashboard already consumes for `records` / `connections` from the Orb
- * path. One `BillingUsageMetric` per series (no-dim → 1; dim → one per dim
- * value with `group: {key, value}`).
+ * Turns the per-day `(sum, batches)` accumulators returned by
+ * `Clickhouse.getDailySumAndBatches` into `BillingUsageMetric[]` with
+ * `view_mode='cumulative'` — the wire shape the dashboard consumes for
+ * `records` / `connections`. One `BillingUsageMetric` per series (no-dim → 1;
+ * dim → one per dim value with `group: {key, value}`).
  *
  * Walks each series in day order, accumulates `running_sum` and
  * `running_batches`, and emits `Math.round(running_sum / running_batches)` per
- * day. Bypasses `toCumulativeUsage` because the output is already
- * cumulative-shaped (running averages, not running sums of deltas).
+ * day.
  *
  * Dim-breakdown additivity contract: per-dim series share the same global
  * per-day batches (by design of `getDailySumAndBatches`' dim branch), so the

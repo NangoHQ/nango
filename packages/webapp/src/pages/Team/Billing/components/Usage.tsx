@@ -8,15 +8,11 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
 import { FreeUsage } from './FreeUsage';
-import { UsageChartCard } from './UsageChartCard';
+import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
+import { UsageTable } from './UsageTable';
 
-import type { DBPlan, UsageMetric } from '@nangohq/types';
-
-// Render order for the usage panels.
-const METRICS: UsageMetric[] = ['connections', 'proxy', 'function_compute_gbms', 'function_executions', 'function_logs', 'records', 'webhook_forwards'];
+import type { DBPlan } from '@nangohq/types';
 
 // Plans on the current usage model. Any plan not listed here is treated as a legacy plan (different usage metrics).
 // Typed against `DBPlan['name']` so a renamed or removed plan fails to compile instead of silently drifting.
@@ -42,18 +38,13 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    // Pin the whole dashboard to ClickHouse when breakdown is active so headline
-    // totals match the per-panel breakdowns (which always query ClickHouse).
-    const breakdownEnabled = useBreakdownEnabled();
-    const source = breakdownEnabled ? 'clickhouse' : undefined;
-
     // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
     // Free — it would double-fetch. Gate on `plan` being resolved too: until it loads `isFree` is
     // false, so a bare `!isFree` would fire one request (and can briefly hit Orb) before we know
     // the plan. Paid accounts have `plan` cached from the app shell, so this adds no real delay.
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source, { enabled: plan != null && !isFree });
-
-    const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
+    // avgPerDay: connections/records come back as the concurrent daily count rather than the
+    // billing running-average, matching what each row's drill-in chart also requests.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;
@@ -66,6 +57,18 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     }
 
     const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
+    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`),
+    // so every row shows just its usage total — `UsageRow` already renders that gracefully for a
+    // `null` limit (no bar, "—" instead of a percent).
+    const rows = USAGE_METRICS.map((metric) => ({
+        metric,
+        label: USAGE_METRIC_LABELS[metric],
+        usage: usage?.data.usage[metric]?.total ?? 0,
+        limit: null,
+        capsLoading: isLoading,
+        data: usage?.data.usage[metric]
+    }));
+
     return (
         <div className="w-full flex flex-col gap-6">
             {isLegacyPlan && (
@@ -93,18 +96,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                 </Alert>
             )}
 
-            {METRICS.map((metric) => (
-                <UsageChartCard
-                    key={metric}
-                    metric={metric}
-                    data={usage?.data.usage[metric]}
-                    isLoading={isLoading}
-                    env={env}
-                    timeframe={timeframe}
-                    isDivergingFromGlobal={isDivergingFromGlobal}
-                    onApplyToAll={applyToAll}
-                />
-            ))}
+            <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
 
             {usage?.data.customer.portalUrl && (
                 <StyledLink icon to={usage.data.customer.portalUrl} type="external" onClick={() => track('web:usage:invoice_details_clicked', {})}>
