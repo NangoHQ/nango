@@ -194,7 +194,7 @@ const AlertDialogFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<
             ref={ref}
             data-slot="alert-dialog-footer"
             className={cn(
-                'bg-surface-panel border-t border-border-default flex items-center gap-2 p-4',
+                'bg-dialog-footer-bg border-t border-border-default flex items-center gap-2 p-4',
                 size === 'sm' ? '[&>*]:flex-1' : 'justify-end',
                 className
             )}
