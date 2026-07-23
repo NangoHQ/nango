@@ -7,6 +7,7 @@ export enum Types {
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
+    AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_GET_ENV_BY_SECRET_KEY_SOURCE = 'nango.auth.getEnvBySecretKey.source',
