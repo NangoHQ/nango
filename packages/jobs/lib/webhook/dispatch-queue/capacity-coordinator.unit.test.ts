@@ -8,9 +8,9 @@ describe('RedisDispatchCapacityCoordinator', () => {
     it('retries a transient permit renewal failure while the lease is valid', async () => {
         const evalMock = vi
             .fn()
-            .mockResolvedValueOnce([1, 1, 0, 1, Date.now() + 300])
+            .mockResolvedValueOnce([1, 1, 0, 1, 1300, 1000])
             .mockRejectedValueOnce(new Error('Redis unavailable'))
-            .mockImplementationOnce(() => Promise.resolve(Date.now() + 300))
+            .mockResolvedValueOnce([1300, 1000])
             .mockResolvedValueOnce(0);
         const coordinator = new RedisDispatchCapacityCoordinator({
             redis: { eval: evalMock } as unknown as NangoRedisClient,
@@ -33,12 +33,12 @@ describe('RedisDispatchCapacityCoordinator', () => {
         await permit.release();
     });
 
-    it('uses the Redis lease expiration when acquisition is slow', async () => {
+    it('does not extend the Redis lease when acquisition is slow', async () => {
         const evalMock = vi
             .fn()
             .mockImplementationOnce(async () => {
                 await new Promise((resolve) => setTimeout(resolve, 350));
-                return [1, 1, 0, 1, Date.now() + 300];
+                return [1, 1, 0, 1, 1300, 1000];
             })
             .mockResolvedValueOnce(0);
         const coordinator = new RedisDispatchCapacityCoordinator({
@@ -54,16 +54,12 @@ describe('RedisDispatchCapacityCoordinator', () => {
 
         const permit = await coordinator.acquire(new AbortController().signal);
 
-        expect(permit.isValid()).toBe(true);
+        expect(permit.isValid()).toBe(false);
         await permit.release();
     });
 
     it('can become valid again after a renewal extends the Redis lease', async () => {
-        const evalMock = vi
-            .fn()
-            .mockResolvedValueOnce([1, 1, 0, 1, Date.now() + 50])
-            .mockImplementationOnce(() => Promise.resolve(Date.now() + 300))
-            .mockResolvedValueOnce(0);
+        const evalMock = vi.fn().mockResolvedValueOnce([1, 1, 0, 1, 1050, 1000]).mockResolvedValueOnce([1300, 1000]).mockResolvedValueOnce(0);
         const coordinator = new RedisDispatchCapacityCoordinator({
             redis: { eval: evalMock } as unknown as NangoRedisClient,
             keyPrefix: 'test:webhook-dispatch:{capacity}',
