@@ -21,15 +21,20 @@ export interface LoggedFetchRedirectPolicy {
 }
 
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
-// Stripped when a redirect crosses origins, matching the browser fetch default so manual following
-// does not leak credentials to a different host than the one the caller authenticated against.
-const CREDENTIAL_HEADERS_STRIPPED_ON_CROSS_ORIGIN_REDIRECT = ['authorization', 'cookie', 'proxy-authorization'];
+// Credential material is never forwarded across a redirect hop (same-origin included). Forwarding is
+// not opt-in anywhere on this path, so we drop these on every hop rather than relying on cross-origin
+// heuristics — matching the OAuth axios path, which also strips credential headers on every hop.
+const CREDENTIAL_HEADERS_STRIPPED_ON_REDIRECT = ['authorization', 'cookie', 'proxy-authorization'];
 
 /**
  * Follow redirects manually, validating every hop against `redirectPolicy`. Undici's fetch skips the
  * dispatcher's safe DNS lookup for IP-literal hosts, so relying on the agent alone would let a public
  * token URL redirect straight to a blocked internal IP; validating each `Location` here closes that gap
  * and enforces `maxRedirects` (which the dispatcher does not).
+ *
+ * Credentials are never forwarded across redirects: credential headers are stripped on every hop, and a
+ * cross-origin 307/308 (which would otherwise replay the original credential-bearing POST body — e.g.
+ * `client_secret`, a JWT assertion, or a custom-auth password) is refused rather than replayed.
  */
 async function fetchFollowingPolicyRedirects(initialUrl: URL, baseProps: RequestInit, redirectPolicy: LoggedFetchRedirectPolicy): Promise<Response> {
     let currentUrl = initialUrl;
@@ -65,16 +70,23 @@ async function fetchFollowingPolicyRedirects(initialUrl: URL, baseProps: Request
 
         await redirectPolicy.validate(target);
 
-        if (target.origin !== currentUrl.origin) {
-            for (const header of CREDENTIAL_HEADERS_STRIPPED_ON_CROSS_ORIGIN_REDIRECT) {
-                headers.delete(header);
-            }
+        const isCrossOrigin = target.origin !== currentUrl.origin;
+
+        // Never forward credential headers across a redirect, regardless of origin.
+        for (const header of CREDENTIAL_HEADERS_STRIPPED_ON_REDIRECT) {
+            headers.delete(header);
         }
+
         if (res.status === 303 || ((res.status === 301 || res.status === 302) && method !== 'GET' && method !== 'HEAD')) {
+            // 301/302/303 downgrade an unsafe method to GET and drop the request body entirely.
             method = 'GET';
             body = null;
             headers.delete('content-type');
             headers.delete('content-length');
+        } else if (isCrossOrigin && body != null) {
+            // 307/308 preserve method + body. Replaying a credential-bearing body to a different origin
+            // would leak it, so refuse the hop instead of forwarding the body unchanged.
+            throw new Error(`Refusing to replay request body across origins on redirect to ${target.origin}`);
         }
 
         currentUrl = target;

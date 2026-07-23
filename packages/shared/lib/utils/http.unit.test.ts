@@ -138,10 +138,15 @@ describe('loggedFetch', () => {
     });
 
     describe('redirect policy', () => {
-        it('validates every hop and returns the final response', async () => {
+        it('validates every hop across a multi-redirect chain and returns the final response', async () => {
             await withServer(
                 (req, res) => {
                     if (req.url === '/start') {
+                        res.writeHead(302, { location: '/step' });
+                        res.end();
+                        return;
+                    }
+                    if (req.url === '/step') {
                         res.writeHead(302, { location: '/final' });
                         res.end();
                         return;
@@ -165,7 +170,8 @@ describe('loggedFetch', () => {
                         { logCtx: buffer, context: 'auth', valuesToFilter: [] }
                     );
                     expect(fetchRes.unwrap().body).toStrictEqual({ ok: true });
-                    expect(validated).toEqual([`${baseUrl}/final`]);
+                    // Both hops (not just the first) must be validated.
+                    expect(validated).toEqual([`${baseUrl}/step`, `${baseUrl}/final`]);
                 }
             );
         });
@@ -217,15 +223,18 @@ describe('loggedFetch', () => {
             );
         });
 
-        it('strips credential headers on cross-origin hops but keeps them same-origin', async () => {
+        it('strips credential headers on every redirect hop, same-origin included', async () => {
             await withServer(
                 (req, res) => {
                     res.writeHead(200, { 'content-type': 'application/json' });
                     res.end(JSON.stringify({ authorization: req.headers['authorization'] ?? null }));
                 },
                 async (targetUrl) => {
+                    // Records the Authorization header seen at each path on the origin server.
+                    const seen: Record<string, string | null> = {};
                     await withServer(
                         (req, res) => {
+                            seen[req.url ?? ''] = req.headers['authorization'] ?? null;
                             // Redirect same-origin first, then cross-origin to the second server.
                             if (req.url === '/start') {
                                 res.writeHead(302, { location: '/same-origin' });
@@ -250,10 +259,88 @@ describe('loggedFetch', () => {
                                 },
                                 { logCtx: buffer, context: 'auth', valuesToFilter: [] }
                             );
-                            // Landed on the cross-origin server, which must not have received the credential header.
+                            // The original request keeps its credential header.
+                            expect(seen['/start']).toBe('Basic secret');
+                            // The same-origin redirect hop must NOT retain the credential header.
+                            expect(seen['/same-origin']).toBeNull();
+                            // Landed on the cross-origin server, which also must not have received it.
                             expect(fetchRes.unwrap().body).toStrictEqual({ authorization: null });
                         }
                     );
+                }
+            );
+        });
+
+        it('refuses to replay a credential-bearing body across origins on a 307 redirect', async () => {
+            await withServer(
+                (req, res) => {
+                    // Cross-origin target: must never receive the original POST body.
+                    let received = '';
+                    req.on('data', (chunk) => (received += chunk));
+                    req.on('end', () => {
+                        res.writeHead(200, { 'content-type': 'application/json' });
+                        res.end(JSON.stringify({ received }));
+                    });
+                },
+                async (targetUrl) => {
+                    await withServer(
+                        (req, res) => {
+                            if (req.url === '/start') {
+                                // 307 preserves method + body; point it at a different origin.
+                                res.writeHead(307, { location: `${targetUrl}/capture` });
+                                res.end();
+                                return;
+                            }
+                            res.writeHead(200);
+                            res.end();
+                        },
+                        async (baseUrl) => {
+                            const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                            const fetchRes = await loggedFetch(
+                                {
+                                    url: new URL(`${baseUrl}/start`),
+                                    method: 'POST',
+                                    body: 'client_secret=super-secret',
+                                    redirect: { maxRedirects: 5, validate: () => undefined }
+                                },
+                                { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+                            );
+                            // The hop is refused rather than replaying the credential body cross-origin.
+                            expect(fetchRes.isErr()).toBe(true);
+                        }
+                    );
+                }
+            );
+        });
+
+        it('replays a body on a same-origin 307 redirect', async () => {
+            await withServer(
+                (req, res) => {
+                    if (req.url === '/start') {
+                        res.writeHead(307, { location: '/final' });
+                        res.end();
+                        return;
+                    }
+                    let received = '';
+                    req.on('data', (chunk) => (received += chunk));
+                    req.on('end', () => {
+                        res.writeHead(200, { 'content-type': 'application/json' });
+                        res.end(JSON.stringify({ received, method: req.method }));
+                    });
+                },
+                async (baseUrl) => {
+                    const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                    const fetchRes = await loggedFetch<{ received: string; method: string }>(
+                        {
+                            url: new URL(`${baseUrl}/start`),
+                            method: 'POST',
+                            body: 'client_secret=super-secret',
+                            redirect: { maxRedirects: 5, validate: () => undefined }
+                        },
+                        { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+                    );
+                    // Same origin: replaying the body is safe, so the POST + body survive.
+                    expect(fetchRes.unwrap().body).toStrictEqual({ received: 'client_secret=super-secret', method: 'POST' });
                 }
             );
         });

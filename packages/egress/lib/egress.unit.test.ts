@@ -12,7 +12,7 @@ import {
     resolveProxyBaseUrlOverrideDenylist,
     resolveProxyBaseUrlOverrideDenylistForRunner
 } from './denylist.js';
-import { OutboundUrlError } from './errors.js';
+import { findOutboundUrlError, OutboundUrlError } from './errors.js';
 import { classifyBlockedIp } from './ip.js';
 import { resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
 import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
@@ -379,8 +379,16 @@ describe('getSafeUndiciDispatcher connect overrides', () => {
         // A honored socketPath would connect straight to the unix socket and never invoke the safe lookup.
         const dispatcher = getSafeUndiciDispatcher(permissive, { socketPath: '/tmp/nango-egress-should-not-be-used.sock' } as never);
 
-        await expect(fetch('http://nango-egress-test.example/', { dispatcher } as never)).rejects.toThrow();
+        const caught = await fetch('http://nango-egress-test.example/', { dispatcher } as never).then(
+            () => null,
+            (err: unknown) => err
+        );
+
         // The safe lookup ran, proving socketPath was stripped and the connection stayed policy-controlled.
         expect(lookupSpy).toHaveBeenCalled();
+        // The rejection is specifically the policy denial (loopback), not an unrelated transport failure —
+        // proving the connection was routed through the safe lookup rather than the unix socket.
+        const outboundErr = findOutboundUrlError(caught);
+        expect(outboundErr?.code).toBe('denied_dns');
     });
 });
