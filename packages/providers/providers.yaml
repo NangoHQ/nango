@@ -10634,6 +10634,30 @@ hubspot-mcp:
     docs: https://nango.dev/docs/api-integrations/hubspot-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app
 
+hubstaff:
+    display_name: Hubstaff
+    categories:
+        - hr
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://account.hubstaff.com/authorizations/new
+    token_url: https://account.hubstaff.com/access_tokens
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        nonce: ${random}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.hubstaff.com
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/hubstaff
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
+
 incident-io:
     display_name: Incident.io
     categories:
