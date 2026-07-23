@@ -239,6 +239,9 @@ export class TaskEventsHandler extends PgEventEmitter {
             STARTED: (task: Task) => {
                 logger.info(`Task started: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+                metrics.duration(metrics.Types.ORCH_TASKS_START_LAG_MS, Math.max(0, task.lastStateTransitionAt.getTime() - task.createdAt.getTime()), {
+                    primitive: task.groupKey.split(GROUP_PREFIX_SEPARATOR)[0] || 'unknown'
+                });
                 // STARTED events are not listen to, so we don't emit them
             },
             SUCCEEDED: (task: Task) => {

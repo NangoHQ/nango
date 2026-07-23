@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getTestDbClient } from '@nangohq/scheduler';
+import { metrics } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { taskEvents, TaskEventsHandler } from './events.js';
@@ -162,6 +163,17 @@ describe('TaskEventsHandler', () => {
 
             expect(handler).toHaveBeenCalledTimes(2);
         });
+    });
+
+    it('clamps task start lag when clocks are skewed', () => {
+        const duration = vi.spyOn(metrics, 'duration').mockImplementation(() => {});
+        eventsHandler.onCallbacks['STARTED']({
+            ...mockActionTask,
+            createdAt: new Date('2026-07-22T12:00:01.000Z'),
+            lastStateTransitionAt: new Date('2026-07-22T12:00:00.000Z')
+        });
+
+        expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_START_LAG_MS, 0, { primitive: 'taskGroup' });
     });
 });
 
