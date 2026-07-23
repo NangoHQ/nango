@@ -1689,6 +1689,30 @@ apple-business-manager:
             description: The EC private key (PEM format) used to sign the client assertion JWT.
             doc_section: '#step-1-create-an-api-account-and-generate-a-private-key'
 
+applied-epic:
+    display_name: Applied Epic
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.myappliedproducts.com/v1/auth/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+        audience: api.myappliedproducts.com/epic
+    proxy:
+        base_url: https://api.myappliedproducts.com
+    docs: https://nango.dev/docs/api-integrations/applied-epic
+    credentials:
+        client_id:
+            type: string
+            title: Consumer Key
+            description: Your Applied DevCenter application Consumer Key (client_id).
+        client_secret:
+            type: string
+            title: Consumer Secret
+            description: Your Applied DevCenter application Consumer Secret (client_secret).
+            secret: true
+
 appstle-subscriptions:
     display_name: Appstle Subscriptions
     categories:
