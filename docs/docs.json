@@ -1028,6 +1028,7 @@
               "api-integrations/baserow",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
+              "api-integrations/beetexting",
               "api-integrations/bettercontact",
               "api-integrations/bigchange",
               "api-integrations/bliro",

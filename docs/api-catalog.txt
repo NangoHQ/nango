@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 915
+Provider count: 916
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -104,6 +104,7 @@ URL patterns:
 | `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
+| `beetexting` | Beetexting | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/beetexting.md) | [connect](https://nango.dev/docs/api-integrations/beetexting/connect.md) | [setup](https://nango.dev/docs/api-integrations/beetexting/connect.md) | communication |
 | `bettercontact` | BetterContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/bettercontact.md) | [connect](https://nango.dev/docs/api-integrations/bettercontact/connect.md) |  | crm |
 | `bigchange` | BigChange | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bigchange.md) | [connect](https://nango.dev/docs/api-integrations/bigchange/connect.md) |  | productivity |
 | `bigcommerce` | BigCommerce | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bigcommerce.md) |  |  | e-commerce |
