@@ -117,7 +117,8 @@ const DialogBody = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>
 DialogBody.displayName = 'DialogBody';
 
 /**
- * Actions bar with a top border on the panel surface (Figma "Dialog Footer").
+ * Actions bar on its own footer surface (Figma "Dialog Footer"). `dialog-footer-bg` is a
+ * step darker than the card body so the footer reads as a distinct strip in light mode too.
  * Buttons placed here should use `size="sm"` by default (Figma footer spec).
  * The only sanctioned exception is the Stripe payment-method dialog, which keeps `lg`.
  */
@@ -125,7 +126,7 @@ const DialogFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'
     <div
         ref={ref}
         data-slot="dialog-footer"
-        className={cn('bg-surface-panel border-t border-border-default flex items-center justify-end gap-2 p-4', className)}
+        className={cn('bg-dialog-footer-bg border-t border-border-default flex items-center justify-end gap-2 p-4', className)}
         {...props}
     />
 ));
