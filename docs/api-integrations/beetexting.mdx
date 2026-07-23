@@ -1,0 +1,41 @@
+---
+title: 'Beetexting'
+sidebarTitle: 'Beetexting'
+description: 'Integrate your application with the Beetexting Connect API'
+---
+
+## 🚀 Quickstart
+
+Connect to Beetexting with Nango while keeping its OAuth credentials and API key together.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango, go to **Integrations** → **Configure New Integration** → **Beetexting**. Enter the Client ID, Client Secret, and API Key from one Beetexting API Connect application.
+    </Step>
+    <Step id="authorize-beetexting" title="Authorize Beetexting">
+    Start a Connect session for the integration and authorize the Beetexting account. Beetexting assigns permissions to the API Connect application, so no explicit OAuth scope is required.
+    </Step>
+    <Step id="call-api" title="Call the Beetexting API through Nango Proxy">
+    Send requests to Beetexting through Nango Proxy. Nango adds the OAuth bearer token and the integration's protected `x-api-key` header automatically.
+
+    ```bash
+    curl "https://api.nango.dev/proxy/message/getmessagebyid/<MESSAGE-ID>" \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>"
+    ```
+
+    Do not send an `Authorization` or `x-api-key` provider header from your application.
+    </Step>
+</Steps>
+
+## 📚 Beetexting integration guides
+
+- [How do I link my account?](/api-integrations/beetexting/connect)
+  Create a Beetexting API Connect application and authorize it with Nango.
+
+Official docs: [Beetexting Connect API](https://developer.beetexting.com/)
+
+## Organization and department routing
+
+Some Beetexting endpoints include an Organization ID and Department ID in the path. Copy the Organization ID from **Settings → Organization**. Copy a Department ID from **Settings → Numbers** after enabling **Display Number IDs**. Store these as application or connection routing configuration; they are not authentication credentials and Nango does not add them to every request.

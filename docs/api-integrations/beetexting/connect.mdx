@@ -1,0 +1,34 @@
+---
+title: 'Beetexting - How do I link my account?'
+sidebarTitle: 'Beetexting'
+description: 'Configure a Beetexting API Connect application and authorize it with Nango.'
+---
+
+# Overview
+
+Beetexting API requests use two forms of authentication together:
+
+1. OAuth 2.0 Authorization Code credentials (`Client ID` and `Client Secret`).
+2. The `API Key` issued for the same API Connect application.
+
+Nango stores the API key as secret integration configuration and automatically adds it to proxied requests as `x-api-key`. The OAuth access and refresh tokens are stored on each connection. Callers should not send either authentication header themselves.
+
+<Steps>
+  <Step title="Create an API Connect application">
+    In Beetexting, open **Settings**, locate **API Connect**, and create an application using the **CODE** grant type.
+
+    Add your Nango OAuth callback URL to the application, then copy the generated **Client ID**, **Client Secret**, and **API Key** into the Beetexting integration settings in Nango.
+  </Step>
+
+  <Step title="Authorize the connection">
+    Start a Nango Connect session and authorize Beetexting. Beetexting assigns scopes to the API Connect client, so Nango does not send an explicit `scope` parameter.
+  </Step>
+
+  <Step title="Add organization routing details when using webhooks">
+    Copy the **Organization ID** from **Settings > Organization**.
+
+    For the primary **Department ID**, open **Settings > Numbers**, enable **Display Number IDs**, and copy the displayed number ID. Store these values on the Nango connection when your application creates organization- and department-scoped webhook subscriptions.
+  </Step>
+</Steps>
+
+For provider details, see [Beetexting OAuth documentation](https://developer.beetexting.com/oauth-2-0-for-beetexting-1578529m0), the [organization and department ID FAQ](https://developer.beetexting.com/faq-1623165m0), and the [webhook subscription documentation](https://developer.beetexting.com/create-or-update-subscription-21352087e0).
