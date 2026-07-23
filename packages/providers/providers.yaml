@@ -18161,8 +18161,6 @@ rydership:
     authorization_url: https://${connectionConfig.environment}/oauth/authorize
     token_url: https://${connectionConfig.environment}/oauth/token
     scope_separator: ' '
-    default_scopes:
-        - user_manage
     authorization_params:
         response_type: code
     token_params:
