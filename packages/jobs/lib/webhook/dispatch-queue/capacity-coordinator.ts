@@ -7,6 +7,12 @@ import type { NangoRedisClient } from '@nangohq/kvstore';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.capacity-coordinator');
 
+/**
+ * 1. Remove expired leases and initialize the shared capacity state.
+ * 2. Return an existing lease for the same token, making retries safe.
+ * 3. Reject acquisition while dispatch is paused or the current limit is full.
+ * 4. Otherwise add a renewable lease and return the updated active count.
+ */
 const ACQUIRE_SCRIPT = `
 local time = redis.call('TIME')
 local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
@@ -44,6 +50,11 @@ redis.call('PEXPIRE', KEYS[2], 604800000)
 return {1, limit, 0, active + 1}
 `;
 
+/**
+ * 1. Check that the lease exists and has not expired.
+ * 2. Remove and reject an expired lease so it cannot be revived.
+ * 3. Otherwise extend the lease and its Redis key TTL.
+ */
 const RENEW_SCRIPT = `
 local time = redis.call('TIME')
 local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
@@ -57,6 +68,10 @@ redis.call('PEXPIRE', KEYS[1], tonumber(ARGV[2]) * 2)
 return 1
 `;
 
+/**
+ * 1. Remove expired leases and the caller's lease.
+ * 2. Return the remaining active lease count for metrics.
+ */
 const RELEASE_SCRIPT = `
 local time = redis.call('TIME')
 local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
@@ -65,6 +80,12 @@ redis.call('ZREM', KEYS[1], ARGV[1])
 return redis.call('ZCARD', KEYS[1])
 `;
 
+/**
+ * 1. Remove expired leases and update the latency moving average.
+ * 2. Count healthy results only while all available capacity is in use.
+ * 3. After enough healthy results, grow the limit using slow start or additive growth.
+ * 4. Reset growth progress when latency becomes unhealthy.
+ */
 const SUCCESS_SCRIPT = `
 local time = redis.call('TIME')
 local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
@@ -99,6 +120,11 @@ redis.call('HSET', KEYS[2], 'lastSuccessAt', now)
 return {limit, previousLimit, ewma}
 `;
 
+/**
+ * 1. Reduce the capacity limit at most once per control interval.
+ * 2. Reset growth progress and set the new slow-start threshold.
+ * 3. Extend the global dispatch pause through the requested retry time.
+ */
 const CONGESTION_SCRIPT = `
 local time = redis.call('TIME')
 local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
