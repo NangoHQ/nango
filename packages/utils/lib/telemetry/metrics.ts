@@ -79,7 +79,7 @@ export enum Types {
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
     // Consume outcome, tagged result=success|failure.
     WEBHOOK_DISPATCH_CONSUME = 'nango.webhook.dispatch_queue.consume',
-    // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
+    // Messages dropped without being scheduled, tagged reason=poison_pill|stale.
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
@@ -88,6 +88,7 @@ export enum Types {
     WEBHOOK_DISPATCH_CAPACITY_ACTIVE = 'nango.webhook.dispatch_queue.capacity.active',
     WEBHOOK_DISPATCH_CAPACITY_CHANGE = 'nango.webhook.dispatch_queue.capacity.change',
     WEBHOOK_DISPATCH_CAPACITY_PERMIT_WAIT_MS = 'nango.webhook.dispatch_queue.capacity.permit_wait_ms',
+    WEBHOOK_DISPATCH_DEFERRED = 'nango.webhook.dispatch_queue.deferred',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',

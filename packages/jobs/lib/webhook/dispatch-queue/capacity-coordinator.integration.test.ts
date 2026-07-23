@@ -88,4 +88,14 @@ describe('RedisDispatchCapacityCoordinator', () => {
         expect(Number(limit)).toBe(1);
         await permit.release();
     });
+
+    it('shares environment cooldowns between jobs instances', async () => {
+        const firstCoordinator = createCoordinator();
+        const secondCoordinator = createCoordinator();
+
+        await firstCoordinator.recordEnvironmentCongestion(42, 5000);
+
+        expect(await secondCoordinator.getEnvironmentCooldown(42)).toBeGreaterThan(0);
+        expect(await secondCoordinator.getEnvironmentCooldown(43)).toBe(0);
+    });
 });

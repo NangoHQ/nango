@@ -44,6 +44,19 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS: '299' })).toThrow('NANGO_TASK_DISPATCH_ADAPTIVE_LEASE_TTL_MS');
     });
 
+    it('should reject task dispatch visibility timeouts that cannot be heartbeated', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '1' })).toThrow('NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS');
+    });
+
+    it('should reject task dispatch backoff bases above the maximum', () => {
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS: '10',
+                NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS: '5'
+            })
+        ).toThrow('NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS (10) must not exceed NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS (5)');
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
@@ -343,6 +356,8 @@ describe('parse', () => {
                 NANGO_TASK_DISPATCH_REDIS_COORDINATION_ENABLED: false,
                 NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY: 1,
                 NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY: 10,
+                NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS: 5,
+                NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS: 900,
                 NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
                 NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10
             });

@@ -686,7 +686,7 @@ const envSchema = z.object({
     NANGO_TASK_DISPATCH_DLQ_URL: z.url().optional(),
     NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
-    NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
+    NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(2).max(43200).optional().default(30),
     // Number of parallel SQS poll loops. Each in-flight batch holds one orchestrator DB session,
     // so peak orchestrator connections from webhook dispatch ≈ jobs_replicas × this. Keep it well
     // under ORCHESTRATOR_DB_POOL_MAX so bulk webhook ingress can't starve the orchestrator's core work.
@@ -698,6 +698,8 @@ const envSchema = z.object({
     NANGO_TASK_DISPATCH_ADAPTIVE_ACQUIRE_RETRY_MS: z.coerce.number().int().positive().optional().default(250),
     NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: z.coerce.number().int().positive().optional().default(250),
     NANGO_TASK_DISPATCH_ADAPTIVE_CONTROL_INTERVAL_MS: z.coerce.number().int().positive().optional().default(1000),
+    NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS: z.coerce.number().int().positive().max(43_200).optional().default(5),
+    NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS: z.coerce.number().int().positive().max(43_200).optional().default(900),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
@@ -750,6 +752,16 @@ export const ENVS = envSchema.check((payload) => {
                 `NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY (${envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_CONCURRENCY})`,
             path: ['NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY'],
             input: envs.NANGO_TASK_DISPATCH_ADAPTIVE_INITIAL_CONCURRENCY
+        });
+    }
+    if (envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS > envs.NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS) {
+        payload.issues.push({
+            code: 'custom',
+            message:
+                `NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS (${envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS}) must not exceed ` +
+                `NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS (${envs.NANGO_TASK_DISPATCH_BACKOFF_MAX_SECONDS})`,
+            path: ['NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS'],
+            input: envs.NANGO_TASK_DISPATCH_BACKOFF_BASE_SECONDS
         });
     }
 });
