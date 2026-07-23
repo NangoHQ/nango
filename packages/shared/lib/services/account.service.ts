@@ -30,27 +30,18 @@ const logger = getLogger('AccountService');
  * from the auth context — the value is only a TTL timestamp.
  */
 class ShadowAuthCache {
-    private seenAtNs = new FixedSizeMap<string, bigint>(10_000);
-    private readonly ttlNs: bigint;
+    private seen: TTLFixedSizeMap<string, true>;
 
     constructor(
         private readonly name: string,
         ttlMs: number
     ) {
-        this.ttlNs = BigInt(ttlMs) * 1_000_000n;
+        this.seen = new TTLFixedSizeMap(10_000, ttlMs);
     }
 
-    /** Emits hit/miss for this hash, evicting the entry when its TTL has passed. */
+    /** Emits hit/miss for this hash. Expired entries are evicted on read by the underlying map. */
     wouldHit(hash: string): boolean {
-        const seenAt = this.seenAtNs.get(hash);
-        let hit = false;
-        if (seenAt !== undefined) {
-            if (process.hrtime.bigint() - seenAt < this.ttlNs) {
-                hit = true;
-            } else {
-                this.seenAtNs.delete(hash);
-            }
-        }
+        const hit = this.seen.get(hash) !== undefined;
         metrics.increment(metrics.Types.AUTH_SHADOW_CACHE, 1, { cache: this.name, result: hit ? 'hit' : 'miss' });
         return hit;
     }
@@ -58,7 +49,7 @@ class ShadowAuthCache {
     /** Marks a successful lookup as would-be-cached. Skips fresh entries so their TTL is not extended. */
     populate(hash: string, wasHit: boolean): void {
         if (!wasHit) {
-            this.seenAtNs.set(hash, process.hrtime.bigint());
+            this.seen.set(hash, true);
         }
     }
 }
