@@ -14064,6 +14064,51 @@ modmed:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-request-access-to-modmed-sandbox'
 
+mosyle:
+    display_name: Mosyle
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://businessapi.mosyle.com/v1/login
+    token_headers:
+        content-type: application/json
+        accesstoken: ${credentials.accessToken}
+    token_params:
+        email: ${credentials.email}
+        password: ${credentials.password}
+    token_response:
+        token: authorization
+    token_response_headers:
+        - authorization
+    token_expires_in_ms: 86400000
+    proxy:
+        base_url: https://businessapi.mosyle.com/v1
+        headers:
+            accesstoken: ${credentials.accessToken}
+            authorization: ${accessToken}
+    docs: https://nango.dev/docs/integrations/all/mosyle
+    docs_connect: https://nango.dev/docs/integrations/all/mosyle/connect
+    connection_config: {}
+    credentials:
+        accessToken:
+            type: string
+            title: Access Token
+            description: The Access Token from your Mosyle console (Organization > API Integration > enable the profile).
+            secret: true
+            doc_section: '#step-1-enable-the-api'
+        email:
+            type: string
+            title: Admin Email
+            description: Email of a Mosyle admin user with API access.
+            doc_section: '#step-1-enable-the-api'
+        password:
+            type: string
+            title: Admin Password
+            description: Password of the Mosyle admin user.
+            secret: true
+            doc_section: '#step-1-enable-the-api'
+
 mural:
     display_name: Mural
     categories:

@@ -1,0 +1,83 @@
+---
+title: 'Mosyle'
+sidebarTitle: 'Mosyle'
+description: 'Access the Mosyle Business API in 2 minutes 🍏'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Mosyle_.
+      </Step>
+      <Step title="Authorize Mosyle">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Mosyle **Access Token** (from the Mosyle console: _Organization > API Integration > enable the profile_) along with an admin **email** and **password**. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the Mosyle API">
+        Let's make your first request to the Mosyle API (list devices). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X POST "https://api.nango.dev/proxy/devices" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{ "operation": "list", "options": { "os": "ios" } }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.post({
+                endpoint: '/devices',
+                providerConfigKey: '<INTEGRATION-ID>',
+                connectionId: '<CONNECTION-ID>',
+                data: { operation: 'list', options: { os: 'ios' } }
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+
+            </Tab>
+        </Tabs>
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Mosyle accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to Mosyle using Connect UI](/integrations/all/mosyle/connect) |
+    | General | [Mosyle Website](https://mosyle.com/) |
+    | Developer | [API Documentation](https://businessapi.mosyle.com/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/mosyle.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Every Mosyle endpoint is a **POST**; the action is selected by the `operation` field in the request body (e.g. `list`, `list_users`).
+    - Auth is two-step: Nango sends your **Access Token** (`accesstoken` header) plus an admin email/password to `/login`, and Mosyle returns a Bearer JWT in the **`Authorization` response header** (not the body). The JWT expires after ~24h; Nango refreshes it automatically.
+    - Errors are frequently returned with an HTTP `200` (and sometimes `400`/`405`) but the real status is inside `response[0].status` (e.g. `MISSING_DATA`, `DEVICES_NOTFOUND`, `UNKNOWN_COLUMNS`). Always branch on the response body, not the HTTP status.
+    - `list` requires an `os` value (`ios`, `mac`, `tvos`, or `visionos`).
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/mosyle.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
