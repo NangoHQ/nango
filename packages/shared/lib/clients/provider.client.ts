@@ -103,7 +103,7 @@ class ProviderClient {
         try {
             await assertSafeOAuthUrl(tokenUrl);
         } catch (err) {
-            throw new NangoError('request_token_external_error', err instanceof Error ? err.message : 'Outbound URL blocked by policy');
+            throw new NangoError('request_token_external_error', { message: err instanceof Error ? err.message : 'Outbound URL blocked by policy' });
         }
         switch (config.provider) {
             case 'attio-mcp':
