@@ -104,7 +104,7 @@ function buildConfig(appId: string, darkMode: boolean, user?: ApiUser, emailHash
         theme: darkMode ? 'dark' : 'light',
         style: {
             brandColor: { light: '#016886', dark: '#00B2E3' },
-            brandBackgroundColor: '#02485D',
+            brandBackgroundColor: { light: '#016886', dark: '#02485D' },
             launcherBackgroundColor: { light: '#016886', dark: '#00B2E3' },
             launcherIconColor: { light: '#FFFFFF', dark: '#18191B' }
         },

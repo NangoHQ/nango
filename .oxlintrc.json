@@ -172,12 +172,34 @@
                         "forbid": [
                             {
                                 "propName": "className",
-                                "disallowedFor": ["Button", "IconButton"],
+                                "disallowedFor": [
+                                    "Button",
+                                    "IconButton",
+                                    "Badge",
+                                    "Card",
+                                    "CardHeader",
+                                    "CardTitle",
+                                    "CardDescription",
+                                    "CardAction",
+                                    "CardContent",
+                                    "CardFooter"
+                                ],
                                 "message": "Don't override design-system styles via className — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
                             },
                             {
                                 "propName": "style",
-                                "disallowedFor": ["Button", "IconButton"],
+                                "disallowedFor": [
+                                    "Button",
+                                    "IconButton",
+                                    "Badge",
+                                    "Card",
+                                    "CardHeader",
+                                    "CardTitle",
+                                    "CardDescription",
+                                    "CardAction",
+                                    "CardContent",
+                                    "CardFooter"
+                                ],
                                 "message": "Don't override design-system styles via the style prop — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
                             }
                         ]

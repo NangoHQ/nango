@@ -1,7 +1,7 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
 import type {
-    AllAuthCredentials,
     ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     BasicApiCredentials,
     OAuth1Credentials,
     OAuth2ClientCredentials,
@@ -87,6 +87,7 @@ export type PostPublicConnection = Endpoint<{
         provider_config_key: string;
         metadata?: Record<string, unknown> | undefined;
         connection_config?: ConnectionConfig | undefined;
+        webhook_url_override?: string | undefined;
         credentials:
             | Omit<OAuth2Credentials, 'raw'>
             | Omit<OAuth2ClientCredentials, 'raw'>
@@ -129,7 +130,7 @@ export type GetConnection = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config'> & {
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config' | 'webhook_url_override'> & {
     provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created_at: string;
     updated_at: string;
@@ -139,7 +140,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
     tags: Tags;
-    credentials: AllAuthCredentials;
+    credentials: ApiPublicAllAuthCredentials;
 };
 export type GetPublicConnection = Endpoint<{
     Method: 'GET';
@@ -169,7 +170,7 @@ export type PatchPublicConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
-        webhook_url?: string | undefined;
+        webhook_url_override?: string | undefined;
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
@@ -188,7 +189,7 @@ export type PatchConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
-        webhook_url?: string | undefined;
+        webhook_url_override?: string | undefined;
     };
     Success: { success: boolean };
     Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
