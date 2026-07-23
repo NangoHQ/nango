@@ -1701,7 +1701,7 @@
               "integrations/all/snowflake-jwt",
               "api-integrations/sophos-central",
               "integrations/all/splitwise",
-              "integrations/all/spotify",
+              "api-integrations/spotify",
               "integrations/all/spotify-oauth2-cc",
               "integrations/all/squarespace",
               "api-integrations/squareup",
