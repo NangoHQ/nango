@@ -233,7 +233,13 @@ describe('DispatchQueueConsumer', () => {
     it('waits for the shared pacer before receiving messages', async () => {
         const gate = deferred<void>();
         const wait = vi.fn(() => gate.promise);
-        const pollPacer: DispatchPollPacer = { wait, recordSuccess: vi.fn(), recordCongestion: vi.fn(), recordFailure: vi.fn() };
+        const pollPacer: DispatchPollPacer = {
+            wait,
+            waitForBackoff: vi.fn(),
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn()
+        };
         const h = makeHarness({ pollPacer });
 
         h.consumer.start();
@@ -247,7 +253,13 @@ describe('DispatchQueueConsumer', () => {
 
     it('records successful orchestrator latency with the pod-local pacer', async () => {
         const recordSuccess = vi.fn();
-        const pollPacer: DispatchPollPacer = { wait: vi.fn(), recordSuccess, recordCongestion: vi.fn(), recordFailure: vi.fn() };
+        const pollPacer: DispatchPollPacer = {
+            wait: vi.fn(),
+            waitForBackoff: vi.fn(),
+            recordSuccess,
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn()
+        };
         const h = makeHarness({ messages: [buildMessage()], pollPacer });
 
         await runOnce(h, () => expect(recordSuccess).toHaveBeenCalledOnce());
@@ -258,20 +270,32 @@ describe('DispatchQueueConsumer', () => {
 
     it('backs off the pod without deleting messages when webhook admission is exhausted', async () => {
         const recordCongestion = vi.fn();
-        const pollPacer: DispatchPollPacer = { wait: vi.fn(), recordSuccess: vi.fn(), recordCongestion, recordFailure: vi.fn() };
+        const pollPacer: DispatchPollPacer = {
+            wait: vi.fn(),
+            waitForBackoff: vi.fn(),
+            recordSuccess: vi.fn(),
+            recordCongestion,
+            recordFailure: vi.fn()
+        };
         const h = makeHarness({ messages: [buildMessage()], pollPacer });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
             Err({ name: 'webhook_admission_exceeded', message: 'busy', payload: { reason: 'concurrency', retryAfterMs: 2000 } })
         );
 
-        await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(2000));
+        await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(2000, expect.any(Number)));
 
         expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('paces the next poll after a generic batch failure', async () => {
         const recordFailure = vi.fn();
-        const pollPacer: DispatchPollPacer = { wait: vi.fn(), recordSuccess: vi.fn(), recordCongestion: vi.fn(), recordFailure };
+        const pollPacer: DispatchPollPacer = {
+            wait: vi.fn(),
+            waitForBackoff: vi.fn(),
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure
+        };
         const h = makeHarness({ messages: [buildMessage()], pollPacer });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Err({ name: 'server_error', message: 'boom', payload: null }));
 
@@ -279,6 +303,27 @@ describe('DispatchQueueConsumer', () => {
 
         expect(recordFailure).toHaveBeenCalledWith(expect.any(Number));
         expect(getDeleteCalls(h)).toHaveLength(0);
+    });
+
+    it('rechecks pod-wide admission backoff after receiving and before dispatching', async () => {
+        const gate = deferred<void>();
+        const waitForBackoff = vi.fn(() => gate.promise);
+        const pollPacer: DispatchPollPacer = {
+            wait: vi.fn(),
+            waitForBackoff,
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn()
+        };
+        const h = makeHarness({ messages: [buildMessage()], pollPacer });
+
+        h.consumer.start();
+        await vi.waitFor(() => expect(waitForBackoff).toHaveBeenCalledOnce());
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
+
+        gate.resolve();
+        await vi.waitFor(() => expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce());
+        await h.consumer.stop();
     });
 
     it('deletes a poison-pill message without calling orchestrator', async () => {
