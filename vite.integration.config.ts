@@ -32,9 +32,11 @@ export default defineConfig({
             // explicit override still resolves to Orb.
             FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: 'true'
         },
-        fileParallelism: false,
-        pool: 'forks',
-        // Vitest 4 removed test.poolOptions; poolOptions.forks.singleFork is now maxWorkers: 1.
-        maxWorkers: 1
+        // Each file still gets its own isolated fork (default `isolate: true`), so this just lets
+        // multiple files' forks run concurrently instead of one at a time. Safe now that the tests
+        // that used to drop/truncate shared Postgres schemas (persist, jobs/sync, records/postgres)
+        // either stopped doing that or moved to a dedicated schema — see NAN-6026 history.
+        fileParallelism: true,
+        pool: 'forks'
     }
 });
