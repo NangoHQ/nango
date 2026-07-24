@@ -1,4 +1,3 @@
-import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
@@ -11,6 +10,8 @@ import { OrchestratorClient } from './client.js';
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
+import type { Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 
 const dbClient = getTestDbClient();
 const eventsHandler = new TaskEventsHandler(dbClient.db);
@@ -20,18 +21,23 @@ const scheduler = new Scheduler({
     onError: () => {}
 });
 
-describe('OrchestratorClient', async () => {
+describe('OrchestratorClient', () => {
     const server = getServer(scheduler, eventsHandler);
-    const port = await getPort();
-    const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
+    let httpServer: Server;
+    let client: OrchestratorClient;
 
     beforeAll(async () => {
         await dbClient.migrate();
-        server.listen(port);
+        httpServer = server.listen(0);
+        const address = await new Promise<AddressInfo>((resolve) => {
+            httpServer.once('listening', () => resolve(httpServer.address() as AddressInfo));
+        });
+        client = new OrchestratorClient({ baseUrl: `http://localhost:${address.port}` });
     });
 
     afterAll(async () => {
         scheduler.stop();
+        httpServer?.close();
         await dbClient.clearDatabase();
     });
 

@@ -31,10 +31,6 @@ export default defineConfig({
             // No effect on default behavior — every other request without the
             // explicit override still resolves to Orb.
             FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: 'true'
-        },
-        fileParallelism: false,
-        pool: 'forks',
-        // Vitest 4 removed test.poolOptions; poolOptions.forks.singleFork is now maxWorkers: 1.
-        maxWorkers: 1
+        }
     }
 });

@@ -11,7 +11,7 @@ export async function up(knex: Knex): Promise<void> {
     for (let p = 0; p < 256; p++) {
         await knex.raw(
             `CREATE INDEX CONCURRENTLY IF NOT EXISTS records_p${p}_mark_previous_generation_as_deleted_v2
-                ON nango_records.records_p${p}(connection_id, model, sync_job_id)
+                ON records_p${p}(connection_id, model, sync_job_id)
                 INCLUDE (id)
                 WHERE deleted_at IS NULL;`
         );

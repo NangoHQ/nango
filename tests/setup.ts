@@ -127,8 +127,82 @@ export async function setupClickhouse() {
     console.log('Clickhouse running at', url);
 }
 
+// Every runServer()-based integration test (and a few others) calls these same migration
+// functions in its own beforeAll. With fileParallelism, many files' beforeAll hooks fire
+// concurrently and race for knex's migration lock on the same shared schema — whichever loses
+// throws `MigrationLocked: Migration table is already locked`. Running them once here, before any
+// test file starts, means every file's own call sees zero pending migrations and never reaches
+// the lock-acquiring code path.
+//
+// Each step is independent and best-effort: if one fails (e.g. to import), the others still run,
+// and any file's own migration call remains the real safety net, just as it was before
+// fileParallelism.
+async function runMigrationOnce(name: string, run: () => Promise<void>) {
+    try {
+        await run();
+    } catch (err) {
+        console.error(`Pre-migration "${name}" in globalSetup failed, falling back to per-file migration calls`, err);
+    }
+}
+
+async function runMigrationsOnce() {
+    const { multipleMigrations, default: db } = await import('@nangohq/database');
+    await runMigrationOnce('database', () => multipleMigrations());
+    await runMigrationOnce('keystore', async () => {
+        const { migrate: migrateKeystore } = await import('@nangohq/keystore');
+        await migrateKeystore(db.knex);
+    });
+    await runMigrationOnce('logs', async () => {
+        const { migrateLogsMapping } = await import('@nangohq/logs');
+        await migrateLogsMapping();
+    });
+    await runMigrationOnce('records', async () => {
+        const { records } = await import('@nangohq/records');
+        await records.migrate();
+    });
+    await runMigrationOnce('tasks', async () => {
+        // packages/server/lib/tasks/index.ts constructs a full Tasks (Scheduler + TaskProcessor)
+        // just to get this schema migrated, which has side effects we don't want in globalSetup.
+        // DatabaseClient is the same underlying migration runner without any of that.
+        const [{ DatabaseClient, defaultDatabaseClientOptions }, { ENVS, parseEnvs }] = await Promise.all([
+            import('@nangohq/scheduler'),
+            import('@nangohq/utils')
+        ]);
+        const envs = parseEnvs(ENVS);
+        const databaseUrl =
+            envs.NANGO_DATABASE_URL ||
+            `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
+        const client = new DatabaseClient({ ...defaultDatabaseClientOptions, url: databaseUrl, schema: envs.TASKS_DATABASE_SCHEMA });
+        try {
+            await client.migrate();
+        } finally {
+            await client.destroy();
+        }
+    });
+    await runMigrationOnce('sessions', async () => {
+        // packages/server/lib/clients/auth.client.ts constructs a module-level KnexSessionStore,
+        // which does its own check-then-create of this table (not a tracked knex migration) the
+        // first time any file imports it. Doing that once here, ahead of any test file, avoids
+        // every fork racing to CREATE TABLE the same table concurrently.
+        //
+        // knex/tablename/sidfieldname must stay identical to auth.client.ts's sessionStore, or
+        // this pre-creation stops covering it. disableDbCleanup is the one intentional difference:
+        // it stops the store from scheduling its recurring expired-session delete in this process
+        // (we only want the table created).
+        const [{ default: connectSessionKnex }, { default: session }, { default: db }] = await Promise.all([
+            import('connect-session-knex'),
+            import('express-session'),
+            import('@nangohq/database')
+        ]);
+        const KnexSessionStore = connectSessionKnex(session);
+        const store = new KnexSessionStore({ knex: db.knex, tablename: '_nango_sessions', sidfieldname: 'sid', disableDbCleanup: true });
+        await store.ready;
+    });
+}
+
 export async function setup() {
     await Promise.all([setupPostgres(), setupLogsStorage(), setupActiveMQ(), setupRedis(), setupClickhouse()]);
+    await runMigrationsOnce();
 }
 
 export const teardown = async () => {

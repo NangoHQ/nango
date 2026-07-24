@@ -1,6 +1,5 @@
 import { setTimeout } from 'timers/promises';
 
-import getPort from 'get-port';
 import { afterAll, beforeAll, describe, it, vi } from 'vitest';
 
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
@@ -14,6 +13,8 @@ import { OrchestratorProcessor } from './processor.js';
 import type { OrchestratorTask } from './types.js';
 import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
+import type { Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 
 const dbClient = getTestDbClient();
 const taskEventsHandler = new TaskEventsHandler(dbClient.db);
@@ -22,20 +23,25 @@ const scheduler = new Scheduler({
     on: taskEventsHandler.onCallbacks,
     onError: () => {}
 });
-const port = await getPort();
-const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
+let orchestratorClient: OrchestratorClient;
 
 describe('OrchestratorProcessor', () => {
     const server = getServer(scheduler, taskEventsHandler);
+    let httpServer: Server;
 
     beforeAll(async () => {
         await dbClient.migrate();
-        server.listen(port);
+        httpServer = server.listen(0);
+        const address = await new Promise<AddressInfo>((resolve) => {
+            httpServer.once('listening', () => resolve(httpServer.address() as AddressInfo));
+        });
+        orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${address.port}` });
     });
 
     afterAll(async () => {
         scheduler.stop();
         await setTimeout(100); // wait for the scheduler to stop
+        httpServer?.close();
         await dbClient.clearDatabase();
     });
 
