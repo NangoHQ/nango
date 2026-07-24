@@ -73,8 +73,7 @@ jobs:
             - run: npm run test:unit -- --exclude packages/cli/
               if: needs.should-run.outputs.should_skip != 'true'
 
-    # Each shard spins up its own Postgres/ES/etc. containers and runs its file set with
-    # fileParallelism (see vite.integration.config.ts), on top of sharding across runners.
+    # Each shard spins up its own Postgres/ES/etc. containers for its file set.
     tests-integration-shards:
         needs: should-run
         runs-on: blacksmith-4vcpu-ubuntu-2404
