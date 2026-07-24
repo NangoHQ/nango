@@ -8,7 +8,9 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
+import { MonthSelector } from './MonthSelector';
 import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
@@ -18,12 +20,9 @@ import type { DBPlan } from '@nangohq/types';
 // Typed against `DBPlan['name']` so a renamed or removed plan fails to compile instead of silently drifting.
 const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'startup-deal', 'enterprise-cloud-hosted', 'starter-v2', 'growth-v2'];
 
-interface UsageProps {
-    selectedMonth: Date;
-}
-
-export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
+export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
+    const { selectedMonth } = useSelectedMonth();
     const { data: environmentData } = useEnvironment(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
@@ -70,7 +69,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     }));
 
     return (
-        <div className="w-full flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-4">
             {isLegacyPlan && (
                 <Alert variant="info">
                     <Info />
@@ -95,6 +94,11 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                     </AlertDescription>
                 </Alert>
             )}
+
+            <div className="flex justify-between items-center">
+                <span className="text-text-strong text-body-medium-medium">Usage</span>
+                <MonthSelector />
+            </div>
 
             <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
 

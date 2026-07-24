@@ -13,6 +13,9 @@ import environmentService, { defaultEnvironments } from './environment.service.j
 import * as plans from './plans/plans.js';
 import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.js';
 import secretService from './secret.service.js';
+import userService from './user.service.js';
+
+import type { DBTeam, DBUser, Role } from '@nangohq/types';
 
 describe('Account service', () => {
     beforeAll(async () => {
@@ -21,6 +24,112 @@ describe('Account service', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    async function createAccountWithUser({
+        email,
+        role = 'administrator',
+        suspended = false
+    }: {
+        email: string;
+        role?: Role;
+        suspended?: boolean;
+    }): Promise<{ account: DBTeam; user: DBUser }> {
+        const account = await createTestAccount();
+        const user = await userService.createUser({
+            email,
+            name: email,
+            account_id: account.id,
+            email_verified: true,
+            role
+        });
+
+        if (!user) {
+            throw new Error('Failed to create test user');
+        }
+
+        if (suspended) {
+            const updated = await userService.update({ id: user.id, suspended: true, suspended_at: new Date() });
+            if (!updated) {
+                throw new Error('Failed to suspend test user');
+            }
+            return { account, user: updated };
+        }
+
+        return { account, user };
+    }
+
+    async function createPlan(accountId: number, name: 'free' | 'growth-v2') {
+        const result = await plans.createPlan(db.knex, { account_id: accountId, name });
+        return result.unwrap();
+    }
+
+    describe('findAccountWithSameDomain', () => {
+        it('does not suggest accounts for a free email domain', async () => {
+            const current = await createAccountWithUser({ email: `${uuid()}@gmail.com` });
+            await createAccountWithUser({ email: `${uuid()}@gmail.com` });
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toBeNull();
+        });
+
+        it('suggests the only eligible account with a matching custom domain', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const candidate = await createAccountWithUser({ email: `admin@${domain}` });
+            await createPlan(candidate.account.id, 'free');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: candidate.account.id,
+                name: candidate.account.name
+            });
+        });
+
+        it('prefers a paid matching account over a free account', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const freeCandidate = await createAccountWithUser({ email: `free@${domain}` });
+            const paidCandidate = await createAccountWithUser({ email: `paid@${domain}` });
+            await createPlan(freeCandidate.account.id, 'free');
+            await createPlan(paidCandidate.account.id, 'growth-v2');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: paidCandidate.account.id,
+                name: paidCandidate.account.name
+            });
+        });
+
+        it('uses active member count to rank matching accounts with the same plan', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const smallerCandidate = await createAccountWithUser({ email: `small@${domain}` });
+            const largerCandidate = await createAccountWithUser({ email: `large@${domain}` });
+            await createPlan(smallerCandidate.account.id, 'free');
+            await createPlan(largerCandidate.account.id, 'free');
+            const additionalMember = await userService.createUser({
+                email: `${uuid()}@another.example.com`,
+                name: 'Additional member',
+                account_id: largerCandidate.account.id,
+                email_verified: true,
+                role: 'development_full_access'
+            });
+            expect(additionalMember).not.toBeNull();
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: largerCandidate.account.id,
+                name: largerCandidate.account.name
+            });
+        });
+
+        it('excludes the current account, suspended matching users, and accounts without an active administrator', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const suspendedCandidate = await createAccountWithUser({ email: `suspended@${domain}`, suspended: true });
+            const noAdministrator = await createAccountWithUser({ email: `member@${domain}`, role: 'development_full_access' });
+            await createPlan(suspendedCandidate.account.id, 'growth-v2');
+            await createPlan(noAdministrator.account.id, 'growth-v2');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toBeNull();
+        });
     });
 
     it('should create an account with default environments and a free plan', async () => {
