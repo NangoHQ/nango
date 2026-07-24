@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "form-data": "4.0.6",
         "mailgun.js": "13.2.0",
         "nodemailer": "9.0.1",

@@ -25,7 +25,7 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "node-cron": "3.0.2",
         "uuidv7": "0.6.3",
         "zod": "4.0.5"

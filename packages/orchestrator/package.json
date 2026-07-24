@@ -15,10 +15,10 @@
     },
     "dependencies": {
         "@nangohq/feature-flags": "file:../feature-flags",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/scheduler": "file:../scheduler",
         "@nangohq/utils": "file:../utils",
-        "@nangohq/kvstore": "file:../kvstore",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "express": "5.1.0",
         "get-port": "7.1.0",
         "p-queue": "8.0.1",

@@ -40,7 +40,7 @@
         "axios": "1.18.0",
         "braintree": "3.15.0",
         "dayjs": "1.11.19",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "exponential-backoff": "3.1.1",
         "fast-xml-parser": "5.5.9",
         "follow-redirects": "1.16.0",
