@@ -2,15 +2,17 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
+import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
+import { getPlan } from '@nangohq/shared';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
-import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { DBPlan, WebhookDispatchMessage } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
@@ -152,11 +154,14 @@ export class DispatchQueueConsumer {
                 span.setTag('batch_size', groupedEntries.length);
                 span.setTag('received', entries.length);
 
+                const planByAccount = await this.getPlansByAccount(groupedEntries);
+
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
+                    const maxConcurrency = planByAccount.get(m.accountId)?.webhook_max_concurrency_override ?? this.webhookMaxConcurrency;
                     return {
                         name: m.taskName,
-                        group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
+                        group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency },
                         args: {
                             webhookName: m.webhookName,
                             parentSyncName: m.parentSyncName,
@@ -186,6 +191,26 @@ export class DispatchQueueConsumer {
                 span.finish();
             }
         });
+    }
+
+    // A batch can span multiple accounts, so resolve each account's plan once and reuse it across its groups.
+    private async getPlansByAccount(groupedEntries: ParsedEntry[][]): Promise<Map<number, DBPlan>> {
+        const accountIds = new Set(groupedEntries.map((group) => group[0]!.parsed.accountId));
+        const planByAccount = new Map<number, DBPlan>();
+        await Promise.all(
+            [...accountIds].map(async (accountId) => {
+                const plan = await getPlan(db.knex, { accountId });
+                if (plan.isOk()) {
+                    planByAccount.set(accountId, plan.value);
+                    return;
+                }
+                // Only a genuine lookup error is worth flagging; a missing plan just falls back to the global limit.
+                if (plan.error.message === 'failed_to_get_plan') {
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PLAN_LOOKUP_ERROR);
+                }
+            })
+        );
+        return planByAccount;
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {

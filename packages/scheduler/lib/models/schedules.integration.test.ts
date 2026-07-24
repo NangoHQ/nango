@@ -39,6 +39,27 @@ describe('Schedules', () => {
         const retrieved = (await schedules.get(db, schedule.id)).unwrap();
         expect(retrieved).toMatchObject(schedule);
     });
+    it('should reconcile per-group max concurrency, applying overrides and resetting the rest', async () => {
+        const env1 = await createSchedule(db, { name: 'sched-env-1', groupKey: 'sync:environment:1' });
+        const env2 = await createSchedule(db, { name: 'sched-env-2', groupKey: 'sync:environment:2', groupMaxConcurrency: 50 });
+        const other = await createSchedule(db, { name: 'sched-action-1', groupKey: 'action:environment:1', groupMaxConcurrency: 99 });
+
+        // env1 gets an override, env2's previous value is cleared, non-sync groups are untouched
+        (
+            await schedules.reconcileGroupMaxConcurrency(db, {
+                groupKeyPrefix: 'sync:environment:',
+                overrides: [{ groupKey: 'sync:environment:1', maxConcurrency: 9 }]
+            })
+        ).unwrap();
+
+        expect((await schedules.get(db, env1.id)).unwrap().groupMaxConcurrency).toBe(9);
+        expect((await schedules.get(db, env2.id)).unwrap().groupMaxConcurrency).toBe(0);
+        expect((await schedules.get(db, other.id)).unwrap().groupMaxConcurrency).toBe(99);
+
+        // Removing the override resets env1 back to the default
+        (await schedules.reconcileGroupMaxConcurrency(db, { groupKeyPrefix: 'sync:environment:', overrides: [] })).unwrap();
+        expect((await schedules.get(db, env1.id)).unwrap().groupMaxConcurrency).toBe(0);
+    });
     it('should be successfully deleted', async () => {
         const schedule = await createSchedule(db);
         await setTimeout(1);
@@ -142,15 +163,16 @@ describe('Schedules', () => {
     });
 });
 
-async function createSchedule(db: knex.Knex): Promise<Schedule> {
+async function createSchedule(db: knex.Knex, params?: { name?: string; groupKey?: string; groupMaxConcurrency?: number }): Promise<Schedule> {
     return (
         await schedules.create(db, {
-            name: 'Test Schedule',
+            name: params?.name ?? 'Test Schedule',
             state: 'STARTED',
             payload: { foo: 'bar' },
             startsAt: new Date(),
             frequencyMs: 300_000,
-            groupKey: 'test-group-key',
+            groupKey: params?.groupKey ?? 'test-group-key',
+            groupMaxConcurrency: params?.groupMaxConcurrency ?? 0,
             retryMax: 1,
             createdToStartedTimeoutSecs: 1,
             startedToCompletedTimeoutSecs: 1,

@@ -1,7 +1,6 @@
 import { defaultOperationExpiration, OtlpSpan } from '@nangohq/logs';
 import { onEventScriptService } from '@nangohq/shared';
 
-import { envs } from '../../../env.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
@@ -54,7 +53,6 @@ export async function postConnectionCreation(
             fileLocation,
             sdkVersion: script.sdk_version,
             async: true,
-            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
 

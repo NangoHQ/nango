@@ -259,6 +259,7 @@ export function validateSchedule(schedule: Schedule): Result<OrchestratorSchedul
             frequencyMs: z.number().int().positive(),
             payload: jsonSchema,
             groupKey: z.string().min(1),
+            groupMaxConcurrency: z.number().int().nonnegative(),
             retryMax: z.number().int(),
             createdToStartedTimeoutSecs: z.number().int(),
             startedToCompletedTimeoutSecs: z.number().int(),

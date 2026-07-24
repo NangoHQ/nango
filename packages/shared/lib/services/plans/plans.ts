@@ -67,6 +67,26 @@ export async function getPlanSafe(
     return plan.isOk() ? plan.value : null;
 }
 
+/**
+ * Return every environment whose account has an explicit sync concurrency override.
+ * Used by the reconciler to push per-account sync limits onto the scheduler's schedules.
+ */
+export async function getSyncConcurrencyOverrides(db: Knex): Promise<Result<{ environmentId: number; maxConcurrency: number }[]>> {
+    try {
+        const rows = await db
+            .from<DBPlan>('plans')
+            .join<DBEnvironment>('_nango_environments', '_nango_environments.account_id', 'plans.account_id')
+            .whereNotNull('plans.sync_max_concurrency_override')
+            .select<{ environmentId: number; maxConcurrency: number }[]>({
+                environmentId: '_nango_environments.id',
+                maxConcurrency: 'plans.sync_max_concurrency_override'
+            });
+        return Ok(rows);
+    } catch (err) {
+        return Err(new Error('failed_to_get_sync_concurrency_overrides', { cause: err }));
+    }
+}
+
 export async function createPlan(
     db: Knex,
     { account_id, ...rest }: Pick<DBPlan, 'account_id' | 'name'> & Partial<Omit<DBPlan, 'account_id' | 'created_at' | 'updated_at'>>
@@ -301,6 +321,14 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 }
                 break;
             }
+            // CONCURRENCY OVERRIDES - operator-set directly on the plan row, not a plan-tier flag.
+            // mergeFlags must never emit them: leaving them out of the returned flags keeps the existing
+            // column values untouched by the plan update, so an override survives any plan change.
+            case 'sync_max_concurrency_override':
+            case 'action_max_concurrency_override':
+            case 'webhook_max_concurrency_override':
+            case 'on_event_max_concurrency_override':
+                break;
             // NUMBER FLAGS - keep override if lower
             case 'sync_frequency_secs_min': {
                 const currentValue = currentPlan[key];

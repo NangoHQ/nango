@@ -47,7 +47,7 @@ const bodySchemaBase = z
         frequencyMs: z.number().int().positive(),
         group: z.object({
             key: z.string().min(1),
-            maxConcurrency: z.coerce.number()
+            maxConcurrency: z.coerce.number().int().nonnegative()
         }),
         retry: z.object({
             max: z.number().int()
@@ -83,6 +83,7 @@ const handler = (scheduler: Scheduler) => {
             startsAt: res.locals.parsedBody.startsAt,
             frequencyMs: res.locals.parsedBody.frequencyMs,
             groupKey: res.locals.parsedBody.group.key,
+            groupMaxConcurrency: res.locals.parsedBody.group.maxConcurrency,
             retryMax: res.locals.parsedBody.retry.max,
             createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
             startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,

@@ -11,6 +11,7 @@ import { routeHandler as postRecurringHandler } from './routes/v1/postRecurring.
 import { routeHandler as putRecurringHandler } from './routes/v1/putRecurring.js';
 import { routeHandler as putRecurringStatesHandler } from './routes/v1/putRecurringStates.js';
 import { routeHandler as getRetryOutputHandler } from './routes/v1/retries/retryKey/getOutput.js';
+import { routeHandler as postReconcileConcurrencyHandler } from './routes/v1/schedules/postReconcileConcurrency.js';
 import { routeHandler as postScheduleRunHandler } from './routes/v1/schedules/postRun.js';
 import { routeHandler as postSchedulesSearchHandler } from './routes/v1/schedules/postSearch.js';
 import { routeHandler as postTasksSearchHandler } from './routes/v1/tasks/postSearch.js';
@@ -35,6 +36,7 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
     createRoute(server, postImmediateBatchHandler(scheduler));
     createRoute(server, postRecurringHandler(scheduler));
     createRoute(server, postScheduleRunHandler(scheduler));
+    createRoute(server, postReconcileConcurrencyHandler(scheduler));
     createRoute(server, putRecurringHandler(scheduler));
     createRoute(server, putRecurringStatesHandler(scheduler));
     createRoute(server, postTasksSearchHandler(scheduler));

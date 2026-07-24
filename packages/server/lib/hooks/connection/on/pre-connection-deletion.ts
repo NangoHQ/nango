@@ -1,7 +1,6 @@
 import { defaultOperationExpiration } from '@nangohq/logs';
 import { configService, getProvider, onEventScriptService } from '@nangohq/shared';
 
-import { envs } from '../../../env.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import preConnectionExecute from '../pre-connection.js';
 
@@ -76,7 +75,6 @@ export async function preConnectionDeletion({
             fileLocation,
             sdkVersion: script.sdk_version,
             async: false,
-            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
         if (res.isErr()) {

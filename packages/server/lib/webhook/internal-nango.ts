@@ -272,7 +272,6 @@ export class InternalNango {
                     webhookName: webhook,
                     syncConfig,
                     input: body,
-                    maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
                     logCtx
                 });
 

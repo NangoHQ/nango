@@ -24,6 +24,7 @@ export enum Types {
     JOBS_DELETE_SYNCS_DATA_SCHEDULES = 'nango.jobs.cron.deleteSyncsData.schedules',
     JOBS_DELETE_OLD_DATA = 'nango.jobs.cron.deleteOldData',
     CRON_TRIAL = 'nango.cron.trial',
+    CRON_SYNC_CONCURRENCY_RECONCILER = 'nango.cron.syncConcurrencyReconciler',
 
     LOGS_LOG = 'nango.logs.log',
     BILLED_RECORDS_COUNT = 'nango.billed.records.count',
@@ -84,6 +85,8 @@ export enum Types {
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
+    // Plan lookup errored (not just missing) while resolving an account's webhook concurrency; dispatch falls back to the global limit.
+    WEBHOOK_DISPATCH_PLAN_LOOKUP_ERROR = 'nango.webhook.dispatch_queue.plan_lookup_error',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',

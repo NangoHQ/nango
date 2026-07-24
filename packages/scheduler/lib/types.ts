@@ -50,6 +50,7 @@ export interface Schedule {
     readonly frequencyMs: number;
     readonly payload: JsonObject;
     readonly groupKey: string;
+    readonly groupMaxConcurrency: number;
     readonly retryMax: number;
     readonly createdToStartedTimeoutSecs: number;
     readonly startedToCompletedTimeoutSecs: number;

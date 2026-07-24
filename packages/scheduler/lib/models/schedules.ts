@@ -41,6 +41,7 @@ export interface DbSchedule {
     frequency: string;
     payload: JsonObject;
     readonly group_key: string;
+    readonly group_max_concurrency: number;
     readonly retry_max: number;
     readonly created_to_started_timeout_secs: number;
     readonly started_to_completed_timeout_secs: number;
@@ -83,6 +84,7 @@ export const DbSchedule = {
         frequency: `${schedule.frequencyMs} milliseconds`,
         payload: schedule.payload,
         group_key: schedule.groupKey,
+        group_max_concurrency: schedule.groupMaxConcurrency,
         retry_max: schedule.retryMax,
         created_to_started_timeout_secs: schedule.createdToStartedTimeoutSecs,
         started_to_completed_timeout_secs: schedule.startedToCompletedTimeoutSecs,
@@ -102,6 +104,7 @@ export const DbSchedule = {
         frequencyMs: postgresIntervalInMs(dbSchedule.frequency as any),
         payload: dbSchedule.payload,
         groupKey: dbSchedule.group_key,
+        groupMaxConcurrency: dbSchedule.group_max_concurrency,
         retryMax: dbSchedule.retry_max,
         createdToStartedTimeoutSecs: dbSchedule.created_to_started_timeout_secs,
         startedToCompletedTimeoutSecs: dbSchedule.started_to_completed_timeout_secs,
@@ -137,6 +140,46 @@ export async function create(db: knex.Knex, props: ScheduleProps): Promise<Resul
         return Ok(DbSchedule.from(inserted[0]));
     } catch (err) {
         return Err(new Error(`Error creating schedule '${props.name}': ${stringifyError(err)}`));
+    }
+}
+
+/**
+ * Reconcile the per-group max concurrency for every schedule whose group_key starts with `groupKeyPrefix`.
+ * Groups listed in `overrides` are set to their value; every other matching group is reset to 0
+ * (no cap, i.e. fall back to the scheduler default). Idempotent: only rows that differ are written.
+ */
+export async function reconcileGroupMaxConcurrency(
+    db: knex.Knex,
+    { groupKeyPrefix, overrides }: { groupKeyPrefix: string; overrides: { groupKey: string; maxConcurrency: number }[] }
+): Promise<Result<{ updated: number }>> {
+    try {
+        const overrideKeys = overrides.map((o) => o.groupKey);
+        let updated = 0;
+        await db.transaction(async (trx) => {
+            // Reset groups that no longer have an override back to the default (0)
+            const reset = await trx
+                .from<DbSchedule>(SCHEDULES_TABLE)
+                .where('group_key', 'like', `${groupKeyPrefix}%`)
+                .whereNull('deleted_at')
+                .whereNot('group_max_concurrency', 0)
+                .whereNotIn('group_key', overrideKeys)
+                .update({ group_max_concurrency: 0, updated_at: new Date() });
+            updated += reset;
+
+            for (const { groupKey, maxConcurrency } of overrides) {
+                const changed = await trx
+                    .from<DbSchedule>(SCHEDULES_TABLE)
+                    .where('group_key', groupKey)
+                    .where('group_key', 'like', `${groupKeyPrefix}%`)
+                    .whereNull('deleted_at')
+                    .whereNot('group_max_concurrency', maxConcurrency)
+                    .update({ group_max_concurrency: maxConcurrency, updated_at: new Date() });
+                updated += changed;
+            }
+        });
+        return Ok({ updated });
+    } catch (err) {
+        return Err(new Error(`Error reconciling group max concurrency: ${stringifyError(err)}`));
     }
 }
 

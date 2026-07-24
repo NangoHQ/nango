@@ -7,6 +7,7 @@ import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as putRecurringStatesRoute } from '../routes/v1/putRecurringStates.js';
 import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
+import { route as postReconcileConcurrencyRoute } from '../routes/v1/schedules/postReconcileConcurrency.js';
 import { route as postScheduleRunRoute } from '../routes/v1/schedules/postRun.js';
 import { route as postSchedulesSearchRoute } from '../routes/v1/schedules/postSearch.js';
 import { route as postTasksSearchRoute } from '../routes/v1/tasks/postSearch.js';
@@ -169,6 +170,25 @@ export class OrchestratorClient {
             });
         } else {
             return Ok(undefined);
+        }
+    }
+
+    public async reconcileSyncConcurrency({
+        overrides
+    }: {
+        overrides: { groupKey: string; maxConcurrency: number }[];
+    }): Promise<Result<{ updated: number }, ClientError>> {
+        const res = await this.routeFetch(postReconcileConcurrencyRoute)({
+            body: { groupKeyPrefix: 'sync:environment:', overrides }
+        });
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || `Error reconciling sync concurrency`,
+                payload: { overrides, response: res.error.payload as any }
+            });
+        } else {
+            return Ok({ updated: res.updated });
         }
     }
 
