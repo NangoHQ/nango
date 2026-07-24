@@ -28,8 +28,8 @@ import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan 
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
-import { cn } from '@/utils/utils';
 import { stripePromise } from '@/utils/stripe.js';
+import { cn } from '@/utils/utils';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS } from './planCardCopy.js';
 
@@ -91,7 +91,7 @@ export const Plans: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            {plans?.activePlan.hidden && <CurrentPlanCard plan={plans.activePlan} />}
+            {plans?.activePlan.hidden && <CurrentPlanCard plan={plans.activePlan} scheduledChange={scheduledChange} />}
             <div className="grid grid-cols-4 gap-4">
                 {plans?.list.map((plan) => (
                     <PlanCard
@@ -111,14 +111,40 @@ export const Plans: React.FC = () => {
 };
 
 /** Compact "CURRENT PLAN" summary shown when the account's active plan isn't one of the 4 self-serve cards below (legacy plan). */
-const CurrentPlanCard: React.FC<{ plan: PlanDefinition }> = ({ plan }) => {
+const CurrentPlanCard: React.FC<{ plan: PlanDefinition; scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ plan, scheduledChange }) => {
     return (
         <Card selected>
-            <div className="flex flex-col gap-1 p-4">
-                <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
-                <span className="text-text-default text-body-medium-regular">{plan.title}</span>
+            <div className="flex flex-col gap-2 p-4">
+                <div className="flex flex-col gap-1">
+                    <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
+                    <span className="text-text-default text-body-medium-regular">{plan.title}</span>
+                </div>
+                <ScheduledChangeNotice scheduledChange={scheduledChange} />
             </div>
         </Card>
+    );
+};
+
+/** Inline "Scheduled plan change" notice, shown on whichever card represents the account's current plan. */
+const ScheduledChangeNotice: React.FC<{ scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ scheduledChange }) => {
+    if (!scheduledChange) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-col gap-1 rounded-sm border-[0.5px] border-status-warning-border bg-status-warning-bg p-2">
+            <div className="flex gap-2 items-start">
+                <Clock9 className="size-4 shrink-0 mt-0.5 text-status-warning-text" />
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-status-warning-text text-body-small-regular">Scheduled plan change</span>
+                    <span className="text-text-default text-body-small-regular">
+                        {scheduledChange.targetPlan.code === 'free'
+                            ? `Your subscription will be cancelled on ${scheduledChange.at}`
+                            : `Switches to ${scheduledChange.targetPlan.title} on ${scheduledChange.at}`}
+                    </span>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -223,21 +249,7 @@ const PlanCard: React.FC<{
                         <span className="text-text-secondary text-body-medium-regular whitespace-nowrap">${plan.basePrice}/mo</span>
                     )}
                 </div>
-                {scheduledChange && (
-                    <div className="flex flex-col gap-1 rounded-sm border-[0.5px] border-status-warning-border bg-status-warning-bg p-2">
-                        <div className="flex gap-2 items-start">
-                            <Clock9 className="size-4 shrink-0 mt-0.5 text-status-warning-text" />
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-status-warning-text text-body-small-regular">Scheduled plan change</span>
-                                <span className="text-text-default text-body-small-regular">
-                                    {scheduledChange.targetPlan.code === 'free'
-                                        ? `Your subscription will be cancelled on ${scheduledChange.at}`
-                                        : `Switches to ${scheduledChange.targetPlan.title} on ${scheduledChange.at}`}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <ScheduledChangeNotice scheduledChange={scheduledChange ?? null} />
                 {limits ? (
                     limits.map((limit) => (
                         <div key={limit} className="flex gap-2 items-center">
