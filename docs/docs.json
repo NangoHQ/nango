@@ -80,11 +80,15 @@
   "redirects": [
     {
       "source": "/reference/backend/control-plane-mcp/overview",
-      "destination": "/reference/backend/management-mcp/overview"
+      "destination": "/reference/backend/management-mcp"
     },
     {
       "source": "/reference/backend/control-plane-mcp/logs",
-      "destination": "/reference/backend/management-mcp/overview"
+      "destination": "/reference/backend/management-mcp"
+    },
+    {
+      "source": "/reference/backend/management-mcp/overview",
+      "destination": "/reference/backend/management-mcp"
     },
     {
       "source": "/integrations/all/snowflake",
@@ -665,6 +669,10 @@
     {
       "source": "/integrations/all/prospeo/connect",
       "destination": "/api-integrations/prospeo/connect"
+    },
+    {
+      "source": "/integrations/all/jobber",
+      "destination": "/api-integrations/jobber"
     }
   ],
   "navigation": {
@@ -897,11 +905,7 @@
                       "reference/backend/backend-sdk/php"
                     ]
                   },
-                  {
-                    "group": "Management MCP (Beta)",
-                    "icon": "/images/mcp.svg",
-                    "pages": ["reference/backend/management-mcp/overview"]
-                  }
+                  "reference/backend/management-mcp"
                 ]
               },
               {
@@ -928,7 +932,7 @@
             ]
           },
           {
-            "group": "800+ APIs & Integrations",
+            "group": "900+ APIs & Integrations",
             "pages": [
               "api-integrations/1password-events",
               "integrations/all/1password-scim",
@@ -1140,6 +1144,7 @@
               "integrations/all/datto-rmm-password-grant",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
+              "api-integrations/dentally",
               "integrations/all/devin",
               "api-integrations/demodesk",
               "integrations/all/dialpad",
@@ -1166,6 +1171,7 @@
               "integrations/all/dropbox-sign",
               "integrations/all/drupal",
               "api-integrations/dualentry-mcp",
+              "api-integrations/dynamic-mockups",
               "api-integrations/dynatrace",
               "api-integrations/dynatrace-oauth",
               "integrations/all/e-conomic",
@@ -1185,6 +1191,7 @@
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
               "integrations/all/epic-games",
+              "api-integrations/ergo",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
               "api-integrations/everflow",
@@ -1318,6 +1325,7 @@
               "api-integrations/huntress",
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
+              "api-integrations/hubstaff",
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "integrations/all/incident-io",
@@ -1341,7 +1349,7 @@
               "integrations/all/jira-data-center",
               "integrations/all/jira-data-center-basic",
               "integrations/all/jobadder",
-              "integrations/all/jobber",
+              "api-integrations/jobber",
               "integrations/all/jobdiva",
               "integrations/all/jobvite",
               "integrations/all/jotform",
@@ -1485,6 +1493,7 @@
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
+              "api-integrations/optum-real",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",
               "api-integrations/ordinal",
@@ -1575,6 +1584,7 @@
               "api-integrations/reply-io",
               "api-integrations/researchdesk",
               "api-integrations/resend",
+              "api-integrations/resova",
               "api-integrations/revivn",
               "integrations/all/recharge",
               "integrations/all/recruitcrm",
@@ -1618,6 +1628,7 @@
               "api-integrations/salesmsg-oauth2",
               "api-integrations/sanity-mcp",
               "integrations/all/salesloft",
+              "api-integrations/semble",
               "api-integrations/sellercloud",
               "integrations/all/sap-business-one",
               "integrations/all/sap-concur",
@@ -1769,6 +1780,7 @@
               "integrations/all/valley",
               "integrations/all/valley-api-key",
               "api-integrations/vanta",
+              "api-integrations/vantage-apparel",
               "api-integrations/veed",
               "api-integrations/veeva-vault",
               "api-integrations/veeva-vault-oauth",
@@ -1817,6 +1829,7 @@
               "integrations/all/yandex",
               "integrations/all/yotpo",
               "api-integrations/youcanbook-me",
+              "api-integrations/youcanbook-me-public",
               "api-integrations/youtube",
               "api-integrations/zapier",
               "integrations/all/zapier-nla",

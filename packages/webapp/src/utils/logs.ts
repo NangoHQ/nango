@@ -66,6 +66,15 @@ export const last24hPreset: PeriodPreset = {
     })
 };
 
+export const last14dPreset: PeriodPreset = {
+    name: 'last14d',
+    label: 'Last 14 days',
+    shortLabel: '2w',
+    toPeriod: () => ({
+        from: startOfDay(subDays(new Date(), 14))
+    })
+};
+
 // Define presets
 export const logsPresets: PeriodPreset[] = [
     {
@@ -101,12 +110,5 @@ export const logsPresets: PeriodPreset[] = [
             from: startOfDay(subDays(new Date(), 7))
         })
     },
-    {
-        name: 'last14d',
-        label: 'Last 14 days',
-        shortLabel: '2w',
-        toPeriod: () => ({
-            from: startOfDay(subDays(new Date(), 14))
-        })
-    }
+    last14dPreset
 ] as const;

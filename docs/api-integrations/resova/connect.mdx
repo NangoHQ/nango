@@ -1,0 +1,38 @@
+---
+title: 'Resova - How do I link my account?'
+sidebarTitle: 'Resova'
+---
+
+# Overview
+
+To authenticate with Resova, you need an **API Key** generated from your Resova account.
+
+### Prerequisites
+
+- A fully active (paid) Resova account. Trial accounts cannot access the API.
+
+### Instructions
+
+#### Step 1: Generating your API key
+
+1. Log in to your Resova account.
+2. Go to **Settings > General Settings > Developer**.
+3. Copy your **API Key**.
+4. If you want to restrict API access by IP, go to **IP Whitelisting** in the same **Developer** section and add the IP addresses you'll be calling the API from. See [Nango's public IP addresses](/guides/platform/security#ip-allowlist) if Nango's proxy will be making the calls.
+
+#### Step 2: Determine your region
+
+Resova hosts separate datacenters per region. Most accounts are on the **US** datacenter (the default) — if your account is on the **EU** datacenter, select **EU** instead. If you're not sure which one you're on, check with your Resova account contact.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+
+1. Open the form where you need to authenticate with Resova.
+2. Enter your **API Key** in the field provided.
+3. Select your **Region**.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/resova/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Resova.

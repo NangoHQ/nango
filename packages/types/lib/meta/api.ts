@@ -13,7 +13,8 @@ export type GetMeta = Endpoint<{
             baseUrl: string;
             debugMode: boolean;
             gettingStartedClosed: boolean;
-            billingUsageSource: 'clickhouse' | 'orb';
+            // Whether the audit trail is enabled for this account (per-account rollout flag); gates the dashboard UI.
+            auditTrail: boolean;
         };
     };
 }>;

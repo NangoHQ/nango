@@ -4,9 +4,9 @@
 
 # Build product integrations with AI.
 
-Connect your product & AI agents with 800+ APIs. Build, run, and maintain integrations with AI in code, on infrastructure built for scale.
+Connect your product & AI agents with 900+ APIs. Build, run, and maintain integrations with AI in code, on infrastructure built for scale.
 
-[Website](https://nango.dev) · [Docs](https://nango.dev/docs/) · [800+ APIs](https://nango.dev/docs/integrations/overview/) · [Slack Community](https://nango.dev/slack)
+[Website](https://nango.dev) · [Docs](https://nango.dev/docs/) · [900+ APIs](https://nango.dev/docs/integrations/overview/) · [Slack Community](https://nango.dev/slack)
 
 [![GitHub Stars](https://img.shields.io/github/stars/NangoHQ/nango?style=social)](https://github.com/NangoHQ/nango/stargazers)
 [![License](https://img.shields.io/badge/license-Elastic-blue.svg)](https://github.com/NangoHQ/nango/blob/master/LICENSE)
@@ -16,7 +16,7 @@ Connect your product & AI agents with 800+ APIs. Build, run, and maintain integr
 
 ## What is Nango?
 
-Nango is an open-source platform for building product integrations. It supports [**800+ APIs**](https://nango.dev/docs/integrations/overview) and works with any backend language, AI coding tool, and agent SDK.
+Nango is an open-source platform for building product integrations. It supports [**900+ APIs**](https://nango.dev/docs/integrations/overview) and works with any backend language, AI coding tool, and agent SDK.
 
 You write integration logic as TypeScript functions, or let AI generate them for you, and deploy to Nango's production runtime. Nango handles auth, execution, scaling, and observability.
 
@@ -28,7 +28,7 @@ Nango gives you three primitives that cover every integration pattern:
 
 ### 1. Auth
 
-Managed OAuth, API keys, and token refresh for 800+ APIs. Embed a white-label auth flow in your app. Nango handles credentials, token storage, and multi-tenant connection management.
+Managed OAuth, API keys, and token refresh for 900+ APIs. Embed a white-label auth flow in your app. Nango handles credentials, token storage, and multi-tenant connection management.
 
 ```typescript
 // Embed auth in your frontend
@@ -117,7 +117,7 @@ Nango's AI builder generates TypeScript integration functions from natural langu
 **Production-grade infrastructure.** 
 Nango processes billions of API requests. The runtime provides per-tenant isolation, elastic scaling, automatic retries, and rate-limit handling. Battle-tested by hundreds of companies in production.
 
-**Auth for 800+ APIs, out of the box.** 
+**Auth for 900+ APIs, out of the box.** 
 OAuth flows, token refresh, credential storage, and multi-tenant support handled for you. Connect to any API without building auth from scratch.
 
 **Open source and self-hostable.** 

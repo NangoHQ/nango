@@ -6115,6 +6115,38 @@ deel-sandbox:
         base_url: https://api-sandbox.demo.deel.com
     docs: https://nango.dev/docs/integrations/all/deel-sandbox
 
+dentally:
+    display_name: Dentally
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.domain}/oauth/authorize
+    token_url: https://${connectionConfig.domain}/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/dentally
+    setup_guide_url: https://nango.dev/docs/api-integrations/dentally/how-to-register-your-own-dentally-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/dentally/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Dentally API host to connect to.
+            format: hostname
+            order: 1
+            enum:
+                - api.dentally.co
+                - api.sandbox.dentally.co
+                - api.apac.dentally.com
+                - api.ca.dentally.com
+            doc_section: '#step-1-choose-your-environment'
+
 devin:
     display_name: Devin
     categories:
@@ -6851,6 +6883,33 @@ dualentry-mcp:
         base_url: https://api.dualentry.com
     docs: https://nango.dev/docs/api-integrations/dualentry-mcp
 
+dynamic-mockups:
+    display_name: Dynamic Mockups
+    categories:
+        - design
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.dynamicmockups.com/api
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/mockups
+    docs: https://nango.dev/docs/api-integrations/dynamic-mockups
+    docs_connect: https://nango.dev/docs/api-integrations/dynamic-mockups/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Dynamic Mockups account.
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]+$'
+            example: 375e11d6-b18f-40eb-b4ab-bc6c85abfb48:************************************************************a481
+            doc_section: '#step-1-generating-your-api-key'
+
 dynatrace:
     display_name: Dynatrace
     categories:
@@ -7304,6 +7363,35 @@ epic-games:
     proxy:
         base_url: https://api.epicgames.dev
     docs: https://nango.dev/docs/integrations/all/epic-games
+
+ergo:
+    display_name: Ergo
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.joinergo.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/meetings?limit=1
+    docs: https://nango.dev/docs/api-integrations/ergo
+    docs_connect: https://nango.dev/docs/api-integrations/ergo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Token
+            description: The token issued by Ergo.
+            pattern: '^ergo_api_at-[0-9a-f]+_[A-Za-z0-9]+$'
+            example: ergo_api_at-48b49ba4********************************************************an1X
+            doc_section: '#step-1-obtaining-your-token'
 
 evaluagent:
     display_name: EvaluAgent
@@ -10546,6 +10634,30 @@ hubspot-mcp:
     docs: https://nango.dev/docs/api-integrations/hubspot-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app
 
+hubstaff:
+    display_name: Hubstaff
+    categories:
+        - hr
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://account.hubstaff.com/authorizations/new
+    token_url: https://account.hubstaff.com/access_tokens
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        nonce: ${random}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.hubstaff.com
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+    docs: https://nango.dev/docs/api-integrations/hubstaff
+    setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
+
 incident-io:
     display_name: Incident.io
     categories:
@@ -11289,13 +11401,17 @@ jobber:
     auth_mode: OAUTH2
     authorization_url: https://api.getjobber.com/api/oauth/authorize
     token_url: https://api.getjobber.com/api/oauth/token
+    disable_pkce: true
     authorization_params:
         response_type: code
     proxy:
         headers:
             x-jobber-graphql-version: ${connectionConfig.version} || 2025-01-20
         base_url: https://api.getjobber.com/api
-    docs: https://nango.dev/docs/integrations/all/jobber
+    webhook_routing_script: jobberWebhookRouting
+    post_connection_script: jobberPostConnection
+    docs: https://nango.dev/docs/api-integrations/jobber
+    setup_guide_url: https://nango.dev/docs/api-integrations/jobber/how-to-register-your-own-jobber-api-oauth-app
     connection_config:
         version:
             type: string
@@ -15138,6 +15254,44 @@ open-hands:
             example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
             doc_section: '#step-1-finding-your-api-key'
 
+optum-real:
+    display_name: Optum Real
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.domain}/apip/auth/sntl/v1/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/optum-real
+    docs_connect: https://nango.dev/docs/api-integrations/optum-real/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Optum Real API environment to connect to.
+            order: 1
+            format: hostname
+            doc_section: '#step-1-choose-your-environment'
+            enum:
+                - sandbox-apigw.optum.com
+                - apigw.optum.com
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID issued via the Optum AI Marketplace for this environment.
+            doc_section: '#step-2-get-your-credentials'
+            format: uuid
+            example: f2aba07d-270c-42ba-8811-01af5f63d458
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret issued via the Optum AI Marketplace for this environment.
+            secret: true
+            doc_section: '#step-2-get-your-credentials'
+
 oracle-hcm:
     display_name: Oracle Fusion Cloud (HCM)
     categories:
@@ -17827,6 +17981,38 @@ resend:
             example: 're_HW***************************65L'
             doc_section: '#step-1-getting-your-api-key'
 
+resova:
+    display_name: Resova
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.resova.${connectionConfig.region}/
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/items
+    docs: https://nango.dev/docs/api-integrations/resova
+    docs_connect: https://nango.dev/docs/api-integrations/resova/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key generated in your Resova account.
+            doc_section: '#step-1-generating-your-api-key'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The datacenter region your Resova account is hosted in.
+            doc_section: '#step-2-determine-your-region'
+            default_value: us
+            enum:
+                - us
+                - eu
+
 retell-ai:
     display_name: Retell AI
     categories:
@@ -19250,6 +19436,39 @@ salesloft:
     proxy:
         base_url: https://api.salesloft.com
     docs: https://nango.dev/docs/integrations/all/salesloft
+
+semble:
+    display_name: Semble
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://open.semble.io/graphql
+    token_params:
+        query: 'mutation { signIn(email: "${credentials.email}", password: "${credentials.password}") { token } }'
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: data.signIn.token
+    proxy:
+        base_url: https://open.semble.io
+        headers:
+            x-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/semble
+    docs_connect: https://nango.dev/docs/api-integrations/semble/connect
+    credentials:
+        email:
+            type: string
+            title: Email
+            description: The email address of the Semble user to authenticate as.
+            format: email
+            doc_section: '#step-1-authenticating-with-email-and-password'
+        password:
+            type: string
+            title: Password
+            description: The password for the Semble user.
+            secret: true
+            doc_section: '#step-1-authenticating-with-email-and-password'
 
 sendgrid:
     display_name: SendGrid
@@ -23241,6 +23460,30 @@ vanta:
     docs: https://nango.dev/docs/api-integrations/vanta
     docs_connect: https://nango.dev/docs/api-integrations/vanta/connect
 
+vantage-apparel:
+    display_name: Vantage Apparel
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: BASIC
+    credentials_verification_script: vantageApparelCredentialsVerification
+    proxy:
+        base_url: https://brandedpromoapparel.com/WebServices
+    docs: https://nango.dev/docs/api-integrations/vantage-apparel
+    docs_connect: https://nango.dev/docs/api-integrations/vantage-apparel/connect
+    credentials:
+        username:
+            type: string
+            title: PromoStandards ID
+            description: The PromoStandards ID used to authenticate SOAP requests.
+            doc_section: '#step-1-finding-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: The password paired with the PromoStandards ID.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+
 veed:
     display_name: VEED (via fal.ai)
     categories:
@@ -24507,6 +24750,25 @@ youcanbook-me:
             example: mycompany
             doc_section: '#step-2-finding-your-subdomain'
 
+youcanbook-me-public:
+    display_name: YouCanBookMe (Public)
+    categories:
+        - productivity
+    auth_mode: NONE
+    proxy:
+        base_url: https://api.youcanbook.me
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+    docs: https://nango.dev/docs/api-integrations/youcanbook-me-public
+    docs_connect: https://nango.dev/docs/api-integrations/youcanbook-me-public/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your YouCanBookMe booking page.
+            example: mycompany
+            doc_section: '#step-1-finding-your-subdomain'
+
 yandex:
     display_name: Yandex
     categories:
@@ -24602,6 +24864,12 @@ zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
+    token_params:
+        grant_type: authorization_code
+        expires_in: '1800'
+    refresh_params:
+        grant_type: refresh_token
+        expires_in: '1800'
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
         retry:

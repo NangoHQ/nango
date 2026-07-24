@@ -5,11 +5,13 @@ import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
 import { ManagedEmailVerification } from '@/pages/Account/ManagedEmailVerification';
+import { MFALogin } from '@/pages/Account/MFALogin';
 import ResetPassword from '@/pages/Account/ResetPassword';
 import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
+import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
 import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
 import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
@@ -91,6 +93,10 @@ const publicAuthRoutes = (() => {
         {
             path: '/signin',
             element: <Signin />
+        },
+        {
+            path: '/signin/mfa',
+            element: <MFALogin />
         }
     ];
 
@@ -168,6 +174,11 @@ export const router = sentryCreateBrowserRouter([
                 path: '/team/billing',
                 element: <TeamBilling />,
                 handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+            },
+            {
+                path: '/team/audit',
+                element: <AuditShow />,
+                handle: { breadcrumb: 'Audit log' } as BreadcrumbHandle
             },
             {
                 path: '/:env',
