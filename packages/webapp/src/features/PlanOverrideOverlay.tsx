@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, X } from 'lucide-react';
 
 import { IconButton } from '@nangohq/design-system';
 
@@ -13,6 +13,7 @@ const REAL_PLAN_VALUE = '__real__';
 
 interface PlanOverrideContentProps {
     onBack: () => void;
+    onClose: () => void;
 }
 
 /**
@@ -20,7 +21,7 @@ interface PlanOverrideContentProps {
  * legacy banner, Usage framing, plan-gated features) with any plan definition, for visual QA.
  * Purely client-side: no backend call is made, so real billing/entitlements are untouched.
  */
-export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack }) => {
+export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack, onClose }) => {
     const env = useStore((s) => s.env);
     const { data: plansList } = useApiGetPlans(env);
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
@@ -28,11 +29,16 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
 
     return (
         <>
-            <div className="flex shrink-0 items-center gap-2 border-b border-border-muted px-4 py-3">
-                <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack} className="text-text-muted hover:text-text-default">
-                    <ChevronLeft className="size-3.5" />
+            <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
+                <div className="flex items-center gap-2">
+                    <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack} className="text-text-muted hover:text-text-default">
+                        <ChevronLeft className="size-3.5" />
+                    </IconButton>
+                    <span className="font-medium text-text-default">Plan Override</span>
+                </div>
+                <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose} className="text-text-muted hover:text-text-default">
+                    <X className="size-3.5" />
                 </IconButton>
-                <span className="font-medium text-text-default">Plan Override</span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">

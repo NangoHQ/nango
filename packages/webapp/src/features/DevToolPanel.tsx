@@ -160,7 +160,7 @@ export const DevToolPanel: React.FC = () => {
                         {view === 'token-editor' ? (
                             <TokenEditorContent onBack={() => setView('home')} onClose={close} />
                         ) : (
-                            <PlanOverrideContent onBack={() => setView('home')} />
+                            <PlanOverrideContent onBack={() => setView('home')} onClose={close} />
                         )}
                     </Suspense>
                 </SentryErrorBoundary>
