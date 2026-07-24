@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 919
+Provider count: 920
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -152,6 +152,7 @@ URL patterns:
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
+| `chartboost` | Chartboost | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/chartboost.md) | [connect](https://nango.dev/docs/api-integrations/chartboost/connect.md) |  | marketing, gaming |
 | `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
 | `chattermill` | Chattermill | API_KEY | [docs](https://nango.dev/docs/integrations/all/chattermill.md) |  |  | support, analytics |
 | `checkhq` | Check | API_KEY | [docs](https://nango.dev/docs/integrations/all/checkhq.md) | [connect](https://nango.dev/docs/integrations/all/checkhq/connect.md) |  | accounting |
