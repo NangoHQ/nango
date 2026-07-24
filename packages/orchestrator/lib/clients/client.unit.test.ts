@@ -82,6 +82,35 @@ describe('OrchestratorClient immediate', () => {
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 
+    it('does not retry webhook admission rejections', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    error: {
+                        message: 'busy',
+                        payload: { acquired: false, reason: 'concurrency', retryAfterMs: 1200 }
+                    }
+                }),
+                { status: 529, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhook(buildWebhookProps('webhook-1'));
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({
+                name: 'fetch_failed',
+                status: 529,
+                message: 'busy',
+                payload: { reason: 'concurrency', retryAfterMs: 1200 }
+            });
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('preserves existing retries on non-immediate route errors', async () => {
         const fetchMock = vi.fn().mockResolvedValue(
             new Response(JSON.stringify({ error: { code: 'schedule_not_found', message: 'missing schedule' } }), {
@@ -193,5 +222,34 @@ describe('OrchestratorClient executeWebhookBatch', () => {
 
         expect(res.isOk()).toBe(true);
         expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('returns batch admission overload without retrying', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    error: {
+                        message: 'busy',
+                        payload: { acquired: false, reason: 'pool_pressure', retryAfterMs: 1200 }
+                    }
+                }),
+                { status: 529, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({
+                name: 'fetch_failed',
+                status: 529,
+                message: 'busy',
+                payload: { reason: 'pool_pressure', retryAfterMs: 1200 }
+            });
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 });

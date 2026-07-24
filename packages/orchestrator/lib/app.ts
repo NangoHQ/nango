@@ -10,6 +10,7 @@ import { TaskEventsHandler } from './events.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
+import { WebhookAdmissionController } from './webhook-admission.js';
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
@@ -74,12 +75,35 @@ try {
     });
     backpressureMonitor.start();
 
+    const webhookAdmissionDbReserve = Math.min(envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE, envs.ORCHESTRATOR_DB_POOL_MAX - 1);
+    if (webhookAdmissionDbReserve !== envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE) {
+        logger.warning(`Webhook admission DB reserve clamped from ${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE} to ${webhookAdmissionDbReserve}`);
+    }
+    const webhookAdmissionMaxConcurrency = Math.min(
+        envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY,
+        envs.ORCHESTRATOR_DB_POOL_MAX - webhookAdmissionDbReserve
+    );
+    if (webhookAdmissionMaxConcurrency !== envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY) {
+        logger.warning(
+            `Webhook admission concurrency clamped from ${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY} to ${webhookAdmissionMaxConcurrency}`
+        );
+    }
+    const webhookAdmission = new WebhookAdmissionController({
+        maxConcurrency: webhookAdmissionMaxConcurrency,
+        dbReserve: webhookAdmissionDbReserve,
+        getAvailableConnections: () => {
+            const pool = dbClient.getPoolStats();
+            return envs.ORCHESTRATOR_DB_POOL_MAX - pool.used - pool.pendingAcquires;
+        },
+        retryAfterMs: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_RETRY_AFTER_MS
+    });
+
     // default max listener is 10
     // but we need more listeners
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
     eventsHandler.setMaxListeners(Infinity);
 
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, eventsHandler, webhookAdmission);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);

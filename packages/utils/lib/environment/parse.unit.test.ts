@@ -390,4 +390,34 @@ describe('parse', () => {
             expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: '0' })).toThrow();
         });
     });
+
+    describe('ORCHESTRATOR_WEBHOOK_*', () => {
+        it('applies webhook admission defaults', () => {
+            expect(parseEnvs(ENVS, {})).toMatchObject({
+                ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: 5,
+                ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: 10,
+                ORCHESTRATOR_WEBHOOK_ADMISSION_RETRY_AFTER_MS: 1000
+            });
+        });
+
+        it('rejects invalid webhook admission limits', () => {
+            expect(() => parseEnvs(ENVS, { ORCHESTRATOR_DB_POOL_MAX: '0' })).toThrow();
+            expect(() => parseEnvs(ENVS, { ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: '0' })).toThrow();
+            expect(() => parseEnvs(ENVS, { ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: '-1' })).toThrow();
+        });
+
+        it('allows webhook admission limits to be clamped at orchestrator startup', () => {
+            expect(
+                parseEnvs(ENVS, {
+                    ORCHESTRATOR_DB_POOL_MAX: '10',
+                    ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: '4',
+                    ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: '7'
+                })
+            ).toMatchObject({
+                ORCHESTRATOR_DB_POOL_MAX: 10,
+                ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: 4,
+                ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: 7
+            });
+        });
+    });
 });

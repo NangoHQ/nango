@@ -66,6 +66,15 @@ export class DatabaseClient {
         await this.db.destroy();
     }
 
+    getPoolStats(): { used: number; pendingAcquires: number } {
+        const pool = (
+            this.db.client as unknown as {
+                pool: { numUsed: () => number; numPendingAcquires: () => number };
+            }
+        ).pool;
+        return { used: pool.numUsed(), pendingAcquires: pool.numPendingAcquires() };
+    }
+
     async migrate(): Promise<void> {
         logger.info('[scheduler] migration');
 
