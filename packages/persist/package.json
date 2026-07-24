@@ -20,15 +20,15 @@
     "dependencies": {
         "@nangohq/database": "file:../database",
         "@nangohq/feature-flags": "file:../feature-flags",
-        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/kms": "file:../kms",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/logs": "file:../logs",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "dayjs": "1.11.19",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "express": "5.1.0",
         "qs": "6.15.0",
         "zod": "4.0.5"

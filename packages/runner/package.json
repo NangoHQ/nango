@@ -19,8 +19,8 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/node": "file:../node-client",
-        "@nangohq/runner-sdk": "file:../runner-sdk",
         "@nangohq/providers": "file:../providers",
+        "@nangohq/runner-sdk": "file:../runner-sdk",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@trpc/client": "10.45.3",
@@ -28,7 +28,7 @@
         "axios": "1.18.0",
         "botbuilder": "4.23.3",
         "connect-timeout": "1.9.1",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "express": "5.1.0",
         "soap": "1.9.3",
         "superjson": "2.2.1",
@@ -37,8 +37,8 @@
         "zod": "4.0.5"
     },
     "devDependencies": {
-        "@nangohq/types": "file:../types",
         "@nangohq/database": "file:../database",
+        "@nangohq/types": "file:../types",
         "@types/connect-timeout": "1.9.0",
         "@types/unzipper": "0.10.10",
         "typescript": "5.8.3",
