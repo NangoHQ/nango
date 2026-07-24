@@ -291,6 +291,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
         }
 
         for (const [model, { startLines, endLines }] of bag.trackDeletesByModel) {
+            const modelBatchingRecordsLines = bag.batchingRecordsLinesByModel.get(model) ?? [];
             if (startLines.length > 1) {
                 return Err(
                     fileErrorToText({
@@ -336,7 +337,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                     })
                 );
             }
-            if (startLines.length > 0 && bag.batchingRecordsLines.some((line) => line < Math.min(...startLines))) {
+            if (startLines.length > 0 && modelBatchingRecordsLines.some((line) => line < Math.min(...startLines))) {
                 return Err(
                     fileErrorToText({
                         filePath: friendlyPath,
@@ -345,7 +346,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                     })
                 );
             }
-            if (endLines.length > 0 && bag.batchingRecordsLines.some((line) => line > Math.min(...endLines))) {
+            if (endLines.length > 0 && modelBatchingRecordsLines.some((line) => line > Math.min(...endLines))) {
                 return Err(
                     fileErrorToText({
                         filePath: friendlyPath,
@@ -451,6 +452,7 @@ type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transfo
 function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const proxyLines: number[] = [];
     const batchingRecordsLines: number[] = [];
+    const batchingRecordsLinesByModel = new Map<string, number[]>();
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
@@ -458,6 +460,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const bag = {
         proxyLines,
         batchingRecordsLines,
+        batchingRecordsLinesByModel,
         setMergingStrategyLines,
         deleteRecordsFromPreviousExecutionsLines,
         trackDeletesByModel,
@@ -605,6 +608,16 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     }
                                     if (callsBatchingRecords.includes(callee.property.name)) {
                                         batchingRecordsLines.push(lineNumber);
+                                        // The model is the second argument of batchSave/batchUpdate/batchDelete.
+                                        // Track it per-model so trackDeletesStart/End ordering is validated against
+                                        // the model's own batching calls, not every model's calls globally.
+                                        const batchingArgs = astPath.node.arguments;
+                                        if (batchingArgs.length > 1 && t.isStringLiteral(batchingArgs[1])) {
+                                            const batchingModel = batchingArgs[1].value;
+                                            const modelLines = batchingRecordsLinesByModel.get(batchingModel) ?? [];
+                                            modelLines.push(lineNumber);
+                                            batchingRecordsLinesByModel.set(batchingModel, modelLines);
+                                        }
                                     }
                                     if (callee.property.name === 'setMergingStrategy') {
                                         setMergingStrategyLines.push(lineNumber);
