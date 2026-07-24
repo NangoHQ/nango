@@ -18,13 +18,14 @@ export const RoleSelect: React.FC<{
     value: Role;
     onChange: (value: Role) => void;
     hasRBAC?: boolean;
-}> = ({ value, onChange, hasRBAC = true }) => {
+    triggerClassName?: string;
+}> = ({ value, onChange, hasRBAC = true, triggerClassName = 'w-40' }) => {
     return (
         <Select value={value} onValueChange={(v) => onChange(v as Role)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className={triggerClassName}>
                 <SelectValue placeholder="Select a role">{roles.find((r) => r.value === value)?.label}</SelectValue>
             </SelectTrigger>
-            <SelectContent align="end" className="p-0 max-w-71">
+            <SelectContent align="start" className="p-0">
                 {roles.map(({ value: v, label, description }) => {
                     const locked = !hasRBAC && v !== 'administrator';
                     return (
@@ -43,10 +44,10 @@ export const RoleSelect: React.FC<{
                             asChild
                         >
                             <span className="block">
-                                <SelectItem value={v} className="h-fit p-2" disabled={locked}>
-                                    <div className="flex flex-col gap-1">
+                                <SelectItem value={v} className="h-fit p-2 pr-6" disabled={locked}>
+                                    <div className="flex min-w-0 flex-col gap-1">
                                         <span className="text-text-strong text-body-medium-regular">{label}</span>
-                                        <p className="text-text-secondary text-body-small-regular">{description}</p>
+                                        <p className="text-text-secondary text-body-small-regular whitespace-normal">{description}</p>
                                     </div>
                                 </SelectItem>
                             </span>

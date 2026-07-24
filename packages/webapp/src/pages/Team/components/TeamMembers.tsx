@@ -1,4 +1,4 @@
-import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
+import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -9,9 +9,12 @@ import {
     DialogBody,
     DialogClose,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    Field,
+    FieldLabel,
     IconButton,
     Input
 } from '@nangohq/design-system';
@@ -20,6 +23,7 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -62,17 +66,24 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit role</DialogTitle>
+                    <DialogDescription>
+                        Manage access level and permissions.{' '}
+                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
+                            Learn more
+                        </StyledLink>
+                    </DialogDescription>
                 </DialogHeader>
 
                 <DialogBody>
                     <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2">
-                            <Input type="email" value={user.email} disabled className="flex-1" />
-                            <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} />
-                        </div>
-                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
-                            Learn more about roles and permissions
-                        </StyledLink>
+                        <Field>
+                            <FieldLabel htmlFor="edit-role-email">Email address</FieldLabel>
+                            <Input id="edit-role-email" type="email" value={user.email} disabled />
+                        </Field>
+                        <Field>
+                            <FieldLabel>Role</FieldLabel>
+                            <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} triggerClassName="w-full" />
+                        </Field>
                     </div>
                 </DialogBody>
                 <DialogFooter>
@@ -82,7 +93,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                         </Button>
                     </DialogClose>
                     <Button variant="primary" size="sm" onClick={onSubmit} loading={isPending}>
-                        Save
+                        Save changes
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -136,7 +147,10 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
+            <div className="inline-flex items-center gap-1.5">
+                <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
+                <InfoTooltip>Everyone with access to this team. Manage roles or remove members here.</InfoTooltip>
+            </div>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -215,6 +229,8 @@ export const TeamMembers: React.FC = () => {
                                                 <DropdownMenuItem
                                                     onSelect={() =>
                                                         confirm({
+                                                            size: 'sm',
+                                                            icon: <Trash2 />,
                                                             title: 'Remove user',
                                                             description: `Are you sure you want to remove ${user.name} from the team?`,
                                                             onConfirm: () => onRemoveUser(user),
@@ -232,6 +248,8 @@ export const TeamMembers: React.FC = () => {
                                                 <DropdownMenuItem
                                                     onSelect={() =>
                                                         confirm({
+                                                            size: 'sm',
+                                                            icon: <Trash2 />,
                                                             title: 'Revoke invitation',
                                                             description: `Are you sure you want to revoke the invitation for ${user.email}?`,
                                                             onConfirm: () => onCancelInvitation(user),

@@ -1,12 +1,14 @@
 import { Helmet } from 'react-helmet';
 
+import { FieldSeparator } from '@nangohq/design-system';
+
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ErrorPageComponent } from '../../components/patterns/ErrorComponent';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { AddTeamMemberButton } from './components/AddTeamMemberButton';
 import { ImpersonateForm } from './components/ImpersonateForm';
+import { InviteTeamMembers } from './components/InviteTeamMembers';
 import { TeamMembers } from './components/TeamMembers';
 import { TeamSettings } from './components/TeamSettings';
 
@@ -19,7 +21,7 @@ export const TeamSettingsPage: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-8">
+            <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-8 max-w-[980px] mx-0">
                 <Helmet>
                     <title>Team Settings - Nango</title>
                 </Helmet>
@@ -38,15 +40,13 @@ export const TeamSettingsPage: React.FC = () => {
     const isNangoAdmin = data?.data.isAdminTeam;
 
     return (
-        <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-8 max-w-[980px] mx-0">
             <Helmet>
                 <title>Team Settings - Nango</title>
             </Helmet>
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
-                <TeamSettings />
-                <AddTeamMemberButton />
-            </div>
-
+            <InviteTeamMembers />
+            <TeamSettings />
+            <FieldSeparator />
             <TeamMembers />
             {isNangoAdmin && <ImpersonateForm />}
         </DashboardLayout>
