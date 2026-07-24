@@ -301,7 +301,7 @@ const VirtualizedRecordRows = ({
                             data-index={vRow.index}
                             ref={(node) => rowVirtualizer.measureElement(node)}
                             className={cn(
-                                'absolute left-0 flex h-11 w-full cursor-pointer border-b border-border-muted hover:bg-state-selected-muted',
+                                'absolute left-0 flex h-11 w-full cursor-pointer border-b border-border-muted hover:bg-state-hover',
                                 'transition-colors'
                             )}
                             style={{

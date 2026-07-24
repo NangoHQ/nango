@@ -64,7 +64,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
 
     return (
         <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
-            <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-surface-panel data-[state=open]:border-b data-[state=open]:border-border-muted">
+            <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-state-hover data-[state=open]:border-b data-[state=open]:border-border-muted">
                 <div className={USAGE_ROW_GRID}>
                     <div className="flex flex-col min-w-0">
                         <span className="text-text-default text-body-medium-regular truncate">{label}</span>
