@@ -160,6 +160,39 @@ async function runMigrationsOnce() {
         const { records } = await import('@nangohq/records');
         await records.migrate();
     });
+    await runMigrationOnce('tasks', async () => {
+        // packages/server/lib/tasks/index.ts constructs a full Tasks (Scheduler + TaskProcessor)
+        // just to get this schema migrated, which has side effects we don't want in globalSetup.
+        // DatabaseClient is the same underlying migration runner without any of that.
+        const [{ DatabaseClient, defaultDatabaseClientOptions }, { ENVS, parseEnvs }] = await Promise.all([
+            import('@nangohq/scheduler'),
+            import('@nangohq/utils')
+        ]);
+        const envs = parseEnvs(ENVS);
+        const databaseUrl =
+            envs.NANGO_DATABASE_URL ||
+            `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
+        const client = new DatabaseClient({ ...defaultDatabaseClientOptions, url: databaseUrl, schema: envs.TASKS_DATABASE_SCHEMA });
+        try {
+            await client.migrate();
+        } finally {
+            await client.destroy();
+        }
+    });
+    await runMigrationOnce('sessions', async () => {
+        // packages/server/lib/clients/auth.client.ts constructs a module-level KnexSessionStore,
+        // which does its own check-then-create of this table (not a tracked knex migration) the
+        // first time any file imports it. Doing that once here, ahead of any test file, avoids
+        // every fork racing to CREATE TABLE the same table concurrently.
+        const [{ default: connectSessionKnex }, { default: session }, { default: db }] = await Promise.all([
+            import('connect-session-knex'),
+            import('express-session'),
+            import('@nangohq/database')
+        ]);
+        const KnexSessionStore = connectSessionKnex(session);
+        const store = new KnexSessionStore({ knex: db.knex, tablename: '_nango_sessions', sidfieldname: 'sid' });
+        await store.ready;
+    });
 }
 
 export async function setup() {
