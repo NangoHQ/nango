@@ -77,7 +77,7 @@ description: 'Access the GitLab API in 2 minutes 💨'
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-pat.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    _None yet, add yours!_
+    GitLab webhook payloads do not contain a Nango connection ID, and a single connection can span many GitLab projects. To route a project or group webhook to a specific connection, append `?nangoConnectionId=<connectionId>` to the Nango webhook URL when registering the hook in GitLab. Nango reads the [`X-Gitlab-Event`](https://docs.gitlab.com/user/project/integrations/webhook_events/) header as the event type. Configure a [signing token](https://docs.gitlab.com/user/project/integrations/webhooks/#signing-tokens) on the GitLab hook and store the same value as `webhookSecret` in the Nango connection's metadata. For GitLab versions before 19.0, configure a secret token and store it in the same metadata field; Nango falls back to validating `X-Gitlab-Token` when no signature is present.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-pat.mdx)</Note>
   </Tab>
@@ -86,4 +86,3 @@ description: 'Access the GitLab API in 2 minutes 💨'
 <Info>
     Questions? Join us in the [Slack community](https://nango.dev/slack).
 </Info>
-
