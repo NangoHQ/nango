@@ -5,14 +5,22 @@ import { Button } from '@nangohq/design-system';
 
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { Tag } from '@/components/ui/Tag';
 import { useApiGetAuditTrail } from '@/hooks/useAudit';
 import { useMeta } from '@/hooks/useMeta';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { last24hPreset, logsPresets } from '@/utils/logs';
+import { formatDateToLogFormat } from '@/utils/utils';
 
 import type { Period } from '@/utils/dates';
+import type { AuditOutcome } from '@nangohq/types';
+
+const outcomeVariant: Record<AuditOutcome, React.ComponentProps<typeof Tag>['variant']> = {
+    success: 'success',
+    failure: 'alert',
+    denied: 'warning'
+};
 
 export const AuditShow: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -47,34 +55,55 @@ export const AuditShow: React.FC = () => {
                 <title>Audit log - Nango</title>
             </Helmet>
 
-            <div key={env} className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl text-text-strong">Audit log</h2>
-                    <PeriodSelector isLive={false} period={period} onChange={(next) => setPeriod(next)} presets={logsPresets} defaultPreset={last24hPreset} />
+            <div key={env} className="flex flex-col gap-3">
+                <div className="flex gap-2 justify-between">
+                    {/* Left side is reserved for search + filters (status, actor, resource, …) added later. */}
+                    <div className="flex-1 min-w-0" />
+                    <div className="flex gap-2">
+                        <PeriodSelector isLive={false} period={period} onChange={(next) => setPeriod(next)} presets={logsPresets} defaultPreset={last24hPreset} />
+                    </div>
                 </div>
 
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Time</TableHead>
-                            <TableHead>Actor</TableHead>
-                            <TableHead>Action</TableHead>
-                            <TableHead>Target</TableHead>
-                            <TableHead>Outcome</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                {events.length > 0 && (
+                    <div className="flex items-center justify-end">
+                        <div className="text-text-muted text-body-small-regular">
+                            {events.length}
+                            {hasNextPage ? '+' : ''} {events.length === 1 && !hasNextPage ? 'event' : 'events'}
+                        </div>
+                    </div>
+                )}
+
+                <table className="w-full text-s text-text-strong">
+                    <thead>
+                        <tr className="border-b border-border-muted">
+                            <th className="px-4 py-2 text-left font-semibold">Time</th>
+                            <th className="px-4 py-2 text-left font-semibold">Actor</th>
+                            <th className="px-4 py-2 text-left font-semibold">Action</th>
+                            <th className="px-4 py-2 text-left font-semibold">Target</th>
+                            <th className="px-4 py-2 text-left font-semibold">Outcome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         {events.map((event) => (
-                            <TableRow key={event.id}>
-                                <TableCell>{new Date(event.occurredAt).toLocaleString()}</TableCell>
-                                <TableCell>{event.actor.display ?? `${event.actor.type} ${event.actor.id}`}</TableCell>
-                                <TableCell>{`${event.resource} ${event.action.replace(/_/g, ' ')}`}</TableCell>
-                                <TableCell>{event.targets.map((target) => target.display ?? `${target.type}:${target.id}`).join(', ') || '—'}</TableCell>
-                                <TableCell>{event.outcome}</TableCell>
-                            </TableRow>
+                            <tr
+                                key={event.id}
+                                className="text-text-muted border-b border-border-muted transition-colors hover:bg-surface-page hover:text-text-strong"
+                            >
+                                <td className="px-4 py-2.5 align-middle">
+                                    <div className="font-code text-s">{formatDateToLogFormat(event.occurredAt)}</div>
+                                </td>
+                                <td className="px-4 py-2.5 align-middle">{event.actor.display ?? `${event.actor.type} ${event.actor.id}`}</td>
+                                <td className="px-4 py-2.5 align-middle">{`${event.resource} ${event.action.replace(/_/g, ' ')}`}</td>
+                                <td className="px-4 py-2.5 align-middle">
+                                    {event.targets.map((target) => target.display ?? `${target.type}:${target.id}`).join(', ') || '—'}
+                                </td>
+                                <td className="px-4 py-2.5 align-middle">
+                                    <Tag variant={outcomeVariant[event.outcome]}>{event.outcome}</Tag>
+                                </td>
+                            </tr>
                         ))}
-                    </TableBody>
-                </Table>
+                    </tbody>
+                </table>
 
                 {isLoading && (
                     <div className="flex flex-col gap-2">
