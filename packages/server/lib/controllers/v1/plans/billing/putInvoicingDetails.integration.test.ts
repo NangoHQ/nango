@@ -124,6 +124,39 @@ describe(`PUT ${route}`, () => {
             expect(res.json.error.code).toBe('invalid_body');
         });
 
+        it('should reject more than 49 additional emails', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
+
+            const res = await api.fetch(route, {
+                method: 'PUT',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { ...validBody, additionalEmails: Array.from({ length: 50 }, (_, i) => `email${i}@acme.com`) }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
+
+        it('should reject a duplicate email between email and additionalEmails', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
+
+            const res = await api.fetch(route, {
+                method: 'PUT',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                // Case-only duplicate of the primary email.
+                body: { ...validBody, additionalEmails: ['BILLING@acme.com'] }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
+
         it('should reject extra params in query', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
@@ -196,6 +229,26 @@ describe(`PUT ${route}`, () => {
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
             expect(putCustomerSpy).toHaveBeenCalledWith(expect.any(Number), body);
+        });
+
+        it('should default additionalEmails to [] when omitted', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
+
+            // Simulates a caller on the prior single-email payload shape (e.g. a stale
+            // webapp bundle mid-deploy) — must keep working rather than 400 invalid_body.
+            const { additionalEmails: _additionalEmails, ...bodyWithoutAdditionalEmails } = validBody;
+            const res = await api.fetch(route, {
+                method: 'PUT',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                // @ts-expect-error omitting additionalEmails on purpose
+                body: bodyWithoutAdditionalEmails
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(putCustomerSpy).toHaveBeenCalledWith(expect.any(Number), validBody);
         });
 
         it('should allow null address and taxId', async () => {
