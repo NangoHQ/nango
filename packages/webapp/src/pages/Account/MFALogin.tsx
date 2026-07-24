@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useMFALoginVerification } from '@/hooks/useAuth';
@@ -20,11 +21,10 @@ export const MFALogin: React.FC = () => {
     const [useRecoveryCode, setUseRecoveryCode] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const verifyCode = async (value: string) => {
         setErrorMessage('');
         try {
-            const result = await verify(useRecoveryCode ? { type: 'recoveryCode', recoveryCode: code } : { type: 'code', code });
+            const result = await verify(useRecoveryCode ? { type: 'recoveryCode', recoveryCode: value } : { type: 'code', code: value });
             signin(result.data.user);
             navigate(result.data.url, { replace: true });
         } catch (err) {
@@ -35,6 +35,8 @@ export const MFALogin: React.FC = () => {
             }
         }
     };
+
+    const hasValidCode = useRecoveryCode ? code.length > 0 : /^\d{6}$/.test(code);
 
     return (
         <DefaultLayout className="gap-10">
@@ -53,19 +55,45 @@ export const MFALogin: React.FC = () => {
                     </Alert>
                 )}
             </div>
-            <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-5 w-full">
-                <InputGroup>
-                    <InputGroupInput
-                        value={code}
-                        onChange={(event) => setCode(event.target.value)}
-                        placeholder={useRecoveryCode ? 'Recovery code' : '123456'}
-                        aria-label={useRecoveryCode ? 'Recovery code' : 'Authenticator code'}
-                        autoComplete="one-time-code"
-                        inputMode={useRecoveryCode ? 'text' : 'numeric'}
-                        disabled={isPending}
-                    />
-                </InputGroup>
-                <Button type="submit" size="lg" loading={isPending} disabled={useRecoveryCode ? code.length === 0 : !/^\d{6}$/.test(code)}>
+            <form
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    void verifyCode(code);
+                }}
+                className="flex flex-col gap-5 w-full"
+            >
+                {useRecoveryCode ? (
+                    <InputGroup>
+                        <InputGroupInput
+                            value={code}
+                            onChange={(event) => setCode(event.target.value)}
+                            placeholder="Recovery code"
+                            aria-label="Recovery code"
+                            autoComplete="one-time-code"
+                            inputMode="text"
+                            disabled={isPending}
+                        />
+                    </InputGroup>
+                ) : (
+                    <div className="flex justify-center">
+                        <InputOTP
+                            maxLength={6}
+                            value={code}
+                            onChange={setCode}
+                            onComplete={(value: string) => void verifyCode(value)}
+                            disabled={isPending}
+                            aria-label="Authenticator code"
+                            autoFocus
+                        >
+                            <InputOTPGroup>
+                                {[0, 1, 2, 3, 4, 5].map((i) => (
+                                    <InputOTPSlot key={i} index={i} />
+                                ))}
+                            </InputOTPGroup>
+                        </InputOTP>
+                    </div>
+                )}
+                <Button type="submit" size="lg" loading={isPending} disabled={!hasValidCode}>
                     Verify and continue
                 </Button>
             </form>
