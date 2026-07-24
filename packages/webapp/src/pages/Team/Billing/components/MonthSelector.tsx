@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
@@ -10,23 +10,14 @@ import { useSelectedMonth } from '../useSelectedMonth';
 
 const EARLIEST_USAGE_MONTH_LABEL = new Date(EARLIEST_USAGE_MONTH_MS).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-interface MonthSelectorProps {
-    /** Notified whenever the selected month changes (backed by the shared `?month` param). */
-    onMonthChange?: (month: Date) => void;
-}
-
 /**
  * Month selector backed by the shared `?month` param (`useSelectedMonth`): chevron buttons flanking
  * a fixed-width month label (so the arrows don't shift between months), with the disabled "previous"
- * button surfacing the earliest-month tooltip. Used in both the paid usage page header and the Free
- * caps table header.
+ * button surfacing the earliest-month tooltip. Used in the usage section header on both Free and
+ * paid plans.
  */
-export const MonthSelector: React.FC<MonthSelectorProps> = ({ onMonthChange }) => {
+export const MonthSelector: React.FC = () => {
     const { selectedMonth, setSelectedMonth, canGoNext, canGoPrevious } = useSelectedMonth();
-
-    useEffect(() => {
-        onMonthChange?.(selectedMonth);
-    }, [selectedMonth, onMonthChange]);
 
     const monthDisplay = useMemo(() => selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }), [selectedMonth]);
 

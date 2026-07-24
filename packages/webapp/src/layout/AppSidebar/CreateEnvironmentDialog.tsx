@@ -3,9 +3,19 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import { Button, Input } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    Input
+} from '@nangohq/design-system';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { usePostEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
@@ -61,14 +71,14 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
-            <DialogContent className="gap-0 rounded border-border-default p-0 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.08)] sm:max-w-md">
+            <DialogContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
-                        <DialogHeader className="gap-2 p-4 text-left">
-                            <DialogTitle className="type-heading-sm">Create environment</DialogTitle>
+                        <DialogHeader>
+                            <DialogTitle>Create environment</DialogTitle>
                             <DialogDescription>Use it to switch between contexts like dev, staging, or production.</DialogDescription>
                         </DialogHeader>
-                        <div className="px-4 pb-4">
+                        <DialogBody>
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -81,8 +91,8 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
                                     </FormItem>
                                 )}
                             />
-                        </div>
-                        <DialogFooter className="border-t border-border-muted bg-surface-panel p-4">
+                        </DialogBody>
+                        <DialogFooter>
                             <DialogClose asChild>
                                 <Button variant="outline" size="sm">
                                     Cancel
