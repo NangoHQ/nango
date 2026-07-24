@@ -2,7 +2,15 @@ import { LogOut } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    Button
+} from '@nangohq/design-system';
 
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -118,44 +126,63 @@ export const InviteSignup: React.FC = () => {
         );
     }
 
+    const memberCount = `${inviteData.newTeamUsers} ${inviteData.newTeamUsers > 1 ? 'members' : 'member'}`;
+
+    if (isLogged) {
+        return (
+            <DefaultLayout className="gap-10">
+                <Helmet>
+                    <title>Join a team - Nango</title>
+                </Helmet>
+
+                <AlertDialog open onOpenChange={() => {}}>
+                    <AlertDialogContent size="sm" destructive>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{`Join ${inviteData.newTeam.name}'s team`}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {inviteData.invitedBy.name} has invited you to join their team{' '}
+                                <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({memberCount}). If you accept, you will permanently
+                                lose access to your existing team.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <Button variant="outline" size="sm" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
+                                Decline
+                            </Button>
+                            <Button variant="danger" size="sm" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
+                                Join new team
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </DefaultLayout>
+        );
+    }
+
     return (
         <DefaultLayout className="gap-10">
             <Helmet>
-                <title>Invitation Error - Nango</title>
+                <title>Join a team - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-5 items-center">
-                <h2 className="text-title-group text-text-strong">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
+                <h2 className="text-title-group text-text-strong">Join a team</h2>
 
                 <div className="flex flex-col gap-2 text-text-secondary text-body-medium-regular text-center">
                     <span>
                         {inviteData.invitedBy.name} has invited you to join their team:
                         <br />
-                        <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({inviteData.newTeamUsers}
-                        {inviteData.newTeamUsers > 1 ? ' members' : ' member'})
+                        <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({memberCount})
                     </span>
-
-                    {isLogged && <span> If you accept, you will permanently lose access to your existing team.</span>}
                 </div>
             </div>
 
-            {isLogged ? (
-                <div className="flex gap-2 items-center justify-center">
-                    <Button variant="outline" size="lg" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
-                        Decline
-                    </Button>
-                    <Button variant="danger" size="lg" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
-                        Join a different team
-                    </Button>
-                </div>
-            ) : (
-                <div className="flex flex-col gap-4 items-center w-full">
-                    <SignupForm invitation={inviteData.invitation} token={token} />
-                    <span className="text-body-medium-regular text-text-muted">
-                        Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
-                    </span>
-                </div>
-            )}
+            <div className="flex flex-col gap-4 items-center w-full">
+                <SignupForm invitation={inviteData.invitation} token={token} />
+                <span className="text-body-medium-regular text-text-muted">
+                    Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
+                </span>
+            </div>
         </DefaultLayout>
     );
 };
