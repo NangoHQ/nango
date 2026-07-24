@@ -67,12 +67,7 @@ CardContent.displayName = 'CardContent';
 
 /** Figma "Card Footer" — muted bg, top border + spacing/4 padding. */
 const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
-    <div
-        ref={ref}
-        data-slot="card-footer"
-        className={cn('flex items-center bg-surface-panel-muted border-t border-border-muted p-4', className)}
-        {...props}
-    />
+    <div ref={ref} data-slot="card-footer" className={cn('flex items-center bg-surface-panel-muted border-t border-border-muted p-4', className)} {...props} />
 ));
 CardFooter.displayName = 'CardFooter';
 
