@@ -26,6 +26,8 @@ import { server } from './server.js';
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 
 const mockSecretKey = 'secret-key';
 
@@ -41,16 +43,20 @@ interface testSeed {
 }
 
 describe('Persist API', () => {
-    const port = 3096;
-    const serverUrl = `http://localhost:${port}`;
+    let serverUrl: string;
     let seed: testSeed;
+    let httpServer: Server;
 
     beforeAll(async () => {
         await multipleMigrations();
         await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
-        server.listen(port);
+        httpServer = server.listen(0);
+        const address = await new Promise<AddressInfo>((resolve) => {
+            httpServer.once('listening', () => resolve(httpServer.address() as AddressInfo));
+        });
+        serverUrl = `http://localhost:${address.port}`;
 
         vi.spyOn(getFlags(), 'shouldUseLightPersistAuthContext').mockResolvedValue(true);
         vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
@@ -67,8 +73,8 @@ describe('Persist API', () => {
         });
     });
 
-    afterAll(async () => {
-        await clearDb();
+    afterAll(() => {
+        httpServer?.close();
     });
 
     it('should server /health', async () => {
@@ -865,15 +871,6 @@ const initDb = async () => {
         sync,
         syncJob
     };
-};
-
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-    await db.knex.raw(`CREATE SCHEMA nango`);
-    // The keystore migration tracker is in the 'migrations' schema and survives the drop.
-    // Clear it so migrateKeystore re-runs and recreates private_keys in the new nango schema.
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore_lock`).catch(() => {});
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore`).catch(() => {});
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {
