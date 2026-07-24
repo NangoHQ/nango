@@ -1,11 +1,18 @@
 import { metrics } from '@nangohq/utils';
 
-export type WebhookAdmissionRejectionReason = 'concurrency';
+export type WebhookAdmissionRejectionReason = 'concurrency' | 'pool_pressure';
 
 export interface WebhookAdmissionRejection {
     acquired: false;
     reason: WebhookAdmissionRejectionReason;
     retryAfterMs: number;
+}
+
+export interface WebhookAdmissionError {
+    error: {
+        message: string;
+        payload: WebhookAdmissionRejection;
+    };
 }
 
 export interface WebhookAdmissionPermit {
@@ -21,22 +28,44 @@ export interface WebhookAdmission {
 
 interface WebhookAdmissionOptions {
     maxConcurrency: number;
+    dbReserve: number;
+    getAvailableConnections: () => number;
     retryAfterMs: number;
+}
+
+export function resolveWebhookAdmissionLimits({ poolMax, maxConcurrency, dbReserve }: { poolMax: number; maxConcurrency: number; dbReserve: number }): {
+    maxConcurrency: number;
+    dbReserve: number;
+} {
+    const effectiveReserve = Math.min(dbReserve, Math.max(0, poolMax - 1));
+    return {
+        maxConcurrency: Math.min(maxConcurrency, poolMax - effectiveReserve),
+        dbReserve: effectiveReserve
+    };
 }
 
 export class WebhookAdmissionController implements WebhookAdmission {
     private readonly maxConcurrency: number;
+    private readonly dbReserve: number;
+    private readonly getAvailableConnections: () => number;
     private readonly retryAfterMs: number;
     private active = 0;
 
     constructor(options: WebhookAdmissionOptions) {
         this.maxConcurrency = options.maxConcurrency;
+        this.dbReserve = options.dbReserve;
+        this.getAvailableConnections = options.getAvailableConnections;
         this.retryAfterMs = options.retryAfterMs;
     }
 
     acquire(): WebhookAdmissionResult {
         if (this.active >= this.maxConcurrency) {
             return this.reject('concurrency');
+        }
+        const effectiveMax = Math.max(1, Math.min(this.maxConcurrency, this.getAvailableConnections() - this.dbReserve));
+        // Keep one bounded waiter so sustained core workload cannot starve webhook dispatch entirely.
+        if (this.active >= effectiveMax) {
+            return this.reject('pool_pressure');
         }
 
         this.active++;

@@ -2,11 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { WebhookAdmissionController } from './webhook-admission.js';
+import { resolveWebhookAdmissionLimits, WebhookAdmissionController } from './webhook-admission.js';
 
-function createController({ maxConcurrency = 2 } = {}) {
+function createController({ maxConcurrency = 2, dbReserve = 0, getAvailableConnections = () => Infinity } = {}) {
     const controller = new WebhookAdmissionController({
         maxConcurrency,
+        dbReserve,
+        getAvailableConnections,
         retryAfterMs: 1500
     });
     return controller;
@@ -28,6 +30,32 @@ describe('WebhookAdmissionController', () => {
             first.release();
         }
         expect(controller.acquire().acquired).toBe(true);
+    });
+
+    it('keeps one admission slot while the database reserve is under pressure', () => {
+        let availableConnections = 2;
+        const controller = createController({ dbReserve: 2, getAvailableConnections: () => availableConnections });
+
+        const first = controller.acquire();
+        expect(first.acquired).toBe(true);
+        expect(controller.acquire()).toEqual({ acquired: false, reason: 'pool_pressure', retryAfterMs: 1500 });
+
+        if (first.acquired) {
+            first.release();
+        }
+        availableConnections = 3;
+        expect(controller.acquire().acquired).toBe(true);
+    });
+
+    it('clamps configured limits while preserving one webhook connection', () => {
+        expect(resolveWebhookAdmissionLimits({ poolMax: 10, maxConcurrency: 7, dbReserve: 4 })).toEqual({
+            maxConcurrency: 6,
+            dbReserve: 4
+        });
+        expect(resolveWebhookAdmissionLimits({ poolMax: 10, maxConcurrency: 5, dbReserve: 20 })).toEqual({
+            maxConcurrency: 1,
+            dbReserve: 9
+        });
     });
 
     it('records admission decisions and in-flight state', () => {

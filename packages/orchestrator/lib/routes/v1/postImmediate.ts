@@ -6,7 +6,7 @@ import { validateRequest } from '@nangohq/utils';
 import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
-import type { WebhookAdmission, WebhookAdmissionRejection } from '../../webhook-admission.js';
+import type { WebhookAdmission, WebhookAdmissionError } from '../../webhook-admission.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
@@ -62,7 +62,7 @@ export type PostImmediate = Endpoint<{
         };
         args: JsonObject & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed' | 'duplicate_task_name' | 'webhook_admission_exceeded', undefined, WebhookAdmissionRejection>;
+    Error: ApiError<'immediate_failed' | 'duplicate_task_name'> | WebhookAdmissionError;
     Success: ImmediateSuccess;
 }>;
 
@@ -85,10 +85,8 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
         const admission = res.locals.parsedBody.args.type === 'webhook' ? webhookAdmission.acquire() : undefined;
         if (admission && !admission.acquired) {
-            res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
-            res.status(429).json({
+            res.status(529).json({
                 error: {
-                    code: 'webhook_admission_exceeded',
                     message: 'Webhook admission capacity is temporarily exhausted',
                     payload: admission
                 }

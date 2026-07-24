@@ -92,6 +92,7 @@ export const routeFetch = <E extends Endpoint<any>>(
                 return {
                     error: {
                         code: 'fetch_failed',
+                        status: res.status,
                         message: `${route.method} ${url} failed with status code ${res.status}`,
                         payload: json
                     }

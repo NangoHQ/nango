@@ -171,7 +171,7 @@ const envSchema = z.object({
     NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     ORCHESTRATOR_DATABASE_URL: z.url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
-    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
+    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(50),
     ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: z.coerce.number().optional().default(1000),
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
@@ -722,20 +722,7 @@ const envSchema = z.object({
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
-export const ENVS = envSchema.check((payload) => {
-    const envs = payload.value;
-    const availableWebhookConnections = envs.ORCHESTRATOR_DB_POOL_MAX - envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE;
-    if (envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY > availableWebhookConnections) {
-        payload.issues.push({
-            code: 'custom',
-            message:
-                `ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY (${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY}) must not exceed ` +
-                `ORCHESTRATOR_DB_POOL_MAX - ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE (${availableWebhookConnections})`,
-            path: ['ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY'],
-            input: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY
-        });
-    }
-});
+export const ENVS = envSchema;
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
     const res = schema.safeParse(envs);

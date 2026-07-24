@@ -3,6 +3,7 @@ import type { RunnerOutputError } from './runner/index.js';
 export interface ApiError<TCode extends string, TErrors = Error[] | ValidationError[] | undefined, TPayload = unknown> {
     error: {
         code: TCode;
+        status?: number | undefined;
         message?: string | undefined;
         errors?: TErrors;
         payload?: TPayload;
@@ -50,7 +51,7 @@ export interface EndpointDefinition {
     Headers?: Record<string, any>;
     Querystring?: Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    Error?: ApiError<any> | never;
+    Error?: { error: any } | never;
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     Success: Record<string, any> | never;
 }
@@ -99,7 +100,7 @@ export interface Endpoint<T extends EndpointDefinition> {
     /**
      * Response body (success + error)
      */
-    Reply: ResDefaultErrors | (T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success']);
+    Reply: ResDefaultErrors | (T['Error'] extends { error: any } ? T['Error'] | T['Success'] : T['Success']);
 }
 
 export interface ErrorPayload {

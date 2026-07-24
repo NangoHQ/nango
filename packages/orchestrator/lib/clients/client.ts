@@ -69,14 +69,16 @@ export class OrchestratorClient {
             retryConfig: {
                 maxAttempts: 3,
                 delayMs: 50,
-                retryIf: (res) => 'error' in res && getWebhookAdmissionError(res.error.payload) === null
+                retryIf: (res) => 'error' in res && getWebhookAdmissionError(getResponseStatus(res.error), res.error.payload) === null
             }
         })({ body: props });
         if ('error' in res) {
-            const admission = getWebhookAdmissionError(res.error.payload);
+            const status = getResponseStatus(res.error);
+            const admission = getWebhookAdmissionError(status, res.error.payload);
             if (admission) {
                 return Err({
-                    name: 'webhook_admission_exceeded',
+                    name: getResponseCode(res.error),
+                    status: 529,
                     message: admission.message,
                     payload: admission.payload
                 });
@@ -92,7 +94,7 @@ export class OrchestratorClient {
             }
 
             return Err({
-                name: res.error.code,
+                name: getResponseCode(res.error),
                 message: res.error.message || `Error scheduling immediate task`,
                 payload: { ...props, response: res.error.payload as any }
             });
@@ -341,11 +343,27 @@ export class OrchestratorClient {
             };
         });
 
-        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+        const res = await this.routeFetch(postImmediateBatchRoute, {
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res && getWebhookAdmissionError(getResponseStatus(res.error), res.error.payload) === null
+            }
+        })({ body: { tasks: entries } });
 
         if ('error' in res) {
+            const status = getResponseStatus(res.error);
+            const admission = getWebhookAdmissionError(status, res.error.payload);
+            if (admission) {
+                return Err({
+                    name: getResponseCode(res.error),
+                    status: 529,
+                    message: admission.message,
+                    payload: admission.payload
+                });
+            }
             return Err({
-                name: res.error.code,
+                name: getResponseCode(res.error),
                 message: res.error.message || 'Error scheduling immediate batch',
                 payload: { response: res.error.payload as any }
             });
@@ -612,18 +630,35 @@ export class OrchestratorClient {
     }
 }
 
-function getWebhookAdmissionError(payload: unknown): { message: string; payload: JsonValue } | null {
-    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+function getWebhookAdmissionError(status: number | undefined, payload: unknown): { message: string; payload: JsonValue } | null {
+    if (status !== 529) {
         return null;
     }
+    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+        return { message: 'Webhook admission capacity is temporarily exhausted', payload: {} };
+    }
     const error = payload.error;
-    if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'webhook_admission_exceeded') {
-        return null;
+    if (!error || typeof error !== 'object') {
+        return { message: 'Webhook admission capacity is temporarily exhausted', payload: {} };
     }
     return {
         message: 'message' in error && typeof error.message === 'string' ? error.message : 'Webhook admission capacity is temporarily exhausted',
         payload: 'payload' in error ? (error.payload as JsonValue) : {}
     };
+}
+
+function getResponseStatus(error: unknown): number | undefined {
+    if (!error || typeof error !== 'object' || !('status' in error)) {
+        return undefined;
+    }
+    return typeof error.status === 'number' ? error.status : undefined;
+}
+
+function getResponseCode(error: unknown): string {
+    if (!error || typeof error !== 'object' || !('code' in error)) {
+        return 'fetch_failed';
+    }
+    return typeof error.code === 'string' ? error.code : 'fetch_failed';
 }
 
 function getDuplicateTaskNameMessage(payload: unknown): string | null {

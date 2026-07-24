@@ -4,7 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
-import type { WebhookAdmission, WebhookAdmissionRejection } from '../../webhook-admission.js';
+import type { WebhookAdmission, WebhookAdmissionError } from '../../webhook-admission.js';
 import type { ImmediateSuccess } from './postImmediate.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -26,7 +26,7 @@ export type PostImmediateBatch = Endpoint<{
     Body: {
         tasks: ImmediateInput[];
     };
-    Error: ApiError<'immediate_batch_failed' | 'invalid_request' | 'webhook_admission_exceeded', undefined, WebhookAdmissionRejection>;
+    Error: ApiError<'immediate_batch_failed' | 'invalid_request'> | WebhookAdmissionError;
     Success: { results: ImmediateBatchResult[] };
 }>;
 
@@ -67,10 +67,8 @@ const handler = (scheduler: Scheduler, webhookAdmission: WebhookAdmission) => {
         const entries = res.locals.parsedBody.tasks;
         const admission = entries.some((entry) => entry.args.type === 'webhook') ? webhookAdmission.acquire() : undefined;
         if (admission && !admission.acquired) {
-            res.setHeader('Retry-After', Math.ceil(admission.retryAfterMs / 1000));
-            res.status(429).json({
+            res.status(529).json({
                 error: {
-                    code: 'webhook_admission_exceeded',
                     message: 'Webhook admission capacity is temporarily exhausted',
                     payload: admission
                 }

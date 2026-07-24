@@ -87,12 +87,11 @@ describe('OrchestratorClient immediate', () => {
             new Response(
                 JSON.stringify({
                     error: {
-                        code: 'webhook_admission_exceeded',
                         message: 'busy',
                         payload: { acquired: false, reason: 'concurrency', retryAfterMs: 1200 }
                     }
                 }),
-                { status: 429, headers: { 'content-type': 'application/json' } }
+                { status: 529, headers: { 'content-type': 'application/json' } }
             )
         );
         vi.stubGlobal('fetch', fetchMock);
@@ -103,7 +102,8 @@ describe('OrchestratorClient immediate', () => {
         expect(res.isErr()).toBe(true);
         if (res.isErr()) {
             expect(res.error).toMatchObject({
-                name: 'webhook_admission_exceeded',
+                name: 'fetch_failed',
+                status: 529,
                 message: 'busy',
                 payload: { reason: 'concurrency', retryAfterMs: 1200 }
             });
@@ -222,5 +222,34 @@ describe('OrchestratorClient executeWebhookBatch', () => {
 
         expect(res.isOk()).toBe(true);
         expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('returns batch admission overload without retrying', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    error: {
+                        message: 'busy',
+                        payload: { acquired: false, reason: 'pool_pressure', retryAfterMs: 1200 }
+                    }
+                }),
+                { status: 529, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({
+                name: 'fetch_failed',
+                status: 529,
+                message: 'busy',
+                payload: { reason: 'pool_pressure', retryAfterMs: 1200 }
+            });
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 });
