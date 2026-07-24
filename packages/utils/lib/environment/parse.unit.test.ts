@@ -16,7 +16,34 @@ describe('parse', () => {
 
     it('should have some default', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
+        expect(res).toMatchObject({
+            NANGO_DB_SSL: false,
+            NANGO_PERSIST_PORT: 3007,
+            NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: 500,
+            NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: 100,
+            NANGO_TASK_DISPATCH_ADAPTIVE_LATENCY_TAU_MS: 10_000,
+            NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO: 0.2,
+            NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS: 500
+        });
+    });
+
+    it('should allow disabling latency-based poll delays while retaining admission backoff', () => {
+        const res = parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: '0' });
+        expect(res.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS).toBe(0);
+    });
+
+    it('should reject an adaptive poll jitter ratio above one', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO: '1.1' })).toThrow();
+    });
+
+    it('should allow disabling generic failure backoff', () => {
+        const res = parseEnvs(ENVS, { NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS: '0' });
+        expect(res.NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS).toBe(0);
+    });
+
+    it('should reject invalid adaptive polling timing', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_LATENCY_TAU_MS: '0' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS: '-1' })).toThrow();
     });
 
     it('should parse the sandbox compiler template', () => {
@@ -372,8 +399,8 @@ describe('parse', () => {
             expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: '21' })).toThrow();
         });
 
-        it('should reject NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS outside [0,43200]', () => {
-            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '-1' })).toThrow();
+        it('should reject NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS outside [1,43200]', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '0' })).toThrow();
             expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '43201' })).toThrow();
         });
 

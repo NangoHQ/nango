@@ -83,6 +83,10 @@ export enum Types {
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
+    WEBHOOK_DISPATCH_ORCHESTRATOR_LATENCY_MS = 'nango.webhook.dispatch_queue.orchestrator_latency_ms',
+    WEBHOOK_DISPATCH_POLL_DELAY_MS = 'nango.webhook.dispatch_queue.poll_delay_ms',
+    WEBHOOK_DISPATCH_POLL_LATENCY_PRESSURE = 'nango.webhook.dispatch_queue.poll_latency_pressure',
+    WEBHOOK_DISPATCH_POLL_BACKOFF = 'nango.webhook.dispatch_queue.poll_backoff',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',

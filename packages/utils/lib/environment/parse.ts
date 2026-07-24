@@ -686,11 +686,18 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_DLQ_URL: z.url().optional(),
     NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
-    NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
+    NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().int().positive().max(43200).optional().default(30),
     // Number of parallel SQS poll loops. Each in-flight batch holds one orchestrator DB session,
     // so peak orchestrator connections from webhook dispatch ≈ jobs_replicas × this. Keep it well
     // under ORCHESTRATOR_DB_POOL_MAX so bulk webhook ingress can't starve the orchestrator's core work.
     NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    // Per-pod pacing ceiling. Zero disables latency-based delay, but explicit admission backoff is still honored.
+    NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: z.coerce.number().int().nonnegative().optional().default(500),
+    // Start pacing above the normal postImmediateBatch tail latency.
+    NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: z.coerce.number().int().positive().optional().default(100),
+    NANGO_TASK_DISPATCH_ADAPTIVE_LATENCY_TAU_MS: z.coerce.number().int().positive().optional().default(10_000),
+    NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO: z.coerce.number().min(0).max(1).optional().default(0.2),
+    NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS: z.coerce.number().int().nonnegative().optional().default(500),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
