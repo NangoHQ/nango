@@ -184,13 +184,18 @@ async function runMigrationsOnce() {
         // which does its own check-then-create of this table (not a tracked knex migration) the
         // first time any file imports it. Doing that once here, ahead of any test file, avoids
         // every fork racing to CREATE TABLE the same table concurrently.
+        //
+        // knex/tablename/sidfieldname must stay identical to auth.client.ts's sessionStore, or
+        // this pre-creation stops covering it. disableDbCleanup is the one intentional difference:
+        // it stops the store from scheduling its recurring expired-session delete in this process
+        // (we only want the table created).
         const [{ default: connectSessionKnex }, { default: session }, { default: db }] = await Promise.all([
             import('connect-session-knex'),
             import('express-session'),
             import('@nangohq/database')
         ]);
         const KnexSessionStore = connectSessionKnex(session);
-        const store = new KnexSessionStore({ knex: db.knex, tablename: '_nango_sessions', sidfieldname: 'sid' });
+        const store = new KnexSessionStore({ knex: db.knex, tablename: '_nango_sessions', sidfieldname: 'sid', disableDbCleanup: true });
         await store.ready;
     });
 }
