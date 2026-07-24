@@ -36,8 +36,9 @@ Copy the **entire SCIM endpoint URL** exactly as shown by the wizard, along with
 Once you have your **SCIM Endpoint** and **SCIM Token**:
 
 1. Open the form where you need to authenticate with ChatGPT Enterprise.
-2. Enter your **SCIM Endpoint** and **SCIM Token** in the designated fields.
-3. Submit the form, and you should be successfully authenticated.
+2. In the **SCIM Endpoint** field, enter the endpoint **without the `https://` prefix** — the form adds it for you (e.g. `api.workos.com/scim/v2.0/acme`, not `https://api.workos.com/scim/v2.0/acme`).
+3. Enter your **SCIM Token** in the designated field.
+4. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/chatgpt-enterprise/form.png" style={{maxWidth: "450px" }}/>
 

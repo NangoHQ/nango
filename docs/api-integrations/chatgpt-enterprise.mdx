@@ -16,13 +16,13 @@ Connect to ChatGPT Enterprise with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your SCIM endpoint and SCIM token. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the ChatGPT Enterprise API">
-    Let's list the users provisioned in your workspace. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's list the users provisioned in your workspace. Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/Users" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to ChatGPT Enterprise with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/Users',
