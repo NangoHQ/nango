@@ -33,12 +33,17 @@ const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
+    '/api/v1/audit-trail',
     '/api/v1/user',
     '/api/v1/user/name',
     '/api/v1/user/password',
     '/api/v1/signin',
     '/api/v1/invite/:id',
     '/api/v1/account/onboarding/hear-about-us',
+    '/api/v1/account/mfa',
+    '/api/v1/account/mfa/enroll',
+    '/api/v1/account/mfa/activate',
+    '/api/v1/account/mfa/recovery-codes',
     '/api/v1/plain'
 ];
 

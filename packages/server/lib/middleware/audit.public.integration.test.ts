@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { audit } from '@nangohq/audit';
 import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
+import { audit } from '../audit.js';
 import { isSuccess, runServer } from '../utils/tests.js';
 
 import type { MockInstance } from 'vitest';

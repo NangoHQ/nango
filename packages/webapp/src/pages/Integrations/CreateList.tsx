@@ -6,10 +6,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Badge, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton.js';
 import { useStore } from '@/store';
 import { useProviders } from '../../hooks/useProviders.js';
@@ -200,7 +199,7 @@ const Provider = ({
             <div className="inline-flex gap-1.5 items-center justify-end">
                 <AuthBadge authMode={provider.authMode} />
                 {provider.categories?.map((category) => (
-                    <Badge key={category} variant="ghost" className="uppercase">
+                    <Badge key={category} case="capitalize">
                         {category}
                     </Badge>
                 ))}

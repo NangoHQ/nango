@@ -1,0 +1,91 @@
+---
+title: 'YouCanBookMe (Public)'
+sidebarTitle: 'YouCanBookMe (Public)'
+description: 'Integrate your application with the unauthenticated YouCanBookMe booking API'
+---
+
+## 🚀 Quickstart
+
+Connect to YouCanBookMe's public booking API with Nango — no credentials required beyond your booking page's subdomain.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _YouCanBookMe (Public)_.
+    </Step>
+    <Step title="Authorize YouCanBookMe (Public)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your booking page subdomain. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the YouCanBookMe API">
+    Let's make your first request to the YouCanBookMe API (create a booking intent). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and your subdomain:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/intents" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "subdomain": "<YOUR-SUBDOMAIN>"
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v1/intents',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                subdomain: '<YOUR-SUBDOMAIN>'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch the connection's subdomain with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 YouCanBookMe (Public) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/youcanbook-me-public/connect)
+  Finding your booking page subdomain
+
+Official docs: [YouCanBookMe API docs](https://developer.youcanbook.me/)
+
+## 🧩 Pre-built syncs & actions for YouCanBookMe (Public)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/youcanbook-me-public/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- **There is no authentication for this API** — the booking-intent endpoints (availability, booking, cancellation, rescheduling) are public. For the authenticated/admin side of the API (e.g. `/v1/profiles`), use the separate [YouCanBookMe](/api-integrations/youcanbook-me) integration, which uses Basic auth (Account ID + API key).
+
+---

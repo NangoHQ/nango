@@ -2634,6 +2634,99 @@ databricks-account:
 databricks-workspace:
     - all-apis
 
+# source: https://docs.datadoghq.com/api/latest/scopes/
+datadog-oauth:
+    - apm_api_catalog_read
+    - apm_api_catalog_write
+    - apm_read
+    - apm_service_catalog_read
+    - apm_service_catalog_write
+    - billing_read
+    - bits_investigations_read
+    - bits_investigations_write
+    - built_in_features
+    - cases_read
+    - cases_shared_settings_write
+    - cases_write
+    - ci_visibility_read
+    - cloud_cost_management_read
+    - cloud_cost_management_write
+    - code_analysis_read
+    - code_coverage_read
+    - create_webhooks
+    - dashboards_embed_share
+    - dashboards_invite_share
+    - dashboards_public_share
+    - dashboards_read
+    - dashboards_write
+    - data_observability_monitors_write
+    - error_tracking_read
+    - error_tracking_write
+    - event_correlation_config_read
+    - event_correlation_config_write
+    - events_read
+    - hosts_read
+    - incident_notification_settings_read
+    - incident_notification_settings_write
+    - incident_read
+    - incident_settings_write
+    - incident_write
+    - integrations
+    - integrations_read
+    - logs_modify_indexes
+    - logs_read_index_data
+    - manage_integrations
+    - metric_tags_write
+    - metrics_read
+    - monitors_downtime
+    - monitors_read
+    - monitors_write
+    - org_authorized_apps_read
+    - org_authorized_apps_write
+    - org_connections_read
+    - org_connections_write
+    - org_management
+    - security_monitoring_critical_assets_read
+    - security_monitoring_critical_assets_write
+    - security_monitoring_filters_read
+    - security_monitoring_filters_write
+    - security_monitoring_findings_read
+    - security_monitoring_findings_write
+    - security_monitoring_notification_profiles_write
+    - security_monitoring_rules_read
+    - security_monitoring_rules_write
+    - security_monitoring_signals_read
+    - security_monitoring_signals_write
+    - security_monitoring_suppressions_read
+    - security_monitoring_suppressions_write
+    - siem_entities_read
+    - slos_corrections
+    - slos_read
+    - slos_write
+    - status_pages_incident_write
+    - status_pages_internal_page_publish
+    - status_pages_public_page_publish
+    - status_pages_settings_read
+    - status_pages_settings_write
+    - synthetics_global_variable_read
+    - synthetics_global_variable_write
+    - synthetics_private_location_read
+    - synthetics_private_location_write
+    - synthetics_read
+    - synthetics_write
+    - teams_manage
+    - teams_read
+    - test_optimization_read
+    - test_optimization_settings_write
+    - test_optimization_write
+    - timeseries_query
+    - usage_read
+    - user_access_invite
+    - user_access_manage
+    - user_access_read
+    - workflows_read
+    - workflows_run
+
 # source: https://developer.datev.de/en/guides/authentication (no comprehensive scopes list or discovery endpoint found)
 datev:
     - account_id
@@ -4763,6 +4856,16 @@ hubspot:
     - timeline
     - transactional-email
 
+# source: https://account.hubstaff.com/.well-known/openid-configuration (scopes_supported)
+hubstaff:
+    - email
+    - hubstaff:read
+    - hubstaff:write
+    - openid
+    - profile
+    - tasks:read
+    - tasks:write
+
 # source: https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions
 instagram:
     - user_media
@@ -6285,6 +6388,11 @@ microsoft-excel:
     - openid
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-excel-oauth2-cc:
+    - https://graph.microsoft.com/.default
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml base_url (Microsoft client credentials resource scope pattern)
 microsoft-oauth2-cc:
     - https://graph.microsoft.com/.default
@@ -6620,6 +6728,11 @@ microsoft-power-bi:
     - Workspace.ReadWrite.All
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Power BI's required OAuth resource/audience is analysis.windows.net, a separate identifier from the api.powerbi.com REST host it's used to call; still current, no newer replacement)
+microsoft-power-bi-oauth2-cc:
+    - https://analysis.windows.net/powerbi/api/.default
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
 microsoft-powerpoint:
     - AuditLogsQuery-OneDrive.Read.All
@@ -6670,6 +6783,11 @@ microsoft-powerpoint:
     - UserAuthMethod-Email.ReadWrite.All
     - VerifiedId-Profile.Read.All
     - VerifiedId-Profile.ReadWrite.All
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-powerpoint-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
@@ -8043,6 +8161,11 @@ microsoft-word:
     - UserAuthMethod-Email.ReadWrite.All
     - VerifiedId-Profile.Read.All
     - VerifiedId-Profile.ReadWrite.All
+
+# source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
+# source: providers.yaml base_url (Microsoft client credentials resource scope pattern; alias of microsoft-oauth2-cc, proxies Microsoft Graph)
+microsoft-word-oauth2-cc:
+    - https://graph.microsoft.com/.default
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 mimecast: []

@@ -160,7 +160,7 @@ const publicAPITelemetryCors = cors({
     exposedHeaders: 'content-type',
     allowedHeaders: 'Authorization, Content-type',
     methods: 'POST',
-    origin: connectUrl
+    origin: new URL(connectUrl).origin
 });
 publicAPI.options('/connect/telemetry', publicAPITelemetryCors);
 publicAPI.use('/', publicAPICorsHandler);

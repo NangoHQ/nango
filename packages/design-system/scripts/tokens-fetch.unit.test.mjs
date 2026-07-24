@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, rmSync, writeFileSync } from 'fs';
+import os from 'os';
+import path from 'path';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
     buildCss,
@@ -7,7 +11,8 @@ import {
     buildPrimitivesThemeBlock,
     buildTailwindThemeBlock,
     buildTypographyBlock,
-    formatTokenValue
+    formatTokenValue,
+    resolveTokens
 } from './tokens-fetch.mjs';
 
 // ─── formatTokenValue ──────────────────────────────────────────────────────────
@@ -270,5 +275,86 @@ describe('buildCss', () => {
 
     it('lists the sets it did find in the error message', async () => {
         await expect(buildCss({ Primitives: {}, 'Semantic/Light': {} })).rejects.toThrow(/Found: Primitives, Semantic\/Light/);
+    });
+});
+
+// ─── resolveTokens — strict flag ──────────────────────────────────────────────
+
+describe('resolveTokens — strict flag', () => {
+    let tmpDir;
+
+    // Token files used across tests:
+    //   valid.json   — one color token with a resolvable self-reference alias
+    //   broken.json  — one good token + one pointing to a non-existent alias
+
+    beforeEach(() => {
+        tmpDir = path.join(os.tmpdir(), `ds-test-${Date.now()}`);
+        mkdirSync(tmpDir, { recursive: true });
+
+        writeFileSync(
+            path.join(tmpDir, 'valid.json'),
+            JSON.stringify({
+                color: {
+                    blue: { $value: '#3b82f6', $type: 'color' }
+                },
+                text: {
+                    primary: { $value: '{color.blue}', $type: 'color' }
+                }
+            })
+        );
+
+        writeFileSync(
+            path.join(tmpDir, 'broken.json'),
+            JSON.stringify({
+                color: {
+                    blue: { $value: '#3b82f6', $type: 'color' }
+                },
+                text: {
+                    primary: { $value: '{color.blue}', $type: 'color' },
+                    muted: { $value: '{nonexistent.token}', $type: 'color' }
+                }
+            })
+        );
+    });
+
+    afterEach(() => {
+        rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    it('resolves valid aliases in non-strict mode', async () => {
+        const tokens = await resolveTokens({ sourceFiles: [path.join(tmpDir, 'valid.json')] });
+        const names = tokens.map((t) => t.path.join('.'));
+        expect(names).toContain('color.blue');
+        expect(names).toContain('text.primary');
+    });
+
+    it('skips unresolved aliases and warns in non-strict mode (default)', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        try {
+            const tokens = await resolveTokens({ sourceFiles: [path.join(tmpDir, 'broken.json')] });
+            // The broken token should be silently dropped
+            const names = tokens.map((t) => t.path.join('.'));
+            expect(names).not.toContain('text.muted');
+            // Valid tokens still present
+            expect(names).toContain('color.blue');
+            expect(names).toContain('text.primary');
+            // A warning was emitted
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('text.muted'));
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('{nonexistent.token}'));
+        } finally {
+            warnSpy.mockRestore();
+        }
+    });
+
+    it('throws on unresolved aliases in strict mode', async () => {
+        await expect(
+            resolveTokens({ sourceFiles: [path.join(tmpDir, 'broken.json')], strict: true })
+        ).rejects.toThrow(/Unresolved token alias: text\.muted → \{nonexistent\.token\}/);
+    });
+
+    it('does not throw for a fully resolved token set in strict mode', async () => {
+        await expect(
+            resolveTokens({ sourceFiles: [path.join(tmpDir, 'valid.json')], strict: true })
+        ).resolves.not.toThrow();
     });
 });
