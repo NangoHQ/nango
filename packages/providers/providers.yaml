@@ -3152,16 +3152,6 @@ bigchange:
             example: '5690'
             pattern: '^[0-9]+$'
             doc_section: '#step-2-find-your-bigchange-customer-id'
-    credentials:
-        client_id:
-            type: string
-            title: Client ID
-            description: Your BigChange Partner API client_id.
-        client_secret:
-            type: string
-            title: Client Secret
-            description: Your BigChange Partner API client_secret.
-            secret: true
 
 bigcommerce:
     display_name: BigCommerce
