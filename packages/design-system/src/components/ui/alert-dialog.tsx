@@ -92,7 +92,10 @@ const AlertDialogContent = React.forwardRef<React.ElementRef<typeof AlertDialogP
                         className={cn(
                             'bg-surface-overlay border-ds-1 border-border-default rounded-ds-sm shadow-container-sheet',
                             'fixed top-[50%] left-[50%] z-50 flex w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] flex-col overflow-hidden',
-                            size === 'sm' ? 'sm:max-w-80' : 'sm:max-w-96',
+                            // Width is content-driven within a range: floor keeps the Figma default for short
+                            // dialogs, ceiling lets it grow for long footer labels (e.g. a verbose danger action)
+                            // instead of clipping under the fixed width.
+                            size === 'sm' ? 'sm:max-w-80' : 'sm:w-fit sm:min-w-96 sm:max-w-lg',
                             'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200',
                             className
                         )}
@@ -134,6 +137,9 @@ export interface AlertDialogHeaderProps extends React.ComponentProps<'div'> {
 /**
  * Media + title/description (Figma "_AlertDialogHeader"). Layout follows the content `size`:
  * `default` lays the icon beside the text; `sm` stacks and centers them.
+ *
+ * The `default` header is capped at the base width so its text wraps at the default measure and
+ * never drives the content wider — only a long footer label grows the dialog (see AlertDialogContent).
  */
 const AlertDialogHeader = React.forwardRef<HTMLDivElement, AlertDialogHeaderProps>(({ className, icon, children, ...props }, ref) => {
     const { size } = useAlertDialogContext();
@@ -141,7 +147,7 @@ const AlertDialogHeader = React.forwardRef<HTMLDivElement, AlertDialogHeaderProp
         <div
             ref={ref}
             data-slot="alert-dialog-header"
-            className={cn('flex p-4', size === 'sm' ? 'flex-col items-center gap-3.5' : 'items-start gap-4', className)}
+            className={cn('flex p-4', size === 'sm' ? 'flex-col items-center gap-3.5' : 'items-start gap-4 sm:max-w-96', className)}
             {...props}
         >
             {icon != null && <AlertDialogMedia>{icon}</AlertDialogMedia>}
