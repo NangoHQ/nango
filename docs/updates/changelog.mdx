@@ -4,6 +4,45 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Management MCP server (Beta)" description="July 16, 2026">
+  Nango now hosts a Management MCP server at `https://mcp.nango.dev/mcp` that lets MCP-compatible clients, like Claude Code or Cursor, work with your Nango account through tools.
+
+  The first tools cover logs, so an agent can investigate failing syncs or actions by querying your Nango logs directly:
+
+  - **`logs_list_operations`:** List and filter log operations.
+  - **`logs_get_operation`:** Get an operation and its log messages.
+
+  Authenticate with a Nango API key sent as a Bearer token. The logs tools require the `environment:logs:read` scope. More tools are on the way, with the goal of supporting the full public API.
+
+  Learn more in the [Management MCP reference](/reference/backend/management-mcp) and the [coding agent setup page](/getting-started/coding-agent-setup#management-mcp-server-beta).
+
+  ![Claude Code querying Nango logs through the Management MCP server](/images/changelog/nango-management-mcp-logs.png)
+</Update>
+---
+
+<Update label="Editable connection tags and metadata" description="July 16, 2026">
+  Connection tags and metadata are now editable from a connection's Auth tab in the dashboard. Previously, updating them required an API call.
+
+  - **Tags:** Add, edit, or remove a connection's key/value tags.
+  - **Metadata:** Edit the metadata JSON in place. Saving overwrites the connection's existing metadata.
+
+  See the [connection tags, configuration & metadata guide](/guides/auth/connection-tags-configuration-metadata) for how these fields work.
+
+  ![Editing tags and connection metadata on the connection page](/images/changelog/editing-tags-connection-metadata.png)
+</Update>
+---
+
+<Update label="CIMD support for MCP auth" description="July 9, 2026">
+  Nango now supports Client ID Metadata Documents (CIMD) when connecting users to MCP servers through the generic MCP integration. Nango hosts a client metadata document for each integration and uses its URL as the OAuth client ID, so no client registration step is needed. CIMD is used automatically when a server supports it, with dynamic client registration (DCR) as the fallback.
+
+  - **Connect to more MCP servers:** The MCP spec now prefers CIMD over DCR, so your users can connect to servers that only support CIMD.
+  - **More reliable auth flows:** Connecting no longer depends on a registration call that can fail or leave stale client records on the server.
+  - **Your branding on the authorization screen:** The hosted document is built from your integration's OAuth client name, URI, and logo.
+
+  Learn more in the [generic MCP provider docs](/integrations/all/mcp-generic) and the [MCP auth guide](/guides/auth/mcp-auth).
+</Update>
+---
+
 <Update label="June 2026 roundup" description="July 1, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in June">
@@ -1037,7 +1076,7 @@ description: "Important developer & product updates, including deprecations & br
       - [Google Workspace Admin](/api-integrations/google-workspace-admin)
       - [Google Service Account](/integrations/all/google-service-account)
       - [Hover](/integrations/all/hover)
-      - [Jobber](/integrations/all/jobber)
+      - [Jobber](/api-integrations/jobber)
       - [Kintone](/integrations/all/kintone)
       - [Kintone User API](/integrations/all/kintone-user-api)
       - [Pax8](/integrations/all/pax8)

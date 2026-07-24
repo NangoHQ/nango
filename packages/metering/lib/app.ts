@@ -6,7 +6,7 @@ import { billing } from '@nangohq/billing';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
-import { initSentry, once, report } from '@nangohq/utils';
+import { once, report } from '@nangohq/utils';
 
 import { billingEventsS3DLQMonitorCron } from './crons/billingEventsS3DLQMonitor.js';
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
@@ -27,8 +27,6 @@ try {
         logger.error('Received uncaughtException...', err);
         report(err);
     });
-
-    initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
     await initializeFeatureFlags();
 
