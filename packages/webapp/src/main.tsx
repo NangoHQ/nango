@@ -10,8 +10,16 @@ if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
         api_host: globalEnv.publicPosthogHost,
         mask_personal_data_properties: true,
+        // The dashboard renders customer-supplied data that can contain PHI (NAN-6428):
+        // mask all text by default, opt Nango-owned static chrome out with data-ph-unmask.
+        mask_all_text: true,
+        mask_all_element_attributes: true,
         session_recording: {
-            maskAllInputs: true
+            maskAllInputs: true,
+            // rrweb matches maskTextSelector against ancestors too, so a :not() opt-out can
+            // never apply (body always matches). Mask everything, unmask via maskTextFn.
+            maskTextSelector: '*',
+            maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*'))
         }
     });
 }
