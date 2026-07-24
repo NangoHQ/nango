@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button, Card, CardContent, CardHeader, CardTitle, Input } from '@nangohq/design-system';
+import { Button, Input } from '@nangohq/design-system';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
+import { InvoicingEmailsField } from './InvoicingEmailsField';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 
 import type { BillingCustomer } from '@nangohq/types';
@@ -40,7 +41,7 @@ const taxIdSchema = z.object({
 
 const schema = z.object({
     legalEntityName: z.string().min(1, 'Required'),
-    email: z.string().email('Valid email required'),
+    emails: z.array(z.string().email('Invalid email address')).min(1, 'At least one billing email required'),
     address: addressSchema.nullable(),
     taxId: taxIdSchema.nullable()
 });
@@ -50,7 +51,7 @@ export type InvoicingFormData = z.infer<typeof schema>;
 function toFormData(customer: BillingCustomer): InvoicingFormData {
     return {
         legalEntityName: customer.invoicingDetails.legalEntityName,
-        email: customer.invoicingDetails.email,
+        emails: [customer.invoicingDetails.email, ...customer.invoicingDetails.additionalEmails],
         address: customer.invoicingDetails.address ? { ...customer.invoicingDetails.address, country: customer.invoicingDetails.address.country ?? '' } : null,
         taxId: customer.invoicingDetails.taxId
     };
@@ -74,7 +75,13 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
 
     const onSubmit = async (data: InvoicingFormData) => {
         try {
-            await putAsync({ legalEntityName: data.legalEntityName, email: data.email, address: data.address, taxId: data.taxId });
+            await putAsync({
+                legalEntityName: data.legalEntityName,
+                email: data.emails[0]!,
+                additionalEmails: data.emails.slice(1),
+                address: data.address,
+                taxId: data.taxId
+            });
             toast({ title: 'Invoicing details updated', variant: 'success' });
         } catch {
             toast({ title: 'Failed to update invoicing details', variant: 'error' });
@@ -83,7 +90,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
 
     if (!customer) {
         return (
-            <div className="flex flex-col gap-3">
+            <div className="border-t border-border-muted p-4 flex flex-col gap-3">
                 <Skeleton className="w-40 h-5" />
                 <Skeleton className="w-full h-9" />
                 <Skeleton className="w-full h-9" />
@@ -93,51 +100,30 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Billing information</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex flex-row items-start gap-5 [&>*]:flex-1">
-                            <FormField
-                                control={form.control}
-                                name="legalEntityName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="flex gap-1 items-center">
-                                            Legal entity name <span className="text-text-danger">*</span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Acme Inc." {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="flex gap-1 items-center">
-                                            Billing email <span className="text-text-danger">*</span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input type="email" placeholder="billing@company.com" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="border-t border-border-muted p-4 flex flex-row items-start gap-5 [&>*]:flex-1">
+                    <FormField
+                        control={form.control}
+                        name="legalEntityName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="flex gap-1 items-center">
+                                    Legal entity name <span className="text-text-danger">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Acme Inc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <InvoicingEmailsField />
+                </div>
 
                 <InvoicingAddressFields />
                 <InvoicingTaxIdFields />
 
-                <div className="flex justify-start">
+                <div className="border-t border-border-muted p-4">
                     <Button type="submit" variant="primary" size="md" loading={isPending}>
                         Save changes
                     </Button>
