@@ -1,0 +1,36 @@
+---
+title: 'Agentcard - How to get your OAuth client credentials'
+sidebarTitle: 'Agentcard'
+description: 'Create an OAuth client in the Agentcard dashboard and obtain the credentials to connect it to Nango'
+---
+
+## Overview
+
+Agentcard authenticates API access with OAuth 2.0 client credentials: a Client ID and a Client Secret tied to your organization. There is no user redirect. Sandbox and production use the same API URL; the credential decides which environment you reach.
+
+### Prerequisites
+
+You must have:
+- An Agentcard account ([sign up](https://agentcard.sh))
+- An organization in the Agentcard dashboard
+
+## Step 1: Open your organization's Credentials page
+
+1. Sign in to the Agentcard dashboard.
+2. Select your organization.
+3. Go to **Credentials**.
+
+## Step 2: Copy your Client ID and Client Secret
+
+1. Your **Client ID** is shown on the Credentials page.
+2. Reveal and copy the **secret** for the environment you want to use: sandbox to test without moving money, production for live cards (production requires an active subscription).
+
+## Step 3: Connect in Nango
+
+1. In Nango, add a connection for the Agentcard integration.
+2. Enter the Client ID and Client Secret.
+3. Save. Nango fetches tokens from `https://api.agentcard.sh/api/v1/oauth/token` automatically and refreshes them as needed.
+
+For API reference and product docs, see [docs.agentcard.sh](https://docs.agentcard.sh).
+
+<Note>Contribute improvements to this guide by [editing this page](https://github.com/NangoHQ/nango/tree/master/docs/api-integrations/agentcard/connect.mdx)</Note>

@@ -955,6 +955,7 @@
               "integrations/all/adp-run",
               "integrations/all/adp-workforce-now",
               "integrations/all/adp-workforce-now-next-gen",
+              "api-integrations/agentcard",
               "integrations/all/adyen",
               "api-integrations/adyntel",
               "api-integrations/ahrefs",
