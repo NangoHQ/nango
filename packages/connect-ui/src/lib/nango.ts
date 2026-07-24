@@ -21,7 +21,7 @@ export function useNango() {
     const setNango = useGlobal((state) => state.setNango);
     const nango = useGlobal((state) => state.nango);
     const apiURL = useGlobal((state) => state.apiURL);
-    const serverWebsocketsPath = useGlobal((state) => state.session?.websockets_path);
+    const serverWebsocketsPath = useGlobal((state) => state.session?.websocketsPath);
 
     // Create a singleton
     useEffect(() => {

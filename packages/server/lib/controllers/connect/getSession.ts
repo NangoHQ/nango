@@ -100,7 +100,7 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
         data.overrides = connectSession.overrides;
     }
     if (!isCloud) {
-        data.websockets_path = getWebsocketsPath();
+        data.websocketsPath = getWebsocketsPath();
     }
 
     res.status(200).send({ data });

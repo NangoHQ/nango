@@ -90,7 +90,7 @@ describe(`GET ${endpoint}`, () => {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
-                websockets_path: '/'
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -123,7 +123,7 @@ describe(`GET ${endpoint}`, () => {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
-                websockets_path: '/ws'
+                websocketsPath: '/ws'
             }
         });
         expect(res.res.status).toBe(200);
@@ -153,7 +153,7 @@ describe(`GET ${endpoint}`, () => {
                 endUser: null,
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
-                websockets_path: '/'
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -183,7 +183,7 @@ describe(`GET ${endpoint}`, () => {
                 endUser: null,
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
-                websockets_path: '/'
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -231,7 +231,7 @@ describe(`GET ${endpoint}`, () => {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: customConnectUISettings,
-                websockets_path: '/'
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
@@ -277,7 +277,7 @@ describe(`GET ${endpoint}`, () => {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
                 connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
-                websockets_path: '/'
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);

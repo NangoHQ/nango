@@ -77,13 +77,13 @@ describe('getConnectSession', () => {
         mockGetWebsocketsPath.mockReturnValue('/ws');
     });
 
-    it('omits websockets_path on cloud, even if the server has a custom path configured', async () => {
+    it('omits websocketsPath on cloud, even if the server has a custom path configured', async () => {
         const { req, res, send } = buildReqRes();
 
         await getConnectSession(req, res, vi.fn());
 
         expect(mockGetWebsocketsPath).not.toHaveBeenCalled();
         const sent = send.mock.calls[0]?.[0] as { data: Record<string, unknown> } | undefined;
-        expect(sent?.data['websockets_path']).toBeUndefined();
+        expect(sent?.data['websocketsPath']).toBeUndefined();
     });
 });
