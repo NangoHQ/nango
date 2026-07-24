@@ -119,7 +119,7 @@ const AlertDialogMedia = React.forwardRef<HTMLDivElement, React.ComponentProps<'
             data-slot="alert-dialog-media"
             className={cn(
                 'bg-state-pressed border-ds-1 border-border-default rounded-ds-sm flex size-10 shrink-0 items-center justify-center overflow-hidden',
-                '[&_svg]:size-6 [&_svg]:shrink-0',
+                '[&_svg]:size-5 [&_svg]:shrink-0',
                 destructive ? '[&_svg]:text-status-danger-icon' : '[&_svg]:text-icon-default',
                 className
             )}
