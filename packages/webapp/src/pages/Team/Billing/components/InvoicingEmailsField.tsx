@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -11,10 +10,14 @@ const emailSchema = z.string().email();
 
 export const InvoicingEmailsField: React.FC = () => {
     const { control, setValue, setError, clearErrors } = useFormContext<InvoicingFormData>();
-    // Defaults to [] for the render between the parent's `customer` becoming truthy
-    // and the `form.reset(toFormData(customer))` effect actually populating the field.
+    // Both default to [] / '' for the render between the parent's `customer` becoming
+    // truthy and the `form.reset(toFormData(customer))` effect actually populating the field.
     const emails = useWatch({ control, name: 'emails' }) ?? [];
-    const [inputValue, setInputValue] = useState('');
+    // Backed by the form (not local state) so leftover, uncommitted text is part of
+    // `InvoicingFormData` and the schema's `superRefine` can block Save on it instead of
+    // it silently vanishing if a revalidation pass clears the field's manually-set error.
+    const inputValue = useWatch({ control, name: 'emailsDraft' }) ?? '';
+    const setInputValue = (value: string) => setValue('emailsDraft', value);
 
     const commit = (next: string[]) => {
         setValue('emails', next, { shouldDirty: true, shouldValidate: true });
@@ -29,11 +32,19 @@ export const InvoicingEmailsField: React.FC = () => {
             .filter(Boolean);
         if (candidates.length === 0) return;
 
+        const existingLower = new Set(emails.map((e) => e.toLowerCase()));
         const invalid = candidates.filter((c) => !emailSchema.safeParse(c).success);
-        const valid = candidates.filter((c) => emailSchema.safeParse(c).success && !emails.includes(c));
+        const valid: string[] = [];
+        for (const c of candidates) {
+            if (!emailSchema.safeParse(c).success) continue;
+            const lower = c.toLowerCase();
+            if (existingLower.has(lower)) continue;
+            existingLower.add(lower);
+            valid.push(c);
+        }
 
         if (valid.length > 0) {
-            commit(Array.from(new Set([...emails, ...valid])));
+            commit([...emails, ...valid]);
         }
 
         if (invalid.length > 0) {

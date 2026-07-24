@@ -39,12 +39,27 @@ const taxIdSchema = z.object({
     value: z.string().min(1, 'Required')
 });
 
-const schema = z.object({
-    legalEntityName: z.string().min(1, 'Required'),
-    emails: z.array(z.string().email('Invalid email address')).min(1, 'At least one billing email required'),
-    address: addressSchema.nullable(),
-    taxId: taxIdSchema.nullable()
-});
+const schema = z
+    .object({
+        legalEntityName: z.string().min(1, 'Required'),
+        emails: z
+            .array(z.string().email('Invalid email address'))
+            .min(1, 'At least one billing email required')
+            .max(50, 'Maximum 50 billing email addresses')
+            .refine((emails) => new Set(emails.map((email) => email.toLowerCase())).size === emails.length, 'Duplicate billing email address'),
+        // Tracks text left in the chip input's textbox that hasn't been committed to `emails`
+        // yet (e.g. a typo the user hasn't fixed or cleared). Not sent to the API — its only
+        // job is to fail validation so Save can't silently drop it.
+        emailsDraft: z.string(),
+        address: addressSchema.nullable(),
+        taxId: taxIdSchema.nullable()
+    })
+    .superRefine((data, ctx) => {
+        const draft = data.emailsDraft.trim();
+        if (draft && !z.string().email().safeParse(draft).success) {
+            ctx.addIssue({ code: 'custom', path: ['emails'], message: `Invalid email address: ${draft}` });
+        }
+    });
 
 export type InvoicingFormData = z.infer<typeof schema>;
 
@@ -52,6 +67,7 @@ function toFormData(customer: BillingCustomer): InvoicingFormData {
     return {
         legalEntityName: customer.invoicingDetails.legalEntityName,
         emails: [customer.invoicingDetails.email, ...customer.invoicingDetails.additionalEmails],
+        emailsDraft: '',
         address: customer.invoicingDetails.address ? { ...customer.invoicingDetails.address, country: customer.invoicingDetails.address.country ?? '' } : null,
         taxId: customer.invoicingDetails.taxId
     };
