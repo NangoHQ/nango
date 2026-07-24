@@ -11,7 +11,7 @@ const styledLinkVariants = cva(
         variants: {
             variant: {
                 default:
-                    'text-text-link [&_svg]:text-text-disabled hover:text-text-link-hover hover:[&_svg]:text-text-link-hover active:text-text-link-active active:[&_svg]:text-text-link-active disabled:text-text-disabled disabled:[&_svg]:text-text-disabled',
+                    'text-text-link [&_svg]:text-text-link hover:text-text-link-hover hover:[&_svg]:text-text-link-hover active:text-text-link-active active:[&_svg]:text-text-link-active disabled:text-text-disabled disabled:[&_svg]:text-text-disabled',
                 info: 'text-status-info-text [&_svg]:text-status-info-text',
                 error: 'text-status-danger-text [&_svg]:text-status-danger-text'
             },
