@@ -15010,6 +15010,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `linkhut` | LinkHut | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/linkhut.md) |  |  | social |
 | `listmonk` | Listmonk | BASIC | [docs](https://nango.dev/docs/integrations/all/listmonk.md) |  |  | marketing |
 | `listrak` | Listrak | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/listrak.md) | [connect](https://nango.dev/docs/api-integrations/listrak/connect.md) |  | marketing |
+| `livetennisapi` | Live Tennis API | API_KEY | [docs](https://nango.dev/docs/api-integrations/livetennisapi.md) | [connect](https://nango.dev/docs/api-integrations/livetennisapi/connect.md) |  | sports |
 | `lob` | Lob | BASIC | [docs](https://nango.dev/docs/api-integrations/lob.md) | [connect](https://nango.dev/docs/api-integrations/lob/connect.md) |  | marketing |
 | `lokalise` | Lokalise | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lokalise.md) |  | [setup](https://nango.dev/docs/api-integrations/lokalise/how-to-register-your-own-lokalise-oauth-app.md) | productivity |
 | `looker` | Looker | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/looker.md) | [connect](https://nango.dev/docs/api-integrations/looker/connect.md) |  | analytics |

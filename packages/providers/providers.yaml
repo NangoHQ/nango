@@ -12287,6 +12287,29 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+livetennisapi:
+    display_name: Live Tennis API
+    categories:
+        - sports
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.livetennisapi.com/api/public/v1
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /matches
+    docs: https://nango.dev/docs/api-integrations/livetennisapi
+    docs_connect: https://nango.dev/docs/api-integrations/livetennisapi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Live Tennis API account.
+            doc_section: '#step-1-generating-your-api-key'
+
 lokalise:
     display_name: Lokalise
     categories:
