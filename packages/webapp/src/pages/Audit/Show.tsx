@@ -60,7 +60,13 @@ export const AuditShow: React.FC = () => {
                     {/* Left side is reserved for search + filters (status, actor, resource, …) added later. */}
                     <div className="flex-1 min-w-0" />
                     <div className="flex gap-2">
-                        <PeriodSelector isLive={false} period={period} onChange={(next) => setPeriod(next)} presets={logsPresets} defaultPreset={last24hPreset} />
+                        <PeriodSelector
+                            isLive={false}
+                            period={period}
+                            onChange={(next) => setPeriod(next)}
+                            presets={logsPresets}
+                            defaultPreset={last24hPreset}
+                        />
                     </div>
                 </div>
 
