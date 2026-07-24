@@ -13,6 +13,7 @@ import { useStore } from '@/store';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
 import { InvoicingEmailsField } from './InvoicingEmailsField';
+import { toFormData } from './invoicingFormData.js';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 
 import type { BillingCustomer } from '@nangohq/types';
@@ -62,19 +63,6 @@ const schema = z
     });
 
 export type InvoicingFormData = z.infer<typeof schema>;
-
-function toFormData(customer: BillingCustomer): InvoicingFormData {
-    return {
-        legalEntityName: customer.invoicingDetails.legalEntityName,
-        // Defensive: `additionalEmails` is typed as required, but a client can still hit an
-        // API version that predates the field (e.g. this webapp build outrunning the backend
-        // deploy), so a real response can omit it despite the type's guarantee.
-        emails: [customer.invoicingDetails.email, ...(customer.invoicingDetails.additionalEmails ?? [])],
-        emailsDraft: '',
-        address: customer.invoicingDetails.address ? { ...customer.invoicingDetails.address, country: customer.invoicingDetails.address.country ?? '' } : null,
-        taxId: customer.invoicingDetails.taxId
-    };
-}
 
 export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefined }> = ({ customer }) => {
     const env = useStore((state) => state.env);
