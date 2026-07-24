@@ -34,8 +34,14 @@ export const AuditShow: React.FC = () => {
     const from = period?.from ? period.from.toISOString() : undefined;
     const to = period?.to ? period.to.toISOString() : undefined;
 
-    const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useApiGetAuditTrail(env, { from, to });
+    // Gate the request on a confirmed flag: don't read audit data while meta is pending or when it's off.
+    const { data, isLoading, isError, refetch, isFetchingNextPage, hasNextPage, fetchNextPage } = useApiGetAuditTrail(
+        env,
+        { from, to },
+        { enabled: meta?.auditTrail === true }
+    );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
+    const showLoading = !meta || isLoading;
 
     // Defensive: the menu entry + route are gated on the flag, but guard direct navigation too.
     if (meta && !meta.auditTrail) {
@@ -112,14 +118,24 @@ export const AuditShow: React.FC = () => {
                                     <Tag variant={outcomeVariant[event.outcome]}>{event.outcome}</Tag>
                                 </td>
                                 <td className="px-4 py-2.5 align-middle text-icon-secondary">
-                                    <ChevronRight size={16} />
+                                    <button
+                                        type="button"
+                                        aria-label="View event details"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelected(event);
+                                        }}
+                                        className="flex items-center rounded hover:text-text-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-default"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
 
-                {isLoading && (
+                {showLoading && (
                     <div className="flex flex-col gap-2">
                         <Skeleton className="w-full" />
                         <Skeleton className="w-full" />
@@ -127,7 +143,16 @@ export const AuditShow: React.FC = () => {
                     </div>
                 )}
 
-                {!isLoading && events.length === 0 && (
+                {!showLoading && isError && (
+                    <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
+                        <div className="text-center">Failed to load audit events</div>
+                        <Button variant="outline" onClick={() => void refetch()}>
+                            Retry
+                        </Button>
+                    </div>
+                )}
+
+                {!showLoading && !isError && events.length === 0 && (
                     <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
                         <div className="text-center">No audit events found</div>
                     </div>

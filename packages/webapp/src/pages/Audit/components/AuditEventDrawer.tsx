@@ -40,7 +40,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
             <SheetContent
                 side="right"
                 hideCloseButton
-                className="w-[720px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
+                className="w-full sm:w-[720px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
             >
                 <SheetTitle className="sr-only">Audit event details</SheetTitle>
                 <div className="relative h-full select-text overflow-y-auto p-8">

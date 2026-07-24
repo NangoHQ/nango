@@ -1,12 +1,12 @@
-import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
 import type { GetAuditTrail } from '@nangohq/types';
 
-export function useApiGetAuditTrail(env: string, filters: { from?: string | undefined; to?: string | undefined }) {
+export function useApiGetAuditTrail(env: string, filters: { from?: string | undefined; to?: string | undefined }, options?: { enabled?: boolean }) {
     return useInfiniteQuery<GetAuditTrail['Success'], APIError, { pages: GetAuditTrail['Success'][] }, unknown[], string | null>({
-        enabled: Boolean(env),
+        enabled: Boolean(env) && (options?.enabled ?? true),
         queryKey: [env, 'audit-trail:infinite', filters.from ?? null, filters.to ?? null],
         queryFn: async ({ pageParam, signal }) => {
             const params = new URLSearchParams({ env });
@@ -29,7 +29,6 @@ export function useApiGetAuditTrail(env: string, filters: { from?: string | unde
         },
         initialPageParam: null,
         getNextPageParam: (lastPage) => lastPage.pagination.nextCursor,
-        placeholderData: keepPreviousData,
         refetchOnWindowFocus: false
     });
 }
