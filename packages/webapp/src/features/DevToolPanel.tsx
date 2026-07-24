@@ -1,4 +1,4 @@
-import { ChevronRight, Palette, X } from 'lucide-react';
+import { ChevronRight, CreditCard, Palette, X } from 'lucide-react';
 import { lazy, Suspense, useEffect } from 'react';
 import { create } from 'zustand';
 
@@ -13,6 +13,7 @@ import { SentryErrorBoundary } from '@/utils/sentry';
 // Lazy-loaded so the Token Editor — and its bundled tokens.json + usage snapshot — is code-split
 // out of the main bundle. It's a dev/admin-only tool, so the chunk is only fetched when opened.
 const TokenEditorContent = lazy(() => import('./TokenEditorOverlay').then((m) => ({ default: m.TokenEditorContent })));
+const PlanOverrideContent = lazy(() => import('./PlanOverrideOverlay').then((m) => ({ default: m.PlanOverrideContent })));
 
 /**
  * True when the dev tool panel is available based on the current hostname:
@@ -42,7 +43,7 @@ export function useIsDevToolsEnabled(): boolean {
 // Toggle with: Ctrl+Shift+D
 export const DEV_PANEL_SHORTCUT = 'KeyD';
 
-type DevPanelView = 'home' | 'token-editor';
+type DevPanelView = 'home' | 'token-editor' | 'plan-override';
 
 interface DevPanelState {
     open: boolean;
@@ -121,6 +122,16 @@ export const DevToolPanel: React.FC = () => {
                                     <ChevronRight className="size-4 shrink-0 text-text-muted" />
                                 </button>
                             </li>
+                            <li>
+                                <button
+                                    onClick={() => setView('plan-override')}
+                                    className="flex w-full cursor-pointer items-center gap-2.5 rounded px-2 py-1.5 text-sm text-text-default hover:bg-surface-panel-inset"
+                                >
+                                    <CreditCard className="size-4 shrink-0 text-text-muted" />
+                                    <span className="flex-1 text-left">Plan Override</span>
+                                    <ChevronRight className="size-4 shrink-0 text-text-muted" />
+                                </button>
+                            </li>
                         </ul>
                     </div>
 
@@ -138,7 +149,7 @@ export const DevToolPanel: React.FC = () => {
                 <SentryErrorBoundary
                     fallback={
                         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-sm text-text-muted">
-                            <span>The Token Editor failed to load.</span>
+                            <span>This tool failed to load.</span>
                             <button onClick={() => window.location.reload()} className="rounded border border-border-muted px-2 py-1 hover:text-text-default">
                                 Reload
                             </button>
@@ -146,7 +157,11 @@ export const DevToolPanel: React.FC = () => {
                     }
                 >
                     <Suspense fallback={<div className="flex flex-1 items-center justify-center text-sm text-text-muted">Loading…</div>}>
-                        <TokenEditorContent onBack={() => setView('home')} onClose={close} />
+                        {view === 'token-editor' ? (
+                            <TokenEditorContent onBack={() => setView('home')} onClose={close} />
+                        ) : (
+                            <PlanOverrideContent onBack={() => setView('home')} onClose={close} />
+                        )}
                     </Suspense>
                 </SentryErrorBoundary>
             )}

@@ -7,8 +7,8 @@ import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
-import { useEnvironment } from '../../../hooks/useEnvironment.js';
 import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
+import { useCurrentPlan } from '../../../hooks/usePlan.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { APIError } from '../../../utils/api.js';
 
@@ -20,7 +20,7 @@ export const FunctionSwitch: React.FC<{
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const { data: environmentData, refetch: refetchEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const environment = environmentData?.environmentAndAccount?.environment;
 

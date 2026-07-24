@@ -4,8 +4,7 @@ import { useMemo } from 'react';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { useApiGetBillingUsage } from '@/hooks/usePlan';
+import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { useSelectedMonth } from '../useSelectedMonth';
@@ -23,7 +22,7 @@ const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 
 export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
     const { selectedMonth } = useSelectedMonth();
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
 
