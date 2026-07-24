@@ -20,7 +20,7 @@ let getCustomerSpy: any;
 
 const mockCustomer: BillingCustomer = {
     id: 'orb_cust_123',
-    invoicingDetails: { legalEntityName: 'Acme', email: 'billing@acme.com', address: null, taxId: null },
+    invoicingDetails: { legalEntityName: 'Acme', email: 'billing@acme.com', additionalEmails: [], address: null, taxId: null },
     portalUrl: null
 };
 

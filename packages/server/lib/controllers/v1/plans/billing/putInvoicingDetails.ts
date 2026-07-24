@@ -30,6 +30,7 @@ const validation = z
     .object({
         legalEntityName: z.string(),
         email: z.email(),
+        additionalEmails: z.array(z.email()),
         address: addressSchema.nullable(),
         taxId: taxIdSchema.nullable()
     })

@@ -19,6 +19,7 @@ const mockCustomer: BillingCustomer = {
     invoicingDetails: {
         legalEntityName: 'Acme Corp',
         email: 'billing@acme.com',
+        additionalEmails: [],
         address: null,
         taxId: null
     },
@@ -28,6 +29,7 @@ const mockCustomer: BillingCustomer = {
 const validBody: BillingInvoicingDetails = {
     legalEntityName: 'Acme Corp',
     email: 'billing@acme.com',
+    additionalEmails: [],
     address: null,
     taxId: null
 };
@@ -106,6 +108,22 @@ describe(`PUT ${route}`, () => {
             expect(res.json.error.code).toBe('invalid_body');
         });
 
+        it('should reject an invalid additional email', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
+
+            const res = await api.fetch(route, {
+                method: 'PUT',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { ...validBody, additionalEmails: ['ap@acme.com', 'not-an-email'] }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_body');
+        });
+
         it('should reject extra params in query', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
@@ -147,9 +165,27 @@ describe(`PUT ${route}`, () => {
             const body: BillingInvoicingDetails = {
                 legalEntityName: 'Acme Corp',
                 email: 'billing@acme.com',
+                additionalEmails: ['ap@acme.com', 'finance@acme.com'],
                 address: { line1: '123 Main St', line2: null, city: 'San Francisco', state: 'CA', postalCode: '94105', country: 'US' },
                 taxId: { country: 'US', type: 'us_ein', value: '12-3456789' }
             };
+            const res = await api.fetch(route, {
+                method: 'PUT',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(putCustomerSpy).toHaveBeenCalledWith(expect.any(Number), body);
+        });
+
+        it('should accept a populated additionalEmails list', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
+
+            const body: BillingInvoicingDetails = { ...validBody, additionalEmails: ['ap@acme.com', 'finance@acme.com'] };
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
