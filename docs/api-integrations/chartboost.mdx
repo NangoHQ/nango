@@ -21,7 +21,7 @@ Connect to Chartboost with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/user" \
+            curl "https://api.nango.dev/proxy/v5/user" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Chartboost with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/user',
+            endpoint: '/v5/user',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -69,7 +69,7 @@ Nango maintained guides for common use cases.
 Learn how to obtain your Chartboost Client ID and Client Secret and link your account
 
 
-Official docs: [Chartboost API docs](https://docs.chartboost.com/en/advertising/integrate-api/)
+Official docs: [Chartboost API docs](https://docs.chartboost.com/en/advertising/reference/api-overview/)
 
 ## 🧩 Pre-built syncs & actions for Chartboost
 
