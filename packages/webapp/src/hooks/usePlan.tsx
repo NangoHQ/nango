@@ -46,7 +46,10 @@ export function currentPlanQueryOptions(env: string) {
  */
 function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): ApiPlan | null | undefined {
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
-    const { data: plansList } = useApiGetPlans(env);
+    // Only fetch the plans list here when an override is actually set — every consumer of
+    // useApiGetCurrentPlan/useCurrentPlan would otherwise fire an extra /plans request even when
+    // dev tools are never opened.
+    const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode) });
 
     return useMemo(() => {
         if (!overrideCode) {
@@ -97,9 +100,9 @@ export async function apiPostPlanExtendTrial(env: string) {
     };
 }
 
-export function useApiGetPlans(env: string) {
+export function useApiGetPlans(env: string, options?: { enabled?: boolean }) {
     return useQuery<GetPlans['Success'], APIError>({
-        enabled: Boolean(env),
+        enabled: Boolean(env) && (options?.enabled ?? true),
         queryKey: ['plans'],
         queryFn: async (): Promise<GetPlans['Success']> => {
             const res = await apiFetch(`/api/v1/plans?env=${env}`, {
