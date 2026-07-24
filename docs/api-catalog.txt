@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 922
+Provider count: 924
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -329,6 +329,8 @@ URL patterns:
 | `github-pat` | Github (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/github-pat.md) | [connect](https://nango.dev/docs/integrations/all/github-pat/connect.md) |  | dev-tools, ticketing |
 | `gitlab` | GitLab | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gitlab.md) |  |  | dev-tools, ticketing |
 | `gitlab-pat` | GitLab  (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/gitlab-pat.md) | [connect](https://nango.dev/docs/integrations/all/gitlab-pat/connect.md) |  | dev-tools, ticketing |
+| `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
+| `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
 | `glyphic` | Glyphic | API_KEY | [docs](https://nango.dev/docs/api-integrations/glyphic.md) | [connect](https://nango.dev/docs/api-integrations/glyphic/connect.md) |  | communication |
 | `gong` | Gong (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/gong.md) | [connect](https://nango.dev/docs/integrations/all/gong/connect.md) |  | communication, marketing, productivity, video |
 | `gong-oauth` | Gong (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gong-oauth.md) |  |  | communication, marketing, productivity, video, popular |

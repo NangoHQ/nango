@@ -9202,6 +9202,74 @@ gong-oauth:
             automated: true
             pattern: '^https?://.*$'
 
+glean:
+    display_name: Glean
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/glean
+    docs_connect: https://nango.dev/docs/api-integrations/glean/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Server URL
+            description: Your Glean instance's server URL.
+            format: hostname
+            prefix: https://
+            example: acme-prod-be.glean.com
+            order: 1
+            doc_section: '#step-1-finding-your-server-url'
+        actAs:
+            type: string
+            title: Act As
+            description: The email of the user to act as.
+            format: email
+            optional: true
+            doc_section: '#step-3-setting-your-act-as-email'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your account API token.
+            order: 2
+            doc_section: '#step-2-generating-your-api-token'
+
+glean-oauth:
+    display_name: Glean (OAuth)
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.serverUrl}/oauth/authorize
+    token_url: https://${connectionConfig.serverUrl}/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+    docs: https://nango.dev/docs/api-integrations/glean-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/glean-oauth/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Server URL
+            description: Your Glean instance's server URL.
+            format: hostname
+            prefix: https://
+            example: acme-prod-be.glean.com
+            order: 1
+            doc_section: '#step-1-finding-your-server-url'
+
 glyphic:
     display_name: Glyphic
     categories:

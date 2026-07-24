@@ -1255,6 +1255,8 @@
               "integrations/all/gitlab-pat",
               "integrations/all/gong",
               "integrations/all/gong-oauth",
+              "api-integrations/glean",
+              "api-integrations/glean-oauth",
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
