@@ -11,7 +11,7 @@ const signinRoute = '/api/v1/account/signin';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 async function signupUser() {
-    const email = `${nanoid()}@example.com`;
+    const email = `${nanoid().toLowerCase()}@example.com`;
     const password = 'aZ1-foobar!?';
     const signupRes = await api.fetch('/api/v1/account/signup', {
         method: 'POST',
@@ -59,11 +59,12 @@ describe(`POST ${confirmEmailRoute}`, () => {
 
     it('does not verify an expired token', async () => {
         const { user } = await signupUser();
+        const expiredToken = user.email_verification_token!;
         await userService.update({ id: user.id, email_verification_token_expires_at: new Date(Date.now() - 1_000) });
 
         const { res, json } = await api.fetch(confirmEmailRoute, {
             method: 'POST',
-            body: { token: user.email_verification_token! }
+            body: { token: expiredToken }
         });
 
         expect(res.status).toBe(400);
@@ -71,9 +72,26 @@ describe(`POST ${confirmEmailRoute}`, () => {
 
         const unverifiedUser = await userService.getUserById(user.id, true);
         expect(unverifiedUser?.email_verified).toBe(false);
+        expect(unverifiedUser?.email_verification_token).toBe(expiredToken);
+        expect(unverifiedUser?.email_verification_token_expires_at?.getTime()).toBeLessThan(Date.now());
     });
 
     it('does not verify an invalid token', async () => {
+        const { user } = await signupUser();
+
+        const { res, json } = await api.fetch(confirmEmailRoute, {
+            method: 'POST',
+            body: { token: '00000000-0000-4000-8000-000000000000' }
+        });
+
+        expect(res.status).toBe(400);
+        expect(json).toMatchObject({ error: { code: 'invalid_token' } });
+
+        const unverifiedUser = await userService.getUserById(user.id, true);
+        expect(unverifiedUser?.email_verified).toBe(false);
+    });
+
+    it('rejects a malformed token', async () => {
         const { user } = await signupUser();
 
         const { res, json } = await api.fetch(confirmEmailRoute, {
@@ -82,7 +100,7 @@ describe(`POST ${confirmEmailRoute}`, () => {
         });
 
         expect(res.status).toBe(400);
-        expect(json).toMatchObject({ error: { code: 'invalid_token' } });
+        expect(json).toMatchObject({ error: { code: 'invalid_body' } });
 
         const unverifiedUser = await userService.getUserById(user.id, true);
         expect(unverifiedUser?.email_verified).toBe(false);

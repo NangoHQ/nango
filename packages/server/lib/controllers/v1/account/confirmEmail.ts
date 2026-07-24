@@ -12,7 +12,7 @@ const logger = getLogger('Server.ConfirmEmail');
 
 const validation = z
     .object({
-        token: z.string().min(6)
+        token: z.uuidv4()
     })
     .strict();
 
