@@ -14698,6 +14698,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
 | `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
+| `chatgpt-enterprise` | ChatGPT Enterprise (SCIM API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatgpt-enterprise.md) | [connect](https://nango.dev/docs/api-integrations/chatgpt-enterprise/connect.md) |  | productivity, dev-tools |
 | `chattermill` | Chattermill | API_KEY | [docs](https://nango.dev/docs/integrations/all/chattermill.md) |  |  | support, analytics |
 | `checkhq` | Check | API_KEY | [docs](https://nango.dev/docs/integrations/all/checkhq.md) | [connect](https://nango.dev/docs/integrations/all/checkhq/connect.md) |  | accounting |
 | `checkout-com` | Checkout.com | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com/connect.md) |  | payment |
