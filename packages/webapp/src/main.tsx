@@ -5,7 +5,6 @@ import ReactDOM from 'react-dom/client';
 import App from './app/App';
 import { Providers } from './app/providers';
 import { globalEnv } from './utils/env';
-import { redactConnectionIdFromUrl } from './utils/telemetry';
 
 if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
@@ -20,23 +19,7 @@ if (globalEnv.publicPosthogKey) {
             // rrweb matches maskTextSelector against ancestors too, so a :not() opt-out can
             // never apply (body always matches). Mask everything, unmask via maskTextFn.
             maskTextSelector: '*',
-            maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*')),
-            // Network entries captured into recordings carry raw API urls (/api/v1/connections/<id>)
-            maskCapturedNetworkRequestFn: (request) => {
-                request.name = redactConnectionIdFromUrl(request.name);
-                return request;
-            }
-        },
-        before_send: (event) => {
-            if (event?.properties) {
-                for (const key of ['$current_url', '$pathname', '$referrer']) {
-                    const value = event.properties[key];
-                    if (typeof value === 'string') {
-                        event.properties[key] = redactConnectionIdFromUrl(value);
-                    }
-                }
-            }
-            return event;
+            maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*'))
         }
     });
 }
