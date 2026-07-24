@@ -1388,6 +1388,7 @@
               "integrations/all/linkhut",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/livetennisapi",
               "api-integrations/lokalise",
               "api-integrations/lob",
               "integrations/all/loom-scim",
