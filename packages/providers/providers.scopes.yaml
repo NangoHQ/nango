@@ -9910,6 +9910,11 @@ rippling-shop-app: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 roller: []
 
+# source: https://help.whiplash.com/hc/en-us/articles/360050873291-The-RyderShip-API (scope parameter)
+rydership:
+    - user_read
+    - user_manage
+
 # source: https://accounts.rydoo.com/.well-known/openid-configuration (scopes_supported)
 rydoo:
     - any_user

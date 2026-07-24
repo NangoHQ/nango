@@ -18307,6 +18307,33 @@ reapit:
             title: ''
             description: ''
             automated: true
+rydership:
+    display_name: RyderShip
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.environment}/oauth/authorize
+    token_url: https://${connectionConfig.environment}/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.environment}/api
+    docs: https://nango.dev/docs/api-integrations/rydership
+    setup_guide_url: https://nango.dev/docs/api-integrations/rydership/how-to-register-your-own-rydership-oauth-app
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The RyderShip environment to connect to.
+            order: 1
+            enum:
+                - www.getwhiplash.com
+                - sandbox.whiplash.app
 rydoo:
     display_name: Rydoo
     categories:
