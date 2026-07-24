@@ -2,10 +2,13 @@ import { ChevronsUpDown, CreditCard, LogOut, ScrollText, SlidersHorizontal, Spar
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
 import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
@@ -19,6 +22,8 @@ export const ProfileDropdown: React.FC = () => {
     const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();
+    const { can } = usePermissions();
+    const canReadAuditTrail = can(permissions.canReadAuditTrail);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const env = useStore((state) => state.env);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
@@ -54,7 +59,7 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
-        if (meta?.auditTrail) {
+        if (meta?.auditTrail && canReadAuditTrail) {
             list.push({
                 label: 'Audit log',
                 icon: ScrollText,
@@ -63,7 +68,7 @@ export const ProfileDropdown: React.FC = () => {
         }
 
         return list;
-    }, [meta, showGettingStarted, env]);
+    }, [meta, showGettingStarted, env, canReadAuditTrail]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

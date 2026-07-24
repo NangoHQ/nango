@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
@@ -9,6 +10,8 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Tag } from '@/components/ui/Tag';
 import { useApiGetAuditTrail } from '@/hooks/useAudit';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { last14dPreset, logsPresets } from '@/utils/logs';
@@ -28,22 +31,25 @@ export const AuditShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
+    const { user } = useUser();
+    const { can } = usePermissions();
+    const canReadAuditTrail = can(permissions.canReadAuditTrail);
     const [period, setPeriod] = useState<Period | null>(() => last14dPreset.toPeriod());
     const [selected, setSelected] = useState<ApiAuditTrailEvent | null>(null);
 
     const from = period?.from ? period.from.toISOString() : undefined;
     const to = period?.to ? period.to.toISOString() : undefined;
 
-    // Gate the request on a confirmed flag: don't read audit data while meta is pending or when it's off.
+    // Only read audit data once the flag and the caller's permission are confirmed; stays idle otherwise.
     const { data, isLoading, isError, refetch, isFetchingNextPage, hasNextPage, fetchNextPage } = useApiGetAuditTrail(
         env,
         { from, to },
-        { enabled: meta?.auditTrail === true }
+        { enabled: meta?.auditTrail === true && canReadAuditTrail }
     );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
-    const showLoading = !meta || isLoading;
+    const showLoading = !meta || !user || isLoading;
 
-    // Defensive: the menu entry + route are gated on the flag, but guard direct navigation too.
+    // Menu entry + route are gated on the flag and the permission, but guard direct navigation too.
     if (meta && !meta.auditTrail) {
         return (
             <DashboardLayout fullWidth title="Audit log">
@@ -53,6 +59,20 @@ export const AuditShow: React.FC = () => {
                 <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
                     <h2 className="text-xl text-center">Audit log not enabled</h2>
                     <div className="text-sm text-text-muted">The audit log is not enabled for this account.</div>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    if (user && !canReadAuditTrail) {
+        return (
+            <DashboardLayout fullWidth title="Audit log">
+                <Helmet>
+                    <title>Audit log - Nango</title>
+                </Helmet>
+                <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
+                    <h2 className="text-xl text-center">Access denied</h2>
+                    <div className="text-sm text-text-muted">Your role does not have access to the audit log.</div>
                 </div>
             </DashboardLayout>
         );
