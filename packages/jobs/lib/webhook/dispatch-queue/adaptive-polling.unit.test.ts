@@ -68,7 +68,7 @@ describe('LocalAdaptivePollPacer', () => {
         pacer.recordCongestion(1200, 20);
         await pacer.waitForBackoff(new AbortController().signal, prepareWait);
 
-        expect(prepareWait).toHaveBeenCalledWith(1320);
+        expect(prepareWait).toHaveBeenCalledWith(1320, expect.any(AbortSignal));
         expect(sleep).toHaveBeenCalledWith(1320, expect.any(AbortSignal));
         const prepareOrder = prepareWait.mock.invocationCallOrder[0];
         const sleepOrder = sleep.mock.invocationCallOrder[0];
@@ -180,5 +180,17 @@ describe('LocalAdaptivePollPacer', () => {
         await pacer.waitForBackoff(new AbortController().signal, () => Promise.resolve());
 
         expect(sleep).not.toHaveBeenCalled();
+    });
+
+    it('does not prepare a pre-dispatch wait after shutdown starts', async () => {
+        const prepareWait = vi.fn(() => Promise.resolve());
+        const pacer = makePacer({ now: () => 0, random: () => 1 });
+        const controller = new AbortController();
+        pacer.recordCongestion(1000, 20);
+        controller.abort();
+
+        await expect(pacer.waitForBackoff(controller.signal, prepareWait)).rejects.toMatchObject({ name: 'AbortError' });
+
+        expect(prepareWait).not.toHaveBeenCalled();
     });
 });

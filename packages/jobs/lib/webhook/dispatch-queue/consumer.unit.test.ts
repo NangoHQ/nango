@@ -51,7 +51,7 @@ function deferred<T>() {
     return { promise, resolve, reject };
 }
 
-type SqsSendFn = (command: unknown) => Promise<unknown>;
+type SqsSendFn = (command: unknown, options?: { abortSignal?: AbortSignal }) => Promise<unknown>;
 type SqsDestroyFn = () => void;
 type OrchestratorExecuteWebhookBatchFn = (props: unknown[]) => Promise<unknown>;
 
@@ -335,8 +335,8 @@ describe('DispatchQueueConsumer', () => {
     });
 
     it('extends message visibility to cover admission backoff and the configured processing window', async () => {
-        const waitForBackoff = vi.fn(async (_signal: AbortSignal, prepareWait: (delayMs: number) => Promise<void>) => {
-            await prepareWait(2500);
+        const waitForBackoff = vi.fn(async (signal: AbortSignal, prepareWait: (delayMs: number, signal: AbortSignal) => Promise<void>) => {
+            await prepareWait(2500, signal);
         });
         const pollPacer: DispatchPollPacer = {
             wait: vi.fn(),
@@ -366,12 +366,35 @@ describe('DispatchQueueConsumer', () => {
                 { Id: '1', ReceiptHandle: 'rh-1', VisibilityTimeout: 33 }
             ]
         });
+        expect(visibilityCalls[0]?.[1]?.abortSignal).toBeInstanceOf(AbortSignal);
         const visibilityOrder = h.sqsSend.mock.invocationCallOrder[1];
         const dispatchOrder = h.orchestratorExecuteWebhookBatch.mock.invocationCallOrder[0];
         if (visibilityOrder === undefined || dispatchOrder === undefined) {
             throw new Error('Expected visibility extension and orchestrator dispatch to be called');
         }
         expect(visibilityOrder).toBeLessThan(dispatchOrder);
+    });
+
+    it('clamps visibility extension to the remaining SQS maximum', async () => {
+        const waitForBackoff = vi.fn(async (signal: AbortSignal, prepareWait: (delayMs: number, signal: AbortSignal) => Promise<void>) => {
+            await prepareWait(2500, signal);
+        });
+        const pollPacer: DispatchPollPacer = {
+            wait: vi.fn(),
+            waitForBackoff,
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn()
+        };
+        const h = makeHarness({ messages: [buildMessage()], visibilityTimeoutSeconds: 43_200, pollPacer });
+
+        await runOnce(h, () => expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce());
+
+        const command = getChangeVisibilityCalls(h)[0]?.[0];
+        if (!(command instanceof ChangeMessageVisibilityBatchCommand)) {
+            throw new Error('Expected a visibility batch command');
+        }
+        expect(command.input.Entries?.[0]?.VisibilityTimeout).toBe(43_199);
     });
 
     it('deletes a poison-pill message without calling orchestrator', async () => {
