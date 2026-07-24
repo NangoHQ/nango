@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -19,8 +20,24 @@ export const InvoicingEmailsField: React.FC = () => {
     const inputValue = useWatch({ control, name: 'emailsDraft' }) ?? '';
     const setInputValue = (value: string) => setValue('emailsDraft', value);
 
+    // Removing a chip (backspace or the chip's own × button) is a state update, not a native
+    // text edit, so the browser's built-in Cmd/Ctrl+Z has nothing to undo. Track removals here
+    // so we can restore the last one ourselves — see handleKeyDown.
+    const [removedStack, setRemovedStack] = useState<string[]>([]);
+
     const commit = (next: string[]) => {
+        const removed = emails.filter((e) => !next.includes(e));
+        if (removed.length > 0) {
+            setRemovedStack((prev) => [...prev, ...removed]);
+        }
         setValue('emails', next, { shouldDirty: true, shouldValidate: true });
+    };
+
+    const undoLastRemoval = () => {
+        if (removedStack.length === 0) return;
+        const last = removedStack[removedStack.length - 1]!;
+        setRemovedStack((prev) => prev.slice(0, -1));
+        setValue('emails', [...emails, last], { shouldDirty: true, shouldValidate: true });
     };
 
     // Splits on commas so a paste of "a@x.com, b@x.com" (or Figma's comma-separated
@@ -62,6 +79,15 @@ export const InvoicingEmailsField: React.FC = () => {
             const value = (e.target as HTMLInputElement).value.replace(/,$/, '').trim();
             if (!value) return;
             addEmailsFromText(value);
+            return;
+        }
+
+        // Only take over Cmd/Ctrl+Z when the input is empty — otherwise let the browser's
+        // native undo handle an in-progress text edit in the draft input as usual.
+        const isUndo = (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z';
+        if (isUndo && !(e.target as HTMLInputElement).value) {
+            e.preventDefault();
+            undoLastRemoval();
         }
     };
 
@@ -89,7 +115,9 @@ export const InvoicingEmailsField: React.FC = () => {
                     </FormLabel>
                     <FormControl>
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
-                            <ComboboxChips className="min-h-9">
+                            {/* ComboboxChips defaults to bg-surface-canvas/border-border-muted, which reads as a
+                                different (much darker) fill than a plain Input — match Input's own tokens instead. */}
+                            <ComboboxChips className="min-h-9 bg-surface-input border-border-interactive">
                                 {emails.length > 0 && (
                                     <ComboboxValue>
                                         {emails.map((email) => (
