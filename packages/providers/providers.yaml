@@ -763,6 +763,29 @@ affinity-v2:
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
 
+agentline:
+    display_name: AgentLine
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.agentline.cloud
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/agents
+    docs: https://nango.dev/docs/api-integrations/agentline
+    docs_connect: https://nango.dev/docs/api-integrations/agentline/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your AgentLine API key.
+            pattern: '^sk_live_[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 agiloft:
     display_name: Agiloft
     categories:

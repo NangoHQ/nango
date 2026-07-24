@@ -960,6 +960,7 @@
               "api-integrations/ahrefs",
               "integrations/all/affinity",
               "integrations/all/affinity-v2",
+              "api-integrations/agentline",
               "api-integrations/agiloft",
               "api-integrations/agiloft-cc",
               "integrations/all/aimfox",

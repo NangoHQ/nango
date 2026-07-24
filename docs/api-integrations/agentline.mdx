@@ -1,0 +1,79 @@
+---
+title: 'AgentLine'
+sidebarTitle: 'AgentLine'
+description: 'Integrate your application with the AgentLine API'
+---
+
+AgentLine is the voice infrastructure for AI agents — phone numbers, calls, and SMS through a single API.
+
+## 🚀 Quickstart
+
+Connect to AgentLine with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _AgentLine_.
+    </Step>
+    <Step title="Connect AgentLine">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _AgentLine_ -> enter your API key and click _Authorize_. See the [connect guide](/api-integrations/agentline/connect) for how to obtain a key.
+    </Step>
+    <Step title="Call the AgentLine API">
+    Let's make your first request to the AgentLine API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/agents" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/agents',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 AgentLine Integration Guides
+
+- [Connect to AgentLine](/api-integrations/agentline/connect)
+Obtain your AgentLine API key and connect it to Nango.
+
+Official docs: [AgentLine docs](https://agentline.cloud/docs)
+
+## 🧩 Pre-built syncs & actions for AgentLine
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/agentline/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
