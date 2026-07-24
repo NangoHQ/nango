@@ -1,0 +1,84 @@
+---
+title: 'Ergo'
+sidebarTitle: 'Ergo'
+description: 'Integrate your application with the Ergo Meeting Data API'
+---
+
+## 🚀 Quickstart
+
+Connect to Ergo with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Ergo_.
+    </Step>
+    <Step id="authorize-ergo" title="Authorize Ergo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-ergo-api" title="Call the Ergo API">
+    Let's make your first request to the Ergo API (discover meetings). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/meetings?limit=5" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/meetings',
+            params: { limit: 5 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+<Note>
+Ergo's `GET /v1/meetings` list is paginated with an opaque `nextCursor` — pass it back verbatim with the same `created_after`/`created_before`/`limit` filters to get the next page; a `null` cursor means you've reached the end. `GET /v1/meetings/{id}` returns 404 for both missing and inaccessible meeting IDs, and does not distinguish between the two. Ergo enforces 60 requests per 60 seconds per token; on a 429, wait at least the `Retry-After` value (in seconds) before retrying.
+</Note>
+
+## 📚 Ergo integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Ergo account?](/api-integrations/ergo/connect)  
+Retrieve your token from Ergo and connect it to Nango
+
+## 🧩 Pre-built syncs & actions for Ergo
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ergo/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

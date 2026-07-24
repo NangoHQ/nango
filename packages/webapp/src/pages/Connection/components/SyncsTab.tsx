@@ -2,10 +2,9 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { Badge, Button, IconButton } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
@@ -153,9 +152,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                             <Tooltip>
                                 <TooltipTrigger>
                                     {/* TODO: Replace badge */}
-                                    <Badge variant="gray" size="xs">
-                                        {truncateMiddle(sync.variant)}
-                                    </Badge>
+                                    <Badge>{truncateMiddle(sync.variant)}</Badge>
                                 </TooltipTrigger>
                                 <TooltipContent>{sync.variant}</TooltipContent>
                             </Tooltip>

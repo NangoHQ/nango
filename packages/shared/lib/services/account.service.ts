@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
-import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report } from '@nangohq/utils';
+import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report, TTLFixedSizeMap } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -18,10 +19,73 @@ import secretService from './secret.service.js';
 import userService from './user.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, PersistAuthContext, Result } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, PersistAuthContext, Result } from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
+
+/**
+ * Measurement-only auth cache: emits a hit/miss metric to estimate the hit ratio
+ * a real per-process cache would achieve. Serves nothing and stores nothing derived
+ * from the auth context — the value is only a TTL timestamp.
+ */
+class ShadowAuthCache {
+    private seen: TTLFixedSizeMap<string, true>;
+
+    constructor(
+        private readonly name: string,
+        ttlMs: number
+    ) {
+        this.seen = new TTLFixedSizeMap(10_000, ttlMs);
+    }
+
+    /** Emits hit/miss for this hash. Expired entries are evicted on read by the underlying map. */
+    wouldHit(hash: string): boolean {
+        const hit = this.seen.get(hash) !== undefined;
+        metrics.increment(metrics.Types.AUTH_SHADOW_CACHE, 1, { cache: this.name, result: hit ? 'hit' : 'miss' });
+        return hit;
+    }
+
+    /** Marks a successful lookup as would-be-cached. Skips fresh entries so their TTL is not extended. */
+    populate(hash: string, wasHit: boolean): void {
+        if (!wasHit) {
+            this.seen.set(hash, true);
+        }
+    }
+}
+
+const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
+
+/**
+ * In-process cache of the persist auth context, keyed by the secret's hash. The cached
+ * PersistAuthContext holds no secret material (account/environment ids, environment name,
+ * and a few plan fields), so the only trade-off is staleness: a served entry can be up to
+ * the TTL old, delaying visibility of revoked keys, deleted environments, and plan changes.
+ * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
+ */
+class PersistAuthContextCache {
+    // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
+    private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+
+    get(hash: string): PersistAuthContext | undefined {
+        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+            return undefined;
+        }
+        const cached = this.cache.get(hash);
+        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: cached ? 'hit' : 'miss' });
+        return cached;
+    }
+
+    set(hash: string, context: PersistAuthContext): void {
+        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+            return;
+        }
+        // The cached instance is shared across requests; callers must not mutate it.
+        this.cache.set(hash, context);
+    }
+}
+
+const persistAuthContextCache = new PersistAuthContextCache();
 
 interface AccountContext {
     account: DBTeam;
@@ -85,6 +149,42 @@ const freeEmailDomains = new Set([
 ]);
 
 class AccountService {
+    async findAccountWithSameDomain({ email, currentAccountId }: { email: string; currentAccountId: number }): Promise<Pick<DBTeam, 'id' | 'name'> | null> {
+        const emailDomain = getEmailDomain(email);
+        if (!emailDomain || freeEmailDomains.has(emailDomain)) {
+            return null;
+        }
+
+        // Find eligible accounts with an active user from the same domain and an active administrator,
+        // excluding the user's current team. Prefer paid accounts, then accounts with more active members,
+        // and finally the lowest account ID for a stable tie-breaker.
+        const account = await db.knex
+            .with('candidate_account', (qb) => {
+                qb.from<DBTeam>('_nango_accounts as account')
+                    .innerJoin<DBUser>('_nango_users as same_domain_user', 'same_domain_user.account_id', 'account.id')
+                    .distinct('account.id', 'account.name')
+                    .where('account.id', '!=', currentAccountId)
+                    .where('same_domain_user.suspended', false)
+                    .whereRaw("LOWER(SPLIT_PART(same_domain_user.email, '@', 2)) = ?", [emailDomain])
+                    .whereExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from<DBUser>('_nango_users as administrator')
+                            .whereRaw('administrator.account_id = account.id')
+                            .where('administrator.suspended', false)
+                            .where('administrator.role', 'administrator');
+                    });
+            })
+            .from('candidate_account')
+            .leftJoin<DBPlan>('plans', 'plans.account_id', 'candidate_account.id')
+            .select<Pick<DBTeam, 'id' | 'name'>>('candidate_account.id', 'candidate_account.name')
+            .orderByRaw("CASE WHEN plans.name IS NOT NULL AND plans.name NOT IN ('free', 'free-uncapped') THEN 1 ELSE 0 END DESC")
+            .orderByRaw(`(SELECT COUNT(*) FROM _nango_users AS member WHERE member.account_id = candidate_account.id AND member.suspended = false) DESC`)
+            .orderBy('candidate_account.id', 'asc')
+            .first<Pick<DBTeam, 'id' | 'name'>>();
+
+        return account || null;
+    }
+
     async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
         try {
             const result = await trx.select('*').from<DBTeam>(`_nango_accounts`).where({ id: id }).first();
@@ -553,6 +653,7 @@ class AccountService {
 
     private async getAccountContextByCustomerKey(secretKey: string): Promise<AccountContext | null> {
         const hash = await this.hashSecretWithCache(secretKey);
+        const wouldHit = customerKeyShadowCache.wouldHit(hash);
 
         // This query debounces last_used_at in the same statement, so it must run on the primary.
         // If we later introduce real read replicas for auth lookups, split this into:
@@ -619,6 +720,7 @@ class AccountService {
         }
 
         hashLocalCache.set(secretKey, hash);
+        customerKeyShadowCache.populate(hash, wouldHit);
 
         const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
@@ -697,6 +799,11 @@ class AccountService {
 
         const hash = await this.hashSecretWithCache(secretKey);
 
+        const cached = persistAuthContextCache.get(hash);
+        if (cached) {
+            return cached;
+        }
+
         const row = await db.readOnly
             .select<{
                 environment_id: number;
@@ -728,7 +835,7 @@ class AccountService {
 
         // Store only successful lookups to avoid polluting the cache
         hashLocalCache.set(secretKey, hash);
-        return {
+        const context: PersistAuthContext = {
             account: { id: row.account_id },
             environment: { id: row.environment_id, name: row.environment_name },
             plan:
@@ -736,6 +843,8 @@ class AccountService {
                     ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
                     : null
         };
+        persistAuthContextCache.set(hash, context);
+        return context;
     }
 
     /**
@@ -818,6 +927,17 @@ class AccountService {
             }
         };
     }
+}
+
+function getEmailDomain(email: string): string | null {
+    const atIndex = email.lastIndexOf('@');
+    const emailDomain = email.slice(atIndex + 1).toLowerCase();
+
+    if (atIndex <= 0 || !emailDomain.includes('.')) {
+        return null;
+    }
+
+    return emailDomain;
 }
 
 function emailToTeamName({ email }: { email?: string | undefined }): string | false {
