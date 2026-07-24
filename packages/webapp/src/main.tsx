@@ -17,7 +17,12 @@ if (globalEnv.publicPosthogKey) {
         mask_all_element_attributes: true,
         session_recording: {
             maskAllInputs: true,
-            maskTextSelector: '*:not([data-ph-unmask])'
+            maskTextSelector: '*:not([data-ph-unmask])',
+            // Network entries captured into recordings carry raw API urls (/api/v1/connections/<id>)
+            maskCapturedNetworkRequestFn: (request) => {
+                request.name = redactConnectionIdFromUrl(request.name);
+                return request;
+            }
         },
         before_send: (event) => {
             if (event?.properties) {
