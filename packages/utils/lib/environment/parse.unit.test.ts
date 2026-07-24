@@ -400,8 +400,8 @@ describe('parse', () => {
             expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: '21' })).toThrow();
         });
 
-        it('should reject NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS outside [0,43200]', () => {
-            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '-1' })).toThrow();
+        it('should reject NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS outside [1,43200]', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '0' })).toThrow();
             expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '43201' })).toThrow();
         });
 

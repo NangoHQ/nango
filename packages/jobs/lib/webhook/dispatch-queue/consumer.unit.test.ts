@@ -1,4 +1,4 @@
-import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { ChangeMessageVisibilityBatchCommand, DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
@@ -68,6 +68,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
+        visibilityTimeoutSeconds?: number;
         sqsSend?: Mock<SqsSendFn>;
         pollPacer?: DispatchPollPacer;
     } = {}
@@ -92,6 +93,9 @@ function makeHarness(
             if (command instanceof DeleteMessageCommand) {
                 return {};
             }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
+                return { Successful: (command.input.Entries ?? []).map((entry) => ({ Id: entry.Id })), Failed: [] };
+            }
             throw new Error(`unexpected command ${String(command)}`);
         });
 
@@ -112,7 +116,7 @@ function makeHarness(
         consumerConcurrency: opts.consumerConcurrency ?? 1,
         maxMessages: 10,
         waitTimeSeconds: 0,
-        visibilityTimeoutSeconds: 30,
+        visibilityTimeoutSeconds: opts.visibilityTimeoutSeconds ?? 30,
         maxAgeMs: opts.maxAgeMs ?? 0,
         ...(opts.pollPacer ? { pollPacer: opts.pollPacer } : {})
     });
@@ -122,6 +126,10 @@ function makeHarness(
 
 function getDeleteCalls(h: Harness) {
     return h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+}
+
+function getChangeVisibilityCalls(h: Harness) {
+    return h.sqsSend.mock.calls.filter((c) => c[0] instanceof ChangeMessageVisibilityBatchCommand);
 }
 
 async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise<void> {
@@ -324,6 +332,46 @@ describe('DispatchQueueConsumer', () => {
         gate.resolve();
         await vi.waitFor(() => expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce());
         await h.consumer.stop();
+    });
+
+    it('extends message visibility to cover admission backoff and the configured processing window', async () => {
+        const waitForBackoff = vi.fn(async (_signal: AbortSignal, prepareWait: (delayMs: number) => Promise<void>) => {
+            await prepareWait(2500);
+        });
+        const pollPacer: DispatchPollPacer = {
+            wait: vi.fn(),
+            waitForBackoff,
+            recordSuccess: vi.fn(),
+            recordCongestion: vi.fn(),
+            recordFailure: vi.fn()
+        };
+        const h = makeHarness({
+            messages: [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })],
+            visibilityTimeoutSeconds: 30,
+            pollPacer
+        });
+
+        await runOnce(h, () => expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce());
+
+        const visibilityCalls = getChangeVisibilityCalls(h);
+        expect(visibilityCalls).toHaveLength(1);
+        const command = visibilityCalls[0]?.[0];
+        if (!(command instanceof ChangeMessageVisibilityBatchCommand)) {
+            throw new Error('Expected a visibility batch command');
+        }
+        expect(command.input).toEqual({
+            QueueUrl: 'http://queue',
+            Entries: [
+                { Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 33 },
+                { Id: '1', ReceiptHandle: 'rh-1', VisibilityTimeout: 33 }
+            ]
+        });
+        const visibilityOrder = h.sqsSend.mock.invocationCallOrder[1];
+        const dispatchOrder = h.orchestratorExecuteWebhookBatch.mock.invocationCallOrder[0];
+        if (visibilityOrder === undefined || dispatchOrder === undefined) {
+            throw new Error('Expected visibility extension and orchestrator dispatch to be called');
+        }
+        expect(visibilityOrder).toBeLessThan(dispatchOrder);
     });
 
     it('deletes a poison-pill message without calling orchestrator', async () => {

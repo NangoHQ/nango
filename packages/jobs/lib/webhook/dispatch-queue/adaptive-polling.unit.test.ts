@@ -62,12 +62,20 @@ describe('LocalAdaptivePollPacer', () => {
 
     it('honors admission Retry-After at the pre-dispatch gate', async () => {
         const sleep = vi.fn(() => Promise.resolve());
+        const prepareWait = vi.fn(() => Promise.resolve());
         const pacer = makePacer({ now: () => 0, random: () => 0.5, sleep });
 
         pacer.recordCongestion(1200, 20);
-        await pacer.waitForBackoff(new AbortController().signal);
+        await pacer.waitForBackoff(new AbortController().signal, prepareWait);
 
+        expect(prepareWait).toHaveBeenCalledWith(1320);
         expect(sleep).toHaveBeenCalledWith(1320, expect.any(AbortSignal));
+        const prepareOrder = prepareWait.mock.invocationCallOrder[0];
+        const sleepOrder = sleep.mock.invocationCallOrder[0];
+        if (prepareOrder === undefined || sleepOrder === undefined) {
+            throw new Error('Expected visibility preparation and sleep to be called');
+        }
+        expect(prepareOrder).toBeLessThan(sleepOrder);
     });
 
     it('extends an existing admission backoff', async () => {
@@ -169,7 +177,7 @@ describe('LocalAdaptivePollPacer', () => {
         const pacer = makePacer({ now: () => 0, random: () => 1, sleep });
         pacer.recordFailure(20);
 
-        await pacer.waitForBackoff(new AbortController().signal);
+        await pacer.waitForBackoff(new AbortController().signal, () => Promise.resolve());
 
         expect(sleep).not.toHaveBeenCalled();
     });

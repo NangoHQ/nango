@@ -5,7 +5,7 @@ import { metrics } from '@nangohq/utils';
 
 export interface DispatchPollPacer {
     wait(signal: AbortSignal): Promise<void>;
-    waitForBackoff(signal: AbortSignal): Promise<void>;
+    waitForBackoff(signal: AbortSignal, prepareWait: (delayMs: number) => Promise<void>): Promise<void>;
     recordCongestion(retryAfterMs: number, durationMs: number): void;
     recordFailure(durationMs: number): void;
     recordSuccess(durationMs: number): void;
@@ -81,10 +81,10 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
 
     /**
      * Gates an already-received batch before orchestrator dispatch.
-     * 1. Ignore adaptive pressure to avoid double pacing. 2. Wait only for explicit admission backoff and peer-loop extensions.
+     * 1. Ignore adaptive pressure. 2. Prepare message visibility for the exact delay. 3. Wait for backoff and peer-loop extensions.
      */
-    async waitForBackoff(signal: AbortSignal): Promise<void> {
-        await this.waitUntilAllowed(signal, false);
+    async waitForBackoff(signal: AbortSignal, prepareWait: (delayMs: number) => Promise<void>): Promise<void> {
+        await this.waitUntilAllowed(signal, false, prepareWait);
     }
 
     /**
@@ -139,7 +139,7 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
      * Executes the shared wait algorithm.
      * 1. Snapshot and decay state. 2. Calculate bounded jitter. 3. Sleep. 4. Repeat only for a live deadline extension.
      */
-    private async waitUntilAllowed(signal: AbortSignal, includeAdaptiveDelay: boolean): Promise<void> {
+    private async waitUntilAllowed(signal: AbortSignal, includeAdaptiveDelay: boolean, prepareWait?: (delayMs: number) => Promise<void>): Promise<void> {
         while (!signal.aborted) {
             const now = this.now();
             this.decay(now);
@@ -156,6 +156,7 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
             if (delayMs === 0) {
                 return;
             }
+            await prepareWait?.(delayMs);
             await this.sleep(delayMs, signal);
             if (this.backoffUntil <= observedBackoffUntil || this.backoffUntil <= this.now()) {
                 return;
