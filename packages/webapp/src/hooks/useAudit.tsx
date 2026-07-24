@@ -4,12 +4,12 @@ import { APIError, apiFetch } from '../utils/api';
 
 import type { GetAuditTrail } from '@nangohq/types';
 
-export function useApiGetAuditTrail(env: string, filters: { from?: string | undefined; to?: string | undefined }, options?: { enabled?: boolean }) {
+export function useApiGetAuditTrail(filters: { from?: string | undefined; to?: string | undefined }, options?: { enabled?: boolean }) {
     return useInfiniteQuery<GetAuditTrail['Success'], APIError, { pages: GetAuditTrail['Success'][] }, unknown[], string | null>({
-        enabled: Boolean(env) && (options?.enabled ?? true),
-        queryKey: [env, 'audit-trail:infinite', filters.from ?? null, filters.to ?? null],
+        enabled: options?.enabled ?? true,
+        queryKey: ['audit-trail:infinite', filters.from ?? null, filters.to ?? null],
         queryFn: async ({ pageParam, signal }) => {
-            const params = new URLSearchParams({ env });
+            const params = new URLSearchParams();
             if (pageParam) {
                 params.append('cursor', pageParam);
             }
@@ -20,7 +20,8 @@ export function useApiGetAuditTrail(env: string, filters: { from?: string | unde
                 params.append('to', filters.to);
             }
 
-            const res = await apiFetch(`/api/v1/audit-trail?${params.toString()}`, { method: 'GET', signal });
+            const qs = params.toString();
+            const res = await apiFetch(`/api/v1/audit-trail${qs ? `?${qs}` : ''}`, { method: 'GET', signal });
             const json = (await res.json()) as GetAuditTrail['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });

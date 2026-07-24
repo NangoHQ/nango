@@ -25,7 +25,6 @@ export const ProfileDropdown: React.FC = () => {
     const { can } = usePermissions();
     const canReadAuditTrail = can(permissions.canReadAuditTrail);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const env = useStore((state) => state.env);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
     const isDevToolsEnabled = useIsDevToolsEnabled();
 
@@ -63,12 +62,12 @@ export const ProfileDropdown: React.FC = () => {
             list.push({
                 label: 'Audit log',
                 icon: ScrollText,
-                href: `/${env}/audit`
+                href: `/team/audit`
             });
         }
 
         return list;
-    }, [meta, showGettingStarted, env, canReadAuditTrail]);
+    }, [meta, showGettingStarted, canReadAuditTrail]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

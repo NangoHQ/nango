@@ -176,6 +176,11 @@ export const router = sentryCreateBrowserRouter([
                 handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
             },
             {
+                path: '/team/audit',
+                element: <AuditShow />,
+                handle: { breadcrumb: 'Audit log' } as BreadcrumbHandle
+            },
+            {
                 path: '/:env',
                 children: [
                     {
@@ -315,11 +320,6 @@ export const router = sentryCreateBrowserRouter([
                         path: 'logs',
                         element: <LogsShow />,
                         handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
-                    },
-                    {
-                        path: 'audit',
-                        element: <AuditShow />,
-                        handle: { breadcrumb: 'Audit log' } as BreadcrumbHandle
                     },
                     {
                         path: 'activity',

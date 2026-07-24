@@ -13,7 +13,6 @@ import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
-import { useStore } from '@/store';
 import { last14dPreset, logsPresets } from '@/utils/logs';
 import { formatDateToLogFormat } from '@/utils/utils';
 import { AuditEventDrawer } from './components/AuditEventDrawer';
@@ -28,7 +27,6 @@ const outcomeVariant: Record<AuditOutcome, React.ComponentProps<typeof Tag>['var
 };
 
 export const AuditShow: React.FC = () => {
-    const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
     const { user } = useUser();
@@ -42,7 +40,6 @@ export const AuditShow: React.FC = () => {
 
     // Only read audit data once the flag and the caller's permission are confirmed; stays idle otherwise.
     const { data, isLoading, isError, refetch, isFetchingNextPage, hasNextPage, fetchNextPage } = useApiGetAuditTrail(
-        env,
         { from, to },
         { enabled: meta?.auditTrail === true && canReadAuditTrail }
     );
@@ -84,7 +81,7 @@ export const AuditShow: React.FC = () => {
                 <title>Audit log - Nango</title>
             </Helmet>
 
-            <div key={env} className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
                 <div className="flex gap-2 justify-between">
                     {/* Left side is reserved for search + filters (status, actor, resource, …) added later. */}
                     <div className="flex-1 min-w-0" />
