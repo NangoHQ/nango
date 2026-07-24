@@ -2,7 +2,7 @@ import dns from 'node:dns/promises';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.js';
+import { clearPinnedAddressCacheForTests, createSafeHttpAgents, getSafeUndiciDispatcher } from './agent.js';
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -12,9 +12,9 @@ import {
     resolveProxyBaseUrlOverrideDenylist,
     resolveProxyBaseUrlOverrideDenylistForRunner
 } from './denylist.js';
-import { OutboundUrlError } from './errors.js';
+import { findOutboundUrlError, OutboundUrlError } from './errors.js';
 import { classifyBlockedIp } from './ip.js';
-import { resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
+import { resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
 import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
 import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
 
@@ -125,6 +125,45 @@ describe('egress permissive mode', () => {
         expect(policy.mode).toBe('permissive');
         expect(validateOutboundUrlSync('http://127.0.0.1:8080/', policy).ok).toBe(false);
         expect(isBaseUrlOverrideDeniedByPolicy('http://127.0.0.1:8080/', policy)).toBe(true);
+    });
+});
+
+describe('egress OAuth policy', () => {
+    it('allows RFC1918 by default but still blocks loopback/metadata/link-local', () => {
+        const policy = resolvePolicyForOAuth({ proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] });
+        expect(policy.blockPrivateIps).toBe(false);
+        expect(validateOutboundUrlSync('http://10.0.0.5/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('http://192.168.1.10/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('http://127.0.0.1/token', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://169.254.169.254/token', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://localhost/token', policy).ok).toBe(false);
+    });
+
+    it('lets the OAuth overlay re-enable RFC1918 blocking', () => {
+        const policy = resolvePolicyForOAuth({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST],
+            outboundUrlPolicyOAuth: { blockPrivateIps: true }
+        });
+        expect(policy.blockPrivateIps).toBe(true);
+        expect(validateOutboundUrlSync('http://10.0.0.5/token', policy).ok).toBe(false);
+    });
+
+    it('inherits the base policy and lets the OAuth overlay win', () => {
+        const policy = resolvePolicyForOAuth({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST],
+            outboundUrlPolicy: { mode: 'allowlist', allowlist: ['api.example.com'] },
+            outboundUrlPolicyOAuth: { maxRedirects: 2 }
+        });
+        expect(policy.mode).toBe('allowlist');
+        expect(policy.maxRedirects).toBe(2);
+        expect(validateOutboundUrlSync('https://api.example.com/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('https://evil.com/token', policy).ok).toBe(false);
+    });
+
+    it('keeps the default denylist even when the operator opts out of the proxy denylist', () => {
+        const policy = resolvePolicyForOAuth({ proxyBaseUrlOverrideDenylist: [] });
+        expect(policy.denylist.has('169.254.169.254')).toBe(true);
+        expect(policy.denylist.has('localhost')).toBe(true);
     });
 });
 
@@ -320,5 +359,36 @@ describe('egress safe lookup pinning', () => {
 
         await lookupVia(lookupFn, 'host-2.example');
         expect(lookupSpy).toHaveBeenCalledTimes(1_004);
+    });
+});
+
+describe('getSafeUndiciDispatcher connect overrides', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        clearPinnedAddressCacheForTests();
+    });
+
+    it('drops socketPath so callers cannot bypass the safe lookup via a unix socket', async () => {
+        // Resolve to a loopback address so validation rejects before any real socket connect is attempted.
+        const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const permissive = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { mode: 'permissive', blockPrivateIps: false, blockLinkLocal: false }
+        });
+
+        // A honored socketPath would connect straight to the unix socket and never invoke the safe lookup.
+        const dispatcher = getSafeUndiciDispatcher(permissive, { socketPath: '/tmp/nango-egress-should-not-be-used.sock' } as never);
+
+        const caught = await fetch('http://nango-egress-test.example/', { dispatcher } as never).then(
+            () => null,
+            (err: unknown) => err
+        );
+
+        // The safe lookup ran, proving socketPath was stripped and the connection stayed policy-controlled.
+        expect(lookupSpy).toHaveBeenCalled();
+        // The rejection is specifically the policy denial (loopback), not an unrelated transport failure —
+        // proving the connection was routed through the safe lookup rather than the unix socket.
+        const outboundErr = findOutboundUrlError(caught);
+        expect(outboundErr?.code).toBe('denied_dns');
     });
 });

@@ -95,9 +95,6 @@ export interface ServerPolicyEnvInput {
     outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
 }
 
-/**
- * Build policy for server-side services from parsed env values.
- */
 export function resolvePolicyForServer(input: ServerPolicyEnvInput): OutboundUrlPolicy {
     const jsonRaw = input.outboundUrlPolicy ?? null;
     const denylistEntries = input.proxyBaseUrlOverrideDenylist;
@@ -128,9 +125,6 @@ function isBaseUrlOverrideEnabledFromEnv(raw: string | undefined): boolean {
     return normalized !== 'false' && normalized !== '0';
 }
 
-/**
- * Build policy for runner / runner-sdk. Always applies secure denylist defaults when env is empty.
- */
 export function resolvePolicyForRunner(input: RunnerPolicyEnvInput): OutboundUrlPolicy {
     return resolvePolicyForRunnerSync(input);
 }
@@ -178,23 +172,27 @@ export function getRunnerPolicyFromEnv(): OutboundUrlPolicy {
     return memoizedRunnerPolicy;
 }
 
-/**
- * OAuth-specific policy: blocks metadata/loopback/link-local + DNS rebinding by default;
- * RFC1918 blocking off unless explicitly configured.
- */
-export function resolvePolicyForOAuth(input: { outboundUrlPolicyOAuthRaw?: string | undefined; outboundUrlPolicyRaw?: string | undefined }): OutboundUrlPolicy {
-    const oauthRaw = parsePolicyJson(input.outboundUrlPolicyOAuthRaw);
-    const baseRaw = parsePolicyJson(input.outboundUrlPolicyRaw);
+export interface OAuthPolicyEnvInput {
+    proxyBaseUrlOverrideDenylist: string[];
+    /** Base policy (NANGO_OUTBOUND_URL_POLICY), already parsed. */
+    outboundUrlPolicy?: OutboundUrlPolicyRaw | undefined;
+    /** OAuth-specific overlay (NANGO_OUTBOUND_URL_POLICY_OAUTH), already parsed. */
+    outboundUrlPolicyOAuth?: OutboundUrlPolicyRaw | undefined;
+}
+
+export function resolvePolicyForOAuth(input: OAuthPolicyEnvInput): OutboundUrlPolicy {
+    const denylistEntries =
+        input.proxyBaseUrlOverrideDenylist.length === 0 ? [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] : input.proxyBaseUrlOverrideDenylist;
     const merged = mergePolicyRaw(
         mergePolicyRaw(
             {
                 blockPrivateIps: false,
                 mode: 'denylist',
-                denylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST]
+                denylist: denylistEntries
             },
-            baseRaw ?? {}
+            input.outboundUrlPolicy ?? {}
         ),
-        oauthRaw ?? {}
+        input.outboundUrlPolicyOAuth ?? {}
     );
     return rawToPolicy(merged, mergeProxyBaseUrlOverrideDenylist(merged.denylist ?? []));
 }

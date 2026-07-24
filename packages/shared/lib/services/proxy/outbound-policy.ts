@@ -1,8 +1,21 @@
-import { resolvePolicyForServer } from '@nangohq/egress';
+import {
+    absoluteUrlFromRedirectRequestOptions,
+    assertSafeOutboundUrl,
+    createAsyncRedirectValidator,
+    createRedirectValidator,
+    getSafeHttpAgents,
+    getSafeUndiciDispatcher,
+    resolvePolicyForOAuth,
+    resolvePolicyForServer
+} from '@nangohq/egress';
 
 import { envs } from '../../env.js';
 
-import type { OutboundUrlPolicy } from '@nangohq/egress';
+import type { OutboundUrlPolicy, ValidateOutboundUrlContext } from '@nangohq/egress';
+import type { AxiosRequestConfig } from 'axios';
+import type http from 'node:http';
+import type https from 'node:https';
+import type { buildConnector, Agent as UndiciAgent } from 'undici';
 
 export {
     OutboundUrlError,
@@ -33,4 +46,93 @@ export function getServerOutboundUrlPolicy(): OutboundUrlPolicy {
 
 export function resetServerOutboundUrlPolicyForTests(): void {
     memoizedServerPolicy = null;
+}
+
+let memoizedOAuthPolicy: OutboundUrlPolicy | null = null;
+
+export function getOAuthOutboundUrlPolicy(): OutboundUrlPolicy {
+    if (memoizedOAuthPolicy) {
+        return memoizedOAuthPolicy;
+    }
+    memoizedOAuthPolicy = resolvePolicyForOAuth({
+        proxyBaseUrlOverrideDenylist: envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
+        outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY,
+        outboundUrlPolicyOAuth: envs.NANGO_OUTBOUND_URL_POLICY_OAUTH
+    });
+    return memoizedOAuthPolicy;
+}
+
+export function resetOAuthOutboundUrlPolicyForTests(): void {
+    memoizedOAuthPolicy = null;
+}
+
+export async function assertSafeOAuthUrl(url: string, ctx?: ValidateOutboundUrlContext): Promise<URL> {
+    return assertSafeOutboundUrl(url, getOAuthOutboundUrlPolicy(), { context: 'oauth', ...ctx });
+}
+
+export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: https.Agent } {
+    return getSafeHttpAgents(getOAuthOutboundUrlPolicy());
+}
+
+/** Headers that may be retained on OAuth token redirects; everything else is treated as credential material. */
+const SAFE_OAUTH_REDIRECT_HEADERS = new Set(['accept', 'accept-encoding', 'content-type', 'user-agent']);
+
+function stripUnsafeOAuthRedirectHeaders(headers: Record<string, unknown> | undefined): void {
+    if (!headers) {
+        return;
+    }
+    for (const key of Object.keys(headers)) {
+        if (!SAFE_OAUTH_REDIRECT_HEADERS.has(key.toLowerCase())) {
+            delete headers[key];
+        }
+    }
+}
+
+/**
+ * Axios request options for OAuth token egress: pinned agents, policy maxRedirects,
+ * and sync validation of each redirect hop (IP literals / denied hosts).
+ * DNS rebinding on redirect hostnames is still caught by the safe agent lookup.
+ *
+ * Credential headers are stripped on every redirect hop (not just cross-origin ones): forwarding
+ * them is not opt-in anywhere in the OAuth path, so Authorization and caller-defined API-key headers
+ * are dropped whenever a redirect is followed. follow-redirects itself only strips Authorization/Cookie.
+ */
+export function getOAuthAxiosRequestConfig(): Pick<AxiosRequestConfig, 'httpAgent' | 'httpsAgent' | 'maxRedirects' | 'beforeRedirect'> {
+    const policy = getOAuthOutboundUrlPolicy();
+    const agents = getSafeHttpAgents(policy);
+    const redirectValidator = createRedirectValidator(policy);
+
+    return {
+        httpAgent: agents.httpAgent,
+        httpsAgent: agents.httpsAgent,
+        maxRedirects: policy.maxRedirects,
+        beforeRedirect: (options) => {
+            const absolute = absoluteUrlFromRedirectRequestOptions(options);
+            // Block redirect hops to blocked IP literals / denied hosts; hostname rebinding is caught by the safe agent.
+            if (absolute) {
+                redirectValidator(absolute);
+            }
+            // Never forward credential material across a redirect; strip on every hop, same-origin included.
+            stripUnsafeOAuthRedirectHeaders(options['headers'] as Record<string, unknown> | undefined);
+        }
+    };
+}
+
+export function getOAuthSafeUndiciDispatcher(connectOverrides?: buildConnector.BuildOptions): UndiciAgent {
+    return getSafeUndiciDispatcher(getOAuthOutboundUrlPolicy(), connectOverrides);
+}
+
+/**
+ * Redirect policy for the OAuth `fetch` path (client-credentials/token exchange via undici).
+ * The safe undici dispatcher only pins DNS for hostname connects and never enforces a redirect cap,
+ * so redirects are followed manually: this caps hops at the OAuth policy's `maxRedirects` and
+ * re-validates every hop (including raw IP-literal targets the dispatcher's lookup would skip).
+ */
+export function getOAuthRedirectPolicy(): { maxRedirects: number; validate: (target: URL) => Promise<void> } {
+    const policy = getOAuthOutboundUrlPolicy();
+    const validate = createAsyncRedirectValidator(policy);
+    return {
+        maxRedirects: policy.maxRedirects,
+        validate: (target: URL) => validate(target.href)
+    };
 }
