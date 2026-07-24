@@ -57,6 +57,118 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('injects a declared integration secret alongside an OAuth access token', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    base_url: 'https://connect.beetexting.com/prod',
+                    headers: { 'x-api-key': '${integrationConfig.apiKey}' }
+                },
+                integration_config: {
+                    apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                }
+            }
+        });
+
+        const headers = buildProxyHeaders({
+            config,
+            url: 'https://connect.beetexting.com/prod/message',
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+            integrationConfig: { oauth_client_id: 'client-id', oauth_client_secret: 'client-secret', custom: { apiKey: 'bee-api-key' } }
+        });
+
+        expect(headers).toEqual({ authorization: 'Bearer oauth-token', 'x-api-key': 'bee-api-key' });
+    });
+
+    it('fails closed when a required integration configuration value is missing', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://example.com', headers: { 'x-api-key': '${integrationConfig.apiKey}' } },
+                integration_config: {
+                    apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                }
+            }
+        });
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://example.com',
+                connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+                integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: {} }
+            })
+        ).toThrowError(expect.objectContaining({ code: 'missing_integration_config' }));
+    });
+
+    it('rejects integration configuration placeholders that are not declared by the provider', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://example.com', headers: { 'x-api-key': '${integrationConfig.unknown}' } },
+                integration_config: {
+                    apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                }
+            }
+        });
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://example.com',
+                connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+                integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: { unknown: 'secret' } }
+            })
+        ).toThrowError(expect.objectContaining({ code: 'invalid_integration_config' }));
+    });
+
+    it('does not allow a caller to override a header backed by a secret integration field', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://example.com', headers: { 'x-api-key': '${integrationConfig.apiKey}' } },
+                integration_config: {
+                    apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                }
+            },
+            headers: { 'X-API-Key': 'caller-controlled' }
+        });
+
+        const headers = buildProxyHeaders({
+            config,
+            url: 'https://example.com',
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+            integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: { apiKey: 'provider-controlled' } }
+        });
+
+        expect(headers['x-api-key']).toBe('provider-controlled');
+        expect(headers['X-API-Key']).toBeUndefined();
+    });
+
+    it('preserves the provider casing when protecting a secret-backed header', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://example.com', headers: { 'X-API-Key': '${integrationConfig.apiKey}' } },
+                integration_config: {
+                    apiKey: { type: 'string', title: 'API Key', description: '', order: 1, automated: false, secret: 'true' }
+                }
+            },
+            headers: { 'x-api-key': 'caller-controlled' }
+        });
+
+        const headers = buildProxyHeaders({
+            config,
+            url: 'https://example.com',
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'oauth-token', raw: {} } }),
+            integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: { apiKey: 'provider-controlled' } }
+        });
+
+        expect(headers['X-API-Key']).toBe('provider-controlled');
+        expect(headers['x-api-key']).toBeUndefined();
+    });
+
     it('should correctly construct headers for Basic auth', () => {
         const config = getDefaultProxy({
             provider: {
@@ -2054,11 +2166,42 @@ describe('buildProxyBody', () => {
         expect(buildProxyBody({ config, connection: getTestConnection() })).toBeNull();
     });
 
-    it('returns null when proxy.body is empty', () => {
+    it('returns an empty object when proxy.body is explicitly empty', () => {
         const config = getDefaultProxy({
             provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: {} } }
         });
-        expect(buildProxyBody({ config, connection: getTestConnection() })).toBeNull();
+        expect(buildProxyBody({ config, connection: getTestConnection() })).toEqual({});
+    });
+
+    it('turns an explicitly empty proxy.body into JSON data for a bodyless POST', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: {} } },
+            method: 'POST'
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection()
+        });
+
+        expect(axiosConfig.data).toEqual({});
+    });
+
+    it('preserves caller FormData when proxy.body is explicitly empty', () => {
+        const form = new FormData();
+        form.append('file', Buffer.from('test'), { filename: 'test.txt', contentType: 'text/plain' });
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'API_KEY', proxy: { base_url: 'https://example.com', body: {} } },
+            method: 'POST',
+            data: form
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection()
+        });
+
+        expect(axiosConfig.data).toBe(form);
     });
 
     it('includes literal values that contain no $ placeholders', () => {
