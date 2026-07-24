@@ -1,36 +1,38 @@
 ---
-title: 'Agentcard - How to get your OAuth client credentials'
+title: 'Agentcard - How do I link my account?'
 sidebarTitle: 'Agentcard'
-description: 'Create an OAuth client in the Agentcard dashboard and obtain the credentials to connect it to Nango'
+description: 'Create an OAuth client in the Agentcard dashboard and connect it to Nango'
 ---
 
-## Overview
+# Overview
 
-Agentcard authenticates API access with OAuth 2.0 client credentials: a Client ID and a Client Secret tied to your organization. There is no user redirect. Sandbox and production use the same API URL; the credential decides which environment you reach.
+To authenticate with the Agentcard API, you need:
+1. **Client ID** - The OAuth client ID for your Agentcard organization
+2. **Client Secret** - The OAuth client secret paired with that ID
+
+This guide walks you through finding both in the Agentcard dashboard and connecting them to Nango. There is no user redirect: Agentcard uses OAuth 2.0 client credentials, and the credential decides whether you reach sandbox or production. The API base URL is always `https://api.agentcard.sh`.
 
 ### Prerequisites
 
-You must have:
-- An Agentcard account ([sign up](https://agentcard.sh))
-- An organization in the Agentcard dashboard
+- An Agentcard account with an organization ([sign up](https://agentcard.sh))
 
-## Step 1: Open your organization's Credentials page
+### Instructions
+
+#### Step 1: Open the Credentials page
 
 1. Sign in to the Agentcard dashboard.
 2. Select your organization.
-3. Go to **Credentials**.
+3. Go to **Settings** -> **Developers** -> **Credentials**.
 
-## Step 2: Copy your Client ID and Client Secret
+#### Step 2: Copy your Client ID and Client Secret
 
 1. Your **Client ID** is shown on the Credentials page.
-2. Reveal and copy the **secret** for the environment you want to use: sandbox to test without moving money, production for live cards (production requires an active subscription).
+2. Reveal and copy the **secret** for the environment you want: sandbox to test without moving money, or production for live cards (production requires an active subscription). Secrets start with `acs_`.
 
-## Step 3: Connect in Nango
+#### Step 3: Enter credentials in the Connect UI
 
-1. In Nango, add a connection for the Agentcard integration.
-2. Enter the Client ID and Client Secret.
-3. Save. Nango fetches tokens from `https://api.agentcard.sh/api/v1/oauth/token` automatically and refreshes them as needed.
+1. Open the form where you need to authenticate with Agentcard.
+2. Enter your **Client ID** and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
-For API reference and product docs, see [docs.agentcard.sh](https://docs.agentcard.sh).
-
-<Note>Contribute improvements to this guide by [editing this page](https://github.com/NangoHQ/nango/tree/master/docs/api-integrations/agentcard/connect.mdx)</Note>
+You are now connected to Agentcard.
