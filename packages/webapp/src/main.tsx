@@ -17,7 +17,10 @@ if (globalEnv.publicPosthogKey) {
         mask_all_element_attributes: true,
         session_recording: {
             maskAllInputs: true,
-            maskTextSelector: '*:not([data-ph-unmask])',
+            // rrweb matches maskTextSelector against ancestors too, so a :not() opt-out can
+            // never apply (body always matches). Mask everything, unmask via maskTextFn.
+            maskTextSelector: '*',
+            maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*')),
             // Network entries captured into recordings carry raw API urls (/api/v1/connections/<id>)
             maskCapturedNetworkRequestFn: (request) => {
                 request.name = redactConnectionIdFromUrl(request.name);

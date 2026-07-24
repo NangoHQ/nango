@@ -36,8 +36,14 @@ Sentry.init({
         if (breadcrumb.category === 'console') {
             return null;
         }
-        if (typeof breadcrumb.data?.['url'] === 'string') {
-            breadcrumb.data['url'] = redactConnectionIdFromUrl(breadcrumb.data['url']);
+        if (breadcrumb.data) {
+            // fetch/xhr breadcrumbs carry `url`, navigation breadcrumbs `from`/`to`
+            for (const key of ['url', 'from', 'to']) {
+                const value = breadcrumb.data[key];
+                if (typeof value === 'string') {
+                    breadcrumb.data[key] = redactConnectionIdFromUrl(value);
+                }
+            }
         }
         return breadcrumb;
     }
