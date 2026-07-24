@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
+import { localFileService, remoteFileService } from '@nangohq/shared';
 import { Err, integrationFilesAreRemote, isCloud, Ok, stringifyError } from '@nangohq/utils';
 
 import { getRuntimeAdapter } from '../../runtime/runtimes.js';
@@ -69,7 +69,6 @@ export async function startScript({
                     throw res.error;
                 }
 
-                await connectionService.trackExecution(nangoProps.nangoConnectionId);
                 return Ok(undefined);
             } catch (err) {
                 span?.setTag('error', err);
