@@ -127,8 +127,44 @@ export async function setupClickhouse() {
     console.log('Clickhouse running at', url);
 }
 
+// Every runServer()-based integration test (and a few others) calls these same migration
+// functions in its own beforeAll. With fileParallelism, many files' beforeAll hooks fire
+// concurrently and race for knex's migration lock on the same shared schema — whichever loses
+// throws `MigrationLocked: Migration table is already locked`. Running them once here, before any
+// test file starts, means every file's own call sees zero pending migrations and never reaches
+// the lock-acquiring code path.
+//
+// Each step is independent and best-effort: if one fails (e.g. to import), the others still run,
+// and any file's own migration call remains the real safety net, just as it was before
+// fileParallelism.
+async function runMigrationOnce(name: string, run: () => Promise<void>) {
+    try {
+        await run();
+    } catch (err) {
+        console.error(`Pre-migration "${name}" in globalSetup failed, falling back to per-file migration calls`, err);
+    }
+}
+
+async function runMigrationsOnce() {
+    const { multipleMigrations, default: db } = await import('@nangohq/database');
+    await runMigrationOnce('database', () => multipleMigrations());
+    await runMigrationOnce('keystore', async () => {
+        const { migrate: migrateKeystore } = await import('@nangohq/keystore');
+        await migrateKeystore(db.knex);
+    });
+    await runMigrationOnce('logs', async () => {
+        const { migrateLogsMapping } = await import('@nangohq/logs');
+        await migrateLogsMapping();
+    });
+    await runMigrationOnce('records', async () => {
+        const { records } = await import('@nangohq/records');
+        await records.migrate();
+    });
+}
+
 export async function setup() {
     await Promise.all([setupPostgres(), setupLogsStorage(), setupActiveMQ(), setupRedis(), setupClickhouse()]);
+    await runMigrationsOnce();
 }
 
 export const teardown = async () => {
