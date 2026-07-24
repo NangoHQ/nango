@@ -53,10 +53,12 @@ export const EmailVerified: React.FC = () => {
 
             const confirmation: ConfirmEmail['Success'] = response;
             track('web:account_signup', { user_id: confirmation.userId, accountId: confirmation.accountId });
-            sessionStorage.setItem('show-email-verified-toast', 'true');
 
             const redirectPath = confirmation.showHearAboutUs ? '/onboarding/hear-about-us' : `/${env}/getting-started`;
-            navigate(`/signin?next=${encodeURIComponent(redirectPath)}`, { replace: true, state: { email: confirmation.email } });
+            navigate(`/signin?next=${encodeURIComponent(redirectPath)}`, {
+                replace: true,
+                state: { email: confirmation.email, verifiedUserId: confirmation.userId }
+            });
         } catch {
             setErrorMessage('An error occurred while verifying the email. Please try again.');
         } finally {

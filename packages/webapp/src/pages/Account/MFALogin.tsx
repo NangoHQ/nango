@@ -1,7 +1,7 @@
 import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
@@ -14,6 +14,8 @@ import { useSignin } from '@/utils/user';
 
 export const MFALogin: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const verifiedUserId = typeof location.state?.verifiedUserId === 'number' ? location.state.verifiedUserId : undefined;
     const signin = useSignin();
     const { mutateAsync: verify, isPending } = useMFALoginVerification();
     const [code, setCode] = useState('');
@@ -26,6 +28,9 @@ export const MFALogin: React.FC = () => {
         try {
             const result = await verify(useRecoveryCode ? { type: 'recoveryCode', recoveryCode: code } : { type: 'code', code });
             signin(result.data.user);
+            if (result.data.user.id === verifiedUserId) {
+                sessionStorage.setItem('show-email-verified-toast', 'true');
+            }
             navigate(result.data.url, { replace: true });
         } catch (err) {
             if (err instanceof APIError && err.res.status === 400) {

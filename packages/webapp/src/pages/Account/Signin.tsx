@@ -58,6 +58,7 @@ export const Signin: React.FC = () => {
     const error = searchParams.get('error');
     const next = searchParams.get('next');
     const inviteToken = next?.match(/^\/signup\/([^/]+)$/)?.[1];
+    const verifiedUserId = typeof location.state?.verifiedUserId === 'number' ? location.state.verifiedUserId : undefined;
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (error === 'sso_session_expired') {
@@ -91,11 +92,14 @@ export const Signin: React.FC = () => {
 
             if (res.status === 200) {
                 if (!('user' in res.json)) {
-                    navigate('/signin/mfa');
+                    navigate('/signin/mfa', { state: { verifiedUserId } });
                     return;
                 }
                 const user: ApiUser = res.json.user;
                 signin(user);
+                if (user.id === verifiedUserId) {
+                    sessionStorage.setItem('show-email-verified-toast', 'true');
+                }
                 navigate(safeInternalPath(next));
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
