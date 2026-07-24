@@ -13,6 +13,7 @@ import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
 import {
+    confirmEmail,
     getEmailByExpiredToken,
     getEmailByUuid,
     getOnboardingHearAboutUs,
@@ -21,7 +22,6 @@ import {
     resendVerificationEmailByUuid,
     signin,
     signup,
-    validateEmailAndLogin,
     validateSigninRequest
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
@@ -181,7 +181,7 @@ if (flagHasAuth) {
     web.route('/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
     web.route('/account/email/expired-token/:token').get(rateLimiterMiddleware, getEmailByExpiredToken);
-    web.route('/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
+    web.route('/account/verify/code').post(rateLimiterMiddleware, confirmEmail);
 }
 
 if (flagHasManagedAuth) {

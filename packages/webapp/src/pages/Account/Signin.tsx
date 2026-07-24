@@ -3,7 +3,7 @@ import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
@@ -51,12 +51,14 @@ export const Signin: React.FC = () => {
     const { mutateAsync: resendVerificationEmailMutation, isPending: isResendingEmail } = useResendVerificationEmail();
     const signin = useSignin();
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast } = useToast();
 
     const [searchParams, setSearchParams] = useSearchParams();
     const error = searchParams.get('error');
     const next = searchParams.get('next');
     const inviteToken = next?.match(/^\/signup\/([^/]+)$/)?.[1];
+    const verifiedUserId = typeof location.state?.verifiedUserId === 'number' ? location.state.verifiedUserId : undefined;
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (error === 'sso_session_expired') {
@@ -77,7 +79,7 @@ export const Signin: React.FC = () => {
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
         defaultValues: {
-            email: '',
+            email: typeof location.state?.email === 'string' ? location.state.email : '',
             password: ''
         },
         mode: 'onSubmit'
@@ -90,11 +92,14 @@ export const Signin: React.FC = () => {
 
             if (res.status === 200) {
                 if (!('user' in res.json)) {
-                    navigate('/signin/mfa');
+                    navigate('/signin/mfa', { state: { verifiedUserId } });
                     return;
                 }
                 const user: ApiUser = res.json.user;
                 signin(user);
+                if (user.id === verifiedUserId) {
+                    sessionStorage.setItem('show-email-verified-toast', 'true');
+                }
                 navigate(safeInternalPath(next));
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
