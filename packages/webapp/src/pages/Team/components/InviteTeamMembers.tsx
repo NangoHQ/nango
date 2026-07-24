@@ -23,7 +23,21 @@ const inviteRowSchema = z.object({
     role: z.enum(['administrator', 'production_support', 'development_full_access'] as const)
 });
 
-const inviteSchema = z.object({ invites: z.array(inviteRowSchema).min(1) });
+const inviteSchema = z.object({ invites: z.array(inviteRowSchema).min(1) }).superRefine(({ invites }, ctx) => {
+    // Reject duplicate emails (case-insensitive) so one address isn't invited twice / raced across role requests.
+    const seen = new Set<string>();
+    invites.forEach((row, index) => {
+        const email = row.email.trim().toLowerCase();
+        if (!email) {
+            return; // empty rows are handled by the per-row email() check
+        }
+        if (seen.has(email)) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'This email is already in the list', path: ['invites', index, 'email'] });
+        } else {
+            seen.add(email);
+        }
+    });
+});
 
 type InviteFormData = z.infer<typeof inviteSchema>;
 
