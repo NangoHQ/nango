@@ -52,7 +52,8 @@ if (validator.errors) {
 const invalidInterpolation = /(?<!(\$|]))\{(?!\s*})/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp') {
+    // Skip validation for 'semble', its token_params.query is a literal GraphQL mutation string
+    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'semble') {
         continue;
     }
 
@@ -260,6 +261,18 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         } else if (!provider.credentials['role_arn']) {
             console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "role_arn" must be defined for AWS_SIGV4 providers`);
             error = true;
+        }
+    } else if (provider.auth_mode === 'APP_STORE') {
+        if (!provider.credentials) {
+            console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" must be defined for APP_STORE providers`);
+            error = true;
+        } else {
+            for (const field of ['issuerId', 'privateKeyId', 'privateKey']) {
+                if (!provider.credentials[field]) {
+                    console.error(chalk.red('error'), chalk.blue(providerKey), `"credentials" > "${field}" must be defined for APP_STORE providers`);
+                    error = true;
+                }
+            }
         }
     } else {
         if (provider.credentials) {

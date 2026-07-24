@@ -28,7 +28,7 @@ const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
                         className={cn('relative w-full flex-1 min-h-0 overflow-auto bg-surface-page min-w-3xl', fullWidth ? 'p-0' : 'p-11')}
                         {...props}
                     >
-                        <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
+                        <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-6' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
                         <Playground />
                     </div>
                 </SidebarInset>

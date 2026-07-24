@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Hubstaff OAuth app'
+sidebarTitle: 'Hubstaff Setup'
+description: 'Register an OAuth app with Hubstaff and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Hubstaff to obtain your OAuth credentials (Client ID and Client Secret). These are required so your users can grant your app access to their Hubstaff account.
+
+<Steps>
+  <Step title="Create a developer account">
+    Go to the [Hubstaff Developer Portal](https://developer.hubstaff.com/) and sign in with your Hubstaff account.
+  </Step>
+  <Step title="Create a new OAuth app">
+    Go to the [OAuth apps page](https://developer.hubstaff.com/account/apps/) and create a new application.
+  </Step>
+  <Step title="Configure the redirect URI">
+    Add the Nango callback URL as a registered redirect URI: `https://api.nango.dev/oauth/callback`. Redirect URIs must be HTTPS (except for `localhost`/`.test` during local development).
+  </Step>
+  <Step title="Get your credentials">
+    Copy your **Client ID** and **Client Secret** from the app settings. You'll need these when configuring the Hubstaff integration in Nango.
+  </Step>
+  <Step title="Select your scopes">
+    When configuring the Hubstaff integration in Nango, select the scopes your integration needs from the list Nango provides.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [Hubstaff's authentication documentation](https://developer.hubstaff.com/authentication).
+
+---

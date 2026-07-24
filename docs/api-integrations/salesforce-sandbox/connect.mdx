@@ -1,0 +1,39 @@
+---
+title: 'Salesforce (Sandbox) - How do I link my account?'
+sidebarTitle: 'Salesforce (Sandbox)'
+---
+
+# Overview
+
+To authenticate with Salesforce Sandbox, you will need:
+1. **Hostname** _(optional)_ — Your Salesforce sandbox instance hostname.
+
+This guide will walk you through finding your hostname in Salesforce.
+
+### Prerequisites
+
+- A Salesforce sandbox account
+
+### Instructions
+
+#### Step 1: Finding your Hostname
+
+1. Log in to your Salesforce sandbox account.
+2. Once logged in, click on your profile to view your hostname (e.g. `acme--sandboxname.sandbox.my.salesforce.com`).
+
+<img src="/api-integrations/salesforce/hostname.png"/>
+
+<Note>
+The hostname is optional. If not provided, Nango uses Salesforce's default sandbox login endpoint (`test.salesforce.com`).
+</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Hostname** (optional):
+1. Open the form where you need to authenticate with Salesforce Sandbox.
+2. Enter your **Hostname** in the respective field, or leave it blank to use the default sandbox login endpoint.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/salesforce-sandbox/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Salesforce (Sandbox).

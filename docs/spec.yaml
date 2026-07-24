@@ -1335,7 +1335,7 @@ paths:
                             properties:
                                 tags:
                                     $ref: '#/components/schemas/Tags'
-                                webhook_url:
+                                webhook_url_override:
                                     type: string
                                     description: >
                                         Override the environment's webhook URLs for this connection.
@@ -3973,9 +3973,6 @@ components:
                                     oauth_client_secret_override:
                                         type: string
                                         description: Set to empty string to allow end-users to provide their own OAuth client secret in Connect UI
-                                    webhook_url:
-                                        type: string
-                                        description: Override the environment's webhook URLs for connections created with this session. When set, webhooks for the connection are sent only to this URL (the environment's primary and secondary URLs are bypassed).
                 overrides:
                     type: object
                     additionalProperties:
@@ -3986,6 +3983,9 @@ components:
                             docs_connect:
                                 type: string
                                 description: Override the url of the docs we point to in the connect flow
+                webhook_url_override:
+                    type: string
+                    description: Override the environment's webhook URLs for the connection created by this session. When set, that connection's webhooks are sent only to this URL (the environment's primary and secondary URLs are bypassed).
 
         ConnectSessionReconnectInput:
             type: object
@@ -4007,6 +4007,8 @@ components:
                     $ref: '#/components/schemas/ConnectSessionInput/properties/integrations_config_defaults'
                 overrides:
                     $ref: '#/components/schemas/ConnectSessionInput/properties/overrides'
+                webhook_url_override:
+                    $ref: '#/components/schemas/ConnectSessionInput/properties/webhook_url_override'
 
         ConnectSession:
             type: object

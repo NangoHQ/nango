@@ -21,6 +21,13 @@ export const ENVS = z.object({
     LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
+    AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
+    // In-process cache of the persist auth context (persist internal-secret route).
+    AUTH_PERSIST_CONTEXT_CACHE_ENABLED: z.stringbool().optional().default(false),
+    // Cached entries are served for up to this long, so revoked keys, deleted environments, and plan
+    // changes stay visible until it elapses. Avoid raising it beyond 1 minute unless strictly
+    // necessary — a larger TTL widens that eventual-consistency window. Read once at startup.
+    AUTH_PERSIST_CONTEXT_CACHE_TTL_MS: z.coerce.number().int().positive().max(60_000).optional().default(60_000), // 1 minute
 
     // API
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
@@ -380,10 +387,6 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // Dev-only override: allows the `source` query param on `getBillingUsage`
-    // to pin a request to Orb for parity checks. Default is ClickHouse; when
-    // OFF (prod default), the `source` param is ignored.
-    FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS
@@ -520,7 +523,6 @@ export const ENVS = z.object({
 
     // Sentry
     PUBLIC_SENTRY_KEY: z.string().optional(),
-    SENTRY_DSN: z.url().optional(),
 
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),

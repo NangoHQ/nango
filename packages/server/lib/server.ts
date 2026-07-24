@@ -16,7 +16,7 @@ import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { flags, getLogger, initSentry, NANGO_VERSION, once, report } from '@nangohq/utils';
+import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
@@ -37,8 +37,6 @@ import type { WebSocket } from 'ws';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
-
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);

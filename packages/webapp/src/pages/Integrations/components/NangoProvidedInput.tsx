@@ -1,6 +1,4 @@
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
-
-import { Badge } from '@/components/ui/Badge';
+import { Badge, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import type { InputProps } from '@nangohq/design-system';
 
@@ -9,9 +7,7 @@ export const NangoProvidedInput: React.FC<InputProps & { fakeValueSize?: number 
         <InputGroup>
             <InputGroupInput disabled value={'•'.repeat(fakeValueSize)} {...props} />
             <InputGroupAddon align="inline-end">
-                <Badge variant="gray" className="uppercase">
-                    Nango provided
-                </Badge>
+                <Badge>Nango provided</Badge>
             </InputGroupAddon>
         </InputGroup>
     );

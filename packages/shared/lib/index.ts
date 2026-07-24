@@ -11,6 +11,7 @@ import localFileService from './services/file/local.service.js';
 import remoteFileService from './services/file/remote.service.js';
 import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
+import mfaService from './services/mfa.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import { generateSlackConnectionId, SlackService } from './services/notification/slack.service.js';
 import secretService from './services/secret.service.js';
@@ -40,6 +41,7 @@ export * from './services/endUser.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
+export { MFAError } from './services/mfa.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
@@ -86,6 +88,7 @@ export {
     getEncryptionManager,
     hmacService,
     localFileService,
+    mfaService,
     pbkdf2,
     providerClientManager,
     remoteFileService,

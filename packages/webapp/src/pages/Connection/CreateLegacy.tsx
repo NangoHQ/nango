@@ -17,7 +17,7 @@ import { useListIntegrations } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
@@ -64,7 +64,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
     const [assertionOptionState, setAssertionOptionState] = useState<Record<string, string>>({});
     const [issuerId, setIssuerId] = useState('');
-    const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
     const { toast } = useToast();
     const providerConfigKey = useSearchParam('providerConfigKey');
@@ -260,7 +259,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         getConnection
             .then(() => {
                 toast({ variant: 'success', title: 'Connection created!' });
-                analyticsTrack('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
+                track('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
                 void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })

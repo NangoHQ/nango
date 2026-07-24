@@ -28,6 +28,14 @@ export function resolveConnectionConfig({
     return connectionConfig;
 }
 
+export function resolveOutboundWebhookUrlOverride({ connectSession }: { connectSession: ConnectSession | undefined }): string | null {
+    const webhookUrl = connectSession?.webhookUrlOverride;
+    if (typeof webhookUrl !== 'string' || webhookUrl.trim() === '') {
+        return null;
+    }
+    return webhookUrl;
+}
+
 export async function isIntegrationAllowed({
     config,
     logCtx,

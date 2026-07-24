@@ -1,25 +1,20 @@
-// `id` and `recordedAt` are stamped downstream by ingestion, not by the caller.
+// `id` and `version` are stamped downstream by the store at write, not by the caller.
 
-export type AuditActorType = 'user' | 'api_key' | 'system';
-export type AuditOutcome = 'success' | 'failure' | 'denied';
-export type AuditTargetType = 'connection' | 'member';
+import type { AuditActor, AuditContext, AuditOutcome, AuditTarget } from '@nangohq/types';
 
-export interface AuditActor {
-    type: AuditActorType;
-    id: string;
-    display?: string;
-}
-
-export interface AuditTarget {
-    type: AuditTargetType;
-    id: string;
-    display?: string;
-}
-
-export interface AuditContext {
-    ip?: string;
-    userAgent?: string;
-}
+// Re-export the shared vocabulary so @nangohq/audit consumers (e.g. the server audit middleware) keep
+// importing these from here.
+export type {
+    AuditActor,
+    AuditActorType,
+    AuditContext,
+    AuditOutcome,
+    AuditTarget,
+    AuditTargetType,
+    AuditResource,
+    AuditAction,
+    AuditTrailVersion
+} from '@nangohq/types';
 
 export interface ConnectionDeletedMetadata {
     // Qualifies the target: connection_id is unique only per (provider config key, environment).
@@ -47,6 +42,3 @@ interface AuditEventCommon {
 export type AuditEvent =
     | (AuditEventCommon & { resource: 'connection'; action: 'deleted'; metadata?: ConnectionDeletedMetadata })
     | (AuditEventCommon & { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata });
-
-export type AuditResource = AuditEvent['resource'];
-export type AuditAction = AuditEvent['action'];

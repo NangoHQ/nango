@@ -20,6 +20,7 @@ export type Resource =
     | 'secret_key'
     | 'connection_credential'
     | 'log'
+    | 'audit_trail'
     | '*';
 export type Scope = 'production' | 'non-production' | 'global';
 

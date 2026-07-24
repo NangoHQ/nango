@@ -6,7 +6,7 @@ import { connectionService, environmentService, seeders } from '@nangohq/shared'
 import { MapLocks } from './locks.js';
 import { NangoActionRunner } from './sdk.js';
 
-import type { DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
+import type { ApiPublicConnectionFull, DBEnvironment, DBSyncConfig, NangoProps } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
     let env: DBEnvironment;
@@ -75,7 +75,8 @@ describe('Connection service integration tests', () => {
                     errors: [],
                     created_at: response.created_at.toISOString(),
                     updated_at: response.updated_at.toISOString(),
-                    last_fetched_at: response.last_fetched_at?.toISOString() || null
+                    last_fetched_at: response.last_fetched_at?.toISOString() || null,
+                    credentials: response.credentials as ApiPublicConnectionFull['credentials']
                 };
             };
 

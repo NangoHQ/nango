@@ -61,8 +61,9 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
 
     useEffect(() => {
         function listener(event: MessageEvent) {
-            // Origin validation for security
-            if (event.origin !== globalEnv.connectUrl) {
+            // Origin validation for security. event.origin never contains a path, so compare
+            // against the origin of connectUrl even when it includes a base path.
+            if (event.origin !== new URL(globalEnv.connectUrl).origin) {
                 return;
             }
 
