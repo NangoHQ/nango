@@ -68,7 +68,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                     <DialogDescription>
                         Manage access level and permissions.{' '}
-                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
+                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon variant="muted" size="sm">
                             Learn more
                         </StyledLink>
                     </DialogDescription>
@@ -171,7 +171,8 @@ export const TeamMembers: React.FC = () => {
                 <TableBody>
                     {allUsers?.map((user) => (
                         <TableRow key={user.id}>
-                            <TableCell>{user.name}</TableCell>
+                            {/* Invited users have no name yet — their name is just the email, so show a muted dash instead of duplicating it. */}
+                            <TableCell>{user.is_invitation ? <span className="text-text-secondary">–</span> : user.name}</TableCell>
 
                             <TableCell>{user.email}</TableCell>
 
