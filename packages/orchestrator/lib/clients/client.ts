@@ -16,6 +16,7 @@ import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeart
 import { validateSchedule, validateTask } from './validate.js';
 
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
+import type { WebhookAdmissionError } from '../webhook-admission.js';
 import type {
     ClientError,
     ExecuteActionProps,
@@ -634,16 +635,10 @@ function getWebhookAdmissionError(status: number | undefined, payload: unknown):
     if (status !== 529) {
         return null;
     }
-    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
-        return { message: 'Webhook admission capacity is temporarily exhausted', payload: {} };
-    }
-    const error = payload.error;
-    if (!error || typeof error !== 'object') {
-        return { message: 'Webhook admission capacity is temporarily exhausted', payload: {} };
-    }
+    const response = payload as Partial<WebhookAdmissionError> | undefined;
     return {
-        message: 'message' in error && typeof error.message === 'string' ? error.message : 'Webhook admission capacity is temporarily exhausted',
-        payload: 'payload' in error ? (error.payload as JsonValue) : {}
+        message: response?.error?.message ?? 'Webhook admission capacity is temporarily exhausted',
+        payload: (response?.error?.payload as JsonValue | undefined) ?? {}
     };
 }
 

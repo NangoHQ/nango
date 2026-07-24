@@ -33,17 +33,6 @@ interface WebhookAdmissionOptions {
     retryAfterMs: number;
 }
 
-export function resolveWebhookAdmissionLimits({ poolMax, maxConcurrency, dbReserve }: { poolMax: number; maxConcurrency: number; dbReserve: number }): {
-    maxConcurrency: number;
-    dbReserve: number;
-} {
-    const effectiveReserve = Math.min(dbReserve, Math.max(0, poolMax - 1));
-    return {
-        maxConcurrency: Math.min(maxConcurrency, poolMax - effectiveReserve),
-        dbReserve: effectiveReserve
-    };
-}
-
 export class WebhookAdmissionController implements WebhookAdmission {
     private readonly maxConcurrency: number;
     private readonly dbReserve: number;

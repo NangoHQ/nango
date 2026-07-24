@@ -10,7 +10,7 @@ import { TaskEventsHandler } from './events.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
-import { resolveWebhookAdmissionLimits, WebhookAdmissionController } from './webhook-admission.js';
+import { WebhookAdmissionController } from './webhook-admission.js';
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
@@ -75,22 +75,22 @@ try {
     });
     backpressureMonitor.start();
 
-    const webhookAdmissionLimits = resolveWebhookAdmissionLimits({
-        poolMax: envs.ORCHESTRATOR_DB_POOL_MAX,
-        maxConcurrency: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY,
-        dbReserve: envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE
-    });
-    if (webhookAdmissionLimits.dbReserve !== envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE) {
-        logger.warning(`Webhook admission DB reserve clamped from ${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE} to ${webhookAdmissionLimits.dbReserve}`);
+    const webhookAdmissionDbReserve = Math.min(envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE, envs.ORCHESTRATOR_DB_POOL_MAX - 1);
+    if (webhookAdmissionDbReserve !== envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE) {
+        logger.warning(`Webhook admission DB reserve clamped from ${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE} to ${webhookAdmissionDbReserve}`);
     }
-    if (webhookAdmissionLimits.maxConcurrency !== envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY) {
+    const webhookAdmissionMaxConcurrency = Math.min(
+        envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY,
+        envs.ORCHESTRATOR_DB_POOL_MAX - webhookAdmissionDbReserve
+    );
+    if (webhookAdmissionMaxConcurrency !== envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY) {
         logger.warning(
-            `Webhook admission concurrency clamped from ${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY} to ${webhookAdmissionLimits.maxConcurrency}`
+            `Webhook admission concurrency clamped from ${envs.ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY} to ${webhookAdmissionMaxConcurrency}`
         );
     }
     const webhookAdmission = new WebhookAdmissionController({
-        maxConcurrency: webhookAdmissionLimits.maxConcurrency,
-        dbReserve: webhookAdmissionLimits.dbReserve,
+        maxConcurrency: webhookAdmissionMaxConcurrency,
+        dbReserve: webhookAdmissionDbReserve,
         getAvailableConnections: () => {
             const pool = dbClient.getPoolStats();
             return envs.ORCHESTRATOR_DB_POOL_MAX - pool.used - pool.pendingAcquires;

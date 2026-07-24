@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
-const envSchema = z.object({
+export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
     CI: z.coerce.boolean().default(false),
@@ -721,8 +721,6 @@ const envSchema = z.object({
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
-
-export const ENVS = envSchema;
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
     const res = schema.safeParse(envs);

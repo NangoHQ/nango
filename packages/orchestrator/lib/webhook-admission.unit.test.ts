@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { resolveWebhookAdmissionLimits, WebhookAdmissionController } from './webhook-admission.js';
+import { WebhookAdmissionController } from './webhook-admission.js';
 
 function createController({ maxConcurrency = 2, dbReserve = 0, getAvailableConnections = () => Infinity } = {}) {
     const controller = new WebhookAdmissionController({
@@ -45,17 +45,6 @@ describe('WebhookAdmissionController', () => {
         }
         availableConnections = 3;
         expect(controller.acquire().acquired).toBe(true);
-    });
-
-    it('clamps configured limits while preserving one webhook connection', () => {
-        expect(resolveWebhookAdmissionLimits({ poolMax: 10, maxConcurrency: 7, dbReserve: 4 })).toEqual({
-            maxConcurrency: 6,
-            dbReserve: 4
-        });
-        expect(resolveWebhookAdmissionLimits({ poolMax: 10, maxConcurrency: 5, dbReserve: 20 })).toEqual({
-            maxConcurrency: 1,
-            dbReserve: 9
-        });
     });
 
     it('records admission decisions and in-flight state', () => {
