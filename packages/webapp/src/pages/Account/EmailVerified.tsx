@@ -6,7 +6,6 @@ import { useSWRConfig } from 'swr';
 
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
-import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 import { useSignin } from '../../utils/user';
@@ -20,8 +19,6 @@ export const EmailVerified: React.FC = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
     const { mutate } = useSWRConfig();
-
-    const env = useStore((state) => state.env);
 
     useEffectOnce(() => {
         if (!token) return;
@@ -49,8 +46,6 @@ export const EmailVerified: React.FC = () => {
                 }
 
                 const user: ValidateEmailAndLogin['Success']['user'] = response['user'];
-                const showHearAboutUs = response['showHearAboutUs'] === true;
-
                 track('web:account_signup', {
                     user_id: user.id,
                     accountId: user.accountId
@@ -60,8 +55,7 @@ export const EmailVerified: React.FC = () => {
                 await mutate<GetUser['Success']>('/api/v1/user', { data: user as GetUser['Success']['data'] }, { revalidate: false });
                 sessionStorage.setItem('show-email-verified-toast', 'true');
 
-                const redirectPath = showHearAboutUs ? '/onboarding/hear-about-us' : `/${env}/getting-started`;
-                navigate(redirectPath, { replace: true });
+                navigate('/onboarding/account-discovery', { replace: true });
             } catch {
                 setErrorMessage('An error occurred while verifying the email. Please try again.');
             }

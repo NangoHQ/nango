@@ -5,6 +5,7 @@ import { APIError, apiFetch } from '@/utils/api';
 import type {
     GetEmailByUuid,
     GetManagedEmailVerification,
+    GetOnboardingAccountDiscovery,
     GetOnboardingHearAboutUs,
     PostForgotPassword,
     PostManagedEmailVerification,
@@ -326,6 +327,22 @@ export function useOnboardingHearAboutUs() {
 
             if (res.status === 200) {
                 return (await res.json()) as GetOnboardingHearAboutUs['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useOnboardingAccountDiscovery() {
+    return useQuery<GetOnboardingAccountDiscovery['Success'], APIError>({
+        queryKey: ['account', 'onboarding', 'account-discovery'],
+        queryFn: async () => {
+            const res = await apiFetch('/api/v1/account/onboarding/account-discovery');
+
+            if (res.status === 200) {
+                return (await res.json()) as GetOnboardingAccountDiscovery['Success'];
             }
 
             const json = (await res.json()) as Record<string, unknown>;

@@ -33,6 +33,7 @@ import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
+import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
@@ -159,6 +160,10 @@ export const router = sentryCreateBrowserRouter([
             {
                 path: '/onboarding/hear-about-us',
                 element: <HearAboutUs />
+            },
+            {
+                path: '/onboarding/account-discovery',
+                element: <AccountDiscovery />
             },
             {
                 path: '/team-settings',
