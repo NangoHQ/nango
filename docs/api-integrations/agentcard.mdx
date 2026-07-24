@@ -76,7 +76,7 @@ Agentcard does not use scopes. Access is determined by the OAuth client's organi
 ## API gotchas
 
 - The credential decides the environment: a sandbox client returns sandbox data and a production client returns live data. The API base URL is always `https://api.agentcard.sh`.
-- Use the `/api/v2` routes: they are the public surface. `/api/v1` paths other than the OAuth token endpoint are internal and return `endpoint_retired`.
+- The public surface is `/api/v2`, including the token endpoint `POST /api/v2/oauth/token`. `/api/v1` paths are internal and return `endpoint_retired`.
 - Agentcard is a payments product for AI agents (one-time virtual cards with spend caps and approvals). Card mints move real money in production; test in sandbox first. Amounts are in cents (`2500` = $25.00).
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/agentcard.mdx)</Note>

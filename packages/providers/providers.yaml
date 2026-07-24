@@ -687,7 +687,7 @@ agentcard:
     categories:
         - payment
     auth_mode: OAUTH2_CC
-    token_url: https://api.agentcard.sh/api/v1/oauth/token
+    token_url: https://api.agentcard.sh/api/v2/oauth/token
     token_params:
         grant_type: client_credentials
     proxy:
