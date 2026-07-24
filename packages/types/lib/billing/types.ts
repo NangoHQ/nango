@@ -41,6 +41,7 @@ export interface BillingCustomer {
 export interface BillingInvoicingDetails {
     legalEntityName: string;
     email: string;
+    additionalEmails: string[];
     address: BillingAddress | null;
     taxId: BillingTaxId | null;
 }

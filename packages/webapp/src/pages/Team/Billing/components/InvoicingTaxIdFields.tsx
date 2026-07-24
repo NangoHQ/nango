@@ -2,7 +2,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { Card, CardAction, CardContent, CardHeader, CardTitle, IconButton, Input } from '@nangohq/design-system';
+import { IconButton, Input } from '@nangohq/design-system';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -53,28 +53,24 @@ export const InvoicingTaxIdFields: React.FC = () => {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    <span className="flex items-center gap-2">
-                        Tax ID
-                        <OptionalTag />
-                    </span>
-                </CardTitle>
-                <CardAction>
-                    {taxId ? (
-                        <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove tax ID">
-                            <Trash2 />
-                        </IconButton>
-                    ) : (
-                        <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add tax ID">
-                            <Plus />
-                        </IconButton>
-                    )}
-                </CardAction>
-            </CardHeader>
+        <div className="border-t border-border-muted">
+            <div className="p-4 flex items-center justify-between">
+                <span className="flex items-center gap-2 text-text-strong text-body-medium-regular">
+                    Tax ID
+                    <OptionalTag />
+                </span>
+                {taxId ? (
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove tax ID">
+                        <Trash2 />
+                    </IconButton>
+                ) : (
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add tax ID">
+                        <Plus />
+                    </IconButton>
+                )}
+            </div>
             {taxId && (
-                <CardContent>
+                <div className="px-4 pb-4">
                     <div className="grid grid-cols-2 items-start gap-3">
                         <FormField
                             control={control}
@@ -153,8 +149,8 @@ export const InvoicingTaxIdFields: React.FC = () => {
                             )}
                         />
                     </div>
-                </CardContent>
+                </div>
             )}
-        </Card>
+        </div>
     );
 };

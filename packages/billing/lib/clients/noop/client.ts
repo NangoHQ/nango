@@ -20,12 +20,16 @@ import type { Result } from '@nangohq/utils';
  * still reads its actual numbers from ClickHouse) don't fail on the missing Orb
  * dependency. Deployed environments always set `ORB_API_KEY` and use OrbClient.
  */
-function stubCustomer(accountId: number, details?: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>): BillingCustomer {
+function stubCustomer(
+    accountId: number,
+    details?: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'> & Partial<Pick<BillingInvoicingDetails, 'additionalEmails'>>
+): BillingCustomer {
     return {
         id: `local-customer-${accountId}`,
         invoicingDetails: {
             legalEntityName: details?.legalEntityName ?? `Local account ${accountId}`,
             email: details?.email ?? `account-${accountId}@local.nango.dev`,
+            additionalEmails: details?.additionalEmails ?? [],
             address: null,
             taxId: null
         },

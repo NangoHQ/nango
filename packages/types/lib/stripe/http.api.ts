@@ -10,7 +10,10 @@ export type PostStripeCollectPayment = Endpoint<{
 
 export interface StripePaymentMethod {
     id: string;
+    brand: string;
     last4: string;
+    expMonth: number;
+    expYear: number;
 }
 
 export type GetStripePaymentMethods = Endpoint<{
