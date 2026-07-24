@@ -1,3 +1,6 @@
+import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
+import isDate from 'lodash-es/isDate.js';
+
 import { endUserToApi } from './endUser.js';
 
 import type {
@@ -46,6 +49,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted, options?:
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         connection_config: connection.connection_config,
+        webhook_url_override: connection.webhook_url_override,
         credentials: options?.includeCredentials ? connection.credentials : redactCredentials(connection.credentials),
         metadata: connection.metadata,
         tags: connection.tags,
@@ -107,6 +111,7 @@ export function connectionFullToPublicApi({
         tags: data.tags,
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
+        webhook_url_override: data.webhook_url_override ?? null,
         created_at: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at),
         updated_at: data.updated_at instanceof Date ? data.updated_at.toISOString() : String(data.updated_at),
         last_fetched_at: data.last_fetched_at
@@ -114,7 +119,14 @@ export function connectionFullToPublicApi({
                 ? data.last_fetched_at.toISOString()
                 : String(data.last_fetched_at)
             : null,
-        credentials: includeCredentials ? data.credentials : ({} as DBConnectionDecrypted['credentials'])
+        credentials: includeCredentials
+            ? cloneDeepWith(data.credentials, (value) => {
+                  if (isDate(value)) {
+                      return value.toISOString();
+                  }
+                  return undefined;
+              })
+            : ({} as ApiPublicConnectionFull['credentials'])
     };
 }
 

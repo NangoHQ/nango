@@ -2,12 +2,11 @@ import { Prism } from '@mantine/prism';
 import { Check, Edit, Eye, EyeOff, Loader, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { Button, IconButton, Textarea } from '@nangohq/design-system';
+import { Badge, Button, IconButton, Textarea } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { cn } from '../../utils/utils.js';
-import { Badge } from './Badge.js';
 import { CopyButton } from './CopyButton.js';
 
 import type { PrismProps } from '@mantine/prism';
@@ -163,7 +162,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 <div className="flex gap-2 items-center">
                     {headerElement}
                     {displayLanguage && (
-                        <Badge variant="gray" className="uppercase">
+                        <Badge>
                             {icon && icon}
                             {displayLanguage}
                         </Badge>

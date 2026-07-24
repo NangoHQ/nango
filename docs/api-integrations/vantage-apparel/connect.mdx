@@ -1,0 +1,35 @@
+---
+title: 'Vantage Apparel - How do I link my account?'
+sidebarTitle: 'Vantage Apparel'
+---
+
+# Overview
+
+To authenticate with PromoStandards, you will need:
+
+1. **PromoStandards ID** — the ID Vantage Apparel issued for PromoStandards web services.
+2. **Password** — the password paired with that ID.
+
+Unlike most APIs, there is no dashboard to generate these from and no OAuth flow — Vantage Apparel issues this `id`/`password` pair directly to you before you start implementation. Nango sends them inside the SOAP request body on every call, matching how PromoStandards itself authenticates — not as an HTTP header. The same credentials authenticate Order Status, Shipment Notification, and Customer Lookup.
+
+### Prerequisites
+
+- You need a Vantage Apparel account.
+
+### Step 1: Finding your credentials
+
+1. Email Vantage Apparel's integrations team at `integrations@vantageapparel.com` to request PromoStandards credentials.
+2. Vantage Apparel issues you a PromoStandards **ID** and **password** for your account.
+3. Credentials are per-account — if you manage multiple Vantage Apparel accounts, request a separate `id`/`password` pair for each one.
+
+### Step 2: Enter credentials in the Connect UI
+
+Once you have your **PromoStandards ID** and **password**:
+
+1. Open the form where you need to authenticate with PromoStandards.
+2. Enter your **PromoStandards ID** and **Password** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/vantage-apparel/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Vantage Apparel.

@@ -345,21 +345,17 @@ const { data } = await nango.createConnectSession({
     }
     ```
     When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
+  </ResponseField>
 
-    `connection_config` also accepts `webhook_url` to override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
+  <ResponseField name="webhook_url_override" type="string">
+    Override the environment's webhook URLs for the connection created with this session. When set, that connection's webhooks are sent only to this URL. See [Override webhook URLs per connection](/guides/platform/webhooks-from-nango#override-webhook-urls-per-connection).
     ```js
-    integrations_config_defaults: {
-      '<INTEGRATION-ID>': {
-        connection_config: {
-          webhook_url: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
-        }
-      }
-    }
+    webhook_url_override: 'https://<your-tunnel>.ngrok.app/webhooks-from-nango'
     ```
   </ResponseField>
 
   <ResponseField name="overrides" type="object">
-    Override Connect UI settings per integration. The key is your integration's unique ID (e.g. `jira`, `slack`, `github`) and the value is an object with the settings to override. Currently supports overriding the documentation URL shown in info icons during the connect flow:
+    Per-integration overrides. The key is your integration's unique ID (e.g. `jira`, `slack`, `github`) and the value is an object with the settings to override. Currently supports overriding the documentation URL shown in info icons during the connect flow:
     ```js
     overrides: {
       '<INTEGRATION-ID>': {
@@ -644,6 +640,9 @@ await nango.patchConnection({
                           Maximum string length: 255
                     </ResponseField>
                 </Expandable>
+            </ResponseField>
+            <ResponseField name="webhook_url_override" type="string">
+                Override the environment's webhook URLs for this connection. When set, this connection's webhooks are sent only to this URL. Pass an empty string to clear the override.
             </ResponseField>
             <ResponseField name="end_user" type="object" deprecated>
                 Deprecated. Use tags instead

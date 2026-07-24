@@ -11,6 +11,7 @@ export function getTestConnectSession(override?: Partial<ConnectSession>): Conne
         integrationsConfigDefaults: null,
         operationId: 'op-123',
         overrides: null,
+        webhookUrlOverride: null,
         endUser: null,
         tags: {},
         createdAt: new Date(),

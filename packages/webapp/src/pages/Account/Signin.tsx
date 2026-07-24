@@ -27,6 +27,22 @@ const signinSchema = z.object({
 
 type SigninFormData = z.infer<typeof signinSchema>;
 
+// Resolve against the current origin and reject anything that escapes it, so a crafted `next` can't become an open redirect.
+function safeInternalPath(path: string | null): string {
+    if (!path) {
+        return '/';
+    }
+    try {
+        const url = new URL(path, window.location.origin);
+        if (url.origin === window.location.origin) {
+            return url.pathname + url.search + url.hash;
+        }
+    } catch {
+        // Malformed value; fall through to the safe default.
+    }
+    return '/';
+}
+
 export const Signin: React.FC = () => {
     const hasLocalAuth = globalEnv.features.auth;
     const hasManagedAuth = globalEnv.features.managedAuth;
@@ -70,12 +86,16 @@ export const Signin: React.FC = () => {
     const onSubmitForm = async (data: SigninFormData) => {
         setServerErrorMessage('');
         try {
-            const res = await signinMutation({ email: data.email, password: data.password });
+            const res = await signinMutation({ email: data.email, password: data.password, returnTo: next ?? undefined });
 
             if (res.status === 200) {
+                if (!('user' in res.json)) {
+                    navigate('/signin/mfa');
+                    return;
+                }
                 const user: ApiUser = res.json.user;
                 signin(user);
-                navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
+                navigate(safeInternalPath(next));
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
                 form.resetField('password', { defaultValue: '' });

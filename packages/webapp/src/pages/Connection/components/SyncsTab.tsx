@@ -2,13 +2,23 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import {
+    Badge,
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    IconButton
+} from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -153,9 +163,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                             <Tooltip>
                                 <TooltipTrigger>
                                     {/* TODO: Replace badge */}
-                                    <Badge variant="gray" size="xs">
-                                        {truncateMiddle(sync.variant)}
-                                    </Badge>
+                                    <Badge>{truncateMiddle(sync.variant)}</Badge>
                                 </TooltipTrigger>
                                 <TooltipContent>{sync.variant}</TooltipContent>
                             </Tooltip>
@@ -286,30 +294,34 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex flex-col gap-8">
-                        <div className="inline-flex gap-2 items-center">
-                            <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
-                            <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
-                            <InfoTooltip icon={<Info />} side="bottom">
-                                The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be set
-                                to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
-                            </InfoTooltip>
-                        </div>
+                    <DialogBody>
+                        <div className="flex flex-col gap-8">
+                            <div className="inline-flex gap-2 items-center">
+                                <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
+                                <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
+                                <InfoTooltip icon={<Info />} side="bottom">
+                                    The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be
+                                    set to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
+                                </InfoTooltip>
+                            </div>
 
-                        <div className="inline-flex gap-2 items-center">
-                            <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
-                            <span className="text-text-strong text-body-medium-medium">Empty cache</span>
-                            <InfoTooltip icon={<Info />} side="bottom">
-                                All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
-                            </InfoTooltip>
+                            <div className="inline-flex gap-2 items-center">
+                                <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
+                                <span className="text-text-strong text-body-medium-medium">Empty cache</span>
+                                <InfoTooltip icon={<Info />} side="bottom">
+                                    All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
+                                </InfoTooltip>
+                            </div>
                         </div>
-                    </div>
+                    </DialogBody>
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
+                            <Button variant="outline" size="sm">
+                                Cancel
+                            </Button>
                         </DialogClose>
-                        <Button variant="primary" onClick={onTrigger} loading={isRunningSyncCommand}>
+                        <Button variant="primary" size="sm" onClick={onTrigger} loading={isRunningSyncCommand}>
                             Trigger
                         </Button>
                     </DialogFooter>

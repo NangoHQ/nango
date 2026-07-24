@@ -6,7 +6,7 @@ import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
+import { getLogger, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
@@ -31,8 +31,6 @@ process.on('uncaughtException', (err) => {
     report(err);
     // not closing on purpose
 });
-
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 try {
     await initializeFeatureFlags();

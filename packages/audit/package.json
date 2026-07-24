@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "@clickhouse/client": "1.18.2",
+        "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils"
     },
     "devDependencies": {

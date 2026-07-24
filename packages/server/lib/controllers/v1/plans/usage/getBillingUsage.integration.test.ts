@@ -193,18 +193,6 @@ describe(`GET ${route}`, () => {
             shouldRequireQueryEnv(res);
         });
 
-        it('rejects an unknown source', async () => {
-            const { apiKey } = await seedAccount();
-            const res = await api.fetch(route, {
-                token: apiKey.secret,
-                // @ts-expect-error invalid source
-                query: { env: 'dev', source: 'not-a-source' }
-            });
-            isError(res.json);
-            expect(res.res.status).toBe(400);
-            expect(res.json.error.code).toBe('invalid_query_params');
-        });
-
         it('rejects an unknown metric in the metrics array', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
@@ -240,12 +228,12 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    describe('ClickHouse happy path (source=clickhouse)', () => {
+    describe('ClickHouse happy path', () => {
         it('returns all 7 metrics populated from the seeded CH data', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
-                query: { env: 'dev', from: day0.toISOString(), to: end.toISOString(), source: 'clickhouse' }
+                query: { env: 'dev', from: day0.toISOString(), to: end.toISOString() }
             });
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
@@ -275,7 +263,7 @@ describe(`GET ${route}`, () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
-                query: { env: 'dev', from: day0.toISOString(), to: end.toISOString(), source: 'clickhouse', metrics: ['records', 'connections'] }
+                query: { env: 'dev', from: day0.toISOString(), to: end.toISOString(), metrics: ['records', 'connections'] }
             });
             isSuccess(res.json);
             const usage = res.json.data.usage;
@@ -299,7 +287,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     breakdown: { records: 'integration_id' }
                 } as any
@@ -348,7 +335,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['proxy'],
                     breakdown: { proxy: 'environment_id' }
                 } as any
@@ -374,7 +360,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['proxy'],
                     breakdown: { proxy: 'success' }
                 } as any
@@ -403,7 +388,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     breakdown: { records: 'integration_id' },
                     top: '1'
@@ -428,7 +412,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['proxy'],
                     filter: { proxy: 'success:true' }
                 } as any
@@ -449,7 +432,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     filter: { records: 'integration_id:hubspot' }
                 } as any
@@ -471,7 +453,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     filter: { records: 'integration_id:does-not-exist' }
                 } as any
@@ -495,7 +476,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     breakdown: { records: 'integration_id' },
                     filter: { records: 'integration_id:hubspot' }
@@ -514,7 +494,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['proxy'],
                     filter: { proxy: 'integration_id:hubspot' },
                     breakdown: { proxy: 'success' }
@@ -543,7 +522,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     // environment_id:1 keeps every fixture row (all are env 1), so the
                     // filtered global equals the unfiltered global (1100) — what we want
@@ -574,7 +552,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     // Unlike the env:1 (keeps-all) case above, this filter actually
                     // drops rows: hubspot records are 1000 (day0) + 700 (day1), both
@@ -605,7 +582,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['records'],
                     filter: { records: 'integration_id:does-not-exist' },
                     breakdown: { records: 'model' }
@@ -626,7 +602,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     filter: { proxy: 'model:abc' } // `model` is not a proxy dim
                 } as any
             });
@@ -643,7 +618,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     filter: { proxy: 'environment_id:not-a-number' }
                 } as any
             });
@@ -660,7 +634,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     filter: { proxy: 'success:maybe' }
                 } as any
             });
@@ -677,7 +650,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     filter: { proxy: 'just-a-value' } // no colon
                 } as any
             });
@@ -694,7 +666,6 @@ describe(`GET ${route}`, () => {
                     env: 'dev',
                     from: day0.toISOString(),
                     to: end.toISOString(),
-                    source: 'clickhouse',
                     metrics: ['proxy'],
                     // No row matches 'http://foo:bar' but the validator must accept it.
                     filter: { proxy: 'connection_id:http://foo:bar' }

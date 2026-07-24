@@ -2,12 +2,22 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Button, FieldLabel, Input } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    FieldLabel,
+    Input
+} from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
@@ -241,33 +251,35 @@ const MFASettings: React.FC = () => {
                         <DialogTitle>Set up your authenticator app</DialogTitle>
                         <DialogDescription>Scan this QR code, then enter the six-digit code from your authenticator app.</DialogDescription>
                     </DialogHeader>
-                    {enrollmentUri && (
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="rounded-ds-sm border border-border-default bg-white p-4">
-                                <QRCodeSVG value={enrollmentUri} size={180} bgColor="#ffffff" fgColor="#000000" />
+                    <DialogBody>
+                        {enrollmentUri && (
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="rounded-ds-sm border border-border-default bg-white p-4">
+                                    <QRCodeSVG value={enrollmentUri} size={180} bgColor="#ffffff" fgColor="#000000" />
+                                </div>
+                                <div className="flex items-center gap-1 text-text-secondary text-ds-xs">
+                                    <span>Cannot scan the code?</span>
+                                    <CopyButton text={enrollmentUri} />
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1 text-text-secondary text-ds-xs">
-                                <span>Cannot scan the code?</span>
-                                <CopyButton text={enrollmentUri} />
-                            </div>
-                        </div>
-                    )}
-                    <label className="flex flex-col gap-2 text-text-default text-ds-sm">
-                        Verification code
-                        <Input
-                            value={code}
-                            onChange={(event) => setCode(event.target.value)}
-                            inputMode="numeric"
-                            autoComplete="one-time-code"
-                            maxLength={6}
-                            placeholder="123456"
-                        />
-                    </label>
+                        )}
+                        <label className="flex flex-col gap-2 text-text-default text-ds-sm">
+                            Verification code
+                            <Input
+                                value={code}
+                                onChange={(event) => setCode(event.target.value)}
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                maxLength={6}
+                                placeholder="123456"
+                            />
+                        </label>
+                    </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" onClick={closeEnrollment}>
+                        <Button variant="outline" size="sm" onClick={closeEnrollment}>
                             Cancel
                         </Button>
-                        <Button onClick={() => void activateEnrollment()} loading={activate.isPending} disabled={!hasValidCode}>
+                        <Button size="sm" onClick={() => void activateEnrollment()} loading={activate.isPending} disabled={!hasValidCode}>
                             Confirm and continue
                         </Button>
                     </DialogFooter>
@@ -280,23 +292,26 @@ const MFASettings: React.FC = () => {
                         <DialogTitle>{actionTitle}</DialogTitle>
                         <DialogDescription>{actionDescription}</DialogDescription>
                     </DialogHeader>
-                    <label className="flex flex-col gap-2 text-text-default text-ds-sm">
-                        Verification code
-                        <Input
-                            value={code}
-                            onChange={(event) => setCode(event.target.value)}
-                            inputMode="numeric"
-                            autoComplete="one-time-code"
-                            maxLength={6}
-                            placeholder="123456"
-                        />
-                    </label>
+                    <DialogBody>
+                        <label className="flex flex-col gap-2 text-text-default text-ds-sm">
+                            Verification code
+                            <Input
+                                value={code}
+                                onChange={(event) => setCode(event.target.value)}
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                maxLength={6}
+                                placeholder="123456"
+                            />
+                        </label>
+                    </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" onClick={closeAction}>
+                        <Button variant="outline" size="sm" onClick={closeAction}>
                             Cancel
                         </Button>
                         <Button
                             variant={action === 'disable' ? 'danger' : 'primary'}
+                            size="sm"
                             onClick={() => void confirmAction()}
                             loading={disable.isPending || regenerateRecoveryCodes.isPending}
                             disabled={!hasValidCode}
@@ -317,20 +332,24 @@ const MFASettings: React.FC = () => {
                         <DialogTitle>Save your recovery codes</DialogTitle>
                         <DialogDescription>Keep these codes somewhere safe. Each code can only be used once and will not be shown again.</DialogDescription>
                     </DialogHeader>
-                    {recoveryCodes && (
-                        <div className="flex flex-col gap-3">
-                            <div className="grid grid-cols-2 gap-2 rounded-ds-sm border border-border-default bg-surface-canvas p-4 font-mono text-ds-sm text-text-default">
-                                {recoveryCodes.map((recoveryCode) => (
-                                    <code key={recoveryCode}>{recoveryCode}</code>
-                                ))}
+                    <DialogBody>
+                        {recoveryCodes && (
+                            <div className="flex flex-col gap-3">
+                                <div className="grid grid-cols-2 gap-2 rounded-ds-sm border border-border-default bg-surface-canvas p-4 font-mono text-ds-sm text-text-default">
+                                    {recoveryCodes.map((recoveryCode) => (
+                                        <code key={recoveryCode}>{recoveryCode}</code>
+                                    ))}
+                                </div>
+                                <div className="flex justify-end">
+                                    <CopyButton text={recoveryCodes.join('\n')} />
+                                </div>
                             </div>
-                            <div className="flex justify-end">
-                                <CopyButton text={recoveryCodes.join('\n')} />
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </DialogBody>
                     <DialogFooter>
-                        <Button onClick={() => setRecoveryCodes(null)}>I saved my codes</Button>
+                        <Button size="sm" onClick={() => setRecoveryCodes(null)}>
+                            I saved my codes
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

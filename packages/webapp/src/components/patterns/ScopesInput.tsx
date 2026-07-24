@@ -1,10 +1,9 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { Badge, IconButton } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
-import { Badge } from '../ui/Badge.js';
 import {
     Combobox,
     ComboboxChip,
@@ -139,7 +138,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                             <TooltipContent side="top">Copy all</TooltipContent>
                         </Tooltip>
                     )}
-                    {isSharedCredentials ? <Badge variant="gray">Nango provided</Badge> : null}
+                    {isSharedCredentials ? <Badge>Nango provided</Badge> : null}
                 </div>
             </div>
         );

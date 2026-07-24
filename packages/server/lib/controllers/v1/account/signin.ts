@@ -5,6 +5,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { loginOrStartPendingMfa } from './mfa/login.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
 import type { PostSignin } from '@nangohq/types';
@@ -13,7 +14,8 @@ import type { RequestHandler, Response } from 'express';
 const validation = z
     .object({
         email: z.string().email(),
-        password: z.string().min(8).max(64)
+        password: z.string().min(8).max(64),
+        returnTo: z.string().max(1024).optional()
     })
     .strict();
 
@@ -59,15 +61,10 @@ export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, Re
         return;
     }
 
-    await new Promise<void>((resolve, reject) => {
-        req.logIn(user as Express.User, (err) => {
-            if (err) {
-                reject(err instanceof Error ? err : new Error(String(err)));
-            } else {
-                resolve();
-            }
-        });
-    });
+    if (await loginOrStartPendingMfa(req, user, req.body.returnTo ?? '/')) {
+        res.status(200).send({ data: { mfaRequired: true } });
+        return;
+    }
 
     res.status(200).send({ user: userToAPI(user) });
 });

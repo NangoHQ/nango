@@ -13,7 +13,7 @@ import type { Response } from 'express';
 export const patchConnectionBodySchema = z.strictObject({
     end_user: endUserSchema.optional(),
     tags: connectionTagsSchema.optional(),
-    webhook_url: webhookUrlSchema
+    webhook_url_override: webhookUrlSchema
 });
 
 export async function handlePatchConnection({
@@ -32,7 +32,7 @@ export async function handlePatchConnection({
     body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
-        webhook_url?: string | undefined;
+        webhook_url_override?: string | undefined;
     };
 }): Promise<void> {
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
@@ -83,12 +83,9 @@ export async function handlePatchConnection({
         }
     }
 
-    if (typeof body.webhook_url === 'string') {
-        if (body.webhook_url === '') {
-            await connectionService.unsetConnectionConfigAttributes(connection, ['webhook_url']);
-        } else {
-            await connectionService.updateConnectionConfig(connection, { webhook_url: body.webhook_url });
-        }
+    // An empty string clears the per-connection override.
+    if (typeof body.webhook_url_override === 'string') {
+        await connectionService.updateWebhookUrlOverride(connection, body.webhook_url_override === '' ? null : body.webhook_url_override);
     }
 
     res.status(200).send({ success: true });

@@ -9,7 +9,7 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -50,6 +50,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
     const { providerConfigKey }: PostPublicOauthOutboundAuthorization['Params'] = paramsVal.data;
     const queryString: PostPublicOauthOutboundAuthorization['Querystring'] = queryStringVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -133,6 +134,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
             providerConfigKey,
             parsedRawCredentials: { type: 'OAUTH2' } as any,
             connectionConfig: updatedConnectionConfig,
+            webhookUrlOverride,
             environmentId: environment.id,
             tags: connectSession?.tags
         });
@@ -211,7 +213,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauth
         if (logCtx) {
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: 'OAUTH2',

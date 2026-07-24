@@ -2,7 +2,7 @@ import './tracer.js';
 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
-import { initSentry, once, report, stringifyError } from '@nangohq/utils';
+import { once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
@@ -22,8 +22,6 @@ process.on('uncaughtException', (err) => {
     report(err);
     // not closing on purpose
 });
-
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 const databaseSchema = envs.ORCHESTRATOR_DATABASE_SCHEMA;
 const databaseUrl =

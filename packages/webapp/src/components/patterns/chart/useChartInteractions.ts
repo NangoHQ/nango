@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Legend/hover interaction state for a breakdown chart, keyed by the series' safe
@@ -46,7 +46,9 @@ export function useChartInteractions(seriesSignature: string) {
         setHoveredKey(null);
     }
 
-    const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
+    // Stable identity (deps: isolated/hidden) so memos keyed on it — e.g. BreakdownChart's cap-axis
+    // computation — only recompute when the visible set actually changes, not on every render.
+    const isSeriesHidden = useCallback((key: string) => (isolated !== null ? key !== isolated : hidden.has(key)), [isolated, hidden]);
 
     const toggleIsolate = (key: string) => {
         // Isolating clears any individually-hidden series, so toggling isolation back off

@@ -6,7 +6,7 @@ import { InfoTooltip } from '../../ui/InfoTooltip';
 import { Skeleton } from '../../ui/Skeleton';
 import { BreakdownChart } from './BreakdownChart';
 import { formatExact, formatShare } from './chartFormat';
-import { ChartLegend } from './ChartLegend';
+import { ChartLegend, ChartStaticLegend } from './ChartLegend';
 import { useChartData, visibleBreakdownTotal } from './useChartData';
 import { useChartInteractions } from './useChartInteractions';
 
@@ -39,6 +39,18 @@ interface ChartCardProps {
     onSeriesToggle?: () => void;
     /** Drop the label + total header (e.g. when an outer row already shows them); the controls move atop the chart body. */
     hideHeader?: boolean;
+    /** Draw a horizontal cap reference line at the metric's plan limit (Free caps view). */
+    capLine?: number;
+    /** 'cumulative' plots counter metrics as a running month-to-date total so the curve climbs to the cap. */
+    chartMode?: 'daily' | 'cumulative';
+    /** In-app route for a breakdown series, when it points somewhere navigable — adds a "go to" link to its legend row. */
+    seriesHref?: (series: ChartSeries) => string | undefined;
+    /** The value to copy for a breakdown series, when it's worth copying — adds a copy button to its legend row. */
+    seriesCopyValue?: (series: ChartSeries) => string | undefined;
+    /** Fired when a series' value is copied from the legend. For analytics only. */
+    onSeriesCopy?: (series: ChartSeries) => void;
+    /** Fired when a series' "go to" link is followed from the legend. For analytics only. */
+    onSeriesGoTo?: (series: ChartSeries) => void;
 }
 
 /**
@@ -61,10 +73,22 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     singleSeries,
     onSeriesIsolate,
     onSeriesToggle,
-    hideHeader
+    hideHeader,
+    capLine,
+    chartMode,
+    seriesHref,
+    seriesCopyValue,
+    onSeriesCopy,
+    onSeriesGoTo
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
+    // AVG metrics (connections/records) arrive as a running-average level series (view_mode
+    // 'cumulative') and always draw as an area. Counter metrics draw as daily bars by default,
+    // but the Free caps view can plot them as a cumulative month-to-date area (chartMode
+    // 'cumulative'). `renderAsArea` is the single "area, not bars" answer for either case.
+    const cumulativeCounter = chartMode === 'cumulative' && !isCumulative;
+    const renderAsArea = isCumulative || cumulativeCounter;
 
     // Series labels identify the current dataset; interaction state resets when they change.
     const seriesSignature = (breakdownSeries ?? []).map((s) => s.label).join(' ');
@@ -82,7 +106,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
             onSeriesToggle?.();
         }
     };
-    const { todayDateKey, baseChartData, breakdownChartData, isEmpty } = useChartData(data, breakdownSeries, timeframe);
+    const { todayDateKey, baseChartData, breakdownChartData, isEmpty } = useChartData(data, breakdownSeries, timeframe, cumulativeCounter);
 
     const chartConfig = useMemo<ChartConfig>(() => {
         if (isBreakdown) {
@@ -108,11 +132,15 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // response's top-level total); otherwise the single series' total. `effectiveEmpty` (not
     // `isEmpty`) so a breakdown with empty top-level `usage` still shows a number.
     const visibleKeys = (breakdownSeries ?? []).filter((s) => !interactions.isSeriesHidden(s.key)).map((s) => s.key);
+    // The cap applies to the whole metric, so hide the cap line whenever the chart is scoped to a
+    // slice — a filter, or an isolated/hidden breakdown series — otherwise the full cap dwarfs the
+    // slice and squishes its data flat.
+    const isSliced = Boolean(filtered) || (isBreakdown && visibleKeys.length < (breakdownSeries?.length ?? 0));
     let headlineTotal: number | undefined;
     if (effectiveEmpty) {
         headlineTotal = undefined;
     } else if (isBreakdown) {
-        headlineTotal = visibleBreakdownTotal(breakdownChartData, visibleKeys, isCumulative, todayDateKey);
+        headlineTotal = visibleBreakdownTotal(breakdownChartData, visibleKeys, renderAsArea, todayDateKey);
     } else {
         headlineTotal = data?.total;
     }
@@ -183,21 +211,28 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                         <BreakdownChart
                             chartData={isBreakdown ? breakdownChartData : baseChartData}
                             config={chartConfig}
-                            isCumulative={isCumulative}
+                            isCumulative={renderAsArea}
                             isBreakdown={isBreakdown}
                             series={breakdownSeries ?? []}
                             todayDateKey={todayDateKey}
                             interactions={interactions}
+                            // Cap line only on the cumulative/point-in-time (area) view; on daily bars the
+                            // monthly cap dwarfs the per-day values and would flatten the bars.
+                            capLine={renderAsArea && !isSliced ? capLine : undefined}
                         />
-                        {breakdownSeries && breakdownSeries.length > 0 && <ChartLegend series={breakdownSeries} interactions={interactions} />}
+                        {breakdownSeries && breakdownSeries.length > 0 && (
+                            <ChartLegend
+                                series={breakdownSeries}
+                                interactions={interactions}
+                                seriesHref={seriesHref}
+                                seriesCopyValue={seriesCopyValue}
+                                onSeriesCopy={onSeriesCopy}
+                                onSeriesGoTo={onSeriesGoTo}
+                            />
+                        )}
                         {!isBreakdown && singleSeries && (
                             // Static, non-interactive: with one series there's nothing to isolate or hide.
-                            <div className="flex items-center gap-1.5 pt-3 text-xs flex-shrink-0">
-                                <span className="block size-2.5 rounded-[2px]" aria-hidden style={{ backgroundColor: singleSeries.color }} />
-                                <span className="text-text-secondary truncate" title={singleSeries.label}>
-                                    {singleSeries.label}
-                                </span>
-                            </div>
+                            <ChartStaticLegend series={[{ key: 'total', ...singleSeries }]} />
                         )}
                     </>
                 )}

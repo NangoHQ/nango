@@ -182,11 +182,14 @@ class ConnectionController {
                 return;
             }
 
-            const webhookUrlValidation = webhookUrlSchema.safeParse(connection_config?.webhook_url);
+            const webhookUrlValidation = webhookUrlSchema.safeParse(req.body['webhook_url_override']);
             if (!webhookUrlValidation.success) {
                 res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(webhookUrlValidation.error) } });
                 return;
             }
+
+            // z.url() already trims; '' (no override) and undefined both normalize to null.
+            const webhookUrlOverride = webhookUrlValidation.data || null;
 
             const integration = await configService.getProviderConfig(provider_config_key, environment.id);
             if (!integration) {
@@ -297,6 +300,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig,
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -360,6 +364,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig,
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -409,6 +414,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -452,6 +458,7 @@ class ConnectionController {
                     environment,
                     credentials,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     connectionCreatedHook: connCreatedHook
                 });
 
@@ -493,6 +500,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     credentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -540,6 +548,7 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     parsedRawCredentials: credentialsRes.value,
                     connectionConfig,
+                    webhookUrlOverride,
                     environmentId: environment.id,
                     metadata
                 });
@@ -590,6 +599,7 @@ class ConnectionController {
                         oauth_client_id: config.oauth_client_id,
                         oauth_client_secret: config.oauth_client_secret
                     },
+                    webhookUrlOverride,
                     metadata,
                     config,
                     environment
@@ -605,7 +615,8 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     environment,
                     metadata,
-                    connectionConfig: { ...connection_config }
+                    connectionConfig: { ...connection_config },
+                    webhookUrlOverride
                 });
 
                 if (imported) {

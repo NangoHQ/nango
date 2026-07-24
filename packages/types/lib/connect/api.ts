@@ -14,7 +14,6 @@ export interface ConnectSessionInput {
                       | {
                             [key: string]: unknown;
                             oauth_scopes_override?: string | undefined;
-                            webhook_url?: string | undefined;
                         }
                       | undefined;
               }
@@ -29,6 +28,8 @@ export interface ConnectSessionInput {
         | undefined;
     tags?: Record<string, string> | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
+    /** Session-level override of the environment's webhook URLs, applied to the connection created by this session. */
+    webhook_url_override?: string | undefined;
 }
 
 export interface EndUserInput {
@@ -77,6 +78,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
         end_user?: ConnectSessionInput['end_user'] | undefined;
         organization?: ConnectSessionInput['organization'];
         overrides?: ConnectSessionInput['overrides'];
+        webhook_url_override?: ConnectSessionInput['webhook_url_override'];
         tags?: ConnectSessionInput['tags'];
     };
     Success: {
@@ -106,7 +108,10 @@ export type PostInternalConnectSessions = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults' | 'overrides'>;
+    Body: Pick<
+        ConnectSessionInput,
+        'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults' | 'overrides' | 'webhook_url_override'
+    >;
 }>;
 
 export type PostPublicConnectTelemetry = Endpoint<{

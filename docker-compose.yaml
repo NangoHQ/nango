@@ -46,6 +46,7 @@ services:
             - NANGO_LOGS_ES_USER
             - NANGO_LOGS_ES_PWD
             - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
+            - NANGO_PUBLIC_CONNECT_URL
         volumes:
             - './packages/providers/providers.yaml:/app/nango/packages/providers/providers.yaml'
         restart: always

@@ -3062,6 +3062,28 @@ gitlab:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 gong-oauth: []
 
+# source: https://developers.glean.com/api-info/client/authentication/glean-issued
+glean-oauth:
+    - ACTIVITY
+    - AGENTS
+    - ANNOUNCEMENTS
+    - ANSWERS
+    - CHAT
+    - COLLECTIONS
+    - DOCPERMISSIONS
+    - DOCUMENTS
+    - ENTITIES
+    - FEEDBACK
+    - INSIGHTS
+    - MCP
+    - PEOPLE
+    - PINS
+    - SEARCH
+    - SHORTCUTS
+    - SUMMARIZE
+    - TOOLS
+    - VERIFICATION
+
 # source: https://accounts.google.com/.well-known/openid-configuration (scopes_supported) + https://developers.google.com/identity/protocols/oauth2/scopes
 google:
     - email
@@ -4855,6 +4877,16 @@ hubspot:
     - tickets.sensitive
     - timeline
     - transactional-email
+
+# source: https://account.hubstaff.com/.well-known/openid-configuration (scopes_supported)
+hubstaff:
+    - email
+    - hubstaff:read
+    - hubstaff:write
+    - openid
+    - profile
+    - tasks:read
+    - tasks:write
 
 # source: https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions
 instagram:

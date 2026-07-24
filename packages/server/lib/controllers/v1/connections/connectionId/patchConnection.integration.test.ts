@@ -63,7 +63,7 @@ describe(`PATCH ${route}`, () => {
         expect(updatedConn?.tags).toStrictEqual({ projectid: '123' });
     });
 
-    it('should update webhook_url', async () => {
+    it('should update webhook_url_override', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
@@ -73,13 +73,14 @@ describe(`PATCH ${route}`, () => {
             token: apiKey.secret,
             params: { connectionId: conn.connection_id },
             query: { env: env.name, provider_config_key: 'github' },
-            body: { webhook_url: 'https://example.com/webhooks-from-nango' }
+            body: { webhook_url_override: 'https://example.com/webhooks-from-nango' }
         });
 
         isSuccess(res.json);
         expect(res.json).toStrictEqual({ success: true });
 
         const updatedConn = await db.knex.select('*').from<DBConnection>('_nango_connections').where({ id: conn.id }).first();
-        expect(updatedConn?.connection_config).toMatchObject({ webhook_url: 'https://example.com/webhooks-from-nango' });
+        expect(updatedConn?.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
+        expect(updatedConn?.connection_config).not.toHaveProperty('webhook_url');
     });
 });
