@@ -20,13 +20,19 @@ describe('parse', () => {
             NANGO_DB_SSL: false,
             NANGO_PERSIST_PORT: 3007,
             NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: 500,
-            NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: 100
+            NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS: 100,
+            NANGO_TASK_DISPATCH_ADAPTIVE_DECAY_WINDOW_MS: 5 * 60 * 1000,
+            NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO: 0.2
         });
     });
 
     it('should allow disabling latency-based poll delays while retaining admission backoff', () => {
         const res = parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS: '0' });
         expect(res.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS).toBe(0);
+    });
+
+    it('should reject an adaptive poll jitter ratio above one', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO: '1.1' })).toThrow();
     });
 
     it('should parse the sandbox compiler template', () => {

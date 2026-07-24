@@ -130,7 +130,7 @@ export class DispatchQueueConsumer {
                 if (outcome.result === 'success') {
                     this.pollPacer?.recordSuccess(outcome.durationMs ?? 0);
                 } else if (outcome.result === 'congestion') {
-                    this.pollPacer?.recordCongestion(outcome.retryAfterMs ?? 1000);
+                    this.pollPacer?.recordCongestion(outcome.retryAfterMs ?? 1000, outcome.durationMs ?? 0);
                 } else if (outcome.result === 'failure') {
                     this.pollPacer?.recordFailure(outcome.durationMs ?? 0);
                 }
@@ -187,6 +187,7 @@ export class DispatchQueueConsumer {
                     };
                 });
 
+                await this.pollPacer?.waitForBackoff(this.abortController.signal);
                 const startedAt = performance.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
                 const durationMs = performance.now() - startedAt;

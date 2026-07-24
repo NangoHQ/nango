@@ -60,7 +60,9 @@ try {
               maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
               pollPacer: new LocalAdaptivePollPacer({
                   maxDelayMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS,
-                  healthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS
+                  healthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS,
+                  decayWindowMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_DECAY_WINDOW_MS,
+                  jitterRatio: envs.NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO
               })
           })
         : undefined;
@@ -146,7 +148,9 @@ try {
         logger.info('webhook dispatch queue consumer started', {
             consumerConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,
             adaptiveMaxPollDelayMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS,
-            adaptiveHealthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS
+            adaptiveHealthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS,
+            adaptiveDecayWindowMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_DECAY_WINDOW_MS,
+            adaptiveJitterRatio: envs.NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO
         });
     }
 
