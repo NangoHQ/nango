@@ -24700,6 +24700,25 @@ youcanbook-me:
             example: mycompany
             doc_section: '#step-2-finding-your-subdomain'
 
+youcanbook-me-public:
+    display_name: YouCanBookMe (Public)
+    categories:
+        - productivity
+    auth_mode: NONE
+    proxy:
+        base_url: https://api.youcanbook.me
+        connection_config:
+            subdomain: ${connectionConfig.subdomain}
+    docs: https://nango.dev/docs/api-integrations/youcanbook-me-public
+    docs_connect: https://nango.dev/docs/api-integrations/youcanbook-me-public/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your YouCanBookMe booking page.
+            example: mycompany
+            doc_section: '#step-1-finding-your-subdomain'
+
 yandex:
     display_name: Yandex
     categories:

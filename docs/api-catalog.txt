@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 919
+Provider count: 920
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -904,6 +904,7 @@ URL patterns:
 | `yandex` | Yandex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/yandex.md) |  |  | social |
 | `yotpo` | Yotpo | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/yotpo.md) | [connect](https://nango.dev/docs/integrations/all/yotpo/connect.md) |  | e-commerce |
 | `youcanbook-me` | YouCanBookMe | BASIC | [docs](https://nango.dev/docs/api-integrations/youcanbook-me.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me/connect.md) |  | productivity |
+| `youcanbook-me-public` | YouCanBookMe (Public) | NONE | [docs](https://nango.dev/docs/api-integrations/youcanbook-me-public.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me-public/connect.md) |  | productivity |
 | `youtube` | YouTube | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/youtube.md) |  | [setup](https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-api-oauth-app.md) | video |
 | `zapier` | Zapier | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/zapier.md) |  | [setup](https://nango.dev/docs/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app.md) | dev-tools |
 | `zapier-nla` | Zapier NLA | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zapier-nla.md) |  |  | productivity |
