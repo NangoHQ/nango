@@ -80,7 +80,7 @@ describe('authz integration', () => {
             const { user } = await seedAccountWithProdEnv();
             const session = await authenticateUser(api, user);
 
-            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', query: { env: 'dev' }, session });
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
 
             expect(res.res.status).not.toBe(403);
         });
@@ -152,7 +152,7 @@ describe('authz integration', () => {
             const supportUser = await createUserWithRole(account.id, 'production_support');
             const session = await authenticateUser(api, supportUser);
 
-            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', query: { env: 'dev' }, session });
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
 
             expect(res.res.status).not.toBe(403);
         });
@@ -478,7 +478,7 @@ describe('authz integration', () => {
             const devUser = await createUserWithRole(account.id, 'development_full_access');
             const session = await authenticateUser(api, devUser);
 
-            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', query: { env: 'dev' }, session });
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
 
             expect(res.res.status).toBe(403);
         });

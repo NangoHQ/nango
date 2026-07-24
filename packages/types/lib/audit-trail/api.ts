@@ -25,9 +25,8 @@ export type GetAuditTrail = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/audit-trail';
     Querystring: {
-        env: string;
-        // `cursor` encodes position only, not the filter window: resend the same `from`/`to` on every
-        // page or subsequent pages paginate the unfiltered set past the cursor.
+        // Account-scoped endpoint: no `env`. `cursor` encodes position only, not the filter window — resend the
+        // same `from`/`to` on every page or subsequent pages paginate the unfiltered set past the cursor.
         cursor?: string;
         from?: string;
         to?: string;

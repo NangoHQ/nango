@@ -12,13 +12,11 @@ const PAGE_SIZE = 25;
 
 const queryStringValidation = z
     .object({
-        // Private dashboard routes always carry `env`, even account-scoped ones; accept and ignore it.
-        env: z.string(),
         cursor: z.string().optional(),
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional()
     })
-    .strict()
+    // Account-scoped endpoint (no `env`). Not strict: any stray query param is stripped rather than 400'd, so a read never fails over an extra key.
     // Surface an inverted range as a 400 rather than a silently empty result.
     .refine((q) => !q.from || !q.to || new Date(q.from) <= new Date(q.to), { message: '`from` must be before or equal to `to`', path: ['from'] });
 

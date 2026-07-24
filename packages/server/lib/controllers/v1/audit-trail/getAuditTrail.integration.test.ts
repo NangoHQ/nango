@@ -50,40 +50,51 @@ describe('GET /api/v1/audit-trail', () => {
     // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
 
     it('rejects a non-decodable cursor with 400', async () => {
-        const { session, env } = await authAdmin();
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, cursor: 'not-a-valid-cursor' } });
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor: 'not-a-valid-cursor' } });
         expect(res.res.status).toBe(400);
     });
 
     it('rejects a JSON-shaped cursor with invalid values with 400, not 500', async () => {
-        const { session, env } = await authAdmin();
+        const { session } = await authAdmin();
         const cursor = Buffer.from(JSON.stringify({ occurredAt: 'garbage', id: 'not-a-uuid' })).toString('base64');
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, cursor } });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor } });
         expect(res.res.status).toBe(400);
     });
 
     it('rejects an invalid date with 400', async () => {
-        const { session, env } = await authAdmin();
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, from: 'not-a-date' } });
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { from: 'not-a-date' } });
         expect(res.res.status).toBe(400);
     });
 
     it('rejects an inverted from/to range with 400', async () => {
-        const { session, env } = await authAdmin();
+        const { session } = await authAdmin();
         const res = await api.fetch('/api/v1/audit-trail', {
             method: 'GET',
             session,
-            query: { env: env.name, from: '2026-07-16T10:00:00.000Z', to: '2026-07-16T09:00:00.000Z' }
+            query: { from: '2026-07-16T10:00:00.000Z', to: '2026-07-16T09:00:00.000Z' }
         });
         expect(res.res.status).toBe(400);
     });
 
+    it('ignores unknown query params (the dashboard appends extras) instead of 400', async () => {
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', {
+            method: 'GET',
+            session,
+            // @ts-expect-error the endpoint type doesn't declare this param; it must be stripped, not rejected, at runtime.
+            query: { unexpected: '1' }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
     it("returns the account's events in the response envelope, most-recent first", async () => {
-        const { session, account, env } = await authAdmin();
+        const { session, account } = await authAdmin();
         (await store.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
         (await store.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
 
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name } });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
@@ -100,14 +111,14 @@ describe('GET /api/v1/audit-trail', () => {
     });
 
     it('paginates via the opaque cursor', async () => {
-        const { session, account, env } = await authAdmin();
+        const { session, account } = await authAdmin();
         // 26 events one second apart (oldest → newest) — one more than the fixed page size of 25.
         const base = Date.parse('2026-07-16T10:00:00.000Z');
         for (let i = 0; i < 26; i++) {
             (await store.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
         }
 
-        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name } });
+        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
         expect(page1.res.status).toBe(200);
         isSuccess(page1.json);
         expect(page1.json.data).toHaveLength(25);
@@ -117,7 +128,7 @@ describe('GET /api/v1/audit-trail', () => {
         const page2 = await api.fetch('/api/v1/audit-trail', {
             method: 'GET',
             session,
-            query: { env: env.name, cursor: page1.json.pagination.nextCursor! }
+            query: { cursor: page1.json.pagination.nextCursor! }
         });
         expect(page2.res.status).toBe(200);
         isSuccess(page2.json);
