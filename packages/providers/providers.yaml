@@ -17629,7 +17629,7 @@ resova:
         - other
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.resova.com/
+        base_url: https://api.resova.${connectionConfig.region}/
         headers:
             x-api-key: ${apiKey}
         verification:
@@ -17644,6 +17644,16 @@ resova:
             title: API Key
             description: The API key generated in your Resova account.
             doc_section: '#step-1-generating-your-api-key'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The datacenter region your Resova account is hosted in.
+            doc_section: '#step-2-determine-your-region'
+            default_value: us
+            enum:
+                - us
+                - eu
 
 retell-ai:
     display_name: Retell AI
