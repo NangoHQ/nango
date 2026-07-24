@@ -5,6 +5,7 @@ import { nanoid } from '@nangohq/utils';
 import { getTestDbClient } from '../db/helpers.test.js';
 import { isDuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
+import * as concurrencyOverrides from './concurrencyOverrides.js';
 import * as tasks from './tasks.js';
 
 import type { Task, TaskState } from '../types.js';
@@ -379,6 +380,54 @@ describe('Task', () => {
             }
             const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
             expect(result).toEqual([]);
+        });
+        it('should reflect a concurrency override', async () => {
+            // the stamped default of 5 is not exceeded by 3 queued tasks
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 5 });
+            }
+            expect((await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap()).toEqual([]);
+
+            // lowering the override below the queued count puts the group under backpressure
+            (await concurrencyOverrides.set(db, { groupKey: 'sync:environment:1', maxConcurrency: 2 })).unwrap();
+            expect((await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap()).toEqual([{ group_key: 'sync:environment:1', queued: 3 }]);
+        });
+    });
+    describe('concurrency overrides', () => {
+        it('applies a lower override live to already-created tasks', async () => {
+            const groupKey = nanoid();
+            // tasks are stamped with a default that allows 5
+            for (let i = 0; i < 5; i++) {
+                await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            }
+            // operator caps the group at 2 after the tasks were already created
+            (await concurrencyOverrides.set(db, { groupKey, maxConcurrency: 2 })).unwrap();
+
+            const dequeued = (await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap();
+            expect(dequeued).toHaveLength(2);
+        });
+        it('applies an override higher than the stamped default', async () => {
+            const groupKey = nanoid();
+            // tasks are stamped with a default that allows only 1
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey, groupMaxConcurrency: 1 });
+            }
+            (await concurrencyOverrides.set(db, { groupKey, maxConcurrency: 3 })).unwrap();
+
+            const dequeued = (await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap();
+            expect(dequeued).toHaveLength(3);
+        });
+        it('reverts to the stamped default when the override is removed', async () => {
+            const groupKey = nanoid();
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey, groupMaxConcurrency: 3 });
+            }
+            (await concurrencyOverrides.set(db, { groupKey, maxConcurrency: 1 })).unwrap();
+            expect((await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap()).toHaveLength(1);
+
+            (await concurrencyOverrides.remove(db, groupKey)).unwrap();
+            // one task is already running, the stamped default of 3 lets two more start
+            expect((await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap()).toHaveLength(2);
         });
     });
     it('should hard-delete terminated tasks older than N days and keep newer ones', async () => {
