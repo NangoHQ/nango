@@ -61,7 +61,8 @@ try {
               pollPacer: new LocalAdaptivePollPacer({
                   maxDelayMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS,
                   healthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS,
-                  decayWindowMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_DECAY_WINDOW_MS,
+                  latencyTauMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_LATENCY_TAU_MS,
+                  failureBackoffMs: envs.NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS,
                   jitterRatio: envs.NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO
               })
           })
@@ -149,7 +150,8 @@ try {
             consumerConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,
             adaptiveMaxPollDelayMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_MAX_POLL_DELAY_MS,
             adaptiveHealthyLatencyMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_HEALTHY_LATENCY_MS,
-            adaptiveDecayWindowMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_DECAY_WINDOW_MS,
+            adaptiveLatencyTauMs: envs.NANGO_TASK_DISPATCH_ADAPTIVE_LATENCY_TAU_MS,
+            failureBackoffMs: envs.NANGO_TASK_DISPATCH_FAILURE_BACKOFF_MS,
             adaptiveJitterRatio: envs.NANGO_TASK_DISPATCH_ADAPTIVE_JITTER_RATIO
         });
     }

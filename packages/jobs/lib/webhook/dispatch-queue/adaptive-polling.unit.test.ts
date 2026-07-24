@@ -5,7 +5,8 @@ import { LocalAdaptivePollPacer } from './adaptive-polling.js';
 const defaultOptions = {
     maxDelayMs: 500,
     healthyLatencyMs: 100,
-    decayWindowMs: 5 * 60 * 1000,
+    latencyTauMs: 10_000,
+    failureBackoffMs: 500,
     jitterRatio: 0.2
 };
 
@@ -15,39 +16,103 @@ function makePacer(options: Partial<ConstructorParameters<typeof LocalAdaptivePo
 
 describe('LocalAdaptivePollPacer', () => {
     it.each([50, 100])('does not delay polling for latency at or below the healthy threshold: %dms', async (durationMs) => {
+        let now = 0;
         const sleep = vi.fn(() => Promise.resolve());
-        const pacer = makePacer({ now: () => 0, random: () => 0.5, sleep });
+        const pacer = makePacer({ now: () => now, random: () => 0.5, sleep });
 
+        now = 1000;
         pacer.recordSuccess(durationMs);
         await pacer.wait(new AbortController().signal);
 
         expect(sleep).not.toHaveBeenCalled();
     });
 
-    it('maps unhealthy latency to a sigmoid delay with bounded jitter', async () => {
-        const sleep = vi.fn(() => Promise.resolve());
-        const pacer = makePacer({ now: () => 0, random: () => 0.5, sleep });
-
-        pacer.recordSuccess(200);
-        await pacer.wait(new AbortController().signal);
-
-        expect(sleep).toHaveBeenCalledWith(208, expect.any(AbortSignal));
-    });
-
-    it('decays latency pressure to effectively zero over five minutes', async () => {
+    it('smooths a single transient latency spike', async () => {
         let now = 0;
         const sleep = vi.fn(() => Promise.resolve());
         const pacer = makePacer({ now: () => now, random: () => 0.5, sleep });
-        pacer.recordSuccess(200);
 
-        now = 5 * 60 * 1000;
+        now = 1000;
+        pacer.recordSuccess(1000);
         await pacer.wait(new AbortController().signal);
-        expect(sleep).toHaveBeenLastCalledWith(3, expect.any(AbortSignal));
 
-        now = 10 * 60 * 1000;
-        sleep.mockClear();
+        expect(sleep).toHaveBeenCalledWith(43, expect.any(AbortSignal));
+    });
+
+    it.each([
+        [5, 178],
+        [10, 285],
+        [30, 428]
+    ])('reacts to sustained unhealthy latency over %ds', async (durationSeconds, expectedDelayMs) => {
+        let now = 0;
+        const sleep = vi.fn(() => Promise.resolve());
+        const pacer = makePacer({ now: () => now, random: () => 0.5, sleep });
+
+        for (let second = 1; second <= durationSeconds; second++) {
+            now = second * 1000;
+            pacer.recordSuccess(1000);
+        }
         await pacer.wait(new AbortController().signal);
-        expect(sleep).not.toHaveBeenCalled();
+
+        expect(sleep).toHaveBeenCalledWith(expectedDelayMs, expect.any(AbortSignal));
+    });
+
+    it('recovers as healthy latency samples replace sustained pressure', async () => {
+        let now = 0;
+        const sleep = vi.fn(() => Promise.resolve());
+        const pacer = makePacer({ now: () => now, random: () => 0.5, sleep });
+
+        for (let second = 1; second <= 10; second++) {
+            now = second * 1000;
+            pacer.recordSuccess(1000);
+        }
+        for (let second = 11; second <= 20; second++) {
+            now = second * 1000;
+            pacer.recordSuccess(50);
+        }
+        await pacer.wait(new AbortController().signal);
+
+        expect(sleep).toHaveBeenCalledWith(105, expect.any(AbortSignal));
+    });
+
+    it('responds consistently over wall-clock time at different sample frequencies', async () => {
+        let slowNow = 0;
+        let fastNow = 0;
+        const slowSleep = vi.fn(() => Promise.resolve());
+        const fastSleep = vi.fn(() => Promise.resolve());
+        const slowPacer = makePacer({ now: () => slowNow, random: () => 0.5, sleep: slowSleep });
+        const fastPacer = makePacer({ now: () => fastNow, random: () => 0.5, sleep: fastSleep });
+
+        for (let sample = 1; sample <= 10; sample++) {
+            slowNow = sample * 1000;
+            slowPacer.recordSuccess(1000);
+        }
+        for (let sample = 1; sample <= 100; sample++) {
+            fastNow = sample * 100;
+            fastPacer.recordSuccess(1000);
+        }
+        await slowPacer.wait(new AbortController().signal);
+        await fastPacer.wait(new AbortController().signal);
+
+        expect(slowSleep).toHaveBeenCalledWith(285, expect.any(AbortSignal));
+        expect(fastSleep).toHaveBeenCalledWith(285, expect.any(AbortSignal));
+    });
+
+    it('isolates a transient spike to the jobs pod that observed it', async () => {
+        let now = 0;
+        const sleeps = Array.from({ length: 10 }, () => vi.fn(() => Promise.resolve()));
+        const pacers = sleeps.map((sleep) => makePacer({ now: () => now, random: () => 0.5, sleep }));
+
+        now = 1000;
+        const affectedPacer = pacers[0];
+        if (!affectedPacer) {
+            throw new Error('Expected an affected jobs pod');
+        }
+        affectedPacer.recordSuccess(1000);
+        await Promise.all(pacers.map(async (pacer) => await pacer.wait(new AbortController().signal)));
+
+        expect(sleeps[0]).toHaveBeenCalledWith(43, expect.any(AbortSignal));
+        expect(sleeps.slice(1).every((sleep) => sleep.mock.calls.length === 0)).toBe(true);
     });
 
     it('honors admission Retry-After even when it exceeds the adaptive maximum', async () => {
@@ -58,6 +123,20 @@ describe('LocalAdaptivePollPacer', () => {
         await pacer.wait(new AbortController().signal);
 
         expect(sleep).toHaveBeenCalledWith(1320, expect.any(AbortSignal));
+    });
+
+    it('does not replace latency pressure with admission congestion', async () => {
+        let now = 0;
+        const sleep = vi.fn(() => Promise.resolve());
+        const pacer = makePacer({ now: () => now, random: () => 1, sleep });
+
+        now = 1000;
+        pacer.recordSuccess(1000);
+        pacer.recordCongestion(100, 20);
+        now = 1101;
+        await pacer.wait(new AbortController().signal);
+
+        expect(sleep).toHaveBeenCalledWith(48, expect.any(AbortSignal));
     });
 
     it('honors admission Retry-After at the pre-dispatch gate', async () => {
@@ -98,15 +177,14 @@ describe('LocalAdaptivePollPacer', () => {
         const firstSleep = new Promise<void>((resolve) => {
             releaseFirstSleep = resolve;
         });
-        const sleep = vi.fn(async (delayMs: number) => {
-            now += delayMs;
+        const sleep = vi.fn(async (_delayMs: number) => {
             sleepCount += 1;
             if (sleepCount === 1) {
                 await firstSleep;
             }
         });
         const pacer = makePacer({ now: () => now, random: () => 0.5, sleep });
-        pacer.recordSuccess(200);
+        pacer.recordCongestion(500, 20);
 
         const waitPromise = pacer.wait(new AbortController().signal);
         await vi.waitFor(() => expect(sleep).toHaveBeenCalledOnce());
@@ -124,24 +202,23 @@ describe('LocalAdaptivePollPacer', () => {
         const sleeping = new Promise<void>((resolve) => {
             releaseSleep = resolve;
         });
-        const sleep = vi.fn(async (delayMs: number) => {
-            now += delayMs;
+        const sleep = vi.fn(async () => {
             await sleeping;
         });
         const pacer = makePacer({ now: () => now, random: () => 1, sleep });
-        pacer.recordFailure(20);
+        pacer.recordCongestion(100, 20);
 
         const waitPromise = pacer.wait(new AbortController().signal);
         await vi.waitFor(() => expect(sleep).toHaveBeenCalledOnce());
-        pacer.recordCongestion(100, 20);
-        now += 200;
+        pacer.recordCongestion(200, 20);
+        now = 300;
         releaseSleep();
         await waitPromise;
 
         expect(sleep).toHaveBeenCalledOnce();
     });
 
-    it('paces polling after generic orchestrator failures', async () => {
+    it('applies the configured fixed backoff after generic failures', async () => {
         const sleep = vi.fn(() => Promise.resolve());
         const pacer = makePacer({ now: () => 0, random: () => 1, sleep });
 
@@ -151,17 +228,40 @@ describe('LocalAdaptivePollPacer', () => {
         expect(sleep).toHaveBeenCalledWith(500, expect.any(AbortSignal));
     });
 
-    it('never exceeds the configured adaptive delay for latency pressure', async () => {
+    it('allows disabling generic failure backoff', async () => {
         const sleep = vi.fn(() => Promise.resolve());
-        const pacer = makePacer({ now: () => 0, random: () => 1, sleep });
+        const pacer = makePacer({ failureBackoffMs: 0, now: () => 0, random: () => 1, sleep });
 
+        pacer.recordFailure(20);
+        await pacer.wait(new AbortController().signal);
+
+        expect(sleep).not.toHaveBeenCalled();
+    });
+
+    it('uses the longer of admission and generic failure backoffs', async () => {
+        const sleep = vi.fn(() => Promise.resolve());
+        const pacer = makePacer({ now: () => 0, random: () => 0.5, sleep });
+
+        pacer.recordFailure(20);
+        pacer.recordCongestion(1200, 20);
+        await pacer.wait(new AbortController().signal);
+
+        expect(sleep).toHaveBeenCalledWith(1320, expect.any(AbortSignal));
+    });
+
+    it('never exceeds the configured adaptive delay for latency pressure', async () => {
+        let now = 0;
+        const sleep = vi.fn(() => Promise.resolve());
+        const pacer = makePacer({ now: () => now, random: () => 1, sleep });
+
+        now = 100_000;
         pacer.recordSuccess(10_000);
         await pacer.wait(new AbortController().signal);
 
         expect(sleep).toHaveBeenCalledWith(500, expect.any(AbortSignal));
     });
 
-    it('aborts an in-progress polling delay during shutdown', async () => {
+    it('aborts an in-progress failure backoff during shutdown', async () => {
         const pacer = makePacer({ random: () => 1 });
         pacer.recordFailure(20);
         const controller = new AbortController();
@@ -173,10 +273,12 @@ describe('LocalAdaptivePollPacer', () => {
     });
 
     it('does not apply latency pressure again at the pre-dispatch backoff gate', async () => {
+        let now = 0;
         const sleep = vi.fn(() => Promise.resolve());
-        const pacer = makePacer({ now: () => 0, random: () => 1, sleep });
-        pacer.recordFailure(20);
+        const pacer = makePacer({ now: () => now, random: () => 1, sleep });
 
+        now = 1000;
+        pacer.recordSuccess(1000);
         await pacer.waitForBackoff(new AbortController().signal, () => Promise.resolve());
 
         expect(sleep).not.toHaveBeenCalled();

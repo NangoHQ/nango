@@ -14,7 +14,8 @@ export interface DispatchPollPacer {
 interface LocalAdaptivePollPacerOptions {
     maxDelayMs: number;
     healthyLatencyMs: number;
-    decayWindowMs: number;
+    latencyTauMs: number;
+    failureBackoffMs: number;
     jitterRatio: number;
     now?: () => number;
     random?: () => number;
@@ -23,25 +24,30 @@ interface LocalAdaptivePollPacerOptions {
 
 /**
  * Converts pod-local orchestrator outcomes into a shared delay for all SQS poll loops.
- * Pressure rises immediately on slow calls or failures, then decays toward zero while explicit admission backoff is enforced separately.
+ * Successful latency updates a smoothed pressure signal, while admission and failure backoffs are enforced separately.
  */
 export class LocalAdaptivePollPacer implements DispatchPollPacer {
     /** Maximum latency-driven delay applied before an SQS receive. */
     private readonly maxDelayMs: number;
     /** Orchestrator latency where the one-sided sigmoid starts producing pressure. */
     private readonly healthyLatencyMs: number;
-    /** Time after which a pressure signal retains only one percent of its original weight. */
-    private readonly decayWindowMs: number;
+    /** Time constant controlling how quickly successful latency samples change pressure. */
+    private readonly latencyTauMs: number;
+    /** Fixed pod-local pause applied after a generic orchestrator failure. */
+    private readonly failureBackoffMs: number;
     /** Fraction of each delay randomized to desynchronize loops and pods. */
     private readonly jitterRatio: number;
     private readonly now: () => number;
     private readonly random: () => number;
     private readonly sleep: (delayMs: number, signal: AbortSignal) => Promise<void>;
-    /** Current normalized load signal, from zero for healthy to one for fully paced. */
-    private pressure = 0;
-    private lastUpdatedAt: number;
+    /** Smoothed normalized latency signal, from zero for healthy to one for fully paced. */
+    private latencyPressure = 0;
+    /** Monotonic time of the previous successful latency sample. */
+    private lastLatencySampleAt: number;
     /** Monotonic deadline through which orchestrator admission asked this pod to stop dispatching. */
-    private backoffUntil = 0;
+    private admissionBackoffUntil = 0;
+    /** Monotonic deadline for the short pause applied after a generic failure. */
+    private failureBackoffUntil = 0;
 
     /**
      * Builds the pod-local controller.
@@ -54,8 +60,11 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
         if (!Number.isFinite(options.healthyLatencyMs) || options.healthyLatencyMs <= 0) {
             throw new Error('Webhook dispatch healthy latency must be positive');
         }
-        if (!Number.isFinite(options.decayWindowMs) || options.decayWindowMs <= 0) {
-            throw new Error('Webhook dispatch poll delay decay window must be positive');
+        if (!Number.isFinite(options.latencyTauMs) || options.latencyTauMs <= 0) {
+            throw new Error('Webhook dispatch latency EWMA time constant must be positive');
+        }
+        if (!Number.isFinite(options.failureBackoffMs) || options.failureBackoffMs < 0) {
+            throw new Error('Webhook dispatch failure backoff must be non-negative');
         }
         if (!Number.isFinite(options.jitterRatio) || options.jitterRatio < 0 || options.jitterRatio > 1) {
             throw new Error('Webhook dispatch poll delay jitter ratio must be between zero and one');
@@ -63,12 +72,13 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
 
         this.maxDelayMs = options.maxDelayMs;
         this.healthyLatencyMs = options.healthyLatencyMs;
-        this.decayWindowMs = options.decayWindowMs;
+        this.latencyTauMs = options.latencyTauMs;
+        this.failureBackoffMs = options.failureBackoffMs;
         this.jitterRatio = options.jitterRatio;
         this.now = options.now ?? (() => performance.now());
         this.random = options.random ?? Math.random;
         this.sleep = options.sleep ?? (async (delayMs, signal) => await setTimeout(delayMs, undefined, { signal }));
-        this.lastUpdatedAt = this.now();
+        this.lastLatencySampleAt = this.now();
     }
 
     /**
@@ -89,39 +99,36 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
 
     /**
      * Applies orchestrator admission feedback.
-     * 1. Decay old pressure. 2. Force full pressure. 3. Extend Retry-After. 4. Record latency and backoff metrics.
+     * 1. Preserve latency pressure. 2. Extend Retry-After. 3. Record latency and admission-backoff metrics.
      */
     recordCongestion(retryAfterMs: number, durationMs: number): void {
         const now = this.now();
-        this.decay(now);
-        this.pressure = 1;
         const validRetryAfterMs = Number.isFinite(retryAfterMs) ? Math.max(0, retryAfterMs) : 0;
-        this.backoffUntil = Math.max(this.backoffUntil, now + validRetryAfterMs);
+        this.admissionBackoffUntil = Math.max(this.admissionBackoffUntil, now + validRetryAfterMs);
         if (Number.isFinite(durationMs) && durationMs >= 0) {
             metrics.duration(metrics.Types.WEBHOOK_DISPATCH_ORCHESTRATOR_LATENCY_MS, durationMs);
         }
         metrics.increment(metrics.Types.WEBHOOK_DISPATCH_POLL_BACKOFF, 1, { reason: 'admission' });
-        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_PRESSURE, this.pressure);
+        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_LATENCY_PRESSURE, this.latencyPressure);
     }
 
     /**
      * Applies generic orchestrator failure feedback.
-     * 1. Decay old pressure. 2. Force full pressure. 3. Record latency and failure backoff metrics.
+     * 1. Preserve latency pressure. 2. Extend the fixed failure deadline. 3. Record latency and failure-backoff metrics.
      */
     recordFailure(durationMs: number): void {
         const now = this.now();
-        this.decay(now);
-        this.pressure = 1;
+        this.failureBackoffUntil = Math.max(this.failureBackoffUntil, now + this.failureBackoffMs);
         if (Number.isFinite(durationMs) && durationMs >= 0) {
             metrics.duration(metrics.Types.WEBHOOK_DISPATCH_ORCHESTRATOR_LATENCY_MS, durationMs);
         }
         metrics.increment(metrics.Types.WEBHOOK_DISPATCH_POLL_BACKOFF, 1, { reason: 'failure' });
-        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_PRESSURE, this.pressure);
+        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_LATENCY_PRESSURE, this.latencyPressure);
     }
 
     /**
      * Applies a successful orchestrator latency sample.
-     * 1. Decay old pressure. 2. Map latency through the sigmoid. 3. Keep the stronger signal and record metrics.
+     * 1. Map latency through the sigmoid. 2. Blend it with a time-adaptive EWMA. 3. Record latency and pressure metrics.
      */
     recordSuccess(durationMs: number): void {
         if (!Number.isFinite(durationMs) || durationMs < 0) {
@@ -129,10 +136,16 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
         }
 
         const now = this.now();
-        this.decay(now);
-        this.pressure = Math.max(this.pressure, this.pressureForLatency(durationMs));
+        const elapsedMs = Math.max(0, now - this.lastLatencySampleAt);
+        const alpha = 1 - Math.exp(-elapsedMs / this.latencyTauMs);
+        const samplePressure = this.pressureForLatency(durationMs);
+        this.latencyPressure += alpha * (samplePressure - this.latencyPressure);
+        if (this.latencyPressure * this.maxDelayMs < 1) {
+            this.latencyPressure = 0;
+        }
+        this.lastLatencySampleAt = now;
         metrics.duration(metrics.Types.WEBHOOK_DISPATCH_ORCHESTRATOR_LATENCY_MS, durationMs);
-        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_PRESSURE, this.pressure);
+        metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_LATENCY_PRESSURE, this.latencyPressure);
     }
 
     /**
@@ -147,15 +160,16 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
         while (true) {
             signal.throwIfAborted();
             const now = this.now();
-            this.decay(now);
-            const observedBackoffUntil = this.backoffUntil;
-            const adaptiveCeilingMs = includeAdaptiveDelay ? this.pressure * this.maxDelayMs : 0;
+            this.clearExpiredBackoffs(now);
+            const observedBackoffUntil = Math.max(this.admissionBackoffUntil, this.failureBackoffUntil);
+            const adaptiveCeilingMs = includeAdaptiveDelay ? this.latencyPressure * this.maxDelayMs : 0;
             const adaptiveDelayMs = adaptiveCeilingMs * (1 - this.jitterRatio + this.random() * this.jitterRatio);
-            const backoffRemainingMs = Math.max(0, observedBackoffUntil - now);
-            const backoffJitterMs = backoffRemainingMs > 0 ? this.random() * backoffRemainingMs * this.jitterRatio : 0;
-            const delayMs = Math.ceil(Math.max(adaptiveDelayMs, backoffRemainingMs + backoffJitterMs));
+            const admissionRemainingMs = Math.max(0, this.admissionBackoffUntil - now);
+            const admissionJitterMs = admissionRemainingMs > 0 ? this.random() * admissionRemainingMs * this.jitterRatio : 0;
+            const failureRemainingMs = Math.max(0, this.failureBackoffUntil - now);
+            const delayMs = Math.ceil(Math.max(adaptiveDelayMs, admissionRemainingMs + admissionJitterMs, failureRemainingMs));
 
-            if (includeAdaptiveDelay || backoffRemainingMs > 0) {
+            if (includeAdaptiveDelay || observedBackoffUntil > now) {
                 metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_POLL_DELAY_MS, delayMs);
             }
             if (delayMs === 0) {
@@ -164,7 +178,8 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
             await prepareWait?.(delayMs, signal);
             signal.throwIfAborted();
             await this.sleep(delayMs, signal);
-            if (this.backoffUntil <= observedBackoffUntil || this.backoffUntil <= this.now()) {
+            const currentBackoffUntil = Math.max(this.admissionBackoffUntil, this.failureBackoffUntil);
+            if (currentBackoffUntil <= observedBackoffUntil || currentBackoffUntil <= this.now()) {
                 return;
             }
         }
@@ -179,21 +194,13 @@ export class LocalAdaptivePollPacer implements DispatchPollPacer {
         return Math.max(0, 2 / (1 + Math.exp(-normalizedLatency)) - 1);
     }
 
-    /**
-     * Recovers local polling capacity over time.
-     * 1. Apply exponential decay for elapsed time. 2. Drop sub-millisecond pressure. 3. Clear expired admission backoff.
-     */
-    private decay(now: number): void {
-        const elapsedMs = Math.max(0, now - this.lastUpdatedAt);
-        if (elapsedMs > 0) {
-            this.pressure *= Math.exp((-Math.log(100) * elapsedMs) / this.decayWindowMs);
-            if (this.pressure * this.maxDelayMs < 1) {
-                this.pressure = 0;
-            }
-            this.lastUpdatedAt = now;
+    /** Clears completed admission and failure deadlines before calculating the next wait. */
+    private clearExpiredBackoffs(now: number): void {
+        if (this.admissionBackoffUntil <= now) {
+            this.admissionBackoffUntil = 0;
         }
-        if (this.backoffUntil <= now) {
-            this.backoffUntil = 0;
+        if (this.failureBackoffUntil <= now) {
+            this.failureBackoffUntil = 0;
         }
     }
 }
