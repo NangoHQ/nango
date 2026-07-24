@@ -13,7 +13,13 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({ children, side = 'top'
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <div className="[&>svg]:size-4 [&>svg]:text-text-muted">{icon}</div>
+                <button
+                    type="button"
+                    aria-label="More information"
+                    className="[&>svg]:size-4 [&>svg]:text-text-muted focus-default inline-flex cursor-help rounded-ds-xs"
+                >
+                    {icon}
+                </button>
             </TooltipTrigger>
             <TooltipContent side={side} align={align}>
                 {children}
