@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks';
 
-import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { ChangeMessageVisibilityBatchCommand, DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
@@ -17,6 +17,7 @@ import type { WebhookDispatchMessage } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
+const MAX_SQS_VISIBILITY_TIMEOUT_SECONDS = 12 * 60 * 60;
 
 const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     version: z.literal(1),
@@ -59,6 +60,7 @@ interface BatchOutcome {
 
 interface ParsedEntry {
     msg: Message;
+    receiptHandle: string;
     parsed: WebhookDispatchMessage;
 }
 
@@ -187,7 +189,9 @@ export class DispatchQueueConsumer {
                     };
                 });
 
-                await this.pollPacer?.waitForBackoff(this.abortController.signal);
+                await this.pollPacer?.waitForBackoff(this.abortController.signal, async (delayMs) => {
+                    await this.extendVisibilityForBackoff(entries, delayMs);
+                });
                 const startedAt = performance.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
                 const durationMs = performance.now() - startedAt;
@@ -245,7 +249,7 @@ export class DispatchQueueConsumer {
                 }
             }
 
-            entries.push({ msg, parsed: message });
+            entries.push({ msg, receiptHandle: msg.ReceiptHandle, parsed: message });
         }
         return entries;
     }
@@ -290,7 +294,28 @@ export class DispatchQueueConsumer {
     }
 
     private async deleteGroup(group: ParsedEntry[]): Promise<void> {
-        await Promise.all(group.map((entry) => this.tryDeleteMessage(entry.msg.ReceiptHandle!)));
+        await Promise.all(group.map((entry) => this.tryDeleteMessage(entry.receiptHandle)));
+    }
+
+    private async extendVisibilityForBackoff(entries: ParsedEntry[], delayMs: number): Promise<void> {
+        const visibilityTimeoutSeconds = this.visibilityTimeoutSeconds + Math.ceil(delayMs / 1000);
+        if (visibilityTimeoutSeconds > MAX_SQS_VISIBILITY_TIMEOUT_SECONDS) {
+            throw new Error('Webhook dispatch admission backoff exceeds the maximum SQS visibility timeout');
+        }
+
+        const result = await this.sqs.send(
+            new ChangeMessageVisibilityBatchCommand({
+                QueueUrl: this.queueUrl,
+                Entries: entries.map((entry, index) => ({
+                    Id: String(index),
+                    ReceiptHandle: entry.receiptHandle,
+                    VisibilityTimeout: visibilityTimeoutSeconds
+                }))
+            })
+        );
+        if (result.Failed?.length) {
+            throw new Error('Failed to extend webhook dispatch message visibility before admission backoff');
+        }
     }
 
     private parseMessage(body: string): Result<WebhookDispatchMessage> {
