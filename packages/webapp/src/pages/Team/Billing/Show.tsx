@@ -1,48 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
-import { useHashNavigation } from '@/hooks/useHashNavigation';
+import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions';
 import { track } from '@/utils/analytics';
 import DashboardLayout from '../../../layout/DashboardLayout';
-import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
 
 export const TeamBilling: React.FC = () => {
-    const [activeTab, setActiveTab] = useHashNavigation('usage');
-    const isUsageTab = activeTab === 'usage';
-    const [selectedMonth, setSelectedMonth] = useState<Date>(() => {
-        const now = new Date();
-        return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
-    });
-
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
 
     useEffect(() => {
-        if (!canManageBilling && activeTab === 'payment-and-invoices') {
-            setActiveTab('usage');
-        }
-    }, [canManageBilling, activeTab, setActiveTab]);
+        track('web:usage:viewed', {});
+    }, []);
 
-    // Read the tab from the URL hash directly: useHashNavigation defaults to 'usage' until it syncs
-    // after mount, so opening #plans would otherwise fire a usage view for one render.
+    // The 3 sections used to be separate tabs reachable via #usage/#plans/#payment-and-invoices
+    // (still linked from other pages). Now that they're stacked on one page, scroll to the matching
+    // section instead of switching tabs.
     const location = useLocation();
-    const onUsageTab = (location.hash ? location.hash.slice(1) : 'usage') === 'usage';
-
-    // Track a usage-page view when the tab becomes active (initial load or switching back to it).
     useEffect(() => {
-        if (onUsageTab) {
-            track('web:usage:viewed', {});
+        const hash = location.hash.slice(1);
+        if (!hash) {
+            return;
         }
-    }, [onUsageTab]);
+        document.getElementById(hash)?.scrollIntoView({ block: 'start' });
+    }, [location.hash]);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but the billing
     // content is capped and left-aligned: the usage charts have a fixed height, so unbounded width
@@ -52,38 +40,28 @@ export const TeamBilling: React.FC = () => {
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            <div className="flex flex-col gap-8 max-w-[1280px]">
-                <header className="flex justify-end items-center">
-                    {isUsageTab && (
-                        <div className="flex items-center gap-4">
-                            <MonthSelector onMonthChange={setSelectedMonth} />
-                        </div>
-                    )}
-                </header>
-                <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-full">
-                    <NavigationList>
-                        <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
-                        <NavigationTrigger value={'plans'}>Plans</NavigationTrigger>
-                        <PermissionGate condition={canManageBilling}>
-                            {(allowed) => (
-                                <NavigationTrigger value={'payment-and-invoices'} disabled={!allowed}>
-                                    Payment & Invoices
-                                </NavigationTrigger>
-                            )}
-                        </PermissionGate>
-                    </NavigationList>
-                    <NavigationContent value={'usage'} className="w-full flex flex-col gap-6">
-                        <Usage selectedMonth={selectedMonth} />
-                    </NavigationContent>
-                    <NavigationContent value={'plans'} className="w-full overflow-x-auto">
+            {/* max-w: the old 1280 cap plus the 228px (184px side panel + 44px gap) the tabbed
+                NavigationList side panel used to take up, now that the sections stack instead */}
+            <div className="flex flex-col gap-8 max-w-[1508px]">
+                <div id="usage">
+                    <Usage />
+                </div>
+                <Separator />
+                <div id="plans" className="flex flex-col gap-4">
+                    <span className="text-text-strong text-body-medium-medium">Plans</span>
+                    <div className="w-full overflow-x-auto">
                         <Plans />
-                    </NavigationContent>
-                    {canManageBilling && (
-                        <NavigationContent value={'payment-and-invoices'} className="w-full">
+                    </div>
+                </div>
+                {canManageBilling && (
+                    <>
+                        <Separator />
+                        <div id="payment-and-invoices" className="flex flex-col gap-4">
+                            <span className="text-text-strong text-body-medium-medium">Billing information</span>
                             <Payment />
-                        </NavigationContent>
-                    )}
-                </Navigation>
+                        </div>
+                    </>
+                )}
             </div>
         </DashboardLayout>
     );

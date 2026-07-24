@@ -383,3 +383,15 @@ export interface FathomWebhookResponse {
     action_items: ActionItem[] | null;
     crm_matches?: CRMMatches;
 }
+
+export interface JobberWebhookPayload {
+    data: {
+        webHookEvent: {
+            topic: string;
+            appId: string;
+            accountId: string;
+            itemId: string;
+            occurredAt: string;
+        };
+    };
+}

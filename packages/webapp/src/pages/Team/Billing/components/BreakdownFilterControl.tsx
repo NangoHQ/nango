@@ -1,10 +1,9 @@
-import { Check, ChevronsUpDown, Layers, ListFilter, SquareStack, X } from 'lucide-react';
+import { Check, ChevronsUpDown, Layers, ListFilter, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { FilterSelect } from '@/components/patterns/FilterSelect';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useApiGetBillingUsageTopDimensionValues, useApiPrefetchBillingUsageTopDimensionValues } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
 import { cn } from '@/utils/utils';
@@ -57,17 +56,13 @@ interface BreakdownFilterControlProps {
     onSetBreakdown: (dimension: AnyBreakdownDimension | null) => void;
     onApplyFilter: (dimension: AnyBreakdownDimension, value: string) => void;
     onClearFilter: () => void;
-    /** Show "Apply to all" — applying this panel's group + filter would change another panel. */
-    canApplyToAll: boolean;
-    onApplyToAll: () => void;
 }
 
 /**
  * Two independent slots for a usage panel: "Group" (one breakdown dimension, a flat list) and
  * "Filter" (one dimension = value, the reusable {@link FilterSelect} with a searchable value pane
  * per dimension). Both offer every dimension; on a collision the filter wins for the query (see
- * UsageChartCard). The ✕ on a trigger clears that slot; "Apply to all" copies both slots to every
- * metric that supports them.
+ * UsageChartCard). The ✕ on a trigger clears that slot.
  */
 export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     metric,
@@ -78,9 +73,7 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
     filter,
     onSetBreakdown,
     onApplyFilter,
-    onClearFilter,
-    canApplyToAll,
-    onApplyToAll
+    onClearFilter
 }) => {
     const [groupOpen, setGroupOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
@@ -145,22 +138,6 @@ export const BreakdownFilterControl: React.FC<BreakdownFilterControlProps> = ({
 
     return (
         <div className="flex items-center gap-2">
-            {canApplyToAll && (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <button
-                            type="button"
-                            onClick={onApplyToAll}
-                            aria-label="Apply to all"
-                            className="flex h-7 items-center justify-center px-1 text-text-muted hover:text-text-strong"
-                        >
-                            <SquareStack className="size-4" />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Apply this group and filter to every applicable metric</TooltipContent>
-                </Tooltip>
-            )}
-
             <SlotTrigger
                 onClear={
                     breakdownDimension

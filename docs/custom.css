@@ -221,6 +221,13 @@ html:not(.dark) #navbar {
 html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
 #sidebar-content .pointer-events-none.sticky { display: none !important; }
 #navigation-items { padding-top: 20px !important; }
+#navigation-items img[src$="/images/mcp.svg"] {
+  opacity: 0.38;
+}
+.dark #navigation-items img[src$="/images/mcp.svg"] {
+  filter: invert(1);
+  opacity: 0.58;
+}
 
 /* ══ TOC — hide scrollbar until hover ════════════════════════════ */
 /*
@@ -451,6 +458,19 @@ html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:ho
   border-radius: 4px !important;
 }
 
+/* Render the custom MCP logo with the surrounding navigation item's color. */
+div:has(> img[src="/images/mcp.svg"]) > img {
+  display: none;
+}
+div:has(> img[src="/images/mcp.svg"])::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  background-color: currentColor;
+  -webkit-mask: url("/images/mcp.svg") center / contain no-repeat;
+  mask: url("/images/mcp.svg") center / contain no-repeat;
+}
+
 /* Consistent padding on all sidebar nav items */
 #sidebar-group a, #sidebar-group button {
   padding: 3px 8px !important;
@@ -578,4 +598,14 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 .chat-assistant-floating-input,
 #content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
+}
+
+/* ══ ASK AI ASSISTANT PANEL — above navbar ═══════════════════════ */
+/*
+ * Raise the panel (Mintlify z-22) above the fixed opaque NAVBAR (z-30)
+ * so its header/Close button and first message aren't hidden behind it.
+ * Stays below the z-200 search / Ask AI dialogs. See NAN-6370.
+ */
+.sticky:has(> #chat-assistant-sheet) {
+  z-index: 40 !important;
 }

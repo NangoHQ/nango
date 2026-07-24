@@ -1,0 +1,85 @@
+---
+title: 'Veeva Vault (OAuth 2.0 / OIDC)'
+sidebarTitle: 'Veeva Vault (OAuth 2.0 / OIDC)'
+description: 'Integrate your application with the Veeva Vault API using OAuth 2.0 / OpenID Connect'
+---
+
+## 🚀 Quickstart
+
+Connect to Veeva Vault with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Veeva Vault (OAuth 2.0 / OIDC)_.
+    </Step>
+    <Step id="authorize-veeva-vault" title="Authorize Veeva Vault">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your identity provider's token endpoint, client ID, client secret, OAuth 2.0 / OpenID Connect profile ID, and Vault DNS (subdomain). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-veeva-vault-api" title="Call the Veeva Vault API">
+    Let's make your first request to the Veeva Vault API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/metadata/objects/users" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/metadata/objects/users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Veeva Vault (OAuth 2.0 / OIDC) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/veeva-vault-oauth/connect)  
+Connect your Veeva Vault account via OAuth 2.0 / OpenID Connect using the Connect UI
+
+Official docs: [Veeva Vault OAuth 2.0 / OpenID Connect](https://general.veevavault.dev/vault-api/api-reference), [Vault Help: OAuth 2.0 / OpenID Connect Profiles](https://platform.veevavault.help/en/gr/43329)
+
+<Note>
+This integration authenticates by exchanging client credentials with your external identity provider (PingFederate, ADFS 4.0, or Okta — see the [connect guide](/api-integrations/veeva-vault-oauth/connect) for supported providers) for an access token, then exchanging that access token for a Vault session ID via Vault's OAuth session endpoint. If your Veeva Vault account only uses username/password authentication, use the [Veeva Vault](/api-integrations/veeva-vault) integration instead.
+</Note>
+
+## 🧩 Pre-built syncs & actions for Veeva Vault (OAuth 2.0 / OIDC)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/veeva-vault-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -26,6 +26,7 @@ import type {
     ApiPublicConnectionFull,
     Checkpoint,
     CheckpointRange,
+    ConnectionForProxy,
     MergingStrategy,
     MessageRowInsert,
     NangoProps,
@@ -204,7 +205,10 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     canRetryOn401 = JSON.stringify(prevConnection.credentials) !== JSON.stringify(connection.credentials);
                     prevConnection = connection;
                 }
-                return connection;
+
+                // Over the wire, credential `Date` fields (e.g. expires_at) arrive as ISO strings; the proxy only
+                // reads credentials for auth and never treats them as Date, so the wire shape is safe here.
+                return connection as unknown as ConnectionForProxy;
             },
             getIntegrationConfig: () => {
                 return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
