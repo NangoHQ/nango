@@ -13,7 +13,7 @@ import { useGlobal } from './store';
 export function buildWebsocketsPath(apiURL: string, serverWebsocketsPath?: string): string {
     const basePath = new URL(apiURL).pathname.replace(/\/+$/, '');
     const wsPath = serverWebsocketsPath || '/';
-    return `${basePath}${wsPath.startsWith('/') ? wsPath : `/${wsPath}`}`;
+    return basePath + (wsPath.startsWith('/') ? wsPath : `/${wsPath}`);
 }
 
 export function useNango() {
