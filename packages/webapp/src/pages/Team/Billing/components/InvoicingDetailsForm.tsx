@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button, Input } from '@nangohq/design-system';
+import { Badge, Button, Card, Input } from '@nangohq/design-system';
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -18,9 +18,7 @@ import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 
 import type { BillingCustomer } from '@nangohq/types';
 
-export const OptionalTag = () => (
-    <span className="bg-surface-page border border-border-strong rounded px-2 py-0.5 text-body-small-regular text-text-muted">Optional</span>
-);
+export const OptionalTag = () => <Badge variant="secondary">Optional</Badge>;
 
 const countryValues = countryCodes.map((c) => c.value) as [string, ...string[]];
 const taxIdTypeValues = taxIdTypes.map((t) => t.value) as [string, ...string[]];
@@ -64,7 +62,10 @@ const schema = z
 
 export type InvoicingFormData = z.infer<typeof schema>;
 
-export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefined }> = ({ customer }) => {
+export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefined; paymentMethodSection: React.ReactNode }> = ({
+    customer,
+    paymentMethodSection
+}) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: putAsync, isPending } = usePutBillingInvoicingDetails(env);
@@ -95,43 +96,48 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
         }
     };
 
-    if (!customer) {
-        return (
-            <div className="border-t border-border-muted p-4 flex flex-col gap-3">
-                <Skeleton className="w-40 h-5" />
-                <Skeleton className="w-full h-9" />
-                <Skeleton className="w-full h-9" />
-            </div>
-        );
-    }
-
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="border-t border-border-muted p-4 flex flex-row items-start gap-5 [&>*]:flex-1">
-                    <FormField
-                        control={form.control}
-                        name="legalEntityName"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="flex gap-1 items-center">
-                                    Legal entity name <span className="text-text-danger">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Acme Inc." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <InvoicingEmailsField />
-                </div>
+                <Card>
+                    {paymentMethodSection}
+                    {customer ? (
+                        <div className="border-t border-border-muted p-4 flex flex-row items-start gap-5 [&>*]:flex-1">
+                            <FormField
+                                control={form.control}
+                                name="legalEntityName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex gap-1 items-center">
+                                            Legal entity name <span className="text-text-danger">*</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Acme Inc." {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <InvoicingEmailsField />
+                        </div>
+                    ) : (
+                        <div className="border-t border-border-muted p-4 flex flex-col gap-3">
+                            <Skeleton className="w-40 h-5" />
+                            <Skeleton className="w-full h-9" />
+                            <Skeleton className="w-full h-9" />
+                        </div>
+                    )}
 
-                <InvoicingAddressFields />
-                <InvoicingTaxIdFields />
+                    {customer && (
+                        <>
+                            <InvoicingAddressFields />
+                            <InvoicingTaxIdFields />
+                        </>
+                    )}
+                </Card>
 
-                <div className="border-t border-border-muted p-4">
-                    <Button type="submit" variant="primary" size="md" loading={isPending}>
+                <div className="pt-4">
+                    <Button type="submit" variant="primary" size="md" loading={isPending} disabled={!customer}>
                         Save changes
                     </Button>
                 </div>

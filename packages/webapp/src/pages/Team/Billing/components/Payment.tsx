@@ -21,6 +21,49 @@ export const Payment: React.FC = () => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
     }, [paymentMethods]);
 
+    const paymentMethodSection = (
+        <div className="p-4 flex items-center justify-between">
+            {isPaymentMethodsLoading ? (
+                <Skeleton className="w-full h-14" />
+            ) : paymentMethodsError ? (
+                <CriticalErrorAlert message="Error loading payment method" />
+            ) : (
+                <>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-text-strong text-body-medium-regular">Payment method</span>
+                        {paymentMethod ? (
+                            <>
+                                <span className="text-text-secondary text-body-small-regular capitalize">
+                                    {paymentMethod.brand ?? 'Card'}···{paymentMethod.last4}
+                                </span>
+                                {/* Defensive: brand/last4 always exist on a Stripe card, but expMonth/expYear only exist once the
+                                    backend maps them — omit the line rather than render "Valid until undefined/ed" if it hasn't. */}
+                                {paymentMethod.expMonth && paymentMethod.expYear && (
+                                    <span className="text-text-secondary text-body-small-regular">
+                                        Valid until {String(paymentMethod.expMonth).padStart(2, '0')}/{String(paymentMethod.expYear).slice(-2)}
+                                    </span>
+                                )}
+                            </>
+                        ) : (
+                            <span className="text-text-secondary text-body-small-regular">No card added</span>
+                        )}
+                    </div>
+                    <PaymentMethodDialog replace={!!paymentMethod}>
+                        <Button size="sm" variant="secondary">
+                            {paymentMethod ? (
+                                <>
+                                    <Pencil /> Edit
+                                </>
+                            ) : (
+                                'Add payment method'
+                            )}
+                        </Button>
+                    </PaymentMethodDialog>
+                </>
+            )}
+        </div>
+    );
+
     return (
         <div className="flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -37,52 +80,16 @@ export const Payment: React.FC = () => {
                     ))}
             </div>
 
-            <Card>
-                <div className="p-4 flex items-start justify-between">
-                    {isPaymentMethodsLoading ? (
-                        <Skeleton className="w-full h-14" />
-                    ) : paymentMethodsError ? (
-                        <CriticalErrorAlert message="Error loading payment method" />
-                    ) : (
-                        <>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-text-strong text-ds-lg font-ds-medium leading-ds-snug tracking-ds-tight">Payment method</span>
-                                {paymentMethod ? (
-                                    <>
-                                        <span className="text-text-secondary text-body-small-regular capitalize">
-                                            {paymentMethod.brand}···{paymentMethod.last4}
-                                        </span>
-                                        <span className="text-text-secondary text-body-small-regular">
-                                            Valid until {String(paymentMethod.expMonth).padStart(2, '0')}/{String(paymentMethod.expYear).slice(-2)}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <span className="text-text-secondary text-body-small-regular">No card added</span>
-                                )}
-                            </div>
-                            <PaymentMethodDialog replace={!!paymentMethod}>
-                                <Button size="md">
-                                    {paymentMethod ? (
-                                        <>
-                                            <Pencil /> Edit
-                                        </>
-                                    ) : (
-                                        'Add payment method'
-                                    )}
-                                </Button>
-                            </PaymentMethodDialog>
-                        </>
-                    )}
-                </div>
-
-                {usageError ? (
+            {usageError ? (
+                <Card>
+                    {paymentMethodSection}
                     <div className="border-t border-border-muted p-4">
                         <CriticalErrorAlert message="Error loading invoicing details" />
                     </div>
-                ) : (
-                    <InvoicingDetailsForm customer={usage?.data.customer} />
-                )}
-            </Card>
+                </Card>
+            ) : (
+                <InvoicingDetailsForm customer={usage?.data.customer} paymentMethodSection={paymentMethodSection} />
+            )}
         </div>
     );
 };

@@ -55,7 +55,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
     return (
         <div className="border-t border-border-muted">
             <div className="p-4 flex items-center justify-between">
-                <span className="flex items-center gap-2 text-text-strong text-ds-lg font-ds-medium leading-ds-snug tracking-ds-tight">
+                <span className="flex items-center gap-2 text-text-strong text-body-medium-regular">
                     Tax ID
                     <OptionalTag />
                 </span>
