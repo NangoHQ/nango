@@ -205,7 +205,7 @@ export class DispatchQueueConsumer {
                         span.setTag('error.details', responsePayload);
                     }
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
-                    if (res.error.name === 'webhook_admission_exceeded') {
+                    if (res.error.status === 529) {
                         const retryAfterMs = getRetryAfterMs(res.error.payload);
                         return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
                     }

@@ -287,7 +287,7 @@ describe('DispatchQueueConsumer', () => {
         };
         const h = makeHarness({ messages: [buildMessage()], pollPacer });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
-            Err({ name: 'webhook_admission_exceeded', message: 'busy', payload: { reason: 'concurrency', retryAfterMs: 2000 } })
+            Err({ name: 'fetch_failed', status: 529, message: 'busy', payload: { reason: 'concurrency', retryAfterMs: 2000 } })
         );
 
         await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(2000, expect.any(Number)));
