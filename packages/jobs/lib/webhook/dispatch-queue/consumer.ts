@@ -113,7 +113,6 @@ export class DispatchQueueConsumer {
         while (!signal.aborted) {
             try {
                 await this.pollPacer?.wait(signal);
-                const receiveStartedAt = performance.now();
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.queueUrl,
@@ -125,11 +124,12 @@ export class DispatchQueueConsumer {
                     }),
                     { abortSignal: signal }
                 );
+                const receivedAt = performance.now();
 
                 const messages = result.Messages ?? [];
                 if (messages.length === 0) continue;
 
-                const outcome = await this.processBatch(messages, receiveStartedAt);
+                const outcome = await this.processBatch(messages, receivedAt);
                 if (outcome.result === 'success') {
                     this.pollPacer?.recordSuccess(outcome.durationMs ?? 0);
                 } else if (outcome.result === 'congestion') {
@@ -145,7 +145,7 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private async processBatch(messages: Message[], receiveStartedAt: number): Promise<BatchOutcome> {
+    private async processBatch(messages: Message[], receivedAt: number): Promise<BatchOutcome> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('jobs.webhook.dispatch_queue.process_batch', {
             ...(active ? { childOf: active } : {}),
@@ -191,7 +191,7 @@ export class DispatchQueueConsumer {
                 });
 
                 await this.pollPacer?.waitForBackoff(this.abortController.signal, async (delayMs, signal) => {
-                    await this.extendVisibilityForBackoff(entries, delayMs, receiveStartedAt, signal);
+                    await this.extendVisibilityForBackoff(entries, delayMs, receivedAt, signal, this.visibilityTimeoutSeconds);
                 });
                 const startedAt = performance.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
@@ -206,8 +206,16 @@ export class DispatchQueueConsumer {
                     }
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
                     if (res.error.status === 529) {
-                        const retryAfterMs = getRetryAfterMs(res.error.payload);
-                        return { result: 'congestion', durationMs, ...(retryAfterMs !== undefined ? { retryAfterMs } : {}) };
+                        const retryAfterMs = getRetryAfterMs(res.error.payload) ?? 1000;
+                        try {
+                            await this.extendVisibilityForBackoff(entries, retryAfterMs, receivedAt, this.abortController.signal, 0);
+                        } catch (err) {
+                            if (err instanceof Error && err.name === 'AbortError') {
+                                throw err;
+                            }
+                            report(new Error('Failed to extend rejected webhook dispatch message visibility', { cause: err }));
+                        }
+                        return { result: 'congestion', durationMs, retryAfterMs };
                     }
                     report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
                     return { result: 'failure', durationMs };
@@ -298,15 +306,24 @@ export class DispatchQueueConsumer {
         await Promise.all(group.map((entry) => this.tryDeleteMessage(entry.receiptHandle)));
     }
 
-    private async extendVisibilityForBackoff(entries: ParsedEntry[], delayMs: number, receiveStartedAt: number, signal: AbortSignal): Promise<void> {
+    private async extendVisibilityForBackoff(
+        entries: ParsedEntry[],
+        delayMs: number,
+        receivedAt: number,
+        signal: AbortSignal,
+        processingWindowSeconds: number
+    ): Promise<void> {
         signal.throwIfAborted();
         const backoffSeconds = Math.ceil(delayMs / 1000);
-        const elapsedSeconds = Math.max(1, Math.ceil((performance.now() - receiveStartedAt) / 1000));
+        const elapsedSeconds = Math.max(1, Math.ceil((performance.now() - receivedAt) / 1000));
         const maxVisibilityTimeoutSeconds = Math.max(0, MAX_SQS_VISIBILITY_TIMEOUT_SECONDS - elapsedSeconds);
         if (backoffSeconds >= maxVisibilityTimeoutSeconds) {
             throw new Error('Webhook dispatch admission backoff exceeds the maximum SQS visibility timeout');
         }
-        const visibilityTimeoutSeconds = Math.min(this.visibilityTimeoutSeconds + backoffSeconds, maxVisibilityTimeoutSeconds);
+        const visibilityTimeoutSeconds = Math.min(
+            Math.max(this.visibilityTimeoutSeconds, backoffSeconds + processingWindowSeconds),
+            maxVisibilityTimeoutSeconds
+        );
 
         const result = await this.sqs.send(
             new ChangeMessageVisibilityBatchCommand({

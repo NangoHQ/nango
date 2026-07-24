@@ -1,3 +1,5 @@
+import { performance } from 'node:perf_hooks';
+
 import { ChangeMessageVisibilityBatchCommand, DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -69,6 +71,7 @@ function makeHarness(
         consumerConcurrency?: number;
         maxAgeMs?: number;
         visibilityTimeoutSeconds?: number;
+        onReceive?: () => void;
         sqsSend?: Mock<SqsSendFn>;
         pollPacer?: DispatchPollPacer;
     } = {}
@@ -87,6 +90,7 @@ function makeHarness(
         vi.fn<SqsSendFn>(async (command: unknown) => {
             await new Promise((resolve) => setImmediate(resolve));
             if (command instanceof ReceiveMessageCommand) {
+                opts.onReceive?.();
                 const messages = bodyQueue.splice(0, bodyQueue.length);
                 return { Messages: messages };
             }
@@ -287,12 +291,17 @@ describe('DispatchQueueConsumer', () => {
         };
         const h = makeHarness({ messages: [buildMessage()], pollPacer });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
-            Err({ name: 'fetch_failed', status: 529, message: 'busy', payload: { reason: 'concurrency', retryAfterMs: 2000 } })
+            Err({ name: 'fetch_failed', status: 529, message: 'busy', payload: { reason: 'concurrency', retryAfterMs: 60_000 } })
         );
 
-        await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(2000, expect.any(Number)));
+        await runOnce(h, () => expect(recordCongestion).toHaveBeenCalledWith(60_000, expect.any(Number)));
 
         expect(getDeleteCalls(h)).toHaveLength(0);
+        const command = getChangeVisibilityCalls(h)[0]?.[0];
+        if (!(command instanceof ChangeMessageVisibilityBatchCommand)) {
+            throw new Error('Expected a visibility batch command');
+        }
+        expect(command.input.Entries).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 60 }]);
     });
 
     it('paces the next poll after a generic batch failure', async () => {
@@ -376,6 +385,8 @@ describe('DispatchQueueConsumer', () => {
     });
 
     it('clamps visibility extension to the remaining SQS maximum', async () => {
+        let now = 0;
+        vi.spyOn(performance, 'now').mockImplementation(() => now);
         const waitForBackoff = vi.fn(async (signal: AbortSignal, prepareWait: (delayMs: number, signal: AbortSignal) => Promise<void>) => {
             await prepareWait(2500, signal);
         });
@@ -386,7 +397,14 @@ describe('DispatchQueueConsumer', () => {
             recordCongestion: vi.fn(),
             recordFailure: vi.fn()
         };
-        const h = makeHarness({ messages: [buildMessage()], visibilityTimeoutSeconds: 43_200, pollPacer });
+        const h = makeHarness({
+            messages: [buildMessage()],
+            visibilityTimeoutSeconds: 43_200,
+            onReceive: () => {
+                now = 20_000;
+            },
+            pollPacer
+        });
 
         await runOnce(h, () => expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce());
 
