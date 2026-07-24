@@ -84,7 +84,8 @@ export const AppSidebar: React.FC = () => {
                                     >
                                         <Link to={item.url}>
                                             <item.icon />
-                                            <span>{item.title}</span>
+                                            {/* Static Nango-owned label, safe to show in masked session recordings (NAN-6428) */}
+                                            <span data-ph-unmask>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (
