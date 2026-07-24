@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -10,11 +11,12 @@ import { useApiGetAuditTrail } from '@/hooks/useAudit';
 import { useMeta } from '@/hooks/useMeta';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
-import { last24hPreset, logsPresets } from '@/utils/logs';
+import { last14dPreset, logsPresets } from '@/utils/logs';
 import { formatDateToLogFormat } from '@/utils/utils';
+import { AuditEventDrawer } from './components/AuditEventDrawer';
 
 import type { Period } from '@/utils/dates';
-import type { AuditOutcome } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditOutcome } from '@nangohq/types';
 
 const outcomeVariant: Record<AuditOutcome, React.ComponentProps<typeof Tag>['variant']> = {
     success: 'success',
@@ -26,7 +28,8 @@ export const AuditShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
-    const [period, setPeriod] = useState<Period | null>(() => last24hPreset.toPeriod());
+    const [period, setPeriod] = useState<Period | null>(() => last14dPreset.toPeriod());
+    const [selected, setSelected] = useState<ApiAuditTrailEvent | null>(null);
 
     const from = period?.from ? period.from.toISOString() : undefined;
     const to = period?.to ? period.to.toISOString() : undefined;
@@ -65,7 +68,7 @@ export const AuditShow: React.FC = () => {
                             period={period}
                             onChange={(next) => setPeriod(next)}
                             presets={logsPresets}
-                            defaultPreset={last24hPreset}
+                            defaultPreset={last14dPreset}
                         />
                     </div>
                 </div>
@@ -87,13 +90,15 @@ export const AuditShow: React.FC = () => {
                             <th className="px-4 py-2 text-left font-semibold">Action</th>
                             <th className="px-4 py-2 text-left font-semibold">Target</th>
                             <th className="px-4 py-2 text-left font-semibold">Outcome</th>
+                            <th className="w-8 px-4 py-2" />
                         </tr>
                     </thead>
                     <tbody>
                         {events.map((event) => (
                             <tr
                                 key={event.id}
-                                className="text-text-muted border-b border-border-muted transition-colors hover:bg-surface-page hover:text-text-strong"
+                                onClick={() => setSelected(event)}
+                                className="text-text-muted border-b border-border-muted transition-colors hover:bg-surface-page hover:text-text-strong cursor-pointer"
                             >
                                 <td className="px-4 py-2.5 align-middle">
                                     <div className="font-code text-s">{formatDateToLogFormat(event.occurredAt)}</div>
@@ -105,6 +110,9 @@ export const AuditShow: React.FC = () => {
                                 </td>
                                 <td className="px-4 py-2.5 align-middle">
                                     <Tag variant={outcomeVariant[event.outcome]}>{event.outcome}</Tag>
+                                </td>
+                                <td className="px-4 py-2.5 align-middle text-icon-secondary">
+                                    <ChevronRight size={16} />
                                 </td>
                             </tr>
                         ))}
@@ -133,6 +141,8 @@ export const AuditShow: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {selected && <AuditEventDrawer event={selected} onClose={() => setSelected(null)} />}
         </DashboardLayout>
     );
 };
