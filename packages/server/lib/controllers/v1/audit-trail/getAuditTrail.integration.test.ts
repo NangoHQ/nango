@@ -78,6 +78,17 @@ describe('GET /api/v1/audit-trail', () => {
         expect(res.res.status).toBe(400);
     });
 
+    it('ignores unknown query params (the dashboard appends extras) instead of 400', async () => {
+        const { session, env } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', {
+            method: 'GET',
+            session,
+            // @ts-expect-error the endpoint type doesn't declare this param; it must be stripped, not rejected, at runtime.
+            query: { env: env.name, unexpected: '1' }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
     it("returns the account's events in the response envelope, most-recent first", async () => {
         const { session, account, env } = await authAdmin();
         (await store.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
