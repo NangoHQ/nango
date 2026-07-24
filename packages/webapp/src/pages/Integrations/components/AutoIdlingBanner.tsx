@@ -6,8 +6,7 @@ import { permissions } from '@nangohq/authz';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
+import { apiPostPlanExtendTrial, useCurrentPlan, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 
@@ -15,7 +14,7 @@ export const AutoIdlingBanner: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { data: environmentData, refetch: refetchEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
