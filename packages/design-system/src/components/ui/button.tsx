@@ -44,10 +44,10 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/outline → --interactive-outline → bg-interactive-outline
-                // border/interactive → --border-interactive → border-border-interactive
+                // border/input → --border-input → border-border-input (border.interactive was removed from the token set)
                 outline: [
-                    'bg-interactive-outline text-text-default border-border-interactive',
-                    'hover:bg-interactive-outline-hover hover:border-border-interactive-hover',
+                    'bg-interactive-outline text-text-default border-border-input',
+                    'hover:bg-interactive-outline-hover hover:border-border-input-hover',
                     'active:bg-interactive-outline-active',
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
@@ -72,11 +72,19 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // transparent bg, text/danger → --text-danger → text-text-danger
+                // Figma Type=Link — inline text link, no fill and no box (see compoundVariants below).
+                // text/default → --text-default → text-text-default; Figma keeps the same colour across hover/active.
+                link: [
+                    'bg-transparent text-text-default border-transparent',
+                    'disabled:text-text-disabled',
+                    'aria-disabled:text-text-disabled',
+                    'focus-visible:shadow-focus-outline-default'
+                ],
+                // Figma Type=Link-Destructive — text/linkDanger → --text-link-danger, brightening to text/danger on hover
                 'link-danger': [
-                    'bg-interactive-ghost text-text-danger border-transparent',
-                    'hover:bg-interactive-ghost-hover',
-                    'active:bg-interactive-ghost-active',
+                    'bg-transparent text-text-link-danger border-transparent',
+                    'hover:text-text-danger',
+                    'active:text-text-link-danger',
                     'disabled:text-text-disabled',
                     'aria-disabled:text-text-disabled',
                     'focus-visible:shadow-focus-outline-danger'
@@ -91,6 +99,14 @@ export const buttonVariants = cva(
                 lg: 'h-9 px-3'
             }
         },
+        compoundVariants: [
+            // Link variants render as bare inline text in Figma: no padding, height from the line box,
+            // 12px medium text and 16px icons at every size (the Figma size axis is inert for links)
+            {
+                variant: ['link', 'link-danger'],
+                className: 'h-auto w-auto p-0 text-ds-xs'
+            }
+        ],
         defaultVariants: {
             variant: 'primary',
             size: 'md'

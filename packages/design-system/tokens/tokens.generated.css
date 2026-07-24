@@ -288,6 +288,7 @@
     --text-link: #0089b0;
     --text-link-hover: #02485d;
     --text-link-active: #013747;
+    --text-link-danger: #a11313;
     --text-danger: #a11313;
     --text-success: #1a6b2c;
     --text-warning: #7a5e0a;
@@ -412,6 +413,7 @@
     --text-link: #66d6f0;
     --text-link-hover: #a3e6f6;
     --text-link-active: #33c4e9;
+    --text-link-danger: #ee4242;
     --text-danger: #f27474;
     --text-success: #7adf8e;
     --text-warning: #facf56;
@@ -540,6 +542,7 @@
     --color-text-link: var(--text-link);
     --color-text-link-hover: var(--text-link-hover);
     --color-text-link-active: var(--text-link-active);
+    --color-text-link-danger: var(--text-link-danger);
     --color-text-danger: var(--text-danger);
     --color-text-success: var(--text-success);
     --color-text-warning: var(--text-warning);

@@ -1,4 +1,4 @@
-import { ChevronRight, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronRight, Plus } from 'lucide-react';
 
 import { Button, IconButton } from './button';
 
@@ -12,7 +12,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
+const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link', 'link-danger'] as const;
 const ICON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 // IconButton supports 2xs (20px) through lg.
@@ -60,6 +60,32 @@ export const AllSizes: Story = {
                     <Button size={size}>
                         <Plus />
                         With icon
+                    </Button>
+                </div>
+            ))}
+        </div>
+    )
+};
+
+// Figma Type=Link / Type=Link-Destructive — bare inline text links (no box, 12px text, size axis inert)
+export const Links: Story = {
+    name: 'Link variants',
+    render: () => (
+        <div className="flex flex-col gap-10">
+            {(['link', 'link-danger'] as const).map((variant) => (
+                <div key={variant} className="flex items-center gap-6 flex-wrap">
+                    <span className="text-ds-xs text-text-secondary w-28 shrink-0">{variant}</span>
+                    <Button variant={variant}>
+                        <ArrowLeft />
+                        Button
+                        <ArrowRight />
+                    </Button>
+                    <Button variant={variant}>Text only</Button>
+                    <Button variant={variant} disabled>
+                        Disabled
+                    </Button>
+                    <Button variant={variant} loading>
+                        Loading
                     </Button>
                 </div>
             ))}
