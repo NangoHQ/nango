@@ -113,6 +113,7 @@ export class DispatchQueueConsumer {
         while (!signal.aborted) {
             try {
                 await this.pollPacer?.wait(signal);
+                const receiveStartedAt = performance.now();
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.queueUrl,
@@ -128,7 +129,7 @@ export class DispatchQueueConsumer {
                 const messages = result.Messages ?? [];
                 if (messages.length === 0) continue;
 
-                const outcome = await this.processBatch(messages);
+                const outcome = await this.processBatch(messages, receiveStartedAt);
                 if (outcome.result === 'success') {
                     this.pollPacer?.recordSuccess(outcome.durationMs ?? 0);
                 } else if (outcome.result === 'congestion') {
@@ -144,7 +145,7 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private async processBatch(messages: Message[]): Promise<BatchOutcome> {
+    private async processBatch(messages: Message[], receiveStartedAt: number): Promise<BatchOutcome> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('jobs.webhook.dispatch_queue.process_batch', {
             ...(active ? { childOf: active } : {}),
@@ -189,8 +190,8 @@ export class DispatchQueueConsumer {
                     };
                 });
 
-                await this.pollPacer?.waitForBackoff(this.abortController.signal, async (delayMs) => {
-                    await this.extendVisibilityForBackoff(entries, delayMs);
+                await this.pollPacer?.waitForBackoff(this.abortController.signal, async (delayMs, signal) => {
+                    await this.extendVisibilityForBackoff(entries, delayMs, receiveStartedAt, signal);
                 });
                 const startedAt = performance.now();
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
@@ -297,11 +298,15 @@ export class DispatchQueueConsumer {
         await Promise.all(group.map((entry) => this.tryDeleteMessage(entry.receiptHandle)));
     }
 
-    private async extendVisibilityForBackoff(entries: ParsedEntry[], delayMs: number): Promise<void> {
-        const visibilityTimeoutSeconds = this.visibilityTimeoutSeconds + Math.ceil(delayMs / 1000);
-        if (visibilityTimeoutSeconds > MAX_SQS_VISIBILITY_TIMEOUT_SECONDS) {
+    private async extendVisibilityForBackoff(entries: ParsedEntry[], delayMs: number, receiveStartedAt: number, signal: AbortSignal): Promise<void> {
+        signal.throwIfAborted();
+        const backoffSeconds = Math.ceil(delayMs / 1000);
+        const elapsedSeconds = Math.max(1, Math.ceil((performance.now() - receiveStartedAt) / 1000));
+        const maxVisibilityTimeoutSeconds = Math.max(0, MAX_SQS_VISIBILITY_TIMEOUT_SECONDS - elapsedSeconds);
+        if (backoffSeconds >= maxVisibilityTimeoutSeconds) {
             throw new Error('Webhook dispatch admission backoff exceeds the maximum SQS visibility timeout');
         }
+        const visibilityTimeoutSeconds = Math.min(this.visibilityTimeoutSeconds + backoffSeconds, maxVisibilityTimeoutSeconds);
 
         const result = await this.sqs.send(
             new ChangeMessageVisibilityBatchCommand({
@@ -311,10 +316,17 @@ export class DispatchQueueConsumer {
                     ReceiptHandle: entry.receiptHandle,
                     VisibilityTimeout: visibilityTimeoutSeconds
                 }))
-            })
+            }),
+            { abortSignal: signal }
         );
         if (result.Failed?.length) {
-            throw new Error('Failed to extend webhook dispatch message visibility before admission backoff');
+            const failures = result.Failed.slice(0, 10).map((failure) => ({
+                id: failure.Id,
+                code: failure.Code,
+                message: failure.Message?.slice(0, 500),
+                senderFault: failure.SenderFault
+            }));
+            throw new Error(`Failed to extend webhook dispatch message visibility before admission backoff: ${JSON.stringify(failures)}`);
         }
     }
 
