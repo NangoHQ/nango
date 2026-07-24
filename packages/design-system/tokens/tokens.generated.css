@@ -372,6 +372,7 @@
     --control-switch-track-off: #a1a2a5;
     --control-switch-track-off-danger: #a1a2a5;
     --control-switch-thumb-off: #ffffff;
+    --dialog-footer-bg: #fafafa;
 }
 
 /* Semantic tokens — Dark */
@@ -496,6 +497,7 @@
     --control-switch-track-off: #18191b;
     --control-switch-track-off-danger: #18191b;
     --control-switch-thumb-off: #ffffff;
+    --dialog-footer-bg: #121212;
 }
 
 /*
@@ -619,6 +621,7 @@
     --color-control-switch-track-off: var(--control-switch-track-off);
     --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
     --color-control-switch-thumb-off: var(--control-switch-thumb-off);
+    --color-dialog-footer-bg: var(--dialog-footer-bg);
 }
 @theme inline {
     --shadow-focus-outline-default: var(--focus-outline-default);
