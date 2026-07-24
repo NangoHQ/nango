@@ -94,6 +94,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Functions: Dry run a function](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md)
 - [Backend: HTTP API: Functions: Get dry run results](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md)
 - [Backend: HTTP API: Functions: Create a function deployment](https://nango.dev/docs/reference/backend/http-api/functions/deployments.md)
+- [Backend: HTTP API: Functions: Get a function deployment](https://nango.dev/docs/reference/backend/http-api/functions/deployments-get.md)
 - [Backend: HTTP API: Functions: Get integration functions config](https://nango.dev/docs/reference/backend/http-api/scripts/config.md)
 - [Backend: HTTP API: Syncs: Get records](https://nango.dev/docs/reference/backend/http-api/sync/records-list.md)
 - [Backend: HTTP API: Syncs: Prune records](https://nango.dev/docs/reference/backend/http-api/sync/prune-records.md)
