@@ -24,7 +24,7 @@ export const Payment: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <span className="text-text-strong text-body-medium-medium">Billing information</span>
+                <h3 className="text-text-strong text-body-medium-medium">Billing information</h3>
                 {!usageError &&
                     (isUsageLoading ? (
                         <Skeleton className="w-27 h-5" />
