@@ -2,11 +2,22 @@ import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Badge, Button, IconButton, Input } from '@nangohq/design-system';
+import {
+    Badge,
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    IconButton,
+    Input
+} from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
@@ -53,20 +64,24 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
-                        <Input type="email" value={user.email} disabled className="flex-1" />
-                        <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} />
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-2">
+                            <Input type="email" value={user.email} disabled className="flex-1" />
+                            <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} />
+                        </div>
+                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
+                            Learn more about roles and permissions
+                        </StyledLink>
                     </div>
-                    <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
-                        Learn more about roles and permissions
-                    </StyledLink>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary" onClick={onSubmit} loading={isPending}>
+                    <Button variant="primary" size="sm" onClick={onSubmit} loading={isPending}>
                         Save
                     </Button>
                 </DialogFooter>

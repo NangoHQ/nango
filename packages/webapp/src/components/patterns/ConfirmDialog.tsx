@@ -1,8 +1,7 @@
 import { useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@nangohq/design-system';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/Dialog';
 import { StyledLink } from '../ui/StyledLink';
 
 export interface ConfirmDialogOptions {
@@ -74,11 +73,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" onClick={handleCancel} disabled={isLoading || loading}>
+                        <Button variant="outline" size="sm" onClick={handleCancel} disabled={isLoading || loading}>
                             {cancelButtonText}
                         </Button>
                     </DialogClose>
-                    <Button variant={confirmVariant} onClick={handleConfirm} loading={isLoading || loading}>
+                    <Button variant={confirmVariant} size="sm" onClick={handleConfirm} loading={isLoading || loading}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

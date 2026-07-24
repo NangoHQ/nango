@@ -1,6 +1,20 @@
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export { Button, type ButtonProps, IconButton, type IconButtonProps, buttonVariants } from './components/ui/button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';
+export {
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    type DialogContentProps,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+    DialogTrigger
+} from './components/ui/dialog';
 export { Input, type InputProps, inputVariants } from './components/ui/input';
 export { Textarea, type TextareaProps } from './components/ui/textarea';
 export {
