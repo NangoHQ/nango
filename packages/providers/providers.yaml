@@ -5740,7 +5740,7 @@ cursor-admin:
         username:
             type: string
             title: API key
-            description: The API Key of your Greenhouse account
+            description: The Admin API key for your Cursor account
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
             pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
             secret: true
