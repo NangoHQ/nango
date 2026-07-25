@@ -1,3 +1,4 @@
+import { getFlags } from '@nangohq/feature-flags';
 import { environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -12,7 +13,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const sessionUser = res.locals.user;
+    const { user: sessionUser, account } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     res.status(200).send({
@@ -23,7 +24,8 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
-            gettingStartedClosed: sessionUser.getting_started_closed
+            gettingStartedClosed: sessionUser.getting_started_closed,
+            auditTrail: await getFlags().isAuditTrailEnabled(account.uuid)
         }
     });
 });

@@ -1,11 +1,14 @@
-import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, LogOut, ScrollText, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+import { permissions } from '@nangohq/authz';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
 import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
@@ -19,6 +22,8 @@ export const ProfileDropdown: React.FC = () => {
     const navigate = useNavigate();
     const signout = useSignout();
     const { user } = useUser();
+    const { can } = usePermissions();
+    const canReadAuditTrail = can(permissions.canReadAuditTrail);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
     const isDevToolsEnabled = useIsDevToolsEnabled();
@@ -53,8 +58,16 @@ export const ProfileDropdown: React.FC = () => {
             });
         }
 
+        if (meta?.auditTrail && canReadAuditTrail) {
+            list.push({
+                label: 'Audit log',
+                icon: ScrollText,
+                href: `/team/audit`
+            });
+        }
+
         return list;
-    }, [meta, showGettingStarted]);
+    }, [meta, showGettingStarted, canReadAuditTrail]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 

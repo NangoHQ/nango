@@ -12,12 +12,18 @@ export type GetTeam = Endpoint<{
     Success: {
         data: {
             account: ApiTeam;
-            users: ApiUser[];
+            users: ApiTeamUser[];
             invitedUsers: ApiInvitation[];
             isAdminTeam: boolean;
+            // Whether MFA is available for this account. When false the dashboard hides per-member 2FA state.
+            mfaFeatureEnabled: boolean;
         };
     };
 }>;
+
+export interface ApiTeamUser extends ApiUser {
+    mfaEnabled: boolean;
+}
 
 export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;

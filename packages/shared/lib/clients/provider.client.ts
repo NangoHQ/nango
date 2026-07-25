@@ -1678,7 +1678,6 @@ class ProviderClient {
 
             throw new NangoError('microsoft_teams_bot_token_request_error', response.data);
         } catch (err: any) {
-            console.log(err);
             throw new NangoError('microsoft_teams_bot_token_request_error', stringifyError(err));
         }
     }

@@ -33,6 +33,7 @@ const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
+    '/api/v1/audit-trail',
     '/api/v1/user',
     '/api/v1/user/name',
     '/api/v1/user/password',
