@@ -43,6 +43,11 @@ export type ConnectSessionOutput = Omit<ConnectSessionInput, 'end_user' | 'organ
     endUser: ApiEndUser | null;
     isReconnecting?: boolean;
     connectUISettings: ConnectUISettings;
+    /**
+     * Server-side WebSocket upgrade path (NANGO_SERVER_WEBSOCKETS_PATH), sent on self-hosted
+     * deployments so Connect UI opens its OAuth-result socket on the matching path.
+     */
+    websocketsPath?: string;
 };
 
 export type PostConnectSessionsBody =
