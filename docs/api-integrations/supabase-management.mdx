@@ -14,7 +14,7 @@ integration instead.
 ## 🚀 Quickstart
 
 <Steps>
-    <Step title="Register a Supabase OAuth application">
+    <Step id="register-oauth-app" title="Register a Supabase OAuth application">
     In the Supabase dashboard, go to your organization's **Settings** -> **OAuth Apps** -> _Add application_.
 
     Set the redirect URI to the callback URL shown on your Nango integration page, and
@@ -29,13 +29,13 @@ integration instead.
     different permissions and create two Nango integrations from this provider.
     </Warning>
     </Step>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Supabase Management API_, and enter the client ID and client secret from the application you registered.
     </Step>
-    <Step title="Authorize a user">
+    <Step id="authorize-user" title="Authorize a user">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_. The user chooses which of their Supabase **organizations** to grant; the resulting token can reach every project in that organization.
     </Step>
-    <Step title="Call the Management API">
+    <Step id="call-management-api" title="Call the Management API">
     List the projects the connection can see. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations) and [connection ID](https://app.nango.dev/dev/connections).
 
     ```bash
