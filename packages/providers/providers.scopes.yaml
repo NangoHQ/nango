@@ -11166,6 +11166,14 @@ stripe-express:
     - read_only
     - read_write
 
+# source: https://supabase.com/docs/guides/integrations/build-a-supabase-integration
+# Scopes are fixed when the Supabase OAuth application is REGISTERED, not narrowed
+# by the authorize request; the `scope` parameter is documented as deprecated.
+supabase-management:
+    - projects:read
+    - database:read
+    - database:write
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 surecontact: []
 
