@@ -18,6 +18,3 @@ temp
 CLAUDE.local.md
 .cursor/*.local.mdc
 
-# Vim swap files
-*.swp
-*.swo
