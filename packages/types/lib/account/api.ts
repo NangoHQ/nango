@@ -223,6 +223,18 @@ export type GetOnboardingAccountDiscovery = ApiEndpoint<{
     };
 }>;
 
+export type PostOnboardingRequestInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/api/v1/account/onboarding/request-invite';
+    Body: never;
+    Error: ApiError<'not_found'> | ApiError<'email_delivery_failed'>;
+    Success: {
+        data: {
+            success: true;
+        };
+    };
+}>;
 export type PostOnboardingHearAboutUs = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';

@@ -19,6 +19,7 @@ import {
     getOnboardingAccountDiscovery,
     getOnboardingHearAboutUs,
     postOnboardingHearAboutUs,
+    postOnboardingRequestInvite,
     resendVerificationEmailByEmail,
     resendVerificationEmailByUuid,
     signin,
@@ -249,6 +250,7 @@ web.route('/meta').get(webAuth, getMeta);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
 web.route('/account/onboarding/account-discovery').get(webAuth, getOnboardingAccountDiscovery);
+web.route('/account/onboarding/request-invite').post(webAuth, postOnboardingRequestInvite);
 web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, auditMfaDisabled, deleteMFA);
 web.route('/account/mfa/enroll').post(webAuth, auditMfaEnrolled, postMFAEnrollment);
 web.route('/account/mfa/activate').post(webAuth, auditMfaEnabled, postMFAActivation);
