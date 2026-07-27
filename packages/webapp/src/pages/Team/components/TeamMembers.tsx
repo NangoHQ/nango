@@ -152,8 +152,8 @@ export const TeamMembers: React.FC = () => {
                                 </ButtonLink>
                             </div>
                         </TableHead>
-                        <TableHead>Status</TableHead>
                         {mfaFeatureEnabled && <TableHead>2FA</TableHead>}
+                        <TableHead>Status</TableHead>
                         <TableHead className="text-right">{/* Actions */}</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -186,18 +186,6 @@ export const TeamMembers: React.FC = () => {
                                 </div>
                             </TableCell>
 
-                            <TableCell>
-                                {user.is_invitation ? (
-                                    <div className="inline-flex items-center gap-2 text-text-secondary">
-                                        <Dot className="bg-status-warning-icon" /> Invited
-                                    </div>
-                                ) : (
-                                    <div className="inline-flex items-center gap-2 text-text-strong">
-                                        <Dot className="bg-status-success-icon" /> Active
-                                    </div>
-                                )}
-                            </TableCell>
-
                             {mfaFeatureEnabled && (
                                 <TableCell>
                                     {user.is_invitation ? (
@@ -209,6 +197,18 @@ export const TeamMembers: React.FC = () => {
                                     )}
                                 </TableCell>
                             )}
+
+                            <TableCell>
+                                {user.is_invitation ? (
+                                    <div className="inline-flex items-center gap-2 text-text-secondary">
+                                        <Dot className="bg-status-warning-icon" /> Invited
+                                    </div>
+                                ) : (
+                                    <div className="inline-flex items-center gap-2 text-text-strong">
+                                        <Dot className="bg-status-success-icon" /> Active
+                                    </div>
+                                )}
+                            </TableCell>
 
                             <TableCell className="text-right">
                                 {me?.email === user.email ? null : (
