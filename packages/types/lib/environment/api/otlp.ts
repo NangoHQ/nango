@@ -6,7 +6,7 @@ export interface OtlpSettings {
 }
 
 export type UpdateOtlpSettings = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Querystring: {
         env: string;

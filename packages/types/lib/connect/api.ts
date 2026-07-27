@@ -56,7 +56,7 @@ export type PostConnectSessionsBody =
       });
 
 export type PostConnectSessions = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/sessions';
     Body: PostConnectSessionsBody;
@@ -70,7 +70,7 @@ export type PostConnectSessions = ApiEndpoint<{
 }>;
 
 export type PostPublicConnectSessionsReconnect = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/sessions/reconnect';
     Body: {
@@ -93,7 +93,7 @@ export type PostPublicConnectSessionsReconnect = ApiEndpoint<{
 }>;
 
 export type GetConnectSession = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/connect/session';
     Success: {
@@ -102,14 +102,14 @@ export type GetConnectSession = ApiEndpoint<{
 }>;
 
 export type DeleteConnectSession = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'DELETE';
     Path: '/connect/session';
     Success: never;
 }>;
 
 export type PostInternalConnectSessions = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
@@ -120,7 +120,7 @@ export type PostInternalConnectSessions = ApiEndpoint<{
 }>;
 
 export type PostPublicConnectTelemetry = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/telemetry';
     Body: {

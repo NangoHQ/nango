@@ -10,7 +10,7 @@ export type ApiEnvironment = Merge<DBEnvironment, { callback_url: string } & Api
 export type ApiWebhooks = Omit<DBExternalWebhook, 'id' | 'environment_id' | 'created_at' | 'updated_at'>;
 
 export type GetEnvironments = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environments';
     Success: {
@@ -19,7 +19,7 @@ export type GetEnvironments = ApiEndpoint<{
 }>;
 
 export type PostEnvironment = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/environments';
     Body: { name: string };
@@ -29,7 +29,7 @@ export type PostEnvironment = ApiEndpoint<{
 }>;
 
 export type GetEnvironment = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environments/current';
     Success: {
@@ -49,7 +49,7 @@ export type GetEnvironment = ApiEndpoint<{
 }>;
 
 export type PatchEnvironment = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
@@ -69,7 +69,7 @@ export type PatchEnvironment = ApiEndpoint<{
 }>;
 
 export type DeleteEnvironment = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/environments';
     Success: never;
@@ -77,14 +77,14 @@ export type DeleteEnvironment = ApiEndpoint<{
 }>;
 
 export type GetPublicEnvironmentVariables = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environment-variables';
     Success: { name: string; value: string }[];
 }>;
 
 export type ListApiKeys = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environment/api-keys';
     Success: {
@@ -100,7 +100,7 @@ export type ListApiKeys = ApiEndpoint<{
 }>;
 
 export type CreateApiKey = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/environment/api-keys';
     Body: {
@@ -120,7 +120,7 @@ export type CreateApiKey = ApiEndpoint<{
 }>;
 
 export type DeleteApiKey = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };
@@ -128,7 +128,7 @@ export type DeleteApiKey = ApiEndpoint<{
 }>;
 
 export type PatchApiKey = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };

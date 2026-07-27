@@ -7,7 +7,7 @@ import type { DBPlan } from './db.js';
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
 export type PostPlanExtendTrial = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/plans/trial/extension';
     Querystring: { env: string };
@@ -34,7 +34,7 @@ export interface PlanDefinition {
 }
 
 export type GetPlans = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans';
     Querystring: { env: string };
@@ -44,7 +44,7 @@ export type GetPlans = ApiEndpoint<{
 }>;
 
 export type GetPlan = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/current';
     Querystring: { env: string };
@@ -54,7 +54,7 @@ export type GetPlan = ApiEndpoint<{
 }>;
 
 export type GetUsage = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/usage';
     Querystring: { env: string };
@@ -73,7 +73,7 @@ export type GetUsage = ApiEndpoint<{
 // constrained to the metric's whitelist at compile time; the controller's zod
 // schema enforces the same shape at runtime.
 export type GetBillingUsageTopDimensionValues = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage/top-dimension-values';
     Querystring: {
@@ -106,7 +106,7 @@ export type GetBillingUsageTopDimensionValues = ApiEndpoint<{
 }>;
 
 export type GetBillingUsage = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
     Querystring: {
@@ -146,7 +146,7 @@ export type GetBillingUsage = ApiEndpoint<{
 }>;
 
 export type PutBillingInvoicingDetails = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/api/v1/plans/billing/invoicing';
     Querystring: { env: string };
@@ -157,7 +157,7 @@ export type PutBillingInvoicingDetails = ApiEndpoint<{
 }>;
 
 export type PostPlanChange = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };

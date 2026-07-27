@@ -164,7 +164,7 @@ export type FunctionDeploymentResultBody =
       };
 
 export type PostFunctionCompile = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/compile';
     Body: FunctionCompileBody;
@@ -173,7 +173,7 @@ export type PostFunctionCompile = ApiEndpoint<{
 }>;
 
 export type PostFunctionDryrun = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/dryruns';
     Body: FunctionDryrunBody;
@@ -182,7 +182,7 @@ export type PostFunctionDryrun = ApiEndpoint<{
 }>;
 
 export type GetFunctionDryrun = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/functions/dryruns/:id';
     Params: { id: string };
@@ -191,7 +191,7 @@ export type GetFunctionDryrun = ApiEndpoint<{
 }>;
 
 export type PostFunctionDryrunResult = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/dryruns/:id/result';
     Params: { id: string };
@@ -201,7 +201,7 @@ export type PostFunctionDryrunResult = ApiEndpoint<{
 }>;
 
 export type PostFunctionDeployment = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;
@@ -212,7 +212,7 @@ export type PostFunctionDeployment = ApiEndpoint<{
 }>;
 
 export type GetFunctionDeployment = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/functions/deployments/:id';
     Params: { id: string };
@@ -221,7 +221,7 @@ export type GetFunctionDeployment = ApiEndpoint<{
 }>;
 
 export type PostFunctionDeploymentResult = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/deployments/:id/result';
     Params: { id: string };
@@ -257,7 +257,7 @@ export interface ProviderTemplatesSuccess {
 }
 
 export type GetIntegrationFunctions = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions';
     Querystring: { env: string } & FunctionListFilters;
@@ -266,7 +266,7 @@ export type GetIntegrationFunctions = ApiEndpoint<{
 }>;
 
 export type GetIntegrationFunction = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     Querystring: { env: string; type?: FunctionType };
@@ -275,7 +275,7 @@ export type GetIntegrationFunction = ApiEndpoint<{
 }>;
 
 export type DeleteIntegrationFunction = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     /** TODO: support deleting on-event functions */
@@ -286,7 +286,7 @@ export type DeleteIntegrationFunction = ApiEndpoint<{
 }>;
 
 export type GetProviderTemplates = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/providers/:providerConfigKey/templates';
     Querystring: { env: string };
@@ -295,7 +295,7 @@ export type GetProviderTemplates = ApiEndpoint<{
 }>;
 
 export type GetPublicIntegrationFunctions = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions';
     Querystring: FunctionListFilters;
@@ -304,7 +304,7 @@ export type GetPublicIntegrationFunctions = ApiEndpoint<{
 }>;
 
 export type GetPublicIntegrationFunction = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions/:name';
     Querystring: { type?: FunctionType };
@@ -313,7 +313,7 @@ export type GetPublicIntegrationFunction = ApiEndpoint<{
 }>;
 
 export type DeletePublicIntegrationFunction = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey/functions/:name';
     /** TODO: support deleting on-event functions */
@@ -324,7 +324,7 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
 }>;
 
 export type GetPublicProviderTemplates = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/providers/:provider/templates';
     Params: { provider: string };
@@ -332,7 +332,7 @@ export type GetPublicProviderTemplates = ApiEndpoint<{
 }>;
 
 export type GetIntegrationTemplates = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/templates';
     Querystring: { env: string };

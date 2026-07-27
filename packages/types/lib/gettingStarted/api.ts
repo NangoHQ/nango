@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { GettingStartedOutput as GettingStartedProgressOutput, PatchGettingStartedInput as PatchGettingStartedProgressInput } from './dto.js';
 
 export type GetGettingStarted = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/getting-started';
     Querystring: { env: string };
@@ -13,7 +13,7 @@ export type GetGettingStarted = ApiEndpoint<{
 }>;
 
 export type PatchGettingStarted = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'PATCH';
     Path: '/api/v1/getting-started';
     Querystring: { env: string };

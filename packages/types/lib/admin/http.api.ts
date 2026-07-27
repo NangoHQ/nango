@@ -1,7 +1,7 @@
 import type { ApiEndpoint } from '../index.js';
 
 export type PostImpersonate = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: `/api/v1/admin/impersonate`;
     Querystring: {

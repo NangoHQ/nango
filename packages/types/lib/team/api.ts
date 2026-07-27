@@ -1,3 +1,5 @@
+import { auditPolicies } from '../audit-trail/event.js';
+
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
 import type { DBInvitation } from '../invitations/db.js';
 import type { ApiUser } from '../user/api.js';
@@ -6,7 +8,7 @@ import type { DBTeam } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type GetTeam = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -24,7 +26,7 @@ export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
 
 export type PutTeam = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -35,7 +37,7 @@ export type PutTeam = ApiEndpoint<{
 }>;
 
 export type DeleteTeamUser = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };
@@ -47,7 +49,7 @@ export type DeleteTeamUser = ApiEndpoint<{
 }>;
 
 export type PatchTeamUser = ApiEndpoint<{
-    Audit: { resource: 'member'; action: 'role_changed'; scope: 'account' };
+    Audit: typeof auditPolicies.memberRoleChanged;
     Method: 'PATCH';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };

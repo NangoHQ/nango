@@ -6,7 +6,7 @@ import type { SyncDeploymentResult } from './index.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type PostDeployConfirmation = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy/confirmation';
     Body: {
@@ -23,7 +23,7 @@ export type PostDeployConfirmation = ApiEndpoint<{
 }>;
 
 export type PostDeploy = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy';
     Body: {
@@ -42,7 +42,7 @@ export type PostDeploy = ApiEndpoint<{
 }>;
 
 export type PostDeployInternal = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy/internal';
     Querystring: {

@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ConnectUISettings } from './dto.js';
 
 export type GetConnectUISettings = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/connect-ui-settings';
     Querystring: { env: string };
@@ -13,7 +13,7 @@ export type GetConnectUISettings = ApiEndpoint<{
 }>;
 
 export type PutConnectUISettings = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'PUT';
     Path: '/api/v1/connect-ui-settings';
     Querystring: { env: string };

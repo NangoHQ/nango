@@ -1,7 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 
 export type PostConnectionToolsMcp = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;
@@ -14,14 +14,14 @@ export type PostConnectionToolsMcp = ApiEndpoint<{
 }>;
 
 export type GetConnectionToolsMcp = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/mcp';
     Success: Record<string, unknown>;
 }>;
 
 export type PostControlPlaneMcp = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;
@@ -29,7 +29,7 @@ export type PostControlPlaneMcp = ApiEndpoint<{
 }>;
 
 export type GetControlPlaneMcp = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/mcp';
     Success: Record<string, unknown>;

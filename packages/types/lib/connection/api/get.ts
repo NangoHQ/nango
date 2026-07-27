@@ -1,3 +1,5 @@
+import { auditPolicies } from '../../audit-trail/event.js';
+
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
 import type {
     ApiKeyCredentials,
@@ -27,7 +29,7 @@ export type ApiConnectionSimple = Pick<
     pausedSyncs: string[];
 };
 export type GetConnections = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         env: string;
@@ -43,7 +45,7 @@ export type GetConnections = ApiEndpoint<{
 }>;
 
 export type GetConnectionsCount = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         env: string;
@@ -64,7 +66,7 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
     tags: Tags;
 };
 export type GetPublicConnections = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         connectionId?: string | undefined;
@@ -83,7 +85,7 @@ export type GetPublicConnections = ApiEndpoint<{
 }>;
 
 export type PostPublicConnection = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/connections';
     Body: {
@@ -124,7 +126,7 @@ export type GetConnection = ApiEndpoint<{
     };
     Path: '/api/v1/connections/:connectionId';
     Error: ApiError<'unknown_provider_config'>;
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Success: {
         data: {
             provider: string;
@@ -148,7 +150,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     credentials: ApiPublicAllAuthCredentials;
 };
 export type GetPublicConnection = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Params: {
         connectionId: string;
@@ -165,7 +167,7 @@ export type GetPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchPublicConnection = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/connections/:connectionId';
     Params: {
@@ -184,7 +186,7 @@ export type PatchPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchConnection = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/connections/:connectionId';
     Params: {
@@ -204,7 +206,7 @@ export type PatchConnection = ApiEndpoint<{
 }>;
 
 export type PostConnectionRefresh = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Params: {
         connectionId: string;
@@ -223,7 +225,7 @@ export type PostConnectionRefresh = ApiEndpoint<{
 }>;
 
 export type DeletePublicConnection = ApiEndpoint<{
-    Audit: { resource: 'connection'; action: 'deleted'; scope: 'environment' };
+    Audit: typeof auditPolicies.connectionDeleted;
     Method: 'DELETE';
     Path: '/connection/:connectionId';
     Params: { connectionId: string };
@@ -239,5 +241,5 @@ export type DeleteConnection = ApiEndpoint<{
     Querystring: { provider_config_key: string; env: string };
     Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;
     Success: { success: boolean };
-    Audit: { resource: 'connection'; action: 'deleted'; scope: 'environment' };
+    Audit: typeof auditPolicies.connectionDeleted;
 }>;

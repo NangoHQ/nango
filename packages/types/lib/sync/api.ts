@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ReportedSyncJobStatus } from './index.js';
 
 export type PostPublicTrigger = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/trigger';
     Body: {
@@ -24,7 +24,7 @@ export type PostPublicTrigger = ApiEndpoint<{
 }>;
 
 export type PostSyncVariant = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/:name/variant/:variant';
     Body: {
@@ -42,7 +42,7 @@ export type PostSyncVariant = ApiEndpoint<{
 }>;
 
 export type DeleteSyncVariant = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/sync/:name/variant/:variant';
     Body: {
@@ -58,7 +58,7 @@ export type DeleteSyncVariant = ApiEndpoint<{
 }>;
 
 export type PutPublicSyncConnectionFrequency = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/sync/update-connection-frequency';
     Body: {
@@ -73,7 +73,7 @@ export type PutPublicSyncConnectionFrequency = ApiEndpoint<{
 }>;
 
 export type PostPublicSyncPause = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/pause';
     Body: {
@@ -86,7 +86,7 @@ export type PostPublicSyncPause = ApiEndpoint<{
 }>;
 
 export type PostPublicSyncStart = ApiEndpoint<{
-    Audit: { reason: 'TODO: audit coverage pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/start';
     Body: {
@@ -99,7 +99,7 @@ export type PostPublicSyncStart = ApiEndpoint<{
 }>;
 
 export type GetPublicSyncStatus = ApiEndpoint<{
-    Audit: { reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/sync/status';
     Querystring: {
