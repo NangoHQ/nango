@@ -1,6 +1,5 @@
-import type { auditPolicies } from '../audit-trail/event.js';
-
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
+import type { auditPolicies } from '../audit-trail/event.js';
 import type { DBInvitation } from '../invitations/db.js';
 import type { ApiUser } from '../user/api.js';
 import type { Role } from '../user/db.js';
