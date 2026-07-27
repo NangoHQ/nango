@@ -1,8 +1,7 @@
-import type { ApiEndpoint, ApiError } from '../api.js';
+import type { ApiError, Endpoint } from '../api.js';
 import type { Deployment, ImageType } from './index.js';
 
-export type PostRollout = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+export type PostRollout = Endpoint<{
     Method: 'POST';
     Path: '/fleet/:fleetId/rollout';
     Body: {

@@ -1,4 +1,4 @@
-import type { ApiEndpoint } from '../api.js';
+import type { ApiEndpoint, Endpoint } from '../api.js';
 import type { Role } from './db.js';
 
 export type GetUser = ApiEndpoint<{
@@ -10,8 +10,7 @@ export type GetUser = ApiEndpoint<{
     };
 }>;
 
-export type InternalGetUsers = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+export type InternalGetUsers = Endpoint<{
     Method: 'GET';
     Path: `/internal/users`;
     Querystring: { accountId: number };
