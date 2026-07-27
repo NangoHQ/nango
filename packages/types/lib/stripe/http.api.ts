@@ -1,7 +1,7 @@
 import type { ApiEndpoint } from '../api.js';
 
 export type PostStripeCollectPayment = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/stripe/payment_methods';
     Success: {
@@ -15,7 +15,7 @@ export interface StripePaymentMethod {
 }
 
 export type GetStripePaymentMethods = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/stripe/payment_methods';
     Success: {
@@ -24,7 +24,7 @@ export type GetStripePaymentMethods = ApiEndpoint<{
 }>;
 
 export type DeleteStripePayment = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'DELETE';
     Path: '/api/v1/stripe/payment_methods';
     Querystring: { payment_id: string };
@@ -34,7 +34,7 @@ export type DeleteStripePayment = ApiEndpoint<{
 }>;
 
 export type PostStripeWebhooks = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/stripe/webhooks';
     Body: any;

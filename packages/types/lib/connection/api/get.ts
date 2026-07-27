@@ -27,7 +27,7 @@ export type ApiConnectionSimple = Pick<
     pausedSyncs: string[];
 };
 export type GetConnections = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         env: string;
@@ -43,7 +43,7 @@ export type GetConnections = ApiEndpoint<{
 }>;
 
 export type GetConnectionsCount = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         env: string;
@@ -64,7 +64,7 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
     tags: Tags;
 };
 export type GetPublicConnections = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         connectionId?: string | undefined;
@@ -83,7 +83,7 @@ export type GetPublicConnections = ApiEndpoint<{
 }>;
 
 export type PostPublicConnection = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/connections';
     Body: {
@@ -124,7 +124,7 @@ export type GetConnection = ApiEndpoint<{
     };
     Path: '/api/v1/connections/:connectionId';
     Error: ApiError<'unknown_provider_config'>;
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Success: {
         data: {
             provider: string;
@@ -148,7 +148,7 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     credentials: ApiPublicAllAuthCredentials;
 };
 export type GetPublicConnection = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Params: {
         connectionId: string;
@@ -165,7 +165,7 @@ export type GetPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchPublicConnection = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/connections/:connectionId';
     Params: {
@@ -184,7 +184,7 @@ export type PatchPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchConnection = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/connections/:connectionId';
     Params: {
@@ -204,7 +204,7 @@ export type PatchConnection = ApiEndpoint<{
 }>;
 
 export type PostConnectionRefresh = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Params: {
         connectionId: string;

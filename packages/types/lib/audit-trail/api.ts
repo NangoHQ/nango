@@ -22,7 +22,7 @@ export interface ApiAuditTrailEvent {
 }
 
 export type GetAuditTrail = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/audit-trail';
     Querystring: {

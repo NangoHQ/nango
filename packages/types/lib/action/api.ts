@@ -6,7 +6,7 @@ export interface AsyncActionResponse {
 }
 
 export type GetAsyncActionResult = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: `/action/:id`;
     Params: {
@@ -19,7 +19,7 @@ export type GetAsyncActionResult = ApiEndpoint<{
 }>;
 
 export type PostPublicTriggerAction = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/action/trigger';
     Body: {
@@ -36,7 +36,7 @@ export type PostPublicTriggerAction = ApiEndpoint<{
 }>;
 
 export type PostInternalTriggerFunction = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/trigger/function';
     Body: {
@@ -52,7 +52,7 @@ export type PostInternalTriggerFunction = ApiEndpoint<{
 
 /** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
 export type GetPublicV1 = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: `/v1/:path`;
     Params: any;

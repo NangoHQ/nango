@@ -23,7 +23,7 @@ export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_
 export type CursorOffset = 'first' | 'last';
 
 export type GetPublicRecords = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: `/records`;
     Headers: {
@@ -48,7 +48,7 @@ export type GetPublicRecords = ApiEndpoint<{
 }>;
 
 export type PatchPublicPruneRecords = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: `/records/prune`;
     Headers: {
@@ -77,7 +77,7 @@ export interface ConnectionRecordModel {
 }
 
 export type GetConnectionRecordModels = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/connections/:connectionId/records/models';
     Params: {
@@ -93,7 +93,7 @@ export type GetConnectionRecordModels = ApiEndpoint<{
 }>;
 
 export type GetConnectionRecords = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/connections/:connectionId/records';
     Params: {

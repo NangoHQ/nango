@@ -14,7 +14,7 @@ export type CliTelemetryEvent =
     | 'cli:pull';
 
 export type PostCliTelemetry = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/cli/telemetry';
     Body: {

@@ -3,7 +3,7 @@ import type { DBEnvironmentVariable } from '../db.js';
 
 export type ApiEnvironmentVariable = Pick<DBEnvironmentVariable, 'name' | 'value'>;
 export type PostEnvironmentVariables = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/environments/variables';
     Querystring: { env: string };

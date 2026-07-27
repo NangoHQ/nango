@@ -6,7 +6,7 @@ import type { DBTeam } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type GetTeam = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -24,7 +24,7 @@ export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
 
 export type PutTeam = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -35,7 +35,7 @@ export type PutTeam = ApiEndpoint<{
 }>;
 
 export type DeleteTeamUser = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };

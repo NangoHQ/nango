@@ -12,7 +12,7 @@ export interface OpenAIFunction {
 }
 
 export type GetPublicScriptsConfig = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: `/scripts/config`;
     Query: {

@@ -8,7 +8,7 @@ export type ConcatOperationList = Concat<OperationList>;
 export type ConcatOperationListWithGroup = OperationList['type'] | ConcatOperationList;
 
 export type SearchOperations = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/operations';
     Querystring: { env: string };
@@ -40,7 +40,7 @@ export interface SearchPeriod {
 export type SearchOperationsData = SearchOperations['Success']['data'][0];
 
 export type GetOperation = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: `/api/v1/logs/operations/:operationId`;
     Querystring: { env: string };
@@ -51,7 +51,7 @@ export type GetOperation = ApiEndpoint<{
 }>;
 
 export type SearchMessages = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/messages';
     Querystring: { env: string };
@@ -72,7 +72,7 @@ export type SearchMessages = ApiEndpoint<{
 export type SearchMessagesData = SearchMessages['Success']['data'][0];
 
 export type SearchFilters = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/filters';
     Querystring: { env: string };
@@ -84,7 +84,7 @@ export type SearchFilters = ApiEndpoint<{
 export type SearchFiltersData = SearchMessages['Success']['data'][0];
 
 export type PostInsights = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/insights';
     Querystring: { env: string };

@@ -1,7 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 
 export type PostPublicWebhook = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/webhook/:environmentUuid/:providerConfigKey';
     Params: {

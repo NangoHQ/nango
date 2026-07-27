@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 export type PutUpgradePreBuiltFlow = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/api/v1/flows/pre-built/upgrade';
     Querystring: { env: string };
@@ -22,7 +22,7 @@ export type PutUpgradePreBuiltFlow = ApiEndpoint<{
 }>;
 
 export type PostPreBuiltDeploy = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/flows/pre-built/deploy';
     Querystring: { env: string };
@@ -40,7 +40,7 @@ export type PostPreBuiltDeploy = ApiEndpoint<{
 }>;
 
 export type PatchFlowEnable = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/enable';
     Querystring: { env: string };
@@ -60,7 +60,7 @@ export type PatchFlowEnable = ApiEndpoint<{
 }>;
 
 export type PatchFlowDisable = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/disable';
     Querystring: { env: string };
@@ -80,7 +80,7 @@ export type PatchFlowDisable = ApiEndpoint<{
 }>;
 
 export type PatchFlowFrequency = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/frequency';
     Querystring: { env: string };
@@ -101,7 +101,7 @@ export type PatchFlowFrequency = ApiEndpoint<{
 }>;
 
 export type GetFlowDownload = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/flows/:id/download';
     Querystring: { env: string };

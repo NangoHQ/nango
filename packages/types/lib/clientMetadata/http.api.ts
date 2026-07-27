@@ -1,7 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 
 export type GetPublicClientMetadata = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: '/oauth/client-metadata/:environmentUuid/:providerConfigKey';
     Params: {

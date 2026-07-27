@@ -6,6 +6,7 @@ export type AuditTargetType = 'connection' | 'member';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditResource = 'connection' | 'member';
 export type AuditAction = 'deleted' | 'role_changed';
+export type AuditScope = 'account' | 'environment';
 
 export interface AuditActor {
     type: AuditActorType;
@@ -30,10 +31,9 @@ export interface AuditContext {
 export interface AuditEndpointEvent {
     resource: AuditResource;
     action: AuditAction;
-    scope: 'account' | 'environment';
+    scope: AuditScope;
 }
 export interface NoAuditEvent {
-    audit: false;
     reason: string;
 }
 export type EndpointAuditPolicy = AuditEndpointEvent | NoAuditEvent;

@@ -1,7 +1,7 @@
 import type { ApiEndpoint } from '../api.js';
 
 export type PostOrbWebhooks = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/orb/webhooks';
     Body: any;

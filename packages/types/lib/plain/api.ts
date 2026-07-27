@@ -1,7 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 
 export type GetPlainHmac = ApiEndpoint<{
-    Audit: { audit: false; reason: 'non-auditable' };
+    Audit: { reason: 'non-auditable' };
     Method: 'GET';
     Path: `/api/v1/plain`;
     Success: { data: { hash: string } };

@@ -10,7 +10,7 @@ export interface MetadataBody {
 type MetadataError = ApiError<'invalid_body'> | ApiError<'unknown_connection'>;
 
 export type SetMetadata = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Body: MetadataBody;
     Path: '/connection/metadata';
@@ -19,7 +19,7 @@ export type SetMetadata = ApiEndpoint<{
 }>;
 
 export type UpdateMetadata = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/connection/metadata';
     Body: MetadataBody;
@@ -28,7 +28,7 @@ export type UpdateMetadata = ApiEndpoint<{
 }>;
 
 export type PostConnectionMetadata = ApiEndpoint<{
-    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
+    Audit: { reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/connections/:connectionId/metadata';
     Params: {
