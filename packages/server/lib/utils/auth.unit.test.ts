@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveConnectionConfig } from './auth.js';
+import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from './auth.js';
 
 import type { ConnectSession } from '@nangohq/types';
 
@@ -15,6 +15,26 @@ function connectSessionWith(connectionConfig: Record<string, unknown> | undefine
         allowedIntegrations: null,
         integrationsConfigDefaults: connectionConfig ? { [integrationKey]: { connectionConfig } } : null,
         overrides: null,
+        webhookUrlOverride: null,
+        endUser: null,
+        tags: {},
+        createdAt: new Date(),
+        updatedAt: null
+    };
+}
+
+function connectSessionWithWebhookOverride(webhookUrlOverride: string | null): ConnectSession {
+    return {
+        id: 1,
+        endUserId: null,
+        accountId: 1,
+        environmentId: 1,
+        connectionId: null,
+        operationId: null,
+        allowedIntegrations: null,
+        integrationsConfigDefaults: null,
+        overrides: null,
+        webhookUrlOverride,
         endUser: null,
         tags: {},
         createdAt: new Date(),
@@ -34,10 +54,10 @@ describe('resolveConnectionConfig', () => {
     });
 
     it('merges session defaults on top of the request params', () => {
-        const connectSession = connectSessionWith({ webhook_url: 'https://example.com/hook' });
+        const connectSession = connectSessionWith({ region: 'eu' });
         expect(resolveConnectionConfig({ params: { subdomain: 'acme' }, connectSession, providerConfigKey: 'github' })).toEqual({
             subdomain: 'acme',
-            webhook_url: 'https://example.com/hook'
+            region: 'eu'
         });
     });
 
@@ -51,29 +71,29 @@ describe('resolveConnectionConfig', () => {
     });
 
     it('applies session defaults even when no params are passed', () => {
-        const connectSession = connectSessionWith({ webhook_url: 'https://example.com/hook' });
+        const connectSession = connectSessionWith({ region: 'eu' });
         expect(resolveConnectionConfig({ params: undefined, connectSession, providerConfigKey: 'github' })).toEqual({
-            webhook_url: 'https://example.com/hook'
+            region: 'eu'
         });
     });
 
     it('ignores defaults configured for a different integration', () => {
-        const connectSession = connectSessionWith({ webhook_url: 'https://example.com/hook' }, 'github');
+        const connectSession = connectSessionWith({ region: 'eu' }, 'github');
         expect(resolveConnectionConfig({ params: { subdomain: 'acme' }, connectSession, providerConfigKey: 'slack' })).toEqual({
             subdomain: 'acme'
         });
     });
 
     it('drops non-string param values while keeping session defaults', () => {
-        const connectSession = connectSessionWith({ webhook_url: 'https://example.com/hook' });
+        const connectSession = connectSessionWith({ region: 'eu' });
         expect(resolveConnectionConfig({ params: { subdomain: 'acme', count: 5 }, connectSession, providerConfigKey: 'github' })).toEqual({
             subdomain: 'acme',
-            webhook_url: 'https://example.com/hook'
+            region: 'eu'
         });
     });
 
-    // webhook_url is privileged: an untrusted client must not be able to redirect a connection's webhooks
-    // by passing it as a request param. It is only honored from the (backend-set) connect session defaults.
+    // webhook_url is a reserved key that must never live in connection_config (it is an override, not a provider
+    // input). getConnectionConfig strips it from client params as defense-in-depth.
     it('drops a client-supplied webhook_url param', () => {
         expect(
             resolveConnectionConfig({
@@ -83,11 +103,23 @@ describe('resolveConnectionConfig', () => {
             })
         ).toEqual({ subdomain: 'acme' });
     });
+});
 
-    it('ignores a client webhook_url param even when the session pins its own', () => {
-        const connectSession = connectSessionWith({ webhook_url: 'https://backend.example.com/hook' });
-        expect(resolveConnectionConfig({ params: { webhook_url: 'https://attacker.example.com/hook' }, connectSession, providerConfigKey: 'github' })).toEqual({
-            webhook_url: 'https://backend.example.com/hook'
-        });
+describe('resolveOutboundWebhookUrlOverride', () => {
+    it('returns null when there is no connect session', () => {
+        expect(resolveOutboundWebhookUrlOverride({ connectSession: undefined })).toBeNull();
+    });
+
+    it('returns null when the session has no webhook_url override', () => {
+        expect(resolveOutboundWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride(null) })).toBeNull();
+    });
+
+    it('returns the session-level webhook_url override', () => {
+        const connectSession = connectSessionWithWebhookOverride('https://backend.example.com/hook');
+        expect(resolveOutboundWebhookUrlOverride({ connectSession })).toBe('https://backend.example.com/hook');
+    });
+
+    it('treats a blank webhook_url override as no override', () => {
+        expect(resolveOutboundWebhookUrlOverride({ connectSession: connectSessionWithWebhookOverride('   ') })).toBeNull();
     });
 });

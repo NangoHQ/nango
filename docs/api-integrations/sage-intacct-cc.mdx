@@ -10,10 +10,10 @@ Connect to Sage Intacct with Nango and see data flow in 2 minutes. The Client Cr
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _Sage Intacct (Client Credentials)_.
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _Sage Intacct (Client Credentials)_. Optionally, register your Client ID and Client Secret in the **Settings** tab so every connection reuses them — see the [setup guide](/api-integrations/sage-intacct-cc/how-to-register-your-own-sage-intacct-cc-app).
     </Step>
     <Step id="connect-sage-intacct-account" title="Connect your Sage Intacct account">
-    Go to **Connections** → _Add Test Connection_. Enter your Client ID, Client Secret, and either Username or Session ID, then save.
+    Go to **Connections** → _Add Test Connection_. Enter either your Username or Session ID, plus your Client ID and Client Secret if you left them blank on the integration, then save.
     </Step>
     <Step id="call-sage-intacct-api" title="Call the Sage Intacct API">
     Make your first request (List employee expenses). Replace the placeholders with your API key (from **Environment Settings**), integration ID, and connection ID:
@@ -65,8 +65,11 @@ Connect to Sage Intacct with Nango and see data flow in 2 minutes. The Client Cr
 
 Nango-maintained guides for common use cases.
 
-- [How to configure Sage Intacct client credentials](/api-integrations/sage-intacct-cc/connect)  
-Set up a Web Services user, authorize your client application, and obtain credentials to connect it to Nango
+- [How to register your own Sage Intacct (Client Credentials) app](/api-integrations/sage-intacct-cc/how-to-register-your-own-sage-intacct-cc-app)  
+Set up a Web Services user, register and authorize a client application, and obtain your Client ID and Client Secret
+
+- [How to link your Sage Intacct account](/api-integrations/sage-intacct-cc/connect)  
+Connect your Sage Intacct account to Nango using the Connect UI
 
 Official docs: [Sage Intacct API docs](https://developer.sage.com/intacct/docs/)
 

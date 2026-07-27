@@ -21,7 +21,7 @@ export class AuditProcessor {
             concurrency: envs.METERING_AUDIT_EVENTS_SUBSCRIBE_CONCURRENCY,
             callback: (event) => {
                 // Persistence (ClickHouse) is wired in a follow-up; for now events are acked and dropped.
-                logger.debug('Dropping audit event', { type: event.type, resource: event.payload.resource, action: event.payload.action });
+                logger.debug('Dropping audit event', { type: event.type });
             }
         });
     }

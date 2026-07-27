@@ -23,6 +23,7 @@
         "uuidv7": "0.6.3"
     },
     "devDependencies": {
+        "@types/pg": "8.15.5",
         "type-fest": "4.41.0",
         "vitest": "4.1.9"
     }

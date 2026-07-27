@@ -3,10 +3,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { Button, FieldLabel } from '@nangohq/design-system';
+import { Badge, Button, FieldLabel } from '@nangohq/design-system';
 
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { Badge } from '@/components/ui/Badge';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
@@ -74,11 +73,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 value: f.name,
                 label: f.name,
                 filterValue: `${f.name} ${f.resolvedType}`,
-                tag: (
-                    <Badge variant="gray" size="xs" className="capitalize font-mono">
-                        {f.resolvedType}
-                    </Badge>
-                )
+                tag: <Badge case="capitalize">{f.resolvedType}</Badge>
             }));
         if (playgroundFunction && !opts.some((o) => o.value === playgroundFunction)) {
             opts.unshift({ value: playgroundFunction, label: playgroundFunction, filterValue: playgroundFunction });

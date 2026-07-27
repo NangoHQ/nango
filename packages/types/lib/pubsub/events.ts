@@ -1,4 +1,4 @@
-import type { AuditEvent } from '../audit/event.js';
+import type { AuditRecord } from '../audit-trail/event.js';
 import type { FunctionRuntime } from '../runner/sdk.js';
 import type { DBTeam } from '../team/db.js';
 import type { DBUser } from '../user/db.js';
@@ -29,8 +29,7 @@ export type LambdaKeepWarmInvokeEvent = EventBase<
 
 export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent | AuditRecordedEvent>;
 
-// Audit trail (see @nangohq/audit). Payload is the full audit envelope; the metering consumer persists it.
-export type AuditRecordedEvent = EventBase<'audit', 'audit.recorded', AuditEvent>;
+export type AuditRecordedEvent = EventBase<'audit', 'audit.recorded', AuditRecord>;
 
 // User events
 export type UserCreatedEvent = EventBase<

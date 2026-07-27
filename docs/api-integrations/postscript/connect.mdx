@@ -1,0 +1,40 @@
+---
+title: 'Postscript - How do I link my account?'
+sidebarTitle: 'Postscript'
+---
+
+# Overview
+
+To authenticate with Postscript, you need:
+
+1. **Private API Key** - A key that grants secure access to the Postscript API, enabling authorized applications to interact with Postscript resources and services.
+
+This guide will walk you through finding your **Private API Key** in Postscript.
+
+### Prerequisites
+
+- An active Postscript account.
+
+### Instructions
+
+#### Step 1: Finding your Private API Key
+
+1. Log in to Postscript, select your shop name in the side menu, then select **API**.
+2. If you don't have a key yet, click **Create Security Key Pair** and confirm.
+3. Under the **Private Key** column, click **Show** and copy the value.
+
+<Note>
+  Use the **Private Key** (starts with `sk_`), not the Public Key (starts with `pk_`) — the Public Key doesn't authenticate requests.
+</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Private API Key**:
+
+1. Open the form where you need to authenticate with Postscript.
+2. Enter your **Private API Key** in the field provided.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/postscript/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Postscript.

@@ -1,3 +1,4 @@
+import type { AllAuthCredentials } from '../auth/api.js';
 import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { DBIntegrationDecrypted } from '../integration/db.js';
 import type { HTTP_METHOD } from '../nangoYaml/index.js';
@@ -52,7 +53,9 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 
-export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
+export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'metadata'> & {
+    credentials: AllAuthCredentials;
+};
 export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {

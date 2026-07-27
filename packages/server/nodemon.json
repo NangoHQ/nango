@@ -6,6 +6,7 @@
         "../records/dist",
         "../utils/dist",
         "../billing/dist",
+        "../feature-flags/dist",
         "../webhooks/dist",
         "../keystore/dist",
         "../../.env",

@@ -8,6 +8,7 @@ import type {
     GetOnboardingHearAboutUs,
     PostForgotPassword,
     PostManagedEmailVerification,
+    PostMFALoginVerification,
     PostOnboardingHearAboutUs,
     PostSignin,
     PostSignup,
@@ -30,12 +31,12 @@ export function useSigninAPI() {
               status: 401;
           },
         APIError,
-        { email: string; password: string }
+        PostSignin['Body']
     >({
-        mutationFn: async ({ email, password }) => {
+        mutationFn: async ({ email, password, returnTo }) => {
             const res = await apiFetch('/api/v1/account/signin', {
                 method: 'POST',
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password, returnTo })
             });
 
             if (res.status === 200) {
@@ -151,6 +152,19 @@ export function useManagedEmailVerificationAPI() {
 
             const json = (await res.json()) as Record<string, unknown>;
             throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useMFALoginVerification() {
+    return useMutation<PostMFALoginVerification['Success'], APIError, PostMFALoginVerification['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch('/api/v1/account/mfa/login/verify', { method: 'POST', body: JSON.stringify(body) });
+            const json = (await res.json()) as PostMFALoginVerification['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
         }
     });
 }

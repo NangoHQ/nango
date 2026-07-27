@@ -1,0 +1,101 @@
+name: Token check
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+    merge_group:
+
+# Least privilege: every job only reads the repo. token-check narrows further to {}.
+permissions:
+    contents: read
+
+jobs:
+    should-run:
+        runs-on: ubuntu-latest
+        outputs:
+            should_skip: ${{ steps.check.outputs.should_skip }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v4
+              id: filter
+              with:
+                  filters: |
+                      tokens:
+                          - 'packages/design-system/tokens/**'
+                          - 'packages/design-system/scripts/tokens-**'
+                          - 'packages/webapp/src/**'
+                          - '.github/workflows/tokens-check.yaml'
+            - name: Determine if should skip
+              id: check
+              run: |
+                  IS_PR="${{ github.event_name == 'pull_request' }}"
+                  IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
+                  IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
+                  TOKENS_CHANGED="${{ steps.filter.outputs.tokens == 'true' }}"
+
+                  SHOULD_SKIP="true"
+                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  elif [[ "$IS_PR" == "true" && "$TOKENS_CHANGED" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  fi
+
+                  echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
+
+    check-tokens:
+        needs: should-run
+        if: needs.should-run.outputs.should_skip != 'true'
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # Full history needed to resolve the merge-base against origin/master
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Validate token aliases resolve cleanly
+              run: npm run tokens:build --workspace=@nangohq/design-system -- --strict
+
+            # The previous step rebuilds tokens.generated.css from the committed
+            # tokens.json. If the committed CSS is stale, hand-edited, or mangled by
+            # a merge, it now differs from the rebuild — fail so the true build output
+            # is what ships (and what the removed-token check below runs against).
+            - name: Verify committed CSS matches tokens.json
+              run: |
+                  if ! git diff --exit-code -- packages/design-system/tokens/tokens.generated.css; then
+                      echo "::error::tokens.generated.css is out of date with tokens.json. Run 'npm run tokens:build --workspace=@nangohq/design-system' and commit the result."
+                      exit 1
+                  fi
+
+            - name: Check for removed tokens still in use
+              run: npm run tokens:check --workspace=@nangohq/design-system
+
+    # Stable required-status-check name. `check-tokens` is path-skipped on PRs that
+    # don't touch tokens, and a skipped required check would hang the PR/merge queue.
+    # This job always runs and translates skipped -> success, so it can be marked
+    # required in branch protection. Mark `token-check` (not `check-tokens`) required.
+    token-check:
+        needs: [should-run, check-tokens]
+        if: always()
+        runs-on: ubuntu-latest
+        permissions: {}
+        steps:
+            - name: Verify token check passed
+              run: |
+                  result="${{ needs.check-tokens.result }}"
+                  if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+                      echo "Token check: $result"
+                      exit 0
+                  fi
+                  echo "Token check did not pass: $result"
+                  exit 1

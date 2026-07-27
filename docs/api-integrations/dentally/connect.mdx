@@ -1,0 +1,35 @@
+---
+title: 'Dentally - How do I link my account?'
+sidebarTitle: 'Dentally'
+---
+
+# Overview
+
+To authenticate with Dentally, you need to select which **Environment** to connect to. Dentally runs a separate OAuth login on each host, so the environment you pick must match the one your app was registered against (see the setup guide if you haven't registered an OAuth app yet).
+
+### Prerequisites
+
+- An OAuth app registered with Dentally for the environment you're connecting to (see [how to register your own Dentally OAuth app](/api-integrations/dentally/how-to-register-your-own-dentally-oauth-app)).
+
+### Instructions
+
+#### Step 1: Choose your environment
+
+Dentally exposes separate hosts depending on the practice's region:
+
+- **Production** — `api.dentally.co`
+- **Sandbox** — `api.sandbox.dentally.co` — use this to test requests before going live.
+- **APAC practices** — `api.apac.dentally.com`
+- **Canadian practices** — `api.ca.dentally.com`
+
+Pick the one matching the OAuth app registered for this integration.
+
+#### Step 2: Authorize Dentally
+
+1. Open the form where you need to authenticate with Dentally.
+2. Select the **Environment**.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/dentally/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dentally.

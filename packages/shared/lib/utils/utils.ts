@@ -648,6 +648,16 @@ function resolveNowExpression(expression: string, replacers: Record<string, any>
         return isoNow ?? new Date().toISOString();
     }
 
+    // `${now+7:days:YYYY-MM-DD}` -> now offset by the amount/unit, formatted.
+    const offsetMatch = expression.match(/^now([+-]\d+):([a-zA-Z]+):(.+)$/);
+    if (offsetMatch) {
+        const [, amount, unit, format] = offsetMatch;
+        return dayjs
+            .utc(getNowDate(replacers))
+            .add(Number(amount), unit as dayjs.ManipulateType)
+            .format(format);
+    }
+
     const formatMatch = expression.match(/^now:(.+)$/);
     if (formatMatch) {
         const format = formatMatch[1];

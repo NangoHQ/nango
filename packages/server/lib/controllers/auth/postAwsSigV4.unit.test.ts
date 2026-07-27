@@ -202,13 +202,12 @@ describe('postPublicAwsSigV4Authorization', () => {
             })
         );
 
-    // The override is only honored from the backend-set connect session default, never from client params,
-    // and is resolved by the real resolveConnectionConfig (not mocked).
+    // The override is only honored from the backend-set connect session `webhook_url_override`, never from client params.
     const connectSessionWithOverride = {
         operationId: null,
         connectionId: null,
         allowedIntegrations: null,
-        integrationsConfigDefaults: { 'aws-sigv4': { connectionConfig: { webhook_url: 'https://override.example.com/hook' } } }
+        webhookUrlOverride: 'https://override.example.com/hook'
     };
     const sessionTokenQuery = { connect_session_token: `nango_connect_session_${'a'.repeat(64)}` };
 
@@ -296,7 +295,7 @@ describe('postPublicAwsSigV4Authorization', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
-    it('stores the resolved per-connection webhook URL override alongside the connection config', async () => {
+    it('stores the per-connection webhook URL override as webhook_url_override (not connection_config)', async () => {
         succeedCredentialVerification();
 
         const req = {
@@ -319,12 +318,15 @@ describe('postPublicAwsSigV4Authorization', () => {
 
         expect(mockUpsertAuthConnection).toHaveBeenCalledWith(
             expect.objectContaining({
+                webhookUrlOverride: 'https://override.example.com/hook',
                 connectionConfig: expect.objectContaining({
-                    webhook_url: 'https://override.example.com/hook',
                     role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole',
                     region: 'us-east-1'
                 })
             })
+        );
+        expect(mockUpsertAuthConnection).toHaveBeenCalledWith(
+            expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
         );
     });
 
@@ -379,7 +381,7 @@ describe('postPublicAwsSigV4Authorization', () => {
         expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
             expect.objectContaining({
                 connection: expect.objectContaining({
-                    connection_config: expect.objectContaining({ webhook_url: 'https://override.example.com/hook' })
+                    webhook_url_override: 'https://override.example.com/hook'
                 })
             }),
             expect.anything(),

@@ -17,6 +17,9 @@ export interface ApiPublicIntegrationInclude {
     // Per-integration, non-secret overrides surfaced to the Connect UI (e.g. the API key field label).
     // Derived server-side from a curated subset of the integration's `custom` config — never the whole object.
     credentials_label?: Record<string, string> | undefined;
+    // Names of `credentials` fields already set at the integration level (via `integration_config`), so the
+    // Connect UI can skip asking end users for them. Presence only — never the underlying value.
+    preconfigured_credentials?: string[] | undefined;
     credentials?:
         | {
               type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];

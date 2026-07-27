@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParam } from 'react-use';
 
 import { ErrorFallback } from '@/components/ErrorFallback';
@@ -14,9 +14,15 @@ import { updateSettings } from '@/lib/updateSettings';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
 
+// Fallback for embedded/iframe use: if a parent frame never postMessages a session token within
+// this delay, assume it never will. Standalone tabs (e.g. a shared "connect link") always carry
+// the token in the URL from the first load, so that case is detected immediately instead.
+const NO_SESSION_TOKEN_TIMEOUT_MS = 10000;
+
 export const Home: React.FC = () => {
     const navigate = useNavigate();
     const { sessionToken, setApiURL, setAuthLink, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview } = useGlobal();
+    const [noSessionToken, setNoSessionToken] = useState(false);
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
@@ -60,6 +66,8 @@ export const Home: React.FC = () => {
         const inUrl = search.get('session_token');
         if (inUrl) {
             setSessionToken(inUrl);
+        } else if (window.self === window.top) {
+            setNoSessionToken(true);
         }
 
         if (isPreview) {
@@ -91,8 +99,20 @@ export const Home: React.FC = () => {
         }
     }, [data]);
 
+    useEffect(() => {
+        if (sessionToken !== null || noSessionToken) {
+            return;
+        }
+        const timeout = setTimeout(() => setNoSessionToken(true), NO_SESSION_TOKEN_TIMEOUT_MS);
+        return () => clearTimeout(timeout);
+    }, [sessionToken, noSessionToken]);
+
     if (error) {
         return <ErrorFallback error={error} />;
+    }
+
+    if (noSessionToken) {
+        return <ErrorFallback message="This page can't be opened directly. Please start a connection from your application." />;
     }
 
     return <LoadingView />;

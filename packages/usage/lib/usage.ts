@@ -5,11 +5,9 @@ import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
-import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
 import { Clickhouse } from './clickhouse/clickhouse.js';
 import { AVG_METRICS, COUNTER_METRICS } from './clickhouse/clickhouse.query.js';
-import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
@@ -120,12 +118,10 @@ export class UsageTrackerNoOps implements IUsageTracker {
 
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
-    public billingClient: UsageBillingClient;
     private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
-        this.billingClient = new UsageBillingClient(redis);
     }
 
     private getClickhouse(): Clickhouse {
@@ -323,43 +319,18 @@ export class UsageTracker implements IUsageTracker {
         return this.getClickhouse().getTopDimensionValues(params as GetTopDimensionValuesQuery);
     }
 
-    public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
-        // ClickHouse is the default. `?source=orb` only takes effect when
-        // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev-only parity checks).
-        const orbOverride = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE && opts?.source === 'orb';
-        if (!orbOverride) {
-            if (opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end) {
-                return this.getBillingUsageFromClickhouse(accountId, {
-                    timeframe: opts.timeframe,
-                    ...(opts.metrics ? { metrics: opts.metrics } : {}),
-                    ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
-                    ...(opts.top !== undefined ? { top: opts.top } : {}),
-                    ...(opts.filter ? { filter: opts.filter } : {})
-                });
-            }
-            return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
+    public async getBillingUsage(_subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
+        if (opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end) {
+            return this.getBillingUsageFromClickhouse(accountId, {
+                timeframe: opts.timeframe,
+                ...(opts.metrics ? { metrics: opts.metrics } : {}),
+                ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
+                ...(opts.top !== undefined ? { top: opts.top } : {}),
+                ...(opts.filter ? { filter: opts.filter } : {}),
+                ...(opts.avgPerDay ? { avgPerDay: opts.avgPerDay } : {})
+            });
         }
-
-        // Strip CH-only fields so they don't pollute the Orb client's Redis
-        // cache key. Orb ignores them, but the cache key hashes the full opts
-        // and would miss on otherwise-identical queries.
-        const orbOpts: GetBillingUsageOpts | undefined = opts
-            ? {
-                  ...(opts.timeframe ? { timeframe: opts.timeframe } : {}),
-                  ...(opts.granularity ? { granularity: opts.granularity } : {}),
-                  ...(opts.billingMetric ? { billingMetric: opts.billingMetric } : {})
-              }
-            : undefined;
-        const orbResult = await this.billingClient.getUsage(subscriptionId, orbOpts);
-        if (orbResult.isErr()) {
-            return Err(orbResult.error);
-        }
-        const orbValue = orbResult.value;
-        return Ok({
-            ...orbValue,
-            connections: orbValue.connections ? toCumulativeUsage(orbValue.connections) : undefined,
-            records: orbValue.records ? toCumulativeUsage(orbValue.records) : undefined
-        });
+        return this.getClickhouse().getCurrentMonthBillingMetrics(accountId, new Date());
     }
 
     /**
@@ -382,9 +353,12 @@ export class UsageTracker implements IUsageTracker {
             // same metric when the dimensions differ; the controller rejects the
             // same-dim combination.
             filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
+            // AVG metrics as point-in-time daily counts instead of the billing running-average.
+            avgPerDay?: boolean;
         }
     ): Promise<Result<BillingUsageMetrics>> {
-        const { timeframe, metrics: scopedMetrics, breakdown, top, filter } = opts;
+        const { timeframe, metrics: scopedMetrics, breakdown, top, filter, avgPerDay } = opts;
+        const avgToUsage = avgPerDay ? toPerDayAvg : toRunningAvgUsage;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
         const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
@@ -538,7 +512,7 @@ export class UsageTracker implements IUsageTracker {
             // emit a zero-valued cumulative metric so the downstream API
             // formatter doesn't fall back to its generic `view_mode: 'periodic'`
             // shape, which is wrong for AVG metrics.
-            result[metric] = toRunningAvgUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
+            result[metric] = avgToUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
         }
 
         // Breakdown-requested metrics: top-level `usage` is empty (per-day points
@@ -559,7 +533,7 @@ export class UsageTracker implements IUsageTracker {
         }
         for (const [metric, br] of avgBreakdowns) {
             if (br.isErr()) return Err(br.error);
-            const series = toRunningAvgUsage(br.value);
+            const series = avgToUsage(br.value);
             result[metric] = {
                 externalId: metric,
                 total: series.reduce((sum, s) => sum + s.total, 0),
@@ -656,46 +630,16 @@ const sources: Record<UsageMetric, string> = {
     data_transfer: 'billing:subscription:usage'
 };
 
-function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetric {
-    const orderedPeriodicUsage = periodicUsage.usage.sort((a, b) => new Date(a.timeframeStart).getTime() - new Date(b.timeframeStart).getTime());
-    const cumulativeUsage: BillingUsageMetric['usage'] = [];
-    let previousQuantity = 0;
-
-    for (const usage of orderedPeriodicUsage) {
-        if (usage?.quantity === undefined) {
-            cumulativeUsage.push(usage);
-            continue;
-        }
-        const quantity = usage.quantity + previousQuantity;
-
-        cumulativeUsage.push({
-            timeframeStart: usage.timeframeStart,
-            timeframeEnd: usage.timeframeEnd,
-            quantity: Math.floor(quantity)
-        });
-
-        previousQuantity = quantity;
-    }
-    return {
-        ...periodicUsage,
-        view_mode: 'cumulative',
-        total: Math.floor(previousQuantity),
-        usage: cumulativeUsage
-    };
-}
-
 /**
- * CH-path sibling of `toCumulativeUsage`. Turns the per-day `(sum, batches)`
- * accumulators returned by `Clickhouse.getDailySumAndBatches` into
- * `BillingUsageMetric[]` with `view_mode='cumulative'` — the same wire shape
- * the dashboard already consumes for `records` / `connections` from the Orb
- * path. One `BillingUsageMetric` per series (no-dim → 1; dim → one per dim
- * value with `group: {key, value}`).
+ * Turns the per-day `(sum, batches)` accumulators returned by
+ * `Clickhouse.getDailySumAndBatches` into `BillingUsageMetric[]` with
+ * `view_mode='cumulative'` — the wire shape the dashboard consumes for
+ * `records` / `connections`. One `BillingUsageMetric` per series (no-dim → 1;
+ * dim → one per dim value with `group: {key, value}`).
  *
  * Walks each series in day order, accumulates `running_sum` and
  * `running_batches`, and emits `Math.round(running_sum / running_batches)` per
- * day. Bypasses `toCumulativeUsage` because the output is already
- * cumulative-shaped (running averages, not running sums of deltas).
+ * day.
  *
  * Dim-breakdown additivity contract: per-dim series share the same global
  * per-day batches (by design of `getDailySumAndBatches`' dim branch), so the
@@ -707,10 +651,20 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
  * `getDailySumAndBatches`' docstring.
  */
 export function toRunningAvgUsage(result: GetDailySumAndBatchesResult): BillingUsageMetric[] {
-    return result.series.map((series) => seriesToCumulativeAvg(result.metric, series)).filter((m): m is BillingUsageMetric => m !== null);
+    return result.series.map((series) => seriesToAvg(result.metric, series, false)).filter((m): m is BillingUsageMetric => m !== null);
 }
 
-function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], series: GetDailySumAndBatchesSeries): BillingUsageMetric | null {
+/**
+ * Per-day value (the point-in-time count each day) rather than the month's running average.
+ * The Free caps view uses this: connections/records are capped as a point-in-time maximum, so
+ * plotting the concurrent daily count (with its cap line) is meaningful, unlike the billing
+ * running-average. Keeps `view_mode: 'cumulative'` so the chart still renders it as an area.
+ */
+export function toPerDayAvg(result: GetDailySumAndBatchesResult): BillingUsageMetric[] {
+    return result.series.map((series) => seriesToAvg(result.metric, series, true)).filter((m): m is BillingUsageMetric => m !== null);
+}
+
+function seriesToAvg(metric: GetDailySumAndBatchesResult['metric'], series: GetDailySumAndBatchesSeries, perDay: boolean): BillingUsageMetric | null {
     if (series.days.length === 0) {
         return null;
     }
@@ -723,7 +677,11 @@ function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], se
     for (const day of sorted) {
         runningSum += day.sum;
         runningBatches += day.batches;
-        if (runningBatches === 0) {
+        // Running average over the month (billing view) vs the day's own value (point-in-time
+        // view for the Free caps chart, where the cap is a concurrent maximum).
+        const sum = perDay ? day.sum : runningSum;
+        const batches = perDay ? day.batches : runningBatches;
+        if (batches === 0) {
             // Defensive: a series shouldn't appear with batches=0 (the SQL filters
             // empty-day groups out), but if it does we skip rather than divide by zero.
             continue;
@@ -735,7 +693,7 @@ function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], se
         usage.push({
             timeframeStart: day.day,
             timeframeEnd: addOneDay(day.day),
-            quantity: runningSum / runningBatches
+            quantity: sum / batches
         });
     }
 

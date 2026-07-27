@@ -1,0 +1,33 @@
+---
+title: 'How to register your own Datadog OAuth app'
+sidebarTitle: 'Datadog (OAuth) Setup'
+description: 'Register an OAuth client with Datadog and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth client with Datadog to obtain your OAuth credentials (client ID & secret). These are required to let your users authorize your app to access their Datadog account.
+
+<Steps>
+  <Step id="create-developer-account" title="Create a developer account">
+    Datadog OAuth clients are created from a Datadog Partner Sandbox Account. Sign up for the [Datadog Developer Platform](https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/) if you don't already have one.
+  </Step>
+  <Step id="create-oauth-client" title="Create your OAuth client">
+    In your Partner Sandbox Account's Developer Platform, create a new OAuth client and configure:
+
+    - **Redirect URI**: `https://api.nango.dev/oauth/callback`
+    - **Onboarding URL**: required by Datadog's form; Nango doesn't use it, so any placeholder URL works.
+    - **Scopes**: select the scopes your app needs, following the principle of least privilege. See [Authorization scopes for OAuth clients](https://docs.datadoghq.com/api/latest/scopes/) for the full list. If you also need to call the [API Key Creation endpoint](https://docs.datadoghq.com/api/latest/key-management/#create-an-api-key) to send data on behalf of users, include `API_KEYS_WRITE`.
+  </Step>
+  <Step id="get-credentials" title="Get your credentials">
+    Copy your **Client ID** and **Client Secret** from the OAuth client you created. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step id="configure-scopes" title="Configure scopes in Nango">
+    In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _Datadog (OAuth)_ and enter the **exact same scopes** in the integration's **Scopes** field that you selected on your Datadog OAuth client. Nango only requests the scopes listed there, and Datadog rejects any scope your OAuth client wasn't granted — so the two lists need to match.
+  </Step>
+  <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [OAuth2 in Datadog](https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/).
+
+---

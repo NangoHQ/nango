@@ -1,7 +1,8 @@
-import { audit } from '@nangohq/audit';
 import { getFlags } from '@nangohq/feature-flags';
 import { userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
+
+import { audit } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type {
