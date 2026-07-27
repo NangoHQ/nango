@@ -37,6 +37,7 @@ import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
 import { TeamSettingsPage } from '@/pages/Team/Settings';
+import { Enable2FA } from '@/pages/User/Enable2FA';
 import { UserSettings } from '@/pages/User/Settings';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -167,8 +168,18 @@ export const router = sentryCreateBrowserRouter([
             },
             {
                 path: '/user-settings',
-                element: <UserSettings />,
-                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Profile settings' } as BreadcrumbHandle,
+                children: [
+                    {
+                        index: true,
+                        element: <UserSettings />
+                    },
+                    {
+                        path: 'enable-2fa',
+                        element: <Enable2FA />,
+                        handle: { breadcrumb: 'Enable 2FA' } as BreadcrumbHandle
+                    }
+                ]
             },
             {
                 path: '/team/billing',
