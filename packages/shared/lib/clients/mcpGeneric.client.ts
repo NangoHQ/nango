@@ -243,10 +243,19 @@ export async function refreshMcpGenericCredentials({
         };
     }
 
-    // Use the MCP SDK refresh path (same as the initial code exchange) so public clients
-    // omit client_secret entirely. simple-oauth2 always sends client_secret= when using
-    // body auth, which strict token endpoints (e.g. Resend) reject with 400.
-    const resource = resourceUrl ? new URL(resourceUrl) : undefined;
+    let resource: URL | undefined;
+    if (resourceUrl) {
+        try {
+            resource = new URL(resourceUrl);
+        } catch (err) {
+            void logCtx.error('Failed to parse oauth_resource_url', { error: String(err), resourceUrl });
+            return {
+                success: false,
+                error: new NangoError('invalid_oauth_metadata', { error: String(err) }),
+                response: null
+            };
+        }
+    }
 
     let tokens: OAuthTokens;
     try {

@@ -177,4 +177,18 @@ describe('refreshMcpGenericCredentials', () => {
         expect(result.success).toBe(false);
         expect(result.error?.type).toBe('refresh_token_external_error');
     });
+
+    it('returns invalid_oauth_metadata when oauth_resource_url is malformed', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await refreshMcpGenericCredentials({
+            connection: mcpGenericConnection({ resourceUrl: 'not a url' }),
+            logCtx: mockLogCtx()
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.error?.type).toBe('unhandled_invalid_oauth_metadata');
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
 });
