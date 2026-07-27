@@ -1,7 +1,8 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 import type { Role } from './db.js';
 
-export type GetUser = Endpoint<{
+export type GetUser = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
@@ -9,7 +10,8 @@ export type GetUser = Endpoint<{
     };
 }>;
 
-export type InternalGetUsers = Endpoint<{
+export type InternalGetUsers = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/internal/users`;
     Querystring: { accountId: number };
@@ -18,7 +20,8 @@ export type InternalGetUsers = Endpoint<{
     };
 }>;
 
-export type PatchUser = Endpoint<{
+export type PatchUser = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: `/api/v1/user`;
     Body: {
@@ -49,7 +52,8 @@ export type ApiUserWithPermissions = ApiUser & {
     permissions: AllowedPermissions;
 };
 
-export type PutUserPassword = Endpoint<{
+export type PutUserPassword = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: `/api/v1/user/password`;
     Body: { oldPassword: string; newPassword: string };

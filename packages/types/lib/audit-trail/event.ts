@@ -23,3 +23,17 @@ export interface AuditContext {
     ip?: string;
     userAgent?: string;
 }
+
+// Every endpoint must declare an audit policy on its `Endpoint` definition: either the audit event it
+// records, or an explicit `NoAuditEvent` opt-out. This makes audit coverage a compile-time decision —
+// a new endpoint cannot be added without consciously opting in or out.
+export interface AuditEndpointEvent {
+    resource: AuditResource;
+    action: AuditAction;
+    scope: 'account' | 'environment';
+}
+export interface NoAuditEvent {
+    audit: false;
+    reason: string;
+}
+export type EndpointAuditPolicy = AuditEndpointEvent | NoAuditEvent;

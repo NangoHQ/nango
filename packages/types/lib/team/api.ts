@@ -1,11 +1,12 @@
-import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
 import type { DBInvitation } from '../invitations/db.js';
 import type { ApiUser } from '../user/api.js';
 import type { Role } from '../user/db.js';
 import type { DBTeam } from './db.js';
 import type { Merge } from 'type-fest';
 
-export type GetTeam = Endpoint<{
+export type GetTeam = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -22,7 +23,8 @@ export type GetTeam = Endpoint<{
 export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
 
-export type PutTeam = Endpoint<{
+export type PutTeam = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -32,7 +34,8 @@ export type PutTeam = Endpoint<{
     };
 }>;
 
-export type DeleteTeamUser = Endpoint<{
+export type DeleteTeamUser = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };
@@ -43,7 +46,8 @@ export type DeleteTeamUser = Endpoint<{
     };
 }>;
 
-export type PatchTeamUser = Endpoint<{
+export type PatchTeamUser = ApiEndpoint<{
+    Audit: { resource: 'member'; action: 'role_changed'; scope: 'account' };
     Method: 'PATCH';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };

@@ -1,3 +1,4 @@
+import type { EndpointAuditPolicy } from './audit-trail/event.js';
 import type { RunnerOutputError } from './runner/index.js';
 
 export interface ApiError<TCode extends string, TErrors = Error[] | ValidationError[] | undefined, TPayload = unknown> {
@@ -101,6 +102,14 @@ export interface Endpoint<T extends EndpointDefinition> {
      */
     Reply: ResDefaultErrors | (T['Error'] extends ApiError<any> ? T['Error'] | T['Success'] : T['Success']);
 }
+
+// Customer-facing API endpoints declare an audit policy: the audit event they record, or an explicit
+// `NoAuditEvent` opt-out. This makes audit coverage a compile-time decision — a customer endpoint cannot
+// be added without consciously opting in or out. Internal service routes keep using `Endpoint`.
+export interface ApiEndpointDefinition extends EndpointDefinition {
+    Audit: EndpointAuditPolicy;
+}
+export type ApiEndpoint<T extends ApiEndpointDefinition> = Endpoint<T> & { Audit: T['Audit'] };
 
 export interface ErrorPayload {
     type: string;

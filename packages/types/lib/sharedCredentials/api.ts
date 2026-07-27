@@ -1,6 +1,7 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 
-export type GetSharedCredentialsProviders = Endpoint<{
+export type GetSharedCredentialsProviders = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/internal/shared-credentials';
     Success: {
@@ -9,7 +10,8 @@ export type GetSharedCredentialsProviders = Endpoint<{
     };
 }>;
 
-export type GetSharedCredentialsProvider = Endpoint<{
+export type GetSharedCredentialsProvider = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/internal/shared-credentials/:id';
     Params: { id: number };
@@ -19,7 +21,8 @@ export type GetSharedCredentialsProvider = Endpoint<{
     };
 }>;
 
-export type PostSharedCredentialsProvider = Endpoint<{
+export type PostSharedCredentialsProvider = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/internal/shared-credentials';
     Body: SharedCredentialsBodyInput;
@@ -29,7 +32,8 @@ export type PostSharedCredentialsProvider = Endpoint<{
     Error: ApiError<'invalid_body' | 'shared_credentials_already_exists' | 'invalid_provider'>;
 }>;
 
-export type PatchSharedCredentialsProvider = Endpoint<{
+export type PatchSharedCredentialsProvider = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'PATCH';
     Path: '/internal/shared-credentials/:id';
     Params: { id: number };

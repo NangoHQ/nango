@@ -1,6 +1,7 @@
-import type { Endpoint } from '../index.js';
+import type { ApiEndpoint } from '../index.js';
 
-export type PostImpersonate = Endpoint<{
+export type PostImpersonate = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: `/api/v1/admin/impersonate`;
     Querystring: {

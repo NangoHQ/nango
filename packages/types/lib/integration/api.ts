@@ -1,4 +1,4 @@
-import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
 import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
@@ -40,7 +40,8 @@ export interface ApiPublicIntegrationInclude {
         | null;
 }
 
-export type GetPublicListIntegrations = Endpoint<{
+export type GetPublicListIntegrations = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations';
     Querystring?: { connect_session_token: string };
@@ -49,7 +50,8 @@ export type GetPublicListIntegrations = Endpoint<{
     };
 }>;
 
-export type PostPublicIntegration = Endpoint<{
+export type PostPublicIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/integrations';
     Body: {
@@ -65,7 +67,8 @@ export type PostPublicIntegration = Endpoint<{
     };
 }>;
 
-export type PostPublicQuickstartIntegration = Endpoint<{
+export type PostPublicQuickstartIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/integrations/quickstart';
     Body: {
@@ -79,7 +82,8 @@ export type PostPublicQuickstartIntegration = Endpoint<{
     };
 }>;
 
-export type GetPublicIntegration = Endpoint<{
+export type GetPublicIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -87,7 +91,8 @@ export type GetPublicIntegration = Endpoint<{
     Success: { data: ApiPublicIntegration };
 }>;
 
-export type PatchPublicIntegration = Endpoint<{
+export type PatchPublicIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -107,14 +112,16 @@ export type PatchPublicIntegration = Endpoint<{
     };
 }>;
 
-export type DeletePublicIntegration = Endpoint<{
+export type DeletePublicIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
     Success: { success: true };
 }>;
 
-export type GetPublicFunctionCode = Endpoint<{
+export type GetPublicFunctionCode = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions/:name/code';
     Params: {
@@ -131,7 +138,8 @@ export type GetPublicFunctionCode = Endpoint<{
     Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
-export type GetFunctionCode = Endpoint<{
+export type GetFunctionCode = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName/code';
     Params: {
@@ -167,7 +175,8 @@ export type ApiIntegrationList = ApiIntegration & {
     };
 };
 
-export type GetIntegrations = Endpoint<{
+export type GetIntegrations = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations';
     Success: {
@@ -233,7 +242,8 @@ export type IntegrationAuthBody =
     | MCPOAuth2GenericAuthBody
     | InstallPluginAuthBody;
 
-export type PostIntegration = Endpoint<{
+export type PostIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
@@ -254,7 +264,8 @@ export type PostIntegration = Endpoint<{
     };
 }>;
 
-export type GetIntegration = Endpoint<{
+export type GetIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -274,7 +285,8 @@ export type GetIntegration = Endpoint<{
     };
 }>;
 
-export type PatchIntegration = Endpoint<{
+export type PatchIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -296,7 +308,8 @@ export type PatchIntegration = Endpoint<{
     };
 }>;
 
-export type DeleteIntegration = Endpoint<{
+export type DeleteIntegration = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -306,7 +319,8 @@ export type DeleteIntegration = Endpoint<{
     };
 }>;
 
-export type GetIntegrationFlows = Endpoint<{
+export type GetIntegrationFlows = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/flows';
     Querystring: { env: string };

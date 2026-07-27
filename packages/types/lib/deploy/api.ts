@@ -1,11 +1,12 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type PostDeployConfirmation = Endpoint<{
+export type PostDeployConfirmation = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy/confirmation';
     Body: {
@@ -21,7 +22,8 @@ export type PostDeployConfirmation = Endpoint<{
     Success: ScriptDifferences;
 }>;
 
-export type PostDeploy = Endpoint<{
+export type PostDeploy = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy';
     Body: {
@@ -39,7 +41,8 @@ export type PostDeploy = Endpoint<{
     Success: SyncDeploymentResult[];
 }>;
 
-export type PostDeployInternal = Endpoint<{
+export type PostDeployInternal = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy/internal';
     Querystring: {

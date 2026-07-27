@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 import type { ConnectUISettings } from '../connectUISettings/dto.js';
 import type { ApiEndUser } from '../endUser/index.js';
 
@@ -55,7 +55,8 @@ export type PostConnectSessionsBody =
           end_user?: ConnectSessionInput['end_user'] | undefined;
       });
 
-export type PostConnectSessions = Endpoint<{
+export type PostConnectSessions = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/sessions';
     Body: PostConnectSessionsBody;
@@ -68,7 +69,8 @@ export type PostConnectSessions = Endpoint<{
     };
 }>;
 
-export type PostPublicConnectSessionsReconnect = Endpoint<{
+export type PostPublicConnectSessionsReconnect = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/sessions/reconnect';
     Body: {
@@ -90,7 +92,8 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
     };
 }>;
 
-export type GetConnectSession = Endpoint<{
+export type GetConnectSession = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/connect/session';
     Success: {
@@ -98,13 +101,15 @@ export type GetConnectSession = Endpoint<{
     };
 }>;
 
-export type DeleteConnectSession = Endpoint<{
+export type DeleteConnectSession = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'DELETE';
     Path: '/connect/session';
     Success: never;
 }>;
 
-export type PostInternalConnectSessions = Endpoint<{
+export type PostInternalConnectSessions = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
@@ -114,7 +119,8 @@ export type PostInternalConnectSessions = Endpoint<{
     >;
 }>;
 
-export type PostPublicConnectTelemetry = Endpoint<{
+export type PostPublicConnectTelemetry = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/telemetry';
     Body: {

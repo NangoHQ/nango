@@ -1,7 +1,8 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ReportedSyncJobStatus } from './index.js';
 
-export type PostPublicTrigger = Endpoint<{
+export type PostPublicTrigger = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/trigger';
     Body: {
@@ -22,7 +23,8 @@ export type PostPublicTrigger = Endpoint<{
     Error: ApiError<'missing_provider_config_key' | 'unknown_provider_config' | 'unknown_connection' | 'no_syncs_found'>;
 }>;
 
-export type PostSyncVariant = Endpoint<{
+export type PostSyncVariant = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/:name/variant/:variant';
     Body: {
@@ -39,7 +41,8 @@ export type PostSyncVariant = Endpoint<{
     Success: { id: string; name: string; variant: string };
 }>;
 
-export type DeleteSyncVariant = Endpoint<{
+export type DeleteSyncVariant = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/sync/:name/variant/:variant';
     Body: {
@@ -54,7 +57,8 @@ export type DeleteSyncVariant = Endpoint<{
     Success: { success: boolean };
 }>;
 
-export type PutPublicSyncConnectionFrequency = Endpoint<{
+export type PutPublicSyncConnectionFrequency = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/sync/update-connection-frequency';
     Body: {
@@ -68,7 +72,8 @@ export type PutPublicSyncConnectionFrequency = Endpoint<{
     Error: ApiError<'unknown_connection' | 'unknown_sync'>;
 }>;
 
-export type PostPublicSyncPause = Endpoint<{
+export type PostPublicSyncPause = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/pause';
     Body: {
@@ -80,7 +85,8 @@ export type PostPublicSyncPause = Endpoint<{
     Error: ApiError<'no_syncs_found' | 'unknown_connection' | 'unknown_provider_config'>;
 }>;
 
-export type PostPublicSyncStart = Endpoint<{
+export type PostPublicSyncStart = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/start';
     Body: {
@@ -92,7 +98,8 @@ export type PostPublicSyncStart = Endpoint<{
     Error: ApiError<'no_syncs_found' | 'unknown_connection' | 'unknown_provider_config'>;
 }>;
 
-export type GetPublicSyncStatus = Endpoint<{
+export type GetPublicSyncStatus = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/sync/status';
     Querystring: {

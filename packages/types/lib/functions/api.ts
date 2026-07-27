@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -163,7 +163,8 @@ export type FunctionDeploymentResultBody =
           };
       };
 
-export type PostFunctionCompile = Endpoint<{
+export type PostFunctionCompile = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/compile';
     Body: FunctionCompileBody;
@@ -171,7 +172,8 @@ export type PostFunctionCompile = Endpoint<{
     Success: FunctionCompileSuccess;
 }>;
 
-export type PostFunctionDryrun = Endpoint<{
+export type PostFunctionDryrun = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/dryruns';
     Body: FunctionDryrunBody;
@@ -179,7 +181,8 @@ export type PostFunctionDryrun = Endpoint<{
     Success: FunctionDryrunCreateSuccess;
 }>;
 
-export type GetFunctionDryrun = Endpoint<{
+export type GetFunctionDryrun = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/functions/dryruns/:id';
     Params: { id: string };
@@ -187,7 +190,8 @@ export type GetFunctionDryrun = Endpoint<{
     Success: FunctionDryrunResultSuccess;
 }>;
 
-export type PostFunctionDryrunResult = Endpoint<{
+export type PostFunctionDryrunResult = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/dryruns/:id/result';
     Params: { id: string };
@@ -196,7 +200,8 @@ export type PostFunctionDryrunResult = Endpoint<{
     Success: { ok: true };
 }>;
 
-export type PostFunctionDeployment = Endpoint<{
+export type PostFunctionDeployment = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;
@@ -206,7 +211,8 @@ export type PostFunctionDeployment = Endpoint<{
     Success: FunctionDeploymentCreateSuccess;
 }>;
 
-export type GetFunctionDeployment = Endpoint<{
+export type GetFunctionDeployment = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/functions/deployments/:id';
     Params: { id: string };
@@ -214,7 +220,8 @@ export type GetFunctionDeployment = Endpoint<{
     Success: FunctionDeploymentResultSuccess;
 }>;
 
-export type PostFunctionDeploymentResult = Endpoint<{
+export type PostFunctionDeploymentResult = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/deployments/:id/result';
     Params: { id: string };
@@ -249,7 +256,8 @@ export interface ProviderTemplatesSuccess {
     data: (NangoSyncFunction | NangoActionFunction)[];
 }
 
-export type GetIntegrationFunctions = Endpoint<{
+export type GetIntegrationFunctions = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions';
     Querystring: { env: string } & FunctionListFilters;
@@ -257,7 +265,8 @@ export type GetIntegrationFunctions = Endpoint<{
     Success: FunctionListSuccess;
 }>;
 
-export type GetIntegrationFunction = Endpoint<{
+export type GetIntegrationFunction = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     Querystring: { env: string; type?: FunctionType };
@@ -265,7 +274,8 @@ export type GetIntegrationFunction = Endpoint<{
     Success: DeployedFunctionSuccess;
 }>;
 
-export type DeleteIntegrationFunction = Endpoint<{
+export type DeleteIntegrationFunction = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     /** TODO: support deleting on-event functions */
@@ -275,7 +285,8 @@ export type DeleteIntegrationFunction = Endpoint<{
     Success: FunctionDeletionSuccess;
 }>;
 
-export type GetProviderTemplates = Endpoint<{
+export type GetProviderTemplates = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/providers/:providerConfigKey/templates';
     Querystring: { env: string };
@@ -283,7 +294,8 @@ export type GetProviderTemplates = Endpoint<{
     Success: ProviderTemplatesSuccess;
 }>;
 
-export type GetPublicIntegrationFunctions = Endpoint<{
+export type GetPublicIntegrationFunctions = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions';
     Querystring: FunctionListFilters;
@@ -291,7 +303,8 @@ export type GetPublicIntegrationFunctions = Endpoint<{
     Success: FunctionListSuccess;
 }>;
 
-export type GetPublicIntegrationFunction = Endpoint<{
+export type GetPublicIntegrationFunction = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions/:name';
     Querystring: { type?: FunctionType };
@@ -299,7 +312,8 @@ export type GetPublicIntegrationFunction = Endpoint<{
     Success: DeployedFunctionSuccess;
 }>;
 
-export type DeletePublicIntegrationFunction = Endpoint<{
+export type DeletePublicIntegrationFunction = ApiEndpoint<{
+    Audit: { audit: false; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey/functions/:name';
     /** TODO: support deleting on-event functions */
@@ -309,14 +323,16 @@ export type DeletePublicIntegrationFunction = Endpoint<{
     Success: FunctionDeletionSuccess;
 }>;
 
-export type GetPublicProviderTemplates = Endpoint<{
+export type GetPublicProviderTemplates = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/providers/:provider/templates';
     Params: { provider: string };
     Success: ProviderTemplatesSuccess;
 }>;
 
-export type GetIntegrationTemplates = Endpoint<{
+export type GetIntegrationTemplates = ApiEndpoint<{
+    Audit: { audit: false; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/templates';
     Querystring: { env: string };
