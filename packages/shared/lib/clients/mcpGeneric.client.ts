@@ -1,14 +1,12 @@
-import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata } from '@modelcontextprotocol/sdk/client/auth.js';
+import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata, refreshAuthorization } from '@modelcontextprotocol/sdk/client/auth.js';
 import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/sdk/shared/auth.js';
-import { AuthorizationCode } from 'simple-oauth2';
 
 import { NangoError } from '../utils/error.js';
 
 import type { ServiceResponse } from '../models/Generic.js';
-import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata } from '@modelcontextprotocol/sdk/shared/auth.js';
+import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type { DBConnectionDecrypted, OAuth2Credentials } from '@nangohq/types';
-import type { AccessToken } from 'simple-oauth2';
 
 /**
  * Validates MCP server URL to prevent SSRF attacks
@@ -245,37 +243,18 @@ export async function refreshMcpGenericCredentials({
         };
     }
 
-    // Use simple-oauth2 with the stored metadata (since MCP tokens are standard OAuth2)
-    const oauth2ClientConfig = {
-        client: {
-            id: clientInformation.client_id,
-            secret: '' // MCP uses PKCE, no client secret needed
-        },
-        auth: {
-            tokenHost: new URL(metadata.token_endpoint).origin,
-            tokenPath: new URL(metadata.token_endpoint).pathname
-        },
-        http: {
-            headers: { 'User-Agent': 'Nango' }
-        },
-        options: {
-            authorizationMethod: 'body' as const,
-            bodyFormat: 'form' as const
-        }
-    };
+    // Use the MCP SDK refresh path (same as the initial code exchange) so public clients
+    // omit client_secret entirely. simple-oauth2 always sends client_secret= when using
+    // body auth, which strict token endpoints (e.g. Resend) reject with 400.
+    const resource = resourceUrl ? new URL(resourceUrl) : undefined;
 
-    const client = new AuthorizationCode(oauth2ClientConfig);
-
-    const oldAccessToken = client.createToken({
-        access_token: currentCredentials.access_token,
-        refresh_token: currentCredentials.refresh_token,
-        expires_at: currentCredentials.expires_at
-    });
-
-    let rawNewAccessToken: AccessToken;
+    let tokens: OAuthTokens;
     try {
-        rawNewAccessToken = await oldAccessToken.refresh({
-            ...(resourceUrl && { resource: resourceUrl })
+        tokens = await refreshAuthorization(mcpServerUrl, {
+            metadata,
+            clientInformation,
+            refreshToken: currentCredentials.refresh_token,
+            ...(resource && { resource })
         });
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -288,10 +267,10 @@ export async function refreshMcpGenericCredentials({
 
     const refreshedCredentials: OAuth2Credentials = {
         type: 'OAUTH2',
-        access_token: rawNewAccessToken.token['access_token'] as string,
-        refresh_token: (rawNewAccessToken.token['refresh_token'] as string) || currentCredentials.refresh_token,
-        expires_at: rawNewAccessToken.token['expires_at'] ? new Date(rawNewAccessToken.token['expires_at'] as string) : undefined,
-        raw: rawNewAccessToken.token
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token || currentCredentials.refresh_token,
+        expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
+        raw: tokens
     };
 
     return { success: true, error: null, response: refreshedCredentials };
