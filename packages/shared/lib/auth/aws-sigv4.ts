@@ -183,6 +183,9 @@ async function fetchAwsTemporaryCredentialsBuiltin({
     });
 
     try {
+        // `region` is already regex-validated, but assert the fully-built STS URL through the egress policy
+        // as well so this path matches the custom-endpoint path and is covered by the same denylist/IP guards.
+        await assertSafeOAuthUrl(stsUrl);
         const response = await axios.post(stsUrl, body, {
             headers: signedHeaders,
             transformResponse: [(data: unknown) => data], // keep raw XML

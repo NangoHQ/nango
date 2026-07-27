@@ -344,5 +344,117 @@ describe('loggedFetch', () => {
                 }
             );
         });
+
+        it.each([301, 302])('downgrades a POST to GET and drops the body/content-type/content-length on a %i redirect', async (status) => {
+            await withServer(
+                (req, res) => {
+                    if (req.url === '/start') {
+                        res.writeHead(status, { location: '/final' });
+                        res.end();
+                        return;
+                    }
+                    let received = '';
+                    req.on('data', (chunk) => (received += chunk));
+                    req.on('end', () => {
+                        res.writeHead(200, { 'content-type': 'application/json' });
+                        res.end(
+                            JSON.stringify({
+                                method: req.method,
+                                received,
+                                contentType: req.headers['content-type'] ?? null,
+                                contentLength: req.headers['content-length'] ?? null
+                            })
+                        );
+                    });
+                },
+                async (baseUrl) => {
+                    const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                    const fetchRes = await loggedFetch<{ method: string; received: string; contentType: string | null; contentLength: string | null }>(
+                        {
+                            url: new URL(`${baseUrl}/start`),
+                            method: 'POST',
+                            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                            body: 'client_secret=super-secret',
+                            redirect: { maxRedirects: 5, validate: () => undefined }
+                        },
+                        { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+                    );
+                    // 301/302 on an unsafe method must become a bodyless GET: the follow-up carries no body and
+                    // neither the content-type nor the content-length of the dropped body are leaked forward.
+                    expect(fetchRes.unwrap().body).toStrictEqual({ method: 'GET', received: '', contentType: null, contentLength: null });
+                }
+            );
+        });
+
+        it('returns the original redirect response when the Location header is unparseable (does not throw)', async () => {
+            await withServer(
+                (req, res) => {
+                    if (req.url === '/start') {
+                        // `http://` has a scheme but no host, so `new URL()` cannot resolve it even against a base.
+                        res.writeHead(302, { location: 'http://', 'content-type': 'application/json' });
+                        res.end(JSON.stringify({ redirected: false }));
+                        return;
+                    }
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ redirected: true }));
+                },
+                async (baseUrl) => {
+                    const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                    const fetchRes = await loggedFetch<{ redirected: boolean }>(
+                        {
+                            url: new URL(`${baseUrl}/start`),
+                            redirect: { maxRedirects: 5, validate: () => undefined }
+                        },
+                        { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+                    );
+                    // A malformed Location is surfaced as the untouched 3xx response rather than an error.
+                    const { res, body } = fetchRes.unwrap();
+                    expect(res.status).toBe(302);
+                    expect(body).toStrictEqual({ redirected: false });
+                }
+            );
+        });
+
+        it('refuses to replay a credential-bearing body across origins on a 308 redirect', async () => {
+            await withServer(
+                (req, res) => {
+                    // Cross-origin target: must never receive the original POST body.
+                    let received = '';
+                    req.on('data', (chunk) => (received += chunk));
+                    req.on('end', () => {
+                        res.writeHead(200, { 'content-type': 'application/json' });
+                        res.end(JSON.stringify({ received }));
+                    });
+                },
+                async (targetUrl) => {
+                    await withServer(
+                        (req, res) => {
+                            if (req.url === '/start') {
+                                // 308, like 307, preserves method + body; point it at a different origin.
+                                res.writeHead(308, { location: `${targetUrl}/capture` });
+                                res.end();
+                                return;
+                            }
+                            res.writeHead(200);
+                            res.end();
+                        },
+                        async (baseUrl) => {
+                            const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                            const fetchRes = await loggedFetch(
+                                {
+                                    url: new URL(`${baseUrl}/start`),
+                                    method: 'POST',
+                                    body: 'client_secret=super-secret',
+                                    redirect: { maxRedirects: 5, validate: () => undefined }
+                                },
+                                { logCtx: buffer, context: 'auth', valuesToFilter: [] }
+                            );
+                            // 308 shares the 307 code path; verify it too refuses the cross-origin body replay.
+                            expect(fetchRes.isErr()).toBe(true);
+                        }
+                    );
+                }
+            );
+        });
     });
 });

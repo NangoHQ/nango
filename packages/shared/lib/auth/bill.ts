@@ -2,6 +2,7 @@ import ms from 'ms';
 
 import { axiosInstance as axios, Err, Ok } from '@nangohq/utils';
 
+import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { AuthCredentialsError } from '../utils/error.js';
 
 import type { BillCredentials, ProviderBill } from '@nangohq/types';
@@ -43,8 +44,12 @@ export async function createCredentials({
     };
 
     try {
+        // Route the login/session call through the OAuth egress policy: validate the token URL and pin the
+        // connected IP so a self-hosted or misconfigured token_url can't be used to reach internal hosts.
+        await assertSafeOAuthUrl(provider.token_url);
         const response = await axios.post(provider.token_url, postBody, {
-            headers
+            headers,
+            ...getOAuthAxiosRequestConfig()
         });
 
         if (response.status !== 200) {
