@@ -682,6 +682,35 @@ adyntel:
             example: you@company.com
             doc_section: '#step-2-find-your-email-address'
 
+agentcard:
+    display_name: Agentcard
+    categories:
+        - payment
+    auth_mode: OAUTH2_CC
+    token_url: https://api.agentcard.sh/api/v2/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.agentcard.sh
+    docs: https://nango.dev/docs/api-integrations/agentcard
+    docs_connect: https://nango.dev/docs/api-integrations/agentcard/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The OAuth client ID from the Credentials page of your Agentcard dashboard
+            example: 1c9f3b1e-8f2a-4d0e-9b7a-2f6d8c4e5a10
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            doc_section: '#step-2-copy-your-client-id-and-client-secret'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The OAuth client secret from the Credentials page of your Agentcard dashboard
+            secret: true
+            example: acs_9hK3mQx1TZr8wBn5vLpD2cYfS7aJ4eG6uNtM0iRoXqWd8kFz
+            pattern: '^acs_[A-Za-z0-9_-]{48}$'
+            doc_section: '#step-2-copy-your-client-id-and-client-secret'
+
 ahrefs:
     display_name: Ahrefs
     categories:
