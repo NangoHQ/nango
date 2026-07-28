@@ -78,13 +78,14 @@ import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
-    auditConnectionDeleted,
-    auditConnectionMetadataUpdated,
-    auditConnectionUpdated,
-    auditFunctionDeleted,
-    auditIntegrationDeleted,
-    auditIntegrationUpdated,
-    auditSyncFrequencyChanged,
+    auditPublicConnectionDeleted,
+    auditPublicConnectionMetadataSet,
+    auditPublicConnectionMetadataUpdated,
+    auditPublicConnectionUpdated,
+    auditPublicFunctionDeleted,
+    auditPublicIntegrationDeleted,
+    auditPublicIntegrationUpdated,
+    auditPublicSyncFrequencyChanged,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit.middleware.js';
@@ -223,18 +224,20 @@ publicAPI
     .get(connectSessionOrApiAuth, withAnyScope('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(apiAuth, withScope('environment:integrations:create'), postPublicIntegration);
 publicAPI.route('/integrations/quickstart').post(apiAuth, withScope('environment:integrations:create'), postPublicQuickstartIntegration);
-publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, auditIntegrationUpdated, withScope('environment:integrations:update'), patchPublicIntegration);
+publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, auditPublicIntegrationUpdated, withScope('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
 
-publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, auditIntegrationDeleted, withScope('environment:integrations:delete'), deletePublicIntegration);
+publicAPI
+    .route('/integrations/:uniqueKey')
+    .delete(apiAuth, auditPublicIntegrationDeleted, withScope('environment:integrations:delete'), deletePublicIntegration);
 publicAPI.route('/integrations/:uniqueKey/functions/:name/code').get(apiAuth, withScope('environment:functions:read'), getFunctionCode);
 publicAPI.route('/integrations/:uniqueKey/functions').get(apiAuth, withScope('environment:functions:list'), getPublicIntegrationFunctions);
 publicAPI
     .route('/integrations/:uniqueKey/functions/:name')
     .get(apiAuth, withScope('environment:functions:read'), getPublicIntegrationFunction)
-    .delete(apiAuth, auditFunctionDeleted, withScope('environment:functions:delete'), deletePublicIntegrationFunction);
+    .delete(apiAuth, auditPublicFunctionDeleted, withScope('environment:functions:delete'), deletePublicIntegrationFunction);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
@@ -245,13 +248,13 @@ publicAPI
 // @deprecated
 publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 // @deprecated
-publicAPI.route('/connection/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connection/:connectionId').delete(apiAuth, auditPublicConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
     .post(
         apiAuth,
-        auditConnectionMetadataUpdated,
+        auditPublicConnectionMetadataSet,
         withScope('environment:connections:update'),
         connectionController.setMetadataLegacy.bind(connectionController)
     );
@@ -260,14 +263,14 @@ publicAPI
     .route('/connection/:connectionId/metadata')
     .patch(
         apiAuth,
-        auditConnectionMetadataUpdated,
+        auditPublicConnectionMetadataUpdated,
         withScope('environment:connections:update'),
         connectionController.updateMetadataLegacy.bind(connectionController)
     );
 // @deprecated
-publicAPI.route('/connection/metadata').post(apiAuth, auditConnectionMetadataUpdated, withScope('environment:connections:update'), postPublicMetadata);
+publicAPI.route('/connection/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
 // @deprecated
-publicAPI.route('/connection/metadata').patch(apiAuth, auditConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connection/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
 // @deprecated
 publicAPI.route('/connection').post(apiAuth, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
 
@@ -275,13 +278,15 @@ publicAPI.route('/connection').post(apiAuth, withScope('environment:connections:
 publicAPI.use('/connections', jsonContentTypeMiddleware);
 publicAPI.route('/connections').post(apiAuth, withScope('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-publicAPI.route('/connections/metadata').post(apiAuth, auditConnectionMetadataUpdated, withScope('environment:connections:update'), postPublicMetadata);
-publicAPI.route('/connections/metadata').patch(apiAuth, auditConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connections/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
 publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
-publicAPI.route('/connections/:connectionId').patch(apiAuth, auditConnectionUpdated, withScope('environment:connections:update'), patchPublicConnection);
-publicAPI.route('/connections/:connectionId').delete(apiAuth, auditConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
+publicAPI.route('/connections/:connectionId').patch(apiAuth, auditPublicConnectionUpdated, withScope('environment:connections:update'), patchPublicConnection);
+publicAPI
+    .route('/connections/:connectionId')
+    .delete(apiAuth, auditPublicConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
@@ -298,7 +303,9 @@ publicAPI.use('/cli', jsonContentTypeMiddleware);
 publicAPI.route('/cli/telemetry').post(rateLimiterMiddleware, postCliTelemetry);
 
 // Syncs
-publicAPI.route('/sync/update-connection-frequency').put(apiAuth, auditSyncFrequencyChanged, withScope('environment:syncs:update'), putSyncConnectionFrequency);
+publicAPI
+    .route('/sync/update-connection-frequency')
+    .put(apiAuth, auditPublicSyncFrequencyChanged, withScope('environment:syncs:update'), putSyncConnectionFrequency);
 
 // Records
 publicAPI.use('/records', jsonContentTypeMiddleware);

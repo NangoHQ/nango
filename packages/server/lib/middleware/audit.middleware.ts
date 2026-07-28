@@ -203,17 +203,57 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
     };
 }
 
+// The deprecated single-connection metadata routes (POST/PATCH /connection/:connectionId/metadata)
+// reuse the batch SetMetadata/UpdateMetadata endpoints but carry the connection in the path/query
+// instead of the body. Those routes have no typed contract (their controllers take a raw Request), so
+// these two reads stay untyped — the batch body fields they fall back to ARE typed on the resolver.
 function param(req: Request<any, any, any, any>, key: string): unknown {
     return (req.params as Record<string, unknown>)[key];
 }
 function query(req: Request<any, any, any, any>, key: string): unknown {
     return (req.query as Record<string, unknown>)[key];
 }
-function bodyField(req: Request<any, any, any, any>, key: string): unknown {
-    return req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>)[key] : undefined;
-}
 function providerConfigKeyMeta(value: unknown): { providerConfigKey: string } | undefined {
     return typeof value === 'string' && value.length > 0 ? { providerConfigKey: value } : undefined;
+}
+// The batch metadata endpoints accept connection_id as an array (body) — record one target per
+// connection; the deprecated single-connection routes carry it in the path instead.
+function connectionTargets(paramId: unknown, bodyId: string | string[] | undefined): AuditTarget | AuditTarget[] | undefined {
+    if (Array.isArray(bodyId)) {
+        return bodyId.map((id) => makeTarget('connection', id)).filter((t): t is AuditTarget => Boolean(t));
+    }
+    return makeTarget('connection', paramId ?? bodyId);
+}
+function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: string[] | undefined): Record<string, unknown> | undefined {
+    const meta: { providerConfigKey?: string; changedFields?: string[] } = {};
+    if (providerConfigKey && providerConfigKey.length > 0) {
+        meta.providerConfigKey = providerConfigKey;
+    }
+    if (fields) {
+        meta.changedFields = fields;
+    }
+    return Object.keys(meta).length > 0 ? meta : undefined;
+}
+function syncFrequencyMeta(frequency: string | null | undefined, providerConfigKey: string | undefined): Record<string, unknown> | undefined {
+    const meta: { providerConfigKey?: string; frequency?: string } = {};
+    if (typeof frequency === 'string') {
+        meta.frequency = frequency;
+    }
+    if (typeof providerConfigKey === 'string') {
+        meta.providerConfigKey = providerConfigKey;
+    }
+    return Object.keys(meta).length > 0 ? meta : undefined;
+}
+function functionDeletedMeta(providerConfigKey: string | undefined, type: string | undefined): Record<string, unknown> | undefined {
+    const meta: { providerConfigKey?: string; type?: string } = {};
+    if (providerConfigKey && providerConfigKey.length > 0) {
+        meta.providerConfigKey = providerConfigKey;
+    }
+    // A sync and an action can share a name; `type` disambiguates which function was deleted.
+    if (type) {
+        meta.type = type;
+    }
+    return Object.keys(meta).length > 0 ? meta : undefined;
 }
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
 // query string, or userinfo, and this goes into the immutable audit record.
@@ -240,8 +280,8 @@ function changedFields(req: Request<any, any, any, any>): string[] | undefined {
         .slice(0, CHANGED_FIELDS_MAX);
     return keys.length > 0 ? keys : undefined;
 }
-async function memberTarget(req: AuditRequest<Endpoint<any>>, locals: RequestLocals): Promise<AuditTarget | undefined> {
-    const id = toId(param(req, 'id'));
+async function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Promise<AuditTarget | undefined> {
+    const id = toId(req.params.id);
     if (!id) {
         return undefined;
     }
@@ -292,100 +332,122 @@ export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
     resource: 'connection',
     action: 'refreshed',
     scope: 'environment',
-    target: (req) => makeTarget('connection', param(req, 'connectionId')),
-    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key'))
+    target: (req) => makeTarget('connection', req.params.connectionId),
+    metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
 });
-export const auditConnectionUpdated = auditable<PatchConnection | PatchPublicConnection>({
+export const auditConnectionUpdated = auditable<PatchConnection>({
     resource: 'connection',
     action: 'updated',
     scope: 'environment',
-    target: (req) => makeTarget('connection', param(req, 'connectionId')),
-    metadata: (req) => {
-        const meta: { providerConfigKey?: string; changedFields?: string[] } = {};
-        const providerConfigKey = query(req, 'provider_config_key');
-        if (typeof providerConfigKey === 'string' && providerConfigKey.length > 0) {
-            meta.providerConfigKey = providerConfigKey;
-        }
-        const fields = changedFields(req);
-        if (fields) {
-            meta.changedFields = fields;
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    target: (req) => makeTarget('connection', req.params.connectionId),
+    metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req))
 });
-export const auditConnectionMetadataUpdated = auditable<PostConnectionMetadata | SetMetadata | UpdateMetadata>({
+export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({
+    resource: 'connection',
+    action: 'updated',
+    scope: 'environment',
+    target: (req) => makeTarget('connection', req.params.connectionId),
+    metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req))
+});
+export const auditConnectionMetadataUpdated = auditable<PostConnectionMetadata>({
+    resource: 'connection',
+    action: 'metadata_updated',
+    scope: 'environment',
+    target: (req) => makeTarget('connection', req.params.connectionId),
+    metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
+});
+export const auditPublicConnectionMetadataSet = auditable<SetMetadata>({
     resource: 'connection',
     action: 'metadata_updated',
     scope: 'environment',
     // The batch metadata endpoints accept connection_id as an array — record one target per connection.
-    target: (req) => {
-        const fromBody = bodyField(req, 'connection_id');
-        if (Array.isArray(fromBody)) {
-            return fromBody.map((id) => makeTarget('connection', id)).filter((t): t is AuditTarget => Boolean(t));
-        }
-        return makeTarget('connection', param(req, 'connectionId') ?? fromBody);
-    },
-    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? bodyField(req, 'provider_config_key'))
+    target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
+    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
 });
-export const auditConnectionDeleted = auditable<DeleteConnection | DeletePublicConnection>({
+export const auditPublicConnectionMetadataUpdated = auditable<UpdateMetadata>({
+    resource: 'connection',
+    action: 'metadata_updated',
+    scope: 'environment',
+    target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
+    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
+});
+export const auditConnectionDeleted = auditable<DeleteConnection>({
     resource: 'connection',
     action: 'deleted',
     scope: 'environment',
-    target: (req) => makeTarget('connection', param(req, 'connectionId')),
-    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key'))
+    target: (req) => makeTarget('connection', req.params.connectionId),
+    metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
+});
+export const auditPublicConnectionDeleted = auditable<DeletePublicConnection>({
+    resource: 'connection',
+    action: 'deleted',
+    scope: 'environment',
+    target: (req) => makeTarget('connection', req.params.connectionId),
+    metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
 });
 
-export const auditIntegrationUpdated = auditable<PatchIntegration | PatchPublicIntegration>({
+export const auditIntegrationUpdated = auditable<PatchIntegration>({
     resource: 'integration',
     action: 'updated',
     scope: 'environment',
-    target: (req) => makeTarget('integration', param(req, 'providerConfigKey') ?? param(req, 'uniqueKey')),
+    target: (req) => makeTarget('integration', req.params.providerConfigKey),
     metadata: (req) => {
         const fields = changedFields(req);
         return fields ? { changedFields: fields } : undefined;
     }
 });
-export const auditIntegrationDeleted = auditable<DeleteIntegration | DeletePublicIntegration>({
+export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
+    resource: 'integration',
+    action: 'updated',
+    scope: 'environment',
+    target: (req) => makeTarget('integration', req.params.uniqueKey),
+    metadata: (req) => {
+        const fields = changedFields(req);
+        return fields ? { changedFields: fields } : undefined;
+    }
+});
+export const auditIntegrationDeleted = auditable<DeleteIntegration>({
     resource: 'integration',
     action: 'deleted',
     scope: 'environment',
-    target: (req) => makeTarget('integration', param(req, 'providerConfigKey') ?? param(req, 'uniqueKey'))
+    target: (req) => makeTarget('integration', req.params.providerConfigKey)
+});
+export const auditPublicIntegrationDeleted = auditable<DeletePublicIntegration>({
+    resource: 'integration',
+    action: 'deleted',
+    scope: 'environment',
+    target: (req) => makeTarget('integration', req.params.uniqueKey)
 });
 
-export const auditFunctionDeleted = auditable<DeleteIntegrationFunction | DeletePublicIntegrationFunction>({
+export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({
     resource: 'function',
     action: 'deleted',
     scope: 'environment',
-    target: (req) => makeTarget('function', param(req, 'functionName') ?? param(req, 'name')),
-    metadata: (req) => {
-        const meta: { providerConfigKey?: string; type?: string } = {};
-        const providerConfigKey = param(req, 'providerConfigKey') ?? param(req, 'uniqueKey');
-        if (typeof providerConfigKey === 'string' && providerConfigKey.length > 0) {
-            meta.providerConfigKey = providerConfigKey;
-        }
-        // A sync and an action can share a name; `type` disambiguates which function was deleted.
-        const type = query(req, 'type');
-        if (typeof type === 'string') {
-            meta.type = type;
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    target: (req) => makeTarget('function', req.params.functionName),
+    metadata: (req) => functionDeletedMeta(req.params.providerConfigKey, req.query.type)
+});
+export const auditPublicFunctionDeleted = auditable<DeletePublicIntegrationFunction>({
+    resource: 'function',
+    action: 'deleted',
+    scope: 'environment',
+    target: (req) => makeTarget('function', req.params.name),
+    metadata: (req) => functionDeletedMeta(req.params.uniqueKey, req.query.type)
 });
 
 export const auditApiKeyUpdated = auditable<PatchApiKey>({
     resource: 'api_key',
     action: 'updated',
     scope: 'environment',
-    target: (req, locals) => apiKeyTarget(param(req, 'keyId'), locals),
+    target: (req, locals) => apiKeyTarget(req.params.keyId, locals),
     metadata: (req) => {
         const meta: { displayName?: string; scopes?: string[] } = {};
-        const displayName = bodyField(req, 'display_name');
+        const displayName = req.body.display_name;
         if (typeof displayName === 'string') {
             meta.displayName = displayName;
         }
-        const scopes = bodyField(req, 'scopes');
+        const scopes = req.body.scopes;
         if (Array.isArray(scopes)) {
-            meta.scopes = scopes.filter((s): s is string => typeof s === 'string');
+            meta.scopes = scopes.filter((s) => typeof s === 'string');
         }
         return Object.keys(meta).length > 0 ? meta : undefined;
     }
@@ -394,59 +456,50 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     resource: 'api_key',
     action: 'deleted',
     scope: 'environment',
-    target: (req, locals) => apiKeyTarget(param(req, 'keyId'), locals)
+    target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
 });
 
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
     resource: 'sync',
     action: 'enabled',
     scope: 'environment',
-    target: (req, locals) => syncTarget(param(req, 'id'), locals)
+    target: (req, locals) => syncTarget(req.params.id, locals)
 });
 export const auditSyncDisabled = auditable<PatchFlowDisable>({
     resource: 'sync',
     action: 'disabled',
     scope: 'environment',
-    target: (req, locals) => syncTarget(param(req, 'id'), locals)
+    target: (req, locals) => syncTarget(req.params.id, locals)
 });
-export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency | PutPublicSyncConnectionFrequency>({
+export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency>({
     resource: 'sync',
     action: 'frequency_changed',
     scope: 'environment',
-    target: (req, locals) => syncTarget(param(req, 'id') ?? bodyField(req, 'sync_name'), locals),
-    metadata: (req) => {
-        const meta: { providerConfigKey?: string; frequency?: string } = {};
-        const frequency = bodyField(req, 'frequency');
-        if (typeof frequency === 'string') {
-            meta.frequency = frequency;
-        }
-        // Private route sends camelCase `providerConfigKey`; public route sends snake_case.
-        const providerConfigKey = bodyField(req, 'providerConfigKey') ?? bodyField(req, 'provider_config_key');
-        if (typeof providerConfigKey === 'string') {
-            meta.providerConfigKey = providerConfigKey;
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    target: (req, locals) => syncTarget(req.params.id, locals),
+    // Private route sends camelCase `providerConfigKey`.
+    metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.providerConfigKey)
+});
+export const auditPublicSyncFrequencyChanged = auditable<PutPublicSyncConnectionFrequency>({
+    resource: 'sync',
+    action: 'frequency_changed',
+    scope: 'environment',
+    target: (req, locals) => syncTarget(req.body.sync_name, locals),
+    // Public route sends snake_case `provider_config_key`.
+    metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.provider_config_key)
 });
 export const auditSyncVariantCreated = auditable<PostSyncVariant>({
     resource: 'sync',
     action: 'variant_created',
     scope: 'environment',
-    target: (req) => makeTarget('sync', param(req, 'name')),
-    metadata: (req) => {
-        const variant = param(req, 'variant');
-        return typeof variant === 'string' ? { variant } : undefined;
-    }
+    target: (req) => makeTarget('sync', req.params.name),
+    metadata: (req) => ({ variant: req.params.variant })
 });
 export const auditSyncVariantDeleted = auditable<DeleteSyncVariant>({
     resource: 'sync',
     action: 'variant_deleted',
     scope: 'environment',
-    target: (req) => makeTarget('sync', param(req, 'name')),
-    metadata: (req) => {
-        const variant = param(req, 'variant');
-        return typeof variant === 'string' ? { variant } : undefined;
-    }
+    target: (req) => makeTarget('sync', req.params.name),
+    metadata: (req) => ({ variant: req.params.variant })
 });
 
 export const auditMemberRemoved = auditable<DeleteTeamUser>({
@@ -462,11 +515,11 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     target: memberTarget,
     metadata: async (req, locals) => {
         const meta: { fromRole?: string; toRole?: string } = {};
-        const role = bodyField(req, 'role');
+        const role = req.body.role;
         if (typeof role === 'string') {
             meta.toRole = role;
         }
-        const id = toId(param(req, 'id'));
+        const id = toId(req.params.id);
         if (id && locals.account) {
             const accountId = locals.account.id;
             const fromRole = await resolveDisplay('member', async () => {
@@ -486,7 +539,7 @@ export const auditTeamUpdated = auditable<PutTeam>({
     scope: 'account',
     target: (_req, locals) => makeTarget('team', locals.account?.id, locals.account?.name),
     metadata: (req) => {
-        const name = bodyField(req, 'name');
+        const name = req.body.name;
         return typeof name === 'string' ? { name } : undefined;
     }
 });
@@ -510,7 +563,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) => {
         const meta: { name?: string; changedFields?: string[] } = {};
-        const name = bodyField(req, 'name');
+        const name = req.body.name;
         if (typeof name === 'string') {
             meta.name = name;
         }
@@ -527,7 +580,7 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
     scope: 'environment',
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) => {
-        const variables = bodyField(req, 'variables');
+        const variables = req.body.variables;
         if (!Array.isArray(variables)) {
             return undefined;
         }
@@ -544,11 +597,11 @@ export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) => {
         const meta: { primaryUrl?: string; secondaryUrl?: string } = {};
-        const primaryUrl = safeUrl(bodyField(req, 'primary_url'));
+        const primaryUrl = safeUrl(req.body.primary_url);
         if (primaryUrl) {
             meta.primaryUrl = primaryUrl;
         }
-        const secondaryUrl = safeUrl(bodyField(req, 'secondary_url'));
+        const secondaryUrl = safeUrl(req.body.secondary_url);
         if (secondaryUrl) {
             meta.secondaryUrl = secondaryUrl;
         }
@@ -562,7 +615,7 @@ export const auditBillingPlanChanged = auditable<PostPlanChange>({
     scope: 'account',
     metadata: (req, locals) => {
         const meta: { fromPlan?: string; toPlan?: string } = {};
-        const orbId = bodyField(req, 'orbId');
+        const orbId = req.body.orbId;
         if (typeof orbId === 'string') {
             meta.toPlan = orbId;
         }
