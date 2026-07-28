@@ -13,6 +13,18 @@ interface OAuth1RequestTokenResult {
     parsed_query_string: any;
 }
 
+// Signature of node-oauth's private `_performSecureRequest`, which we wrap to validate each redirect hop.
+type PerformSecureRequest = (
+    oauthToken: string | null,
+    oauthTokenSecret: string | null,
+    method: string,
+    url: string,
+    extraParams: Record<string, any> | null,
+    postBody: string | Buffer | null,
+    postContentType: string | undefined,
+    callback?: (err: unknown, data?: any, res?: any) => void
+) => http.ClientRequest | undefined;
+
 // The choice of OAuth 1.0a libraries for node is not exactly great:
 // There are a half-dozen around but none of the is really maintained anymore (no surprise, OAuth 1.0 is officially deprecated)
 // We still need to support it though because a few dozen important services are still using it, e.g. Twitter, Etsy, Sellsy, Trello
@@ -51,16 +63,14 @@ export class OAuth1Client {
         this.client.setClientOptions({
             requestTokenHttpMethod: this.authConfig.request_http_method || 'POST',
             accessTokenHttpMethod: this.authConfig.token_http_method || 'POST',
-            // Do not auto-follow redirects: node-oauth follows `Location` without any policy check, so a
-            // request/access-token URL that 3xx-redirects could be pointed at an internal host. Token
-            // endpoints don't legitimately redirect, so refusing to follow is safe and closes that hole.
-            followRedirects: false
+            // Keep following 301/302 redirects (some OAuth1 token endpoints legitimately redirect), but every
+            // hop is validated against the OAuth egress policy via the `_performSecureRequest` wrapper below.
+            followRedirects: true
         });
 
         // node-oauth builds its request with a bare `http`/`https` client and no agent, so it never runs the
         // OAuth egress DNS-pinning lookup. Override the client factory to inject the OAuth-safe agents, which
-        // resolve + pin the connected IP and reject blocked addresses (rebinding-safe). Combined with the
-        // `assertSafeOAuthUrl` pre-flight below, this brings OAuth1 in line with the other auth modes.
+        // resolve + pin the connected IP and reject blocked addresses (rebinding-safe on the connect path).
         const { httpAgent, httpsAgent } = getOAuthSafeHttpAgents();
         const createSafeClient = (
             port: number,
@@ -75,6 +85,30 @@ export class OAuth1Client {
         };
         // @ts-expect-error `_createClient` is a private method of node-oauth that we override to pin egress.
         this.client._createClient = createSafeClient;
+
+        // node-oauth follows redirects by re-invoking `_performSecureRequest` with the `Location` URL
+        // (see oauth.js), so wrapping it lets us validate every hop — the initial request and each redirect
+        // target — against the OAuth egress policy. A blocked hop is surfaced through node-oauth's error
+        // callback (which rejects the wrapping promise) rather than thrown, since redirects are followed from
+        // an async response handler where a synchronous throw would go uncaught.
+        // @ts-expect-error `_performSecureRequest` is a private node-oauth method.
+        const originalPerformSecureRequest = this.client._performSecureRequest.bind(this.client) as PerformSecureRequest;
+        const performGuardedRequest: PerformSecureRequest = (oauthToken, oauthTokenSecret, method, url, extraParams, postBody, postContentType, callback) => {
+            // Streaming (no-callback) requests aren't used by this client; delegate untouched.
+            if (!callback) {
+                return originalPerformSecureRequest(oauthToken, oauthTokenSecret, method, url, extraParams, postBody, postContentType, callback);
+            }
+            assertSafeOAuthUrl(url)
+                .then(() => {
+                    originalPerformSecureRequest(oauthToken, oauthTokenSecret, method, url, extraParams, postBody, postContentType, callback);
+                })
+                .catch((err: unknown) => {
+                    callback(err);
+                });
+            return undefined;
+        };
+        // @ts-expect-error `_performSecureRequest` is a private node-oauth method we wrap to guard every hop.
+        this.client._performSecureRequest = performGuardedRequest;
     }
 
     async getOAuthRequestToken(): Promise<OAuth1RequestTokenResult> {

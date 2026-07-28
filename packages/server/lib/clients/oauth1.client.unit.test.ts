@@ -1,9 +1,10 @@
 import http from 'node:http';
 import https from 'node:https';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import oAuth1 from 'oauth';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { assertSafeOAuthUrl } from '@nangohq/shared';
+import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '@nangohq/shared';
 
 import { extractQueryParams, OAuth1Client } from './oauth1.client.js';
 
@@ -14,12 +15,18 @@ import type { AddressInfo } from 'node:net';
 // OAuth1 token calls run through node-oauth, which we pin to the OAuth-safe agents and gate with
 // `assertSafeOAuthUrl`. Neutralise the egress policy here so a loopback test server is reachable
 // (loopback is always blocked by the real policy) while still exercising the guarded flow.
+// The agents are stable singletons so the internal-wiring tests can assert the exact instances
+// node-oauth was pinned to.
 vi.mock('@nangohq/shared', async (importOriginal) => {
     const actual = await importOriginal<typeof NangoShared>();
+    const nodeHttp = await import('node:http');
+    const nodeHttps = await import('node:https');
+    const httpAgent = new nodeHttp.Agent();
+    const httpsAgent = new nodeHttps.Agent();
     return {
         ...actual,
         assertSafeOAuthUrl: vi.fn((url: string) => Promise.resolve(new URL(url))),
-        getOAuthSafeHttpAgents: vi.fn(() => ({ httpAgent: new http.Agent(), httpsAgent: new https.Agent() }))
+        getOAuthSafeHttpAgents: vi.fn(() => ({ httpAgent, httpsAgent }))
     };
 });
 
@@ -48,6 +55,32 @@ function makeProvider(overrides: Partial<ProviderOAuth1>): ProviderOAuth1 {
     } as ProviderOAuth1;
 }
 
+// The private node-oauth members OAuth1Client overrides to enforce egress. Declared here so the
+// internal-wiring tests below have a typed handle on them and fail loudly if node-oauth changes them.
+interface NodeOAuthInternals {
+    _createClient: (port: number, hostname: string, method: string, path: string, headers: http.OutgoingHttpHeaders, sslEnabled: boolean) => http.ClientRequest;
+    _performSecureRequest: (
+        oauthToken: string | null,
+        oauthTokenSecret: string | null,
+        method: string,
+        url: string,
+        extraParams: Record<string, unknown> | null,
+        postBody: string | Buffer | null,
+        postContentType: string | undefined,
+        callback?: (err: unknown, data?: unknown, res?: unknown) => void
+    ) => http.ClientRequest | undefined;
+}
+
+function getNodeOAuthInternals(client: OAuth1Client): NodeOAuthInternals {
+    return (client as unknown as { client: NodeOAuthInternals }).client;
+}
+
+/** Minimal ClientRequest stand-in so factory/streaming tests never open a real socket. */
+function fakeClientRequest(): http.ClientRequest {
+    const stub = { on: () => stub, write: () => true, end: () => undefined, destroy: () => undefined };
+    return stub as unknown as http.ClientRequest;
+}
+
 describe('oauth1', () => {
     it('should extract query params', () => {
         const res = extractQueryParams('baz=bar&foo=bar');
@@ -61,6 +94,10 @@ describe('oauth1', () => {
 });
 
 describe('OAuth1Client egress', () => {
+    beforeEach(() => {
+        // Reset to the permissive default; individual tests override with rejections for blocked hops.
+        vi.mocked(assertSafeOAuthUrl).mockImplementation((url: string) => Promise.resolve(new URL(url)));
+    });
     afterEach(() => {
         vi.clearAllMocks();
     });
@@ -120,5 +157,183 @@ describe('OAuth1Client egress', () => {
                 expect(serverHit).toBe(false);
             }
         );
+    });
+
+    it('follows a 302 redirect on the request-token endpoint, validating each hop', async () => {
+        await withServer(
+            (req, res) => {
+                if (req.url === '/request') {
+                    // node-oauth follows 301/302 by re-requesting the absolute Location.
+                    res.writeHead(302, { location: `http://${req.headers.host}/request-final` });
+                    res.end();
+                    return;
+                }
+                res.writeHead(200, { 'content-type': 'application/x-www-form-urlencoded' });
+                res.end('oauth_token=redirected-token&oauth_token_secret=redirected-secret&oauth_callback_confirmed=true');
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/request`, token_url: `${baseUrl}/access` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+                const result = await client.getOAuthRequestToken();
+
+                // The redirect was followed rather than surfaced as a token error.
+                expect(result.request_token).toBe('redirected-token');
+                // Both the original URL and the redirect target were validated.
+                expect(assertSafeOAuthUrl).toHaveBeenCalledWith(`${baseUrl}/request`);
+                expect(assertSafeOAuthUrl).toHaveBeenCalledWith(`${baseUrl}/request-final`);
+            }
+        );
+    });
+
+    it('rejects a redirect whose target is blocked by policy without following it', async () => {
+        // Permit the initial endpoint, but block the redirect target (e.g. cloud metadata).
+        vi.mocked(assertSafeOAuthUrl).mockImplementation((url: string) =>
+            url.includes('169.254.169.254') ? Promise.reject(new Error('URL resolves to a blocked address')) : Promise.resolve(new URL(url))
+        );
+        await withServer(
+            (_req, res) => {
+                res.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data/' });
+                res.end();
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/request`, token_url: `${baseUrl}/access` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+                await expect(client.getOAuthRequestToken()).rejects.toThrow();
+                expect(assertSafeOAuthUrl).toHaveBeenCalledWith('http://169.254.169.254/latest/meta-data/');
+            }
+        );
+    });
+});
+
+// These tests deliberately reach into node-oauth's private `_createClient` / `_performSecureRequest`
+// members because that is exactly the surface our egress hardening overrides. They document and lock in
+// the internal contract we depend on, so a node-oauth upgrade that renames, removes, or reshapes those
+// members (which would silently bypass DNS pinning / per-hop URL validation) fails here instead.
+describe('OAuth1Client node-oauth internal wiring', () => {
+    beforeEach(() => {
+        vi.mocked(assertSafeOAuthUrl).mockImplementation((url: string) => Promise.resolve(new URL(url)));
+    });
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('depends on node-oauth private members that still exist on the prototype', () => {
+        const proto = oAuth1.OAuth.prototype as unknown as Partial<NodeOAuthInternals>;
+        expect(typeof proto._createClient).toBe('function');
+        expect(typeof proto._performSecureRequest).toBe('function');
+    });
+
+    it('replaces _createClient and _performSecureRequest on the constructed instance', () => {
+        const provider = makeProvider({ request_url: 'https://example.com/request', token_url: 'https://example.com/access' });
+        const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+        const proto = oAuth1.OAuth.prototype as unknown as NodeOAuthInternals;
+        const internals = getNodeOAuthInternals(client);
+
+        expect(typeof internals._createClient).toBe('function');
+        expect(typeof internals._performSecureRequest).toBe('function');
+        // The instance members must be our overrides, not node-oauth's originals.
+        expect(internals._createClient).not.toBe(proto._createClient);
+        expect(internals._performSecureRequest).not.toBe(proto._performSecureRequest);
+    });
+
+    it('_createClient pins every request (http + https) to the injected OAuth-safe agents', () => {
+        const provider = makeProvider({ request_url: 'https://example.com/request', token_url: 'https://example.com/access' });
+        const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+        const internals = getNodeOAuthInternals(client);
+        const { httpAgent, httpsAgent } = getOAuthSafeHttpAgents();
+
+        const httpsSpy = vi.spyOn(https, 'request').mockReturnValue(fakeClientRequest());
+        const httpSpy = vi.spyOn(http, 'request').mockReturnValue(fakeClientRequest());
+
+        try {
+            internals._createClient(443, 'example.com', 'POST', '/access', { 'x-test': '1' }, true);
+            internals._createClient(80, 'example.com', 'GET', '/request', {}, false);
+
+            expect(httpsSpy).toHaveBeenCalledWith(
+                expect.objectContaining({ host: 'example.com', port: 443, path: '/access', method: 'POST', agent: httpsAgent })
+            );
+            expect(httpSpy).toHaveBeenCalledWith(expect.objectContaining({ host: 'example.com', port: 80, path: '/request', method: 'GET', agent: httpAgent }));
+        } finally {
+            httpsSpy.mockRestore();
+            httpSpy.mockRestore();
+        }
+    });
+
+    it('the _performSecureRequest wrapper validates the hop, then delegates to node-oauth (callback path)', async () => {
+        await withServer(
+            (_req, res) => {
+                res.writeHead(200, { 'content-type': 'application/x-www-form-urlencoded' });
+                res.end('delegated=yes');
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/request`, token_url: `${baseUrl}/access` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+                const url = `${baseUrl}/secure`;
+
+                const data = await new Promise<string>((resolve, reject) => {
+                    getNodeOAuthInternals(client)._performSecureRequest(null, null, 'GET', url, null, '', undefined, (err, body) =>
+                        err ? reject(err as Error) : resolve(body as string)
+                    );
+                });
+
+                // The wrapper ran the policy check and the original node-oauth implementation issued the request.
+                expect(data).toBe('delegated=yes');
+                expect(assertSafeOAuthUrl).toHaveBeenCalledWith(url);
+            }
+        );
+    });
+
+    it('the _performSecureRequest wrapper surfaces a blocked hop via the callback without issuing a request', async () => {
+        vi.mocked(assertSafeOAuthUrl).mockRejectedValueOnce(new Error('URL resolves to a blocked address'));
+        let serverHit = false;
+        await withServer(
+            (_req, res) => {
+                serverHit = true;
+                res.end('should-not-happen');
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/request`, token_url: `${baseUrl}/access` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+                const error = await new Promise<unknown>((resolve) => {
+                    getNodeOAuthInternals(client)._performSecureRequest(null, null, 'GET', `${baseUrl}/blocked`, null, '', undefined, (err) => resolve(err));
+                });
+
+                expect(error).toBeInstanceOf(Error);
+                // The guard short-circuits before node-oauth issues the request.
+                expect(serverHit).toBe(false);
+            }
+        );
+    });
+
+    it('the _performSecureRequest wrapper delegates streaming (no-callback) requests untouched, skipping validation', () => {
+        const provider = makeProvider({ request_url: 'https://example.com/request', token_url: 'https://example.com/access' });
+        const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+        const fakeRequest = fakeClientRequest();
+        const httpSpy = vi.spyOn(http, 'request').mockReturnValue(fakeRequest);
+
+        try {
+            const returned = getNodeOAuthInternals(client)._performSecureRequest(
+                null,
+                null,
+                'GET',
+                'http://example.com/stream',
+                null,
+                '',
+                undefined,
+                undefined
+            );
+
+            // No callback => the wrapper must not run the async policy check; it simply hands off to node-oauth.
+            expect(assertSafeOAuthUrl).not.toHaveBeenCalled();
+            expect(httpSpy).toHaveBeenCalledOnce();
+            expect(returned).toBe(fakeRequest);
+        } finally {
+            httpSpy.mockRestore();
+        }
     });
 });

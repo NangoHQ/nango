@@ -239,8 +239,9 @@ describe('getAwsSigV4Settings', () => {
 
 describe('fetchAwsTemporaryCredentials', () => {
     afterEach(() => {
+        // Restores the per-test axios spy created via vi.spyOn; the factory vi.fn mocks keep their default
+        // implementations and their (assertion-irrelevant) call history across tests.
         vi.restoreAllMocks();
-        vi.clearAllMocks();
     });
 
     const input = { roleArn: 'arn:aws:iam::123456789012:role/TestRole', externalId: 'external-123', region: 'us-east-1' };

@@ -45,7 +45,9 @@ export async function createCredentials({
 
     try {
         // Route the login/session call through the OAuth egress policy: validate the token URL and pin the
-        // connected IP so a self-hosted or misconfigured token_url can't be used to reach internal hosts.
+        // connected IP. Note the OAuth policy intentionally allows private/RFC1918 destinations by default
+        // (so self-hosted Bill gateways keep working) — it blocks loopback, link-local/cloud-metadata, and
+        // denylisted hosts, not all internal addresses.
         await assertSafeOAuthUrl(provider.token_url);
         const response = await axios.post(provider.token_url, postBody, {
             headers,
