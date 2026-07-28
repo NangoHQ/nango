@@ -19,6 +19,15 @@ type EnvRecord = Record<string, string | undefined>;
 
 const PEM_PREFIX = '-----BEGIN';
 
+// The base64 alphabet has no '-', so this also tells an encoded blob apart from a raw one.
+function containsPem(value: string): boolean {
+    return value.includes(PEM_PREFIX);
+}
+
+/**
+ * Every branch returns trimmed content so the same certificate resolves identically whether it
+ * arrives as raw PEM, base64 PEM, or a file.
+ */
 function resolveAsset(env: EnvRecord, name: string): string | undefined {
     const inlineVar = `NANGO_INTERNAL_TLS_${name}`;
     const fileVar = `${inlineVar}_FILE`;
@@ -32,11 +41,11 @@ function resolveAsset(env: EnvRecord, name: string): string | undefined {
     if (file) {
         let content: string;
         try {
-            content = readFileSync(file, 'utf8');
+            content = readFileSync(file, 'utf8').trim();
         } catch (err) {
             throw new Error(`Unable to read ${fileVar} at '${file}'`, { cause: err });
         }
-        if (!content.includes(PEM_PREFIX)) {
+        if (!containsPem(content)) {
             throw new Error(`${fileVar} at '${file}' does not contain a PEM block`);
         }
         return content;
@@ -46,12 +55,12 @@ function resolveAsset(env: EnvRecord, name: string): string | undefined {
         return undefined;
     }
 
-    if (inline.startsWith(PEM_PREFIX)) {
+    if (containsPem(inline)) {
         return inline;
     }
 
-    const decoded = Buffer.from(inline, 'base64').toString('utf8');
-    if (!decoded.startsWith(PEM_PREFIX)) {
+    const decoded = Buffer.from(inline, 'base64').toString('utf8').trim();
+    if (!containsPem(decoded)) {
         throw new Error(`${inlineVar} is neither a PEM block nor base64-encoded PEM`);
     }
     return decoded;

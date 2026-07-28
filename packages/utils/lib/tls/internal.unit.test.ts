@@ -42,7 +42,7 @@ describe('loadInternalTlsOptions', () => {
             NANGO_INTERNAL_TLS_CERT: Buffer.from(CERT_PEM).toString('base64'),
             NANGO_INTERNAL_TLS_KEY: Buffer.from(KEY_PEM).toString('base64')
         });
-        expect(res).toEqual({ cert: CERT_PEM, key: KEY_PEM });
+        expect(res).toEqual({ cert: CERT_PEM.trim(), key: KEY_PEM.trim() });
     });
 
     it('should read from files', () => {
@@ -51,7 +51,30 @@ describe('loadInternalTlsOptions', () => {
             NANGO_INTERNAL_TLS_KEY_FILE: writeTemp('tls.key', KEY_PEM),
             NANGO_INTERNAL_TLS_CA_FILE: writeTemp('ca.crt', CA_PEM)
         });
-        expect(res).toEqual({ cert: CERT_PEM, key: KEY_PEM, ca: CA_PEM });
+        expect(res).toEqual({ cert: CERT_PEM.trim(), key: KEY_PEM.trim(), ca: CA_PEM.trim() });
+    });
+
+    it('should resolve raw, base64 and file forms to identical content', () => {
+        const raw = loadInternalTlsOptions({ NANGO_INTERNAL_TLS_CERT: CERT_PEM, NANGO_INTERNAL_TLS_KEY: KEY_PEM });
+        const base64 = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT: Buffer.from(CERT_PEM).toString('base64'),
+            NANGO_INTERNAL_TLS_KEY: Buffer.from(KEY_PEM).toString('base64')
+        });
+        const file = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT_FILE: writeTemp('same.crt', CERT_PEM),
+            NANGO_INTERNAL_TLS_KEY_FILE: writeTemp('same.key', KEY_PEM)
+        });
+        expect(raw).toEqual(base64);
+        expect(raw).toEqual(file);
+    });
+
+    it('should accept surrounding whitespace in any form', () => {
+        const padded = `\n\n${CERT_PEM}\n\n`;
+        const expected = { cert: CERT_PEM.trim(), key: KEY_PEM.trim() };
+
+        expect(loadInternalTlsOptions({ NANGO_INTERNAL_TLS_CERT: padded, NANGO_INTERNAL_TLS_KEY: KEY_PEM })).toEqual(expected);
+        expect(loadInternalTlsOptions({ NANGO_INTERNAL_TLS_CERT: Buffer.from(padded).toString('base64'), NANGO_INTERNAL_TLS_KEY: KEY_PEM })).toEqual(expected);
+        expect(loadInternalTlsOptions({ NANGO_INTERNAL_TLS_CERT_FILE: writeTemp('padded.crt', padded), NANGO_INTERNAL_TLS_KEY: KEY_PEM })).toEqual(expected);
     });
 
     it('should include the passphrase', () => {
