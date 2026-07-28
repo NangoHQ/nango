@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import https from 'node:https';
+import { createSecureContext } from 'node:tls';
 
 import { Agent } from 'undici';
 
@@ -78,11 +79,24 @@ export function loadInternalTlsOptions(env: EnvRecord = process.env): InternalTl
     };
 }
 
+/**
+ * Both agent types accept a wrong passphrase or a mismatched cert/key pair without complaint and
+ * only fail on the first request, so force the parse up front.
+ */
+export function assertUsable(options: InternalTlsOptions): void {
+    try {
+        createSecureContext(options as SecureContextOptions);
+    } catch (err) {
+        throw new Error('NANGO_INTERNAL_TLS_* assets were rejected. Check the cert/key pair and NANGO_INTERNAL_TLS_KEY_PASSPHRASE.', { cause: err });
+    }
+}
+
 const options = loadInternalTlsOptions();
 
 export const internalTlsEnabled = options !== undefined;
 
 if (options) {
+    assertUsable(options);
     getLogger('internalTls').info(`Internal TLS enabled (client cert: ${Boolean(options.cert)}, ca: ${Boolean(options.ca)})`);
 }
 

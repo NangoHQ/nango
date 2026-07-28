@@ -1,10 +1,11 @@
+import { generateKeyPairSync } from 'node:crypto';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { loadInternalTlsOptions } from './internal.js';
+import { assertUsable, loadInternalTlsOptions } from './internal.js';
 
 const CERT_PEM = '-----BEGIN CERTIFICATE-----\nnot-a-real-cert\n-----END CERTIFICATE-----\n';
 const KEY_PEM = '-----BEGIN PRIVATE KEY-----\nnot-a-real-key\n-----END PRIVATE KEY-----\n';
@@ -62,6 +63,15 @@ describe('loadInternalTlsOptions', () => {
         expect(res?.passphrase).toBe('hunter2');
     });
 
+    it('should preserve whitespace in the passphrase', () => {
+        const res = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT: CERT_PEM,
+            NANGO_INTERNAL_TLS_KEY: KEY_PEM,
+            NANGO_INTERNAL_TLS_KEY_PASSPHRASE: ' hunter2 '
+        });
+        expect(res?.passphrase).toBe(' hunter2 ');
+    });
+
     it('should allow a CA on its own', () => {
         const res = loadInternalTlsOptions({ NANGO_INTERNAL_TLS_CA: CA_PEM });
         expect(res).toEqual({ ca: CA_PEM.trim() });
@@ -105,5 +115,32 @@ describe('loadInternalTlsOptions', () => {
         expect(() => {
             loadInternalTlsOptions({ NANGO_INTERNAL_TLS_KEY: KEY_PEM });
         }).toThrowError(/must be set together/);
+    });
+});
+
+describe('assertUsable', () => {
+    const passphrase = ' spaced secret ';
+    const { privateKey } = generateKeyPairSync('ec', {
+        namedCurve: 'prime256v1',
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem', cipher: 'aes-256-cbc', passphrase }
+    });
+
+    it('should accept an encrypted key with its passphrase', () => {
+        expect(() => {
+            assertUsable({ key: privateKey, passphrase });
+        }).not.toThrow();
+    });
+
+    it('should reject an encrypted key whose passphrase has been trimmed', () => {
+        expect(() => {
+            assertUsable({ key: privateKey, passphrase: passphrase.trim() });
+        }).toThrowError(/assets were rejected/);
+    });
+
+    it('should reject an unreadable key', () => {
+        expect(() => {
+            assertUsable({ key: KEY_PEM });
+        }).toThrowError(/assets were rejected/);
     });
 });
