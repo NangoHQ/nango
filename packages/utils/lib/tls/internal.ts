@@ -102,8 +102,6 @@ export function assertUsable(options: InternalTlsOptions): void {
 
 const options = loadInternalTlsOptions();
 
-export const internalTlsEnabled = options !== undefined;
-
 if (options) {
     assertUsable(options);
     getLogger('internalTls').info(`Internal TLS enabled (client cert: ${Boolean(options.cert)}, ca: ${Boolean(options.ca)})`);
