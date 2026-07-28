@@ -2260,7 +2260,7 @@ avanan:
         x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
     token_response:
         token: ''
-    token_expires_in_ms: 3_600_000
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.subdomain}.avanan.net
         headers:
