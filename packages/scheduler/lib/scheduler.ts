@@ -217,7 +217,9 @@ export class Scheduler {
         }
         const events: SchedulerEvent[] = [];
         const result = await this.db.transaction<Result<Task>>(async (trx) => {
-            const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1 });
+            // The schedule must be locked before inserting the task so that concurrent calls and/or scheduling daemon don't attempt to mutate the schedule while we're inserting the task.
+            // noWait so that concurrent runs for the same schedule fail immediately instead of piling up
+            const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true, noWait: true });
             if (getSchedules.isErr()) {
                 return Err(getSchedules.error);
             }

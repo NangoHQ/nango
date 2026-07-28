@@ -4,7 +4,8 @@ import { nanoid } from '@nangohq/utils';
 
 import { defaultSchedulerConfig } from './config.js';
 import { getTestDbClient } from './db/helpers.test.js';
-import { isDuplicateTaskNameError, isScheduleTaskAlreadyRunningError } from './errors.js';
+import { isDuplicateTaskNameError, isScheduleLockedError, isScheduleTaskAlreadyRunningError } from './errors.js';
+import * as schedules from './models/schedules.js';
 import { Scheduler } from './scheduler.js';
 
 import type { TaskProps } from './models/tasks.js';
@@ -229,9 +230,20 @@ describe('Scheduler', () => {
 
         expect(created).toHaveLength(1);
         expect(rejected).toHaveLength(1);
-        expect(isScheduleTaskAlreadyRunningError(rejected[0]?.reason)).toBe(true);
+        // the loser either fails to acquire the schedule lock or, if it acquired it after the winner committed, conflicts on the task
+        expect(isScheduleLockedError(rejected[0]?.reason) || isScheduleTaskAlreadyRunningError(rejected[0]?.reason)).toBe(true);
         expect((await scheduler.searchTasks({ scheduleId: schedule.id, state: 'CREATED' })).unwrap()).toHaveLength(1);
         expect(callbacks.CREATED).toHaveBeenCalledOnce();
+    });
+    it('should not run an immediate task for a schedule locked by another transaction', async () => {
+        const schedule = await recurring({ scheduler });
+
+        await dbClient.db.transaction(async (trx) => {
+            (await schedules.search(trx, { id: schedule.id, limit: 1, forUpdate: true })).unwrap();
+            await expect(immediate(scheduler, { schedule })).rejects.toSatisfy(isScheduleLockedError);
+        });
+
+        expect((await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap()).toHaveLength(0);
     });
     it('should create an uncapped task when immediate is called for a schedule', async () => {
         const schedule = await recurring({ scheduler });
