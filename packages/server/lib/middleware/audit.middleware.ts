@@ -76,6 +76,18 @@ function makeTarget(type: AuditTargetType, value: unknown, display?: string): Au
     return id ? { type, id, ...(display ? { display } : {}) } : undefined;
 }
 
+// Drop keys whose value is undefined, returning undefined when nothing is left. Callers map any
+// "absent" sentinel (empty string, non-string) to undefined themselves — compact only strips undefined.
+function compact(obj: Record<string, unknown>): Record<string, unknown> | undefined {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (value !== undefined) {
+            out[key] = value;
+        }
+    }
+    return Object.keys(out).length > 0 ? out : undefined;
+}
+
 function resolveActor(locals: RequestLocals): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
@@ -126,19 +138,10 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
     }
 }
 
-async function emit(
-    spec: Omit<AuditEndpointPolicy, 'kind'>,
-    req: Request,
-    res: Response,
-    enabled: boolean,
-    resolved: ResolvedAudit | undefined
-): Promise<void> {
+async function emit(spec: Omit<AuditEndpointPolicy, 'kind'>, req: Request, res: Response, resolved: ResolvedAudit | undefined): Promise<void> {
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
-        if (!enabled) {
-            return;
-        }
         const locals = res.locals as RequestLocals;
         const { account, environment } = locals;
         if (!account) {
@@ -176,19 +179,19 @@ interface ResolvedAudit {
 // that never reach the controller.
 export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<TEndpoint>): RequestHandler {
     return (req, res, next) => {
-        // Resolve target and metadata before the handler runs — some handlers move or overwrite the
-        // pre-mutation state (a removed member, an old role) — then emit on finish. The audit-enabled
-        // flag is checked once here (not again in emit) so a single check drives both phases.
-        let enabled = false;
-        let resolved: ResolvedAudit | undefined;
-        res.on('finish', () => {
-            void emit(spec, req, res, enabled, resolved);
-        });
         void (async () => {
             try {
                 const locals = res.locals as RequestLocals;
                 if (locals.account && (await getFlags().isAuditTrailEnabled(locals.account.uuid))) {
-                    enabled = true;
+                    // Register the finish listener only once we know we should audit — a disabled account
+                    // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
+                    // whatever we managed to resolve (even nothing, if resolution threw).
+                    let resolved: ResolvedAudit | undefined;
+                    res.on('finish', () => {
+                        void emit(spec, req, res, resolved);
+                    });
+                    // Resolve target and metadata before the handler runs — some handlers move or overwrite
+                    // the pre-mutation state (a removed member, an old role).
                     resolved = {
                         target: spec.target ? await spec.target(req, locals) : undefined,
                         metadata: spec.metadata ? await spec.metadata(req, locals) : undefined
@@ -225,35 +228,23 @@ function connectionTargets(paramId: unknown, bodyId: string | string[] | undefin
     return makeTarget('connection', paramId ?? bodyId);
 }
 function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: string[] | undefined): Record<string, unknown> | undefined {
-    const meta: { providerConfigKey?: string; changedFields?: string[] } = {};
-    if (providerConfigKey && providerConfigKey.length > 0) {
-        meta.providerConfigKey = providerConfigKey;
-    }
-    if (fields) {
-        meta.changedFields = fields;
-    }
-    return Object.keys(meta).length > 0 ? meta : undefined;
+    return compact({
+        providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
+        changedFields: fields
+    });
 }
 function syncFrequencyMeta(frequency: string | null | undefined, providerConfigKey: string | undefined): Record<string, unknown> | undefined {
-    const meta: { providerConfigKey?: string; frequency?: string } = {};
-    if (typeof frequency === 'string') {
-        meta.frequency = frequency;
-    }
-    if (typeof providerConfigKey === 'string') {
-        meta.providerConfigKey = providerConfigKey;
-    }
-    return Object.keys(meta).length > 0 ? meta : undefined;
+    return compact({
+        frequency: typeof frequency === 'string' ? frequency : undefined,
+        providerConfigKey: typeof providerConfigKey === 'string' ? providerConfigKey : undefined
+    });
 }
 function functionDeletedMeta(providerConfigKey: string | undefined, type: string | undefined): Record<string, unknown> | undefined {
-    const meta: { providerConfigKey?: string; type?: string } = {};
-    if (providerConfigKey && providerConfigKey.length > 0) {
-        meta.providerConfigKey = providerConfigKey;
-    }
-    // A sync and an action can share a name; `type` disambiguates which function was deleted.
-    if (type) {
-        meta.type = type;
-    }
-    return Object.keys(meta).length > 0 ? meta : undefined;
+    return compact({
+        providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
+        // A sync and an action can share a name; `type` disambiguates which function was deleted.
+        type: type ? type : undefined
+    });
 }
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
 // query string, or userinfo, and this goes into the immutable audit record.
@@ -280,52 +271,47 @@ function changedFields(req: Request<any, any, any, any>): string[] | undefined {
         .slice(0, CHANGED_FIELDS_MAX);
     return keys.length > 0 ? keys : undefined;
 }
-async function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Promise<AuditTarget | undefined> {
-    const id = toId(req.params.id);
+// Shared shape for targets whose display is looked up from the DB: normalize the id, bail if absent,
+// resolve the display best-effort (failures degrade to no display), and assemble the target. Each call
+// site supplies only its own lookup — the id is handed in already normalized.
+async function dbTarget(type: AuditTargetType, value: unknown, lookup: (id: string) => Promise<string | undefined>): Promise<AuditTarget | undefined> {
+    const id = toId(value);
     if (!id) {
         return undefined;
     }
-    const display = await resolveDisplay('member', async () => {
+    const display = await resolveDisplay(type, () => lookup(id));
+    return { type, id, ...(display ? { display } : {}) };
+}
+
+function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Promise<AuditTarget | undefined> {
+    return dbTarget('member', req.params.id, async (id) => {
         if (!locals.account) {
             return undefined;
         }
         const user = await userService.getUserByIdAndAccountId(Number(id), locals.account.id);
         return user?.email;
     });
-    return { type: 'member', id, ...(display ? { display } : {}) };
 }
 
-async function syncTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
-    const id = toId(value);
-    if (!id) {
-        return undefined;
-    }
-    const numericId = Number(id);
-    const display = Number.isNaN(numericId)
-        ? undefined
-        : await resolveDisplay('sync', async () => {
-              if (!locals.environment) {
-                  return undefined;
-              }
-              const syncConfig = await getSyncConfigById(locals.environment.id, numericId);
-              return syncConfig?.sync_name;
-          });
-    return { type: 'sync', id, ...(display ? { display } : {}) };
+function syncTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
+    return dbTarget('sync', value, async (id) => {
+        const numericId = Number(id);
+        if (Number.isNaN(numericId) || !locals.environment) {
+            return undefined;
+        }
+        const syncConfig = await getSyncConfigById(locals.environment.id, numericId);
+        return syncConfig?.sync_name;
+    });
 }
 
-async function apiKeyTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
-    const id = toId(value);
-    if (!id) {
-        return undefined;
-    }
-    const display = await resolveDisplay('api_key', async () => {
+function apiKeyTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
             return undefined;
         }
         const result = await customerKeyService.getApiKeysByEnv(db.knex, locals.environment.id);
         return result.isOk() ? result.value.find((key) => String(key.id) === id)?.display_name : undefined;
     });
-    return { type: 'api_key', id, ...(display ? { display } : {}) };
 }
 
 export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
@@ -439,18 +425,11 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
     action: 'updated',
     scope: 'environment',
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals),
-    metadata: (req) => {
-        const meta: { displayName?: string; scopes?: string[] } = {};
-        const displayName = req.body.display_name;
-        if (typeof displayName === 'string') {
-            meta.displayName = displayName;
-        }
-        const scopes = req.body.scopes;
-        if (Array.isArray(scopes)) {
-            meta.scopes = scopes.filter((s) => typeof s === 'string');
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    metadata: (req) =>
+        compact({
+            displayName: typeof req.body.display_name === 'string' ? req.body.display_name : undefined,
+            scopes: Array.isArray(req.body.scopes) ? req.body.scopes.filter((s) => typeof s === 'string') : undefined
+        })
 });
 export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     resource: 'api_key',
@@ -514,23 +493,20 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     scope: 'account',
     target: memberTarget,
     metadata: async (req, locals) => {
-        const meta: { fromRole?: string; toRole?: string } = {};
         const role = req.body.role;
-        if (typeof role === 'string') {
-            meta.toRole = role;
-        }
+        let fromRole: string | undefined;
         const id = toId(req.params.id);
         if (id && locals.account) {
             const accountId = locals.account.id;
-            const fromRole = await resolveDisplay('member', async () => {
+            fromRole = await resolveDisplay('member', async () => {
                 const user = await userService.getUserByIdAndAccountId(Number(id), accountId);
                 return user?.role;
             });
-            if (fromRole) {
-                meta.fromRole = fromRole;
-            }
         }
-        return Object.keys(meta).length > 0 ? meta : undefined;
+        return compact({
+            toRole: typeof role === 'string' ? role : undefined,
+            fromRole: fromRole ? fromRole : undefined
+        });
     }
 });
 export const auditTeamUpdated = auditable<PutTeam>({
@@ -561,18 +537,11 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     action: 'updated',
     scope: 'environment',
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
-    metadata: (req) => {
-        const meta: { name?: string; changedFields?: string[] } = {};
-        const name = req.body.name;
-        if (typeof name === 'string') {
-            meta.name = name;
-        }
-        const fields = changedFields(req);
-        if (fields) {
-            meta.changedFields = fields;
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    metadata: (req) =>
+        compact({
+            name: typeof req.body.name === 'string' ? req.body.name : undefined,
+            changedFields: changedFields(req)
+        })
 });
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({
     resource: 'environment',
@@ -587,7 +556,7 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
         const variableNames = variables
             .map((v) => (v && typeof v === 'object' ? (v as Record<string, unknown>)['name'] : undefined))
             .filter((n): n is string => typeof n === 'string');
-        return { variableCount: variables.length, ...(variableNames.length > 0 ? { variableNames } : {}) };
+        return compact({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
 });
 export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
@@ -595,35 +564,22 @@ export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     action: 'webhook_urls_changed',
     scope: 'environment',
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
-    metadata: (req) => {
-        const meta: { primaryUrl?: string; secondaryUrl?: string } = {};
-        const primaryUrl = safeUrl(req.body.primary_url);
-        if (primaryUrl) {
-            meta.primaryUrl = primaryUrl;
-        }
-        const secondaryUrl = safeUrl(req.body.secondary_url);
-        if (secondaryUrl) {
-            meta.secondaryUrl = secondaryUrl;
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    metadata: (req) =>
+        compact({
+            primaryUrl: safeUrl(req.body.primary_url),
+            secondaryUrl: safeUrl(req.body.secondary_url)
+        })
 });
 
 export const auditBillingPlanChanged = auditable<PostPlanChange>({
     resource: 'billing',
     action: 'plan_changed',
     scope: 'account',
-    metadata: (req, locals) => {
-        const meta: { fromPlan?: string; toPlan?: string } = {};
-        const orbId = req.body.orbId;
-        if (typeof orbId === 'string') {
-            meta.toPlan = orbId;
-        }
-        if (locals.plan?.name) {
-            meta.fromPlan = locals.plan.name;
-        }
-        return Object.keys(meta).length > 0 ? meta : undefined;
-    }
+    metadata: (req, locals) =>
+        compact({
+            toPlan: typeof req.body.orbId === 'string' ? req.body.orbId : undefined,
+            fromPlan: locals.plan?.name || undefined
+        })
 });
 export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({ resource: 'billing', action: 'trial_extended', scope: 'account' });
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({ resource: 'billing', action: 'details_changed', scope: 'account' });
