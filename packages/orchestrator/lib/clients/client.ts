@@ -16,6 +16,7 @@ import { route as postHeartbeatRoute } from '../routes/v1/tasks/taskId/postHeart
 import { validateSchedule, validateTask } from './validate.js';
 
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
+import type { WebhookAdmissionError } from '../webhook-admission.js';
 import type {
     ClientError,
     ExecuteActionProps,
@@ -65,8 +66,25 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({ body: props });
+        const res = await this.routeFetch(postImmediateRoute, {
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res && getWebhookAdmissionError(getResponseStatus(res.error), res.error.payload) === null
+            }
+        })({ body: props });
         if ('error' in res) {
+            const status = getResponseStatus(res.error);
+            const admission = getWebhookAdmissionError(status, res.error.payload);
+            if (admission) {
+                return Err({
+                    name: getResponseCode(res.error),
+                    status: 529,
+                    message: admission.message,
+                    payload: admission.payload
+                });
+            }
+
             const duplicateMessage = getDuplicateTaskNameMessage(res.error.payload);
             if (duplicateMessage !== null) {
                 return Err({
@@ -77,7 +95,7 @@ export class OrchestratorClient {
             }
 
             return Err({
-                name: res.error.code,
+                name: getResponseCode(res.error),
                 message: res.error.message || `Error scheduling immediate task`,
                 payload: { ...props, response: res.error.payload as any }
             });
@@ -326,11 +344,27 @@ export class OrchestratorClient {
             };
         });
 
-        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+        const res = await this.routeFetch(postImmediateBatchRoute, {
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res && getWebhookAdmissionError(getResponseStatus(res.error), res.error.payload) === null
+            }
+        })({ body: { tasks: entries } });
 
         if ('error' in res) {
+            const status = getResponseStatus(res.error);
+            const admission = getWebhookAdmissionError(status, res.error.payload);
+            if (admission) {
+                return Err({
+                    name: getResponseCode(res.error),
+                    status: 529,
+                    message: admission.message,
+                    payload: admission.payload
+                });
+            }
             return Err({
-                name: res.error.code,
+                name: getResponseCode(res.error),
                 message: res.error.message || 'Error scheduling immediate batch',
                 payload: { response: res.error.payload as any }
             });
@@ -595,6 +629,31 @@ export class OrchestratorClient {
             }));
         }
     }
+}
+
+function getWebhookAdmissionError(status: number | undefined, payload: unknown): { message: string; payload: JsonValue } | null {
+    if (status !== 529) {
+        return null;
+    }
+    const response = payload as Partial<WebhookAdmissionError> | undefined;
+    return {
+        message: response?.error?.message ?? 'Webhook admission capacity is temporarily exhausted',
+        payload: (response?.error?.payload as JsonValue | undefined) ?? {}
+    };
+}
+
+function getResponseStatus(error: unknown): number | undefined {
+    if (!error || typeof error !== 'object' || !('status' in error)) {
+        return undefined;
+    }
+    return typeof error.status === 'number' ? error.status : undefined;
+}
+
+function getResponseCode(error: unknown): string {
+    if (!error || typeof error !== 'object' || !('code' in error)) {
+        return 'fetch_failed';
+    }
+    return typeof error.code === 'string' ? error.code : 'fetch_failed';
 }
 
 function getDuplicateTaskNameMessage(payload: unknown): string | null {

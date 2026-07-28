@@ -177,7 +177,7 @@ export const ENVS = z.object({
     NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS: z.coerce.number().optional(),
     ORCHESTRATOR_DATABASE_URL: z.url().optional(),
     ORCHESTRATOR_DATABASE_SCHEMA: z.string().optional().default('nango_scheduler'),
-    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().optional().default(50),
+    ORCHESTRATOR_DB_POOL_MAX: z.coerce.number().int().positive().optional().default(50),
     ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: z.coerce.number().optional().default(1000),
     ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: z.coerce.number().optional().default(10000),
     ORCHESTRATOR_CLEANING_OLDER_THAN_DAYS: z.coerce.number().optional().default(5),
@@ -186,6 +186,9 @@ export const ENVS = z.object({
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
+    ORCHESTRATOR_WEBHOOK_ADMISSION_MAX_CONCURRENCY: z.coerce.number().int().positive().optional().default(5),
+    ORCHESTRATOR_WEBHOOK_ADMISSION_DB_RESERVE: z.coerce.number().int().nonnegative().optional().default(10),
+    ORCHESTRATOR_WEBHOOK_ADMISSION_RETRY_AFTER_MS: z.coerce.number().int().positive().optional().default(1000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 

@@ -5,6 +5,7 @@ import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { nanoid } from '@nangohq/utils';
 
 import { TaskEventsHandler } from '../events.js';
+import { allowWebhookAdmission } from '../helpers.test.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 
@@ -21,7 +22,7 @@ const scheduler = new Scheduler({
 });
 
 describe('OrchestratorClient', async () => {
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, eventsHandler, allowWebhookAdmission);
     const port = await getPort();
     const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 

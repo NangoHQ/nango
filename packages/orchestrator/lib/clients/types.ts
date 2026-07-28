@@ -256,6 +256,7 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
 
 export interface ClientError extends Error {
     name: string;
+    status?: number;
     payload: JsonValue;
     additional_properties?: Record<string, JsonValue>;
 }
