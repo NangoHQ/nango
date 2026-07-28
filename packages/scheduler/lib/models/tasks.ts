@@ -243,7 +243,7 @@ export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | u
 
 async function queueSizesQuery(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
     try {
-        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('id as count').where('state', 'CREATED').groupBy('group_key');
+        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('* as count').where('state', 'CREATED').groupBy('group_key');
         if (opts.groupKeys && opts.groupKeys.length > 0) {
             q.whereIn('group_key', opts.groupKeys);
         }
