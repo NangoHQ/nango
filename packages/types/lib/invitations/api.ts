@@ -1,9 +1,10 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ApiInvitation, ApiTeam } from '../team/api.js';
 import type { ApiUser } from '../user/api.js';
 import type { Role } from '../user/db.js';
 
-export type PostInvite = Endpoint<{
+export type PostInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/invite';
     Querystring: { env: string };
@@ -13,7 +14,8 @@ export type PostInvite = Endpoint<{
     };
 }>;
 
-export type DeleteInvite = Endpoint<{
+export type DeleteInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/invite';
     Querystring: { env: string };
@@ -23,7 +25,8 @@ export type DeleteInvite = Endpoint<{
     };
 }>;
 
-export type GetInvite = Endpoint<{
+export type GetInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/invite/:id';
     Params: { id: string };
@@ -38,7 +41,8 @@ export type GetInvite = Endpoint<{
     Errors: ApiError<'not_found'>;
 }>;
 
-export type AcceptInvite = Endpoint<{
+export type AcceptInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/invite/:id';
     Params: { id: string };
@@ -47,7 +51,8 @@ export type AcceptInvite = Endpoint<{
     };
 }>;
 
-export type DeclineInvite = Endpoint<{
+export type DeclineInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/api/v1/invite/:id';
     Params: { id: string };

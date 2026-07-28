@@ -143,13 +143,13 @@ function FieldSeparator({ className, children, ...props }: React.ComponentProps<
             className={cn('flex items-center gap-2', className)}
             {...props}
         >
-            <span aria-hidden className="h-0 flex-1 border-t-ds-hairline border-border-strong" />
+            <span aria-hidden className="h-0 flex-1 border-t-[0.5px] border-border-strong" />
             {children != null && (
                 <>
                     <span data-slot="field-separator-content" className="text-text-secondary text-ds-md font-ds-regular leading-ds-normal shrink-0">
                         {children}
                     </span>
-                    <span aria-hidden className="h-0 flex-1 border-t-ds-hairline border-border-strong" />
+                    <span aria-hidden className="h-0 flex-1 border-t-[0.5px] border-border-strong" />
                 </>
             )}
         </div>

@@ -786,6 +786,9 @@
                                     },
                                     "minItems": 1
                                 },
+                                "order": {
+                                    "type": "number"
+                                },
                                 "default_value": {
                                     "type": "string"
                                 },

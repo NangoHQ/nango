@@ -1,4 +1,5 @@
-import { listInvitations, userService } from '@nangohq/shared';
+import { getFlags } from '@nangohq/feature-flags';
+import { listInvitations, mfaService, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -21,14 +22,18 @@ export const getTeam = asyncWrapper<GetTeam>(async (req, res) => {
     const users = await userService.getUsersByAccountId(account.id);
     const invitedUsers = await listInvitations({ accountId: account.id });
 
-    const usersFormatted = users.map(userToAPI);
+    const mfaFeatureEnabled = await getFlags().isMFAEnabled(account.uuid);
+    const mfaEnabledUserIds = mfaFeatureEnabled ? await mfaService.getEnabledUserIds(users.map((user) => user.id)) : new Set<number>();
+
+    const usersFormatted = users.map((user) => ({ ...userToAPI(user), mfaEnabled: mfaEnabledUserIds.has(user.id) }));
 
     res.status(200).send({
         data: {
             account: teamToApi(account),
             users: usersFormatted,
             invitedUsers: invitedUsers.map(invitationToApi),
-            isAdminTeam: account.uuid === envs.NANGO_ADMIN_UUID
+            isAdminTeam: account.uuid === envs.NANGO_ADMIN_UUID,
+            mfaFeatureEnabled
         }
     });
 });
