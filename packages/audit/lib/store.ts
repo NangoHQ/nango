@@ -1,16 +1,11 @@
-import { randomUUID } from 'node:crypto';
-
 import { Err, getLogger, metrics, Ok, stringifyError } from '@nangohq/utils';
 
-import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
-import type { ApiAuditTrailEvent } from '@nangohq/types';
+import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('audit');
 
-// Schema version (date it shipped, not a timestamp); bump to a new date only on a breaking change.
-const AUDIT_EVENT_VERSION = '2026-07-16';
 const AUDIT_RETENTION_DAYS = 90;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
 
@@ -32,15 +27,15 @@ export interface AuditTrailPage {
     nextCursor: AuditTrailCursor | null;
 }
 
-// A backend audit events are read from and written to. One implementation per backend, each fully
-// implementing both sides.
-export interface AuditStore {
-    record(event: AuditEvent): Promise<Result<void>>;
+export interface AuditWriter {
+    record(record: SerializedAuditEvent): Promise<Result<void>>;
+}
+
+export interface AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>>;
 }
 
-// Used when audit isn't wired to a backend: writes are dropped, reads are empty.
-export class DropAuditStore implements AuditStore {
+export class DropAuditStore implements AuditWriter, AuditReader {
     record(): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }
@@ -50,19 +45,17 @@ export class DropAuditStore implements AuditStore {
     }
 }
 
-export class ClickhouseAuditStore implements AuditStore {
+export class ClickhouseAuditStore implements AuditWriter, AuditReader {
     constructor(
         private readonly client: ClickHouseClient,
         private readonly retentionDays = AUDIT_RETENTION_DAYS
     ) {}
 
-    async record(event: AuditEvent): Promise<Result<void>> {
-        // id and version are stamped at write; they aren't part of the emitted event.
-        const stored = { ...event, id: randomUUID(), version: AUDIT_EVENT_VERSION };
+    async record({ event }: SerializedAuditEvent): Promise<Result<void>> {
         try {
             await this.client.insert({
                 table: 'audit_trail_events',
-                values: [{ event: JSON.stringify(stored), retention_days: this.retentionDays }],
+                values: [{ event, retention_days: this.retentionDays }],
                 format: 'JSONEachRow'
             });
             metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'true' });

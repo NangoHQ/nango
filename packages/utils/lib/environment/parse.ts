@@ -3,7 +3,6 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
-// Single source of truth for pub/sub subjects allowed in NANGO_PUBSUB_SNS_SQS_CONFIG.
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
 export const ENVS = z.object({
@@ -549,6 +548,9 @@ export const ENVS = z.object({
 
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
+
+    // Audit
+    NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),

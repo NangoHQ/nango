@@ -1,6 +1,6 @@
-// `id` and `version` are stamped downstream by the store at write, not by the caller.
+// `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditOutcome, AuditTarget } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
 
 // Re-export the shared vocabulary so @nangohq/audit consumers (e.g. the server audit middleware) keep
 // importing these from here.
@@ -42,3 +42,5 @@ interface AuditEventCommon {
 export type AuditEvent =
     | (AuditEventCommon & { resource: 'connection'; action: 'deleted'; metadata?: ConnectionDeletedMetadata })
     | (AuditEventCommon & { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata });
+
+export type StoredAuditEvent = AuditEvent & { id: string; version: AuditTrailVersion };

@@ -60,6 +60,6 @@ export const auditPolicies = {
 
 // `type`, not `interface`: an interface has no implicit index signature and so fails the pub/sub
 // Serializable payload constraint.
-export type AuditRecord = {
+export type SerializedAuditEvent = {
     event: string;
 };

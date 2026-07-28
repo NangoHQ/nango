@@ -3,13 +3,16 @@ import { Subscriber } from '@nangohq/pubsub';
 import { envs } from '../env.js';
 import { logger } from '../utils.js';
 
+import type { AuditWriter } from '@nangohq/audit';
 import type { Transport } from '@nangohq/pubsub';
 
 export class AuditProcessor {
     private subscriber: Subscriber;
+    private store: AuditWriter;
 
-    constructor({ transport }: { transport: Transport }) {
+    constructor({ transport, store }: { transport: Transport; store: AuditWriter }) {
         this.subscriber = new Subscriber(transport);
+        this.store = store;
     }
 
     public start(): void {
@@ -19,9 +22,11 @@ export class AuditProcessor {
             consumerGroup: 'audit',
             subject: 'audit',
             concurrency: envs.METERING_AUDIT_EVENTS_SUBSCRIBE_CONCURRENCY,
-            callback: (event) => {
-                // Persistence (ClickHouse) is wired in a follow-up; for now events are acked and dropped.
-                logger.debug('Dropping audit event', { type: event.type });
+            callback: async (event) => {
+                const result = await this.store.record(event.payload);
+                if (result.isErr()) {
+                    logger.error(`Failed to store audit event: ${result.error.message}`);
+                }
             }
         });
     }

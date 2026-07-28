@@ -1,6 +1,7 @@
 import { createClient } from '@clickhouse/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { AuditClient } from './audit.js';
 import { ClickhouseAuditStore } from './store.js';
 
 import type { AuditEvent } from './event.js';
@@ -35,7 +36,7 @@ const at = (offsetMs: number) => new Date(base + offsetMs).toISOString();
 let client: ClickHouseClient;
 let store: ClickhouseAuditStore;
 
-// Raw insert with a known id so read assertions are deterministic (record() stamps a random id).
+// Known ids so the read assertions below are deterministic.
 async function insertEvent({ id, accountId, occurredAt }: { id: string; accountId: number; occurredAt: string }) {
     const event = {
         id,
@@ -112,8 +113,8 @@ describe('ClickhouseAuditStore.list', () => {
     });
 });
 
-describe('ClickhouseAuditStore.record', () => {
-    it('writes an event that reads back with a stamped id + version', async () => {
+describe('AuditClient.record through ClickhouseAuditStore', () => {
+    it('writes an emitted event that reads back with the id + version stamped at emit', async () => {
         const event: AuditEvent = {
             occurredAt: at(5000),
             accountId: 7,
@@ -125,7 +126,7 @@ describe('ClickhouseAuditStore.record', () => {
             context: {},
             outcome: 'success'
         };
-        expect((await store.record(event)).isOk()).toBe(true);
+        expect((await new AuditClient(store, store).record(event)).isOk()).toBe(true);
 
         const { events } = (await store.list({ accountId: 7, limit: 10 })).unwrap();
         expect(events).toHaveLength(1);
