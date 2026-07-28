@@ -1,22 +1,25 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ApiUser } from '../user/api.js';
 
 type MFAError = ApiError<'invalid_mfa_code'> | ApiError<'mfa_already_enabled'> | ApiError<'mfa_enrollment_not_found'> | ApiError<'mfa_not_enabled'>;
 
-export type GetMFAStatus = Endpoint<{
+export type GetMFAStatus = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/account/mfa';
     Success: { data: { enabled: boolean } };
 }>;
 
-export type PostMFAEnrollment = Endpoint<{
+export type PostMFAEnrollment = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
     Method: 'POST';
     Path: '/api/v1/account/mfa/enroll';
     Error: ApiError<'mfa_already_enabled'>;
     Success: { data: { otpauthUri: string } };
 }>;
 
-export type PostMFAActivation = Endpoint<{
+export type PostMFAActivation = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
     Method: 'POST';
     Path: '/api/v1/account/mfa/activate';
     Body: { code: string };
@@ -24,7 +27,8 @@ export type PostMFAActivation = Endpoint<{
     Success: { data: { recoveryCodes: string[] } };
 }>;
 
-export type PostMFARecoveryCodes = Endpoint<{
+export type PostMFARecoveryCodes = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
     Method: 'POST';
     Path: '/api/v1/account/mfa/recovery-codes';
     Body: { code: string };
@@ -32,7 +36,8 @@ export type PostMFARecoveryCodes = Endpoint<{
     Success: { data: { recoveryCodes: string[] } };
 }>;
 
-export type DeleteMFA = Endpoint<{
+export type DeleteMFA = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
     Method: 'DELETE';
     Path: '/api/v1/account/mfa';
     Body: { code: string };
@@ -42,7 +47,8 @@ export type DeleteMFA = Endpoint<{
 
 export type MFAEndpointError = MFAError;
 
-export type PostMFALoginVerification = Endpoint<{
+export type PostMFALoginVerification = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
     Method: 'POST';
     Path: '/api/v1/account/mfa/login/verify';
     Body: { type: 'code'; code: string } | { type: 'recoveryCode'; recoveryCode: string };

@@ -1,5 +1,6 @@
 export { default as githubAppOauthWebhookRouting } from './github-app-oauth-webhook-routing.js';
 export { default as githubAppWebhookRouting } from './github-app-webhook-routing.js';
+export { default as gitlabWebhookRouting } from './gitlab-webhook-routing.js';
 export { default as hubspotWebhookRouting } from './hubspot-webhook-routing.js';
 export { default as jiraWebhookRouting } from './jira-webhook-routing.js';
 export { default as linearWebhookRouting } from './linear-webhook-routing.js';
