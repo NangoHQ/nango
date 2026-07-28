@@ -1,4 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { auditPolicies } from '../audit-trail/event.js';
 import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -275,7 +276,7 @@ export type GetIntegrationFunction = ApiEndpoint<{
 }>;
 
 export type DeleteIntegrationFunction = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.functionDeleted;
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     /** TODO: support deleting on-event functions */
@@ -313,7 +314,7 @@ export type GetPublicIntegrationFunction = ApiEndpoint<{
 }>;
 
 export type DeletePublicIntegrationFunction = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.functionDeleted;
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey/functions/:name';
     /** TODO: support deleting on-event functions */

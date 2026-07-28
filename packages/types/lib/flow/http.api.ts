@@ -1,4 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { auditPolicies } from '../audit-trail/event.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 export type PutUpgradePreBuiltFlow = ApiEndpoint<{
@@ -40,7 +41,7 @@ export type PostPreBuiltDeploy = ApiEndpoint<{
 }>;
 
 export type PatchFlowEnable = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.syncEnabled;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/enable';
     Querystring: { env: string };
@@ -60,7 +61,7 @@ export type PatchFlowEnable = ApiEndpoint<{
 }>;
 
 export type PatchFlowDisable = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.syncDisabled;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/disable';
     Querystring: { env: string };
@@ -80,7 +81,7 @@ export type PatchFlowDisable = ApiEndpoint<{
 }>;
 
 export type PatchFlowFrequency = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.syncFrequencyChanged;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/frequency';
     Querystring: { env: string };

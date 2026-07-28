@@ -1,4 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { auditPolicies } from '../audit-trail/event.js';
 import type { ReportedSyncJobStatus } from './index.js';
 
 export type PostPublicTrigger = ApiEndpoint<{
@@ -24,7 +25,7 @@ export type PostPublicTrigger = ApiEndpoint<{
 }>;
 
 export type PostSyncVariant = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.syncVariantCreated;
     Method: 'POST';
     Path: '/sync/:name/variant/:variant';
     Body: {
@@ -42,7 +43,7 @@ export type PostSyncVariant = ApiEndpoint<{
 }>;
 
 export type DeleteSyncVariant = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.syncVariantDeleted;
     Method: 'DELETE';
     Path: '/sync/:name/variant/:variant';
     Body: {
@@ -58,7 +59,7 @@ export type DeleteSyncVariant = ApiEndpoint<{
 }>;
 
 export type PutPublicSyncConnectionFrequency = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.syncFrequencyChanged;
     Method: 'PUT';
     Path: '/sync/update-connection-frequency';
     Body: {

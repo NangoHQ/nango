@@ -1,5 +1,6 @@
 import type { ApiKeyScope } from '../../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
+import type { auditPolicies } from '../../audit-trail/event.js';
 import type { ApiPlan } from '../../plans/http.api.js';
 import type { DBEnvironment, DBExternalWebhook } from '../db.js';
 import type { ApiEnvironmentVariable } from '../variable/api.js';
@@ -49,7 +50,7 @@ export type GetEnvironment = ApiEndpoint<{
 }>;
 
 export type PatchEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.environmentUpdated;
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
@@ -69,7 +70,7 @@ export type PatchEnvironment = ApiEndpoint<{
 }>;
 
 export type DeleteEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.environmentDeleted;
     Method: 'DELETE';
     Path: '/api/v1/environments';
     Success: never;
@@ -120,7 +121,7 @@ export type CreateApiKey = ApiEndpoint<{
 }>;
 
 export type DeleteApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.apiKeyDeleted;
     Method: 'DELETE';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };
@@ -128,7 +129,7 @@ export type DeleteApiKey = ApiEndpoint<{
 }>;
 
 export type PatchApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.apiKeyUpdated;
     Method: 'PATCH';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };

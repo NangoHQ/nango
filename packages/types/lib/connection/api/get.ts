@@ -166,7 +166,7 @@ export type GetPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchPublicConnection = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.connectionUpdated;
     Method: 'PATCH';
     Path: '/connections/:connectionId';
     Params: {
@@ -185,7 +185,7 @@ export type PatchPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchConnection = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.connectionUpdated;
     Method: 'PATCH';
     Path: '/api/v1/connections/:connectionId';
     Params: {
@@ -205,7 +205,7 @@ export type PatchConnection = ApiEndpoint<{
 }>;
 
 export type PostConnectionRefresh = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.connectionRefreshed;
     Method: 'POST';
     Params: {
         connectionId: string;

@@ -31,7 +31,7 @@ export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
 
 export type PutTeam = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.teamUpdated;
     Method: 'PUT';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -42,7 +42,7 @@ export type PutTeam = ApiEndpoint<{
 }>;
 
 export type DeleteTeamUser = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.memberRemoved;
     Method: 'DELETE';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };

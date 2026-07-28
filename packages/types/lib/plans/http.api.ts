@@ -1,4 +1,5 @@
 import type { ApiEndpoint } from '../api.js';
+import type { auditPolicies } from '../audit-trail/event.js';
 import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
@@ -7,7 +8,7 @@ import type { DBPlan } from './db.js';
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
 export type PostPlanExtendTrial = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.billingTrialExtended;
     Method: 'POST';
     Path: '/api/v1/plans/trial/extension';
     Querystring: { env: string };
@@ -146,7 +147,7 @@ export type GetBillingUsage = ApiEndpoint<{
 }>;
 
 export type PutBillingInvoicingDetails = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.billingDetailsChanged;
     Method: 'PUT';
     Path: '/api/v1/plans/billing/invoicing';
     Querystring: { env: string };
@@ -157,7 +158,7 @@ export type PutBillingInvoicingDetails = ApiEndpoint<{
 }>;
 
 export type PostPlanChange = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: typeof auditPolicies.billingPlanChanged;
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };
