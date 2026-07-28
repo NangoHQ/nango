@@ -6,7 +6,7 @@ import { getLogger, metrics } from '@nangohq/utils';
 import { audit } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditResourceAction, AuditTarget, AuditTargetType } from '@nangohq/audit';
+import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType } from '@nangohq/audit';
 import type {
     AuditEndpointPolicy,
     DeleteApiKey,
@@ -53,29 +53,16 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 
 type AuditableEndpoint = Endpoint<any> & { Audit: AuditEndpointPolicy };
 
-// Matched by action membership, since a variant may group several actions under one metadata shape.
-type VariantFor<TAudit extends AuditEndpointPolicy> = AuditResourceAction extends infer V
-    ? V extends AuditResourceAction
-        ? V['resource'] extends TAudit['resource']
-            ? TAudit['action'] extends V['action']
-                ? V
-                : never
-            : never
-        : never
-    : never;
-type MetaOf<V> = V extends { metadata?: infer M } ? M : never;
-type SpecMetadata<TEndpoint extends Endpoint<any>, V> = 'metadata' extends keyof V
-    ? { metadata?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => MetaOf<V> | undefined | Promise<MetaOf<V> | undefined> }
-    : { metadata?: never };
-
 // The identity comes from the endpoint's own `Audit` declaration (so wiring can't disagree with it);
-// the spec only adds the runtime resolvers.
+// the spec only adds the runtime resolvers. Metadata is best-effort and loosely typed here — the
+// per-event shapes are documented on the emit model (@nangohq/audit's AuditEvent).
 export type AuditSpec<TEndpoint extends AuditableEndpoint> = Omit<TEndpoint['Audit'], 'kind'> & {
     target?: (
         req: AuditRequest<TEndpoint>,
         locals: RequestLocals
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
-} & SpecMetadata<TEndpoint, VariantFor<TEndpoint['Audit']>>;
+    metadata?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+};
 
 function toId(value: unknown): string | undefined {
     if (typeof value === 'string') {
