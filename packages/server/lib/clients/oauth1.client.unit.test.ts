@@ -4,7 +4,7 @@ import https from 'node:https';
 import oAuth1 from 'oauth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '@nangohq/shared';
+import { assertSafeOAuthUrl, getOAuthRedirectPolicy, getOAuthSafeHttpAgents } from '@nangohq/shared';
 
 import { extractQueryParams, OAuth1Client } from './oauth1.client.js';
 
@@ -16,7 +16,9 @@ import type { AddressInfo } from 'node:net';
 // `assertSafeOAuthUrl`. Neutralise the egress policy here so a loopback test server is reachable
 // (loopback is always blocked by the real policy) while still exercising the guarded flow.
 // The agents are stable singletons so the internal-wiring tests can assert the exact instances
-// node-oauth was pinned to.
+// node-oauth was pinned to. `maxRedirects` is lowered so the redirect-cap test needs only a short chain.
+const TEST_MAX_REDIRECTS = 2;
+
 vi.mock('@nangohq/shared', async (importOriginal) => {
     const actual = await importOriginal<typeof NangoShared>();
     const nodeHttp = await import('node:http');
@@ -26,7 +28,8 @@ vi.mock('@nangohq/shared', async (importOriginal) => {
     return {
         ...actual,
         assertSafeOAuthUrl: vi.fn((url: string) => Promise.resolve(new URL(url))),
-        getOAuthSafeHttpAgents: vi.fn(() => ({ httpAgent, httpsAgent }))
+        getOAuthSafeHttpAgents: vi.fn(() => ({ httpAgent, httpsAgent })),
+        getOAuthRedirectPolicy: vi.fn(() => ({ maxRedirects: 2, validate: () => Promise.resolve() }))
     };
 });
 
@@ -58,6 +61,7 @@ function makeProvider(overrides: Partial<ProviderOAuth1>): ProviderOAuth1 {
 // The private node-oauth members OAuth1Client overrides to enforce egress. Declared here so the
 // internal-wiring tests below have a typed handle on them and fail loudly if node-oauth changes them.
 interface NodeOAuthInternals {
+    _clientOptions: { followRedirects: boolean };
     _createClient: (port: number, hostname: string, method: string, path: string, headers: http.OutgoingHttpHeaders, sslEnabled: boolean) => http.ClientRequest;
     _performSecureRequest: (
         oauthToken: string | null,
@@ -205,6 +209,73 @@ describe('OAuth1Client egress', () => {
             }
         );
     });
+
+    it('stops a redirect loop at the policy cap instead of issuing unbounded requests', async () => {
+        let requestCount = 0;
+        await withServer(
+            (req, res) => {
+                requestCount += 1;
+                // A token endpoint that redirects to itself forever. node-oauth has no cap of its own, so
+                // without the wrapper's budget this would recurse until the process gave out.
+                res.writeHead(302, { location: `http://${req.headers.host}/loop` });
+                res.end();
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/loop`, token_url: `${baseUrl}/access` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+                await expect(client.getOAuthRequestToken()).rejects.toThrow(`Maximum number of redirects (${TEST_MAX_REDIRECTS}) exceeded`);
+                // The initial request plus exactly `maxRedirects` hops, matching the undici OAuth path.
+                expect(requestCount).toBe(TEST_MAX_REDIRECTS + 1);
+            }
+        );
+    });
+
+    it('caps redirects on the access-token flow too', async () => {
+        let requestCount = 0;
+        await withServer(
+            (req, res) => {
+                requestCount += 1;
+                res.writeHead(302, { location: `http://${req.headers.host}/loop` });
+                res.end();
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/request`, token_url: `${baseUrl}/loop` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+                await expect(client.getOAuthAccessToken('req-token', 'req-secret', 'the-verifier')).rejects.toThrow(
+                    `Maximum number of redirects (${TEST_MAX_REDIRECTS}) exceeded`
+                );
+                expect(requestCount).toBe(TEST_MAX_REDIRECTS + 1);
+            }
+        );
+    });
+
+    it('counts hops per token request, so a fresh call starts with a full redirect budget', async () => {
+        let requestCount = 0;
+        await withServer(
+            (req, res) => {
+                requestCount += 1;
+                if (req.url === '/request') {
+                    res.writeHead(302, { location: `http://${req.headers.host}/request-final` });
+                    res.end();
+                    return;
+                }
+                res.writeHead(200, { 'content-type': 'application/x-www-form-urlencoded' });
+                res.end('oauth_token=req-token&oauth_token_secret=req-secret&oauth_callback_confirmed=true');
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({ request_url: `${baseUrl}/request`, token_url: `${baseUrl}/access` });
+                const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+                // Reusing one client for several redirecting calls must not exhaust a shared budget.
+                for (let i = 0; i < TEST_MAX_REDIRECTS + 2; i++) {
+                    await expect(client.getOAuthRequestToken()).resolves.toMatchObject({ request_token: 'req-token' });
+                }
+                expect(requestCount).toBe((TEST_MAX_REDIRECTS + 2) * 2);
+            }
+        );
+    });
 });
 
 // These tests deliberately reach into node-oauth's private `_createClient` / `_performSecureRequest`
@@ -223,6 +294,16 @@ describe('OAuth1Client node-oauth internal wiring', () => {
         const proto = oAuth1.OAuth.prototype as unknown as Partial<NodeOAuthInternals>;
         expect(typeof proto._createClient).toBe('function');
         expect(typeof proto._performSecureRequest).toBe('function');
+    });
+
+    it('leaves redirect following on and takes its hop budget from the OAuth policy', () => {
+        const provider = makeProvider({ request_url: 'https://example.com/request', token_url: 'https://example.com/access' });
+        const client = new OAuth1Client(config, provider, 'https://app.example.com/callback');
+
+        // Redirects are followed, so the cap in the `_performSecureRequest` wrapper is the only thing bounding
+        // node-oauth's uncapped redirect recursion; it must come from the policy rather than a local constant.
+        expect(getNodeOAuthInternals(client)._clientOptions.followRedirects).toBe(true);
+        expect(getOAuthRedirectPolicy).toHaveBeenCalled();
     });
 
     it('replaces _createClient and _performSecureRequest on the constructed instance', () => {

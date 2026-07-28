@@ -3,7 +3,7 @@ import https from 'node:https';
 
 import oAuth1 from 'oauth';
 
-import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '@nangohq/shared';
+import { assertSafeOAuthUrl, getOAuthRedirectPolicy, getOAuthSafeHttpAgents } from '@nangohq/shared';
 
 import type { IntegrationConfig, Provider, ProviderOAuth1 } from '@nangohq/types';
 
@@ -63,8 +63,14 @@ export class OAuth1Client {
         this.client.setClientOptions({
             requestTokenHttpMethod: this.authConfig.request_http_method || 'POST',
             accessTokenHttpMethod: this.authConfig.token_http_method || 'POST',
-            // Keep following 301/302 redirects (some OAuth1 token endpoints legitimately redirect), but every
-            // hop is validated against the OAuth egress policy via the `_performSecureRequest` wrapper below.
+            // Redirects stay enabled for providers whose token endpoints 3xx. This accepts a tradeoff the
+            // other OAuth paths do not: node-oauth follows a redirect by re-invoking `_performSecureRequest`
+            // against the `Location`, which re-signs for the new URL and resends the credentials — a valid
+            // `Authorization` for the new host, plus the `oauth_verifier` from the body. An OAuth1 signature
+            // is bound to the request URL, so the credential-stripping `getOAuthAxiosRequestConfig` and
+            // `loggedFetch` perform has no equivalent here; stripping would leave a request no provider can
+            // honour. Each hop is instead validated against the OAuth egress policy and capped at its
+            // `maxRedirects` by the `_performSecureRequest` wrapper below.
             followRedirects: true
         });
 
@@ -86,17 +92,30 @@ export class OAuth1Client {
         // @ts-expect-error `_createClient` is a private method of node-oauth that we override to pin egress.
         this.client._createClient = createSafeClient;
 
-        // node-oauth follows redirects by re-invoking `_performSecureRequest` with the `Location` URL
-        // (see oauth.js), so wrapping it lets us validate every hop — the initial request and each redirect
-        // target — against the OAuth egress policy. A blocked hop is surfaced through node-oauth's error
-        // callback (which rejects the wrapping promise) rather than thrown, since redirects are followed from
-        // an async response handler where a synchronous throw would go uncaught.
+        // Every token request node-oauth issues goes through `_performSecureRequest` — the initial request,
+        // each hop of a redirect chain, and the `getOAuthAccessToken` path below which calls it directly — so
+        // wrapping it validates every URL against the OAuth egress policy and enforces the policy's redirect
+        // cap. node-oauth recurses on each redirect with no cap of its own, so without this a looping token
+        // endpoint would issue unbounded serial requests. A blocked or over-budget hop is surfaced through
+        // node-oauth's error callback (which rejects the wrapping promise) rather than thrown, because the
+        // callback is also invoked from async response handlers where a synchronous throw would go uncaught.
+        const { maxRedirects } = getOAuthRedirectPolicy();
+        // node-oauth threads the same callback through every hop of a chain (see `passBackControl` in
+        // oauth.js), so the callback identifies the logical token request: its first sighting is the initial
+        // request and every later one is a redirect hop.
+        const requestsPerCallback = new WeakMap<object, number>();
         // @ts-expect-error `_performSecureRequest` is a private node-oauth method.
         const originalPerformSecureRequest = this.client._performSecureRequest.bind(this.client) as PerformSecureRequest;
         const performGuardedRequest: PerformSecureRequest = (oauthToken, oauthTokenSecret, method, url, extraParams, postBody, postContentType, callback) => {
             // Streaming (no-callback) requests aren't used by this client; delegate untouched.
             if (!callback) {
                 return originalPerformSecureRequest(oauthToken, oauthTokenSecret, method, url, extraParams, postBody, postContentType, callback);
+            }
+            const alreadyIssued = requestsPerCallback.get(callback) ?? 0;
+            requestsPerCallback.set(callback, alreadyIssued + 1);
+            if (alreadyIssued > maxRedirects) {
+                callback(new Error(`Maximum number of redirects (${maxRedirects}) exceeded`));
+                return undefined;
             }
             assertSafeOAuthUrl(url)
                 .then(() => {
@@ -107,7 +126,7 @@ export class OAuth1Client {
                 });
             return undefined;
         };
-        // @ts-expect-error `_performSecureRequest` is a private node-oauth method we wrap to guard every hop.
+        // @ts-expect-error `_performSecureRequest` is a private node-oauth method we wrap to guard egress.
         this.client._performSecureRequest = performGuardedRequest;
     }
 
