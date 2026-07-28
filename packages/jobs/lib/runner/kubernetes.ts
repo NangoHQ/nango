@@ -134,7 +134,7 @@ class Kubernetes {
         // Match both patterns:
         // - http://service-name (without namespace)
         // - http://service-name.namespace (with namespace)
-        if (!url.match(/^http:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)?$/)) {
+        if (!url.match(new RegExp(`^${envs.NANGO_RUNNER_URL_SCHEME}://[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)?$`))) {
             return Promise.resolve(Err(new Error('Invalid Kubernetes service URL format')));
         }
         return Promise.resolve(Ok(undefined));
@@ -398,11 +398,12 @@ class Kubernetes {
 
     private getRunnerUrl(node: Node): string {
         const name = this.getServiceName(node);
+        const scheme = envs.NANGO_RUNNER_URL_SCHEME;
         if (this.namespacePerRunner) {
             const namespace = this.getNamespace(node);
-            return `http://${name}.${namespace}`;
+            return `${scheme}://${name}.${namespace}`;
         }
-        return `http://${name}`;
+        return `${scheme}://${name}`;
     }
 
     private getEnvironmentVariables(node: Node, runnerUrl: string): k8s.V1EnvVar[] {

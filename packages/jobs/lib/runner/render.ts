@@ -68,7 +68,7 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
                     { key: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
                     { key: 'RUNNER_NODE_ID', value: `${node.id}` },
-                    { key: 'RUNNER_URL', value: `http://${name}` },
+                    { key: 'RUNNER_URL', value: `${envs.NANGO_RUNNER_URL_SCHEME}://${name}` },
                     { key: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` },
                     { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                     { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
@@ -109,7 +109,7 @@ export const renderNodeProvider: NodeProvider = {
         return Ok(undefined);
     },
     verifyUrl: (url) => {
-        if (!url.match(/^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/)) {
+        if (!url.match(new RegExp(`^${envs.NANGO_RUNNER_URL_SCHEME}://(production|staging)-runner-account-(\\d+|default)-\\d+`))) {
             return Promise.resolve(Err('Invalid URL'));
         }
         return Promise.resolve(Ok(undefined));
