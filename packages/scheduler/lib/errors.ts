@@ -8,3 +8,14 @@ export class DuplicateTaskNameError extends Error {
 export function isDuplicateTaskNameError(err: unknown): boolean {
     return err instanceof DuplicateTaskNameError;
 }
+
+export class ScheduleTaskAlreadyRunningError extends Error {
+    constructor() {
+        super('A task for this schedule is already running');
+        this.name = 'ScheduleTaskAlreadyRunningError';
+    }
+}
+
+export function isScheduleTaskAlreadyRunningError(err: unknown): boolean {
+    return err instanceof ScheduleTaskAlreadyRunningError;
+}

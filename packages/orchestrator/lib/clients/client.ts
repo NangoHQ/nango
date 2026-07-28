@@ -173,13 +173,29 @@ export class OrchestratorClient {
     }
 
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
-        const res = await this.routeFetch(postScheduleRunRoute)({
+        const res = await this.routeFetch(postScheduleRunRoute, {
+            // A schedule that already has an active task is a terminal answer, not a transient failure
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res && getScheduleTaskAlreadyRunningMessage(res.error.payload) === null
+            }
+        })({
             body: {
                 scheduleName: props.scheduleName,
                 extra: props.extra
             }
         });
         if ('error' in res) {
+            const alreadyRunning = getScheduleTaskAlreadyRunningMessage(res.error.payload);
+            if (alreadyRunning !== null) {
+                return Err({
+                    name: 'schedule_task_already_running',
+                    message: alreadyRunning || 'A task for this schedule is already running',
+                    payload: {}
+                });
+            }
+
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
@@ -610,6 +626,25 @@ function getDuplicateTaskNameMessage(payload: unknown): string | null {
     };
 
     if (response.error?.code !== 'duplicate_task_name') {
+        return null;
+    }
+
+    return response.error.message || '';
+}
+
+function getScheduleTaskAlreadyRunningMessage(payload: unknown): string | null {
+    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+        return null;
+    }
+
+    const response = payload as {
+        error?: {
+            code?: string;
+            message?: string;
+        };
+    };
+
+    if (response.error?.code !== 'schedule_task_already_running') {
         return null;
     }
 
