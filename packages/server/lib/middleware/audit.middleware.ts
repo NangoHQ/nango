@@ -215,8 +215,8 @@ function bodyField(req: Request<any, any, any, any>, key: string): unknown {
 function providerConfigKeyMeta(value: unknown): { providerConfigKey: string } | undefined {
     return typeof value === 'string' && value.length > 0 ? { providerConfigKey: value } : undefined;
 }
-// Keep only origin + path from a URL — a webhook URL can carry a secret token in its query string or
-// userinfo, and this goes into the immutable audit record.
+// Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
+// query string, or userinfo, and this goes into the immutable audit record.
 function safeUrl(value: unknown): string | undefined {
     if (typeof value !== 'string' || value.length === 0) {
         return undefined;
