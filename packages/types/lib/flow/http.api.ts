@@ -1,7 +1,8 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
-export type PutUpgradePreBuiltFlow = Endpoint<{
+export type PutUpgradePreBuiltFlow = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PUT';
     Path: '/api/v1/flows/pre-built/upgrade';
     Querystring: { env: string };
@@ -20,7 +21,8 @@ export type PutUpgradePreBuiltFlow = Endpoint<{
     };
 }>;
 
-export type PostPreBuiltDeploy = Endpoint<{
+export type PostPreBuiltDeploy = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/api/v1/flows/pre-built/deploy';
     Querystring: { env: string };
@@ -37,7 +39,8 @@ export type PostPreBuiltDeploy = Endpoint<{
     };
 }>;
 
-export type PatchFlowEnable = Endpoint<{
+export type PatchFlowEnable = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/enable';
     Querystring: { env: string };
@@ -56,7 +59,8 @@ export type PatchFlowEnable = Endpoint<{
     };
 }>;
 
-export type PatchFlowDisable = Endpoint<{
+export type PatchFlowDisable = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/disable';
     Querystring: { env: string };
@@ -75,7 +79,8 @@ export type PatchFlowDisable = Endpoint<{
     };
 }>;
 
-export type PatchFlowFrequency = Endpoint<{
+export type PatchFlowFrequency = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/frequency';
     Querystring: { env: string };
@@ -95,7 +100,8 @@ export type PatchFlowFrequency = Endpoint<{
     };
 }>;
 
-export type GetFlowDownload = Endpoint<{
+export type GetFlowDownload = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/flows/:id/download';
     Querystring: { env: string };

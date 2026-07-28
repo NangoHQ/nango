@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 
 export type CliTelemetryEvent =
     | 'cli:init'
@@ -13,7 +13,8 @@ export type CliTelemetryEvent =
     | 'cli:deploy'
     | 'cli:pull';
 
-export type PostCliTelemetry = Endpoint<{
+export type PostCliTelemetry = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/cli/telemetry';
     Body: {

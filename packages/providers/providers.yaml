@@ -2289,7 +2289,7 @@ avanan:
         x-av-sig: '${sha256Hex(${base64(${random}${credentials.appId}${now:YYYY-MM-DDTHH:mm:ss}${credentials.secretKey})})}'
     token_response:
         token: ''
-    token_expires_in_ms: 3_600_000
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.subdomain}.avanan.net
         headers:
@@ -5769,7 +5769,7 @@ cursor-admin:
         username:
             type: string
             title: API key
-            description: The API Key of your Greenhouse account
+            description: The Admin API key for your Cursor account
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
             pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
             secret: true
@@ -9062,8 +9062,11 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+    webhook_routing_script: gitlabWebhookRouting
     proxy:
         base_url: https://gitlab.com
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/gitlab
 
 gitlab-pat:
@@ -9072,6 +9075,7 @@ gitlab-pat:
         - dev-tools
         - ticketing
     auth_mode: API_KEY
+    webhook_routing_script: gitlabWebhookRouting
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
@@ -9085,6 +9089,8 @@ gitlab-pat:
                 content-type: application/json
             endpoints:
                 - /api/v4/users
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/integrations/all/gitlab-pat
     docs_connect: https://nango.dev/docs/integrations/all/gitlab-pat/connect
     credentials:
@@ -11083,7 +11089,7 @@ ironclad:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: https://ironcladapp.com/oauth/authorize
+    authorization_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.ironcladapp.com/oauth/token
     disable_pkce: true
     authorization_params:

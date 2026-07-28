@@ -1,6 +1,7 @@
-import type { Endpoint } from '../../api.js';
+import type { ApiEndpoint } from '../../api.js';
 
-export type PatchWebhook = Endpoint<{
+export type PatchWebhook = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Querystring: {
         env: string;
