@@ -19977,8 +19977,8 @@ servicenow:
         - productivity
         - popular
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
-    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    authorization_url: https://${connectionConfig.hostname}/oauth_auth.do || https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
+    token_url: https://${connectionConfig.hostname}/oauth_token.do || https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
     authorization_params:
         response_type: code
     token_params:
@@ -19986,17 +19986,23 @@ servicenow:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.subdomain}.service-now.com
-    docs: https://nango.dev/docs/integrations/all/servicenow
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.service-now.com
+    docs: https://nango.dev/docs/api-integrations/servicenow
+    docs_connect: https://nango.dev/docs/api-integrations/servicenow/connect
     connection_config:
-        subdomain:
+        hostname:
             type: string
             title: ServiceNow Domain
-            description: The subdomain of your ServiceNow account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .service-now.com
+            description: The full hostname of your ServiceNow instance
+            format: hostname
+            example: domain.service-now.com
             prefix: https://
+            doc_section: '#step-1-finding-your-domain'
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of hostname
 
 servicenow-oauth2-cc:
     display_name: ServiceNow (Client Credentials)
@@ -20004,23 +20010,27 @@ servicenow-oauth2-cc:
         - productivity
         - ticketing
     auth_mode: OAUTH2_CC
-    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    token_url: https://${connectionConfig.hostname}/oauth_token.do || https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.subdomain}.service-now.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.service-now.com
     docs: https://nango.dev/docs/api-integrations/servicenow-oauth2-cc
     docs_connect: https://nango.dev/docs/api-integrations/servicenow-oauth2-cc/connect
     connection_config:
-        subdomain:
+        hostname:
             type: string
             title: ServiceNow Domain
-            description: The subdomain of your ServiceNow account
-            doc_section: '#step-5-enter-credentials-in-the-connect-ui'
-            pattern: '^[a-z0-9_-]+$'
-            example: dev12345
-            suffix: .service-now.com
+            description: The full hostname of your ServiceNow instance
+            format: hostname
+            example: dev12345.service-now.com
             prefix: https://
+            doc_section: '#step-5-enter-credentials-in-the-connect-ui'
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of hostname
     credentials:
         client_id:
             type: string

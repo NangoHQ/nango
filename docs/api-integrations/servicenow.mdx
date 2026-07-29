@@ -1,7 +1,7 @@
 ---
-title: 'ServiceNow (Client Credentials)'
-sidebarTitle: 'ServiceNow (Client Credentials)'
-description: 'Integrate your application with the ServiceNow API using OAuth 2.0 Client Credentials'
+title: 'ServiceNow'
+sidebarTitle: 'ServiceNow'
+description: 'Integrate your application with the ServiceNow API using OAuth 2.0'
 ---
 
 ## 🚀 Quickstart
@@ -10,10 +10,10 @@ Connect to ServiceNow with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ServiceNow (Client Credentials)_.
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ServiceNow_.
     </Step>
     <Step title="Authorize ServiceNow">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your ServiceNow instance domain, Client ID, and Client Secret. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, enter your instance domain, then log in to ServiceNow. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the ServiceNow API">
     Let's make your first request to the ServiceNow Table API (fetch a list of incidents). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -48,8 +48,6 @@ Connect to ServiceNow with Nango and see data flow in 2 minutes.
         console.log(res.data);
         ```
         </Tab>
-
-
     </Tabs>
     Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
@@ -57,7 +55,7 @@ Connect to ServiceNow with Nango and see data flow in 2 minutes.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -67,16 +65,28 @@ Connect to ServiceNow with Nango and see data flow in 2 minutes.
 
 Nango-maintained guides for common use cases.
 
-- [How do I link my account?](/api-integrations/servicenow-oauth2-cc/connect)
-  Connect your ServiceNow account using the Connect UI
+- [How to register your own ServiceNow OAuth app](/api-integrations/servicenow/how-to-register-your-own-servicenow-oauth-app)  
+Register an OAuth app with ServiceNow and obtain credentials to connect it to Nango
+
+- [How do I link my account?](/api-integrations/servicenow/connect)  
+Find your instance domain and connect it to Nango
 
 Official docs: [ServiceNow REST API Documentation](https://developer.servicenow.com/dev.do#!/reference/api/vancouver/rest/c_TableAPI)
 
+## API gotchas
+
+- A [ServiceNow Developer Instance](https://developer.servicenow.com/dev.do) is free for testing; production instances require a paid subscription.
+- The OAuth application must be registered as **Create an OAuth API endpoint for external clients** in the Application Registry, with the redirect URL set to `https://api.nango.dev/oauth/callback`.
+- Enter your instance's full domain (e.g. `your-instance.service-now.com`) in the **ServiceNow Domain** field — Nango uses it to build the authorization and token endpoints automatically.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/servicenow.mdx)</Note>
+
 ## 🧩 Pre-built syncs & actions for ServiceNow
 
-_No pre-built syncs or actions available yet._
+Enable them in your dashboard. Extend and customize to fit your needs.
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>
+import PreBuiltUseCases from "/snippets/generated/servicenow/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
 
 ---
-

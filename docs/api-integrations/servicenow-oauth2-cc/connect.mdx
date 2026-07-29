@@ -6,7 +6,7 @@ sidebarTitle: ServiceNow (Client Credentials)
 # Overview
 
 To authenticate with ServiceNow using Client Credentials, you need:
-1. **Subdomain** - Your ServiceNow instance subdomain (e.g., `dev12345` for `dev12345.service-now.com`).
+1. **Domain** - Your ServiceNow instance's full hostname (e.g., `dev12345.service-now.com`).
 2. **Client ID** - The unique identifier for your OAuth application.
 3. **Client Secret** - A confidential key used to authenticate the application.
 
@@ -94,7 +94,7 @@ This is the service account identity that API calls will be made as:
 Once you have your credentials:
 
 1. Open the form where you need to authenticate with ServiceNow.
-2. Enter your **Subdomain** (e.g., `dev12345`), **Client ID**, and **Client Secret** in their designated fields.
+2. Enter your **Domain** (e.g., `dev12345.service-now.com`), **Client ID**, and **Client Secret** in their designated fields.
 <img src="/api-integrations/servicenow-oauth2-cc/form.png" />
 3. Submit the form, and you should be successfully authenticated.
 
