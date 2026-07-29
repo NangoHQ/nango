@@ -21,8 +21,26 @@ export interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;
     changedFields?: string[];
 }
+export interface IntegrationCreatedMetadata {
+    provider?: string;
+}
 export interface IntegrationUpdatedMetadata {
     changedFields?: string[];
+}
+export interface EnvironmentCreatedMetadata {
+    name?: string;
+}
+export interface MemberInvitedMetadata {
+    role?: string;
+}
+export interface FunctionDeployedMetadata {
+    providerConfigKey?: string;
+    // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
+    type?: string;
+}
+export interface FunctionUpgradedMetadata {
+    providerConfigKey?: string;
+    upgradeVersion?: string;
 }
 export interface FunctionDeletedMetadata {
     providerConfigKey?: string;
@@ -32,6 +50,9 @@ export interface FunctionDeletedMetadata {
 export interface ApiKeyUpdatedMetadata {
     displayName?: string;
     scopes?: string[];
+}
+export interface SyncStateMetadata {
+    providerConfigKey?: string;
 }
 export interface SyncFrequencyChangedMetadata {
     providerConfigKey?: string;
@@ -76,20 +97,30 @@ interface AuditEventCommon {
 }
 
 export type AuditResourceAction =
+    | { resource: 'connection'; action: 'created'; metadata?: ConnectionMetadata }
     | { resource: 'connection'; action: 'refreshed' | 'metadata_updated' | 'deleted'; metadata?: ConnectionMetadata }
     | { resource: 'connection'; action: 'updated'; metadata?: ConnectionUpdatedMetadata }
+    | { resource: 'integration'; action: 'created'; metadata?: IntegrationCreatedMetadata }
     | { resource: 'integration'; action: 'updated'; metadata?: IntegrationUpdatedMetadata }
     | { resource: 'integration'; action: 'deleted' }
+    | { resource: 'function'; action: 'deployed'; metadata?: FunctionDeployedMetadata }
+    | { resource: 'function'; action: 'upgraded'; metadata?: FunctionUpgradedMetadata }
     | { resource: 'function'; action: 'deleted'; metadata?: FunctionDeletedMetadata }
+    | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'deleted' }
+    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncStateMetadata }
     | { resource: 'sync'; action: 'enabled' | 'disabled' }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
+    | { resource: 'member'; action: 'invited'; metadata?: MemberInvitedMetadata }
+    | { resource: 'member'; action: 'invite_accepted' | 'invite_declined' }
+    | { resource: 'member'; action: 'invite_revoked' }
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
     | { resource: 'user'; action: 'updated' }
+    | { resource: 'environment'; action: 'created'; metadata?: EnvironmentCreatedMetadata }
     | { resource: 'environment'; action: 'deleted' }
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }
     | { resource: 'environment'; action: 'updated'; metadata?: EnvironmentUpdatedMetadata }
