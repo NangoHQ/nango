@@ -10,6 +10,7 @@ import { audit } from '../audit.js';
 import { isSuccess, runServer } from '../utils/tests.js';
 import { resetPasswordSecret } from '../utils/utils.js';
 
+import type { AuditAction } from '@nangohq/audit';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
@@ -20,6 +21,12 @@ const resetPasswordRoute = '/api/v1/account/reset-password';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
+
+// A test that signs in before acting records an app_auth/login first, so select the event under test
+// by its action rather than by position.
+function authEvent(action: AuditAction) {
+    return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.action === action);
+}
 
 async function signupVerifiedUser(): Promise<{ email: string; password: string; user: DBUser }> {
     const email = `${nanoid()}@example.com`;
@@ -171,16 +178,15 @@ describe('auth audit middleware (private API)', () => {
     it('records app_auth/logout on a successful logout', async () => {
         const { email, password, user } = await signupVerifiedUser();
         const session = await signin(email, password);
-        auditSpy.mockClear();
 
         // logout replies 200 with an empty body; api.fetch's res.json() would throw, so use a raw fetch.
         const res = await fetch(`${api.url}${logoutRoute}`, { method: 'POST', headers: { Cookie: session } });
         expect(res.status).toBe(200);
 
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(authEvent('logout')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(authEvent('logout')).toMatchObject({
             resource: 'app_auth',
             action: 'logout',
             outcome: 'success',
