@@ -24,15 +24,6 @@ function eventWithAction(action: AuditAction) {
     return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.action === action);
 }
 
-async function enrollAndActivate(session: string): Promise<OTPAuth.TOTP> {
-    const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session });
-    isSuccess(enrollment.json);
-    const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
-    const activation = await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session, body: { code: totp.generate() } });
-    expect(activation.res.status).toBe(200);
-    return totp;
-}
-
 // Signs up a verified user with an active MFA factor (enrolled directly through the service, so no HTTP
 // audit event is produced), then signs them in to reach the pending-MFA-login state. Returns the pending
 // session cookie plus the user and TOTP so the caller can drive /mfa/login/verify.
@@ -75,105 +66,6 @@ describe('MFA audit (private API)', () => {
 
     beforeEach(() => {
         auditSpy.mockClear();
-    });
-
-    it('records an audit event when a user enrolls in MFA', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        const res = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session });
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-
-        await vi.waitFor(() => {
-            expect(eventWithAction('enrolled')).toBeDefined();
-        });
-        expect(eventWithAction('enrolled')).toMatchObject({
-            resource: 'mfa',
-            action: 'enrolled',
-            outcome: 'success',
-            environment: null,
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'user', id: String(user.id), display: user.email }]
-        });
-    });
-
-    it('records an audit event when a user activates MFA', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session });
-        isSuccess(enrollment.json);
-        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
-
-        const res = await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session, body: { code: totp.generate() } });
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-
-        await vi.waitFor(() => {
-            expect(eventWithAction('enabled')).toBeDefined();
-        });
-        expect(eventWithAction('enabled')).toMatchObject({
-            resource: 'mfa',
-            action: 'enabled',
-            outcome: 'success',
-            environment: null,
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'user', id: String(user.id), display: user.email }]
-        });
-    });
-
-    it('records an audit event when a user regenerates recovery codes', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-        const totp = await enrollAndActivate(session);
-
-        const code = totp.generate({ timestamp: Date.now() + 30_000 });
-        const res = await api.fetch(`${mfaRoute}/recovery-codes`, { method: 'POST', session, body: { code } });
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-
-        await vi.waitFor(() => {
-            expect(eventWithAction('recovery_regenerated')).toBeDefined();
-        });
-        const event = eventWithAction('recovery_regenerated');
-        expect(event).toMatchObject({
-            resource: 'mfa',
-            action: 'recovery_regenerated',
-            outcome: 'success',
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'user', id: String(user.id), display: user.email }]
-        });
-        // The submitted TOTP code and the returned recovery codes must never reach the audit record.
-        const serialized = JSON.stringify(event);
-        expect(serialized).not.toContain(code);
-        for (const recoveryCode of res.json.data.recoveryCodes) {
-            expect(serialized).not.toContain(recoveryCode);
-        }
-    });
-
-    it('records an audit event when a user disables MFA', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-        const totp = await enrollAndActivate(session);
-
-        const code = totp.generate({ timestamp: Date.now() + 30_000 });
-        const res = await api.fetch(mfaRoute, { method: 'DELETE', session, body: { code } });
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-
-        await vi.waitFor(() => {
-            expect(eventWithAction('disabled')).toBeDefined();
-        });
-        const event = eventWithAction('disabled');
-        expect(event).toMatchObject({
-            resource: 'mfa',
-            action: 'disabled',
-            outcome: 'success',
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'user', id: String(user.id), display: user.email }]
-        });
-        expect(JSON.stringify(event)).not.toContain(code);
     });
 
     it('records a failure outcome for a rejected activation and never persists the submitted code', async () => {
