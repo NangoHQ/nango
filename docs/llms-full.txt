@@ -13946,6 +13946,18 @@ Please reach out in the [community](https://nango.dev/slack) if you would like t
   **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
 
+## Contributing to Nango
+
+Source: https://nango.dev/docs/contributing.md
+Description: Learn which external contributions Nango reviews
+
+Nango only reviews external pull requests for:
+
+- **Security fixes.** Report vulnerabilities privately through our [security policy](https://github.com/NangoHQ/nango/security/policy) before submitting a fix.
+- **New API support.** Follow the [new API contribution guide](/integrations/contribute-or-request-api).
+
+We do not review external pull requests for bug fixes, new features, or improvements to existing features and APIs. Please [report bugs](https://github.com/NangoHQ/nango/issues) instead. For questions and feedback, join the [community Slack](https://nango.dev/slack).
+
 ## Explore APIs & integrations
 
 Source: https://nango.dev/docs/integrations/overview.md

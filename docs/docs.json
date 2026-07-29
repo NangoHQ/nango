@@ -920,6 +920,12 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing"
+            ]
           }
         ]
       },

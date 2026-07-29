@@ -133,6 +133,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Functions: Functions CLI](https://nango.dev/docs/reference/functions/functions-cli.md): Full reference of the CLI available to implement, test & deploy Nango Functions.
 - [Functions: Functions SDK](https://nango.dev/docs/reference/functions/functions-sdk.md): Full reference of the SDK available in Nango Functions.
 
+## Contributing
+
+- [Contributing to Nango](https://nango.dev/docs/contributing.md): Learn which external contributions Nango reviews
+
 ## Overview
 
 - [Explore APIs & integrations](https://nango.dev/docs/integrations/overview.md)
