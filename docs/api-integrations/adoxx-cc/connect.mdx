@@ -37,9 +37,10 @@ The Client Credentials Flow runs requests in the context of a technical user, so
 #### Step 2: Set the Base URL and link the technical user
 
 1. Go to **Settings > System settings > System**.
-2. In the **Base URL** field, enter the URL where the instance can be reached from other machines, e.g. `http://<SERVER_NAME>:<TOMCAT_PORT>/ADONIS16_0/` (default port is `8000`). This is the value you'll enter as **Base URL** in Nango.
-3. Click **Select users** and choose the technical user created in step 1.
-4. Click **Save**.
+2. In the **Base URL** field, enter the URL where the instance can be reached from other machines, e.g. `http://<SERVER_NAME>:<TOMCAT_PORT>/ADONIS16_0/` (default port is `8000`).
+3. Nango's **Base URL** field expects a different format: no protocol and no trailing slash — Nango always connects over `https://`. Strip both from the value above before entering it in Nango, e.g. `<SERVER_NAME>:<TOMCAT_PORT>/ADONIS16_0`.
+4. Click **Select users** and choose the technical user created in step 1.
+5. Click **Save**.
 
 #### Step 3: Enable the REST API and OAuth 2.0, and define a scope
 
