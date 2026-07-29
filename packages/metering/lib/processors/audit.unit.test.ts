@@ -48,11 +48,25 @@ describe('AuditProcessor', () => {
         expect(write).toHaveBeenCalledWith(record);
     });
 
-    it('logs and acknowledges when the write fails, so one bad event cannot block the queue', async () => {
+    it('logs and acknowledges when the write returns Err', async () => {
         const error = vi.spyOn(logger, 'error');
         const props = start({ record: () => Promise.resolve(Err(new Error('clickhouse unavailable'))) });
 
         await expect(props.callback(message)).resolves.toBeUndefined();
         expect(error).toHaveBeenCalledWith(expect.stringContaining('clickhouse unavailable'));
+    });
+
+    // A throw and an Err must share one fate, or the same failure is dropped or retried depending on
+    // whether the writer happened to catch it.
+    it('logs and acknowledges when the write throws', async () => {
+        const error = vi.spyOn(logger, 'error');
+        const props = start({
+            record: () => {
+                throw new Error('unexpected');
+            }
+        });
+
+        await expect(props.callback(message)).resolves.toBeUndefined();
+        expect(error).toHaveBeenCalledWith('Failed to store audit event', expect.any(Error));
     });
 });

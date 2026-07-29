@@ -23,9 +23,13 @@ export class AuditProcessor {
             subject: 'audit',
             concurrency: envs.METERING_AUDIT_EVENTS_SUBSCRIBE_CONCURRENCY,
             callback: async (event) => {
-                const result = await this.store.record(event.payload);
-                if (result.isErr()) {
-                    logger.error(`Failed to store audit event: ${result.error.message}`);
+                try {
+                    const result = await this.store.record(event.payload);
+                    if (result.isErr()) {
+                        logger.error(`Failed to store audit event: ${result.error.message}`);
+                    }
+                } catch (err) {
+                    logger.error('Failed to store audit event', err);
                 }
             }
         });
