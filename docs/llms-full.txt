@@ -6867,8 +6867,6 @@ NANGO_MANAGEMENT_MCP_SERVER_URL=https://mcp.example.com
 
 The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango uses the request hostname to distinguish Management MCP traffic from the public API. Restart the Nango server after setting the environment variable; the Management MCP endpoint is then available at `https://mcp.example.com/mcp`.
 
-The currently available Management MCP tools query Nango logs. Follow the [Logs](#logs) setup below to enable log storage, then configure your MCP client with the self-hosted endpoint and a scoped Nango API key as described in the [Management MCP reference](/reference/backend/management-mcp#connect).
-
 ### Connect UI
 
 Nango Connect is available for self-hosted deployments in the main Docker image.
