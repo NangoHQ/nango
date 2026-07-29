@@ -9,10 +9,17 @@ import { Ok } from '@nangohq/utils';
 import { audit } from '../audit.js';
 import { authenticateUser, runServer } from '../utils/tests.js';
 
+import type { AuditAction, AuditResource } from '@nangohq/audit';
 import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
+
+// authenticateUser() signs in, which now records an app_auth/login event, so the event under test is
+// not necessarily calls[0]. Select it by resource/action instead of by position.
+function auditEvent(resource: AuditResource, action: AuditAction) {
+    return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.resource === resource && event.action === action);
+}
 
 // Seeds an account/env/user plus an algolia connection and an enabled sync so `/sync/command` reaches
 // the controller. The orchestrator is mocked, so the command's real business outcome is irrelevant —
@@ -77,9 +84,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'paused')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'paused')).toMatchObject({
             resource: 'sync',
             action: 'paused',
             outcome: 'success',
@@ -101,9 +108,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'started')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'started')).toMatchObject({
             resource: 'sync',
             action: 'started',
             outcome: 'success',
@@ -124,9 +131,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'triggered')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'triggered')).toMatchObject({
             resource: 'sync',
             action: 'triggered',
             outcome: 'success',
@@ -149,9 +156,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'triggered')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'triggered')).toMatchObject({
             resource: 'sync',
             action: 'triggered',
             outcome: 'success',
@@ -173,9 +180,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'cancelled')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'cancelled')).toMatchObject({
             resource: 'sync',
             action: 'cancelled',
             outcome: 'success',
@@ -197,9 +204,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'triggered')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'triggered')).toMatchObject({
             resource: 'sync',
             action: 'triggered',
             outcome: 'success',
@@ -220,8 +227,8 @@ describe('audit sync command middleware (private API)', () => {
         });
 
         // A known-mapped command on the same sync gives the fire-and-forget `res.on('finish')` handler
-        // something to drain. Once it records exactly once — the mapped PAUSE — we know the unmapped
-        // command emitted nothing, without racing the async finish handler.
+        // something to drain. Once exactly one sync event is recorded — the mapped PAUSE — we know the
+        // unmapped command emitted nothing, without racing the async finish handler.
         await postSyncCommand(session, {
             command: 'PAUSE',
             nango_connection_id: connection.id,
@@ -230,9 +237,10 @@ describe('audit sync command middleware (private API)', () => {
         });
 
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalledTimes(1);
+            expect(auditEvent('sync', 'paused')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditSpy.mock.calls.map((call) => call[0]).filter((event) => event.resource === 'sync')).toHaveLength(1);
+        expect(auditEvent('sync', 'paused')).toMatchObject({
             resource: 'sync',
             action: 'paused',
             targets: [{ type: 'sync', id: sync.id, display: sync.name }]
@@ -257,9 +265,9 @@ describe('audit sync command middleware (private API)', () => {
 
         expect(status).toBe(403);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'paused')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'paused')).toMatchObject({
             resource: 'sync',
             action: 'paused',
             outcome: 'denied',
