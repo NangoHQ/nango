@@ -56,9 +56,6 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 
 type AuditableEndpoint = Endpoint<any> & { Audit: AuditPolicy };
 
-// Build a concrete audit policy value inline at each spec. The resource/action/scope are captured as
-// literal types, so the value is checked against the endpoint's own `Audit: AuditPolicy<…>` declaration
-// (`policy: TEndpoint['Audit']`) — the wiring cannot disagree with the endpoint contract.
 const Audit = {
     auditable: <R extends AuditResource, A extends AuditAction, S extends AuditScope>(policy: { resource: R; action: A; scope: S }): AuditPolicy<R, A, S> => ({
         kind: 'audit',
@@ -66,9 +63,7 @@ const Audit = {
     })
 };
 
-// The identity comes from the endpoint's own `Audit` declaration (so wiring can't disagree with it);
-// the spec only adds the runtime resolvers. Metadata is best-effort and loosely typed here — the
-// per-event shapes are documented on the emit model (@nangohq/audit's AuditEvent).
+// Metadata is loosely typed here; per-event shapes live on the emit model (@nangohq/audit's AuditEvent).
 type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     policy: TEndpoint['Audit'];
     target?: (
@@ -90,9 +85,7 @@ function makeTarget(type: AuditTargetType, value: unknown, display?: string): Au
     return id ? { type, id, ...(display ? { display } : {}) } : undefined;
 }
 
-// Drop keys whose value is undefined, returning undefined when nothing is left. Callers map any
-// "absent" sentinel (empty string, non-string) to undefined themselves — compact only strips undefined.
-function compact(obj: Record<string, unknown>): Record<string, unknown> | undefined {
+function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | undefined {
     const out: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
         if (value !== undefined) {
@@ -242,19 +235,19 @@ function connectionTargets(paramId: unknown, bodyId: string | string[] | undefin
     return makeTarget('connection', paramId ?? bodyId);
 }
 function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: string[] | undefined): Record<string, unknown> | undefined {
-    return compact({
+    return omitUndefined({
         providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
         changedFields: fields
     });
 }
 function syncFrequencyMeta(frequency: string | null | undefined, providerConfigKey: string | undefined): Record<string, unknown> | undefined {
-    return compact({
+    return omitUndefined({
         frequency: typeof frequency === 'string' ? frequency : undefined,
         providerConfigKey: typeof providerConfigKey === 'string' ? providerConfigKey : undefined
     });
 }
 function functionDeletedMeta(providerConfigKey: string | undefined, type: string | undefined): Record<string, unknown> | undefined {
-    return compact({
+    return omitUndefined({
         providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
         // A sync and an action can share a name; `type` disambiguates which function was deleted.
         type: type ? type : undefined
@@ -285,9 +278,7 @@ function changedFields(req: Request<any, any, any, any>): string[] | undefined {
         .slice(0, CHANGED_FIELDS_MAX);
     return keys.length > 0 ? keys : undefined;
 }
-// Shared shape for targets whose display is looked up from the DB: normalize the id, bail if absent,
-// resolve the display best-effort (failures degrade to no display), and assemble the target. Each call
-// site supplies only its own lookup — the id is handed in already normalized.
+// Target whose display is looked up from the DB best-effort; failures degrade to no display.
 async function dbTarget(type: AuditTargetType, value: unknown, lookup: (id: string) => Promise<string | undefined>): Promise<AuditTarget | undefined> {
     const id = toId(value);
     if (!id) {
@@ -350,7 +341,6 @@ export const auditConnectionMetadataUpdated = auditable<PostConnectionMetadata>(
 });
 export const auditPublicConnectionMetadataSet = auditable<SetMetadata>({
     policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
-    // The batch metadata endpoints accept connection_id as an array — record one target per connection.
     target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
     metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
 });
@@ -410,7 +400,7 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'updated', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals),
     metadata: (req) =>
-        compact({
+        omitUndefined({
             displayName: typeof req.body.display_name === 'string' ? req.body.display_name : undefined,
             scopes: Array.isArray(req.body.scopes) ? req.body.scopes.filter((s) => typeof s === 'string') : undefined
         })
@@ -469,7 +459,7 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
                 return user?.role;
             });
         }
-        return compact({
+        return omitUndefined({
             toRole: typeof role === 'string' ? role : undefined,
             fromRole: fromRole ? fromRole : undefined
         });
@@ -496,7 +486,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
-        compact({
+        omitUndefined({
             name: typeof req.body.name === 'string' ? req.body.name : undefined,
             changedFields: changedFields(req)
         })
@@ -512,14 +502,14 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
         const variableNames = variables
             .map((v) => (v && typeof v === 'object' ? (v as Record<string, unknown>)['name'] : undefined))
             .filter((n): n is string => typeof n === 'string');
-        return compact({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
+        return omitUndefined({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
 });
 export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     policy: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
-        compact({
+        omitUndefined({
             primaryUrl: safeUrl(req.body.primary_url),
             secondaryUrl: safeUrl(req.body.secondary_url)
         })
@@ -528,7 +518,7 @@ export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
 export const auditBillingPlanChanged = auditable<PostPlanChange>({
     policy: Audit.auditable({ resource: 'billing', action: 'plan_changed', scope: 'account' }),
     metadata: (req, locals) =>
-        compact({
+        omitUndefined({
             toPlan: typeof req.body.orbId === 'string' ? req.body.orbId : undefined,
             fromPlan: locals.plan?.name || undefined
         })
