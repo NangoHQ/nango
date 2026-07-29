@@ -6857,6 +6857,16 @@ The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
 If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
 </Note>
 
+### Management MCP server
+
+The [Management MCP server](/reference/backend/management-mcp) runs as part of the main Nango server. To enable it, configure a dedicated hostname and route traffic for that hostname to the Nango server:
+
+```sh
+NANGO_MANAGEMENT_MCP_SERVER_URL=https://mcp.example.com
+```
+
+The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango uses the request hostname to distinguish Management MCP traffic from the public API. Restart the Nango server after setting the environment variable; the Management MCP endpoint is then available at `https://mcp.example.com/mcp`.
+
 ### Connect UI
 
 Nango Connect is available for self-hosted deployments in the main Docker image.
@@ -14581,6 +14591,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `adobe-commerce` | Adobe Commerce | API_KEY | [docs](https://nango.dev/docs/api-integrations/adobe-commerce.md) | [connect](https://nango.dev/docs/api-integrations/adobe-commerce/connect.md) |  | e-commerce |
 | `adobe-umapi` | UMAPI (Adobe User Management API) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adobe-umapi.md) | [connect](https://nango.dev/docs/integrations/all/adobe-umapi/connect.md) |  | other |
 | `adobe-workfront` | Adobe Workfront | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe-workfront.md) | [connect](https://nango.dev/docs/integrations/all/adobe-workfront/connect.md) |  | productivity |
+| `adoxx-cc` | ADOXX (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/adoxx-cc.md) | [connect](https://nango.dev/docs/api-integrations/adoxx-cc/connect.md) |  | dev-tools |
 | `adp` | ADP | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp.md) | [connect](https://nango.dev/docs/integrations/all/adp/connect.md) |  | hr |
 | `adp-lyric` | ADP Lyric | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-lyric.md) | [connect](https://nango.dev/docs/integrations/all/adp-lyric/connect.md) |  | hr |
 | `adp-run` | RUN Powered by ADP | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-run.md) | [connect](https://nango.dev/docs/integrations/all/adp-run/connect.md) |  | hr |

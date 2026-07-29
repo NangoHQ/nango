@@ -547,6 +547,28 @@ adobe-commerce:
             description: Your Adobe Commerce access token
             doc_section: '#step-3-obtaining-your-access-token'
 
+adoxx-cc:
+    display_name: ADOXX (Client Credentials)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.baseUrl}/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}/rest
+    docs: https://nango.dev/docs/api-integrations/adoxx-cc
+    docs_connect: https://nango.dev/docs/api-integrations/adoxx-cc/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The base URL of your ADOXX instance, including the product/version path segment.
+            example: yourcompany.com:8000/ADOXX
+            prefix: https://
+            order: 1
+
 adp:
     display_name: ADP
     auth_mode: OAUTH2_CC
