@@ -3,6 +3,8 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
+const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
+
 function outboundUrlPolicySchema(varName: string) {
     return z
         .string()
@@ -148,6 +150,7 @@ export const ENVS = z.object({
 
     // Metering
     METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
+    METERING_AUDIT_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -551,6 +554,9 @@ export const ENVS = z.object({
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
 
+    // Audit
+    NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
     NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
@@ -572,7 +578,7 @@ export const ENVS = z.object({
             z.object({
                 topicArns: z
                     .partialRecord(
-                        z.enum(['user', 'usage', 'team', 'lambda_keep_warm']),
+                        z.enum(PUBSUB_SUBJECTS),
                         z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
                     )
                     .optional()
@@ -581,13 +587,13 @@ export const ENVS = z.object({
                     .record(z.string(), z.url())
                     .check((payload) => {
                         const record = payload.value;
-                        const allowedSubjects = new Set(['user', 'usage', 'team', 'lambda_keep_warm']);
+                        const allowedSubjects = new Set<string>(PUBSUB_SUBJECTS);
                         for (const key of Object.keys(record)) {
                             const lastColon = key.lastIndexOf(':');
                             if (lastColon < 0 || lastColon === key.length - 1) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of user, usage, team, lambda_keep_warm)`,
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of ${PUBSUB_SUBJECTS.join(', ')})`,
                                     path: [key],
                                     input: record[key]
                                 });
@@ -597,7 +603,7 @@ export const ENVS = z.object({
                             if (!allowedSubjects.has(subject)) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of user, usage, team, lambda_keep_warm`,
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of ${PUBSUB_SUBJECTS.join(', ')}`,
                                     path: [key],
                                     input: record[key]
                                 });
