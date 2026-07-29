@@ -106,4 +106,4 @@ export type EnqueueBatchItem<Defs extends readonly AnyTaskDefinition[]> = {
     };
 }[Defs[number]['type']];
 
-export type EnqueueDiscardReason = 'capped' | 'duplicate';
+export type EnqueueDiscardReason = 'capped' | 'duplicate' | 'conflict';

@@ -2,6 +2,7 @@ import ms from 'ms';
 
 import { axiosInstance as axios, Err, Ok } from '@nangohq/utils';
 
+import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { AuthCredentialsError } from '../utils/error.js';
 
 import type { BillCredentials, ProviderBill } from '@nangohq/types';
@@ -43,8 +44,14 @@ export async function createCredentials({
     };
 
     try {
+        // Route the login/session call through the OAuth egress policy: validate the token URL and pin the
+        // connected IP. Note the OAuth policy intentionally allows private/RFC1918 destinations by default
+        // (so self-hosted Bill gateways keep working) — it blocks loopback, link-local/cloud-metadata, and
+        // denylisted hosts, not all internal addresses.
+        await assertSafeOAuthUrl(provider.token_url);
         const response = await axios.post(provider.token_url, postBody, {
-            headers
+            headers,
+            ...getOAuthAxiosRequestConfig()
         });
 
         if (response.status !== 200) {
