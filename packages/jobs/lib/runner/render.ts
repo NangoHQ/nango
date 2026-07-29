@@ -7,7 +7,7 @@ import { createClient } from 'redis';
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getRedisClientOptions, getRedisUrl } from '@nangohq/kvstore';
 import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { Err, getInternalTlsEnv, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { RenderAPI } from './render.api.js';
@@ -78,7 +78,8 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'JOBS_SERVICE_URL', value: envs.JOBS_SERVICE_URL },
                     { key: 'PROVIDERS_URL', value: getProvidersUrl() },
                     { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
-                    ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : [])
+                    ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : []),
+                    ...Object.entries(getInternalTlsEnv()).map(([key, value]) => ({ key, value }))
                 ]
             })
         );

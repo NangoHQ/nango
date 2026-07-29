@@ -111,6 +111,23 @@ export function getInternalTlsOptions(): InternalTlsOptions | undefined {
     return options;
 }
 
+/**
+ * Env vars for a runner the jobs service creates. Runners get an explicit env list rather than the
+ * parent's, and the assets are forwarded as resolved PEM because a _FILE path set on jobs points at
+ * nothing inside a pod or Lambda that jobs just created.
+ */
+export function getInternalTlsEnv(opts: InternalTlsOptions | undefined = options): Record<string, string> {
+    if (!opts) {
+        return {};
+    }
+    return {
+        ...(opts.cert ? { NANGO_INTERNAL_TLS_CERT: opts.cert } : {}),
+        ...(opts.key ? { NANGO_INTERNAL_TLS_KEY: opts.key } : {}),
+        ...(opts.ca ? { NANGO_INTERNAL_TLS_CA: opts.ca } : {}),
+        ...(opts.passphrase ? { NANGO_INTERNAL_TLS_KEY_PASSPHRASE: opts.passphrase } : {})
+    };
+}
+
 let dispatcher: Agent | undefined;
 let httpsAgent: https.Agent | undefined;
 

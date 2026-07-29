@@ -18,7 +18,7 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
+import { Err, getInternalTlsEnv, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
@@ -273,7 +273,9 @@ class Lambda {
                     : {}),
                 ...(envs.NANGO_OUTBOUND_URL_POLICY ? { NANGO_OUTBOUND_URL_POLICY: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) } : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
-                ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
+                ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {}),
+                // Lambda caps all env vars at 4KB in aggregate, which PEM assets can exhaust.
+                ...getInternalTlsEnv()
             }
         };
     }

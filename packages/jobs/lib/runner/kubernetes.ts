@@ -2,7 +2,7 @@ import * as k8s from '@kubernetes/client-node';
 
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { Err, getInternalTlsEnv, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { notifyOnIdle } from './runner.js';
@@ -431,7 +431,8 @@ class Kubernetes {
             { name: 'JOBS_SERVICE_URL', value: getJobsUrl() },
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
-            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'DISTRIBUTED' }] : [])
+            ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'DISTRIBUTED' }] : []),
+            ...Object.entries(getInternalTlsEnv()).map(([name, value]) => ({ name, value }))
         ];
     }
 

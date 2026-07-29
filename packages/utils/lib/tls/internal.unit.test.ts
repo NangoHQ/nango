@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { assertUsable, loadInternalTlsOptions } from './internal.js';
+import { assertUsable, getInternalTlsEnv, loadInternalTlsOptions } from './internal.js';
 
 const CERT_PEM = '-----BEGIN CERTIFICATE-----\nnot-a-real-cert\n-----END CERTIFICATE-----\n';
 const KEY_PEM = '-----BEGIN PRIVATE KEY-----\nnot-a-real-key\n-----END PRIVATE KEY-----\n';
@@ -86,6 +86,15 @@ describe('loadInternalTlsOptions', () => {
         expect(res?.passphrase).toBe('hunter2');
     });
 
+    it('should omit an empty passphrase', () => {
+        const res = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT: CERT_PEM,
+            NANGO_INTERNAL_TLS_KEY: KEY_PEM,
+            NANGO_INTERNAL_TLS_KEY_PASSPHRASE: ''
+        });
+        expect(res).not.toHaveProperty('passphrase');
+    });
+
     it('should preserve whitespace in the passphrase', () => {
         const res = loadInternalTlsOptions({
             NANGO_INTERNAL_TLS_CERT: CERT_PEM,
@@ -141,6 +150,52 @@ describe('loadInternalTlsOptions', () => {
     });
 });
 
+describe('getInternalTlsEnv', () => {
+    it('should be empty when disabled', () => {
+        expect(getInternalTlsEnv(undefined)).toEqual({});
+    });
+
+    it('should forward every asset that is set', () => {
+        const opts = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT: CERT_PEM,
+            NANGO_INTERNAL_TLS_KEY: KEY_PEM,
+            NANGO_INTERNAL_TLS_CA: CA_PEM,
+            NANGO_INTERNAL_TLS_KEY_PASSPHRASE: 'hunter2'
+        });
+        expect(getInternalTlsEnv(opts)).toEqual({
+            NANGO_INTERNAL_TLS_CERT: CERT_PEM.trim(),
+            NANGO_INTERNAL_TLS_KEY: KEY_PEM.trim(),
+            NANGO_INTERNAL_TLS_CA: CA_PEM.trim(),
+            NANGO_INTERNAL_TLS_KEY_PASSPHRASE: 'hunter2'
+        });
+    });
+
+    it('should omit assets that are not set', () => {
+        const opts = loadInternalTlsOptions({ NANGO_INTERNAL_TLS_CA: CA_PEM });
+        expect(getInternalTlsEnv(opts)).toEqual({ NANGO_INTERNAL_TLS_CA: CA_PEM.trim() });
+    });
+
+    it('should forward file-based assets as inline PEM', () => {
+        const opts = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT_FILE: writeTemp('forward.crt', CERT_PEM),
+            NANGO_INTERNAL_TLS_KEY_FILE: writeTemp('forward.key', KEY_PEM)
+        });
+        expect(getInternalTlsEnv(opts)).toEqual({
+            NANGO_INTERNAL_TLS_CERT: CERT_PEM.trim(),
+            NANGO_INTERNAL_TLS_KEY: KEY_PEM.trim()
+        });
+    });
+
+    it('should round-trip back through the loader', () => {
+        const opts = loadInternalTlsOptions({
+            NANGO_INTERNAL_TLS_CERT_FILE: writeTemp('trip.crt', CERT_PEM),
+            NANGO_INTERNAL_TLS_KEY_FILE: writeTemp('trip.key', KEY_PEM),
+            NANGO_INTERNAL_TLS_CA: Buffer.from(CA_PEM).toString('base64')
+        });
+        expect(loadInternalTlsOptions(getInternalTlsEnv(opts))).toEqual(opts);
+    });
+});
+
 describe('assertUsable', () => {
     const passphrase = ' spaced secret ';
     const { privateKey } = generateKeyPairSync('ec', {
@@ -165,5 +220,20 @@ describe('assertUsable', () => {
         expect(() => {
             assertUsable({ key: KEY_PEM });
         }).toThrowError(/assets were rejected/);
+    });
+
+    // OpenSSL falls back to an empty password when none is supplied, which is why an empty
+    // NANGO_INTERNAL_TLS_KEY_PASSPHRASE can be dropped rather than carried through as ''.
+    it('should accept a key encrypted with an empty passphrase when no passphrase is given', () => {
+        const { privateKey: emptyPassphraseKey } = generateKeyPairSync('ec', {
+            namedCurve: 'prime256v1',
+            publicKeyEncoding: { type: 'spki', format: 'pem' },
+            privateKeyEncoding: { type: 'pkcs8', format: 'pem', cipher: 'aes-256-cbc', passphrase: '' }
+        });
+        expect(emptyPassphraseKey).toContain('ENCRYPTED PRIVATE KEY');
+
+        expect(() => {
+            assertUsable({ key: emptyPassphraseKey });
+        }).not.toThrow();
     });
 });
