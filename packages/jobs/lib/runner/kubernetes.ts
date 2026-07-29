@@ -12,6 +12,21 @@ import type { Result } from '@nangohq/utils';
 
 export const logger = getLogger('Kubernetes');
 
+export function getTlsSecretName(serviceName: string): string {
+    return `${serviceName}-internal-tls`;
+}
+
+/**
+ * The assets go in a Secret rather than straight into the pod spec: a literal there is readable by
+ * anyone who can get pods and is echoed into the audit log of every pod create.
+ */
+export function getTlsEnvVars(serviceName: string, tlsEnv: Record<string, string> = getInternalTlsEnv()): k8s.V1EnvVar[] {
+    return Object.keys(tlsEnv).map((key) => ({
+        name: key,
+        valueFrom: { secretKeyRef: { name: getTlsSecretName(serviceName), key } }
+    }));
+}
+
 class Kubernetes {
     private static instance: Kubernetes | null = null;
     private readonly kc: k8s.KubeConfig;
@@ -70,6 +85,12 @@ class Kubernetes {
             }
         }
 
+        // Create the TLS secret first, otherwise the pods cannot start
+        const tlsSecretResult = await this.createTlsSecret(name, namespace);
+        if (tlsSecretResult.isErr()) {
+            return tlsSecretResult;
+        }
+
         // Create deployment
         const deploymentResult = await this.createDeployment(node, name, namespace, runnerUrl);
         if (deploymentResult.isErr()) {
@@ -124,6 +145,19 @@ class Kubernetes {
                 return Err(new Error('Failed to delete network policies', { cause: err }));
             }
 
+            if (Object.keys(getInternalTlsEnv()).length > 0) {
+                try {
+                    await this.coreApi.deleteNamespacedSecret({
+                        name: getTlsSecretName(name),
+                        namespace
+                    });
+                } catch (err: any) {
+                    if (!this.notFound(err)) {
+                        return Err(new Error('Failed to delete internal TLS secret', { cause: err }));
+                    }
+                }
+            }
+
             return Ok(undefined);
         } catch (err) {
             return Err(err as Error);
@@ -158,6 +192,35 @@ class Kubernetes {
             return Err(new Error('Failed to create namespace', { cause: err }));
         }
 
+        return Ok(undefined);
+    }
+
+    private async createTlsSecret(name: string, namespace: string): Promise<Result<void>> {
+        const tlsEnv = getInternalTlsEnv();
+        if (Object.keys(tlsEnv).length === 0) {
+            return Ok(undefined);
+        }
+
+        const secretManifest: k8s.V1Secret = {
+            metadata: {
+                name: getTlsSecretName(name),
+                labels: { app: name }
+            },
+            type: 'Opaque',
+            stringData: tlsEnv
+        };
+
+        try {
+            await this.coreApi.createNamespacedSecret({
+                namespace,
+                body: secretManifest
+            });
+        } catch (err: any) {
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
+            }
+            return Err(new Error('Failed to create internal TLS secret', { cause: err }));
+        }
         return Ok(undefined);
     }
 
@@ -203,7 +266,7 @@ class Kubernetes {
                                 ports: [{ containerPort: 8080 }],
                                 args: ['node', 'packages/runner/dist/app.js', '8080', 'dockerized-runner'],
                                 resources: this.getResourceLimits(node),
-                                env: this.getEnvironmentVariables(node, runnerUrl)
+                                env: this.getEnvironmentVariables(node, name, runnerUrl)
                             }
                         ]
                     }
@@ -406,7 +469,7 @@ class Kubernetes {
         return `${scheme}://${name}`;
     }
 
-    private getEnvironmentVariables(node: Node, runnerUrl: string): k8s.V1EnvVar[] {
+    private getEnvironmentVariables(node: Node, name: string, runnerUrl: string): k8s.V1EnvVar[] {
         return [
             { name: 'PORT', value: '8080' },
             { name: 'NODE_ENV', value: envs.NODE_ENV },
@@ -432,7 +495,7 @@ class Kubernetes {
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
             ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'DISTRIBUTED' }] : []),
-            ...Object.entries(getInternalTlsEnv()).map(([name, value]) => ({ name, value }))
+            ...getTlsEnvVars(name)
         ];
     }
 
