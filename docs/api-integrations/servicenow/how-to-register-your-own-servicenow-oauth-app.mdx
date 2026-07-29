@@ -30,12 +30,12 @@ This guide shows you how to register your own OAuth application with ServiceNow 
     <Step title="Configure OAuth scopes">
         1. In the Application Registry, open your newly created application.
         2. In the **Application Scope** tab, click **Add**.
-        3. Search for and select the API scopes your application needs. Common scopes include `admin`, `user_admin`, `user`, `useraccount`, `web_service_admin`, `web_service`, `personalize`, and `impersonate`.
+        3. Search for and select the API scopes your application needs. Common scopes include `admin`, `user_admin`, `user`, `useraccount`, `web_service_admin`, `web_service`, `personalize`, and `user_impersonate`.
         4. Click **Save**.
     </Step>
     <Step title="Configure OAuth policies">
         1. In your application record, navigate to the **OAuth Policies** tab.
-        2. Configure the token lifespans as needed (defaults: 30-minute access tokens, 8-hour refresh tokens).
+        2. Configure the token lifespans as needed (defaults: 30-minute access tokens, 100-day refresh tokens).
         3. Set **Refresh Token Count** to "Unlimited" to allow continuous refreshing.
         4. Click **Update**.
     </Step>
