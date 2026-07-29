@@ -7085,6 +7085,7 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 **Operator guidance:**
 
 - Set the variables on **every** service. Each one is both a client and a server in this topology.
+- Runners started at runtime by the jobs service inherit the configuration automatically, as inline PEM, regardless of which form you used on jobs itself. On Kubernetes that means the private key is visible in the runner pod spec. On AWS Lambda, all environment variables share a 4 KB budget that the assets can exhaust; prefer ECDSA and a single certificate rather than a chain.
 - Point the internal service URLs at your TLS listeners: `ORCHESTRATOR_SERVICE_URL`, `JOBS_SERVICE_URL`, `PERSIST_SERVICE_URL`, `SERVER_SERVICE_URL`, `PROVIDERS_URL`, and `RUNNER_SERVICE_URL` all need `https://` values. Set `NANGO_RUNNER_URL_SCHEME=https` so runner URLs generated at runtime match.
 - Setting a cert without a key (or the reverse), setting both the inline and `_FILE` form of the same asset, pointing `_FILE` at an unreadable path, or supplying a wrong passphrase or a mismatched cert/key pair all fail at startup rather than silently falling back to plain TLS.
 - `NANGO_INTERNAL_TLS_KEY_PASSPHRASE` is used exactly as given, including any leading or trailing whitespace, since that whitespace may be part of the passphrase. Surrounding whitespace *is* stripped from the other variables, where it is never significant.
