@@ -63,6 +63,11 @@ export interface BillingPlanChangedMetadata {
     fromPlan?: string;
     toPlan?: string;
 }
+export type AppAuthLoginMethod = 'local' | 'sso' | 'managed' | 'email_code';
+export interface AppAuthLoginMetadata {
+    mfaRequired?: boolean;
+    method?: AppAuthLoginMethod;
+}
 
 interface AuditEventCommon {
     occurredAt: string;
@@ -96,6 +101,7 @@ export type AuditResourceAction =
     | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
     | { resource: 'billing'; action: 'trial_extended' | 'details_changed' }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
-    | { resource: 'app_auth'; action: 'password_changed' };
+    | { resource: 'app_auth'; action: 'login'; metadata?: AppAuthLoginMetadata }
+    | { resource: 'app_auth'; action: 'password_changed' | 'logout' | 'signup' | 'password_reset' };
 
 export type AuditEvent = AuditEventCommon & AuditResourceAction;

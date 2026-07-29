@@ -218,6 +218,8 @@ export async function finalizeManagedAuthentication({
         return;
     }
 
+    req.auditManagedSignup = isNewUser;
+
     try {
         if (invitation && isNewUser) {
             // New user: created directly in the invited team, auto-accept and proceed

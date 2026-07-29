@@ -10,6 +10,12 @@ declare global {
             name: string;
             account_id: number;
         }
+
+        interface Request {
+            // Set by finalizeManagedAuthentication so the audit finish-hook can tell a first SSO signup
+            // (new user created) from a returning login on the same managed-auth routes.
+            auditManagedSignup?: boolean;
+        }
     }
 }
 

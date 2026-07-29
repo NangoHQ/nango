@@ -9,7 +9,8 @@ import type {
     PostManagedSignup,
     PostSignin,
     PostSignup,
-    PutResetPassword
+    PutResetPassword,
+    ValidateEmailAndLogin
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
@@ -192,6 +193,7 @@ export type PrivateApiEndpoints =
     | PostSignup
     | PostSignin
     | PostLogout
+    | ValidateEmailAndLogin
     | GetTeam
     | PutTeam
     | PostPlanExtendTrial

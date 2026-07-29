@@ -43,7 +43,6 @@ export type AuditAction =
     | 'variables_changed'
     | 'webhook_urls_changed'
     | 'login'
-    | 'login_failed'
     | 'logout'
     | 'signup'
     | 'password_changed'

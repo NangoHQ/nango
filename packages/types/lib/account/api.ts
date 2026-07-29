@@ -1,8 +1,9 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiUser } from '../user/api.js';
 
 export type PostSignup = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'app_auth', 'signup', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/signup';
     Body: {
@@ -28,7 +29,7 @@ export type PostSignup = ApiEndpoint<{
 }>;
 
 export type ValidateEmailAndLogin = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'app_auth', 'login', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/verify/code';
     Body: {
@@ -94,7 +95,7 @@ export type GetEmailByExpiredToken = ApiEndpoint<{
 }>;
 
 export type PostSignin = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'app_auth', 'login', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/signin';
     Body: {
@@ -107,7 +108,7 @@ export type PostSignin = ApiEndpoint<{
 }>;
 
 export type PostLogout = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'app_auth', 'logout', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/logout';
     Success: never;
@@ -126,7 +127,7 @@ export type PostForgotPassword = ApiEndpoint<{
 }>;
 
 export type PutResetPassword = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'app_auth', 'password_reset', 'account'>;
     Method: 'PUT';
     Path: '/api/v1/account/reset-password';
     Body: {
@@ -140,7 +141,9 @@ export type PutResetPassword = ApiEndpoint<{
 }>;
 
 export type PostManagedSignup = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    // Only returns the IdP authorization URL — no user, no session, no resolvable actor. The managed
+    // signup/login is recorded later on the callback once the session is established.
+    Audit: { kind: 'no-audit'; reason: 'initiates SSO redirect, no auth state change' };
     Method: 'POST';
     Path: '/api/v1/account/managed/signup';
     Body: {
@@ -155,7 +158,8 @@ export type PostManagedSignup = ApiEndpoint<{
 }>;
 
 export type GetManagedEmailVerification = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    // Read-only: returns the pending verification email from the session, no auth state change.
+    Audit: { kind: 'no-audit'; reason: 'read-only, no auth state change' };
     Method: 'GET';
     Path: '/api/v1/account/managed/verification';
     Error: ApiError<'not_found'>;
@@ -167,7 +171,9 @@ export type GetManagedEmailVerification = ApiEndpoint<{
 }>;
 
 export type PostManagedEmailVerification = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    // Establishes a session (login, or signup when a new user is created); the emitted action is
+    // resolved at runtime. `login` is the representative policy for the coverage gate.
+    Audit: AuditPolicy<'app_auth', 'login', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/managed/verification';
     Body: {
@@ -182,7 +188,9 @@ export type PostManagedEmailVerification = ApiEndpoint<{
 }>;
 
 export type GetManagedCallback = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    // SSO callback establishes a session (login, or signup when a new user is created); the emitted
+    // action is resolved at runtime. `login` is the representative policy for the coverage gate.
+    Audit: AuditPolicy<'app_auth', 'login', 'account'>;
     Method: 'GET';
     Path: '/api/v1/login/callback';
     Querystring: {
