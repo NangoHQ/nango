@@ -3041,6 +3041,30 @@ baserow:
             pattern: '^[A-Za-z0-9]{32}$'
             doc_section: '#step-2-generating-your-database-token'
 
+basin:
+    display_name: Basin
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://usebasin.com/api/
+        headers:
+            authorization: Token ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/forms
+    docs: https://nango.dev/docs/api-integrations/basin
+    docs_connect: https://nango.dev/docs/api-integrations/basin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Basin API Key
+            example: bc019587************************
+            pattern: '^[a-f0-9]{32}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 battlenet:
     display_name: Battle.net
     categories:

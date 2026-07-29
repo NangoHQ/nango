@@ -1027,6 +1027,7 @@
               "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
               "api-integrations/baserow",
+              "api-integrations/basin",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
