@@ -229,7 +229,13 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
                         void (async () => {
-                            if (spec.targetFromResponse && resolved && resolved.target === undefined && outcomeFromStatus(res.statusCode) === 'success') {
+                            if (
+                                spec.targetFromResponse &&
+                                resolved &&
+                                resolved.target === undefined &&
+                                responseBody !== undefined &&
+                                outcomeFromStatus(res.statusCode) === 'success'
+                            ) {
                                 try {
                                     resolved.target = await spec.targetFromResponse(responseBody as TEndpoint['Success'], req, locals);
                                 } catch (err) {
