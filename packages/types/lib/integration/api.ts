@@ -1,5 +1,5 @@
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
-import type { auditPolicies } from '../audit-trail/event.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
@@ -93,7 +93,7 @@ export type GetPublicIntegration = ApiEndpoint<{
 }>;
 
 export type PatchPublicIntegration = ApiEndpoint<{
-    Audit: typeof auditPolicies.integrationUpdated;
+    Audit: AuditPolicy<'integration', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -114,7 +114,7 @@ export type PatchPublicIntegration = ApiEndpoint<{
 }>;
 
 export type DeletePublicIntegration = ApiEndpoint<{
-    Audit: typeof auditPolicies.integrationDeleted;
+    Audit: AuditPolicy<'integration', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -287,7 +287,7 @@ export type GetIntegration = ApiEndpoint<{
 }>;
 
 export type PatchIntegration = ApiEndpoint<{
-    Audit: typeof auditPolicies.integrationUpdated;
+    Audit: AuditPolicy<'integration', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -310,7 +310,7 @@ export type PatchIntegration = ApiEndpoint<{
 }>;
 
 export type DeleteIntegration = ApiEndpoint<{
-    Audit: typeof auditPolicies.integrationDeleted;
+    Audit: AuditPolicy<'integration', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };

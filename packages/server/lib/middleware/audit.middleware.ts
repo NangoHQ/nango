@@ -8,7 +8,10 @@ import { audit } from '../audit.js';
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType } from '@nangohq/audit';
 import type {
-    AuditEndpointPolicy,
+    AuditAction,
+    AuditPolicy,
+    AuditResource,
+    AuditScope,
     DeleteApiKey,
     DeleteConnection,
     DeleteEnvironment,
@@ -51,12 +54,23 @@ const logger = getLogger('Audit');
 
 type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>;
 
-type AuditableEndpoint = Endpoint<any> & { Audit: AuditEndpointPolicy };
+type AuditableEndpoint = Endpoint<any> & { Audit: AuditPolicy };
+
+// Build a concrete audit policy value inline at each spec. The resource/action/scope are captured as
+// literal types, so the value is checked against the endpoint's own `Audit: AuditPolicy<…>` declaration
+// (`policy: TEndpoint['Audit']`) — the wiring cannot disagree with the endpoint contract.
+const Audit = {
+    auditable: <R extends AuditResource, A extends AuditAction, S extends AuditScope>(policy: { resource: R; action: A; scope: S }): AuditPolicy<R, A, S> => ({
+        kind: 'audit',
+        ...policy
+    })
+};
 
 // The identity comes from the endpoint's own `Audit` declaration (so wiring can't disagree with it);
 // the spec only adds the runtime resolvers. Metadata is best-effort and loosely typed here — the
 // per-event shapes are documented on the emit model (@nangohq/audit's AuditEvent).
-export type AuditSpec<TEndpoint extends AuditableEndpoint> = Omit<TEndpoint['Audit'], 'kind'> & {
+type AuditSpec<TEndpoint extends AuditableEndpoint> = {
+    policy: TEndpoint['Audit'];
     target?: (
         req: AuditRequest<TEndpoint>,
         locals: RequestLocals
@@ -138,7 +152,7 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
     }
 }
 
-async function emit(spec: Omit<AuditEndpointPolicy, 'kind'>, req: Request, res: Response, resolved: ResolvedAudit | undefined): Promise<void> {
+async function emit(policy: AuditPolicy, req: Request, res: Response, resolved: ResolvedAudit | undefined): Promise<void> {
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
@@ -152,10 +166,10 @@ async function emit(spec: Omit<AuditEndpointPolicy, 'kind'>, req: Request, res: 
         const event = {
             occurredAt,
             accountId: account.id,
-            environment: spec.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
+            environment: policy.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
             actor: resolveActor(locals),
-            resource: spec.resource,
-            action: spec.action,
+            resource: policy.resource,
+            action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
             context: contextFromRequest(req),
             outcome: outcomeFromStatus(res.statusCode),
@@ -188,7 +202,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     // whatever we managed to resolve (even nothing, if resolution threw).
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
-                        void emit(spec, req, res, resolved);
+                        void emit(spec.policy, req, res, resolved);
                     });
                     // Resolve target and metadata before the handler runs — some handlers move or overwrite
                     // the pre-mutation state (a removed member, an old role).
@@ -315,67 +329,49 @@ function apiKeyTarget(value: unknown, locals: RequestLocals): Promise<AuditTarge
 }
 
 export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
-    resource: 'connection',
-    action: 'refreshed',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'refreshed', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
 });
 export const auditConnectionUpdated = auditable<PatchConnection>({
-    resource: 'connection',
-    action: 'updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req))
 });
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({
-    resource: 'connection',
-    action: 'updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req))
 });
 export const auditConnectionMetadataUpdated = auditable<PostConnectionMetadata>({
-    resource: 'connection',
-    action: 'metadata_updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
 });
 export const auditPublicConnectionMetadataSet = auditable<SetMetadata>({
-    resource: 'connection',
-    action: 'metadata_updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
     // The batch metadata endpoints accept connection_id as an array — record one target per connection.
     target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
     metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
 });
 export const auditPublicConnectionMetadataUpdated = auditable<UpdateMetadata>({
-    resource: 'connection',
-    action: 'metadata_updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
     target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
     metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
 });
 export const auditConnectionDeleted = auditable<DeleteConnection>({
-    resource: 'connection',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
 });
 export const auditPublicConnectionDeleted = auditable<DeletePublicConnection>({
-    resource: 'connection',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'connection', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
 });
 
 export const auditIntegrationUpdated = auditable<PatchIntegration>({
-    resource: 'integration',
-    action: 'updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('integration', req.params.providerConfigKey),
     metadata: (req) => {
         const fields = changedFields(req);
@@ -383,9 +379,7 @@ export const auditIntegrationUpdated = auditable<PatchIntegration>({
     }
 });
 export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
-    resource: 'integration',
-    action: 'updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('integration', req.params.uniqueKey),
     metadata: (req) => {
         const fields = changedFields(req);
@@ -393,37 +387,27 @@ export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
     }
 });
 export const auditIntegrationDeleted = auditable<DeleteIntegration>({
-    resource: 'integration',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('integration', req.params.providerConfigKey)
 });
 export const auditPublicIntegrationDeleted = auditable<DeletePublicIntegration>({
-    resource: 'integration',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('integration', req.params.uniqueKey)
 });
 
 export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({
-    resource: 'function',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('function', req.params.functionName),
     metadata: (req) => functionDeletedMeta(req.params.providerConfigKey, req.query.type)
 });
 export const auditPublicFunctionDeleted = auditable<DeletePublicIntegrationFunction>({
-    resource: 'function',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('function', req.params.name),
     metadata: (req) => functionDeletedMeta(req.params.uniqueKey, req.query.type)
 });
 
 export const auditApiKeyUpdated = auditable<PatchApiKey>({
-    resource: 'api_key',
-    action: 'updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'api_key', action: 'updated', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals),
     metadata: (req) =>
         compact({
@@ -432,65 +416,47 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
         })
 });
 export const auditApiKeyDeleted = auditable<DeleteApiKey>({
-    resource: 'api_key',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
 });
 
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
-    resource: 'sync',
-    action: 'enabled',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'sync', action: 'enabled', scope: 'environment' }),
     target: (req, locals) => syncTarget(req.params.id, locals)
 });
 export const auditSyncDisabled = auditable<PatchFlowDisable>({
-    resource: 'sync',
-    action: 'disabled',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'sync', action: 'disabled', scope: 'environment' }),
     target: (req, locals) => syncTarget(req.params.id, locals)
 });
 export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency>({
-    resource: 'sync',
-    action: 'frequency_changed',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
     target: (req, locals) => syncTarget(req.params.id, locals),
     // Private route sends camelCase `providerConfigKey`.
     metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.providerConfigKey)
 });
 export const auditPublicSyncFrequencyChanged = auditable<PutPublicSyncConnectionFrequency>({
-    resource: 'sync',
-    action: 'frequency_changed',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
     target: (req, locals) => syncTarget(req.body.sync_name, locals),
     // Public route sends snake_case `provider_config_key`.
     metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.provider_config_key)
 });
 export const auditSyncVariantCreated = auditable<PostSyncVariant>({
-    resource: 'sync',
-    action: 'variant_created',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'sync', action: 'variant_created', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.params.name),
     metadata: (req) => ({ variant: req.params.variant })
 });
 export const auditSyncVariantDeleted = auditable<DeleteSyncVariant>({
-    resource: 'sync',
-    action: 'variant_deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'sync', action: 'variant_deleted', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.params.name),
     metadata: (req) => ({ variant: req.params.variant })
 });
 
 export const auditMemberRemoved = auditable<DeleteTeamUser>({
-    resource: 'member',
-    action: 'removed',
-    scope: 'account',
+    policy: Audit.auditable({ resource: 'member', action: 'removed', scope: 'account' }),
     target: memberTarget
 });
 export const auditMemberRoleChanged = auditable<PatchTeamUser>({
-    resource: 'member',
-    action: 'role_changed',
-    scope: 'account',
+    policy: Audit.auditable({ resource: 'member', action: 'role_changed', scope: 'account' }),
     target: memberTarget,
     metadata: async (req, locals) => {
         const role = req.body.role;
@@ -510,9 +476,7 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
     }
 });
 export const auditTeamUpdated = auditable<PutTeam>({
-    resource: 'team',
-    action: 'updated',
-    scope: 'account',
+    policy: Audit.auditable({ resource: 'team', action: 'updated', scope: 'account' }),
     target: (_req, locals) => makeTarget('team', locals.account?.id, locals.account?.name),
     metadata: (req) => {
         const name = req.body.name;
@@ -520,22 +484,16 @@ export const auditTeamUpdated = auditable<PutTeam>({
     }
 });
 export const auditUserUpdated = auditable<PatchUser>({
-    resource: 'user',
-    action: 'updated',
-    scope: 'account',
+    policy: Audit.auditable({ resource: 'user', action: 'updated', scope: 'account' }),
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
 
 export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
-    resource: 'environment',
-    action: 'deleted',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
 });
 export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
-    resource: 'environment',
-    action: 'updated',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         compact({
@@ -544,9 +502,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
         })
 });
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({
-    resource: 'environment',
-    action: 'variables_changed',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'environment', action: 'variables_changed', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) => {
         const variables = req.body.variables;
@@ -560,9 +516,7 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
     }
 });
 export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
-    resource: 'environment',
-    action: 'webhook_urls_changed',
-    scope: 'environment',
+    policy: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         compact({
@@ -572,21 +526,21 @@ export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
 });
 
 export const auditBillingPlanChanged = auditable<PostPlanChange>({
-    resource: 'billing',
-    action: 'plan_changed',
-    scope: 'account',
+    policy: Audit.auditable({ resource: 'billing', action: 'plan_changed', scope: 'account' }),
     metadata: (req, locals) =>
         compact({
             toPlan: typeof req.body.orbId === 'string' ? req.body.orbId : undefined,
             fromPlan: locals.plan?.name || undefined
         })
 });
-export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({ resource: 'billing', action: 'trial_extended', scope: 'account' });
-export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({ resource: 'billing', action: 'details_changed', scope: 'account' });
+export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
+    policy: Audit.auditable({ resource: 'billing', action: 'trial_extended', scope: 'account' })
+});
+export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
+    policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
+});
 
 export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
-    resource: 'app_auth',
-    action: 'password_changed',
-    scope: 'account',
+    policy: Audit.auditable({ resource: 'app_auth', action: 'password_changed', scope: 'account' }),
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });

@@ -1,5 +1,5 @@
 import type { ApiEndpoint, Endpoint } from '../api.js';
-import type { auditPolicies } from '../audit-trail/event.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { Role } from './db.js';
 
 export type GetUser = ApiEndpoint<{
@@ -21,7 +21,7 @@ export type InternalGetUsers = Endpoint<{
 }>;
 
 export type PatchUser = ApiEndpoint<{
-    Audit: typeof auditPolicies.userUpdated;
+    Audit: AuditPolicy<'user', 'updated', 'account'>;
     Method: 'PATCH';
     Path: `/api/v1/user`;
     Body: {
@@ -53,7 +53,7 @@ export type ApiUserWithPermissions = ApiUser & {
 };
 
 export type PutUserPassword = ApiEndpoint<{
-    Audit: typeof auditPolicies.appAuthPasswordChanged;
+    Audit: AuditPolicy<'app_auth', 'password_changed', 'account'>;
     Method: 'PUT';
     Path: `/api/v1/user/password`;
     Body: { oldPassword: string; newPassword: string };

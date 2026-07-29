@@ -1,6 +1,6 @@
 import type { ApiKeyScope } from '../../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
-import type { auditPolicies } from '../../audit-trail/event.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 import type { ApiPlan } from '../../plans/http.api.js';
 import type { DBEnvironment, DBExternalWebhook } from '../db.js';
 import type { ApiEnvironmentVariable } from '../variable/api.js';
@@ -50,7 +50,7 @@ export type GetEnvironment = ApiEndpoint<{
 }>;
 
 export type PatchEnvironment = ApiEndpoint<{
-    Audit: typeof auditPolicies.environmentUpdated;
+    Audit: AuditPolicy<'environment', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
@@ -70,7 +70,7 @@ export type PatchEnvironment = ApiEndpoint<{
 }>;
 
 export type DeleteEnvironment = ApiEndpoint<{
-    Audit: typeof auditPolicies.environmentDeleted;
+    Audit: AuditPolicy<'environment', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/environments';
     Success: never;
@@ -121,7 +121,7 @@ export type CreateApiKey = ApiEndpoint<{
 }>;
 
 export type DeleteApiKey = ApiEndpoint<{
-    Audit: typeof auditPolicies.apiKeyDeleted;
+    Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };
@@ -129,7 +129,7 @@ export type DeleteApiKey = ApiEndpoint<{
 }>;
 
 export type PatchApiKey = ApiEndpoint<{
-    Audit: typeof auditPolicies.apiKeyUpdated;
+    Audit: AuditPolicy<'api_key', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };

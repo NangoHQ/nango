@@ -1,5 +1,5 @@
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
-import type { auditPolicies } from '../audit-trail/event.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { DBInvitation } from '../invitations/db.js';
 import type { ApiUser } from '../user/api.js';
 import type { Role } from '../user/db.js';
@@ -31,7 +31,7 @@ export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
 export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
 
 export type PutTeam = ApiEndpoint<{
-    Audit: typeof auditPolicies.teamUpdated;
+    Audit: AuditPolicy<'team', 'updated', 'account'>;
     Method: 'PUT';
     Path: '/api/v1/team';
     Querystring: { env: string };
@@ -42,7 +42,7 @@ export type PutTeam = ApiEndpoint<{
 }>;
 
 export type DeleteTeamUser = ApiEndpoint<{
-    Audit: typeof auditPolicies.memberRemoved;
+    Audit: AuditPolicy<'member', 'removed', 'account'>;
     Method: 'DELETE';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };
@@ -54,7 +54,7 @@ export type DeleteTeamUser = ApiEndpoint<{
 }>;
 
 export type PatchTeamUser = ApiEndpoint<{
-    Audit: typeof auditPolicies.memberRoleChanged;
+    Audit: AuditPolicy<'member', 'role_changed', 'account'>;
     Method: 'PATCH';
     Path: '/api/v1/team/users/:id';
     Querystring: { env: string };

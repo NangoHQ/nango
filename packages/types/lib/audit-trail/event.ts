@@ -75,58 +75,18 @@ export interface AuditContext {
 }
 
 // Every endpoint declares an audit policy on its `ApiEndpoint` definition: either the audit event it
-// records (`AuditEndpointPolicy`) or an explicit `NoAudit` opt-out. This makes audit coverage a
-// compile-time decision — a customer endpoint cannot be added without consciously opting in or out.
-export interface AuditEndpointPolicy {
+// records (`AuditPolicy`) or an explicit `NoAudit` opt-out. This makes audit coverage a compile-time
+// decision — a customer endpoint cannot be added without consciously opting in or out. The policy's
+// resource/action/scope are captured as type parameters so the endpoint's declaration and the
+// middleware spec that services it are checked against each other by the compiler.
+export interface AuditPolicy<R extends AuditResource = AuditResource, A extends AuditAction = AuditAction, S extends AuditScope = AuditScope> {
     kind: 'audit';
-    resource: AuditResource;
-    action: AuditAction;
-    scope: AuditScope;
+    resource: R;
+    action: A;
+    scope: S;
 }
 export interface NoAudit<Reason extends string = 'non-auditable'> {
     kind: 'no-audit';
     reason: Reason;
 }
-export type EndpointAudit = AuditEndpointPolicy | NoAudit<string>;
-
-// Constructors for the policies above — `auditable()` stamps `kind: 'audit'` so each identity is
-// authored once (in `auditPolicies`) and referenced from both the endpoint type and the middleware.
-export const Audit = {
-    auditable: <R extends AuditResource, A extends AuditAction, S extends AuditScope>(policy: {
-        resource: R;
-        action: A;
-        scope: S;
-    }): { kind: 'audit'; resource: R; action: A; scope: S } => ({ kind: 'audit', ...policy }),
-    notAuditable: <Reason extends string = 'non-auditable'>(reason: Reason = 'non-auditable' as Reason): NoAudit<Reason> => ({ kind: 'no-audit', reason })
-} as const;
-
-// The single source of truth for each audited endpoint's identity. Endpoint types reference an entry
-// via `typeof auditPolicies.x`; the audit middleware spreads the same entry — so the two cannot drift.
-export const auditPolicies = {
-    connectionRefreshed: Audit.auditable({ resource: 'connection', action: 'refreshed', scope: 'environment' }),
-    connectionUpdated: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
-    connectionMetadataUpdated: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
-    connectionDeleted: Audit.auditable({ resource: 'connection', action: 'deleted', scope: 'environment' }),
-    integrationUpdated: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    integrationDeleted: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    functionDeleted: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
-    apiKeyUpdated: Audit.auditable({ resource: 'api_key', action: 'updated', scope: 'environment' }),
-    apiKeyDeleted: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
-    syncEnabled: Audit.auditable({ resource: 'sync', action: 'enabled', scope: 'environment' }),
-    syncDisabled: Audit.auditable({ resource: 'sync', action: 'disabled', scope: 'environment' }),
-    syncFrequencyChanged: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
-    syncVariantCreated: Audit.auditable({ resource: 'sync', action: 'variant_created', scope: 'environment' }),
-    syncVariantDeleted: Audit.auditable({ resource: 'sync', action: 'variant_deleted', scope: 'environment' }),
-    memberRemoved: Audit.auditable({ resource: 'member', action: 'removed', scope: 'account' }),
-    memberRoleChanged: Audit.auditable({ resource: 'member', action: 'role_changed', scope: 'account' }),
-    teamUpdated: Audit.auditable({ resource: 'team', action: 'updated', scope: 'account' }),
-    userUpdated: Audit.auditable({ resource: 'user', action: 'updated', scope: 'account' }),
-    environmentDeleted: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'environment' }),
-    environmentUpdated: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
-    environmentVariablesChanged: Audit.auditable({ resource: 'environment', action: 'variables_changed', scope: 'environment' }),
-    environmentWebhookUrlsChanged: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
-    billingPlanChanged: Audit.auditable({ resource: 'billing', action: 'plan_changed', scope: 'account' }),
-    billingTrialExtended: Audit.auditable({ resource: 'billing', action: 'trial_extended', scope: 'account' }),
-    billingDetailsChanged: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' }),
-    appAuthPasswordChanged: Audit.auditable({ resource: 'app_auth', action: 'password_changed', scope: 'account' })
-} as const;
+export type EndpointAudit = AuditPolicy | NoAudit<string>;
