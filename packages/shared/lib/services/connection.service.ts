@@ -2,7 +2,6 @@ import { createPrivateKey } from 'crypto';
 
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
-import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
@@ -43,6 +42,13 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
+import {
+    assertSafeOAuthUrl,
+    findOutboundUrlError,
+    getOAuthAxiosRequestConfig,
+    getOAuthRedirectPolicy,
+    getOAuthSafeUndiciDispatcher
+} from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -92,6 +98,7 @@ import type {
     TwoStepCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -1311,6 +1318,21 @@ class ConnectionService {
         }
         const url = makeUrl(tokenUrl, connectionConfig);
 
+        try {
+            await assertSafeOAuthUrl(url.href);
+        } catch (err) {
+            const outboundErr = findOutboundUrlError(err);
+            const reasonCode = outboundErr?.code ?? 'blocked';
+            const errorMessage = outboundErr?.message ?? (err instanceof Error ? err.message : String(err));
+            logger.error(`OAuth client credentials token URL blocked by outbound policy (host: ${url.host}, code: ${reasonCode})`);
+            void logCtx.error('Token URL blocked by outbound policy', { host: url.host, code: reasonCode, error: errorMessage });
+            return {
+                success: false,
+                error: new NangoError('client_credentials_fetch_error', { host: url.host, code: reasonCode, message: errorMessage }),
+                response: null
+            };
+        }
+
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
             interpolatedParams = interpolateObjectValues(provider.token_params, connectionConfig);
@@ -1397,7 +1419,7 @@ class ConnectionService {
             }
         }
 
-        let agent: Agent | undefined;
+        let agent: Agent = getOAuthSafeUndiciDispatcher();
 
         if (client_certificate && client_private_key) {
             try {
@@ -1411,9 +1433,7 @@ class ConnectionService {
                     throw new NangoError('invalid_certificate_or_key_format');
                 }
 
-                agent = new Agent({
-                    connect: { cert, key, rejectUnauthorized: false }
-                });
+                agent = getOAuthSafeUndiciDispatcher({ cert, key, rejectUnauthorized: false });
             } catch (err) {
                 throw new NangoError('invalid_certificate_or_key_format', { err });
             }
@@ -1431,7 +1451,8 @@ class ConnectionService {
                 method: 'POST',
                 headers,
                 body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                agent
+                agent,
+                redirect: getOAuthRedirectPolicy()
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
@@ -1559,7 +1580,9 @@ class ConnectionService {
         }
 
         try {
-            const requestOptions = { headers };
+            await assertSafeOAuthUrl(url);
+
+            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
 
             const bodyContent =
                 bodyFormat === 'xml'
@@ -1645,6 +1668,7 @@ class ConnectionService {
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
                     const strippedTokenUrl = stripStepResponse(step.token_url);
                     const stepUrl = new URL(interpolateString(strippedTokenUrl, { connectionConfig, ...stepResponsesObjForURL })).toString();
+                    await assertSafeOAuthUrl(stepUrl);
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
@@ -1655,7 +1679,7 @@ class ConnectionService {
                         }
                     }
 
-                    const stepRequestOptions = { headers: stepHeaders };
+                    const stepRequestOptions = { headers: stepHeaders, ...getOAuthAxiosRequestConfig() };
 
                     let stepResponse: any;
 
