@@ -685,7 +685,9 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
 export const auditConnectionCreated = auditable<PostPublicConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
     // The typed connection-import path — never the OAuth callback. Never record credentials.
+    // connection_id is optional on import; when omitted the server generates one, so fall back to the response.
     target: (req) => makeTarget('connection', req.body.connection_id),
+    targetFromResponse: (response) => makeTarget('connection', response.connection_id),
     metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
 });
 

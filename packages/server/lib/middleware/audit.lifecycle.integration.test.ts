@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
-import { inviteEmail, seeders, updatePlan, userService } from '@nangohq/shared';
+import { customerKeyService, inviteEmail, seeders, updatePlan, userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
@@ -398,6 +398,34 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         expect(res.res.status).not.toBe(401);
     });
 
+    it('records a connection import with the server-generated connection_id when none is supplied', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch('/connections', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider_config_key: 'github', credentials: { type: 'OAUTH2', access_token: '123' } }
+        });
+
+        expect(res.res.status).toBe(201);
+        isSuccess(res.json);
+        // The request omitted connection_id, so the target can only come from the response body.
+        const generatedId = res.json.connection_id;
+        expect(generatedId).toBeTruthy();
+
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            targets: [{ type: 'connection', id: generatedId }],
+            metadata: { providerConfigKey: 'github' }
+        });
+    });
+
     it('records a sync pause with one target per sync', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
 
@@ -478,6 +506,30 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
             action: 'deployed',
             targets: [{ type: 'function', id: 'my-func' }],
             metadata: { providerConfigKey: 'algolia', type: 'action' }
+        });
+    });
+
+    it('records a denied deployment (caller lacks environment:deploy scope)', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        // Restrict the key so withScope('environment:deploy') rejects with 403 before the controller runs.
+        (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { type: 'function', integration_id: 'algolia', function_name: 'denied-func', function_type: 'action', code: '' }
+        });
+
+        // The audit middleware now runs between auth and the scope check, so the denial is still recorded.
+        expect(res.res.status).toBe(403);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'function',
+            action: 'deployed',
+            outcome: 'denied',
+            targets: [{ type: 'function', id: 'denied-func' }]
         });
     });
 
