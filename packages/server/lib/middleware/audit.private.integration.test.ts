@@ -9,6 +9,7 @@ import { audit } from '../audit.js';
 import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
+import type { AuditAction, AuditResource } from '@nangohq/audit';
 import type { MockInstance } from 'vitest';
 
 // Stripe is never called for real in tests — stub getStripe so the payment-method controllers can reach
@@ -28,6 +29,12 @@ vi.mock('@nangohq/billing', async () => {
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
+
+// authenticateUser() signs in, which now records an app_auth/login event, so the event under test is
+// not necessarily calls[0]. Select it by resource/action instead of by position.
+function auditEvent(resource: AuditResource, action: AuditAction) {
+    return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.resource === resource && event.action === action);
+}
 
 // Sets up an account + env + a connection under provider_config_key 'algolia'.
 async function seedConnection() {
@@ -77,9 +84,9 @@ describe('audit middleware (private API)', () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('connection', 'deleted')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('connection', 'deleted')).toMatchObject({
             resource: 'connection',
             action: 'deleted',
             outcome: 'success',
@@ -108,9 +115,9 @@ describe('audit middleware (private API)', () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'role_changed')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'role_changed')).toMatchObject({
             resource: 'member',
             action: 'role_changed',
             outcome: 'success',
@@ -139,9 +146,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.res.status).toBe(403);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'role_changed')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'role_changed')).toMatchObject({
             resource: 'member',
             action: 'role_changed',
             outcome: 'denied',
@@ -168,9 +175,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.res.status).toBe(400);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'role_changed')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('member', 'role_changed');
         expect(event).toMatchObject({
             resource: 'member',
             action: 'role_changed',
@@ -193,9 +200,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('connection', 'updated')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('connection', 'updated');
         expect(event).toMatchObject({
             resource: 'connection',
             action: 'updated',
@@ -224,9 +231,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('environment', 'variables_changed')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('environment', 'variables_changed');
         expect(event).toMatchObject({
             resource: 'environment',
             action: 'variables_changed',
@@ -251,9 +258,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('environment', 'webhook_urls_changed')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('environment', 'webhook_urls_changed');
         expect(event).toMatchObject({
             resource: 'environment',
             action: 'webhook_urls_changed',
@@ -279,11 +286,11 @@ describe('audit middleware (private API)', () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'removed')).toBeDefined();
         });
         // The controller moves the member out of the account, so the email is only knowable if the
         // target was resolved before the handler ran — this guards the resolve-before-next() timing.
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'removed')).toMatchObject({
             resource: 'member',
             action: 'removed',
             outcome: 'success',
@@ -306,9 +313,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('billing', 'payment_method_added')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('billing', 'payment_method_added');
         expect(event).toMatchObject({
             resource: 'billing',
             action: 'payment_method_added',
@@ -330,9 +337,9 @@ describe('audit middleware (private API)', () => {
 
         expect(res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('billing', 'payment_method_removed')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('billing', 'payment_method_removed');
         expect(event).toMatchObject({
             resource: 'billing',
             action: 'payment_method_removed',
@@ -366,9 +373,9 @@ describe('audit middleware (private API)', () => {
             await fetch(stripeUrl({ env: 'dev' }), { method: 'DELETE', headers: { Cookie: session } });
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('billing', 'payment_method_removed')).toBeDefined();
             });
-            const event = auditSpy.mock.calls[0]?.[0];
+            const event = auditEvent('billing', 'payment_method_removed');
             expect(event).toMatchObject({
                 resource: 'billing',
                 action: 'payment_method_removed'
@@ -392,10 +399,10 @@ describe('audit middleware (private API)', () => {
 
         expect(res.status).toBe(403);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('billing', 'payment_method_removed')).toBeDefined();
         });
         // The pm id is resolved from the request before the authz gate runs, so a denial is still recorded.
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('billing', 'payment_method_removed')).toMatchObject({
             resource: 'billing',
             action: 'payment_method_removed',
             outcome: 'denied',
