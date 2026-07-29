@@ -1,12 +1,12 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { customerKeyService, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType } from '@nangohq/audit';
+import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
     AuditAction,
     AuditPolicy,
@@ -17,6 +17,7 @@ import type {
     DeleteEnvironment,
     DeleteIntegration,
     DeleteIntegrationFunction,
+    DeleteMFA,
     DeletePublicConnection,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
@@ -38,6 +39,10 @@ import type {
     PostConnectionMetadata,
     PostConnectionRefresh,
     PostEnvironmentVariables,
+    PostMFAActivation,
+    PostMFAEnrollment,
+    PostMFALoginVerification,
+    PostMFARecoveryCodes,
     PostPlanChange,
     PostPlanExtendTrial,
     PostSyncVariant,
@@ -534,3 +539,80 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     policy: Audit.auditable({ resource: 'app_auth', action: 'password_changed', scope: 'account' }),
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
+
+// MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is
+// recorded — the request bodies carry only TOTP/recovery codes, which must never be persisted.
+export const auditMfaEnrolled = auditable<PostMFAEnrollment>({
+    policy: Audit.auditable({ resource: 'mfa', action: 'enrolled', scope: 'account' }),
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+});
+export const auditMfaEnabled = auditable<PostMFAActivation>({
+    policy: Audit.auditable({ resource: 'mfa', action: 'enabled', scope: 'account' }),
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+});
+export const auditMfaDisabled = auditable<DeleteMFA>({
+    policy: Audit.auditable({ resource: 'mfa', action: 'disabled', scope: 'account' }),
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+});
+export const auditMfaRecoveryRegenerated = auditable<PostMFARecoveryCodes>({
+    policy: Audit.auditable({ resource: 'mfa', action: 'recovery_regenerated', scope: 'account' }),
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+});
+
+const METHOD_BY_TYPE = { code: 'totp', recoveryCode: 'recovery_code' } as const;
+
+// The login-verify route runs BEFORE authentication (the user is mid-login), so res.locals carries no
+// user or account and the standard locals-based auditable() can't attribute the event — and emit()
+// early-returns without an account. Resolve the acting user from the pending-login session (it still
+// exists at middleware entry; the controller deletes it once verification succeeds), load their
+// account directly, and emit an `mfa`/`verified` event on finish for both success and failure.
+export const auditMfaVerified: RequestHandler = (req, res, next) => {
+    // Capture the pending user synchronously — the controller clears the pending session on success.
+    const userId = req.session.pendingMfaLogin?.userId;
+    res.on('finish', () => {
+        void emitMfaVerified(req, res, userId);
+    });
+    next();
+};
+
+async function emitMfaVerified(req: Request, res: Response, pendingUserId: number | undefined): Promise<void> {
+    const occurredAt = new Date().toISOString();
+    try {
+        // Success attributes to the logged-in user; a failed verify still attributes via the pending session.
+        const uid = req.user?.id ?? pendingUserId;
+        if (uid == null) {
+            return;
+        }
+        const user = await userService.getUserById(uid, true);
+        if (!user) {
+            return;
+        }
+        const account = await accountService.getAccountById(db.knex, user.account_id);
+        if (!account) {
+            return;
+        }
+        if (!(await getFlags().isAuditTrailEnabled(account.uuid))) {
+            return;
+        }
+        const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;
+        const method: MfaVerifiedMetadata['method'] | undefined = bodyType ? METHOD_BY_TYPE[bodyType] : undefined;
+        const event: AuditEvent = {
+            occurredAt,
+            accountId: account.id,
+            environment: null,
+            actor: { type: 'user', id: String(user.id), display: user.email },
+            resource: 'mfa',
+            action: 'verified',
+            targets: [{ type: 'user', id: String(user.id), display: user.email }],
+            context: contextFromRequest(req),
+            outcome: outcomeFromStatus(res.statusCode),
+            ...(method ? { metadata: { method } } : {})
+        };
+        const result = await audit.record(event);
+        if (result.isErr()) {
+            logger.error(`failed to record audit event`, result.error);
+        }
+    } catch (err) {
+        logger.error(`failed to emit mfa verify audit event`, err);
+    }
+}

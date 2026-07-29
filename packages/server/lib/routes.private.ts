@@ -140,6 +140,11 @@ import {
     auditIntegrationUpdated,
     auditMemberRemoved,
     auditMemberRoleChanged,
+    auditMfaDisabled,
+    auditMfaEnabled,
+    auditMfaEnrolled,
+    auditMfaRecoveryRegenerated,
+    auditMfaVerified,
     auditSyncDisabled,
     auditSyncEnabled,
     auditSyncFrequencyChanged,
@@ -222,11 +227,11 @@ if (flagHasManagedAuth) {
 web.route('/meta').get(webAuth, getMeta);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
-web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, deleteMFA);
-web.route('/account/mfa/enroll').post(webAuth, postMFAEnrollment);
-web.route('/account/mfa/activate').post(webAuth, postMFAActivation);
-web.route('/account/mfa/recovery-codes').post(webAuth, postMFARecoveryCodes);
-web.route('/account/mfa/login/verify').post(rateLimiterMiddleware, postMFALoginVerification);
+web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, auditMfaDisabled, deleteMFA);
+web.route('/account/mfa/enroll').post(webAuth, auditMfaEnrolled, postMFAEnrollment);
+web.route('/account/mfa/activate').post(webAuth, auditMfaEnabled, postMFAActivation);
+web.route('/account/mfa/recovery-codes').post(webAuth, auditMfaRecoveryRegenerated, postMFARecoveryCodes);
+web.route('/account/mfa/login/verify').post(rateLimiterMiddleware, auditMfaVerified, postMFALoginVerification);
 
 // Team
 web.route('/team').get(webAuth, getTeam);
