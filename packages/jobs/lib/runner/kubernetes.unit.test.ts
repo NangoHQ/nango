@@ -1,13 +1,28 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTlsEnvVars, getTlsSecretName } from './kubernetes.js';
+import { getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
+
+import type { Node } from '@nangohq/fleet';
 
 vi.mock('../env.js', () => ({
     envs: {
+        NODE_ENV: 'test',
+        NANGO_CLOUD: false,
         RUNNER_NAMESPACE: 'runners',
         JOBS_NAMESPACE: 'nango',
         NAMESPACE_PER_RUNNER: false,
-        NANGO_RUNNER_URL_SCHEME: 'http'
+        NANGO_RUNNER_URL_SCHEME: 'http',
+        RUNNER_DO_NOT_DISRUPT: false,
+        NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: false,
+        NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: [],
+        NANGO_OUTBOUND_URL_POLICY: null,
+        PROVIDERS_RELOAD_INTERVAL: 60_000,
+        RUNNER_MAX_REQUEST_CPU: 2000,
+        RUNNER_MAX_REQUEST_MEMORY: 4096,
+        RUNNER_MIN_REQUEST_CPU: 100,
+        RUNNER_MIN_REQUEST_MEMORY: 512,
+        RUNNER_REQUEST_CPU_MULTIPLIER: 1.4,
+        RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4
     }
 }));
 
@@ -31,6 +46,63 @@ const tlsEnv = {
     NANGO_INTERNAL_TLS_CA: '-----BEGIN CERTIFICATE-----\nca\n-----END CERTIFICATE-----',
     NANGO_INTERNAL_TLS_KEY_PASSPHRASE: 'secret'
 };
+
+const { getInternalTlsEnvMock, k8sMock } = vi.hoisted(() => ({
+    getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
+    k8sMock: {
+        calls: [] as { method: string; body?: any; name?: string }[],
+        errors: new Map<string, { reason: string }>()
+    }
+}));
+
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...(actual as object),
+        getInternalTlsEnv: getInternalTlsEnvMock
+    };
+});
+
+vi.mock('@kubernetes/client-node', () => {
+    // The client reports API failures as an error carrying the serialized response body.
+    class ApiError extends Error {
+        constructor(public body: string) {
+            super(body);
+        }
+    }
+
+    const record = (method: string) => (param: any) => {
+        k8sMock.calls.push({ method, body: param?.body, name: param?.name });
+        const err = k8sMock.errors.get(method);
+        if (err) {
+            throw new ApiError(JSON.stringify(err));
+        }
+        return Promise.resolve({});
+    };
+
+    const api = new Proxy({}, { get: (_target, method: string) => record(method) });
+
+    class AppsV1Api {}
+    class CoreV1Api {}
+    class NetworkingV1Api {}
+    class KubeConfig {
+        loadFromDefault() {
+            // no cluster in unit tests
+        }
+        makeApiClient() {
+            return api;
+        }
+    }
+
+    return { AppsV1Api, CoreV1Api, NetworkingV1Api, KubeConfig };
+});
+
+const node = { id: 1, routingId: 'account-7', image: 'runner:latest', cpuMilli: 500, memoryMb: 512, replicas: 1, idleMaxDurationMs: 1000 } as Node;
+const secretName = 'account-7-1-internal-tls';
+
+function methodsCalled(): string[] {
+    return k8sMock.calls.map((call) => call.method);
+}
 
 describe('getTlsEnvVars', () => {
     it('should return nothing when internal TLS is disabled', () => {
@@ -61,5 +133,75 @@ describe('getTlsEnvVars', () => {
     it('should scope the secret to the runner', () => {
         expect(getTlsSecretName('my-runner-1')).toBe('my-runner-1-internal-tls');
         expect(getTlsSecretName('my-runner-2')).toBe('my-runner-2-internal-tls');
+    });
+});
+
+describe('runner TLS secret lifecycle', () => {
+    beforeEach(() => {
+        k8sMock.calls = [];
+        k8sMock.errors.clear();
+        getInternalTlsEnvMock.mockReturnValue(tlsEnv);
+    });
+
+    it('should create the secret before the deployment', async () => {
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const called = methodsCalled();
+        expect(called.indexOf('createNamespacedSecret')).toBeLessThan(called.indexOf('createNamespacedDeployment'));
+
+        const secret = k8sMock.calls.find((call) => call.method === 'createNamespacedSecret')?.body;
+        expect(secret.metadata.name).toBe(secretName);
+        expect(secret.stringData).toEqual(tlsEnv);
+    });
+
+    it('should not create a secret when internal TLS is disabled', async () => {
+        getInternalTlsEnvMock.mockReturnValue({});
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+        expect(methodsCalled()).not.toContain('createNamespacedSecret');
+    });
+
+    it('should overwrite a secret left over from an earlier attempt', async () => {
+        k8sMock.errors.set('createNamespacedSecret', { reason: 'AlreadyExists' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const replaced = k8sMock.calls.find((call) => call.method === 'replaceNamespacedSecret');
+        expect(replaced?.name).toBe(secretName);
+        expect(replaced?.body.stringData).toEqual(tlsEnv);
+    });
+
+    it('should fail the node when the secret cannot be written', async () => {
+        k8sMock.errors.set('createNamespacedSecret', { reason: 'Forbidden' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        expect(methodsCalled()).not.toContain('createNamespacedDeployment');
+    });
+
+    it('should delete the secret on termination', async () => {
+        const res = await kubernetesNodeProvider.terminate(node);
+        expect(res.isOk()).toBe(true);
+
+        expect(k8sMock.calls.find((call) => call.method === 'deleteNamespacedSecret')?.name).toBe(secretName);
+    });
+
+    it('should delete the secret even once internal TLS is turned off', async () => {
+        getInternalTlsEnvMock.mockReturnValue({});
+
+        const res = await kubernetesNodeProvider.terminate(node);
+        expect(res.isOk()).toBe(true);
+
+        expect(k8sMock.calls.find((call) => call.method === 'deleteNamespacedSecret')?.name).toBe(secretName);
+    });
+
+    it('should ignore a missing secret on termination', async () => {
+        k8sMock.errors.set('deleteNamespacedSecret', { reason: 'NotFound' });
+
+        const res = await kubernetesNodeProvider.terminate(node);
+        expect(res.isOk()).toBe(true);
     });
 });

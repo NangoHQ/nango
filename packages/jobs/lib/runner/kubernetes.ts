@@ -145,16 +145,14 @@ class Kubernetes {
                 return Err(new Error('Failed to delete network policies', { cause: err }));
             }
 
-            if (Object.keys(getInternalTlsEnv()).length > 0) {
-                try {
-                    await this.coreApi.deleteNamespacedSecret({
-                        name: getTlsSecretName(name),
-                        namespace
-                    });
-                } catch (err: any) {
-                    if (!this.notFound(err)) {
-                        return Err(new Error('Failed to delete internal TLS secret', { cause: err }));
-                    }
+            try {
+                await this.coreApi.deleteNamespacedSecret({
+                    name: getTlsSecretName(name),
+                    namespace
+                });
+            } catch (err: any) {
+                if (!this.notFound(err)) {
+                    return Err(new Error('Failed to delete internal TLS secret', { cause: err }));
                 }
             }
 
@@ -215,11 +213,23 @@ class Kubernetes {
                 namespace,
                 body: secretManifest
             });
+            return Ok(undefined);
         } catch (err: any) {
-            if (this.alreadyExists(err)) {
-                return Ok(undefined);
+            if (!this.alreadyExists(err)) {
+                return Err(new Error('Failed to create internal TLS secret', { cause: err }));
             }
-            return Err(new Error('Failed to create internal TLS secret', { cause: err }));
+        }
+
+        // Left over from an earlier attempt at this same node. Overwrite rather than adopt it, so a
+        // retry cannot hand the runner assets this service no longer holds.
+        try {
+            await this.coreApi.replaceNamespacedSecret({
+                name: getTlsSecretName(name),
+                namespace,
+                body: secretManifest
+            });
+        } catch (err: any) {
+            return Err(new Error('Failed to update internal TLS secret', { cause: err }));
         }
         return Ok(undefined);
     }
