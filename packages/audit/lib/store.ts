@@ -51,11 +51,13 @@ export class ClickhouseAuditStore implements AuditWriter, AuditReader {
         private readonly retentionDays = AUDIT_RETENTION_DAYS
     ) {}
 
-    async record({ event }: SerializedAuditEvent): Promise<Result<void>> {
+    // Never throws, so every call emits exactly one ingest-result metric — callers rely on that to
+    // reconcile events published against events stored.
+    async record(record: SerializedAuditEvent): Promise<Result<void>> {
         try {
             await this.client.insert({
                 table: 'audit_trail_events',
-                values: [{ event, retention_days: this.retentionDays }],
+                values: [{ event: record.event, retention_days: this.retentionDays }],
                 format: 'JSONEachRow'
             });
             metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'true' });

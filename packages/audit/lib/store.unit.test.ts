@@ -54,6 +54,16 @@ describe('ClickhouseAuditStore.record', () => {
         expect(result.isErr()).toBe(true);
         expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false' });
     });
+
+    it('returns Err with a failure metric instead of throwing on a malformed record', async () => {
+        const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const store = new ClickhouseAuditStore({ insert: vi.fn() } as unknown as ClickHouseClient, 90);
+
+        const result = await store.record(undefined as unknown as SerializedAuditEvent);
+
+        expect(result.isErr()).toBe(true);
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false' });
+    });
 });
 
 describe('DropAuditStore', () => {
