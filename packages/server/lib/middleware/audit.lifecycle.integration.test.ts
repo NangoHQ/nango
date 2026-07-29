@@ -10,10 +10,17 @@ import { getLogger } from '@nangohq/utils';
 import { audit } from '../audit.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
+import type { AuditAction, AuditResource } from '@nangohq/audit';
 import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
+
+// authenticateUser() signs in, which now records an app_auth/login event, so the event under test is
+// not necessarily calls[0]. Select it by resource/action instead of by position.
+function auditEvent(resource: AuditResource, action: AuditAction) {
+    return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.resource === resource && event.action === action);
+}
 
 describe('audit middleware — lifecycle events (created / invited / deployed / paused / started)', () => {
     beforeAll(async () => {
@@ -44,9 +51,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('integration', 'created')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('integration', 'created')).toMatchObject({
             resource: 'integration',
             action: 'created',
             outcome: 'success',
@@ -69,9 +76,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         isSuccess(res.json);
         const createdId = String(res.json.data.id);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('environment', 'created')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('environment', 'created')).toMatchObject({
             resource: 'environment',
             action: 'created',
             outcome: 'success',
@@ -98,9 +105,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         const createdId = String(res.json.data.id);
         const secret = res.json.data.secret;
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('api_key', 'created')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('api_key', 'created');
         expect(event).toMatchObject({
             resource: 'api_key',
             action: 'created',
@@ -127,9 +134,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'invited')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'invited')).toMatchObject({
             resource: 'member',
             action: 'invited',
             outcome: 'success',
@@ -158,9 +165,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).toBe(403);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'invited')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'invited')).toMatchObject({
             resource: 'member',
             action: 'invited',
             outcome: 'denied',
@@ -182,9 +189,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'invite_revoked')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'invite_revoked')).toMatchObject({
             resource: 'member',
             action: 'invite_revoked',
             outcome: 'success',
@@ -217,9 +224,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'invite_accepted')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'invite_accepted')).toMatchObject({
             resource: 'member',
             action: 'invite_accepted',
             outcome: 'success',
@@ -253,9 +260,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).toBe(200);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'invite_declined')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'invite_declined')).toMatchObject({
             resource: 'member',
             action: 'invite_declined',
             outcome: 'success',
@@ -278,9 +285,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).toBe(400);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'invite_accepted')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('member', 'invite_accepted')).toMatchObject({
             resource: 'member',
             action: 'invite_accepted',
             outcome: 'failure',
@@ -325,9 +332,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).not.toBe(404);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('function', 'deployed')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('function', 'deployed')).toMatchObject({
             resource: 'function',
             action: 'deployed',
             targets: [
@@ -359,9 +366,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         // request body before the handler runs.
         expect(res.res.status).not.toBe(401);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('function', 'upgraded')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('function', 'upgraded')).toMatchObject({
             resource: 'function',
             action: 'upgraded',
             targets: [{ type: 'function', id: 'my-sync' }],
@@ -383,9 +390,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         });
 
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('connection', 'created')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('connection', 'created');
         expect(event).toMatchObject({
             resource: 'connection',
             action: 'created',
@@ -415,9 +422,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         expect(generatedId).toBeTruthy();
 
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('connection', 'created')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('connection', 'created')).toMatchObject({
             resource: 'connection',
             action: 'created',
             outcome: 'success',
@@ -440,9 +447,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).not.toBe(401);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'paused')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'paused')).toMatchObject({
             resource: 'sync',
             action: 'paused',
             targets: [
@@ -467,9 +474,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
 
         expect(res.res.status).not.toBe(401);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('sync', 'started')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('sync', 'started')).toMatchObject({
             resource: 'sync',
             action: 'started',
             targets: [
@@ -499,9 +506,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         // before the handler runs, so it is recorded regardless of outcome.
         expect(res.res.status).not.toBe(401);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('function', 'deployed')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('function', 'deployed')).toMatchObject({
             resource: 'function',
             action: 'deployed',
             targets: [{ type: 'function', id: 'my-func' }],
@@ -523,9 +530,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         // The audit middleware now runs between auth and the scope check, so the denial is still recorded.
         expect(res.res.status).toBe(403);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('function', 'deployed')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('function', 'deployed')).toMatchObject({
             resource: 'function',
             action: 'deployed',
             outcome: 'denied',
@@ -550,9 +557,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         // The deploy is rejected (no matching template), but the audit target is resolved from the request body.
         expect(res.res.status).not.toBe(401);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('function', 'deployed')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('function', 'deployed')).toMatchObject({
             resource: 'function',
             action: 'deployed',
             targets: [{ type: 'function', id: 'my-prebuilt-sync' }],
@@ -580,9 +587,9 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
         const uniqueKey = res.json.data.unique_key;
         expect(uniqueKey.length).toBeGreaterThan(0);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('integration', 'created')).toBeDefined();
         });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+        expect(auditEvent('integration', 'created')).toMatchObject({
             resource: 'integration',
             action: 'created',
             outcome: 'success',
@@ -630,7 +637,7 @@ describe('audit middleware — lifecycle events (created / invited / deployed / 
             });
             // A failed create emits targetless (the id only exists on success) with a failure outcome.
             expect(auditSpy).toHaveBeenCalledTimes(1);
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('integration', 'created')).toMatchObject({
                 resource: 'integration',
                 action: 'created',
                 outcome: 'failure',
