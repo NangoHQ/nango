@@ -107,6 +107,10 @@
       "destination": "/api-integrations/apple-app-store"
     },
     {
+      "source": "/integrations/all/servicenow",
+      "destination": "/api-integrations/servicenow"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1653,7 +1657,7 @@
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
-              "integrations/all/servicenow",
+              "api-integrations/servicenow",
               "api-integrations/servicenow-oauth2-cc",
               "integrations/all/setmore",
               "integrations/all/sellsy",
