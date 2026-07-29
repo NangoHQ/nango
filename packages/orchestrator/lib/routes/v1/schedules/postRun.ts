@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { isScheduleLockedError, isScheduleTaskAlreadyRunningError } from '@nangohq/scheduler';
 import { validateRequest } from '@nangohq/utils';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -17,7 +18,7 @@ export type PostScheduleRun = Endpoint<{
         scheduleName: string;
         extra: JsonObject;
     };
-    Error: ApiError<'recurring_run_failed'>;
+    Error: ApiError<'recurring_run_failed' | 'schedule_task_already_running' | 'schedule_locked'>;
     Success: { scheduleId: string };
 }>;
 
@@ -34,6 +35,14 @@ const handler = (scheduler: Scheduler) => {
             extra: res.locals.parsedBody.extra
         });
         if (schedule.isErr()) {
+            if (isScheduleTaskAlreadyRunningError(schedule.error)) {
+                res.status(409).json({ error: { code: 'schedule_task_already_running', message: schedule.error.message } });
+                return;
+            }
+            if (isScheduleLockedError(schedule.error)) {
+                res.status(409).json({ error: { code: 'schedule_locked', message: schedule.error.message } });
+                return;
+            }
             res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });
             return;
         }

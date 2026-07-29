@@ -1,7 +1,8 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { ApiUser } from '../user/api.js';
 
-export type PostSignup = Endpoint<{
+export type PostSignup = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/signup';
     Body: {
@@ -26,7 +27,8 @@ export type PostSignup = Endpoint<{
     };
 }>;
 
-export type ValidateEmailAndLogin = Endpoint<{
+export type ValidateEmailAndLogin = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/verify/code';
     Body: {
@@ -44,7 +46,8 @@ export type ValidateEmailAndLogin = Endpoint<{
     };
 }>;
 
-export type ResendVerificationEmailByUuid = Endpoint<{
+export type ResendVerificationEmailByUuid = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/resend-verification-email/by-uuid';
     Body: { uuid: string };
@@ -54,7 +57,8 @@ export type ResendVerificationEmailByUuid = Endpoint<{
     };
 }>;
 
-export type ResendVerificationEmailByEmail = Endpoint<{
+export type ResendVerificationEmailByEmail = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/resend-verification-email/by-email';
     Body: { email: string };
@@ -64,7 +68,8 @@ export type ResendVerificationEmailByEmail = Endpoint<{
     };
 }>;
 
-export type GetEmailByUuid = Endpoint<{
+export type GetEmailByUuid = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/account/email/:uuid';
     Params: { uuid: string };
@@ -75,7 +80,8 @@ export type GetEmailByUuid = Endpoint<{
     };
 }>;
 
-export type GetEmailByExpiredToken = Endpoint<{
+export type GetEmailByExpiredToken = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/account/email/expired-token/:token';
     Params: { token: string };
@@ -87,7 +93,8 @@ export type GetEmailByExpiredToken = Endpoint<{
     };
 }>;
 
-export type PostSignin = Endpoint<{
+export type PostSignin = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/signin';
     Body: {
@@ -99,13 +106,15 @@ export type PostSignin = Endpoint<{
     Success: { user: ApiUser } | { data: { mfaRequired: true } };
 }>;
 
-export type PostLogout = Endpoint<{
+export type PostLogout = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/logout';
     Success: never;
 }>;
 
-export type PostForgotPassword = Endpoint<{
+export type PostForgotPassword = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/forgot-password';
     Body: {
@@ -116,7 +125,8 @@ export type PostForgotPassword = Endpoint<{
     };
 }>;
 
-export type PutResetPassword = Endpoint<{
+export type PutResetPassword = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'PUT';
     Path: '/api/v1/account/reset-password';
     Body: {
@@ -129,7 +139,8 @@ export type PutResetPassword = Endpoint<{
     };
 }>;
 
-export type PostManagedSignup = Endpoint<{
+export type PostManagedSignup = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/managed/signup';
     Body: {
@@ -143,7 +154,8 @@ export type PostManagedSignup = Endpoint<{
     };
 }>;
 
-export type GetManagedEmailVerification = Endpoint<{
+export type GetManagedEmailVerification = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/account/managed/verification';
     Error: ApiError<'not_found'>;
@@ -154,7 +166,8 @@ export type GetManagedEmailVerification = Endpoint<{
     };
 }>;
 
-export type PostManagedEmailVerification = Endpoint<{
+export type PostManagedEmailVerification = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/managed/verification';
     Body: {
@@ -168,7 +181,8 @@ export type PostManagedEmailVerification = Endpoint<{
     };
 }>;
 
-export type GetManagedCallback = Endpoint<{
+export type GetManagedCallback = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/login/callback';
     Querystring: {
@@ -183,7 +197,8 @@ export type GetManagedCallback = Endpoint<{
     };
 }>;
 
-export type GetOnboardingHearAboutUs = Endpoint<{
+export type GetOnboardingHearAboutUs = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/account/onboarding/hear-about-us';
     Error: ApiError<'unauthorized'>;
@@ -194,7 +209,8 @@ export type GetOnboardingHearAboutUs = Endpoint<{
     };
 }>;
 
-export type PostOnboardingHearAboutUs = Endpoint<{
+export type PostOnboardingHearAboutUs = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/onboarding/hear-about-us';
     Body: {

@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditResource, AuditTarget, AuditTrailVersion } from './event.js';
 
 // The audit event returned to the dashboard — the stored blob, parsed. Typed strictly for the current
@@ -21,13 +21,13 @@ export interface ApiAuditTrailEvent {
     metadata?: Record<string, unknown>;
 }
 
-export type GetAuditTrail = Endpoint<{
+export type GetAuditTrail = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/audit-trail';
     Querystring: {
-        env: string;
-        // `cursor` encodes position only, not the filter window: resend the same `from`/`to` on every
-        // page or subsequent pages paginate the unfiltered set past the cursor.
+        // Account-scoped endpoint: no `env`. `cursor` encodes position only, not the filter window — resend the
+        // same `from`/`to` on every page or subsequent pages paginate the unfiltered set past the cursor.
         cursor?: string;
         from?: string;
         to?: string;

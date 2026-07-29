@@ -6977,6 +6977,7 @@ NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.inte
 | `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` | `true` | Set to `false` to reject all base URL overrides |
 | `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
 | `NANGO_OUTBOUND_URL_POLICY` | Secure defaults when unset | JSON object controlling SSRF protection for proxy, customer webhooks, and `uncontrolledFetch` |
+| `NANGO_OUTBOUND_URL_POLICY_OAUTH` | Inherits the base policy; RFC1918 allowed | JSON object overlay controlling SSRF protection for OAuth/token flows (token, refresh, STS, JWT-bearer endpoints) |
 
 **Operator guidance:**
 
@@ -7019,6 +7020,12 @@ NANGO_OUTBOUND_URL_POLICY='{"mode":"allowlist","allowlist":[".hubspot.com","api.
 | `maxRedirects` | `5` | Maximum redirect hops followed |
 
 Each resolved address (including on every redirect hop) is validated; in `allowlist` mode, only listed hostnames are reachable regardless of IP.
+
+The same DNS-pinning protection also covers OAuth/token flows (token exchange, refresh, AWS STS, and JWT-bearer token endpoints). These use a separate overlay, `NANGO_OUTBOUND_URL_POLICY_OAUTH`, applied on top of `NANGO_OUTBOUND_URL_POLICY` but with the same JSON shape. The only difference is the default: `blockPrivateIps` is `false` for OAuth so self-hosted integrations whose token endpoints live on a private network keep working. Loopback and unspecified addresses stay blocked regardless. Link-local/metadata addresses (including the cloud-metadata IP `169.254.169.254`) stay blocked by default through `blockLinkLocal`, but that check is disabled if you set `blockLinkLocal:false`. Lock OAuth down to public hosts only by setting `blockPrivateIps`:
+
+```sh
+NANGO_OUTBOUND_URL_POLICY_OAUTH='{"blockPrivateIps":true}'
+```
 
 #### Securing the dashboard
 
@@ -7069,6 +7076,8 @@ import Nango from '@nangohq/frontend';
 
 let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '</YOUR-WEBSOCKETS-PATH>' });
 ```
+
+Connect UI discovers the custom path on its own (from the connect session), so `websocketsPath` only needs to be configured for direct `nango.auth()` calls. If Nango is served behind a reverse proxy under a sub-path, direct `nango.auth()` needs the full public path in `websocketsPath` (e.g. `/<API-BASE-PATH></YOUR-WEBSOCKETS-PATH>`) because the SDK resolves it from the origin, while Connect UI composes the public path automatically from the `apiURL` base path and `NANGO_SERVER_WEBSOCKETS_PATH`.
 
 ### Telemetry
 
@@ -14582,6 +14591,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `adyntel` | Adyntel | API_KEY | [docs](https://nango.dev/docs/api-integrations/adyntel.md) | [connect](https://nango.dev/docs/api-integrations/adyntel/connect.md) |  | marketing |
 | `affinity` | Affinity (v1) | BASIC | [docs](https://nango.dev/docs/integrations/all/affinity.md) | [connect](https://nango.dev/docs/integrations/all/affinity/connect.md) |  | crm |
 | `affinity-v2` | Affinity (v2) | API_KEY | [docs](https://nango.dev/docs/integrations/all/affinity-v2.md) | [connect](https://nango.dev/docs/integrations/all/affinity-v2/connect.md) |  | crm |
+| `agentcard` | Agentcard | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/agentcard.md) | [connect](https://nango.dev/docs/api-integrations/agentcard/connect.md) |  | payment |
 | `agiloft` | Agiloft | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/agiloft.md) | [connect](https://nango.dev/docs/api-integrations/agiloft/connect.md) | [setup](https://nango.dev/docs/api-integrations/agiloft/how-to-register-your-own-agiloft-api-oauth-app.md) | productivity |
 | `agiloft-cc` | Agiloft (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/agiloft-cc.md) | [connect](https://nango.dev/docs/api-integrations/agiloft-cc/connect.md) |  | productivity |
 | `ahrefs` | Ahrefs | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/ahrefs.md) |  | [setup](https://nango.dev/docs/api-integrations/ahrefs/how-to-register-your-own-ahrefs-api-oauth-app.md) | marketing, analytics |
@@ -14699,6 +14709,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
 | `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
+| `chatgpt-enterprise` | ChatGPT Enterprise (SCIM API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatgpt-enterprise.md) | [connect](https://nango.dev/docs/api-integrations/chatgpt-enterprise/connect.md) |  | productivity, dev-tools |
 | `chattermill` | Chattermill | API_KEY | [docs](https://nango.dev/docs/integrations/all/chattermill.md) |  |  | support, analytics |
 | `checkhq` | Check | API_KEY | [docs](https://nango.dev/docs/integrations/all/checkhq.md) | [connect](https://nango.dev/docs/integrations/all/checkhq/connect.md) |  | accounting |
 | `checkout-com` | Checkout.com | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com/connect.md) |  | payment |
@@ -14875,6 +14886,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `github-pat` | Github (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/github-pat.md) | [connect](https://nango.dev/docs/integrations/all/github-pat/connect.md) |  | dev-tools, ticketing |
 | `gitlab` | GitLab | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gitlab.md) |  |  | dev-tools, ticketing |
 | `gitlab-pat` | GitLab  (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/gitlab-pat.md) | [connect](https://nango.dev/docs/integrations/all/gitlab-pat/connect.md) |  | dev-tools, ticketing |
+| `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
+| `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
 | `glyphic` | Glyphic | API_KEY | [docs](https://nango.dev/docs/api-integrations/glyphic.md) | [connect](https://nango.dev/docs/api-integrations/glyphic/connect.md) |  | communication |
 | `gong` | Gong (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/gong.md) | [connect](https://nango.dev/docs/integrations/all/gong/connect.md) |  | communication, marketing, productivity, video |
 | `gong-oauth` | Gong (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gong-oauth.md) |  |  | communication, marketing, productivity, video, popular |
@@ -15216,6 +15229,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `reply-io` | Reply.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/reply-io.md) | [connect](https://nango.dev/docs/api-integrations/reply-io/connect.md) |  | marketing, communication |
 | `researchdesk` | ResearchDesk | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/researchdesk.md) | [connect](https://nango.dev/docs/api-integrations/researchdesk/connect.md) |  | other |
 | `resend` | Resend | API_KEY | [docs](https://nango.dev/docs/api-integrations/resend.md) | [connect](https://nango.dev/docs/api-integrations/resend/connect.md) |  | communication |
+| `resova` | Resova | API_KEY | [docs](https://nango.dev/docs/api-integrations/resova.md) | [connect](https://nango.dev/docs/api-integrations/resova/connect.md) |  | other |
 | `retell-ai` | Retell AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/retell-ai.md) | [connect](https://nango.dev/docs/integrations/all/retell-ai/connect.md) |  | dev-tools, productivity |
 | `revivn` | Revivn | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/revivn.md) | [connect](https://nango.dev/docs/api-integrations/revivn/connect.md) |  | other |
 | `ring-central` | RingCentral | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ring-central.md) |  |  | support |
@@ -15307,6 +15321,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `snowflake` | Snowflake | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/snowflake.md) | [connect](https://nango.dev/docs/api-integrations/snowflake/connect.md) | [setup](https://nango.dev/docs/api-integrations/snowflake/how-to-register-your-own-snowflake-api-oauth-app.md) | dev-tools |
 | `snowflake-jwt` | Snowflake (JWT) | JWT | [docs](https://nango.dev/docs/integrations/all/snowflake-jwt.md) | [connect](https://nango.dev/docs/integrations/all/snowflake-jwt/connect.md) |  | dev-tools |
 | `sophos-central` | Sophos Central | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/sophos-central.md) | [connect](https://nango.dev/docs/api-integrations/sophos-central/connect.md) |  | dev-tools |
+| `spendesk` | Spendesk | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/spendesk.md) |  | [setup](https://nango.dev/docs/api-integrations/spendesk/how-to-register-your-own-spendesk-api-oauth-app.md) | accounting, invoicing |
 | `splitwise` | Splitwise | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/splitwise.md) |  |  | payment, social |
 | `spotify` | Spotify (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/spotify.md) |  |  | other |
 | `spotify-oauth2-cc` | Spotify (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/spotify-oauth2-cc.md) |  |  | other |
@@ -15450,6 +15465,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `yandex` | Yandex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/yandex.md) |  |  | social |
 | `yotpo` | Yotpo | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/yotpo.md) | [connect](https://nango.dev/docs/integrations/all/yotpo/connect.md) |  | e-commerce |
 | `youcanbook-me` | YouCanBookMe | BASIC | [docs](https://nango.dev/docs/api-integrations/youcanbook-me.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me/connect.md) |  | productivity |
+| `youcanbook-me-public` | YouCanBookMe (Public) | NONE | [docs](https://nango.dev/docs/api-integrations/youcanbook-me-public.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me-public/connect.md) |  | productivity |
 | `youtube` | YouTube | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/youtube.md) |  | [setup](https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-api-oauth-app.md) | video |
 | `zapier` | Zapier | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/zapier.md) |  | [setup](https://nango.dev/docs/api-integrations/zapier/how-to-register-your-own-zapier-oauth-app.md) | dev-tools |
 | `zapier-nla` | Zapier NLA | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zapier-nla.md) |  |  | productivity |
