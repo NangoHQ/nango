@@ -10,7 +10,11 @@ export const sql = [
         retention_days UInt16,                          -- fixed app-level tier (e.g. 90/180/365), never free-form — bounds partitions
         id             UUID          MATERIALIZED toUUID(JSONExtractString(event, 'id')),
         account_id     Int64         MATERIALIZED JSONExtractInt(event, 'accountId'),
-        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3)
+        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3),
+        -- Unlike the other keys, JSONExtractInt can't throw: it yields 0 for a missing or malformed
+        -- accountId, filing the event under the wrong account. Guarding the key's JSON type rejects
+        -- both, while still accepting a legitimate accountId of 0 (which account_id != 0 would not).
+        CONSTRAINT account_id_valid CHECK JSONType(event, 'accountId') IN ('Int64', 'UInt64')
     )
     ENGINE = ReplacingMergeTree
     PARTITION BY (retention_days, toYYYYMM(occurred_at))

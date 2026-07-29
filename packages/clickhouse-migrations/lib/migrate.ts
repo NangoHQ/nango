@@ -31,7 +31,7 @@ async function createDatabaseIfNotExists({
         await client.command({ query: `CREATE DATABASE IF NOT EXISTS ${database}` });
         return Ok(undefined);
     } catch (err) {
-        return Err(`Clickhouse migration failed to create the database: ${stringifyError(err)}`);
+        return Err(`Clickhouse migration (${database}) failed to create the database: ${stringifyError(err)}`);
     } finally {
         await client.close();
     }
@@ -45,7 +45,7 @@ export async function migrate({ clickhouseClient, database, migrationsDir, migra
 
     const client = clickhouseClient({ database });
     if (!client) {
-        logger.info('Clickhouse migration: config not set, skipping migration');
+        logger.info(`Clickhouse migration (${database}): config not set, skipping migration`);
         return Ok(undefined);
     }
     try {
@@ -75,16 +75,16 @@ export async function migrate({ clickhouseClient, database, migrationsDir, migra
 
         for (const migration of migrations) {
             const { sql } = (await import(path.join(migrationsDir, migration))) as { sql: string[] };
-            logger.info(`Clickhouse migration: applying ${migration}`);
+            logger.info(`Clickhouse migration (${database}): applying ${migration}`);
             for (const statement of sql) {
                 await client.command({ query: statement, query_params: { database } });
             }
             await client.insert({ table: migrationTable, values: [{ name: migration }], format: 'JSONEachRow' });
         }
-        logger.info(`Clickhouse migration: ${migrations.length > 0 ? `applied ${migrations.length} migration(s)` : `no migrations`}`);
+        logger.info(`Clickhouse migration (${database}): ${migrations.length > 0 ? `applied ${migrations.length} migration(s)` : `no migrations`}`);
         return Ok(undefined);
     } catch (err) {
-        return Err(`Clickhouse migration failed: ${stringifyError(err)}`);
+        return Err(`Clickhouse migration (${database}) failed: ${stringifyError(err)}`);
     } finally {
         await client.close();
     }
