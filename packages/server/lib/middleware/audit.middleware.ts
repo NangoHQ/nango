@@ -95,7 +95,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-function resolveActor(locals: RequestLocals): AuditActor {
+export function resolveActor(locals: RequestLocals): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
@@ -112,7 +112,7 @@ function resolveActor(locals: RequestLocals): AuditActor {
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
 
-function contextFromRequest(req: Request): AuditContext {
+export function contextFromRequest(req: Request): AuditContext {
     const context: AuditContext = {};
     if (req.ip) {
         context.ip = req.ip;
@@ -124,7 +124,7 @@ function contextFromRequest(req: Request): AuditContext {
     return context;
 }
 
-function outcomeFromStatus(status: number): AuditOutcome {
+export function outcomeFromStatus(status: number): AuditOutcome {
     if (status < 300) {
         return 'success';
     }
