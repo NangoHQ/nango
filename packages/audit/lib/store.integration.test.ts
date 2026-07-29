@@ -1,32 +1,13 @@
 import { createClient } from '@clickhouse/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { migrate } from './migrate.js';
 import { ClickhouseAuditStore } from './store.js';
 
 import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 
-// `audit_trail_events` currently lives in the `usage` ClickHouse DB, created by the usage migration
-// (a future change will move it to a dedicated audit DB + migration owned here). To keep this package's
-// tests self-contained, the test owns a throwaway DB and mirrors that migration's DDL rather than depending
-// on @nangohq/usage. Keep in sync with:
-//   packages/usage/lib/clickhouse/migrations/20260715000009_create_audit_trail_events.ts
 const database = 'audit_store_test';
-const createTable = `
-    CREATE TABLE IF NOT EXISTS ${database}.audit_trail_events
-    (
-        event          String CODEC(ZSTD(3)),
-        retention_days UInt16,
-        id             UUID          MATERIALIZED toUUID(JSONExtractString(event, 'id')),
-        account_id     Int64         MATERIALIZED JSONExtractInt(event, 'accountId'),
-        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3)
-    )
-    ENGINE = ReplacingMergeTree
-    PARTITION BY (retention_days, toYYYYMM(occurred_at))
-    ORDER BY (account_id, occurred_at, id)
-    TTL toDateTime(occurred_at) + INTERVAL retention_days DAY
-    SETTINGS ttl_only_drop_parts = 1
-`;
 
 // Recent base time so rows aren't born-expired by the retention TTL.
 const base = new Date('2026-07-16T10:00:00.000Z').getTime();
@@ -61,9 +42,9 @@ beforeAll(async () => {
     const url = process.env['CLICKHOUSE_URL']!;
     const admin = createClient({ url });
     await admin.command({ query: `DROP DATABASE IF EXISTS ${database}` });
-    await admin.command({ query: `CREATE DATABASE ${database}` });
-    await admin.command({ query: createTable });
     await admin.close();
+
+    (await migrate({ clickhouseUrl: url, database })).unwrap();
 
     client = createClient({ url, database });
     store = new ClickhouseAuditStore(client);

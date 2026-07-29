@@ -14,7 +14,8 @@ function buildStore(): AuditStore {
         return new DropAuditStore();
     }
     try {
-        const store = new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
+        // TODO: repoint at the dedicated audit database once it and its schema are created.
+        const store = new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL, { database: 'usage' }));
         logger.info('Audit: reading and writing events to ClickHouse');
         return store;
     } catch (err) {
