@@ -22,6 +22,10 @@ export class AuditProcessor {
             consumerGroup: 'audit',
             subject: 'audit',
             concurrency: envs.METERING_AUDIT_EVENTS_SUBSCRIBE_CONCURRENCY,
+            // Deliberately never throws. The transport acks whenever this callback resolves, so a failed
+            // write drops the event instead of being retried and eventually sent to the DLQ. That keeps
+            // parity with the direct-write path this replaces; throw-to-retry lands with the hardened
+            // consumer, together with publish-side batching, in a subsequent PR.
             callback: async (event) => {
                 try {
                     const result = await this.store.record(event.payload);
