@@ -561,6 +561,10 @@ export const auditMfaRecoveryRegenerated = auditable<PostMFARecoveryCodes>({
 
 const METHOD_BY_TYPE = { code: 'totp', recoveryCode: 'recovery_code' } as const;
 
+// Anchor the event's resource/action to the endpoint's declared Audit policy so this dedicated middleware
+// can't drift from it — the typed auditable() specs get the same guarantee for free via AuditSpec.policy.
+const mfaVerifiedPolicy: PostMFALoginVerification['Audit'] = { kind: 'audit', resource: 'mfa', action: 'verified', scope: 'account' };
+
 // The login-verify route runs BEFORE authentication (the user is mid-login), so res.locals carries no
 // user or account and the standard locals-based auditable() can't attribute the event — and emit()
 // early-returns without an account. Resolve the acting user from the pending-login session (it still
@@ -578,12 +582,12 @@ export const auditMfaVerified: RequestHandler = (req, res, next) => {
 async function emitMfaVerified(req: Request, res: Response, pendingUserId: number | undefined): Promise<void> {
     const occurredAt = new Date().toISOString();
     try {
-        // Success attributes to the logged-in user; a failed verify still attributes via the pending session.
-        const uid = req.user?.id ?? pendingUserId;
-        if (uid == null) {
+        // Attribute to the pending-login user captured at middleware entry — equal to req.user on success,
+        // and the only attribution available on failure. No pending challenge means there is nothing to audit.
+        if (pendingUserId == null) {
             return;
         }
-        const user = await userService.getUserById(uid, true);
+        const user = await userService.getUserById(pendingUserId, true);
         if (!user) {
             return;
         }
@@ -595,14 +599,14 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;
-        const method: MfaVerifiedMetadata['method'] | undefined = bodyType ? METHOD_BY_TYPE[bodyType] : undefined;
+        const method: MfaVerifiedMetadata['method'] | undefined = bodyType && Object.hasOwn(METHOD_BY_TYPE, bodyType) ? METHOD_BY_TYPE[bodyType] : undefined;
         const event: AuditEvent = {
             occurredAt,
             accountId: account.id,
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
-            resource: 'mfa',
-            action: 'verified',
+            resource: mfaVerifiedPolicy.resource,
+            action: mfaVerifiedPolicy.action,
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
             context: contextFromRequest(req),
             outcome: outcomeFromStatus(res.statusCode),
