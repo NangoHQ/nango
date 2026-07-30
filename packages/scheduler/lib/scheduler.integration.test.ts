@@ -4,7 +4,8 @@ import { nanoid } from '@nangohq/utils';
 
 import { defaultSchedulerConfig } from './config.js';
 import { getTestDbClient } from './db/helpers.test.js';
-import { isDuplicateTaskNameError } from './errors.js';
+import { isDuplicateTaskNameError, isScheduleLockedError, isScheduleTaskAlreadyRunningError } from './errors.js';
+import * as schedules from './models/schedules.js';
 import { Scheduler } from './scheduler.js';
 
 import type { TaskProps } from './models/tasks.js';
@@ -218,7 +219,31 @@ describe('Scheduler', () => {
     it('should not run an immediate task for a schedule if another task is already running', async () => {
         const schedule = await recurring({ scheduler });
         await immediate(scheduler, { schedule }); // first task: OK
-        await expect(immediate(scheduler, { schedule })).rejects.toThrow();
+        await expect(immediate(scheduler, { schedule })).rejects.toSatisfy(isScheduleTaskAlreadyRunningError);
+    });
+    it('should create exactly one task for concurrent immediate calls on the same schedule', async () => {
+        const schedule = await recurring({ scheduler });
+
+        const results = await Promise.allSettled([immediate(scheduler, { schedule }), immediate(scheduler, { schedule })]);
+        const created = results.filter((result): result is PromiseFulfilledResult<Task> => result.status === 'fulfilled');
+        const rejected = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+
+        expect(created).toHaveLength(1);
+        expect(rejected).toHaveLength(1);
+        // the loser either fails to acquire the schedule lock or, if it acquired it after the winner committed, conflicts on the task
+        expect(isScheduleLockedError(rejected[0]?.reason) || isScheduleTaskAlreadyRunningError(rejected[0]?.reason)).toBe(true);
+        expect((await scheduler.searchTasks({ scheduleId: schedule.id, state: 'CREATED' })).unwrap()).toHaveLength(1);
+        expect(callbacks.CREATED).toHaveBeenCalledOnce();
+    });
+    it('should not run an immediate task for a schedule locked by another transaction', async () => {
+        const schedule = await recurring({ scheduler });
+
+        await dbClient.db.transaction(async (trx) => {
+            (await schedules.search(trx, { id: schedule.id, limit: 1, forUpdate: true })).unwrap();
+            await expect(immediate(scheduler, { schedule })).rejects.toSatisfy(isScheduleLockedError);
+        });
+
+        expect((await scheduler.searchTasks({ scheduleId: schedule.id })).unwrap()).toHaveLength(0);
     });
     it('should create an uncapped task when immediate is called for a schedule', async () => {
         const schedule = await recurring({ scheduler });

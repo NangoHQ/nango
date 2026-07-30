@@ -30,15 +30,6 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('action-trace-manual-keep', { targetingKey: String(environmentId), environmentId }, false);
         },
         /**
-         * Whether persist auth resolves the minimal PersistAuthContext via the light
-         * lookup instead of the full account context query. No account is known before
-         * the lookup, so gradual rollout buckets per evaluation — use random stickiness.
-         * Default `false`.
-         */
-        shouldUseLightPersistAuthContext() {
-            return client.isEnabled('persist-light-auth-context', {}, false);
-        },
-        /**
          * Whether to send sync completion webhooks for this environment and provider.
          * Default `true`.
          */

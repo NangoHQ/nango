@@ -1,8 +1,39 @@
-import { describe, expect, it } from 'vitest';
+import http from 'node:http';
 
-import { getAwsSigV4Settings, isValidAwsRegion, parseAssumeRoleResponse } from './aws-sigv4.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { axiosInstance } from '@nangohq/utils';
+
+import { assertSafeOAuthUrl } from '../services/proxy/outbound-policy.js';
+import { fetchAwsTemporaryCredentials, getAwsSigV4Settings, isValidAwsRegion, parseAssumeRoleResponse } from './aws-sigv4.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
+import type * as OutboundPolicyModule from '../services/proxy/outbound-policy.js';
+import type { AwsSigV4IntegrationSettings } from './aws-sigv4.js';
+import type { AddressInfo } from 'node:net';
+
+// The STS AssumeRole call goes through the OAuth egress policy. Neutralise the policy so a local test
+// server is reachable (loopback is always blocked by the real policy) while still asserting the URL guard.
+vi.mock('../services/proxy/outbound-policy.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof OutboundPolicyModule>();
+    return {
+        ...actual,
+        assertSafeOAuthUrl: vi.fn((url: string) => Promise.resolve(new URL(url))),
+        // `proxy: false` keeps axios off any ambient HTTP(S)_PROXY so the loopback test server is reached directly.
+        getOAuthAxiosRequestConfig: vi.fn(() => ({ proxy: false }))
+    };
+});
+
+async function withServer(handler: http.RequestListener, fn: (baseUrl: string) => Promise<void>): Promise<void> {
+    const server = http.createServer(handler);
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address() as AddressInfo;
+    try {
+        await fn(`http://127.0.0.1:${port}`);
+    } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+}
 
 function makeConfig(overrides: Partial<ProviderConfig> = {}): ProviderConfig {
     return {
@@ -203,6 +234,120 @@ describe('getAwsSigV4Settings', () => {
         if (result.isOk()) {
             expect(result.value.stsEndpoint?.auth).toBeUndefined();
         }
+    });
+});
+
+describe('fetchAwsTemporaryCredentials', () => {
+    afterEach(() => {
+        // Restores the per-test axios spy created via vi.spyOn; the factory vi.fn mocks keep their default
+        // implementations and their (assertion-irrelevant) call history across tests.
+        vi.restoreAllMocks();
+    });
+
+    const input = { roleArn: 'arn:aws:iam::123456789012:role/TestRole', externalId: 'external-123', region: 'us-east-1' };
+
+    const stsXml = `<AssumeRoleResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+  <AssumeRoleResult>
+    <Credentials>
+      <AccessKeyId>ASIABUILTIN</AccessKeyId>
+      <SecretAccessKey>builtinSecret</SecretAccessKey>
+      <SessionToken>builtinSession</SessionToken>
+      <Expiration>2035-01-02T04:04:05Z</Expiration>
+    </Credentials>
+  </AssumeRoleResult>
+</AssumeRoleResponse>`;
+
+    it('builtin mode: assumes the role against the region STS endpoint and validates the URL', async () => {
+        const postSpy = vi.spyOn(axiosInstance, 'post').mockResolvedValue({ status: 200, data: stsXml });
+
+        const settings: AwsSigV4IntegrationSettings = {
+            service: 's3',
+            stsMode: 'builtin',
+            defaultRegion: 'us-east-1',
+            builtinCredentials: { awsAccessKeyId: 'AKIATEST', awsSecretAccessKey: 'secret' }
+        };
+
+        const result = await fetchAwsTemporaryCredentials({ settings, input });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.accessKeyId).toBe('ASIABUILTIN');
+            expect(result.value.sessionToken).toBe('builtinSession');
+        }
+        // The built-in STS URL is now validated through the egress policy, matching the custom path.
+        expect(assertSafeOAuthUrl).toHaveBeenCalledWith('https://sts.us-east-1.amazonaws.com/');
+        expect(postSpy).toHaveBeenCalledOnce();
+    });
+
+    it('builtin mode: refresh re-runs the guarded assume-role call', async () => {
+        // AWS_SIGV4 refresh re-invokes fetchAwsTemporaryCredentials (connection.service), so a repeat call must succeed.
+        const postSpy = vi.spyOn(axiosInstance, 'post').mockResolvedValue({ status: 200, data: stsXml });
+        const settings: AwsSigV4IntegrationSettings = {
+            service: 's3',
+            stsMode: 'builtin',
+            defaultRegion: 'us-east-1',
+            builtinCredentials: { awsAccessKeyId: 'AKIATEST', awsSecretAccessKey: 'secret' }
+        };
+
+        const first = await fetchAwsTemporaryCredentials({ settings, input });
+        const refreshed = await fetchAwsTemporaryCredentials({ settings, input });
+
+        expect(first.isOk()).toBe(true);
+        expect(refreshed.isOk()).toBe(true);
+        expect(postSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('builtin mode: does not call STS when the URL is blocked by policy', async () => {
+        vi.mocked(assertSafeOAuthUrl).mockRejectedValueOnce(new Error('URL resolves to a blocked address'));
+        const postSpy = vi.spyOn(axiosInstance, 'post');
+
+        const settings: AwsSigV4IntegrationSettings = {
+            service: 's3',
+            stsMode: 'builtin',
+            defaultRegion: 'us-east-1',
+            builtinCredentials: { awsAccessKeyId: 'AKIATEST', awsSecretAccessKey: 'secret' }
+        };
+
+        const result = await fetchAwsTemporaryCredentials({ settings, input });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.type).toBe('aws_sigv4_sts_request_failed');
+        }
+        expect(postSpy).not.toHaveBeenCalled();
+    });
+
+    it('custom mode: fetches credentials from the custom STS endpoint end-to-end', async () => {
+        await withServer(
+            (_req, res) => {
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(
+                    JSON.stringify({
+                        accessKeyId: 'ASIACUSTOM',
+                        secretAccessKey: 'customSecret',
+                        sessionToken: 'customSession',
+                        expiration: new Date('2035-01-02T04:04:05Z').toISOString()
+                    })
+                );
+            },
+            async (baseUrl) => {
+                const settings: AwsSigV4IntegrationSettings = {
+                    service: 's3',
+                    stsMode: 'custom',
+                    defaultRegion: 'us-east-1',
+                    stsEndpoint: { url: `${baseUrl}/sts` }
+                };
+
+                const result = await fetchAwsTemporaryCredentials({ settings, input });
+
+                expect(result.isOk()).toBe(true);
+                if (result.isOk()) {
+                    expect(result.value.accessKeyId).toBe('ASIACUSTOM');
+                    expect(result.value.sessionToken).toBe('customSession');
+                }
+                expect(assertSafeOAuthUrl).toHaveBeenCalledWith(`${baseUrl}/sts`);
+            }
+        );
     });
 });
 

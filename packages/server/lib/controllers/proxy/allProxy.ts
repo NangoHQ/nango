@@ -1,6 +1,7 @@
 import { finished, PassThrough } from 'node:stream';
 
 import { isAxiosError } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
 
 import { getFlags } from '@nangohq/feature-flags';
@@ -427,7 +428,9 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         void pubsub.publisher.publish({
             subject: 'usage',
             type: 'usage.proxy',
-            idempotencyKey: logCtx.id,
+            // NOTE: `existingActivityLogId` is set via header, hence we can't rely on it as an
+            // idempotency key, so whenever it is set, we use a uuid as the idempotency key instead.
+            idempotencyKey: existingActivityLogId ? uuidv4() : logCtx.id,
             payload: {
                 value: 1,
                 properties: {

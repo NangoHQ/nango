@@ -1,6 +1,7 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 
-export type GetPublicClientMetadata = Endpoint<{
+export type GetPublicClientMetadata = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/oauth/client-metadata/:environmentUuid/:providerConfigKey';
     Params: {
