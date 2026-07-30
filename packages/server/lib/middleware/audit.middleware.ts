@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { customerKeyService, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
@@ -94,6 +94,9 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
         locals: RequestLocals
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
     metadata?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    // Defaults to the authenticated account (res.locals.account). Override when the audited account is not
+    // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
+    account?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Promise<{ id: number; uuid: string } | undefined>;
 };
 
 function toId(value: unknown): string | undefined {
@@ -168,15 +171,18 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
     }
 }
 
-async function emit(policy: AuditPolicy, req: Request, res: Response, resolved: ResolvedAudit | undefined): Promise<void> {
+async function emit(
+    policy: AuditPolicy,
+    req: Request,
+    res: Response,
+    resolved: ResolvedAudit | undefined,
+    account: { id: number },
+    environment: RequestLocals['environment']
+): Promise<void> {
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
         const locals = res.locals as RequestLocals;
-        const { account, environment } = locals;
-        if (!account) {
-            return;
-        }
         const target = resolved?.target;
         const metadata = resolved?.metadata;
         const event = {
@@ -212,7 +218,12 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
         void (async () => {
             try {
                 const locals = res.locals as RequestLocals;
-                if (locals.account && (await getFlags().isAuditTrailEnabled(locals.account.uuid))) {
+                // Resolve the audited account before the flag gate: a spec may attribute the event to an
+                // account other than the caller's (see AuditSpec.account), and the gate must use that one.
+                const account = spec.account ? await spec.account(req, locals) : locals.account;
+                // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
+                const environment = locals.environment;
+                if (account && (await getFlags().isAuditTrailEnabled(account.uuid))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
                     let responseBody: unknown;
@@ -242,7 +253,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                                     logger.error(`failed to resolve audit target from response`, err);
                                 }
                             }
-                            await emit(spec.policy, req, res, resolved);
+                            await emit(spec.policy, req, res, resolved, account, environment);
                         })();
                     });
                     // Resolve target and metadata before the handler runs — some handlers move or overwrite
@@ -641,15 +652,28 @@ export const auditMemberInviteRevoked = auditable<DeleteInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_revoked', scope: 'account' }),
     target: (req) => makeTarget('member', req.body.email, req.body.email)
 });
+// Recorded under the inviting team (like invited/revoked), not the invitee's own account: locals.account
+// is the accepter's pre-existing account, so resolve the target account from the invitation instead. The
+// invite still exists here (resolved before the handler consumes it).
+async function invitingAccount(req: Request<{ id: string }>): Promise<{ id: number; uuid: string } | undefined> {
+    const invitation = await getInvitation(req.params.id);
+    if (!invitation) {
+        return undefined;
+    }
+    return (await accountService.getAccountById(db.knex, invitation.account_id)) ?? undefined;
+}
+
 // Accept/decline run under webAuth, so the acting user IS the invited member — the actor is resolved
 // from the session and the target email comes from locals, keeping the member identity (email)
 // consistent with the invited/revoked events. The invite token (req.params.id) is not a member identity.
 export const auditMemberInviteAccepted = auditable<AcceptInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_accepted', scope: 'account' }),
+    account: invitingAccount,
     target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
 });
 export const auditMemberInviteDeclined = auditable<DeclineInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_declined', scope: 'account' }),
+    account: invitingAccount,
     target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
 });
 

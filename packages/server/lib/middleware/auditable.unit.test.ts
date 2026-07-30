@@ -22,10 +22,23 @@ import {
     auditSyncStarted
 } from './audit.middleware.js';
 
+import type * as NangoShared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
+
+// invite accept/decline resolve the audited account from the invitation (see AuditSpec.account).
+const getInvitationMock = vi.hoisted(() => vi.fn());
+const getAccountByIdMock = vi.hoisted(() => vi.fn());
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return {
+        ...actual,
+        getInvitation: getInvitationMock,
+        accountService: { ...actual.accountService, getAccountById: getAccountByIdMock }
+    };
+});
 
 function fakeReq(overrides: Record<string, unknown> = {}) {
     return {
@@ -195,6 +208,9 @@ describe('auditable() lifecycle specs (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        // Invite accept/decline attribute to the inviting team (account 100), not the caller's account (42).
+        getInvitationMock.mockReset().mockResolvedValue({ account_id: 100, email: 'dev@example.com', role: 'administrator' });
+        getAccountByIdMock.mockReset().mockResolvedValue({ id: 100, uuid: 'inviting-acc-uuid', name: 'Inviting Team' });
     });
 
     it('member invited: one target per email, account-scoped (environment null)', async () => {
@@ -228,42 +244,61 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('invite accepted: the accepting member (from the session) is actor and target', async () => {
+    it('invite accepted: recorded under the inviting team, actor and target are the accepting member', async () => {
         const req = fakeReq({ params: { id: 'invite-token' } });
         const event = await runAudit(auditMemberInviteAccepted, req, fakeRes(locals));
+        expect(getInvitationMock).toHaveBeenCalledWith('invite-token');
         expect(event).toMatchObject({
             resource: 'member',
             action: 'invite_accepted',
             outcome: 'success',
-            accountId: 42,
+            // The inviting team (from the invitation), not the accepter's own account (42).
+            accountId: 100,
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
         });
     });
 
-    it('invite declined: the declining member (from the session) is actor and target', async () => {
+    it('invite accepted: the audit-trail flag is gated on the inviting team, not the caller account', async () => {
+        // Caller's own account (42, uuid 'acc-uuid') has audit OFF; the inviting team ('inviting-acc-uuid')
+        // has it ON. The event must still record — proving the gate keys on the resolved account, not locals.
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockImplementation((uuid: string) => Promise.resolve(uuid === 'inviting-acc-uuid'));
+        const req = fakeReq({ params: { id: 'invite-token' } });
+        const event = await runAudit(auditMemberInviteAccepted, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'member', action: 'invite_accepted', accountId: 100 });
+    });
+
+    it('invite declined: recorded under the inviting team, actor and target are the declining member', async () => {
         const req = fakeReq({ params: { id: 'invite-token' } });
         const event = await runAudit(auditMemberInviteDeclined, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'member',
             action: 'invite_declined',
             outcome: 'success',
-            accountId: 42,
+            accountId: 100,
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
         });
     });
 
-    it('failed invite acceptance (4xx): target still resolved from the session, outcome failure', async () => {
+    it('invite accept for an unknown invitation records nothing (no account to attribute to)', async () => {
+        getInvitationMock.mockResolvedValue(null);
         const req = fakeReq({ params: { id: 'missing-token' } });
+        await new Promise<void>((resolve) => auditMemberInviteAccepted(req, fakeRes(locals), () => resolve()));
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(recordMock).not.toHaveBeenCalled();
+    });
+
+    it('failed invite acceptance (4xx): target still resolved from the session, outcome failure', async () => {
+        const req = fakeReq({ params: { id: 'invite-token' } });
         const event = await runAudit(auditMemberInviteAccepted, req, fakeRes(locals, 400));
         expect(event).toMatchObject({
             resource: 'member',
             action: 'invite_accepted',
             outcome: 'failure',
-            accountId: 42,
+            accountId: 100,
             environment: null,
             targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
         });
