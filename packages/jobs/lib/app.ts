@@ -13,6 +13,7 @@ import { envs } from './env.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
 import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
+import { assertInternalTlsCompatibleWithLambda } from './runner/lambda.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
@@ -121,6 +122,8 @@ try {
         logger.info('Received SIGTERM...');
         close();
     });
+
+    assertInternalTlsCompatibleWithLambda();
 
     if (envs.RUNNER_TYPE === 'LOCAL') {
         // when running locally, the runners (running as processes) are being killed

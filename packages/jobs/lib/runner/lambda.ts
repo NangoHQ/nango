@@ -18,7 +18,7 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, getInternalTlsEnv, getLogger, Ok, stringifyError } from '@nangohq/utils';
+import { Err, getInternalTlsOptions, getLogger, Ok, stringifyError, useLambda } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
@@ -37,6 +37,19 @@ const cloudwatchLogsClient = new CloudWatchLogsClient();
 
 /** Synthetic tenant id for readiness checks on PER_TENANT Lambdas (see AWS tenant isolation invoke docs). */
 const READINESS_CHECK_TENANT_ID = 'nango-readiness';
+
+/**
+ * A Lambda has nowhere to hold the mTLS assets: every env var shares a 4KB budget the PEM blocks can
+ * exhaust, and whatever is in the function config is readable through GetFunctionConfiguration.
+ */
+export function assertInternalTlsCompatibleWithLambda({
+    lambdaEnabled = useLambda,
+    tlsEnabled = Boolean(getInternalTlsOptions())
+}: { lambdaEnabled?: boolean; tlsEnabled?: boolean } = {}): void {
+    if (lambdaEnabled && tlsEnabled) {
+        throw new Error('Lambda runners do not support internal mTLS. Unset LAMBDA_ENABLED or the NANGO_INTERNAL_TLS_* variables.');
+    }
+}
 
 /**
  * Async readiness invoke (`Event`) — returns after AWS accepts the invoke; use for keep-warm so SQS handlers finish quickly.
@@ -273,9 +286,7 @@ class Lambda {
                     : {}),
                 ...(envs.NANGO_OUTBOUND_URL_POLICY ? { NANGO_OUTBOUND_URL_POLICY: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) } : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
-                ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {}),
-                // Lambda caps all env vars at 4KB in aggregate, which PEM assets can exhaust.
-                ...getInternalTlsEnv()
+                ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }
         };
     }
