@@ -62,11 +62,18 @@ describe('audit middleware — live-stack contract', () => {
             await vi.waitFor(() => {
                 expect(auditSpy).toHaveBeenCalled();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({ resource: 'member', action: 'role_changed', outcome: 'denied' });
+            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+                resource: 'member',
+                action: 'role_changed',
+                outcome: 'denied',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'user', id: String(user.id) }
+            });
         });
 
         it('public (apiAuth + withScope): a scope the key does not hold', async () => {
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
             // Restrict the key so withScope('environment:connections:update') rejects with 403 first.
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
@@ -82,7 +89,14 @@ describe('audit middleware — live-stack contract', () => {
             await vi.waitFor(() => {
                 expect(auditSpy).toHaveBeenCalled();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({ resource: 'connection', action: 'updated', outcome: 'denied' });
+            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+                resource: 'connection',
+                action: 'updated',
+                outcome: 'denied',
+                accountId: account.id,
+                environment: { id: env.id, display: env.name },
+                actor: { type: 'api_key', id: String(apiKey.id) }
+            });
         });
     });
 
@@ -110,6 +124,9 @@ describe('audit middleware — live-stack contract', () => {
             expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
                 resource: 'member',
                 action: 'role_changed',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
                 metadata: { fromRole: 'development_full_access', toRole: 'production_support' }
             });
         });
@@ -135,13 +152,16 @@ describe('audit middleware — live-stack contract', () => {
             expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
                 resource: 'member',
                 action: 'removed',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
                 targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
             });
         });
     });
 
     it('does not leak a cross-account member email on a real authorization rejection', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
+        const { account, user } = await seeders.seedAccountEnvAndUser();
         const other = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -158,7 +178,13 @@ describe('audit middleware — live-stack contract', () => {
             expect(auditSpy).toHaveBeenCalled();
         });
         const event = auditSpy.mock.calls[0]?.[0];
-        expect(event).toMatchObject({ resource: 'member', action: 'role_changed', targets: [{ type: 'member', id: String(other.user.id) }] });
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'role_changed',
+            accountId: account.id,
+            environment: null,
+            targets: [{ type: 'member', id: String(other.user.id) }]
+        });
         expect(event?.targets[0]).not.toHaveProperty('display');
     });
 });

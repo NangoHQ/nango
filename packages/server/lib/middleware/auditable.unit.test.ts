@@ -13,9 +13,6 @@ import {
 
 import type { RequestHandler } from 'express';
 
-// Unit-level coverage of the middleware's behavior — the part the per-endpoint integration tests were
-// really asserting (event shape, redaction, outcome, resolve-before-next). No server, no auth stack,
-// no database, no ClickHouse: the audit client is mocked and a fake req/res drives the same code path.
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
 
@@ -76,6 +73,8 @@ describe('auditable() middleware behavior (unit)', () => {
             resource: 'environment',
             action: 'variables_changed',
             outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'environment', id: '9', display: 'dev' }],
             metadata: { variableCount: 2, variableNames: ['API_URL', 'TOKEN'] },
@@ -114,10 +113,12 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(JSON.stringify(event)).not.toContain('shh-secret');
     });
 
-    it('maps a 4xx response to a denied outcome', async () => {
-        const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
-        const event = await runAudit(auditEnvironmentVariablesChanged, req, fakeRes(locals, 403));
-        expect(event).toMatchObject({ resource: 'environment', action: 'variables_changed', outcome: 'denied' });
+    it('maps the response status to an outcome (403 → denied, 5xx → failure)', async () => {
+        const denied = await runAudit(auditEnvironmentVariablesChanged, fakeReq({ body: { variables: [] } }), fakeRes(locals, 403));
+        expect(denied).toMatchObject({ outcome: 'denied' });
+        recordMock.mockClear();
+        const failed = await runAudit(auditEnvironmentVariablesChanged, fakeReq({ body: { variables: [] } }), fakeRes(locals, 500));
+        expect(failed).toMatchObject({ outcome: 'failure' });
     });
 
     it('resolves an api_key actor (secret-key auth) rather than a user', async () => {
@@ -133,6 +134,8 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(event).toMatchObject({
             resource: 'connection',
             action: 'deleted',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [{ type: 'connection', id: 'conn-1' }],
             metadata: { providerConfigKey: 'algolia' }
