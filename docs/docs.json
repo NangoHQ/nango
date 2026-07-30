@@ -107,6 +107,10 @@
       "destination": "/api-integrations/apple-app-store"
     },
     {
+      "source": "/integrations/all/servicenow",
+      "destination": "/api-integrations/servicenow"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -769,7 +773,8 @@
                       "guides/platform/migrations/migrate-from-public-key",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
-                  }
+                  },
+                  "contributing"
                 ]
               }
             ]
@@ -834,7 +839,8 @@
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
-                          "reference/backend/http-api/functions/deployments",
+                          "reference/backend/http-api/functions/deployments-create",
+                          "reference/backend/http-api/functions/deployments-get",
                           "reference/backend/http-api/scripts/config"
                         ]
                       },
@@ -943,6 +949,7 @@
               "api-integrations/accelo",
               "api-integrations/acumatica",
               "api-integrations/adobe-commerce",
+              "api-integrations/adoxx-cc",
               "integrations/all/acuity-scheduling",
               "integrations/all/active-campaign",
               "integrations/all/addepar",
@@ -1652,7 +1659,7 @@
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
-              "integrations/all/servicenow",
+              "api-integrations/servicenow",
               "api-integrations/servicenow-oauth2-cc",
               "integrations/all/setmore",
               "integrations/all/sellsy",

@@ -1,3 +1,4 @@
+import type { SerializedAuditEvent } from '../audit-trail/event.js';
 import type { FunctionRuntime } from '../runner/sdk.js';
 import type { DBTeam } from '../team/db.js';
 import type { DBUser } from '../user/db.js';
@@ -26,7 +27,9 @@ export type LambdaKeepWarmInvokeEvent = EventBase<
     }
 >;
 
-export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent>;
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent | AuditRecordedEvent>;
+
+export type AuditRecordedEvent = EventBase<'audit', 'audit.recorded', SerializedAuditEvent>;
 
 // User events
 export type UserCreatedEvent = EventBase<

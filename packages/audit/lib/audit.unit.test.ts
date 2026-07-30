@@ -2,26 +2,30 @@ import { describe, expect, it } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import { Audit, InvalidAuditCursorError } from './audit.js';
+import { AuditClient, InvalidAuditCursorError } from './audit.js';
 import { DropAuditStore } from './store.js';
 
-import type { AuditEvent } from './event.js';
-import type { AuditStore, AuditTrailPage, ListAuditTrailEventsParams } from './store.js';
+import type { AuditEvent, StoredAuditEvent } from './event.js';
+import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
+import type { SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-// In-memory store so tests can assert on what was recorded and on how `list` is called.
-class RecordingStore implements AuditStore {
-    events: AuditEvent[] = [];
+class RecordingStore implements AuditWriter, AuditReader {
+    records: SerializedAuditEvent[] = [];
     listCalls: ListAuditTrailEventsParams[] = [];
 
-    record(event: AuditEvent): Promise<Result<void>> {
-        this.events.push(event);
+    record(record: SerializedAuditEvent): Promise<Result<void>> {
+        this.records.push(record);
         return Promise.resolve(Ok(undefined));
     }
 
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
         this.listCalls.push(params);
         return Promise.resolve(Ok({ events: [], nextCursor: null }));
+    }
+
+    stored(index = 0): StoredAuditEvent {
+        return JSON.parse(this.records[index]!.event) as StoredAuditEvent;
     }
 }
 
@@ -50,42 +54,68 @@ const roleEvent: AuditEvent = {
     metadata: { fromRole: 'development_full_access', toRole: 'administrator' }
 };
 
-describe('Audit.record', () => {
-    it('routes events to its store', async () => {
+describe('AuditClient.record', () => {
+    it('hands the writer the serialized event, stamped with an id and version', async () => {
         const store = new RecordingStore();
-        await new Audit(store).record(event);
-        expect(store.events).toEqual([event]);
+        await new AuditClient(store, store).record(event);
+
+        expect(store.records).toHaveLength(1);
+        const stored = store.stored();
+        expect(stored.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+        expect(stored.version).toBe('2026-07-16');
+        expect(stored).toMatchObject(event);
     });
 
-    it('returns Err instead of throwing when the store fails', async () => {
-        const audit = new Audit({
-            record() {
-                throw new Error('boom');
+    it('stamps the id before the writer sees it, so a redelivered record keeps the same id', async () => {
+        const store = new RecordingStore();
+        const audit = new AuditClient(store, store);
+        await audit.record(event);
+
+        await store.record(store.records[0]!);
+
+        expect(store.stored(0).id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+        expect(store.stored(1).id).toBe(store.stored(0).id);
+    });
+
+    it('gives each emitted event its own id', async () => {
+        const store = new RecordingStore();
+        const audit = new AuditClient(store, store);
+        await audit.record(event);
+        await audit.record(event);
+
+        expect(store.stored(1).id).not.toBe(store.stored(0).id);
+    });
+
+    it('returns Err instead of throwing when the writer fails', async () => {
+        const audit = new AuditClient(
+            {
+                record() {
+                    throw new Error('boom');
+                }
             },
-            list() {
-                return Promise.resolve(Ok({ events: [], nextCursor: null }));
-            }
-        });
+            new DropAuditStore()
+        );
         const result = await audit.record(event);
         expect(result.isErr()).toBe(true);
     });
 
-    it('preserves typed metadata on events that define it', async () => {
+    it('preserves typed metadata through serialization', async () => {
         const store = new RecordingStore();
-        await new Audit(store).record(roleEvent);
-        expect(store.events).toEqual([roleEvent]);
+        await new AuditClient(store, store).record(roleEvent);
+        expect(store.stored()).toMatchObject(roleEvent);
     });
 });
 
-describe('Audit.listAuditTrailEvents', () => {
+describe('AuditClient.listAuditTrailEvents', () => {
     it('returns empty for a DropAuditStore (audit not wired)', async () => {
-        const result = await new Audit(new DropAuditStore()).listAuditTrailEvents({ accountId: 1, limit: 25 });
+        const drop = new DropAuditStore();
+        const result = await new AuditClient(drop, drop).listAuditTrailEvents({ accountId: 1, limit: 25 });
         expect(result.unwrap()).toEqual({ events: [], nextCursor: null });
     });
 
-    it('rejects a non-decodable cursor before hitting the store', async () => {
+    it('rejects a non-decodable cursor before hitting the reader', async () => {
         const store = new RecordingStore();
-        const result = await new Audit(store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor: 'not-a-valid-cursor' });
+        const result = await new AuditClient(store, store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor: 'not-a-valid-cursor' });
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(InvalidAuditCursorError);
@@ -96,7 +126,7 @@ describe('Audit.listAuditTrailEvents', () => {
     it('rejects a JSON-shaped cursor with invalid timestamp/id values (would 500 at the CH bind otherwise)', async () => {
         const store = new RecordingStore();
         const cursor = Buffer.from(JSON.stringify({ occurredAt: 'garbage', id: 'not-a-uuid' })).toString('base64');
-        const result = await new Audit(store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor });
+        const result = await new AuditClient(store, store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor });
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(InvalidAuditCursorError);
@@ -104,11 +134,11 @@ describe('Audit.listAuditTrailEvents', () => {
         expect(store.listCalls).toHaveLength(0);
     });
 
-    it('round-trips a valid opaque cursor to the store as (occurredAt, id)', async () => {
+    it('round-trips a valid opaque cursor to the reader as (occurredAt, id)', async () => {
         const store = new RecordingStore();
         const before = { occurredAt: '2026-01-01 00:00:00.000', id: '11111111-1111-1111-1111-111111111111' };
         const cursor = Buffer.from(JSON.stringify(before)).toString('base64');
-        await new Audit(store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor });
+        await new AuditClient(store, store).listAuditTrailEvents({ accountId: 1, limit: 25, cursor });
         expect(store.listCalls[0]?.before).toEqual(before);
     });
 });
