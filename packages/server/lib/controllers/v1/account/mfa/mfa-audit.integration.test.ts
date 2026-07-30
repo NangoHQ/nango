@@ -2,17 +2,16 @@ import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
-import { mfaService, seeders, userService } from '@nangohq/shared';
+import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { audit } from '../../../../audit.js';
-import { authenticateUser, isSuccess, runServer } from '../../../../utils/tests.js';
+import { isSuccess, runServer } from '../../../../utils/tests.js';
 
 import type { AuditAction } from '@nangohq/audit';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
-const mfaRoute = '/api/v1/account/mfa';
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
 const verifyRoute = '/api/v1/account/mfa/login/verify';
@@ -50,7 +49,11 @@ async function startPendingMfaLogin(): Promise<{ user: DBUser; totp: OTPAuth.TOT
     return { user: user!, totp, recoveryCodes, pendingSession };
 }
 
-describe('MFA audit (private API)', () => {
+// The MFA login-verify flow is a dedicated middleware that resolves the acting user from the
+// pending-login session (real signup + signin + MFA activation + DB reads), so it only makes sense
+// against the live stack. The typed auditable() specs (enroll/enable/disable/recovery) are covered
+// off-stack in ../../../../middleware/auditable.unit.test.ts.
+describe('MFA verify audit — pending-login session (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
@@ -66,28 +69,6 @@ describe('MFA audit (private API)', () => {
 
     beforeEach(() => {
         auditSpy.mockClear();
-    });
-
-    it('records a failure outcome for a rejected activation and never persists the submitted code', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-        await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session });
-
-        const badCode = '000000';
-        const res = await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session, body: { code: badCode } });
-        expect(res.res.status).toBe(400);
-
-        await vi.waitFor(() => {
-            expect(eventWithAction('enabled')).toBeDefined();
-        });
-        const event = eventWithAction('enabled');
-        expect(event).toMatchObject({
-            resource: 'mfa',
-            action: 'enabled',
-            outcome: 'failure',
-            actor: { type: 'user', id: String(user.id), display: user.email }
-        });
-        expect(JSON.stringify(event)).not.toContain(badCode);
     });
 
     it('records a verified event on a successful MFA login challenge, attributing the pending user', async () => {
@@ -106,6 +87,7 @@ describe('MFA audit (private API)', () => {
             resource: 'mfa',
             action: 'verified',
             outcome: 'success',
+            accountId: user.account_id,
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
@@ -131,6 +113,7 @@ describe('MFA audit (private API)', () => {
             resource: 'mfa',
             action: 'verified',
             outcome: 'success',
+            accountId: user.account_id,
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
@@ -155,6 +138,8 @@ describe('MFA audit (private API)', () => {
             resource: 'mfa',
             action: 'verified',
             outcome: 'failure',
+            accountId: user.account_id,
+            environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
             metadata: { method: 'totp' }
