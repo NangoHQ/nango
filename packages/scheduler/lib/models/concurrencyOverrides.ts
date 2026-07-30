@@ -37,3 +37,19 @@ export async function remove(db: knex.Knex, groupKey: string): Promise<Result<vo
         return Err(new Error(`Error removing concurrency override for '${groupKey}': ${stringifyError(err)}`));
     }
 }
+
+/**
+ * Fetch the overrides for the given group keys as a map.
+ * Used when materializing tasks so the cap is stamped at create time rather than read in the hot dequeue query.
+ */
+export async function getByGroupKeys(db: knex.Knex, groupKeys: string[]): Promise<Result<Map<string, number>>> {
+    if (groupKeys.length === 0) {
+        return Ok(new Map());
+    }
+    try {
+        const rows = await db.from<ConcurrencyOverride>(CONCURRENCY_OVERRIDES_TABLE).whereIn('group_key', groupKeys).select('group_key', 'max_concurrency');
+        return Ok(new Map(rows.map((r) => [r.group_key, r.max_concurrency])));
+    } catch (err) {
+        return Err(new Error(`Error getting concurrency overrides: ${stringifyError(err)}`));
+    }
+}

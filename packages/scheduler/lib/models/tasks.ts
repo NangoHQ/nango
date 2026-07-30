@@ -5,7 +5,7 @@ import { Err, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 import { defaultSchedulerConfig } from '../config.js';
 import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
-import { CONCURRENCY_OVERRIDES_TABLE } from './concurrencyOverrides.js';
+import * as concurrencyOverrides from './concurrencyOverrides.js';
 import { SCHEDULES_TABLE } from './schedules.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
@@ -150,6 +150,12 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
             return Err(sizes.error);
         }
 
+        // Stamp any per-group concurrency override onto the task at create time so the hot dequeue query stays untouched.
+        const overrides = await concurrencyOverrides.getByGroupKeys(db, groupKeys);
+        if (overrides.isErr()) {
+            return Err(overrides.error);
+        }
+
         const now = new Date();
         const candidatesPerGroup = new Map<string, { props: TaskProps; task: Task }[]>();
         const discarded: DiscardedTask[] = [];
@@ -163,6 +169,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                     props,
                     task: {
                         ...props,
+                        groupMaxConcurrency: overrides.value.get(props.groupKey) ?? props.groupMaxConcurrency,
                         id: uuidv7(),
                         state: 'CREATED',
                         createdAt: now,
@@ -412,23 +419,21 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
                             .whereLike('group_key', groupKeyLikePattern)
                             .groupBy('group_key');
                     })
-                    // 3. rank the candidate tasks by created_at for each group, applying any per-group override
+                    // 3. rank the candidate tasks by created_at for each group
                     .with('with_rank', (qb) => {
                         qb.select(
                             'c.*',
                             db.raw('ROW_NUMBER() OVER (PARTITION BY c.group_key ORDER BY c.created_at ASC) as rank'),
-                            db.raw('COALESCE(r.running_count, 0) as current_running'),
-                            db.raw('COALESCE(o.max_concurrency, c.group_max_concurrency) as effective_max_concurrency')
+                            db.raw('COALESCE(r.running_count, 0) as current_running')
                         )
                             .from('candidates as c')
-                            .leftJoin('running as r', 'c.group_key', 'r.group_key')
-                            .leftJoin(`${CONCURRENCY_OVERRIDES_TABLE} as o`, 'o.group_key', 'c.group_key');
+                            .leftJoin('running as r', 'c.group_key', 'r.group_key');
                     })
-                    // 4. select the tasks that can be started based on the effective max concurrency
+                    // 4. select the tasks that can be started based on the max_concurrency
                     .with('to_start', (qb) => {
                         qb.select('id', 'group_key', 'created_at')
                             .from('with_rank')
-                            .whereRaw('effective_max_concurrency = 0 OR (rank + current_running <= effective_max_concurrency)')
+                            .whereRaw('group_max_concurrency = 0 OR (rank + current_running <= group_max_concurrency)')
 
                             .orderBy('created_at', 'asc')
                             .limit(limit);
@@ -520,13 +525,12 @@ export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limi
     try {
         const { rows } = await db.raw<{ rows: GroupBackpressure[] }>(
             `
-            SELECT t.group_key, count(*)::int as queued
-            FROM ${TASKS_TABLE} t
-            LEFT JOIN ${CONCURRENCY_OVERRIDES_TABLE} o ON o.group_key = t.group_key
-            WHERE t.state = 'CREATED'
-            GROUP BY t.group_key
-            HAVING COALESCE(max(o.max_concurrency), max(t.group_max_concurrency)) > 0
-               AND count(*) > COALESCE(max(o.max_concurrency), max(t.group_max_concurrency))
+            SELECT group_key, count(*)::int as queued
+            FROM ${TASKS_TABLE}
+            WHERE state = 'CREATED'
+              AND group_max_concurrency > 0
+            GROUP BY group_key
+            HAVING count(*) > max(group_max_concurrency)
             ORDER BY queued DESC
             LIMIT ?
             `,
