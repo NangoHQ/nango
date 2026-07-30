@@ -583,6 +583,7 @@
                             "enum": [
                                 "authorization_code",
                                 "client_credentials",
+                                "account_credentials",
                                 "urn:ietf:params:oauth:grant-type:saml2-bearer",
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
                                 "password",

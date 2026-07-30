@@ -1856,6 +1856,7 @@
               "integrations/all/zoho-people",
               "integrations/all/zoho-recruit",
               "api-integrations/zoom",
+              "api-integrations/zoom-cc",
               "integrations/all/zoominfo",
               "api-integrations/zorus",
               "integrations/all/zuora"

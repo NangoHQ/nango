@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 926
+Provider count: 927
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -933,6 +933,7 @@ URL patterns:
 | `zoho-people` | Zoho People | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zoho-people.md) | [connect](https://nango.dev/docs/integrations/all/zoho-people/connect.md) |  | hr |
 | `zoho-recruit` | Zoho Recruit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/zoho-recruit.md) | [connect](https://nango.dev/docs/integrations/all/zoho-recruit/connect.md) |  | ats |
 | `zoom` | Zoom | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/zoom.md) |  | [setup](https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app.md) | video |
+| `zoom-cc` | Zoom (Server-to-Server OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/zoom-cc.md) | [connect](https://nango.dev/docs/api-integrations/zoom-cc/connect.md) |  | video |
 | `zoominfo` | ZoomInfo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zoominfo.md) | [connect](https://nango.dev/docs/integrations/all/zoominfo/connect.md) |  | crm, marketing |
 | `zorus` | Zorus | API_KEY | [docs](https://nango.dev/docs/api-integrations/zorus.md) | [connect](https://nango.dev/docs/api-integrations/zorus/connect.md) |  | other |
 | `zuora` | Zuora | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zuora.md) | [connect](https://nango.dev/docs/integrations/all/zuora/connect.md) |  | erp |
