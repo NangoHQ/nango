@@ -12,9 +12,13 @@ export const sql = [
         account_id     Int64         MATERIALIZED JSONExtractInt(event, 'accountId'),
         occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3),
         -- Unlike the other keys, JSONExtractInt can't throw: it yields 0 for a missing or malformed
-        -- accountId, filing the event under the wrong account. The type guard rejects both of those
-        -- (ClickHouse reports a plain JSON integer as Int64), and the value guard rejects ids that
-        -- can't exist, account ids being serials starting at 1.
+        -- accountId, filing the event under the wrong account. Hence the two guards below.
+        --
+        -- JSONType reports the type ClickHouse parsed out of the JSON, not the domain: a plain integer
+        -- comes back as Int64 whatever its sign, and UInt64 only appears above the Int64 range. So the
+        -- type to accept is Int64, and "no negative account id" has to be a check on the value.
+        -- account_id must stay signed for that to work — read into a UInt64 column, a negative wraps to
+        -- a huge positive and passes account_id > 0. Both facts are pinned by a test.
         CONSTRAINT account_id_valid CHECK JSONType(event, 'accountId') = 'Int64' AND account_id > 0
     )
     ENGINE = ReplacingMergeTree

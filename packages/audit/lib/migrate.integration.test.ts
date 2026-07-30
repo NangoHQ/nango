@@ -75,6 +75,30 @@ describe('audit migrate', () => {
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000006', -5)).toBe('rejected');
     });
 
+    // Guards the two premises the accountId constraint rests on. If a ClickHouse upgrade changed either,
+    // the constraint would silently reject every event instead of just the invalid ones.
+    it('parses a plain JSON integer as Int64, and keeps account_id signed', async () => {
+        const types = await (
+            await admin.query({
+                query: `SELECT JSONType('{"a":42}', 'a') AS positive,
+                               JSONType('{"a":-5}', 'a') AS negative,
+                               JSONType('{"a":18446744073709551615}', 'a') AS above_int64`,
+                format: 'JSONEachRow'
+            })
+        ).json<{ positive: string; negative: string; above_int64: string }>();
+        expect(types[0]).toEqual({ positive: 'Int64', negative: 'Int64', above_int64: 'UInt64' });
+
+        // Signed, so a negative accountId stays negative instead of wrapping past the > 0 guard.
+        const columns = await (
+            await admin.query({
+                query: `SELECT type FROM system.columns WHERE database = {db:String} AND table = 'audit_trail_events' AND name = 'account_id'`,
+                format: 'JSONEachRow',
+                query_params: { db: database }
+            })
+        ).json<{ type: string }>();
+        expect(columns[0]?.type).toBe('Int64');
+    });
+
     it('skips when ClickHouse is not configured', async () => {
         expect((await migrate({ clickhouseUrl: undefined, database })).isOk()).toBe(true);
     });
