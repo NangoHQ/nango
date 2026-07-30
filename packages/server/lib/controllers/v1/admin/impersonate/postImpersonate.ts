@@ -6,7 +6,7 @@ import { flags, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { clearFailedChallenges, isChallengeLocked, recordFailedChallenge } from './challengeLimiter.js';
+import { clearChallengeAttempts, reserveChallengeAttempt } from './challengeLimiter.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
@@ -44,31 +44,25 @@ async function challengeAdmin({
 }: {
     res: Response<PostImpersonate['Reply'], Required<RequestLocals>>;
     logCtx: LogContext;
-    adminUser: DBUser | undefined;
+    adminUser: DBUser;
     code: string | undefined;
 }): Promise<boolean> {
-    // Only a session carries a user to challenge. A secret key cannot pass someone's MFA.
-    if (!adminUser) {
-        void logCtx.error('Impersonation refused, no authenticated user to challenge');
-        res.status(401).send({ error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' } });
-        return false;
-    }
-
     if (!(await mfaService.hasActiveFactor(adminUser.id))) {
         void logCtx.error('Impersonation refused, admin has no MFA factor enrolled');
         res.status(400).send({ error: { code: 'mfa_not_enabled' } });
         return false;
     }
 
-    if (await isChallengeLocked(adminUser.id)) {
-        void logCtx.error('Impersonation refused, too many failed MFA attempts');
-        res.status(429).send({ error: { code: 'too_many_mfa_attempts' } });
-        return false;
-    }
-
+    // Nothing was guessed yet, so this does not spend an attempt.
     if (!code) {
         void logCtx.error('Impersonation refused, no MFA code provided');
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });
+        return false;
+    }
+
+    if (!(await reserveChallengeAttempt(adminUser.id))) {
+        void logCtx.error('Impersonation refused, too many failed MFA attempts');
+        res.status(429).send({ error: { code: 'too_many_mfa_attempts' } });
         return false;
     }
 
@@ -77,13 +71,12 @@ async function challengeAdmin({
         throw verified.error;
     }
     if (!verified.value) {
-        await recordFailedChallenge(adminUser.id);
         void logCtx.error('Impersonation refused, invalid MFA code');
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return false;
     }
 
-    await clearFailedChallenges(adminUser.id);
+    await clearChallengeAttempts(adminUser.id);
     return true;
 }
 
@@ -113,10 +106,17 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
         return;
     }
 
+    // Only a dashboard session carries a user to challenge, so a secret key can never impersonate.
+    // Enforced even under breakglass, otherwise turning the challenge off would also open this door.
+    if (!adminUser) {
+        res.status(401).send({ error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' } });
+        return;
+    }
+
     // Every impersonation attempt is recorded, including the ones the challenge refuses.
     const meta: Record<string, unknown> = {
         loginReason: body.loginReason,
-        admin: adminUser?.email,
+        admin: adminUser.email,
         targetAccountUUID: body.accountUUID,
         mfa: envs.NANGO_IMPERSONATION_MFA_REQUIRED ? 'required' : 'skipped_breakglass'
     };
