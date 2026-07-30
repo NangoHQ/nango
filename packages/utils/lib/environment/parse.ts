@@ -556,6 +556,10 @@ export const ENVS = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+    NANGO_AUDIT_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    NANGO_AUDIT_CONSUMER_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
+    NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
+    NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(10).max(43200).optional().default(30),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),

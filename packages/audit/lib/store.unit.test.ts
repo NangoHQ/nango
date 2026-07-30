@@ -1,3 +1,4 @@
+import { ClickHouseError } from '@clickhouse/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
@@ -52,7 +53,7 @@ describe('ClickhouseAuditStore.record', () => {
         const result = await store.record(record);
 
         expect(result.isErr()).toBe(true);
-        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', code: 'unknown' });
     });
 
     it('returns Err with a failure metric instead of throwing on a malformed record', async () => {
@@ -62,7 +63,7 @@ describe('ClickhouseAuditStore.record', () => {
         const result = await store.record(undefined as unknown as SerializedAuditEvent);
 
         expect(result.isErr()).toBe(true);
-        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', code: 'unknown' });
     });
 });
 
@@ -71,5 +72,60 @@ describe('DropAuditStore', () => {
         const store: AuditWriter & AuditReader = new DropAuditStore();
         expect((await store.record(record)).isOk()).toBe(true);
         expect((await store.list({ accountId: 1, limit: 25 })).unwrap()).toEqual({ events: [], nextCursor: null });
+    });
+});
+
+describe('ClickhouseAuditStore.recordMany', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it('writes the whole batch in one insert, carrying the dedup token', async () => {
+        const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const insert = vi.fn().mockResolvedValue({});
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
+
+        const result = await store.recordMany([record, { event: '{"id":"second"}' }], { dedupToken: 'token-1' });
+
+        expect(result.isOk()).toBe(true);
+        expect(insert).toHaveBeenCalledOnce();
+        const arg = insert.mock.calls[0]![0] as {
+            values: { event: string; retention_days: number }[];
+            clickhouse_settings: { insert_deduplication_token?: string };
+        };
+        expect(arg.values).toEqual([
+            { event: record.event, retention_days: 90 },
+            { event: '{"id":"second"}', retention_days: 90 }
+        ]);
+        expect(arg.clickhouse_settings.insert_deduplication_token).toBe('token-1');
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 2, { success: 'true' });
+    });
+
+    it('counts every record in the batch as failed when the insert fails', async () => {
+        const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const insert = vi.fn().mockRejectedValue(new Error('clickhouse unavailable'));
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
+
+        expect((await store.recordMany([record, record, record], { dedupToken: 't' })).isErr()).toBe(true);
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 3, { success: 'false', code: 'unknown' });
+    });
+
+    it('does not insert an empty batch', async () => {
+        const insert = vi.fn();
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
+
+        expect((await store.recordMany([], { dedupToken: 't' })).isOk()).toBe(true);
+        expect(insert).not.toHaveBeenCalled();
+    });
+});
+
+describe('ClickhouseAuditStore ingest failure tagging', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("tags the failure with ClickHouse's own error code so alerting can tell a bad event from a bad backend", async () => {
+        const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const insert = vi.fn().mockRejectedValue(new ClickHouseError({ message: 'constraint violated', code: '469', type: 'VIOLATED_CONSTRAINT' }));
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
+
+        expect((await store.recordMany([record], { dedupToken: 't' })).isErr()).toBe(true);
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', code: '469' });
     });
 });

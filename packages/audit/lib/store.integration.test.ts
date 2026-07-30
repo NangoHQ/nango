@@ -136,3 +136,31 @@ describe('AuditClient.record through ClickhouseAuditStore', () => {
         expect(events[0]!.resource).toBe('connection');
     });
 });
+
+describe('ClickhouseAuditStore.list deduplication', () => {
+    it('returns one row for an event that was stored twice', async () => {
+        const id = '44444444-4444-4444-4444-444444444444';
+        // Merges are what eventually collapse a ReplacingMergeTree duplicate, and on a table this small one
+        // fires almost immediately — stopping them is what makes this test the read path rather than a merge.
+        await client.command({ query: `SYSTEM STOP MERGES ${database}.audit_trail_events` });
+        try {
+            // At-least-once delivery: the same event, same ORDER BY key, written by two separate attempts.
+            await insertEvent({ id, accountId: 9, occurredAt: at(3000) });
+            await insertEvent({ id, accountId: 9, occurredAt: at(3000) });
+
+            const raw = await client.query({
+                query: `SELECT count() AS c FROM ${database}.audit_trail_events WHERE account_id = 9`,
+                format: 'JSONEachRow'
+            });
+            expect(Number((await raw.json<{ c: string | number }>())[0]!.c)).toBe(2);
+
+            // Both rows are in storage, yet the read returns one — so a redelivered event never shows up
+            // twice in the dashboard while it waits for a merge.
+            const { events } = (await store.list({ accountId: 9, limit: 10 })).unwrap();
+            expect(events).toHaveLength(1);
+            expect(events[0]!.id).toBe(id);
+        } finally {
+            await client.command({ query: `SYSTEM START MERGES ${database}.audit_trail_events` });
+        }
+    });
+});

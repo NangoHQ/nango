@@ -1,3 +1,5 @@
+import { ClickHouseError } from '@clickhouse/client';
+
 import { Err, getLogger, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import type { ClickHouseClient } from '@clickhouse/client';
@@ -31,6 +33,11 @@ export interface AuditWriter {
     record(record: SerializedAuditEvent): Promise<Result<void>>;
 }
 
+export interface AuditBatchWriter {
+    /** `dedupToken` must be stable across retries of a batch, so a re-sent insert is discarded server-side. */
+    recordMany(records: SerializedAuditEvent[], opts: { dedupToken: string }): Promise<Result<void>>;
+}
+
 export interface AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>>;
 }
@@ -45,7 +52,7 @@ export class DropAuditStore implements AuditWriter, AuditReader {
     }
 }
 
-export class ClickhouseAuditStore implements AuditWriter, AuditReader {
+export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, AuditReader {
     constructor(
         private readonly client: ClickHouseClient,
         private readonly retentionDays = AUDIT_RETENTION_DAYS
@@ -54,16 +61,32 @@ export class ClickhouseAuditStore implements AuditWriter, AuditReader {
     // Never throws, so every call emits exactly one ingest-result metric — callers rely on that to
     // reconcile events published against events stored.
     async record(record: SerializedAuditEvent): Promise<Result<void>> {
+        return this.insert([record], {});
+    }
+
+    async recordMany(records: SerializedAuditEvent[], { dedupToken }: { dedupToken: string }): Promise<Result<void>> {
+        if (records.length === 0) {
+            return Ok(undefined);
+        }
+        return this.insert(records, { insert_deduplication_token: dedupToken });
+    }
+
+    private async insert(records: SerializedAuditEvent[], settings: { insert_deduplication_token?: string }): Promise<Result<void>> {
         try {
             await this.client.insert({
                 table: 'audit_trail_events',
-                values: [{ event: record.event, retention_days: this.retentionDays }],
-                format: 'JSONEachRow'
+                values: records.map((r) => ({ event: r.event, retention_days: this.retentionDays })),
+                format: 'JSONEachRow',
+                clickhouse_settings: settings
             });
-            metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'true' });
+            metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, records.length, { success: 'true' });
             return Ok(undefined);
         } catch (err) {
-            metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false' });
+            // ClickHouse's own code, so alerting can separate a rejected event (a bug in what we emit, e.g.
+            // 469 VIOLATED_CONSTRAINT or 376 CANNOT_PARSE_UUID) from an unavailable backend, without this
+            // having to enumerate codes or match on message text.
+            const code = err instanceof ClickHouseError ? err.code : 'unknown';
+            metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, records.length, { success: 'false', code });
             return Err(err);
         }
     }
@@ -85,6 +108,9 @@ export class ClickhouseAuditStore implements AuditWriter, AuditReader {
             params['before_id'] = before.id;
         }
 
+        // No FINAL and no `LIMIT 1 BY id`: both dedup server-side but defeat the short-circuit ORDER BY gets
+        // from the primary key prefix. Unbounded on a 5M-row account, rows read: 99K as written, 1.1M with
+        // LIMIT 1 BY, 5M with FINAL. Copies are dropped from the result set instead.
         // Cursor columns aliased so `occurred_at`/`id` in WHERE/ORDER BY still resolve to the real columns.
         const sql = `
             SELECT event, toString(id) AS cursor_id, toString(occurred_at) AS cursor_occurred_at
@@ -103,9 +129,13 @@ export class ClickhouseAuditStore implements AuditWriter, AuditReader {
             });
             const rows = await res.json<{ event: string; cursor_id: string; cursor_occurred_at: string }>();
 
+            // Copies share (account_id, occurred_at, id), so they are adjacent in this ordering. `hasMore`
+            // stays keyed off the raw count: a page thinned by more than the spare row is short, not final.
+            const deduped = rows.filter((row, i) => i === 0 || row.cursor_id !== rows[i - 1]!.cursor_id);
+
             // Fetched limit+1: the extra row means there's another page — drop it and expose its cursor.
             const hasMore = rows.length > limit;
-            const page = hasMore ? rows.slice(0, limit) : rows;
+            const page = deduped.slice(0, limit);
             const last = page.at(-1);
             const nextCursor = hasMore && last ? { occurredAt: last.cursor_occurred_at, id: last.cursor_id } : null;
 
