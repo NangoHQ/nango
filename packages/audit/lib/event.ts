@@ -1,6 +1,6 @@
-// `id` and `version` are stamped downstream by the store at write, not by the caller.
+// `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditOutcome, AuditTarget } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -130,3 +130,5 @@ export type AuditResourceAction =
     | { resource: 'app_auth'; action: 'password_changed' };
 
 export type AuditEvent = AuditEventCommon & AuditResourceAction;
+
+export type StoredAuditEvent = AuditEvent & { id: string; version: AuditTrailVersion };

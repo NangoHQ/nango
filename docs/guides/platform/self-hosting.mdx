@@ -192,6 +192,16 @@ The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
 If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
 </Note>
 
+### Management MCP server
+
+The [Management MCP server](/reference/backend/management-mcp) runs as part of the main Nango server. To enable it, configure a dedicated hostname and route traffic for that hostname to the Nango server:
+
+```sh
+NANGO_MANAGEMENT_MCP_SERVER_URL=https://mcp.example.com
+```
+
+The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango uses the request hostname to distinguish Management MCP traffic from the public API. Restart the Nango server after setting the environment variable; the Management MCP endpoint is then available at `https://mcp.example.com/mcp`.
+
 ### Connect UI
 
 Nango Connect is available for self-hosted deployments in the main Docker image.

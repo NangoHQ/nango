@@ -347,14 +347,12 @@ describe('resolveTokens — strict flag', () => {
     });
 
     it('throws on unresolved aliases in strict mode', async () => {
-        await expect(
-            resolveTokens({ sourceFiles: [path.join(tmpDir, 'broken.json')], strict: true })
-        ).rejects.toThrow(/Unresolved token alias: text\.muted → \{nonexistent\.token\}/);
+        await expect(resolveTokens({ sourceFiles: [path.join(tmpDir, 'broken.json')], strict: true })).rejects.toThrow(
+            /Unresolved token alias: text\.muted → \{nonexistent\.token\}/
+        );
     });
 
     it('does not throw for a fully resolved token set in strict mode', async () => {
-        await expect(
-            resolveTokens({ sourceFiles: [path.join(tmpDir, 'valid.json')], strict: true })
-        ).resolves.not.toThrow();
+        await expect(resolveTokens({ sourceFiles: [path.join(tmpDir, 'valid.json')], strict: true })).resolves.not.toThrow();
     });
 });
