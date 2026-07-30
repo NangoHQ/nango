@@ -1,4 +1,4 @@
-import type { ApiEndpoint } from '../index.js';
+import type { ApiEndpoint, ApiError } from '../index.js';
 
 export type PostImpersonate = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
@@ -10,6 +10,9 @@ export type PostImpersonate = ApiEndpoint<{
     Body: {
         accountUUID: string;
         loginReason: string;
+        /** TOTP code from the admin's own factor. Omitted only when the breakglass env var is set. */
+        code?: string | undefined;
     };
+    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_not_enabled'> | ApiError<'too_many_mfa_attempts'>;
     Success: { success: true };
 }>;

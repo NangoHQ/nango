@@ -19,6 +19,7 @@ describe(`POST ${endpoint}`, () => {
     });
     afterEach(() => {
         flags.hasAdminCapabilities = false;
+        envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
     });
 
     it('should be protected', async () => {
@@ -95,5 +96,69 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    // TODO: Need an actual success test but can't work because we don't have a session with current test setup
+    it('should refuse when there is no session to challenge', async () => {
+        flags.hasAdminCapabilities = true;
+
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'test' },
+            token: apiKey.secret,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test', code: '123456' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(401);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' }
+        });
+    });
+
+    it('should skip the challenge when the breakglass env var is off', async () => {
+        flags.hasAdminCapabilities = true;
+        envs.NANGO_IMPERSONATION_MFA_REQUIRED = false;
+
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'test' },
+            token: apiKey.secret,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test' }
+        });
+
+        // Past the challenge, so it fails on the target lookup instead of on MFA
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'Account not found' }
+        });
+    });
+
+    it('should reject a malformed code', async () => {
+        flags.hasAdminCapabilities = true;
+
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'test' },
+            token: apiKey.secret,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test', code: 'abc' }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [{ code: 'invalid_format', message: 'Invalid string: must match pattern /^\\d{6}$/', path: ['code'] }]
+            }
+        });
+    });
+
+    // TODO: Need a success test and per-user challenge tests (no factor, wrong code, lockout) but they
+    // need a dashboard session, which the current test setup cannot create.
 });
