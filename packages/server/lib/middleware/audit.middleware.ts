@@ -68,9 +68,12 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     policy: TEndpoint['Audit'];
     target?: (
         req: AuditRequest<TEndpoint>,
-        locals: RequestLocals
+        locals: Partial<RequestLocals>
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
-    metadata?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    metadata?: (
+        req: AuditRequest<TEndpoint>,
+        locals: Partial<RequestLocals>
+    ) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
 };
 
 function toId(value: unknown): string | undefined {
@@ -95,7 +98,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-function resolveActor(locals: RequestLocals): AuditActor {
+function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
@@ -149,7 +152,7 @@ async function emit(policy: AuditPolicy, req: Request, res: Response, resolved: 
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
-        const locals = res.locals as RequestLocals;
+        const locals = res.locals as Partial<RequestLocals>;
         const { account, environment } = locals;
         if (!account) {
             return;
@@ -188,7 +191,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
     return (req, res, next) => {
         void (async () => {
             try {
-                const locals = res.locals as RequestLocals;
+                const locals = res.locals as Partial<RequestLocals>;
                 if (locals.account && (await getFlags().isAuditTrailEnabled(locals.account.uuid))) {
                     // Register the finish listener only once we know we should audit — a disabled account
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
@@ -288,7 +291,7 @@ async function dbTarget(type: AuditTargetType, value: unknown, lookup: (id: stri
     return { type, id, ...(display ? { display } : {}) };
 }
 
-function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Promise<AuditTarget | undefined> {
+function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('member', req.params.id, async (id) => {
         if (!locals.account) {
             return undefined;
@@ -298,7 +301,7 @@ function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Prom
     });
 }
 
-function syncTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
+function syncTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('sync', value, async (id) => {
         const numericId = Number(id);
         if (Number.isNaN(numericId) || !locals.environment) {
@@ -309,7 +312,7 @@ function syncTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget 
     });
 }
 
-function apiKeyTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
+function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
             return undefined;

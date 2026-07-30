@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { envs, modelMessages, modelOperations } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { SearchOperations } from '@nangohq/types';
 
@@ -57,7 +57,7 @@ const validation = z
     })
     .strict();
 
-export const searchOperations = asyncWrapper<SearchOperations>(async (req, res) => {
+export const searchOperations = asyncWrapperWithEnvironment<SearchOperations>(async (req, res) => {
     if (!envs.NANGO_LOGS_ENABLED) {
         res.status(404).send({ error: { code: 'feature_disabled' } });
         return;

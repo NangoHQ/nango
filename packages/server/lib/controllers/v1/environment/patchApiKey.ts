@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
 import { apiKeyScopes, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { PatchApiKey } from '@nangohq/types';
 
@@ -19,7 +19,7 @@ const validationBody = z
     })
     .refine((data) => data.scopes || data.display_name, { message: 'At least one of scopes or display_name is required' });
 
-export const patchApiKey = asyncWrapper<PatchApiKey>(async (req, res) => {
+export const patchApiKey = asyncWrapperWithEnvironment<PatchApiKey>(async (req, res) => {
     const valParams = validationParams.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valParams.error) } });

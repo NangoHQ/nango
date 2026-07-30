@@ -2,7 +2,7 @@ import { configService, getSyncConfigById, getSyncsBySyncConfigId, updateFrequen
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { frequencySchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { validationBody as validationBodyBase, validationParams } from './patchDisable.js';
 
@@ -15,7 +15,7 @@ export const validationBody = validationBodyBase.extend({
     frequency: frequencySchema
 });
 
-export const patchFlowFrequency = asyncWrapper<PatchFlowFrequency>(async (req, res) => {
+export const patchFlowFrequency = asyncWrapperWithEnvironment<PatchFlowFrequency>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

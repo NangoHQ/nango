@@ -6,9 +6,9 @@ import type { RequestLocals } from '../utils/express.js';
 import type { Permission, Scope } from '@nangohq/types';
 import type { RequestHandler } from 'express';
 
-export const envScope = (l: RequestLocals): Scope => (l.environment?.is_production ? 'production' : 'non-production');
+export const envScope = (l: Partial<RequestLocals>): Scope => (l.environment?.is_production ? 'production' : 'non-production');
 
-type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: RequestLocals) => Scope };
+type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: Partial<RequestLocals>) => Scope };
 
 export function can(permission: Permission | ScopedPermission): RequestHandler {
     return async (_req, res, next) => {
@@ -17,7 +17,7 @@ export function can(permission: Permission | ScopedPermission): RequestHandler {
             return;
         }
 
-        const { plan, user } = res.locals as RequestLocals;
+        const { plan, user } = res.locals as Partial<RequestLocals>;
 
         if (flagHasPlan && (!plan || !plan.has_rbac)) {
             next();
@@ -31,7 +31,7 @@ export function can(permission: Permission | ScopedPermission): RequestHandler {
 
         const perm: Permission =
             'scopedBy' in permission
-                ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(res.locals as RequestLocals) }
+                ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(res.locals as Partial<RequestLocals>) }
                 : permission;
         const allowed = await evaluator.evaluate(user.role, perm);
 

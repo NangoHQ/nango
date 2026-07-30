@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { deletableFunctionTypeSchema, providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { handleDeleteIntegrationFunction } from '../../../shared/integrations/functions/deleteFunction.js';
 
 import type { DeletePublicIntegrationFunction } from '@nangohq/types';
@@ -22,7 +22,7 @@ const validationQuery = z
     })
     .strict();
 
-export const deletePublicIntegrationFunction = asyncWrapper<DeletePublicIntegrationFunction>(async (req, res) => {
+export const deletePublicIntegrationFunction = asyncWrapperWithEnvironment<DeletePublicIntegrationFunction>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });

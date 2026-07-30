@@ -5,7 +5,7 @@ import { externalWebhookService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { webhookUrlSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
 import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 
@@ -21,7 +21,7 @@ const validation = z
     })
     .strict();
 
-export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
+export const patchWebhook = asyncWrapperWithEnvironment<PatchWebhook>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

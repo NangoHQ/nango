@@ -7,7 +7,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { preConnectionDeletion } from '../../../hooks/connection/on/pre-connection-deletion.js';
 import { slackService } from '../../../services/slack.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { DeletePublicConnection } from '@nangohq/types';
@@ -25,7 +25,7 @@ const validationParams = z
 
 const orchestrator = getOrchestrator();
 
-export const deletePublicConnection = asyncWrapper<DeletePublicConnection>(async (req, res) => {
+export const deletePublicConnection = asyncWrapperWithEnvironment<DeletePublicConnection>(async (req, res) => {
     const valParams = validationParams.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });

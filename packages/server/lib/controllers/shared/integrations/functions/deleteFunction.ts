@@ -3,7 +3,7 @@ import { report } from '@nangohq/utils';
 
 import { startFunctionDeletion } from '../../../../tasks/startFunctionDeletion.js';
 
-import type { RequestLocals } from '../../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
 import type { DBEnvironment, DeleteIntegrationFunction } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -14,7 +14,7 @@ export async function handleDeleteIntegrationFunction({
     name,
     type
 }: {
-    res: Response<DeleteIntegrationFunction['Reply'], Required<RequestLocals>>;
+    res: Response<DeleteIntegrationFunction['Reply'], RequestLocalsWithEnvironment>;
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;

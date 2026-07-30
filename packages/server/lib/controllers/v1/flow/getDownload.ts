@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { configService, getSyncConfigById, remoteFileService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { GetFlowDownload } from '@nangohq/types';
 
@@ -13,7 +13,7 @@ export const validationParams = z
     })
     .strict();
 
-export const getFlowDownload = asyncWrapper<GetFlowDownload>(async (req, res) => {
+export const getFlowDownload = asyncWrapperWithEnvironment<GetFlowDownload>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

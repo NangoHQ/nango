@@ -5,7 +5,7 @@ import { connectionService } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 
 import type { GetConnectionRecordModels } from '@nangohq/types';
 
@@ -22,7 +22,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getConnectionRecordModels = asyncWrapper<GetConnectionRecordModels>(async (req, res) => {
+export const getConnectionRecordModels = asyncWrapperWithEnvironment<GetConnectionRecordModels>(async (req, res) => {
     const emptyBody = requireEmptyBody(req);
     if (emptyBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });

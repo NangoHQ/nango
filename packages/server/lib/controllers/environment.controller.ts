@@ -2,14 +2,18 @@ import { accountService, environmentService, errorManager, generateSlackConnecti
 import { flags } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
 
 class EnvironmentController {
-    getHmacDigest(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    getHmacDigest(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const { environment } = res.locals;
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const { provider_config_key: providerConfigKey, connection_id: connectionId } = req.query;
 
             if (!providerConfigKey) {
@@ -33,14 +37,19 @@ class EnvironmentController {
         }
     }
 
-    async getAdminAuthInfo(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async getAdminAuthInfo(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
             if (!flags.hasAdminCapabilities || !envs.NANGO_ADMIN_UUID) {
                 res.status(400).send({ error: { code: 'feature_disabled', message: 'Admin capabilities are not enabled' } });
                 return;
             }
 
-            const { account, environment: callerEnvironment } = res.locals;
+            const { account } = res.locals;
+            const callerEnvironment = requireEnvironment(req, res);
+            if (!callerEnvironment) {
+                return;
+            }
+
             const expectedConnectionId = generateSlackConnectionId(account.uuid, callerEnvironment.id);
             const { connection_id: connectionId } = req.query;
 

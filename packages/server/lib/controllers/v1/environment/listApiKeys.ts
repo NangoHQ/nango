@@ -3,11 +3,11 @@ import { customerKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { canReadProdSecret } from '../../../authz/resolve.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ApiKeyScope, ListApiKeys } from '@nangohq/types';
 
-export const listApiKeys = asyncWrapper<ListApiKeys>(async (req, res) => {
+export const listApiKeys = asyncWrapperWithEnvironment<ListApiKeys>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

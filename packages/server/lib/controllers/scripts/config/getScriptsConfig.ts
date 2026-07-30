@@ -4,7 +4,7 @@ import { getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { getDefinition } from '@nangohq/utils';
 
 import { providerNameSchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { GetPublicScriptsConfig, OpenAIFunction, StandardNangoConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -21,7 +21,7 @@ export const validationParams = z
     })
     .strict();
 
-export const getPublicScriptsConfig = asyncWrapper<GetPublicScriptsConfig>(async (req, res) => {
+export const getPublicScriptsConfig = asyncWrapperWithEnvironment<GetPublicScriptsConfig>(async (req, res) => {
     const { format = NANGO_FORMAT } = req.query as { format?: Format };
     const { environment } = res.locals;
 

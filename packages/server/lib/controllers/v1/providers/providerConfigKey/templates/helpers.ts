@@ -10,7 +10,7 @@ export function handleGetProviderTemplates({
     res,
     providerConfigKey
 }: {
-    res: Response<GetProviderTemplates['Reply'], Required<RequestLocals>>;
+    res: Response<GetProviderTemplates['Reply'], RequestLocals>;
     providerConfigKey: string;
 }): void {
     const all = flowService.getAllAvailableFlowsAsStandardConfig();

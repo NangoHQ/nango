@@ -18,7 +18,7 @@ export async function createDeploySandboxApiKey(parentApiKeyId: number, environm
     });
 }
 
-export function requireCustomerKeyId<T>(res: Response<T, Required<RequestLocals>>, message: string): number | null {
+export function requireCustomerKeyId<T>(res: Response<T, RequestLocals>, message: string): number | null {
     if (res.locals['apiKeyAuthSource'] !== 'customer_key' || !res.locals['apiKeyId']) {
         res.status(403).send({ error: { code: 'forbidden', message } } as T);
         return null;
@@ -27,7 +27,7 @@ export function requireCustomerKeyId<T>(res: Response<T, Required<RequestLocals>
     return res.locals['apiKeyId'];
 }
 
-export function verifyDeploymentResultSandboxToken<T>(res: Response<T, Required<RequestLocals>>, deploymentId: string): boolean {
+export function verifyDeploymentResultSandboxToken<T>(res: Response<T, RequestLocals>, deploymentId: string): boolean {
     if (res.locals['sandboxTokenPurpose'] !== 'deploy' || res.locals['sandboxTokenDeploymentId'] !== deploymentId) {
         res.status(403).send({ error: { code: 'forbidden', message: 'This sandbox token is not authorized for this deployment' } } as T);
         return false;

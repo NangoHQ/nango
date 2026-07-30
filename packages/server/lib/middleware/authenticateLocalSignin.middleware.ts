@@ -17,7 +17,7 @@ interface LocalAuthInfo {
  * passes a full {@link DBUser}. We assert that here so downstream handlers see a
  * consistent type (see {@link RequestLocals.user}).
  */
-export function authenticateLocalSignin(req: Request, res: Response<any, RequestLocals>, next: NextFunction): void {
+export function authenticateLocalSignin(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction): void {
     passport.authenticate('local', { session: false }, (err: unknown, user: Express.User | false | null, info?: LocalAuthInfo) => {
         if (err) {
             next(err);

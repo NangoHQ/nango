@@ -10,7 +10,7 @@ import {
     integrationForwardWebhooksSchema,
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { resolveIntegrationConfig } from '../../v1/integrations/integrationConfig.js';
 import { validationParams } from './getIntegration.js';
 
@@ -27,7 +27,7 @@ const validationBody = z
     })
     .strict();
 
-export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async (req, res) => {
+export const patchPublicIntegration = asyncWrapperWithEnvironment<PatchPublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

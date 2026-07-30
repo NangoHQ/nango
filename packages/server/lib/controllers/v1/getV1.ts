@@ -5,7 +5,7 @@ import { baseUrl, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { hasScope } from '../../middleware/scope.middleware.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { postPublicTriggerAction } from '../action/postTriggerAction.js';
 import { getPublicRecords } from '../records/getRecords.js';
 
@@ -17,7 +17,7 @@ const schemaHeaders = z.object({
 });
 
 /** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
-export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
+export const allPublicV1 = asyncWrapperWithEnvironment<GetPublicV1>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });

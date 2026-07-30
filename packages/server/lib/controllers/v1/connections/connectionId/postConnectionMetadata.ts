@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { handlePostConnectionMetadata } from '../../../shared/connections/postConnectionMetadata.js';
 
 import type { PostConnectionMetadata } from '@nangohq/types';
@@ -25,7 +25,7 @@ const validationParams = z
     })
     .strict();
 
-export const postConnectionMetadata = asyncWrapper<PostConnectionMetadata>(async (req, res) => {
+export const postConnectionMetadata = asyncWrapperWithEnvironment<PostConnectionMetadata>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });

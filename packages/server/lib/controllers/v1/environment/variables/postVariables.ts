@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
 import type { PostEnvironmentVariables } from '@nangohq/types';
 
@@ -13,7 +13,7 @@ const validation = z
     })
     .strict();
 
-export const postEnvironmentVariables = asyncWrapper<PostEnvironmentVariables>(async (req, res) => {
+export const postEnvironmentVariables = asyncWrapperWithEnvironment<PostEnvironmentVariables>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

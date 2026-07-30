@@ -6,7 +6,7 @@ import { connectionService } from '@nangohq/shared';
 import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
@@ -51,7 +51,7 @@ export const validationHeaders = z
     })
     .strict();
 
-export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) => {
+export const getPublicRecords = asyncWrapperWithEnvironment<GetPublicRecords>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });

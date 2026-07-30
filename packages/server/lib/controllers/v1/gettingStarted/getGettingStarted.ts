@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { gettingStartedService } from '@nangohq/shared';
 import { report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { GetGettingStarted } from '@nangohq/types';
 
@@ -10,7 +10,7 @@ import type { GetGettingStarted } from '@nangohq/types';
  * Getting started should always be available, so if it doesn't already exist, we create it,
  * including setting up a new github-getting-started integration using the preprovisioned provider if needed.
  */
-export const getGettingStarted = asyncWrapper<GetGettingStarted>(async (req, res) => {
+export const getGettingStarted = asyncWrapperWithEnvironment<GetGettingStarted>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

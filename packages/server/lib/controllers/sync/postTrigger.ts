@@ -4,7 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { errorManager, SyncCommand, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 import { normalizeSyncParams } from './helpers.js';
 
@@ -37,7 +37,7 @@ const headersValidation = z.object({
 
 const orchestrator = getOrchestrator();
 
-export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res) => {
+export const postPublicTrigger = asyncWrapperWithEnvironment<PostPublicTrigger>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

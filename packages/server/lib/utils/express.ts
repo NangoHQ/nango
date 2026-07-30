@@ -22,13 +22,19 @@ import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser
 //       };
 
 export interface RequestLocals {
-    authType?: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession';
-    user?: DBUser;
-    account?: DBTeam;
+    // Set by every auth path.
+    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession';
+    account: DBTeam;
+    plan: DBPlan | null;
+
+    // Asserted, not guaranteed: `connectSession` is only set by connect-session auth and `user` only
+    // by session auth. Enough handlers read them unguarded that narrowing them is its own change.
+    connectSession: ConnectSession;
+    user: DBUser;
+
+    // Set only by some auth paths, so a handler must check before use.
     environment?: DBEnvironment;
-    connectSession?: ConnectSession;
     endUser?: InternalEndUser | null;
-    plan?: DBPlan | null;
     lang?: string;
     secret?: DBAPISecret;
     apiKeyScopes?: string[];
@@ -39,3 +45,6 @@ export interface RequestLocals {
     sandboxTokenDryrunId?: string;
     sandboxTokenDeploymentId?: string;
 }
+
+/** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */
+export type RequestLocalsWithEnvironment = RequestLocals & { environment: DBEnvironment };

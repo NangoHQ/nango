@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { handlePatchConnection, patchConnectionBodySchema } from '../../../shared/connections/patchConnection.js';
 
 import type { PatchConnection } from '@nangohq/types';
@@ -17,7 +17,7 @@ const paramValidation = z.strictObject({
     connectionId: connectionIdSchema
 });
 
-export const patchConnection = asyncWrapper<PatchConnection>(async (req, res) => {
+export const patchConnection = asyncWrapperWithEnvironment<PatchConnection>(async (req, res) => {
     const queryParamValues = queryStringValidation.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });

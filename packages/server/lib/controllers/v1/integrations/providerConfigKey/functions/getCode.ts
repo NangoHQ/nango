@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema, functionTypeSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { handleGetFunctionCode } from '../../../../shared/integrations/functions/getCode.js';
 
 import type { GetFunctionCode } from '@nangohq/types';
@@ -22,7 +22,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const getIntegrationFunctionCode = asyncWrapper<GetFunctionCode>(async (req, res) => {
+export const getIntegrationFunctionCode = asyncWrapperWithEnvironment<GetFunctionCode>(async (req, res) => {
     const queryStringValues = querystringValidation.safeParse(req.query);
     if (!queryStringValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryStringValues.error) } });

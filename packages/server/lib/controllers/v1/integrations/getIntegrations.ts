@@ -4,12 +4,12 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolve } from '../../../authz/resolve.js';
 import { integrationToApi } from '../../../formatters/integration.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { parseAssertionOptionParamsFromTemplate, parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../../../utils/utils.js';
 
 import type { ApiIntegrationList, GetIntegrations, ProviderTwoStep } from '@nangohq/types';
 
-export const getIntegrations = asyncWrapper<GetIntegrations>(async (req, res) => {
+export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

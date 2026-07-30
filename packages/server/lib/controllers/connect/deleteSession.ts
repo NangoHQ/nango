@@ -2,11 +2,11 @@ import db from '@nangohq/database';
 import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import * as connectSessionService from '../../services/connectSession.service.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { DeleteConnectSession } from '@nangohq/types';
 
-export const deleteConnectSession = asyncWrapper<DeleteConnectSession>(async (req, res) => {
+export const deleteConnectSession = asyncWrapperWithEnvironment<DeleteConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

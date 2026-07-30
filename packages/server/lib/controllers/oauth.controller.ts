@@ -43,6 +43,7 @@ import {
 } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
@@ -94,8 +95,12 @@ function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): st
 }
 
 class OAuthController {
-    public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const { account, environment, connectSession } = res.locals;
+    public async oauthRequest(req: Request, res: Response<any, RequestLocals>, _next: NextFunction) {
+        const { account, connectSession } = res.locals;
+        const environment = requireEnvironment(req, res);
+        if (!environment) {
+            return;
+        }
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
@@ -360,8 +365,12 @@ class OAuthController {
         }
     }
 
-    public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account, connectSession } = res.locals;
+    public async oauth2RequestCC(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const { account, connectSession } = res.locals;
+        const environment = requireEnvironment(req, res);
+        if (!environment) {
+            return;
+        }
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();

@@ -28,7 +28,7 @@ import { getHeaders, getLogger, isBaseUrlOverrideDenied, metrics, normalizeDenyl
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 import { capping } from '../../utils/usage.js';
 
@@ -130,7 +130,7 @@ function applyFilteredResponseHeaders(res: Response, headers: Record<string, unk
     }
 }
 
-export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
+export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });

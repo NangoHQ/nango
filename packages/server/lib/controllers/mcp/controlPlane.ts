@@ -1,12 +1,12 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
 
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetControlPlaneMcp, PostControlPlaneMcp } from '@nangohq/types';
 
-export const postControlPlaneMcp = asyncWrapper<PostControlPlaneMcp>(async (req, res) => {
+export const postControlPlaneMcp = asyncWrapperWithEnvironment<PostControlPlaneMcp>(async (req, res) => {
     const { account, environment } = res.locals;
     const server = createControlPlaneMcpServer(account, environment, res.locals['apiKeyScopes']);
     const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();
@@ -21,7 +21,7 @@ export const postControlPlaneMcp = asyncWrapper<PostControlPlaneMcp>(async (req,
 });
 
 // We have to be explicit about not supporting SSE
-export const getControlPlaneMcp = asyncWrapper<GetControlPlaneMcp>((_, res) => {
+export const getControlPlaneMcp = asyncWrapperWithEnvironment<GetControlPlaneMcp>((_, res) => {
     res.writeHead(405).end(
         JSON.stringify({
             jsonrpc: '2.0',

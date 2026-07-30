@@ -4,7 +4,7 @@ import { connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { bodySchema } from '../connect/postSessions.js';
 
 import type { GetPublicConnections } from '@nangohq/types';
@@ -22,7 +22,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (req, res) => {
+export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnections>(async (req, res) => {
     const queryParamValues = validationQuery.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({

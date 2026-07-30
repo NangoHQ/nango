@@ -11,7 +11,7 @@ import {
     providerConfigKeySchema,
     providerSchema
 } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { resolveIntegrationConfig } from '../v1/integrations/integrationConfig.js';
 
 import type { DBCreateIntegration, PostPublicIntegration, PostPublicQuickstartIntegration } from '@nangohq/types';
@@ -32,7 +32,7 @@ const validationBody = baseValidationBody.extend({
 
 const quickstartAuthModes = new Set(['OAUTH1', 'OAUTH2']);
 
-export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (req, res) => {
+export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -142,7 +142,7 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
     });
 });
 
-export const postPublicQuickstartIntegration = asyncWrapper<PostPublicQuickstartIntegration>(async (req, res) => {
+export const postPublicQuickstartIntegration = asyncWrapperWithEnvironment<PostPublicQuickstartIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
 import { deployIntegrationTemplate } from './helpers.js';
 
@@ -17,7 +17,7 @@ const validation = z
     })
     .strict();
 
-export const postPreBuiltDeploy = asyncWrapper<PostPreBuiltDeploy>(async (req, res) => {
+export const postPreBuiltDeploy = asyncWrapperWithEnvironment<PostPreBuiltDeploy>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

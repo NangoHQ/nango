@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { functionTypeSchema, providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { handleGetFunctionCode } from '../../../shared/integrations/functions/getCode.js';
 
 import type { GetPublicFunctionCode } from '@nangohq/types';
@@ -21,7 +21,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getFunctionCode = asyncWrapper<GetPublicFunctionCode>(async (req, res) => {
+export const getFunctionCode = asyncWrapperWithEnvironment<GetPublicFunctionCode>(async (req, res) => {
     const valParams = validationParams.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });

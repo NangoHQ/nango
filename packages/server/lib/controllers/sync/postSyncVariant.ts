@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { DBConnection, PostSyncVariant } from '@nangohq/types';
@@ -27,7 +27,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) => {
+export const postSyncVariant = asyncWrapperWithEnvironment<PostSyncVariant>(async (req, res) => {
     const { account, environment, plan } = res.locals;
     const logCtx = await logContextGetter.create({ operation: { type: 'sync', action: 'create_variant' } }, { account, environment });
 

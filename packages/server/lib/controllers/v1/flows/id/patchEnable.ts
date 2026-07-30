@@ -3,14 +3,14 @@ import { logContextGetter } from '@nangohq/logs';
 import { configService, enableScriptConfig, getSyncConfigById, productTracking, startTrial, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { validationBody, validationParams } from './patchDisable.js';
 
 import type { PatchFlowEnable } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
-export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) => {
+export const patchFlowEnable = asyncWrapperWithEnvironment<PatchFlowEnable>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

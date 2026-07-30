@@ -16,11 +16,11 @@ import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
 import { webhooksToApi } from '../../../formatters/webhooks.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { GetEnvironment } from '@nangohq/types';
 
-export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
+export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

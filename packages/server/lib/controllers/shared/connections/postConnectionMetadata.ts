@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { configService, connectionService } from '@nangohq/shared';
 
-import type { RequestLocals } from '../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../utils/express.js';
 import type { DBEnvironment, Metadata, PostConnectionMetadata } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -12,7 +12,7 @@ export async function handlePostConnectionMetadata({
     providerConfigKey,
     metadata
 }: {
-    res: Response<PostConnectionMetadata['Reply'], Required<RequestLocals>>;
+    res: Response<PostConnectionMetadata['Reply'], RequestLocalsWithEnvironment>;
     environment: DBEnvironment;
     connectionId: string;
     providerConfigKey: string;

@@ -1,7 +1,7 @@
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { validationParams } from './getIntegration.js';
 
@@ -9,7 +9,7 @@ import type { DeletePublicIntegration } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
-export const deletePublicIntegration = asyncWrapper<DeletePublicIntegration>(async (req, res) => {
+export const deletePublicIntegration = asyncWrapperWithEnvironment<DeletePublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

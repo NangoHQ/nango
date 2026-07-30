@@ -1,12 +1,12 @@
 import { getFunctionDeployment as getStoredFunctionDeployment } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { functionDeploymentParamsSchema } from '../validation.js';
 
 import type { GetFunctionDeployment } from '@nangohq/types';
 
-export const getFunctionDeployment = asyncWrapper<GetFunctionDeployment>(async (req, res) => {
+export const getFunctionDeployment = asyncWrapperWithEnvironment<GetFunctionDeployment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

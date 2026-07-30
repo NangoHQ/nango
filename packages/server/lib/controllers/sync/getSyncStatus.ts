@@ -5,7 +5,7 @@ import { connectionService, getSyncsByConnectionId, getSyncsByProviderConfigKey,
 import { Ok, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { DBConnectionDecrypted, GetPublicSyncStatus } from '@nangohq/types';
@@ -18,7 +18,7 @@ const querySchema = z.strictObject({
     connection_id: connectionIdSchema.optional()
 });
 
-export const getPublicSyncStatus = asyncWrapper<GetPublicSyncStatus>(async (req, res) => {
+export const getPublicSyncStatus = asyncWrapperWithEnvironment<GetPublicSyncStatus>(async (req, res) => {
     const parsedQuery = querySchema.safeParse(req.query);
     if (!parsedQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(parsedQuery.error) } });

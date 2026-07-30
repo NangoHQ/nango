@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { getHeaders, metrics, redactHeaders, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { runAction } from './runAction.js';
 
 import type { PostPublicTriggerAction } from '@nangohq/types';
@@ -21,7 +21,7 @@ const schemaBody = z.object({
     input: z.unknown()
 });
 
-export const postPublicTriggerAction = asyncWrapper<PostPublicTriggerAction>(async (req, res) => {
+export const postPublicTriggerAction = asyncWrapperWithEnvironment<PostPublicTriggerAction>(async (req, res) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
