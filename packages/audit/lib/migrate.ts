@@ -15,7 +15,8 @@ const migrationsExt = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
 
 export function migrate({ clickhouseUrl, database = AUDIT_DATABASE }: { clickhouseUrl: string | undefined; database?: string }): Promise<Result<void>> {
     return migrateClickhouse({
-        clickhouseClient: (opts) => (clickhouseUrl ? auditClickhouseClient(clickhouseUrl, opts) : null),
+        // No database requested means the runner is about to CREATE DATABASE, so don't pick up the default.
+        clickhouseClient: (opts) => (clickhouseUrl ? auditClickhouseClient(clickhouseUrl, { database: opts?.database ?? null }) : null),
         database,
         migrationsDir,
         migrationsExt,

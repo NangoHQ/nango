@@ -13,8 +13,7 @@ function buildClickhouseStore(): ClickhouseAuditStore | null {
         return null;
     }
     try {
-        // TODO: repoint at the dedicated audit database once it and its schema are created.
-        return new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL, { database: 'usage' }));
+        return new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
     } catch (err) {
         logger.error('Audit: failed to create the ClickHouse store', err);
         return null;

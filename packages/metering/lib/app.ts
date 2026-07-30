@@ -67,8 +67,7 @@ try {
     teamProc.start();
 
     // Audit processor
-    // TODO: repoint at the dedicated audit database once it and its schema are created.
-    const auditStore = envs.CLICKHOUSE_URL ? new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL, { database: 'usage' })) : new DropAuditStore();
+    const auditStore = envs.CLICKHOUSE_URL ? new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL)) : new DropAuditStore();
     const auditProc = new AuditProcessor({ transport: pubsubTransport, store: auditStore });
     auditProc.start();
 

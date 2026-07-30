@@ -38,7 +38,7 @@ describe('GET /api/v1/audit-trail', () => {
         api = await runServer();
         // The endpoint reads from usage.audit_trail_events; create it in the shared ClickHouse container.
         (await migrate({ database: 'usage' })).unwrap();
-        auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!, { database: 'usage' });
+        auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
     });
