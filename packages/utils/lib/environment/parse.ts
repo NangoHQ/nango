@@ -557,7 +557,10 @@ export const ENVS = z.object({
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
     // .int() because these go straight into SQS request fields, which reject a fractional value outright.
-    NANGO_AUDIT_CONSUMER_CONCURRENCY: z.coerce.number().int().min(1).optional().default(5),
+    // One poll loop on purpose. Long polling returns as soon as a single message is available, so a batch
+    // only grows while an insert is in flight — extra loops would be parked in ReceiveMessage and take those
+    // arrivals one at a time, turning one insert into several. Raise it if queue depth starts building.
+    NANGO_AUDIT_CONSUMER_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
     NANGO_AUDIT_CONSUMER_MAX_MESSAGES: z.coerce.number().int().min(1).max(10).optional().default(10),
     NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: z.coerce.number().int().min(0).max(20).optional().default(20),
     NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().int().min(10).max(43200).optional().default(30),
