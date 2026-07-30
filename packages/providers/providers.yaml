@@ -783,7 +783,7 @@ agentline:
             type: string
             title: API Key
             description: Your AgentLine API key.
-            pattern: '^sk_live_[a-zA-Z0-9_]+$'
+            pattern: '^al_live_[a-zA-Z0-9_]+$'
             doc_section: '#step-1-finding-your-api-key'
 
 agiloft:
