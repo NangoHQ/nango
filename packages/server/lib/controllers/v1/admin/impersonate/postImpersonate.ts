@@ -96,7 +96,7 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
     }
 
     const body: PostImpersonate['Body'] = valBody.data;
-    const { account, environment, user: adminUser } = res.locals;
+    const { account, environment, user: adminUser, authType } = res.locals;
 
     if (account.uuid !== envs.NANGO_ADMIN_UUID) {
         res.status(401).send({ error: { code: 'forbidden', message: 'You are not authorized to impersonate an account' } });
@@ -107,6 +107,7 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
     const meta: Record<string, unknown> = {
         loginReason: body.loginReason,
         admin: adminUser?.email,
+        authType,
         targetAccountUUID: body.accountUUID,
         mfa: envs.NANGO_IMPERSONATION_MFA_REQUIRED ? 'required' : 'skipped_breakglass'
     };
