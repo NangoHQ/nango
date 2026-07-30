@@ -1,11 +1,12 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { environmentService, externalWebhookService, getPlan } from '@nangohq/shared';
+import { environmentService, getPlan } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { sendCreateEnvironmentError } from '../../environment/sendCreateEnvironmentError.js';
 
 import type { PostEnvironment } from '@nangohq/types';
 
@@ -31,7 +32,7 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
     const body: PostEnvironment['Body'] = valBody.data;
 
     const accountId = res.locals.account.id;
-    const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+    let plan;
 
     if (flagHasPlan) {
         const planRes = await getPlan(db.knex, { accountId });
@@ -40,39 +41,16 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
             return;
         }
 
-        const plan = planRes.value;
-        if (plan && environments.length >= plan.environments_max) {
-            res.status(400).send({
-                error: {
-                    code: 'resource_capped',
-                    message: 'Maximum number of environments reached'
-                }
-            });
-            return;
-        }
+        plan = planRes.value;
     }
 
-    const exists = environments.some((env) => env.name === body.name);
-    if (exists) {
-        res.status(409).send({ error: { code: 'conflict', message: 'Environment already exists' } });
+    const created = await environmentService.createEnvironment(db.knex, { accountId, name: body.name, ...(plan && { plan }) });
+    if (created.isErr()) {
+        sendCreateEnvironmentError(res, created.error);
         return;
     }
 
-    const created = await environmentService.createEnvironment(db.knex, { accountId: accountId, name: body.name });
-    if (!created) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to create environment' } });
-        return;
-    }
+    const environment = created.value;
 
-    await externalWebhookService.update(db.knex, {
-        environment_id: created.id,
-        data: {
-            on_auth_creation: true,
-            on_auth_refresh_error: true,
-            on_sync_completion_always: true,
-            on_sync_error: true
-        }
-    });
-
-    res.status(200).send({ data: { id: created.id, name: created.name } });
+    res.status(200).send({ data: { id: environment.id, name: environment.name } });
 });

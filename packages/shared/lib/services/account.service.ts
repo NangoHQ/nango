@@ -272,14 +272,20 @@ class AccountService {
 
             if (flagHasPlan) {
                 const freePlan = plansList.find((plan) => plan.code === 'free');
-                const res = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
-                if (res.isErr()) {
-                    report(res.error);
-                    // Rollback transaction
-                    throw res.error;
+                const createdPlan = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
+                if (createdPlan.isErr()) {
+                    // Report and rollback transaction
+                    report(createdPlan.error);
+                    throw createdPlan.error;
                 }
             }
-            await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
+
+            const createdEnvs = await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
+            if (createdEnvs.isErr()) {
+                // Rollback transaction; the service already reports on errors
+                throw createdEnvs.error;
+            }
+
             metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
             return result[0];
         });
