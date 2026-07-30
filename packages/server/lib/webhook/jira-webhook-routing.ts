@@ -27,7 +27,10 @@ function validate(secret: string, headerSignature: string, rawBody: string): boo
     return timingSafeEqual(calculatedBuffer, headerBuffer);
 }
 
-function extractBaseUrl(body: Record<string, any>): string | undefined {
+function extractBaseUrl(body: Record<string, any> | null | undefined): string | undefined {
+    if (!body) {
+        return undefined;
+    }
     const selfUrl =
         body['issue']?.['self'] ||
         body['comment']?.['self'] ||
