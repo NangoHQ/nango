@@ -1,11 +1,14 @@
 # Contribution guidelines
 
-Nango only reviews external pull requests for:
+Thanks for your interest in contributing to Nango. We keep our review capacity focused on two types of external contributions:
 
-- **Security fixes.** Report vulnerabilities privately by following our [security policy](SECURITY.md) before submitting a fix.
-- **New API support.** Follow the [new API contribution guide](https://nango.dev/docs/integrations/contribute-or-request-api).
+- **Security fixes.** Please don't open a public issue or pull request. Report the vulnerability privately through our [security policy](SECURITY.md), and share any proposed fix through that same private channel.
+- **New API support.** Please follow the [new API contribution guide](https://nango.dev/docs/integrations/contribute-or-request-api) and we'll take it from there.
 
-We do not review external pull requests for bug fixes, new features, or improvements to existing features and APIs. Please report bugs in [GitHub issues](https://github.com/NangoHQ/nango/issues) instead. For questions and feedback, join the [community Slack](https://nango.dev/slack).
+For everything else, including bug fixes, new features, and improvements to existing features and APIs, we don't review external pull requests. We'd still love to hear from you:
+
+- Found something broken? [Report it](https://github.com/NangoHQ/nango/issues) and we'll take a look.
+- Questions, ideas, or feedback? Join us in the [community Slack](https://nango.dev/slack).
 
 See the [development setup](DEVELOPMENT.md) to run Nango and integrations locally.
 
