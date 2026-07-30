@@ -191,14 +191,16 @@ describe('audit — auth flows', () => {
             await vi.waitFor(() => {
                 expect(auditSpy).toHaveBeenCalled();
             });
-            // The rejected attempt is still attributed to the account the attempted email maps to.
+            // The rejected attempt maps to the target account, but the actor is anonymous — a wrong-password
+            // attempt against someone's email must never frame the victim as the one acting.
             expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'denied',
                 accountId: user.account_id,
                 environment: null,
-                actor: { type: 'user', id: String(user.id), display: user.email }
+                actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' },
+                targets: [{ type: 'user', id: String(user.id), display: user.email }]
             });
         });
 

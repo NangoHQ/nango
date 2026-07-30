@@ -8,7 +8,7 @@ import { getLogger } from '@nangohq/utils';
 import { audit } from '../audit.js';
 import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
 
-import type { AppAuthLoginMethod, AuditEvent, AuditOutcome } from '@nangohq/audit';
+import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
     DBTeam,
     DBUser,
@@ -66,8 +66,8 @@ async function principalFromUser(user: Pick<DBUser, 'id' | 'email' | 'account_id
 }
 
 // Maps the attempted email to its user (and account). Used for login and signup; on a rejected login
-// the email still resolves to the account it targeted, so the denied attempt is attributed to it. An
-// email that maps to no user yields null — we skip rather than invent an account or leak existence.
+// the email resolves the target the attempt was aimed at (the actor is anonymous — see recordAuthEvent).
+// An email that maps to no user yields null — we skip rather than invent an account or leak existence.
 async function principalFromBodyEmail<TEndpoint extends EmailBodyEndpoint>(req: AuthRequest<TEndpoint>): Promise<AuthPrincipal | null> {
     const email = req.body.email;
     if (!email) {
@@ -119,11 +119,14 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             return;
         }
         const ref = { type: 'user' as const, id: String(principal.userId), display: principal.userEmail };
+        // A non-success attempt never authenticated as the claimed email — the actor is anonymous, and the
+        // (untrusted) email is only the target it was aimed at (never the actor).
+        const actor: AuditActor = outcome === 'success' ? ref : { type: 'anonymous', id: 'unknown', display: 'anonymous' };
         const common = {
             occurredAt,
             accountId: principal.account.id,
             environment: null,
-            actor: ref,
+            actor,
             targets: [ref],
             context: contextFromRequest(req),
             outcome
