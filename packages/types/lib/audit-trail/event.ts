@@ -92,3 +92,9 @@ export interface NoAudit<Reason extends string = 'non-auditable'> {
     reason: Reason;
 }
 export type EndpointAudit = AuditPolicy | NoAudit<string>;
+
+// `type`, not `interface`: an interface has no implicit index signature and so fails the pub/sub
+// Serializable payload constraint.
+export type SerializedAuditEvent = {
+    event: string;
+};
