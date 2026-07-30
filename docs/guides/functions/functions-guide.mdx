@@ -264,7 +264,7 @@ Pull the source of a function that is already deployed to an environment so you 
 nango pull github list-repos --env dev
 ```
 
-This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
+This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 

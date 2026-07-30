@@ -27,9 +27,7 @@ export class Publisher {
             idempotencyKey: event.idempotencyKey ?? uuidv4(),
             createdAt: event.createdAt ?? new Date()
         });
-        if (res.isErr()) {
-            metrics.increment(metrics.Types.PUBSUB_PUBLISH, 1, { subject: event.subject, success: 'false' });
-        }
+        metrics.increment(metrics.Types.PUBSUB_PUBLISH, 1, { subject: event.subject, success: String(res.isOk()) });
         return res;
     }
 
@@ -79,6 +77,9 @@ function reportBatchPublishResults(subject: Event['subject'], batchSize: number,
                 });
             });
             metrics.increment(metrics.Types.PUBSUB_PUBLISH, res_.failed.length, { subject: subject, success: 'false' });
+        }
+        if (res_.successful.length > 0) {
+            metrics.increment(metrics.Types.PUBSUB_PUBLISH, res_.successful.length, { subject: subject, success: 'true' });
         }
     } else {
         logger.error(`publishBatch total failure`, { subject: subject, total: batchSize, error: res.error.message });
