@@ -2,7 +2,7 @@ import './tracer.js';
 
 import * as cron from 'node-cron';
 
-import { auditClickhouseClient, ClickhouseAuditStore } from '@nangohq/audit';
+import { auditClickhouseClient, ClickhouseAuditStore, migrate as migrateAudit } from '@nangohq/audit';
 import { billing } from '@nangohq/billing';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
@@ -46,6 +46,13 @@ try {
     const usageMigration = await migrateUsage();
     if (usageMigration.isErr()) {
         logger.error('Usage migration failed', usageMigration.error);
+        process.exit(1);
+    }
+
+    // Audit migrations
+    const auditMigration = await migrateAudit({ clickhouseUrl: envs.CLICKHOUSE_URL });
+    if (auditMigration.isErr()) {
+        logger.error('Audit migration failed', auditMigration.error);
         process.exit(1);
     }
 

@@ -15,6 +15,7 @@
     "dependencies": {
         "@clickhouse/client": "1.18.2",
         "@nangohq/billing": "file:../billing",
+        "@nangohq/clickhouse-migrations": "file:../clickhouse-migrations",
         "@nangohq/database": "file:../database",
         "@nangohq/email": "file:../email",
         "@nangohq/kvstore": "file:../kvstore",

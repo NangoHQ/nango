@@ -773,7 +773,8 @@
                       "guides/platform/migrations/migrate-from-public-key",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
-                  }
+                  },
+                  "contributing"
                 ]
               }
             ]
