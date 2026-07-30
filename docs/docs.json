@@ -1757,6 +1757,7 @@
               "api-integrations/toast",
               "integrations/all/todoist",
               "integrations/all/trafft",
+              "api-integrations/transporeon-oauth2-cc",
               "integrations/all/tailscale",
               "integrations/all/tailscale-api-key",
               "integrations/all/trakstar-hire",
