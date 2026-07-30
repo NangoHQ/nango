@@ -35,6 +35,7 @@ process.on('uncaughtException', (err) => {
 
 try {
     await initializeFeatureFlags();
+    assertInternalTlsCompatibleWithLambda();
 
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
@@ -122,8 +123,6 @@ try {
         logger.info('Received SIGTERM...');
         close();
     });
-
-    assertInternalTlsCompatibleWithLambda();
 
     if (envs.RUNNER_TYPE === 'LOCAL') {
         // when running locally, the runners (running as processes) are being killed

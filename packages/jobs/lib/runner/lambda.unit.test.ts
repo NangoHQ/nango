@@ -9,18 +9,8 @@ interface MockCommand {
     input: Record<string, unknown>;
 }
 
-const { sent, tlsEnv } = vi.hoisted(() => ({
-    sent: [] as MockCommand[],
-    tlsEnv: {
-        NANGO_INTERNAL_TLS_CERT: '-----BEGIN CERTIFICATE-----\ncert\n-----END CERTIFICATE-----',
-        NANGO_INTERNAL_TLS_KEY: '-----BEGIN PRIVATE KEY-----\nkey\n-----END PRIVATE KEY-----'
-    }
-}));
-
-// Pretend the service has mTLS configured, so reinstating the forwarding fails the assertion below.
-vi.mock('@nangohq/utils', async (importOriginal) => ({
-    ...((await importOriginal()) as object),
-    getInternalTlsEnv: () => tlsEnv
+const { sent } = vi.hoisted(() => ({
+    sent: [] as MockCommand[]
 }));
 
 function mockCommands(names: string[]): Record<string, unknown> {
