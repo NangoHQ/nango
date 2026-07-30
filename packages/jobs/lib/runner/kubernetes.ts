@@ -228,6 +228,10 @@ class Kubernetes {
                 name: getTlsSecretName(name),
                 namespace
             });
+            const resourceVersion = existing.metadata?.resourceVersion;
+            if (!resourceVersion) {
+                return Err(new Error('Failed to update internal TLS secret: existing secret has no resourceVersion'));
+            }
             await this.coreApi.replaceNamespacedSecret({
                 name: getTlsSecretName(name),
                 namespace,
@@ -235,7 +239,7 @@ class Kubernetes {
                     ...secretManifest,
                     metadata: {
                         ...secretManifest.metadata,
-                        resourceVersion: existing.metadata?.resourceVersion
+                        resourceVersion
                     }
                 }
             });
