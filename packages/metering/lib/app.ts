@@ -73,8 +73,10 @@ try {
     // rather than configured: an insert outliving a message's invisibility would be redelivered while the
     // first attempt is still running, and both would write the row.
     const auditQueueUrl = envs.NANGO_PUBSUB_SNS_SQS_CONFIG.queueUrls?.['audit:audit'];
+    // Audit events only reach SQS when the publisher targets SNS, which is the `sns-sqs` transport alone —
+    // under `activemq` or `migration` the producer publishes to ActiveMQ, so there would be nothing to poll.
     const auditProc =
-        envs.CLICKHOUSE_URL && auditQueueUrl
+        envs.NANGO_PUBSUB_TRANSPORT === 'sns-sqs' && envs.CLICKHOUSE_URL && auditQueueUrl
             ? new AuditProcessor({
                   queueUrl: auditQueueUrl,
                   store: new ClickhouseAuditStore(
@@ -91,7 +93,7 @@ try {
     if (auditProc) {
         auditProc.start();
     } else {
-        logger.info('Audit consumer not started: CLICKHOUSE_URL or the audit queue URL is not configured');
+        logger.info('Audit consumer not started: needs the sns-sqs transport, CLICKHOUSE_URL and the audit queue URL');
     }
 
     // Crons

@@ -81,7 +81,7 @@ describe('AuditProcessor', () => {
         expect(recordMany).toHaveBeenCalledTimes(1);
         const [records, opts] = recordMany.mock.calls[0] as [{ event: string }[], { dedupToken: string }];
         expect(records.map((r) => (JSON.parse(r.event) as { id: string }).id)).toEqual(['a', 'b', 'c']);
-        expect(opts.dedupToken).toMatch(/^[0-9a-f-]{36}$/);
+        expect(opts.dedupToken).toMatch(/^[0-9a-f]{64}$/);
         expect(deleted.sort()).toEqual(['handle-a', 'handle-b', 'handle-c']);
     });
 
@@ -108,6 +108,33 @@ describe('AuditProcessor', () => {
         const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
         const wrongSubject = { ...auditMessage('x'), MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } } };
         const { deleted } = await run([wrongSubject], { recordMany });
+
+        expect(recordMany).not.toHaveBeenCalled();
+        expect(deleted).toEqual([]);
+    });
+
+    it('gives a batch the same dedup token every time it is delivered, so a re-sent insert is discarded', async () => {
+        const first = vi.fn().mockResolvedValue(Ok(undefined));
+        await run([auditMessage('a'), auditMessage('b')], { recordMany: first });
+
+        // Same messages, redelivered in a different order — SQS makes no ordering promise.
+        const second = vi.fn().mockResolvedValue(Ok(undefined));
+        await run([auditMessage('b'), auditMessage('a')], { recordMany: second });
+
+        const tokenOf = (m: ReturnType<typeof vi.fn>) => (m.mock.calls[0] as [unknown, { dedupToken: string }])[1].dedupToken;
+        expect(tokenOf(first)).toBe(tokenOf(second));
+    });
+
+    it('rejects an envelope whose payload carries no event blob', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const notAnEnvelope = {
+            ...auditMessage('x'),
+            Body: serde
+                .serialize({ idempotencyKey: 'k', subject: 'audit', type: 'audit.recorded', payload: {}, createdAt: new Date() })
+                .unwrap()
+                .toString('base64')
+        };
+        const { deleted } = await run([notAnEnvelope], { recordMany });
 
         expect(recordMany).not.toHaveBeenCalled();
         expect(deleted).toEqual([]);

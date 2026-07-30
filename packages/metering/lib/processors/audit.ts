@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 
@@ -97,7 +97,7 @@ export class AuditProcessor {
 
         const result = await this.props.store.recordMany(
             received.map((r) => r.event.payload),
-            { dedupToken: randomUUID() }
+            { dedupToken: batchDedupToken(received) }
         );
 
         if (result.isErr()) {
@@ -133,6 +133,14 @@ export class AuditProcessor {
             report(new Error('Audit consumer: failed to deserialize message'), { messageId: msg.MessageId });
             return [];
         }
+        // `deserialize` gives back whatever was serialised, so the type is an assertion rather than a check.
+        // Only the envelope this code owns is verified — whether the event itself is storable is the table's
+        // constraints to decide, and duplicating them here would give them a second place to drift from.
+        if (typeof decoded.value.payload?.event !== 'string') {
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
+            report(new Error('Audit consumer: message is not an audit envelope'), { messageId: msg.MessageId });
+            return [];
+        }
         const receiveCount = Number(msg.Attributes?.['ApproximateReceiveCount']);
         return [
             {
@@ -163,4 +171,22 @@ function describe(event: string): { eventId?: string | undefined; resource?: str
     } catch {
         return {};
     }
+}
+
+// Derived from the message ids rather than random, so a batch redelivered whole — the common case, since a
+// failed insert makes all of its messages visible again together — carries the token of the attempt that
+// may already have been written, and ClickHouse discards it. SQS is free to regroup messages across
+// deliveries, in which case the token differs and the copy is caught by ReplacingMergeTree and the read
+// instead. Falls back to a random token if any id is missing, which only loses that dedup.
+function batchDedupToken(received: Received[]): string {
+    const ids: string[] = [];
+    for (const { messageId } of received) {
+        if (!messageId) {
+            return randomUUID();
+        }
+        ids.push(messageId);
+    }
+    // Codepoint order, not localeCompare: the token has to hash identically on every pod.
+    ids.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    return createHash('sha256').update(ids.join(',')).digest('hex');
 }
