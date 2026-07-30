@@ -81,6 +81,7 @@ export const validateEmailAndLogin = asyncWrapper<ValidateEmailAndLogin>(async (
             return;
         }
 
+        req.auditAuthSucceeded = true;
         res.status(200).send({ user: userToAPI(user), showHearAboutUs });
     });
 });

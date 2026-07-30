@@ -359,6 +359,28 @@ describe('audit — auth flows', () => {
             expect(auditSpy).not.toHaveBeenCalled();
         });
 
+        it('does not record a login when a failed SSO attempt is made with an existing session', async () => {
+            // An already-signed-in user has req.user populated by passport.session(). A FAILED SSO attempt
+            // must not be recorded as a successful login for them — it never called req.login this request.
+            const { email, password } = await signupVerifiedUser();
+            const session = await signin(email, password);
+            // signin records its own login asynchronously; wait for it, then clear, so the assertion only
+            // sees events from the failed callback attempt below.
+            await vi.waitFor(() => {
+                expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'login')).toBe(true);
+            });
+            auditSpy.mockClear();
+            workosMocks.authenticateWithCode.mockRejectedValue(Object.assign(new Error('invalid'), { error: 'invalid_grant' }));
+
+            const res = await fetch(`${api.url}/api/v1/login/callback?code=bad_code`, { headers: { Cookie: session }, redirect: 'manual' });
+            expect(res.status).toBe(302);
+            expect(res.headers.get('location')).toBe('http://localhost:3003/signin?error=sso_session_expired');
+
+            // Fire-and-forget finish hook: give it a tick, then confirm nothing was recorded despite req.user.
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            expect(auditSpy).not.toHaveBeenCalled();
+        });
+
         it('records app_auth/login (method email_code) on a successful verify-code login', async () => {
             const user = await signupUser({ verified: false });
             const token = user.email_verification_token;

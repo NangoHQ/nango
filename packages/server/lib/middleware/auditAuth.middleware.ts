@@ -51,8 +51,9 @@ interface EmailBodyEndpoint extends Endpoint<any> {
 interface AuthAuditOptions {
     recordNonSuccess?: boolean;
     method?: AppAuthLoginMethod;
-    // Success is signaled by an established session (req.login), not a 2xx — the SSO callback even
-    // replies 302. A resolved session principal is the success signal; non-success resolves to null.
+    // These routes can't be classified by status (the SSO callback replies 302 on both success and
+    // failure). Success is instead signaled by the controller setting req.auditAuthSucceeded when
+    // req.login actually established a session this request — not by a pre-existing session's req.user.
     sessionOutcome?: boolean;
 }
 
@@ -95,10 +96,14 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
     const occurredAt = new Date().toISOString();
     try {
         const action = typeof actionOrResolver === 'function' ? actionOrResolver(req) : actionOrResolver;
-        // sessionOutcome routes reply 302 on success, so status can't classify them; a resolved session
-        // principal is the success signal and non-success attempts resolve to null below.
         let outcome: AuditOutcome;
         if (options.sessionOutcome) {
+            // Only a login this request actually established (req.login → req.auditAuthSucceeded) is a
+            // success. Without it, req.user may just be a pre-existing session, so a failed attempt by an
+            // already-signed-in user would otherwise be recorded as a successful login for that user.
+            if (!req.auditAuthSucceeded) {
+                return;
+            }
             outcome = 'success';
         } else {
             outcome = outcomeFromStatus(res.statusCode);
