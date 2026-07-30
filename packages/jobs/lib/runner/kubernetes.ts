@@ -221,12 +221,23 @@ class Kubernetes {
         }
 
         // Left over from an earlier attempt at this same node. Overwrite rather than adopt it, so a
-        // retry cannot hand the runner assets this service no longer holds.
+        // retry cannot hand the runner assets this service no longer holds. Replace is a PUT and
+        // needs the current resourceVersion for optimistic concurrency.
         try {
+            const existing = await this.coreApi.readNamespacedSecret({
+                name: getTlsSecretName(name),
+                namespace
+            });
             await this.coreApi.replaceNamespacedSecret({
                 name: getTlsSecretName(name),
                 namespace,
-                body: secretManifest
+                body: {
+                    ...secretManifest,
+                    metadata: {
+                        ...secretManifest.metadata,
+                        resourceVersion: existing.metadata?.resourceVersion
+                    }
+                }
             });
         } catch (err: any) {
             return Err(new Error('Failed to update internal TLS secret', { cause: err }));

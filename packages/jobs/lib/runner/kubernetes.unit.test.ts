@@ -77,6 +77,9 @@ vi.mock('@kubernetes/client-node', () => {
         if (err) {
             throw new ApiError(JSON.stringify(err));
         }
+        if (method === 'readNamespacedSecret') {
+            return Promise.resolve({ metadata: { name: param?.name, resourceVersion: '42' } });
+        }
         return Promise.resolve({});
     };
 
@@ -169,9 +172,13 @@ describe('runner TLS secret lifecycle', () => {
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);
 
+        const called = methodsCalled();
+        expect(called.indexOf('readNamespacedSecret')).toBeLessThan(called.indexOf('replaceNamespacedSecret'));
+
         const replaced = k8sMock.calls.find((call) => call.method === 'replaceNamespacedSecret');
         expect(replaced?.name).toBe(secretName);
         expect(replaced?.body.stringData).toEqual(tlsEnv);
+        expect(replaced?.body.metadata.resourceVersion).toBe('42');
     });
 
     it('should fail the node when the secret cannot be written', async () => {
