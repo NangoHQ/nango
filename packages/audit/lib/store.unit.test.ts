@@ -53,7 +53,7 @@ describe('ClickhouseAuditStore.record', () => {
         const result = await store.record(record);
 
         expect(result.isErr()).toBe(true);
-        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', code: 'unknown' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', reason: 'no_response' });
     });
 
     it('returns Err with a failure metric instead of throwing on a malformed record', async () => {
@@ -63,7 +63,7 @@ describe('ClickhouseAuditStore.record', () => {
         const result = await store.record(undefined as unknown as SerializedAuditEvent);
 
         expect(result.isErr()).toBe(true);
-        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', code: 'unknown' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', reason: 'no_response' });
     });
 });
 
@@ -105,7 +105,7 @@ describe('ClickhouseAuditStore.recordMany', () => {
         const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
 
         expect((await store.recordMany([record, record, record], { dedupToken: 't' })).isErr()).toBe(true);
-        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 3, { success: 'false', code: 'unknown' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 3, { success: 'false', reason: 'no_response' });
     });
 
     it('does not insert an empty batch', async () => {
@@ -117,15 +117,39 @@ describe('ClickhouseAuditStore.recordMany', () => {
     });
 });
 
-describe('ClickhouseAuditStore ingest failure tagging', () => {
+describe('ClickhouseAuditStore ingest failures', () => {
     afterEach(() => vi.restoreAllMocks());
 
-    it("tags the failure with ClickHouse's own error code so alerting can tell a bad event from a bad backend", async () => {
+    it('separates a server error, where nothing was written, from no response, where it may have been', async () => {
         const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
-        const insert = vi.fn().mockRejectedValue(new ClickHouseError({ message: 'constraint violated', code: '469', type: 'VIOLATED_CONSTRAINT' }));
-        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
+        const served = new ClickhouseAuditStore(
+            { insert: vi.fn().mockRejectedValue(new ClickHouseError({ message: 'constraint violated', code: '469' })) } as unknown as ClickHouseClient,
+            90
+        );
+        const silent = new ClickhouseAuditStore({ insert: vi.fn().mockRejectedValue(new Error('socket hang up')) } as unknown as ClickHouseClient, 90);
 
-        expect((await store.recordMany([record], { dedupToken: 't' })).isErr()).toBe(true);
-        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', code: '469' });
+        await served.recordMany([record], { dedupToken: 't' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', reason: 'server_error' });
+
+        await silent.recordMany([record], { dedupToken: 't' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', reason: 'no_response' });
+    });
+
+    it('returns an error with the quoted row already stripped, so no caller can log it', async () => {
+        vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const raw =
+            'Code: 469. DB::Exception: Constraint `account_id_valid` is violated at row 1. ' +
+            'Column values: event = \'{"actor":{"display":"leak@customer.example"}}\'';
+        const store = new ClickhouseAuditStore(
+            { insert: vi.fn().mockRejectedValue(new ClickHouseError({ message: raw, code: '469' })) } as unknown as ClickHouseClient,
+            90
+        );
+
+        const result = await store.recordMany([record], { dedupToken: 't' });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).not.toContain('leak@customer.example');
+            expect(result.error.message).toContain('account_id_valid');
+        }
     });
 });

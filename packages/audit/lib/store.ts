@@ -2,6 +2,8 @@ import { ClickHouseError } from '@clickhouse/client';
 
 import { Err, getLogger, metrics, Ok, stringifyError } from '@nangohq/utils';
 
+import { sanitizeClickhouseError } from './error.js';
+
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -82,12 +84,13 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
             metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, records.length, { success: 'true' });
             return Ok(undefined);
         } catch (err) {
-            // ClickHouse's own code, so alerting can separate a rejected event (a bug in what we emit, e.g.
-            // 469 VIOLATED_CONSTRAINT or 376 CANNOT_PARSE_UUID) from an unavailable backend, without this
-            // having to enumerate codes or match on message text.
-            const code = err instanceof ClickHouseError ? err.code : 'unknown';
-            metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, records.length, { success: 'false', code });
-            return Err(err);
+            // A block insert is atomic, so a server error means nothing was written. No response means the
+            // opposite: the rows may be stored and a retry can duplicate them. The specific code is logged
+            // rather than tagged, to keep this dimension bounded.
+            const reason = err instanceof ClickHouseError ? 'server_error' : 'no_response';
+            metrics.increment(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, records.length, { success: 'false', reason });
+            // Sanitised here so no caller can log the row ClickHouse quotes back.
+            return Err(new Error(sanitizeClickhouseError(err)));
         }
     }
 

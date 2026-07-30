@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 
-import { sanitizeClickhouseError } from '@nangohq/audit';
 import { getSubjectMessageAttribute, serde, unwrapSqsBody } from '@nangohq/pubsub';
 import { metrics, report } from '@nangohq/utils';
 
@@ -104,7 +103,7 @@ export class AuditProcessor {
         if (result.isErr()) {
             // Left undeleted on purpose: the messages redeliver and, past the queue's maxReceiveCount, reach
             // the DLQ, where they can be redriven once the cause is fixed.
-            logger.error(`Failed to store audit events: ${sanitizeClickhouseError(result.error)}`, {
+            logger.error(`Failed to store audit events: ${result.error.message}`, {
                 messages: received.map((r) => ({
                     messageId: r.messageId,
                     receiveCount: r.receiveCount,
