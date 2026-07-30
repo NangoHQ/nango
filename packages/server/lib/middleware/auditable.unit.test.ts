@@ -3,8 +3,10 @@ import { EventEmitter } from 'node:events';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
+import { metrics } from '@nangohq/utils';
 
 import {
+    auditable,
     auditConnectionUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
@@ -53,6 +55,9 @@ async function runAudit(handler: RequestHandler, req: any, res: any) {
 
 describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
+        // metrics.increment stays spied across tests, so its call history has to be cleared or the
+        // negative assertions below pass or fail depending on test order.
+        vi.clearAllMocks();
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
         // getFlags() returns the stable noop facade in tests; force the audit trail on.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
@@ -166,5 +171,64 @@ describe('auditable() middleware behavior (unit)', () => {
         await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
         // Target was captured pre-next, so it still points at the original environment.
         expect(recordMock.mock.calls[0]?.[0]?.targets).toEqual([{ type: 'environment', id: '9', display: 'dev' }]);
+    });
+
+    describe('an event we meant to record going missing is metered', () => {
+        it('counts a resolution failure as degraded, not dropped — the event is still recorded', async () => {
+            const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+            const handler = auditable({
+                policy: { resource: 'environment', action: 'variables_changed', scope: 'environment' },
+                target: () => {
+                    throw new Error('resolver exploded');
+                }
+            } as any);
+            const res = fakeRes(locals);
+
+            await new Promise<void>((resolve) => handler(fakeReq(), res, () => resolve()));
+            res.emit('finish');
+
+            await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
+            expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_RESOLVE_FAILED, 1, { source: 'auditable' });
+            expect(inc).not.toHaveBeenCalledWith(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
+            // Degraded, not lost: the event still carries the account and outcome, just no target.
+            expect(recordMock.mock.calls[0]?.[0]?.accountId).toBe(42);
+            expect(recordMock.mock.calls[0]?.[0]?.outcome).toBe('success');
+            expect(recordMock.mock.calls[0]?.[0]?.targets).toEqual([]);
+        });
+
+        it('counts a gate failure as dropped — no listener was registered, so nothing is recorded', async () => {
+            const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+            vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockRejectedValue(new Error('unleash unreachable'));
+            const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
+            const res = fakeRes(locals);
+
+            await new Promise<void>((resolve) => auditEnvironmentVariablesChanged(req, res, () => resolve()));
+            res.emit('finish');
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
+            expect(inc).not.toHaveBeenCalledWith(metrics.Types.AUDIT_RESOLVE_FAILED, 1, { source: 'auditable' });
+            expect(recordMock).not.toHaveBeenCalled();
+        });
+
+        it('counts an emit failure as dropped — the event never reaches the store', async () => {
+            const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+            // Resolution reads the body; only the emit path reads headers, so this throws inside emit().
+            const req = fakeReq({
+                body: { variables: [{ name: 'X', value: 'y' }] },
+                get: () => {
+                    throw new Error('headers gone');
+                }
+            });
+            const res = fakeRes(locals);
+
+            await new Promise<void>((resolve) => auditEnvironmentVariablesChanged(req, res, () => resolve()));
+            res.emit('finish');
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
+            expect(inc).not.toHaveBeenCalledWith(metrics.Types.AUDIT_RESOLVE_FAILED, 1, { source: 'auditable' });
+            expect(recordMock).not.toHaveBeenCalled();
+        });
     });
 });
