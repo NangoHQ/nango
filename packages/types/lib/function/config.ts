@@ -1,5 +1,13 @@
 import type { OnEventType } from '../scripts/on-events/api.js';
 
+export interface FunctionCapabilities {
+    usesRecords: boolean;
+    usesOutbound: boolean;
+    usesCheckpoints: boolean;
+    usesMetadata: boolean;
+    usesInvoke: boolean;
+}
+
 /**
  * Declares where the debounce/coalescing key is extracted from:
  * - `{ body: '$.portalId' }`: dot notation path into the body
@@ -40,4 +48,4 @@ export interface FunctionLimits {
     };
 }
 
-export type Requires = { connection?: true; outbound?: boolean; invoke?: boolean } | { connection: false; outbound?: false; invoke?: boolean };
+export type FunctionRequires = { connection?: true; outbound?: boolean; invoke?: boolean } | { connection: false; outbound?: false; invoke?: boolean };

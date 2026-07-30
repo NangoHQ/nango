@@ -17,21 +17,53 @@ import {
     TrackDeletesDefinitionError
 } from './utils.js';
 
-import type { CreateActionResponse, CreateFunctionResponse, CreateOnEventResponse, CreateSyncResponse, Requires, TriggerDefinition } from '@nangohq/runner-sdk';
+import type {
+    CreateActionResponse,
+    CreateFunctionResponse,
+    CreateOnEventResponse,
+    CreateSyncResponse,
+    FunctionRequires,
+    FunctionTriggerDefinition
+} from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
-import type { FunctionCapabilities, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
+import type {
+    DBFunctionConfigVersion,
+    FunctionConcurrencyLimit,
+    NangoYamlParsed,
+    NangoYamlParsedIntegration,
+    ParsedNangoAction,
+    ParsedNangoSync,
+    Result
+} from '@nangohq/types';
 import type * as z from 'zod';
 
-export interface FunctionConfig {
+interface FunctionDefinition {
+    description: string;
+    trigger?: FunctionTriggerDefinition | undefined;
+    requires?: FunctionRequires | undefined;
+    limits?: { concurrency?: { perConnection?: FunctionConcurrencyLimit } } | undefined;
+    input?: z.ZodTypeAny | undefined;
+    output?: z.ZodTypeAny | undefined;
+    data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
+}
+
+export interface FunctionConfig
+    extends Pick<
+        DBFunctionConfigVersion,
+        | 'description'
+        | 'trigger'
+        | 'requires'
+        | 'capabilities'
+        | 'limits'
+        | 'input_schema_ref'
+        | 'output_schema_ref'
+        | 'model_schema_refs'
+        | 'metadata_schema_ref'
+        | 'checkpoint_schema_ref'
+        | 'json_schema'
+    > {
     name: string;
     integrationId: string;
-    description: string;
-    trigger: TriggerDefinition | null;
-    capabilities: FunctionCapabilities;
-    input: string | null;
-    output: string | null;
-    json_schema: JSONSchema7;
 }
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
@@ -268,7 +300,7 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: { trigger?: TriggerDefinition | undefined; data?: unknown; requires?: Requires | undefined };
+    params: { trigger?: FunctionTriggerDefinition | undefined; data?: unknown; requires?: FunctionRequires | undefined };
     integrationId: string;
     basename: string;
 }): Result<void> {
@@ -276,7 +308,7 @@ export function validateFunction({
 
     // For now only trigger-less functions (triggered manually) are supported, with no data (records, checkpoints or metadata).
     // TODO: Add support for http, schedule and event triggers, and data
-    const supportedFunctionTriggerKinds: TriggerDefinition['kind'][] = [];
+    const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none'];
 
     if (params.trigger && !supportedFunctionTriggerKinds.includes(params.trigger.kind)) {
         const supported = supportedFunctionTriggerKinds.map((kind) => `'${kind}'`).join(', ');
@@ -303,7 +335,7 @@ export function parseFunction({
     basename,
     basenameClean
 }: {
-    params: CreateFunctionResponse;
+    params: FunctionDefinition;
     integrationId: string;
     integrationIdClean: string;
     basename: string;
@@ -311,6 +343,10 @@ export function parseFunction({
 }): FunctionConfig {
     const inputName = params.input ? `FunctionInput_${integrationIdClean}_${basenameClean}` : null;
     const outputName = params.output ? `FunctionOutput_${integrationIdClean}_${basenameClean}` : null;
+    const metadata = params.data?.metadata;
+    const metadataName = metadata ? `FunctionMetadata_${integrationIdClean}_${basenameClean}` : null;
+    const checkpoint = params.data?.checkpoint;
+    const checkpointName = checkpoint ? `FunctionCheckpoint_${integrationIdClean}_${basenameClean}` : null;
 
     const allZodModels: Record<string, z.ZodType> = {};
     if (inputName) {
@@ -319,6 +355,12 @@ export function parseFunction({
     if (outputName) {
         allZodModels[outputName] = params.output as z.ZodType;
     }
+    if (metadataName && metadata) {
+        allZodModels[metadataName] = metadata;
+    }
+    if (checkpointName && checkpoint) {
+        allZodModels[checkpointName] = checkpoint;
+    }
     const models = params.data?.models;
     if (models) {
         for (const [name, model] of Object.entries(models)) {
@@ -326,14 +368,30 @@ export function parseFunction({
         }
     }
 
+    const requires: FunctionRequires =
+        params.requires?.connection === false
+            ? { connection: false, outbound: false, invoke: params.requires.invoke === true }
+            : { connection: true, outbound: params.requires?.outbound !== false, invoke: params.requires?.invoke === true };
+
+    const limits: DBFunctionConfigVersion['limits'] =
+        requires.connection === false
+            ? {}
+            : { concurrency: { perConnection: params.trigger?.kind === 'schedule' ? 1 : (params.limits?.concurrency?.perConnection ?? 'max') } };
+    const toSchemaRef = (name: string | null): string | null => (name ? `#/definitions/${name}` : null);
+
     return {
         name: basename,
         integrationId,
         description: params.description,
-        trigger: params.trigger ?? null,
+        trigger: params.trigger ?? { kind: 'none' },
+        requires,
         capabilities: deriveFunctionCapabilities(params),
-        input: inputName,
-        output: outputName,
+        limits,
+        input_schema_ref: toSchemaRef(inputName),
+        output_schema_ref: toSchemaRef(outputName),
+        model_schema_refs: models ? Object.keys(models).map((name) => `#/definitions/${name}`) : [],
+        metadata_schema_ref: toSchemaRef(metadataName),
+        checkpoint_schema_ref: toSchemaRef(checkpointName),
         json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
     };
 }
