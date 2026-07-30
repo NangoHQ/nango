@@ -76,30 +76,13 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
         }
     }
 
-    if (Array.isArray(body)) {
-        const connectionIds = new Set<string>();
-        for (const event of body) {
-            const ids = await routeEvent(nango, event);
-            for (const id of ids) {
-                connectionIds.add(id);
-            }
-        }
-
-        return Ok({
-            content: { status: 'success' },
-            statusCode: 200,
-            connectionIds: Array.from(connectionIds),
-            toForward: body
-        });
-    } else {
-        const connectionIds = await routeEvent(nango, body);
-        return Ok({
-            content: { status: 'success' },
-            statusCode: 200,
-            connectionIds,
-            toForward: body
-        });
-    }
+    const connectionIds = await routeEvent(nango, body);
+    return Ok({
+        content: { status: 'success' },
+        statusCode: 200,
+        connectionIds,
+        toForward: body
+    });
 };
 
 export default route;
