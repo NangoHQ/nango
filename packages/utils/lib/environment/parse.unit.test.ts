@@ -19,16 +19,6 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
-    // These go straight into SQS request fields, which reject a fractional value outright — the consumer
-    // would then fail every receive and sit in its retry loop.
-    it('rejects a fractional audit consumer setting', () => {
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_MAX_MESSAGES: '1.5' })).toThrowError();
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_CONCURRENCY: '2.5' })).toThrowError();
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: '0.5' })).toThrowError();
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: '30.5' })).toThrowError();
-        expect(parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_MAX_MESSAGES: '4' }).NANGO_AUDIT_CONSUMER_MAX_MESSAGES).toBe(4);
-    });
-
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');

@@ -107,7 +107,7 @@ export class AuditProcessor {
                 messages: received.map((r) => ({
                     messageId: r.messageId,
                     receiveCount: r.receiveCount,
-                    ...describe(r.event.payload.event)
+                    ...nonIdentifyingFields(r.event.payload.event)
                 }))
             });
             return;
@@ -161,9 +161,7 @@ export class AuditProcessor {
     }
 }
 
-// The blob carries the actor's email and IP, so only these non-identifying fields are ever read out of it
-// to identify which event in a failed batch was the problem.
-function describe(event: string): { eventId?: string | undefined; resource?: string | undefined; action?: string | undefined } {
+function nonIdentifyingFields(event: string): { eventId?: string | undefined; resource?: string | undefined; action?: string | undefined } {
     try {
         const parsed = JSON.parse(event) as Record<string, unknown>;
         const pick = (key: string): string | undefined => (typeof parsed[key] === 'string' ? (parsed[key] as string) : undefined);
@@ -173,11 +171,9 @@ function describe(event: string): { eventId?: string | undefined; resource?: str
     }
 }
 
-// Derived from the message ids rather than random, so a batch redelivered whole — the common case, since a
-// failed insert makes all of its messages visible again together — carries the token of the attempt that
-// may already have been written, and ClickHouse discards it. SQS is free to regroup messages across
-// deliveries, in which case the token differs and the copy is caught by ReplacingMergeTree and the read
-// instead. Falls back to a random token if any id is missing, which only loses that dedup.
+// Derived from the message ids, not random, so a redelivery of the same batch carries the token of the
+// attempt that may already have been written and ClickHouse discards it. Sorted because SQS makes no
+// ordering promise.
 function batchDedupToken(received: Received[]): string {
     const ids: string[] = [];
     for (const { messageId } of received) {
@@ -186,7 +182,5 @@ function batchDedupToken(received: Received[]): string {
         }
         ids.push(messageId);
     }
-    // Codepoint order, not localeCompare: the token has to hash identically on every pod.
-    ids.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    return createHash('sha256').update(ids.join(',')).digest('hex');
+    return createHash('sha256').update(ids.sort().join(',')).digest('hex');
 }
