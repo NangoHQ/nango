@@ -9580,7 +9580,7 @@ Returns the status and result of an asynchronous function dry run.
 
 ## Create a function deployment
 
-Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.md
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments-create.md
 
 <Info>
   Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
