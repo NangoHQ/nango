@@ -166,8 +166,8 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             if (!updatedConnection) {
                 return Err(
                     new NangoError('unknown_connection', {
-                        connection_id: newConnection.connection_id,
-                        provider_config_key: newConnection.provider_config_key
+                        connectionId: newConnection.connection_id,
+                        providerConfigKey: newConnection.provider_config_key
                     })
                 );
             }
@@ -332,8 +332,8 @@ async function testCredentials(
         if (!connection) {
             return Err(
                 new NangoError('unknown_connection', {
-                    connection_id: oldConnection.connection_id,
-                    provider_config_key: oldConnection.provider_config_key
+                    connectionId: oldConnection.connection_id,
+                    providerConfigKey: oldConnection.provider_config_key
                 })
             );
         }
@@ -534,8 +534,8 @@ export async function refreshCredentialsIfNeeded({
             if (!updatedConnection) {
                 return Err(
                     new NangoError('unknown_connection', {
-                        connection_id: connectionToRefresh.connection_id,
-                        provider_config_key: connectionToRefresh.provider_config_key
+                        connectionId: connectionToRefresh.connection_id,
+                        providerConfigKey: connectionToRefresh.provider_config_key
                     })
                 );
             }
