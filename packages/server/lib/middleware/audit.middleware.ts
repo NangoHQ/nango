@@ -4,6 +4,7 @@ import { customerKeyService, getSyncConfigById, userService } from '@nangohq/sha
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { markAudit } from './auditWiring.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType } from '@nangohq/audit';
@@ -185,7 +186,7 @@ interface ResolvedAudit {
 // Place AFTER auth and BEFORE authorization so it captures every outcome — including 403 denials
 // that never reach the controller.
 export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<TEndpoint>): RequestHandler {
-    return (req, res, next) => {
+    const handler: RequestHandler = (req, res, next) => {
         void (async () => {
             try {
                 const locals = res.locals as RequestLocals;
@@ -211,6 +212,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
             }
         })();
     };
+    return markAudit(handler, spec.policy);
 }
 
 // The deprecated single-connection metadata routes (POST/PATCH /connection/:connectionId/metadata)

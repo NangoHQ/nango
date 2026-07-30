@@ -1,5 +1,6 @@
 import { flagHasPlan, flags } from '@nangohq/utils';
 
+import { markAuthz } from '../middleware/auditWiring.js';
 import { evaluator } from './evaluator.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -11,7 +12,7 @@ export const envScope = (l: RequestLocals): Scope => (l.environment?.is_producti
 type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: RequestLocals) => Scope };
 
 export function can(permission: Permission | ScopedPermission): RequestHandler {
-    return async (_req, res, next) => {
+    const handler: RequestHandler = async (_req, res, next) => {
         if (!flags.hasAuthRoles) {
             next();
             return;
@@ -42,4 +43,5 @@ export function can(permission: Permission | ScopedPermission): RequestHandler {
 
         next();
     };
+    return markAuthz(handler);
 }

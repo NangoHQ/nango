@@ -153,7 +153,7 @@ import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
 
-let webAuth: RequestHandler[] = flagHasAuth
+export let webAuth: RequestHandler[] = flagHasAuth
     ? [passport.authenticate('session') as RequestHandler, authMiddleware.sessionAuth.bind(authMiddleware), rateLimiterMiddleware]
     : isBasicAuthEnabled
       ? [passport.authenticate('basic', { session: false }) as RequestHandler, authMiddleware.basicAuth.bind(authMiddleware), rateLimiterMiddleware]
