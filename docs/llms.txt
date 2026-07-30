@@ -63,6 +63,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Migrations: Migrate from end user](https://nango.dev/docs/guides/platform/migrations/migrate-from-end-user.md): Guide to migrate away from using end users in connections and connect sessions
 - [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session.
 - [Platform: Migrations: Migrating to Zero YAML](https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md): Guide on how to migrate to Zero YAML in Nango.
+- [Platform: Contributing to Nango](https://nango.dev/docs/contributing.md): Learn which external contributions Nango reviews
 
 ## Reference
 
