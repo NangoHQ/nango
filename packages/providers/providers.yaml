@@ -1656,14 +1656,31 @@ apple-app-store:
     display_name: Apple App Store
     categories:
         - e-commerce
-    auth_mode: APP_STORE
-    token_url: https://api.appstoreconnect.apple.com/v1/apps
-    authorization_params:
-        audience: appstoreconnect-v1
+    auth_mode: JWT
+    signature:
+        protocol: EC
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 900000
+        header:
+            alg: ES256
+            kid: ${credentials.privateKeyId}
+            typ: JWT
+        payload:
+            iss: ${credentials.issuerId}
+            aud: appstoreconnect-v1
+            scope: ${connectionConfig.scope}
     proxy:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://nango.dev/docs/api-integrations/apple-app-store
     docs_connect: https://nango.dev/docs/api-integrations/apple-app-store/connect
+    connection_config:
+        scope:
+            type: string
+            title: Scope
+            description: Restricts the token to a specific API request.
+            example: GET /v1/apps
+            optional: true
     credentials:
         issuerId:
             type: string

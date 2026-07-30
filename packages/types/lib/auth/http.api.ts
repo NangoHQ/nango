@@ -65,24 +65,6 @@ export type PostPublicApiKeyAuthorization = ApiEndpoint<{
     Success: ConnectionResponseSuccess;
 }>;
 
-export type PostPublicAppStoreAuthorization = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
-    Method: 'POST';
-    Body: {
-        privateKeyId: string;
-        privateKey: string;
-        issuerId: string;
-        scope?: string | undefined;
-    };
-    Querystring: ConnectionQueryString;
-    Params: {
-        providerConfigKey: string;
-    };
-    Path: '/app-store-auth/:providerConfigKey';
-    Error: AuthErrors;
-    Success: ConnectionResponseSuccess;
-}>;
-
 export type PostPublicBasicAuthorization = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';

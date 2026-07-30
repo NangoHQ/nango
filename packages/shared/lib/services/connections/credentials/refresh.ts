@@ -121,7 +121,6 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 res = await testCredentials(props, provider as TestableProvider);
                 break;
             }
-            case 'APP_STORE':
             case 'CUSTOM':
             case 'OAUTH1':
             case undefined: {
