@@ -172,8 +172,8 @@ export type GetManagedEmailVerification = ApiEndpoint<{
 
 export type PostManagedEmailVerification = ApiEndpoint<{
     // Establishes a session (login, or signup when a new user is created); the emitted action is
-    // resolved at runtime. `login` is the representative policy for the coverage gate.
-    Audit: AuditPolicy<'app_auth', 'login', 'account'>;
+    // resolved at runtime, so the policy declares both.
+    Audit: AuditPolicy<'app_auth', 'login' | 'signup', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/managed/verification';
     Body: {
@@ -189,8 +189,8 @@ export type PostManagedEmailVerification = ApiEndpoint<{
 
 export type GetManagedCallback = ApiEndpoint<{
     // SSO callback establishes a session (login, or signup when a new user is created); the emitted
-    // action is resolved at runtime. `login` is the representative policy for the coverage gate.
-    Audit: AuditPolicy<'app_auth', 'login', 'account'>;
+    // action is resolved at runtime, so the policy declares both.
+    Audit: AuditPolicy<'app_auth', 'login' | 'signup', 'account'>;
     Method: 'GET';
     Path: '/api/v1/login/callback';
     Querystring: {
