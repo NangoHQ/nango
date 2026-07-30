@@ -52,7 +52,7 @@ describe('audit migrate', () => {
         expect(Number((await res.json<{ count: string }>())[0]!.count)).toBe(1);
     });
 
-    it('rejects an event whose accountId is missing or malformed, but keeps account 0', async () => {
+    it('rejects an event whose accountId is missing, malformed or not a real account id', async () => {
         const insert = async (id: string, accountId?: unknown): Promise<'accepted' | 'rejected'> => {
             const event = { id, occurredAt: '2026-07-29T10:00:00.000Z', ...(accountId === undefined ? {} : { accountId }) };
             try {
@@ -68,10 +68,11 @@ describe('audit migrate', () => {
         };
 
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000001', 42)).toBe('accepted');
-        // account_id != 0 would have false-rejected this one, which is why the guard is on the JSON type.
-        expect(await insert('aaaaaaaa-0000-0000-0000-000000000002', 0)).toBe('accepted');
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000002', 1)).toBe('accepted');
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000003', 'not-a-number')).toBe('rejected');
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000004')).toBe('rejected');
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000005', 0)).toBe('rejected');
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000006', -5)).toBe('rejected');
     });
 
     it('skips when ClickHouse is not configured', async () => {
