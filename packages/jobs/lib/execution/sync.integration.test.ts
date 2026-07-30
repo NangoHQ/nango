@@ -17,12 +17,15 @@ import type { ConnectionJobs, DBSyncConfig, SyncResult } from '@nangohq/types';
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));
 
 describe('Running sync', () => {
+    const logsEnabled = envs.NANGO_LOGS_ENABLED;
+
     beforeAll(async () => {
         await initDb();
         envs.NANGO_LOGS_ENABLED = false;
     });
 
     afterAll(async () => {
+        envs.NANGO_LOGS_ENABLED = logsEnabled;
         await clearRecordsDb();
     });
 
