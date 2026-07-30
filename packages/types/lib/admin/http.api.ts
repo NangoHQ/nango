@@ -10,7 +10,6 @@ export type PostImpersonate = ApiEndpoint<{
     Body: {
         accountUUID: string;
         loginReason: string;
-        /** TOTP code from the admin's own factor. Omitted only when the breakglass env var is set. */
         code?: string | undefined;
     };
     Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_not_enabled'> | ApiError<'too_many_mfa_attempts'>;

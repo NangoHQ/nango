@@ -17,8 +17,6 @@ const schemaBody = z
     .object({
         accountUUID: z.string().uuid(),
         loginReason: z.string().min(1).max(1024),
-        // Recovery codes are deliberately not accepted. Impersonation is the highest-privilege action
-        // we have, and NANGO_IMPERSONATION_MFA_REQUIRED already covers a lost authenticator.
         code: z
             .string()
             .regex(/^\d{6}$/)
@@ -53,7 +51,6 @@ async function challengeAdmin({
         return false;
     }
 
-    // Nothing was guessed yet, so this does not spend an attempt.
     if (!code) {
         void logCtx.error('Impersonation refused, no MFA code provided');
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });

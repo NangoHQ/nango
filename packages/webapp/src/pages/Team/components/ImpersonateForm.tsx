@@ -22,8 +22,8 @@ type ImpersonateFormData = z.infer<typeof ImpersonateFormSchema>;
 
 const errorMessages: Record<string, string> = {
     mfa_not_enabled: 'You need to enroll MFA before you can impersonate an account.',
-    invalid_mfa_code: 'That code is not valid. Check your authenticator and try again.',
-    too_many_mfa_attempts: 'Too many failed attempts. Wait 15 minutes before trying again.'
+    invalid_mfa_code: 'Invalid MFA code.',
+    too_many_mfa_attempts: 'Too many failed attempts. Wait 5 minutes before trying again.'
 };
 
 export const ImpersonateForm: React.FC = () => {

@@ -9,16 +9,12 @@ import type { RateLimiterAbstract } from 'rate-limiter-flexible';
 
 const logger = getLogger('Impersonation.challengeLimiter');
 
-// The generic API rate limiter allows hundreds of requests per minute, which is enough to brute
-// force a 6-digit code. Impersonation gets its own much tighter budget.
 const MAX_ATTEMPTS = 5;
-const WINDOW_SECONDS = 15 * 60;
+const WINDOW_SECONDS = 5 * 60;
 
 const opts = { keyPrefix: 'impersonate-mfa', points: MAX_ATTEMPTS, duration: WINDOW_SECONDS, blockDuration: WINDOW_SECONDS };
 
-// Used when Redis is not configured (self-hosted, tests) and as the fallback when it is unreachable.
-// The budget is then per process, so horizontally scaled workers each get their own. Weaker than a
-// shared budget, but far better than no budget, and Nango Cloud always has Redis.
+// Used when Redis is not configured
 const memoryLimiter = new RateLimiterMemory(opts);
 
 let sharedLimiterPromise: Promise<RateLimiterAbstract> | undefined;
