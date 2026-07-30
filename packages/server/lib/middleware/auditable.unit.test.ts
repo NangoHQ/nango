@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
 
-import { auditEnvironmentVariablesChanged } from './audit.middleware.js';
+import { auditConnectionUpdated, auditEnvironmentVariablesChanged, auditEnvironmentWebhookUrlsChanged } from './audit.middleware.js';
 
 import type { RequestHandler } from 'express';
 
@@ -79,6 +79,34 @@ describe('auditable() middleware behavior (unit)', () => {
         const serialized = JSON.stringify(event);
         expect(serialized).not.toContain('super-secret-value');
         expect(serialized).not.toContain('secret.example');
+    });
+
+    it('connection update: records changed field names + provider, never the submitted value', async () => {
+        const req = fakeReq({
+            params: { connectionId: 'conn-1' },
+            query: { provider_config_key: 'algolia' },
+            body: { webhook_url_override: 'https://leaked-value.test/hook' }
+        });
+        const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'connection',
+            action: 'updated',
+            outcome: 'success',
+            targets: [{ type: 'connection', id: 'conn-1' }],
+            metadata: { providerConfigKey: 'algolia', changedFields: ['webhook_url_override'] }
+        });
+        expect(JSON.stringify(event)).not.toContain('leaked-value');
+    });
+
+    it('webhook settings: records only the URL origin, never the path or secret query params', async () => {
+        const req = fakeReq({ body: { primary_url: 'https://hooks.example/primary?token=shh-secret' } });
+        const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'webhook_urls_changed',
+            metadata: { primaryUrl: 'https://hooks.example' }
+        });
+        expect(JSON.stringify(event)).not.toContain('shh-secret');
     });
 
     it('maps a 4xx response to a denied outcome', async () => {

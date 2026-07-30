@@ -9,22 +9,26 @@ import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { MockInstance } from 'vitest';
 
+// POC — what remains after the strategy shift.
+//
+// The middleware's pure logic (event shape, redaction, outcome mapping, resolve-before-next mechanics)
+// now lives in auditable.unit.test.ts, and the "audit runs after auth / before authz so denials are
+// captured" guarantee is enforced across every route by auditWiring (unit + one real-table sweep).
+//
+// The only cases kept here are the ones a fake req/res cannot honestly reproduce: the audit target or
+// metadata is resolved from state that a REAL controller mutates (the pre-change role, a removed
+// member's email — both only knowable if resolved before the handler ran) or from a REAL authorization
+// rejection (cross-account). These assert the middleware's contract with the live stack, not its logic.
+//
+// Deleted from this file and covered off-stack:
+//   - deleted connection, connection update (changed fields), environment variables, webhook URLs
+//     -> auditable.unit.test.ts  (event shape + redaction, no containers)
+//   - denied member role change -> auditWiring (denial capture is now a structural guarantee)
+
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
 
-// Sets up an account + env + a connection under provider_config_key 'algolia'.
-async function seedConnection() {
-    const seed = await seeders.seedAccountEnvAndUser();
-    await seeders.createConfigSeed(seed.env, 'algolia', 'algolia');
-    const connection = await seeders.createConnectionSeed({
-        env: seed.env,
-        provider: 'algolia',
-        rawCredentials: { type: 'API_KEY', apiKey: 'test_api_key' }
-    });
-    return { ...seed, connection };
-}
-
-describe('audit middleware (private API)', () => {
+describe('audit middleware — live-stack contract (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
@@ -41,33 +45,7 @@ describe('audit middleware (private API)', () => {
         auditSpy.mockClear();
     });
 
-    it('audit log for a deleted connection', async () => {
-        const { user, connection } = await seedConnection();
-        const session = await authenticateUser(api, user);
-
-        const res = await api.fetch('/api/v1/connections/:connectionId', {
-            method: 'DELETE',
-            session,
-            params: { connectionId: connection.connection_id },
-            query: { provider_config_key: 'algolia', env: 'dev' }
-        });
-
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
-        });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
-            resource: 'connection',
-            action: 'deleted',
-            outcome: 'success',
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'connection', id: connection.connection_id }],
-            metadata: { providerConfigKey: 'algolia' }
-        });
-    });
-
-    it('audit log for a member role change captures the pre-change role', async () => {
+    it('captures the pre-change role — resolved before the controller overwrites it', async () => {
         const { account, user, plan } = await seeders.seedAccountEnvAndUser();
         await updatePlan(db.knex, { id: plan.id, has_rbac: true });
         const targetUser = await seeders.seedUser(account.id);
@@ -99,36 +77,6 @@ describe('audit middleware (private API)', () => {
         });
     });
 
-    it('audit log (denied) for a member role change the caller may not perform', async () => {
-        const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-        await updatePlan(db.knex, { id: plan.id, has_rbac: true });
-        // Demote the acting user so `can(canUpdateTeamMember)` rejects with 403 before the controller runs.
-        await userService.update({ id: user.id, role: 'production_support' });
-        const targetUser = await seeders.seedUser(account.id);
-        const session = await authenticateUser(api, user);
-
-        const res = await api.fetch('/api/v1/team/users/:id', {
-            method: 'PATCH',
-            session,
-            query: { env: 'dev' },
-            params: { id: targetUser.id },
-            body: { role: 'development_full_access' }
-        });
-
-        expect(res.res.status).toBe(403);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
-        });
-        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
-            resource: 'member',
-            action: 'role_changed',
-            outcome: 'denied',
-            environment: null,
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
-        });
-    });
-
     it('does not leak a cross-account member email into the target display', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const other = await seeders.seedAccountEnvAndUser();
@@ -155,90 +103,6 @@ describe('audit middleware (private API)', () => {
             targets: [{ type: 'member', id: String(other.user.id) }]
         });
         expect(event?.targets[0]).not.toHaveProperty('display');
-    });
-
-    it('records the changed field names (not values) for a connection update', async () => {
-        const { user, connection } = await seedConnection();
-        const session = await authenticateUser(api, user);
-
-        const res = await api.fetch('/api/v1/connections/:connectionId', {
-            method: 'PATCH',
-            session,
-            params: { connectionId: connection.connection_id },
-            query: { provider_config_key: 'algolia', env: 'dev' },
-            body: { webhook_url_override: 'https://leaked-value.test/hook' }
-        });
-
-        expect(res.res.status).toBe(200);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
-        });
-        const event = auditSpy.mock.calls[0]?.[0];
-        expect(event).toMatchObject({
-            resource: 'connection',
-            action: 'updated',
-            outcome: 'success',
-            metadata: { providerConfigKey: 'algolia', changedFields: ['webhook_url_override'] }
-        });
-        // Only the field name is recorded — the submitted value must not reach the audit record.
-        expect(JSON.stringify(event)).not.toContain('leaked-value');
-    });
-
-    it('records variable names but never their values', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        const res = await api.fetch('/api/v1/environments/variables', {
-            method: 'POST',
-            session,
-            query: { env: 'dev' },
-            body: {
-                variables: [
-                    { name: 'API_URL', value: 'https://secret.example' },
-                    { name: 'TOKEN', value: 'super-secret-value' }
-                ]
-            }
-        });
-
-        expect(res.res.status).toBe(200);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
-        });
-        const event = auditSpy.mock.calls[0]?.[0];
-        expect(event).toMatchObject({
-            resource: 'environment',
-            action: 'variables_changed',
-            metadata: { variableCount: 2, variableNames: ['API_URL', 'TOKEN'] }
-        });
-        // The values must never reach the audit record.
-        const serialized = JSON.stringify(event);
-        expect(serialized).not.toContain('super-secret-value');
-        expect(serialized).not.toContain('secret.example');
-    });
-
-    it('records the new webhook URLs for a webhook settings change', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-
-        const res = await api.fetch('/api/v1/environments/webhook', {
-            method: 'PATCH',
-            session,
-            query: { env: 'dev' },
-            body: { primary_url: 'https://hooks.example/primary?token=shh-secret' }
-        });
-
-        expect(res.res.status).toBe(200);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
-        });
-        const event = auditSpy.mock.calls[0]?.[0];
-        expect(event).toMatchObject({
-            resource: 'environment',
-            action: 'webhook_urls_changed',
-            // Only the origin is recorded — path and any secret query params are stripped.
-            metadata: { primaryUrl: 'https://hooks.example' }
-        });
-        expect(JSON.stringify(event)).not.toContain('shh-secret');
     });
 
     it('captures a removed member email resolved before the controller moves the row', async () => {

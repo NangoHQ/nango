@@ -76,14 +76,21 @@ handler; `apiAuth`/`webAuth` are exported so the auth boundary is identifiable b
   spec was ever written. There is no runtime artifact to key off (the policy is a compile-only type),
   so no runtime test can see it. **Only the typed route builder closes this** (see below).
 
-## Test inventory, before → after (for the merged first set)
+## Test inventory, before → after (done in this PR for the merged first set)
 
-- Delete the per-endpoint "denied request is recorded" integration cases → the structural check.
-- Move event-shape / redaction / outcome / resolve-before-next assertions → `auditable.unit.test.ts`.
-- Keep **one** end-to-end smoke (a real audited request emits through the full stack).
-- Keep `store.integration.test.ts` (the real write).
+`audit.private.integration.test.ts` went from **8 stack-booting tests → 3**. The five deleted:
 
-Net: ~45 stack-booting tests → a handful of unit tests + one structural test + one smoke.
+- deleted connection, connection update (changed fields), environment variables, webhook URLs →
+  moved to `auditable.unit.test.ts` (event shape + redaction, no containers).
+- denied member role change → the structural check (denial capture is now a guarantee for every
+  audited route, not one asserted per endpoint).
+
+The three kept are the ones a fake req/res cannot honestly reproduce — the target/metadata is resolved
+from state a **real controller mutates** (pre-change role, removed-member email) or from a **real authz
+rejection** (cross-account). Those assert the middleware's contract with the live stack, not its logic.
+
+Applied across all the audit-events PRs this pattern turns ~45 stack-booting tests into a unit suite +
+one structural sweep + the handful of live-stack-contract cases + the existing `store` write test.
 
 ## The endgame (separate, larger change): typed route builder
 
