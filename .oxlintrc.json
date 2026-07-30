@@ -182,7 +182,13 @@
                                     "CardDescription",
                                     "CardAction",
                                     "CardContent",
-                                    "CardFooter"
+                                    "CardFooter",
+                                    "DialogHeader",
+                                    "DialogBody",
+                                    "DialogFooter",
+                                    "AlertDialogHeader",
+                                    "AlertDialogMedia",
+                                    "AlertDialogFooter"
                                 ],
                                 "message": "Don't override design-system styles via className — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
                             },
@@ -198,7 +204,13 @@
                                     "CardDescription",
                                     "CardAction",
                                     "CardContent",
-                                    "CardFooter"
+                                    "CardFooter",
+                                    "DialogHeader",
+                                    "DialogBody",
+                                    "DialogFooter",
+                                    "AlertDialogHeader",
+                                    "AlertDialogMedia",
+                                    "AlertDialogFooter"
                                 ],
                                 "message": "Don't override design-system styles via the style prop — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
                             }

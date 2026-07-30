@@ -1,6 +1,7 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 
-export type PostConnectionToolsMcp = Endpoint<{
+export type PostConnectionToolsMcp = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;
@@ -12,20 +13,23 @@ export type PostConnectionToolsMcp = Endpoint<{
     Error: ApiError<'missing_connection_id' | 'unknown_connection'>;
 }>;
 
-export type GetConnectionToolsMcp = Endpoint<{
+export type GetConnectionToolsMcp = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/mcp';
     Success: Record<string, unknown>;
 }>;
 
-export type PostControlPlaneMcp = Endpoint<{
+export type PostControlPlaneMcp = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;
     Success: Record<string, unknown>;
 }>;
 
-export type GetControlPlaneMcp = Endpoint<{
+export type GetControlPlaneMcp = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/mcp';
     Success: Record<string, unknown>;
