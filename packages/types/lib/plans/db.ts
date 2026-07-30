@@ -152,6 +152,18 @@ export interface DBPlan extends Timestamps {
     has_rbac: boolean;
 
     /**
+     * Record control-plane audit trail events
+     * @default false
+     */
+    has_audit_trail_control_plane: boolean;
+
+    /**
+     * Expose the audit trail to the customer, through the dashboard and export
+     * @default false
+     */
+    has_audit_trail_ui: boolean;
+
+    /**
      * Enable or disable the ability to override the docs connect url from the connect session
      * @default false
      */

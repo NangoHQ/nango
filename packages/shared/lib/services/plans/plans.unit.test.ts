@@ -22,6 +22,20 @@ describe('mergeFlags', () => {
     });
 
     describe.each([
+        { from: 'growth-v2', to: 'enterprise' },
+        { from: 'enterprise', to: 'free' }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when changing plan from $from to $to', ({ from, to }) => {
+        it('should leave audit trail entitlements untouched, so a manually enabled account keeps them', () => {
+            const currentPlan = makePlan({ code: from, flagOverrides: { has_audit_trail_control_plane: true, has_audit_trail_ui: true } });
+            const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition(to)! });
+
+            // mergeFlags output is spread into the plans UPDATE, so an absent key leaves the column as stored.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
+            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
+        });
+    });
+
+    describe.each([
         { from: 'starter-v2', to: 'free' },
         { from: 'growth-v2', to: 'starter-v2' },
         { from: 'enterprise-cloud-hosted', to: 'free' },
@@ -137,6 +151,8 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         has_webhooks_forward: false,
         has_webhooks_script: false,
         has_rbac: false,
+        has_audit_trail_control_plane: false,
+        has_audit_trail_ui: false,
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
