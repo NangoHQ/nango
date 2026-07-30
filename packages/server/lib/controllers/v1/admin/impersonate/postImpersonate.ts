@@ -106,17 +106,10 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
         return;
     }
 
-    // Only a dashboard session carries a user to challenge, so a secret key can never impersonate.
-    // Enforced even under breakglass, otherwise turning the challenge off would also open this door.
-    if (!adminUser) {
-        res.status(401).send({ error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' } });
-        return;
-    }
-
-    // Every impersonation attempt is recorded, including the ones the challenge refuses.
+    // Every impersonation attempt is recorded, including the ones that are refused below.
     const meta: Record<string, unknown> = {
         loginReason: body.loginReason,
-        admin: adminUser.email,
+        admin: adminUser?.email,
         targetAccountUUID: body.accountUUID,
         mfa: envs.NANGO_IMPERSONATION_MFA_REQUIRED ? 'required' : 'skipped_breakglass'
     };
@@ -124,6 +117,13 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
     let logCtx: LogContext | undefined;
     try {
         logCtx = await logContextGetter.create({ operation: { type: 'admin', action: 'impersonation' } }, { account, environment, meta });
+
+        if (!adminUser) {
+            void logCtx.error('Impersonation refused, a secret key has no session to challenge');
+            res.status(401).send({ error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' } });
+            await logCtx.failed();
+            return;
+        }
 
         if (envs.NANGO_IMPERSONATION_MFA_REQUIRED) {
             if (!(await challengeAdmin({ res, logCtx, adminUser, code: body.code }))) {
