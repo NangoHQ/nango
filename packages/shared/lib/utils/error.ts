@@ -21,7 +21,17 @@ export class NangoInternalError extends Error {
     }
 }
 
-export class AuthCredentialsError extends NangoInternalError {}
+export class AuthCredentialsError extends NangoInternalError {
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+
+        const cause = options?.cause;
+        const causeMessage = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : undefined;
+        if (causeMessage) {
+            this.message = causeMessage;
+        }
+    }
+}
 
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;

@@ -22,7 +22,7 @@ export function createCredentials({
 }): Result<JwtCredentials, AuthCredentialsError> {
     try {
         if (!provider.token) {
-            return Err(new AuthCredentialsError('missing_toke_body'));
+            return Err(new AuthCredentialsError('missing_token_body'));
         }
 
         if (!provider.signature) {
@@ -108,7 +108,7 @@ export function fetchJwtToken({
     payload: Record<string, string | number>;
     options: object;
 }): Result<{ jwtToken: string }, AuthCredentialsError> {
-    const hasLineBreak = /^-----BEGIN RSA PRIVATE KEY-----\n/.test(privateKey);
+    const hasLineBreak = privateKey.startsWith('-----BEGIN RSA PRIVATE KEY-----\n');
 
     if (!hasLineBreak) {
         privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
