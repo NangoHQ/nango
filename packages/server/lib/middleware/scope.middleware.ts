@@ -20,7 +20,7 @@ export function hasScope({ grantedScopes, requiredScope }: { grantedScopes: stri
 }
 
 export function withScope(requiredScope: ApiKeyScope) {
-    return function (_req: Request, res: Response<unknown, RequestLocals>, next: NextFunction): void {
+    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
         const scopes = res.locals['apiKeyScopes'];
 
         if (hasScope({ grantedScopes: scopes, requiredScope })) {
@@ -33,7 +33,7 @@ export function withScope(requiredScope: ApiKeyScope) {
 }
 
 export function withAnyScope(...requiredScopes: ApiKeyScope[]) {
-    return function (_req: Request, res: Response<unknown, RequestLocals>, next: NextFunction): void {
+    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
         const scopes = res.locals['apiKeyScopes'];
 
         for (const scope of requiredScopes) {

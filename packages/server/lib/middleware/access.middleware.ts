@@ -90,7 +90,7 @@ export class AccessMiddleware {
         return Ok({ ...accountContext });
     }
 
-    async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('secretKeyAuth', {
             childOf: active!
@@ -186,7 +186,7 @@ export class AccessMiddleware {
         return Ok({ ...accountContext });
     }
 
-    async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async sessionAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('sessionAuth', {
             childOf: active!
@@ -208,7 +208,7 @@ export class AccessMiddleware {
         }
     }
 
-    async noAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async noAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         res.locals['authType'] = 'none';
         if (!req.isAuthenticated()) {
             const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
@@ -232,7 +232,7 @@ export class AccessMiddleware {
         await fillLocalsFromSession(req, res, next);
     }
 
-    async basicAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async basicAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         // Already signed in.
         if (req.isAuthenticated()) {
             await fillLocalsFromSession(req, res, next);
@@ -288,7 +288,7 @@ export class AccessMiddleware {
         });
     }
 
-    async connectSessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionAuth', {
             childOf: active!
@@ -337,7 +337,7 @@ export class AccessMiddleware {
      * This is the same as connectSessionAuth expect we check the body
      * Only used for /connect/telemetry because we use sendBeacon that does not accept headers
      */
-    async connectSessionAuthBody(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionAuthBody(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionAuth', {
             childOf: active!
@@ -376,7 +376,7 @@ export class AccessMiddleware {
         }
     }
 
-    async connectSessionOrSecretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionOrSecretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionOrSecretKeyAuth', {
             childOf: active!
@@ -463,7 +463,7 @@ export class AccessMiddleware {
         }
     }
 
-    async connectSessionOrPublicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionOrPublicKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionOrPublicKeyAuth', {
             childOf: active!
@@ -541,7 +541,7 @@ export class AccessMiddleware {
      * Test authentication that accepts both secret key and session authentication
      * This allows tests to use either authentication method
      */
-    async testAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async testAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         if (!isTest) {
             res.status(401).send({ error: { code: 'unauthorized', message: 'testAuth is only available in test environment' } });
             return;
@@ -644,7 +644,7 @@ export class AccessMiddleware {
 /**
  * Fill res.locals with common information
  */
-async function fillLocalsFromSession(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+async function fillLocalsFromSession(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
     try {
         const user = await userService.getUserById(req.user!.id);
         if (!user) {

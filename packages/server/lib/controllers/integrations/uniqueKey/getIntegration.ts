@@ -6,7 +6,7 @@ import { integrationCredentialsToPublicApi, integrationToPublicApi } from '../..
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { hasScope } from '../../../middleware/scope.middleware.js';
 import integrationService from '../../../services/integration.service.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
 
@@ -26,7 +26,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (req, res) => {
+export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegration>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });

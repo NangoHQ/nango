@@ -9,7 +9,7 @@ import {
 import { configService, connectionService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
 import { getFunctionCallbackBaseUrl } from '../helpers.js';
 import { functionDryrunBodySchema } from '../validation.js';
@@ -17,7 +17,7 @@ import { createDryrunSandboxApiKey, defaultFunctionName, requireCustomerKeyId, t
 
 import type { PostFunctionDryrun } from '@nangohq/types';
 
-export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, res) => {
+export const postFunctionDryrun = asyncWrapperWithEnvironment<PostFunctionDryrun>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

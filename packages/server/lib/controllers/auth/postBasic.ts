@@ -18,7 +18,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -40,7 +40,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPublicBasicAuthorization>(async (req, res, next: NextFunction) => {
     const val = connectionCredentialsBasicSchema.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
