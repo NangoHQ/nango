@@ -7,6 +7,7 @@ import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/s
 import { audit } from '../audit.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
+import type { AuditAction, AuditResource } from '@nangohq/audit';
 import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
@@ -23,6 +24,12 @@ import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
+
+// authenticateUser() signs in, and once sign-in is itself audited that records a leading app_auth/login
+// event — so the event under test is not necessarily calls[0]. Select it by resource/action.
+function auditEvent(resource: AuditResource, action: AuditAction) {
+    return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.resource === resource && event.action === action);
+}
 
 describe('audit middleware — live-stack contract', () => {
     beforeAll(async () => {
@@ -60,9 +67,9 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(403);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('member', 'role_changed')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('member', 'role_changed')).toMatchObject({
                 resource: 'member',
                 action: 'role_changed',
                 outcome: 'denied',
@@ -87,9 +94,9 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(403);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('connection', 'updated')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('connection', 'updated')).toMatchObject({
                 resource: 'connection',
                 action: 'updated',
                 outcome: 'denied',
@@ -119,9 +126,9 @@ describe('audit middleware — live-stack contract', () => {
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('member', 'role_changed')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('member', 'role_changed')).toMatchObject({
                 resource: 'member',
                 action: 'role_changed',
                 outcome: 'success',
@@ -147,9 +154,9 @@ describe('audit middleware — live-stack contract', () => {
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('member', 'removed')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('member', 'removed')).toMatchObject({
                 resource: 'member',
                 action: 'removed',
                 outcome: 'success',
@@ -175,9 +182,9 @@ describe('audit middleware — live-stack contract', () => {
 
         expect(res.res.status).toBe(400);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'role_changed')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('member', 'role_changed');
         expect(event).toMatchObject({
             resource: 'member',
             action: 'role_changed',
