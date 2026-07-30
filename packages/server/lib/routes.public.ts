@@ -35,7 +35,9 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
+import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { postFunctionDeploymentBundle } from './controllers/functions/deployments/bundle/postBundle.js';
@@ -216,6 +218,12 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
+
+// Environment management is temporarily mounted without account-key auth so it can be exercised locally.
+// Account-key authentication and scope enforcement must be added before this is deployed.
+publicAPI.use('/environments', jsonContentTypeMiddleware);
+publicAPI.route('/environments').post(postPublicEnvironment);
+publicAPI.route('/environments/:environmentId').delete(deletePublicEnvironment);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
