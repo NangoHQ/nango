@@ -181,7 +181,7 @@ export interface ProviderJwt extends BaseProvider {
             aud?: string;
             iss?: string;
             sub?: string;
-            scope?: string;
+            scope?: string | string[];
         };
     };
 }

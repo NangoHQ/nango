@@ -3,6 +3,8 @@ import { generateKeyPairSync } from 'node:crypto';
 import jsonwebtoken from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
 
+import { getProvider } from '@nangohq/providers';
+
 import { createCredentials, decode, fetchJwtToken } from './jwt.js';
 
 import type { ProviderJwt, ProviderTwoStep } from '@nangohq/types';
@@ -129,12 +131,12 @@ describe('createCredentials', () => {
             payload: {
                 iss: '${credentials.issuerId}',
                 aud: 'appstoreconnect-v1',
-                scope: '${connectionConfig.scope}'
+                scope: ['${connectionConfig.scope}']
             }
         }
     };
 
-    it('includes scope in the payload when provided via connectionConfig', () => {
+    it('includes scope as an array in the payload when provided via connectionConfig (App Store Connect requires an array)', () => {
         const res = createCredentials({
             config: 'apple-app-store',
             provider: appleAppStoreProvider,
@@ -146,9 +148,24 @@ describe('createCredentials', () => {
         if (res.isOk()) {
             expect(res.value.token).toBeTruthy();
             const decoded = decode(res.value.token || '');
-            expect(decoded?.['scope']).toBe('GET /v1/apps');
+            expect(decoded?.['scope']).toEqual(['GET /v1/apps']);
             expect(decoded?.['iss']).toBe('test-issuer');
             expect(decoded?.['aud']).toBe('appstoreconnect-v1');
+        }
+    });
+
+    it('splits a comma-separated scope into multiple array entries', () => {
+        const res = createCredentials({
+            config: 'apple-app-store',
+            provider: appleAppStoreProvider,
+            dynamicCredentials: { privateKey, privateKeyId: 'test-key-id', issuerId: 'test-issuer' },
+            connectionConfig: { scope: 'GET /v1/apps, GET /v1/builds' }
+        });
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            const decoded = decode(res.value.token || '');
+            expect(decoded?.['scope']).toEqual(['GET /v1/apps', 'GET /v1/builds']);
         }
     });
 
@@ -227,6 +244,33 @@ describe('createCredentials', () => {
         if (res.isOk()) {
             const decoded = decode(res.value.token || '');
             expect(decoded?.['aud']).toBe('https://login.salesforce.com');
+        }
+    });
+    it('keeps google-service-account scope as a plain string, unaffected by array-scope handling', () => {
+        const googleServiceAccountProvider = getProvider('google-service-account') as ProviderTwoStep;
+        expect(googleServiceAccountProvider).toBeTruthy();
+
+        const { privateKey: googlePrivateKey } = generateKeyPairSync('rsa', {
+            modulusLength: 2048,
+            publicKeyEncoding: { type: 'spki', format: 'pem' },
+            privateKeyEncoding: { type: 'pkcs1', format: 'pem' }
+        });
+
+        const res = createCredentials({
+            config: 'google-service-account',
+            provider: googleServiceAccountProvider,
+            dynamicCredentials: {
+                privateKey: googlePrivateKey,
+                serviceAccountEmailAddress: 'test@project.iam.gserviceaccount.com',
+                scopes: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar'
+            }
+        });
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            const decoded = decode(res.value.token || '');
+            expect(decoded?.['scope']).toBe('https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar');
+            expect(decoded?.['iss']).toBe('test@project.iam.gserviceaccount.com');
         }
     });
 });

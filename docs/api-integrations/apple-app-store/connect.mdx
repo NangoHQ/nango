@@ -40,7 +40,7 @@ Keep both values available for the next step.
 
 #### Step 3: Scope format
 
-When setting **Scope**, use the format `<HTTP method> <path>`, matching the request you want to allow, e.g. `GET /v1/apps`. See Apple's docs on [generating tokens for API requests](https://developer.apple.com/documentation/appstoreconnectapi/generating_tokens_for_api_requests#4586138) for the full scope syntax, including how to restrict to a specific resource instance with query parameters.
+When setting **Scope**, use the format `<HTTP method> <path>`, matching the request you want to allow, e.g. `GET /v1/apps`. To allow more than one request, separate them with commas, e.g. `GET /v1/apps,GET /v1/builds`. See Apple's docs on [generating tokens for API requests](https://developer.apple.com/documentation/appstoreconnectapi/generating_tokens_for_api_requests#4586138) for the full scope syntax, including how to restrict to a specific resource instance with query parameters.
 
 #### Step 4: Enter credentials in the Connect UI
 
@@ -49,7 +49,7 @@ Once you have your **Issuer ID**, **Key ID**, and **Private Key**:
 1. Open the form where you need to authenticate with Apple App Store.
 2. Enter your **Issuer ID** and **Key ID** in their respective fields.
 3. Paste the raw content of the downloaded `.p8` file into the **Private Key** field, unmodified (Nango encodes it internally — don't base64-encode it yourself).
-4. Optionally, set **Scope** to restrict the token to a single API request. Leave it blank to allow the full set of requests your key has access to.
+4. Optionally, set **Scope** to restrict the token to one or more specific API requests. Leave it blank to allow the full set of requests your key has access to.
 5. Submit the form to complete authentication.
 
 <img src="/api-integrations/apple-app-store/form.png" style={{maxWidth: "450px" }}/>

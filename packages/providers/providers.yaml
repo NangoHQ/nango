@@ -1669,7 +1669,8 @@ apple-app-store:
         payload:
             iss: ${credentials.issuerId}
             aud: appstoreconnect-v1
-            scope: ${connectionConfig.scope}
+            scope:
+                - ${connectionConfig.scope}
     proxy:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://nango.dev/docs/api-integrations/apple-app-store
@@ -1678,7 +1679,7 @@ apple-app-store:
         scope:
             type: string
             title: Scope
-            description: Restricts the token to a specific API request.
+            description: Restricts the token to specific API requests.
             example: GET /v1/apps
             optional: true
     credentials:

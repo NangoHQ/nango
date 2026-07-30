@@ -41,9 +41,34 @@ export function createCredentials({
         const mergedConnectionConfig = { ...(dynamicCredentials['connectionConfig'] as Record<string, any> | undefined), ...connectionConfig };
         const replacers = { ...dynamicCredentials, connectionConfig: mergedConnectionConfig };
         const isUnresolved = (value: string) => /\$\{[^{}]*\}/.test(value);
+        const resolvePayloadArray = (values: any[]): { value: string[]; hasContent: boolean } => {
+            const resolved = values.flatMap((item) => {
+                if (typeof item !== 'string') {
+                    return [];
+                }
+                const strippedItem = stripCredential(item);
+                const interpolatedItem = interpolateString(strippedItem, replacers);
+                if (isUnresolved(interpolatedItem)) {
+                    return [];
+                }
+                return interpolatedItem
+                    .split(',')
+                    .map((v) => v.trim())
+                    .filter(Boolean);
+            });
+            return { value: resolved, hasContent: resolved.length > 0 };
+        };
         const payload: Record<string, any> = {};
 
         for (const [key, value] of Object.entries(provider.token.payload)) {
+            if (Array.isArray(value)) {
+                const { value: resolved, hasContent } = resolvePayloadArray(value);
+                if (hasContent) {
+                    payload[key] = resolved;
+                }
+                continue;
+            }
+
             const strippedValue = stripCredential(value);
 
             if (strippedValue === null) {
