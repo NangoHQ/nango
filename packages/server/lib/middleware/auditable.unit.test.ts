@@ -5,10 +5,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as featureFlags from '@nangohq/feature-flags';
 
 import {
+    auditConnectionCreated,
     auditConnectionUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
-    auditPublicConnectionDeleted
+    auditFunctionDeployed,
+    auditFunctionDeployedCli,
+    auditFunctionUpgraded,
+    auditMemberInviteAccepted,
+    auditMemberInvited,
+    auditMemberInviteDeclined,
+    auditMemberInviteRevoked,
+    auditPreBuiltDeployed,
+    auditPublicConnectionDeleted,
+    auditSyncPaused,
+    auditSyncStarted
 } from './audit.middleware.js';
 
 import type { RequestHandler } from 'express';
@@ -40,6 +51,14 @@ const locals = {
     environment: { id: 9, name: 'dev' },
     authType: 'session',
     user: { id: 7, email: 'dev@example.com' }
+};
+
+const secretKeyLocals = {
+    account: { id: 42, uuid: 'acc-uuid' },
+    environment: { id: 9, name: 'dev' },
+    authType: 'secretKey',
+    apiKeyId: 5,
+    apiKeyDisplayName: 'ci-key'
 };
 
 // Invoke the middleware, wait for it to call next() (resolution done), fire the response 'finish'
@@ -166,5 +185,226 @@ describe('auditable() middleware behavior (unit)', () => {
         await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
         // Target was captured pre-next, so it still points at the original environment.
         expect(recordMock.mock.calls[0]?.[0]?.targets).toEqual([{ type: 'environment', id: '9', display: 'dev' }]);
+    });
+});
+
+// Lifecycle specs whose target and metadata come entirely from the request (body/params/query) and
+// res.locals — no live stack needed. The created-resource specs that read the response body
+// (targetFromResponse) stay in audit.integration.test.ts.
+describe('auditable() lifecycle specs (unit)', () => {
+    beforeEach(() => {
+        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+    });
+
+    it('member invited: one target per email, account-scoped (environment null)', async () => {
+        const req = fakeReq({ body: { emails: ['alice@example.com', 'bob@example.com'], role: 'administrator' } });
+        const event = await runAudit(auditMemberInvited, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'invited',
+            outcome: 'success',
+            accountId: 42,
+            environment: null,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [
+                { type: 'member', id: 'alice@example.com', display: 'alice@example.com' },
+                { type: 'member', id: 'bob@example.com', display: 'bob@example.com' }
+            ],
+            metadata: { role: 'administrator' }
+        });
+    });
+
+    it('invite revoked: the revoked email is the target, account-scoped', async () => {
+        const req = fakeReq({ body: { email: 'revoke-me@example.com' } });
+        const event = await runAudit(auditMemberInviteRevoked, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'invite_revoked',
+            outcome: 'success',
+            accountId: 42,
+            environment: null,
+            targets: [{ type: 'member', id: 'revoke-me@example.com', display: 'revoke-me@example.com' }]
+        });
+    });
+
+    it('invite accepted: the accepting member (from the session) is actor and target', async () => {
+        const req = fakeReq({ params: { id: 'invite-token' } });
+        const event = await runAudit(auditMemberInviteAccepted, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'invite_accepted',
+            outcome: 'success',
+            accountId: 42,
+            environment: null,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+        });
+    });
+
+    it('invite declined: the declining member (from the session) is actor and target', async () => {
+        const req = fakeReq({ params: { id: 'invite-token' } });
+        const event = await runAudit(auditMemberInviteDeclined, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'invite_declined',
+            outcome: 'success',
+            accountId: 42,
+            environment: null,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+        });
+    });
+
+    it('failed invite acceptance (4xx): target still resolved from the session, outcome failure', async () => {
+        const req = fakeReq({ params: { id: 'missing-token' } });
+        const event = await runAudit(auditMemberInviteAccepted, req, fakeRes(locals, 400));
+        expect(event).toMatchObject({
+            resource: 'member',
+            action: 'invite_accepted',
+            outcome: 'failure',
+            accountId: 42,
+            environment: null,
+            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+        });
+    });
+
+    it('bulk CLI deploy: one target per flow, the script type carried as display', async () => {
+        const req = fakeReq({
+            body: {
+                flowConfigs: [
+                    {
+                        type: 'sync',
+                        syncName: 'flow-a',
+                        providerConfigKey: 'algolia',
+                        models: [],
+                        runs: 'every day',
+                        track_deletes: false,
+                        fileBody: { js: '', ts: '' }
+                    },
+                    {
+                        type: 'action',
+                        syncName: 'flow-b',
+                        providerConfigKey: 'algolia',
+                        models: [],
+                        runs: null,
+                        track_deletes: false,
+                        fileBody: { js: '', ts: '' }
+                    }
+                ],
+                nangoYamlBody: '',
+                reconcile: false,
+                debug: false
+            }
+        });
+        const event = await runAudit(auditFunctionDeployedCli, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deployed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            targets: [
+                { type: 'function', id: 'flow-a', display: 'sync' },
+                { type: 'function', id: 'flow-b', display: 'action' }
+            ]
+        });
+    });
+
+    it('pre-built flow upgrade: the script name is the target, provider + version in metadata', async () => {
+        const req = fakeReq({
+            body: { id: 1, provider: 'algolia', scriptName: 'my-sync', type: 'sync', upgradeVersion: '2.0.0', providerConfigKey: 'algolia' }
+        });
+        const event = await runAudit(auditFunctionUpgraded, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'upgraded',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'function', id: 'my-sync' }],
+            metadata: { providerConfigKey: 'algolia', upgradeVersion: '2.0.0' }
+        });
+    });
+
+    it('connection creation: the connection_id is the target, credentials never recorded', async () => {
+        const req = fakeReq({
+            body: { connection_id: 'audit-conn', provider_config_key: 'algolia', credentials: { type: 'API_KEY', apiKey: 'super-secret-credential' } }
+        });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            targets: [{ type: 'connection', id: 'audit-conn' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+        expect(JSON.stringify(event)).not.toContain('super-secret-credential');
+    });
+
+    it('sync pause: one target per sync, variant carried as display', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'paused',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [
+                { type: 'sync', id: 'sync-a' },
+                { type: 'sync', id: 'sync-b', display: 'v2' }
+            ],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('sync start: one target per sync, variant carried as display', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncStarted, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'started',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [
+                { type: 'sync', id: 'sync-a' },
+                { type: 'sync', id: 'sync-b', display: 'v2' }
+            ],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('single-function deployment: the function name is the target, provider + type in metadata', async () => {
+        const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
+        const event = await runAudit(auditFunctionDeployed, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deployed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'function', id: 'my-func' }],
+            metadata: { providerConfigKey: 'algolia', type: 'action' }
+        });
+    });
+
+    it('pre-built flow deploy: the script name is the target, provider + type in metadata', async () => {
+        const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'my-prebuilt-sync', type: 'sync' } });
+        const event = await runAudit(auditPreBuiltDeployed, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deployed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'function', id: 'my-prebuilt-sync' }],
+            metadata: { providerConfigKey: 'algolia', type: 'sync' }
+        });
     });
 });
