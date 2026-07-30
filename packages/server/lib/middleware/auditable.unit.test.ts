@@ -4,7 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
 
-import { auditConnectionUpdated, auditEnvironmentVariablesChanged, auditEnvironmentWebhookUrlsChanged } from './audit.middleware.js';
+import {
+    auditConnectionUpdated,
+    auditEnvironmentVariablesChanged,
+    auditEnvironmentWebhookUrlsChanged,
+    auditPublicConnectionDeleted
+} from './audit.middleware.js';
 
 import type { RequestHandler } from 'express';
 
@@ -113,6 +118,37 @@ describe('auditable() middleware behavior (unit)', () => {
         const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
         const event = await runAudit(auditEnvironmentVariablesChanged, req, fakeRes(locals, 403));
         expect(event).toMatchObject({ resource: 'environment', action: 'variables_changed', outcome: 'denied' });
+    });
+
+    it('resolves an api_key actor (secret-key auth) rather than a user', async () => {
+        const apiKeyLocals = {
+            account: { id: 42, uuid: 'acc-uuid' },
+            environment: { id: 9, name: 'dev' },
+            authType: 'secretKey',
+            apiKeyId: 5,
+            apiKeyDisplayName: 'ci-key'
+        };
+        const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'algolia' } });
+        const event = await runAudit(auditPublicConnectionDeleted, req, fakeRes(apiKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'connection',
+            action: 'deleted',
+            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            targets: [{ type: 'connection', id: 'conn-1' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('records nothing when the audit trail is disabled for the account', async () => {
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+        const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
+        const res = fakeRes(locals);
+
+        await new Promise<void>((resolve) => auditEnvironmentVariablesChanged(req, res, () => resolve()));
+        res.emit('finish');
+        // Give the fire-and-forget finish hook a tick, then confirm the gate short-circuited it.
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(recordMock).not.toHaveBeenCalled();
     });
 
     it('resolves the target BEFORE next() — a later mutation of res.locals cannot change it', async () => {
