@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
-import { accountService, customerKeyService, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, getPlanSafe, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
@@ -194,7 +194,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
         void (async () => {
             try {
                 const locals = res.locals as RequestLocals;
-                if (locals.account && (await getFlags().isAuditTrailEnabled(locals.account.uuid))) {
+                if (locals.account && canRecordAuditTrail(locals.plan)) {
                     // Register the finish listener only once we know we should audit — a disabled account
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
                     // whatever we managed to resolve (even nothing, if resolution threw).
@@ -595,7 +595,8 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
         if (!account) {
             return;
         }
-        if (!(await getFlags().isAuditTrailEnabled(account.uuid))) {
+        // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
+        if (!canRecordAuditTrail(await getPlanSafe(db.knex, { accountId: account.id }))) {
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;

@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
+import { flags } from '@nangohq/utils';
 
 import {
     auditConnectionUpdated,
@@ -55,8 +55,11 @@ async function runAudit(handler: RequestHandler, req: any, res: any) {
 describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
-        // getFlags() returns the stable noop facade in tests; force the audit trail on.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
+    });
+
+    afterEach(() => {
+        flags.hasAuditTrail = false;
     });
 
     it('builds the event and records variable names but never their values', async () => {
@@ -159,8 +162,9 @@ describe('auditable() middleware behavior (unit)', () => {
         });
     });
 
-    it('records nothing when the audit trail is disabled for the account', async () => {
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+    // The per-account entitlement branch needs plans enabled, so it lives in audit.integration.test.ts.
+    it('records nothing when the audit trail is disabled for the deployment', async () => {
+        flags.hasAuditTrail = false;
         const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
         const res = fakeRes(locals);
 

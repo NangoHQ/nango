@@ -1,4 +1,4 @@
-import type { ApiEndpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditResource, AuditTarget, AuditTrailVersion } from './event.js';
 
 // The audit event returned to the dashboard — the stored blob, parsed. Typed strictly for the current
@@ -25,6 +25,7 @@ export type GetAuditTrail = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/audit-trail';
+    Error: ApiError<'feature_disabled'>;
     Querystring: {
         // Account-scoped endpoint: no `env`. `cursor` encodes position only, not the filter window — resend the
         // same `from`/`to` on every page or subsequent pages paginate the unfiltered set past the cursor.

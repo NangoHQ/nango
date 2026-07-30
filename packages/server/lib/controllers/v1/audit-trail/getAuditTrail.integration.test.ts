@@ -3,8 +3,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore } from '@nangohq/audit';
 import { seeders } from '@nangohq/shared';
 import { migrate } from '@nangohq/usage';
+import { flags } from '@nangohq/utils';
 
-import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
 
 import type { AuditEvent } from '@nangohq/audit';
 
@@ -13,8 +14,8 @@ let auditClient: ReturnType<typeof auditClickhouseClient>;
 let store: ClickhouseAuditStore;
 let emitter: AuditClient;
 
-async function authAdmin() {
-    const { account, env, user } = await seeders.seedAccountEnvAndUser();
+async function authAdmin({ entitled = true }: { entitled?: boolean } = {}) {
+    const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_ui: entitled } });
     const session = await authenticateUser(api, user);
     return { session, account, env };
 }
@@ -41,11 +42,23 @@ describe('GET /api/v1/audit-trail', () => {
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
+        flags.hasAuditTrail = true;
     });
 
     afterAll(async () => {
         api.server.close();
+        flags.hasAuditTrail = false;
         await auditClient.close();
+    });
+
+    it('rejects an account that is not entitled to the audit trail with 403', async () => {
+        const { session } = await authAdmin({ entitled: false });
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+        expect(res.res.status).toBe(403);
+        isError(res.json);
+        expect(res.json.error.code).toBe('feature_disabled');
     });
 
     // RBAC (403 for development_full_access, allowed for administrator + production_support) is covered

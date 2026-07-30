@@ -1,9 +1,10 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
-import { mfaService, userService } from '@nangohq/shared';
-import { nanoid } from '@nangohq/utils';
+import { mfaService, updatePlanByTeam, userService } from '@nangohq/shared';
+import { flags, nanoid } from '@nangohq/utils';
 
 import { audit } from '../../../../audit.js';
 import { isSuccess, runServer } from '../../../../utils/tests.js';
@@ -35,6 +36,8 @@ async function startPendingMfaLogin(): Promise<{ user: DBUser; totp: OTPAuth.TOT
     const created = await userService.getUserByEmail(email);
     expect(created).toBeTruthy();
     await userService.verifyUserEmail(created!.id);
+    // Signup lands on the free plan, which is not entitled to ingestion.
+    (await updatePlanByTeam(db.knex, { account_id: created!.account_id, has_audit_trail_control_plane: true })).unwrap();
 
     const enrollment = (await mfaService.startEnrollment(created!.id, email)).unwrap();
     const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
@@ -57,13 +60,14 @@ describe('MFA verify audit — pending-login session (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force both the MFA feature and the audit trail on.
+        // getFlags() returns the stable noop facade in tests; force the MFA feature on.
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
     });
 
     afterAll(() => {
         api.server.close();
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
