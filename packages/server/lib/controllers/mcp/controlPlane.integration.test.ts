@@ -11,7 +11,7 @@ import type { ApiKeyScope } from '@nangohq/types';
 type AuthenticateUser = typeof authenticateUserType;
 type RunServer = typeof runServerType;
 
-let originalControlPlaneMcpServerUrl: string | undefined;
+let originalManagementMcpServerUrl: string | undefined;
 let authenticateUser: AuthenticateUser;
 let runServer: RunServer;
 let api: Awaited<ReturnType<RunServer>>;
@@ -136,8 +136,8 @@ function parseToolText(res: any) {
 
 describe('POST /mcp control-plane server', () => {
     beforeAll(async () => {
-        originalControlPlaneMcpServerUrl = process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'];
-        process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'] = 'https://mcp-development.nango.dev';
+        originalManagementMcpServerUrl = process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'];
+        process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'] = 'https://mcp-development.nango.dev';
 
         vi.resetModules();
         ({ authenticateUser, runServer } = await import('../../utils/tests.js'));
@@ -146,10 +146,10 @@ describe('POST /mcp control-plane server', () => {
 
     afterAll(() => {
         api.server.close();
-        if (originalControlPlaneMcpServerUrl === undefined) {
-            delete process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'];
+        if (originalManagementMcpServerUrl === undefined) {
+            delete process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'];
         } else {
-            process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'] = originalControlPlaneMcpServerUrl;
+            process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'] = originalManagementMcpServerUrl;
         }
     });
 

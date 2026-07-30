@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { auditClickhouseClient, ClickhouseAuditStore } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore } from '@nangohq/audit';
 import { seeders } from '@nangohq/shared';
 import { migrate } from '@nangohq/usage';
 
@@ -11,6 +11,7 @@ import type { AuditEvent } from '@nangohq/audit';
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditClient: ReturnType<typeof auditClickhouseClient>;
 let store: ClickhouseAuditStore;
+let emitter: AuditClient;
 
 async function authAdmin() {
     const { account, env, user } = await seeders.seedAccountEnvAndUser();
@@ -39,6 +40,7 @@ describe('GET /api/v1/audit-trail', () => {
         (await migrate({ database: 'usage' })).unwrap();
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!, { database: 'usage' });
         store = new ClickhouseAuditStore(auditClient);
+        emitter = new AuditClient(store, store);
     });
 
     afterAll(async () => {
@@ -91,8 +93,8 @@ describe('GET /api/v1/audit-trail', () => {
 
     it("returns the account's events in the response envelope, most-recent first", async () => {
         const { session, account } = await authAdmin();
-        (await store.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
-        (await store.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
 
         const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
 
@@ -115,7 +117,7 @@ describe('GET /api/v1/audit-trail', () => {
         // 26 events one second apart (oldest → newest) — one more than the fixed page size of 25.
         const base = Date.parse('2026-07-16T10:00:00.000Z');
         for (let i = 0; i < 26; i++) {
-            (await store.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
+            (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
         }
 
         const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });

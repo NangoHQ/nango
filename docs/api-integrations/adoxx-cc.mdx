@@ -1,0 +1,79 @@
+---
+title: 'ADOXX (Client Credentials)'
+sidebarTitle: 'ADOXX (Client Credentials)'
+description: 'Integrate your application with the ADOXX REST API using client credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to ADOXX with Nango using client credentials and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _ADOXX (Client Credentials)_.
+    </Step>
+    <Step id="authorize-adoxx" title="Authorize ADOXX">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Base URL, Client ID, and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-adoxx-api" title="Call the ADOXX API">
+    Let's make your first request to the ADOXX REST API, using the `connection` endpoint that's always available for testing. Replace the placeholders below with your Nango API key, integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/connection" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/connection',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 ADOXX (Client Credentials) integration guides
+
+- [How do I link my account?](/api-integrations/adoxx-cc/connect)  
+  Learn how to obtain your Base URL, Client ID, and Client Secret from your ADOXX instance and use them to connect your account.
+
+Official docs: [ADOXX OAuth 2.0 Client Credentials documentation](https://developer.boc-group.com/adoxx/en/Oauth2_Client_Credentials/)
+
+## 🧩 Pre-built syncs & actions for ADOXX (Client Credentials)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/adoxx-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

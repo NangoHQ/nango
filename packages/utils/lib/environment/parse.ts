@@ -3,6 +3,38 @@ import * as z from 'zod';
 import { DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST, mergeProxyBaseUrlOverrideDenylist } from '../proxy/baseUrlOverrideDenylist.js';
 import { roles } from '../roles.js';
 
+const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
+
+function outboundUrlPolicySchema(varName: string) {
+    return z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in ${varName}`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(
+            z
+                .object({
+                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
+                    denylist: z.array(z.string()).optional(),
+                    allowlist: z.array(z.string()).optional(),
+                    blockPrivateIps: z.boolean().optional(),
+                    blockLinkLocal: z.boolean().optional(),
+                    maxRedirects: z.number().int().nonnegative().optional()
+                })
+                .strict()
+                .optional()
+        );
+}
+
 export const ENVS = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
@@ -33,7 +65,7 @@ export const ENVS = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
-    NANGO_CONTROL_PLANE_MCP_SERVER_URL: z.url().optional(),
+    NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
@@ -78,36 +110,11 @@ export const ENVS = z.object({
                 return z.NEVER;
             }
         }),
-    // Outbound URL policy (JSON), consumed by @nangohq/egress.
-    NANGO_OUTBOUND_URL_POLICY: z
-        .string()
-        .optional()
-        .transform((s, ctx) => {
-            if (s === undefined || s.trim() === '') {
-                return undefined;
-            }
-            try {
-                return JSON.parse(s) as unknown;
-            } catch {
-                ctx.addIssue(`Invalid JSON in NANGO_OUTBOUND_URL_POLICY`);
-                return z.NEVER; // tells Zod to stop here and mark parse as failed
-            }
-        })
-        .pipe(
-            z
-                .object({
-                    mode: z.enum(['denylist', 'allowlist', 'permissive']).optional(),
-                    denylist: z.array(z.string()).optional(),
-                    allowlist: z.array(z.string()).optional(),
-                    blockPrivateIps: z.boolean().optional(),
-                    blockLinkLocal: z.boolean().optional(),
-                    maxRedirects: z.number().int().nonnegative().optional()
-                })
-                // Reject unknown keys so a typo (e.g. `blockPrivateIp`) fails fast at startup instead of
-                // being silently dropped and weakening the intended SSRF restrictions.
-                .strict()
-                .optional()
-        ),
+    // Outbound URL policy (JSON), consumed by @nangohq/egress for proxy/webhook/uncontrolledFetch paths.
+    NANGO_OUTBOUND_URL_POLICY: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY'),
+    // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
+    // but RFC1918 blocking defaults off (configurable) so self-hosted token endpoints keep working.
+    NANGO_OUTBOUND_URL_POLICY_OAUTH: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY_OAUTH'),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -143,6 +150,7 @@ export const ENVS = z.object({
 
     // Metering
     METERING_USAGE_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
+    METERING_AUDIT_EVENTS_SUBSCRIBE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -546,6 +554,9 @@ export const ENVS = z.object({
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
 
+    // Audit
+    NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
     NANGO_PUBSUB_SNS_SQS_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
@@ -567,7 +578,7 @@ export const ENVS = z.object({
             z.object({
                 topicArns: z
                     .partialRecord(
-                        z.enum(['user', 'usage', 'team', 'lambda_keep_warm']),
+                        z.enum(PUBSUB_SUBJECTS),
                         z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
                     )
                     .optional()
@@ -576,13 +587,13 @@ export const ENVS = z.object({
                     .record(z.string(), z.url())
                     .check((payload) => {
                         const record = payload.value;
-                        const allowedSubjects = new Set(['user', 'usage', 'team', 'lambda_keep_warm']);
+                        const allowedSubjects = new Set<string>(PUBSUB_SUBJECTS);
                         for (const key of Object.keys(record)) {
                             const lastColon = key.lastIndexOf(':');
                             if (lastColon < 0 || lastColon === key.length - 1) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of user, usage, team, lambda_keep_warm)`,
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of ${PUBSUB_SUBJECTS.join(', ')})`,
                                     path: [key],
                                     input: record[key]
                                 });
@@ -592,7 +603,7 @@ export const ENVS = z.object({
                             if (!allowedSubjects.has(subject)) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of user, usage, team, lambda_keep_warm`,
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of ${PUBSUB_SUBJECTS.join(', ')}`,
                                     path: [key],
                                     input: record[key]
                                 });

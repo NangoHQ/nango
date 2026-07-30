@@ -9,10 +9,13 @@
             "path": "../clickhouse-migrations"
         },
         {
-            "path": "../utils"
+            "path": "../pubsub"
         },
         {
             "path": "../types"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

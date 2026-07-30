@@ -2,7 +2,7 @@ import './tracer.js';
 
 import * as cron from 'node-cron';
 
-import { migrate as migrateAudit } from '@nangohq/audit';
+import { auditClickhouseClient, ClickhouseAuditStore, DropAuditStore, migrate as migrateAudit } from '@nangohq/audit';
 import { billing } from '@nangohq/billing';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
@@ -14,6 +14,7 @@ import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
 import { exportUsageCron } from './crons/usage.js';
 import { e2bSandboxesDaemon } from './daemons/e2b-sandboxes.daemon.js';
 import { envs } from './env.js';
+import { AuditProcessor } from './processors/audit.js';
 import { TeamProcessor } from './processors/team.js';
 import { UsageProcessor } from './processors/usage.js';
 import { logger } from './utils.js';
@@ -64,6 +65,12 @@ try {
     // Team processor
     const teamProc = new TeamProcessor({ transport: pubsubTransport });
     teamProc.start();
+
+    // Audit processor
+    // TODO: repoint at the dedicated audit database once it and its schema are created.
+    const auditStore = envs.CLICKHOUSE_URL ? new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL, { database: 'usage' })) : new DropAuditStore();
+    const auditProc = new AuditProcessor({ transport: pubsubTransport, store: auditStore });
+    auditProc.start();
 
     // Crons
     exportUsageCron();

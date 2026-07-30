@@ -1,9 +1,7 @@
-// `id` and `version` are stamped downstream by the store at write, not by the caller.
+// `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditOutcome, AuditTarget } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
 
-// Re-export the shared vocabulary so @nangohq/audit consumers (e.g. the server audit middleware) keep
-// importing these from here.
 export type {
     AuditActor,
     AuditActorType,
@@ -16,21 +14,59 @@ export type {
     AuditTrailVersion
 } from '@nangohq/types';
 
-export interface ConnectionDeletedMetadata {
-    // Qualifies the target: connection_id is unique only per (provider config key, environment).
-    providerConfigKey: string;
+export interface ConnectionMetadata {
+    providerConfigKey?: string;
 }
-
+export interface ConnectionUpdatedMetadata {
+    providerConfigKey?: string;
+    changedFields?: string[];
+}
+export interface IntegrationUpdatedMetadata {
+    changedFields?: string[];
+}
+export interface FunctionDeletedMetadata {
+    providerConfigKey?: string;
+    // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
+    type?: string;
+}
+export interface ApiKeyUpdatedMetadata {
+    displayName?: string;
+    scopes?: string[];
+}
+export interface SyncFrequencyChangedMetadata {
+    providerConfigKey?: string;
+    frequency?: string;
+}
+export interface SyncVariantMetadata {
+    variant?: string;
+}
 export interface MemberRoleChangedMetadata {
-    // Optional: capturing it needs pre-update state a route-level emit may not have.
     fromRole?: string;
-    toRole: string;
+    toRole?: string;
+}
+export interface TeamUpdatedMetadata {
+    name?: string;
+}
+export interface EnvironmentUpdatedMetadata {
+    name?: string;
+    changedFields?: string[];
+}
+export interface EnvironmentVariablesChangedMetadata {
+    variableCount?: number;
+    variableNames?: string[];
+}
+export interface EnvironmentWebhookMetadata {
+    primaryUrl?: string;
+    secondaryUrl?: string;
+}
+export interface BillingPlanChangedMetadata {
+    fromPlan?: string;
+    toPlan?: string;
 }
 
 interface AuditEventCommon {
     occurredAt: string;
     accountId: number;
-    // null for account-scoped events (e.g. member changes) that aren't tied to an environment.
     environment: { id: number; display: string } | null;
     actor: AuditActor;
     via?: AuditActor[];
@@ -39,6 +75,29 @@ interface AuditEventCommon {
     outcome: AuditOutcome;
 }
 
-export type AuditEvent =
-    | (AuditEventCommon & { resource: 'connection'; action: 'deleted'; metadata?: ConnectionDeletedMetadata })
-    | (AuditEventCommon & { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata });
+export type AuditResourceAction =
+    | { resource: 'connection'; action: 'refreshed' | 'metadata_updated' | 'deleted'; metadata?: ConnectionMetadata }
+    | { resource: 'connection'; action: 'updated'; metadata?: ConnectionUpdatedMetadata }
+    | { resource: 'integration'; action: 'updated'; metadata?: IntegrationUpdatedMetadata }
+    | { resource: 'integration'; action: 'deleted' }
+    | { resource: 'function'; action: 'deleted'; metadata?: FunctionDeletedMetadata }
+    | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
+    | { resource: 'api_key'; action: 'deleted' }
+    | { resource: 'sync'; action: 'enabled' | 'disabled' }
+    | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
+    | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
+    | { resource: 'member'; action: 'removed' }
+    | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
+    | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
+    | { resource: 'user'; action: 'updated' }
+    | { resource: 'environment'; action: 'deleted' }
+    | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }
+    | { resource: 'environment'; action: 'updated'; metadata?: EnvironmentUpdatedMetadata }
+    | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
+    | { resource: 'billing'; action: 'trial_extended' | 'details_changed' }
+    | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
+    | { resource: 'app_auth'; action: 'password_changed' };
+
+export type AuditEvent = AuditEventCommon & AuditResourceAction;
+
+export type StoredAuditEvent = AuditEvent & { id: string; version: AuditTrailVersion };

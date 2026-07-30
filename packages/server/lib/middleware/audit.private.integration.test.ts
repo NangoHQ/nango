@@ -67,10 +67,12 @@ describe('audit middleware (private API)', () => {
         });
     });
 
-    it('audit log for a member role change', async () => {
+    it('audit log for a member role change captures the pre-change role', async () => {
         const { account, user, plan } = await seeders.seedAccountEnvAndUser();
         await updatePlan(db.knex, { id: plan.id, has_rbac: true });
         const targetUser = await seeders.seedUser(account.id);
+        // Pin a known starting role; the controller overwrites it, so fromRole proves we resolved before it ran.
+        await userService.update({ id: targetUser.id, role: 'development_full_access' });
         const session = await authenticateUser(api, user);
 
         const res = await api.fetch('/api/v1/team/users/:id', {
@@ -93,7 +95,7 @@ describe('audit middleware (private API)', () => {
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }],
-            metadata: { toRole: 'production_support' }
+            metadata: { fromRole: 'development_full_access', toRole: 'production_support' }
         });
     });
 
@@ -153,5 +155,117 @@ describe('audit middleware (private API)', () => {
             targets: [{ type: 'member', id: String(other.user.id) }]
         });
         expect(event?.targets[0]).not.toHaveProperty('display');
+    });
+
+    it('records the changed field names (not values) for a connection update', async () => {
+        const { user, connection } = await seedConnection();
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch('/api/v1/connections/:connectionId', {
+            method: 'PATCH',
+            session,
+            params: { connectionId: connection.connection_id },
+            query: { provider_config_key: 'algolia', env: 'dev' },
+            body: { webhook_url_override: 'https://leaked-value.test/hook' }
+        });
+
+        expect(res.res.status).toBe(200);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        const event = auditSpy.mock.calls[0]?.[0];
+        expect(event).toMatchObject({
+            resource: 'connection',
+            action: 'updated',
+            outcome: 'success',
+            metadata: { providerConfigKey: 'algolia', changedFields: ['webhook_url_override'] }
+        });
+        // Only the field name is recorded — the submitted value must not reach the audit record.
+        expect(JSON.stringify(event)).not.toContain('leaked-value');
+    });
+
+    it('records variable names but never their values', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch('/api/v1/environments/variables', {
+            method: 'POST',
+            session,
+            query: { env: 'dev' },
+            body: {
+                variables: [
+                    { name: 'API_URL', value: 'https://secret.example' },
+                    { name: 'TOKEN', value: 'super-secret-value' }
+                ]
+            }
+        });
+
+        expect(res.res.status).toBe(200);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        const event = auditSpy.mock.calls[0]?.[0];
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'variables_changed',
+            metadata: { variableCount: 2, variableNames: ['API_URL', 'TOKEN'] }
+        });
+        // The values must never reach the audit record.
+        const serialized = JSON.stringify(event);
+        expect(serialized).not.toContain('super-secret-value');
+        expect(serialized).not.toContain('secret.example');
+    });
+
+    it('records the new webhook URLs for a webhook settings change', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch('/api/v1/environments/webhook', {
+            method: 'PATCH',
+            session,
+            query: { env: 'dev' },
+            body: { primary_url: 'https://hooks.example/primary?token=shh-secret' }
+        });
+
+        expect(res.res.status).toBe(200);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        const event = auditSpy.mock.calls[0]?.[0];
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'webhook_urls_changed',
+            // Only the origin is recorded — path and any secret query params are stripped.
+            metadata: { primaryUrl: 'https://hooks.example' }
+        });
+        expect(JSON.stringify(event)).not.toContain('shh-secret');
+    });
+
+    it('captures a removed member email resolved before the controller moves the row', async () => {
+        const { account, user, plan } = await seeders.seedAccountEnvAndUser();
+        await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+        const targetUser = await seeders.seedUser(account.id);
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch('/api/v1/team/users/:id', {
+            method: 'DELETE',
+            session,
+            query: { env: 'dev' },
+            params: { id: targetUser.id }
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalled();
+        });
+        // The controller moves the member out of the account, so the email is only knowable if the
+        // target was resolved before the handler ran — this guards the resolve-before-next() timing.
+        expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'member',
+            action: 'removed',
+            outcome: 'success',
+            targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
+        });
     });
 });
