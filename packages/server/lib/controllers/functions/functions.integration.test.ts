@@ -25,9 +25,10 @@ async function seedAccount(scopes?: ApiKeyScope[]) {
 async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccount>>, scopes: string[]) {
     const key = await customerKeyService.createApiKey(db.knex, {
         accountId: seed.account.id,
-        environmentId: seed.env.id,
+        target: { type: 'environment', environmentId: seed.env.id },
         displayName: `test-${randomUUID()}`,
-        scopes
+        scopes,
+        withSandboxSigningSecret: true
     });
 
     return key.unwrap();

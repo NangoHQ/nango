@@ -4,7 +4,7 @@ import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
 
-import type { ApiKeyScope } from '@nangohq/types';
+import type { EnvironmentApiKeyScope } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -23,12 +23,12 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const WRONG_SCOPE = 'environment:mcp'; // unlikely to match any route except /mcp
 
-async function createKeyWithScopes(scopes: ApiKeyScope[]): Promise<string> {
+async function createKeyWithScopes(scopes: EnvironmentApiKeyScope[]): Promise<string> {
     const result = await createKeyWithScopesAndEnv(scopes);
     return result.secret;
 }
 
-async function createKeyWithScopesAndEnv(scopes: ApiKeyScope[]) {
+async function createKeyWithScopesAndEnv(scopes: EnvironmentApiKeyScope[]) {
     const { env, user } = await seeders.seedAccountEnvAndUser();
     const session = await authenticateUser(api, user);
     const res = await api.fetch('/api/v1/environment/api-keys', {

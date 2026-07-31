@@ -1,9 +1,9 @@
-import type { ApiKeyScope } from '@nangohq/types';
+import type { EnvironmentApiKeyScope } from '@nangohq/types';
 
 export interface ScopeItem {
-    value: ApiKeyScope;
+    value: EnvironmentApiKeyScope;
     label: string;
-    credentials?: ApiKeyScope;
+    credentials?: EnvironmentApiKeyScope;
 }
 
 export interface ScopeGroup {

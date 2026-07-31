@@ -6,7 +6,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
 import type { authenticateUser as authenticateUserType, runServer as runServerType } from '../../utils/tests.js';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { EnvironmentApiKeyScope } from '@nangohq/types';
 
 type AuthenticateUser = typeof authenticateUserType;
 type RunServer = typeof runServerType;
@@ -114,7 +114,7 @@ function parseServerSentEventJson(data: string): any {
     throw new Error('MCP SSE response did not contain a data payload');
 }
 
-async function createKeyWithScopes(scopes: ApiKeyScope[]) {
+async function createKeyWithScopes(scopes: EnvironmentApiKeyScope[]) {
     const { env, account, user } = await seeders.seedAccountEnvAndUser();
     const session = await authenticateUser(api, user);
     const res = await api.fetch('/api/v1/environment/api-keys', {

@@ -8,12 +8,13 @@ export function tagTraceUser({
     plan
 }: {
     account: Pick<DBTeam, 'id'>;
-    environment: Pick<DBEnvironment, 'id'>;
+    // Absent for account-plane credentials, which are not bound to any environment.
+    environment?: Pick<DBEnvironment, 'id'> | undefined;
     plan?: Pick<DBPlan, 'name'> | null;
 }) {
     tracer.setUser({
         id: String(account.id),
-        environmentId: String(environment.id),
+        ...(environment ? { environmentId: String(environment.id) } : {}),
         paying: plan?.name !== 'free' ? 'paying' : 'free',
         plan: plan?.name
     });

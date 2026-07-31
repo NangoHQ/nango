@@ -78,8 +78,7 @@ export type * from './dbConfig/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
-export { ALL_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
-export type { ApiKeyScope } from './api-keys/scopes.js';
+export type { AccountApiKeyScope, ApiKeyScope, EnvironmentApiKeyScope } from './api-keys/scopes.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';

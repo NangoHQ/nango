@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, zodErrorToHTTP } from '@nangohq/utils';
+import { environmentApiKeyScopes, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
@@ -14,7 +14,7 @@ const validationParams = z.object({
 
 const validationBody = z
     .object({
-        scopes: z.array(z.enum(apiKeyScopes)).min(1).optional(),
+        scopes: z.array(z.enum(environmentApiKeyScopes)).min(1).optional(),
         display_name: z.string().min(1).max(255).optional()
     })
     .refine((data) => data.scopes || data.display_name, { message: 'At least one of scopes or display_name is required' });
@@ -36,7 +36,13 @@ export const patchApiKey = asyncWrapperWithEnvironment<PatchApiKey>(async (req, 
     }
 
     if (parsed.data.display_name) {
-        const result = await customerKeyService.renameApiKey(db.knex, keyId, parsed.data.display_name, environment.id, account.id);
+        const result = await customerKeyService.renameApiKey(
+            db.knex,
+            keyId,
+            parsed.data.display_name,
+            { type: 'environment', environmentId: environment.id },
+            account.id
+        );
         if (result.isErr()) {
             const { type: errType = '', message: errMsg = '' } = result.error as { type?: string; message?: string };
             if (errType === 'duplicate_api_key' || errMsg.includes('duplicate_api_key')) {
@@ -49,7 +55,10 @@ export const patchApiKey = asyncWrapperWithEnvironment<PatchApiKey>(async (req, 
     }
 
     if (parsed.data.scopes) {
-        const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, parsed.data.scopes, environment.id);
+        const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, parsed.data.scopes, {
+            type: 'environment',
+            environmentId: environment.id
+        });
         if (result.isErr()) {
             res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
             return;

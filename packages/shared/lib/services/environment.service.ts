@@ -142,8 +142,10 @@ class EnvironmentService {
 
             const apiKey = await customerKeyService.createApiKey(innerTrx, {
                 accountId: accountId,
-                environmentId: env.id,
-                displayName: 'Default - Full access'
+                target: { type: 'environment', environmentId: env.id },
+                displayName: 'Default - Full access',
+                scopes: ['environment:*'],
+                withSandboxSigningSecret: true
             });
             if (apiKey.isErr()) {
                 throw apiKey.error;
@@ -166,7 +168,7 @@ class EnvironmentService {
         return environment;
     }
 
-    async createDefaultEnvironments(trx: Knex, { accountId: accountId }: { accountId: number }): Promise<void> {
+    async createDefaultEnvironments(trx: Knex, { accountId }: { accountId: number }): Promise<void> {
         for (const environment of defaultEnvironments) {
             const newEnv = await this.createEnvironment(trx, { accountId, name: environment });
             if (newEnv) {

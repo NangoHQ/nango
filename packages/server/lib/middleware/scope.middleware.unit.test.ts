@@ -43,13 +43,31 @@ describe('hasScope', () => {
         expect(hasScope({ grantedScopes: ['environment:deploy', 'environment:proxy'], requiredScope: 'environment:proxy' })).toBe(true);
     });
 
-    it('wildcard does not match across prefixes', () => {
-        // Cast to ApiKeyScope: account-level scopes are not yet supported, but we verify
-        // that environment:* doesn't accidentally match them
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'account:environments:create' as ApiKeyScope })).toBe(false);
-    });
-
     it('credential scope does not grant non-credential access', () => {
         expect(hasScope({ grantedScopes: ['environment:connections:read_credentials'], requiredScope: 'environment:connections:update' })).toBe(false);
+    });
+
+    // The prefix is the plane tag, and prefix matching is the only thing keeping the two planes
+    // apart. If this breaks, an environment key authorizes account operations.
+    describe('plane isolation', () => {
+        it('environment:* does not grant any account scope', () => {
+            expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'account:*' })).toBe(false);
+            expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'account:team:read' })).toBe(false);
+        });
+
+        it('account:* does not grant any environment scope', () => {
+            expect(hasScope({ grantedScopes: ['account:*'], requiredScope: 'environment:*' })).toBe(false);
+            expect(hasScope({ grantedScopes: ['account:*'], requiredScope: 'environment:connections:read' })).toBe(false);
+            expect(hasScope({ grantedScopes: ['account:*'], requiredScope: 'environment:deploy' })).toBe(false);
+        });
+
+        it('account:* grants account scopes', () => {
+            expect(hasScope({ grantedScopes: ['account:*'], requiredScope: 'account:team:read' })).toBe(true);
+        });
+
+        it('a specific account scope does not grant its siblings', () => {
+            expect(hasScope({ grantedScopes: ['account:team:read'], requiredScope: 'account:team:read' })).toBe(true);
+            expect(hasScope({ grantedScopes: ['account:team:read'], requiredScope: 'account:*' as ApiKeyScope })).toBe(false);
+        });
     });
 });

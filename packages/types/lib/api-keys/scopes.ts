@@ -1,4 +1,7 @@
-export const API_KEY_SCOPES = [
+// Scopes are split by plane. The prefix is the plane tag, and `hasScope`'s prefix matching keeps the
+// two families isolated: `environment:*` never matches `account:...` and vice versa. Keep them apart
+// so an environment key can never be granted an account capability.
+export const ENVIRONMENT_API_KEY_SCOPES = [
     'environment:*',
     // Integrations
     'environment:integrations:list',
@@ -54,6 +57,14 @@ export const API_KEY_SCOPES = [
     'environment:mcp'
 ] as const;
 
-export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
+export type EnvironmentApiKeyScope = (typeof ENVIRONMENT_API_KEY_SCOPES)[number];
 
-export const ALL_SCOPES: string[] = [...API_KEY_SCOPES];
+export const ACCOUNT_API_KEY_SCOPES = [
+    'account:*',
+    // Team
+    'account:team:read'
+] as const;
+
+export type AccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];
+
+export type ApiKeyScope = EnvironmentApiKeyScope | AccountApiKeyScope;

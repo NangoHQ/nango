@@ -1,4 +1,4 @@
-import type { ApiKeyScope } from '../../api-keys/scopes.js';
+import type { EnvironmentApiKeyScope } from '../../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
 import type { AuditPolicy } from '../../audit-trail/event.js';
 import type { ApiPlan } from '../../plans/http.api.js';
@@ -92,7 +92,7 @@ export type ListApiKeys = ApiEndpoint<{
         data: {
             id: number;
             display_name: string;
-            scopes: ApiKeyScope[];
+            scopes: EnvironmentApiKeyScope[];
             secret: string;
             last_used_at: string | null;
             created_at: string;
@@ -106,13 +106,13 @@ export type CreateApiKey = ApiEndpoint<{
     Path: '/api/v1/environment/api-keys';
     Body: {
         display_name: string;
-        scopes?: ApiKeyScope[];
+        scopes?: EnvironmentApiKeyScope[];
     };
     Success: {
         data: {
             id: number;
             display_name: string;
-            scopes: ApiKeyScope[];
+            scopes: EnvironmentApiKeyScope[];
             secret: string;
             created_at: string;
         };
@@ -134,7 +134,7 @@ export type PatchApiKey = ApiEndpoint<{
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };
     Body: {
-        scopes?: ApiKeyScope[];
+        scopes?: EnvironmentApiKeyScope[];
         display_name?: string;
     };
     Success: { success: true };

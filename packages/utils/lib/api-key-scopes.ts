@@ -1,6 +1,6 @@
-import type { ApiKeyScope } from '@nangohq/types';
+import type { AccountApiKeyScope, EnvironmentApiKeyScope } from '@nangohq/types';
 
-export const apiKeyScopes = [
+export const environmentApiKeyScopes = [
     'environment:*',
     // Integrations
     'environment:integrations:list',
@@ -54,9 +54,16 @@ export const apiKeyScopes = [
     'environment:variables:read',
     // MCP
     'environment:mcp'
-] as const satisfies readonly ApiKeyScope[];
+] as const satisfies readonly EnvironmentApiKeyScope[];
 
-// The `satisfies` above rejects entries that aren't valid `ApiKeyScope`s;
-// the assertion below rejects any `ApiKeyScope` missing from this array.
-// Together they keep the two lists in sync.
-true satisfies [Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [never] ? true : never;
+export const accountApiKeyScopes = [
+    'account:*',
+    // Team
+    'account:team:read'
+] as const satisfies readonly AccountApiKeyScope[];
+
+// Each `satisfies` above rejects entries that aren't valid scopes for that plane;
+// the assertions below reject any scope missing from its array.
+// Together they keep these lists in sync with @nangohq/types.
+true satisfies [Exclude<EnvironmentApiKeyScope, (typeof environmentApiKeyScopes)[number]>] extends [never] ? true : never;
+true satisfies [Exclude<AccountApiKeyScope, (typeof accountApiKeyScopes)[number]>] extends [never] ? true : never;

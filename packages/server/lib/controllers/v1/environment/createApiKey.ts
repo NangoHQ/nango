@@ -2,16 +2,16 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { environmentApiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
+import type { CreateApiKey, EnvironmentApiKeyScope } from '@nangohq/types';
 
 const validationBody = z
     .object({
         display_name: z.string().min(1).max(255),
-        scopes: z.array(z.enum(apiKeyScopes)).nonempty('At least one scope is required when scopes are provided').optional()
+        scopes: z.array(z.enum(environmentApiKeyScopes)).nonempty('At least one scope is required when scopes are provided').optional()
     })
     .strict();
 
@@ -33,9 +33,10 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
 
     const result = await customerKeyService.createApiKey(db.knex, {
         accountId: account.id,
-        environmentId: environment.id,
+        target: { type: 'environment', environmentId: environment.id },
         displayName,
-        scopes: scopes ?? ['environment:*']
+        scopes: scopes ?? ['environment:*'],
+        withSandboxSigningSecret: true
     });
 
     if (result.isErr()) {
@@ -55,7 +56,7 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
         data: {
             id: key.id,
             display_name: key.display_name,
-            scopes: (key.scopes ?? []) as ApiKeyScope[],
+            scopes: (key.scopes ?? []) as EnvironmentApiKeyScope[],
             secret: key.secret,
             created_at: key.created_at.toISOString()
         }

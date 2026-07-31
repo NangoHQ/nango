@@ -317,7 +317,7 @@ function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<A
         if (!locals.environment) {
             return undefined;
         }
-        const result = await customerKeyService.getApiKeysByEnv(db.knex, locals.environment.id);
+        const result = await customerKeyService.getApiKeys(db.knex, { type: 'environment', environmentId: locals.environment.id });
         return result.isOk() ? result.value.find((key) => String(key.id) === id)?.display_name : undefined;
     });
 }

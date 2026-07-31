@@ -89,8 +89,8 @@ const persistAuthContextCache = new PersistAuthContextCache();
 
 interface AccountContext {
     account: DBTeam;
-    environment: DBEnvironment;
-    secret: DBAPISecret;
+    environment?: DBEnvironment;
+    secret?: DBAPISecret;
     plan: DBPlan | null;
     auth?: {
         source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
@@ -102,6 +102,8 @@ interface AccountContext {
         deploymentId?: string;
     };
 }
+
+type AccountContextWithEnvironment = AccountContext & { environment: DBEnvironment; secret: DBAPISecret };
 
 const freeEmailDomains = new Set([
     'gmail.com',
@@ -323,7 +325,7 @@ class AccountService {
      * exist in api_secrets. Returns null when no env var matches the key; when one
      * matches, resolution failures are terminal (context: null, no hashed lookup).
      */
-    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AccountContext | null } | null> {
+    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AccountContextWithEnvironment | null } | null> {
         const environmentVariables = Object.keys(process.env).filter((k) => k.startsWith('NANGO_SECRET_KEY_'));
         for (const environmentVariable of environmentVariables) {
             const envSecretKey = process.env[environmentVariable] as string;
@@ -356,7 +358,7 @@ class AccountService {
         return null;
     }
 
-    async getAccountContextByPublicKey(publicKey: string): Promise<AccountContext | null> {
+    async getAccountContextByPublicKey(publicKey: string): Promise<AccountContextWithEnvironment | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
             if (environmentVariables.length > 0) {
@@ -385,6 +387,16 @@ class AccountService {
         return this.getAccountContext({ publicKey });
     }
 
+    async getAccountContext(
+        opts:
+            | { publicKey: string }
+            | { internalSecretKey: string }
+            | { accountId: number; envName: string }
+            | { environmentId: number }
+            | { environmentUuid: string }
+            | { accountUuid: string; envName: string }
+    ): Promise<AccountContextWithEnvironment | null>;
+    async getAccountContext(opts: { secretKey: string } | { internalSecretKey: string }): Promise<AccountContext | null>;
     async getAccountContext(
         // TODO: fix this union type that is not discriminated
         opts:
@@ -491,7 +503,7 @@ class AccountService {
         };
     }
 
-    private async getAccountContextBySandboxApiKey(sandboxApiKey: string): Promise<Result<AccountContext | null>> {
+    private async getAccountContextBySandboxApiKey(sandboxApiKey: string): Promise<Result<AccountContextWithEnvironment | null>> {
         try {
             const parsed = parseSandboxApiKeyToken(sandboxApiKey);
             if (!parsed) {
@@ -663,9 +675,9 @@ class AccountService {
         } = await db.knex.raw<{
             rows: {
                 account: DBTeam;
-                environment: DBEnvironment;
+                environment: DBEnvironment | null;
                 plan: DBPlan | null;
-                default_secret: DBAPISecret;
+                default_secret: DBAPISecret | null;
                 pending_secret: DBAPISecret | null;
                 auth_scopes: string[] | null;
                 auth_api_key_id: number;
@@ -674,13 +686,14 @@ class AccountService {
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes, ck.display_name
+                    SELECT ck.id, ck.account_id, ck.scopes, ck.display_name, ckr.entity_id AS environment_id
                     FROM customer_keys ck
-                    JOIN customer_keys_relations ckr ON ckr.customer_key_id = ck.id
+                    LEFT JOIN customer_keys_relations ckr
+                        ON ckr.customer_key_id = ck.id
+                       AND ckr.entity_type = 'environment'
                     WHERE ck.hashed = ?
                       AND ck.key_type = 'api'
                       AND ck.deleted_at IS NULL
-                      AND ckr.entity_type = 'environment'
                     LIMIT 1
                 ),
                 updated_customer_key AS (
@@ -701,16 +714,21 @@ class AccountService {
                     matched_customer_key.id AS auth_api_key_id,
                     matched_customer_key.display_name AS auth_display_name
                 FROM matched_customer_key
-                JOIN _nango_environments ON _nango_environments.id = matched_customer_key.environment_id
-                JOIN _nango_accounts ON _nango_accounts.id = _nango_environments.account_id
-                JOIN api_secrets AS default_secret
+                LEFT JOIN _nango_environments
+                    ON _nango_environments.id = matched_customer_key.environment_id
+                   AND _nango_environments.deleted = false
+                JOIN _nango_accounts ON _nango_accounts.id = COALESCE(_nango_environments.account_id, matched_customer_key.account_id)
+                LEFT JOIN api_secrets AS default_secret
                     ON default_secret.environment_id = _nango_environments.id
                    AND default_secret.is_default = true
                 LEFT JOIN api_secrets AS pending_secret
                     ON pending_secret.environment_id = _nango_environments.id
                    AND pending_secret.is_default = false
                 LEFT JOIN plans ON plans.account_id = _nango_accounts.id
-                WHERE _nango_environments.deleted = false
+                -- An environment-bound key whose environment is soft-deleted must fail auth: without this
+                -- the COALESCE above resolves it to its own account_id, so it would authenticate with no
+                -- environment while still carrying environment scopes.
+                WHERE matched_customer_key.environment_id IS NULL OR default_secret.id IS NOT NULL
                 LIMIT 1;
             `,
             [hash]
@@ -722,7 +740,8 @@ class AccountService {
         hashLocalCache.set(secretKey, hash);
         customerKeyShadowCache.populate(hash, wouldHit);
 
-        const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
+        // Both absent for account-plane keys, which are bound to no environment.
+        const defaultSecret = row.default_secret ? getEncryptionManager().decryptAPISecret(row.default_secret) : null;
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
 
         return {
@@ -731,14 +750,19 @@ class AccountService {
                 created_at: new Date(row.account.created_at),
                 updated_at: new Date(row.account.updated_at)
             },
-            environment: {
-                ...row.environment,
-                secret_key: defaultSecret.secret,
-                pending_secret_key: pendingKey?.secret || null,
-                created_at: new Date(row.environment.created_at),
-                updated_at: new Date(row.environment.updated_at),
-                deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
-            },
+            ...(row.environment && defaultSecret
+                ? {
+                      environment: {
+                          ...row.environment,
+                          secret_key: defaultSecret.secret,
+                          pending_secret_key: pendingKey?.secret || null,
+                          created_at: new Date(row.environment.created_at),
+                          updated_at: new Date(row.environment.updated_at),
+                          deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+                      },
+                      secret: defaultSecret
+                  }
+                : {}),
             plan: row.plan
                 ? {
                       ...row.plan,
@@ -751,7 +775,6 @@ class AccountService {
                       orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
                   }
                 : null,
-            secret: defaultSecret,
             auth: {
                 source: 'customer_key' as const,
                 scopes: row.auth_scopes ?? [],
@@ -852,7 +875,7 @@ class AccountService {
      * Used by internal services (persist, runners) that authenticate with the
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
-    private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
+    private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContextWithEnvironment | null> {
         const hash = await this.hashSecretWithCache(secretKey);
 
         const row = await db.readOnly

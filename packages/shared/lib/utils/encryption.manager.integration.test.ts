@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../seeders/index.js';
+import customerKeyService from '../services/customerKey.service.js';
 import environmentService from '../services/environment.service.js';
 import { decryptSandboxSigningSecret } from '../services/sandbox-api-key.js';
 import secretService from '../services/secret.service.js';
@@ -114,6 +115,29 @@ describe('encryption', () => {
             const decryptedSigningSecret = decryptSandboxSigningSecret(rawKey!);
             expect(decryptedSigningSecret).toBeTruthy();
             expect(rawKey!.sandbox_signing_secret).not.toEqual(decryptedSigningSecret);
+        });
+
+        // The re-encryption loop selects customer_keys unfiltered, so it must cover account-plane keys
+        // too — they are in the same table but carry no sandbox signing secret.
+        it('should encrypt account API keys and leave their sandbox columns null', async () => {
+            db.knex.client.config.searchPath = 'nango_encrypt_account_keys';
+            db.schema = () => 'nango_encrypt_account_keys';
+
+            await multipleMigrations();
+
+            // @ts-expect-error Modify the key on the fly
+            encryptionManager.key = testEncryptionKey;
+
+            const { accountApiKey } = await seedAccountEnvAndUser();
+            const rawKey = await db.knex<DBCustomerKey>('customer_keys').where({ id: accountApiKey.id }).first();
+            expect(rawKey).toBeDefined();
+            expect(rawKey!.secret).not.toEqual(accountApiKey.secret);
+            expect(rawKey!.iv).toBeTruthy();
+            expect(rawKey!.tag).toBeTruthy();
+            expect(rawKey!.sandbox_signing_secret).toBeNull();
+
+            const decrypted = (await customerKeyService.getApiKeys(db.knex, { type: 'account', accountId: accountApiKey.account_id })).unwrap();
+            expect(decrypted.find((k) => k.id === accountApiKey.id)?.secret).toEqual(accountApiKey.secret);
         });
     });
 });

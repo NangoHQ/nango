@@ -14,9 +14,11 @@ const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
 // Cache decrypted webhook signing key per environment. No eviction needed since rotation is not supported yet.
 const webhookSigningKeyCache = new Map<number, string>();
-// Internal safety limit — not a product constraint, just prevents unbounded key creation.
+// Internal safety limit per target — not a product constraint, just prevents unbounded key creation.
 // Can be raised without migration if needed.
-export const MAX_API_KEYS_PER_ENV = 50;
+export const MAX_API_KEYS_PER_TARGET = 50;
+
+export type KeyTarget = { type: 'environment'; environmentId: number } | { type: 'account'; accountId: number };
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -24,18 +26,42 @@ class CustomerKeyService {
         await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_customer_key_name_${keyType}"`, [lockKey]);
     }
 
-    private async insertApiKeyForEnvironment(
+    /** Restricts a query to the keys applying to this target, so neither plane sees or mutates the other's. */
+    private scopedToTarget(trx: Knex, target: KeyTarget) {
+        // Correlated subquery rather than a join: these predicates also run inside UPDATE, and Postgres
+        // has no UPDATE ... LEFT JOIN.
+        const boundToEnvironment = trx(CUSTOMER_KEYS_RELATIONS_TABLE)
+            .select(trx.raw('1'))
+            .where('customer_key_id', trx.ref(`${CUSTOMER_KEYS_TABLE}.id`))
+            .where('entity_type', 'environment');
+
+        if (target.type === 'environment') {
+            const boundToThisEnvironment = boundToEnvironment.where('entity_id', target.environmentId);
+            return (qb: Knex.QueryBuilder): void => {
+                void qb.whereExists(boundToThisEnvironment);
+            };
+        }
+
+        // Account keys are this account's keys that are bound to no environment.
+        return (qb: Knex.QueryBuilder): void => {
+            void qb.where(`${CUSTOMER_KEYS_TABLE}.account_id`, target.accountId).whereNotExists(boundToEnvironment);
+        };
+    }
+
+    private async insertApiKey(
         trx: Knex,
         {
             accountId,
-            environmentId,
+            target,
             displayName,
-            scopes
+            scopes,
+            withSandboxSigningSecret
         }: {
             accountId: number;
-            environmentId: number;
+            target: KeyTarget;
             displayName: string;
             scopes: string[];
+            withSandboxSigningSecret: boolean;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
@@ -55,7 +81,7 @@ class CustomerKeyService {
                 iv: '',
                 tag: '',
                 hashed: hashed.value,
-                ...encryptSandboxSigningSecret(createSandboxSigningSecret()),
+                ...(withSandboxSigningSecret ? encryptSandboxSigningSecret(createSandboxSigningSecret()) : {}),
                 last_used_at: null,
                 deleted_at: null
             } satisfies Partial<DBCustomerKey>;
@@ -69,11 +95,13 @@ class CustomerKeyService {
                 return Err(new NangoError('impossible_condition'));
             }
 
-            await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
-                customer_key_id: row.id,
-                entity_type: 'environment',
-                entity_id: environmentId
-            });
+            if (target.type === 'environment') {
+                await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
+                    customer_key_id: row.id,
+                    entity_type: 'environment',
+                    entity_id: target.environmentId
+                });
+            }
 
             row.secret = plainText; // Callers expect unencrypted secret.
             return Ok(row);
@@ -86,54 +114,45 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId,
+            target,
             displayName,
-            scopes = ['environment:*']
+            scopes,
+            withSandboxSigningSecret
         }: {
             accountId: number;
-            environmentId: number;
+            target: KeyTarget;
             displayName: string;
-            scopes?: string[];
+            scopes: string[];
+            withSandboxSigningSecret: boolean;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
             const created = await trx.transaction(async (innerTrx) => {
                 await this.acquireNameLock(innerTrx, accountId, 'api');
 
-                // Check name uniqueness within the environment
                 const existing = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                     .select(`${CUSTOMER_KEYS_TABLE}.id`)
-                    .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                     .where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName)
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                    .modify(this.scopedToTarget(innerTrx, target))
                     .first();
 
                 if (existing) {
                     throw new NangoError('duplicate_api_key', { display_name: displayName });
                 }
 
-                // Check max keys per environment
                 const count = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                    .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                    .modify(this.scopedToTarget(innerTrx, target))
                     .count('* as total')
-                    .first();
-                if (count && Number(count['total']) >= MAX_API_KEYS_PER_ENV) {
-                    throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
+                    .first<{ total: string | number } | undefined>();
+                if (count && Number(count.total) >= MAX_API_KEYS_PER_TARGET) {
+                    throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_TARGET });
                 }
 
-                const inserted = await this.insertApiKeyForEnvironment(innerTrx, {
-                    accountId,
-                    environmentId,
-                    displayName,
-                    scopes
-                });
+                const inserted = await this.insertApiKey(innerTrx, { accountId, target, displayName, scopes, withSandboxSigningSecret });
                 if (inserted.isErr()) {
                     throw inserted.error;
                 }
@@ -200,15 +219,13 @@ class CustomerKeyService {
         }
     }
 
-    public async getApiKeysByEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey[]>> {
+    public async getApiKeys(trx: Knex, target: KeyTarget): Promise<Result<DBCustomerKey[]>> {
         try {
-            const rows = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+            const rows: DBCustomerKey[] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .select(`${CUSTOMER_KEYS_TABLE}.*`)
-                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .modify(this.scopedToTarget(trx, target))
                 .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
 
             const decrypted = rows.map(
@@ -248,21 +265,18 @@ class CustomerKeyService {
         }
     }
 
-    public async renameApiKey(trx: Knex, keyId: number, displayName: string, envId: number, accountId: number): Promise<Result<void>> {
+    public async renameApiKey(trx: Knex, keyId: number, displayName: string, target: KeyTarget, accountId: number): Promise<Result<void>> {
         try {
             await trx.transaction(async (innerTrx) => {
                 await this.acquireNameLock(innerTrx, accountId, 'api');
 
-                // Check uniqueness: no other API key in the same environment should have this name
                 const existing = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                     .select(`${CUSTOMER_KEYS_TABLE}.id`)
-                    .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                     .where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName)
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                     .whereNot(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                    .modify(this.scopedToTarget(innerTrx, target))
                     .first();
 
                 if (existing) {
@@ -273,13 +287,7 @@ class CustomerKeyService {
                     .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                    .whereExists(function () {
-                        void this.select(innerTrx.raw('1'))
-                            .from(CUSTOMER_KEYS_RELATIONS_TABLE)
-                            .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
-                            .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
-                            .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
-                    })
+                    .modify(this.scopedToTarget(innerTrx, target))
                     .update({ display_name: displayName, updated_at: innerTrx.fn.now() as unknown as Date });
                 if (updated === 0) {
                     throw new NangoError('no_such_api_secret', { id: keyId });
@@ -291,19 +299,13 @@ class CustomerKeyService {
         }
     }
 
-    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[], envId: number): Promise<Result<void>> {
+    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[], target: KeyTarget): Promise<Result<void>> {
         try {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .whereExists(function () {
-                    void this.select(trx.raw('1'))
-                        .from(CUSTOMER_KEYS_RELATIONS_TABLE)
-                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
-                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
-                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
-                })
+                .modify(this.scopedToTarget(trx, target))
                 .update({ scopes, updated_at: trx.fn.now() as unknown as Date });
             if (updated === 0) {
                 return Err(new NangoError('no_such_api_secret', { id: keyId }));
@@ -314,19 +316,13 @@ class CustomerKeyService {
         }
     }
 
-    public async deleteCustomerKey(trx: Knex, keyId: number, envId: number): Promise<Result<void>> {
+    public async deleteApiKey(trx: Knex, keyId: number, target: KeyTarget): Promise<Result<void>> {
         try {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .whereExists(function () {
-                    void this.select(trx.raw('1'))
-                        .from(CUSTOMER_KEYS_RELATIONS_TABLE)
-                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
-                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
-                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
-                })
+                .modify(this.scopedToTarget(trx, target))
                 .update({
                     deleted_at: trx.fn.now() as unknown as Date
                 });

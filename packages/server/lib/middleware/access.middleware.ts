@@ -54,8 +54,8 @@ export class AccessMiddleware {
     ): Promise<
         Result<{
             account: DBTeam;
-            environment: DBEnvironment;
-            secret: DBAPISecret;
+            environment?: DBEnvironment;
+            secret?: DBAPISecret;
             plan: DBPlan | null;
             auth?: {
                 source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
@@ -120,8 +120,11 @@ export class AccessMiddleware {
 
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
-            res.locals['environment'] = result.value.environment;
             res.locals['plan'] = result.value.plan;
+            // Absent for account-plane keys; environment routes are gated by their scope guards.
+            if (result.value.environment) {
+                res.locals['environment'] = result.value.environment;
+            }
             if (result.value.auth?.scopes) {
                 res.locals['apiKeyScopes'] = result.value.auth.scopes;
             }
@@ -412,8 +415,10 @@ export class AccessMiddleware {
                 }
                 res.locals['authType'] = 'secretKey';
                 res.locals['account'] = apiKeyResult.value.account;
-                res.locals['environment'] = apiKeyResult.value.environment;
                 res.locals['plan'] = apiKeyResult.value.plan;
+                if (apiKeyResult.value.environment) {
+                    res.locals['environment'] = apiKeyResult.value.environment;
+                }
                 if (apiKeyResult.value.auth?.scopes) {
                     res.locals['apiKeyScopes'] = apiKeyResult.value.auth.scopes;
                 }
@@ -575,8 +580,11 @@ export class AccessMiddleware {
 
             res.locals['authType'] = 'secretKey';
             res.locals['account'] = result.value.account;
-            res.locals['environment'] = result.value.environment;
             res.locals['plan'] = result.value.plan;
+            // Absent for account-plane keys; environment routes are gated by their scope guards.
+            if (result.value.environment) {
+                res.locals['environment'] = result.value.environment;
+            }
             tagTraceUser(result.value);
             next();
         } catch (err) {

@@ -29,7 +29,7 @@ export const deleteApiKey = asyncWrapperWithEnvironment<DeleteApiKey>(async (req
 
     const { environment } = res.locals;
 
-    const result = await customerKeyService.deleteCustomerKey(db.knex, keyId, environment.id);
+    const result = await customerKeyService.deleteApiKey(db.knex, keyId, { type: 'environment', environmentId: environment.id });
     if (result.isErr()) {
         res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
         return;

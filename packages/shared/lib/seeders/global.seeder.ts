@@ -14,15 +14,25 @@ export async function seedAccountEnvAndUser({ plan: planOverride }: { plan?: Par
     env: DBEnvironment;
     secret: DBAPISecret;
     apiKey: DBCustomerKey;
+    accountApiKey: DBCustomerKey;
     user: DBUser;
     plan: DBPlan;
 }> {
     const account = await createAccount();
     const env = await createEnvironmentSeed(account.id, 'dev');
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
-    const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, env.id)).unwrap();
+    const apiKeys = (await customerKeyService.getApiKeys(db.knex, { type: 'environment', environmentId: env.id })).unwrap();
     const apiKey = apiKeys[0]!;
+    const accountApiKey = (
+        await customerKeyService.createApiKey(db.knex, {
+            accountId: account.id,
+            target: { type: 'account', accountId: account.id },
+            displayName: 'Account key',
+            scopes: ['account:*'],
+            withSandboxSigningSecret: false
+        })
+    ).unwrap();
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free', ...planOverride })).unwrap();
     const user = await seedUser(account.id);
-    return { account, env, secret, apiKey, user, plan };
+    return { account, env, secret, apiKey, accountApiKey, user, plan };
 }

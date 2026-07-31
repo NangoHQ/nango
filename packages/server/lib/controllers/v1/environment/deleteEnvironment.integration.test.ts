@@ -38,7 +38,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create prod environment');
         }
 
-        const prodApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, prodEnv.id)).unwrap();
+        const prodApiKeys = (await customerKeyService.getApiKeys(db.knex, { type: 'environment', environmentId: prodEnv.id })).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
@@ -64,7 +64,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create test environment');
         }
 
-        const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
+        const testApiKeys = (await customerKeyService.getApiKeys(db.knex, { type: 'environment', environmentId: testEnv.id })).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
@@ -88,7 +88,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create test environment');
         }
 
-        const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
+        const testApiKeys = (await customerKeyService.getApiKeys(db.knex, { type: 'environment', environmentId: testEnv.id })).unwrap();
 
         // Create a provider config for this environment
         const providerName = 'github';

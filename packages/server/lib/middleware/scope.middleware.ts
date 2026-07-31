@@ -19,20 +19,7 @@ export function hasScope({ grantedScopes, requiredScope }: { grantedScopes: stri
     return false;
 }
 
-export function withScope(requiredScope: ApiKeyScope) {
-    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-        const scopes = res.locals['apiKeyScopes'];
-
-        if (hasScope({ grantedScopes: scopes, requiredScope })) {
-            next();
-            return;
-        }
-
-        res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required: ${requiredScope}` } });
-    };
-}
-
-export function withAnyScope(...requiredScopes: ApiKeyScope[]) {
+function guard(requiredScopes: ApiKeyScope[]) {
     return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
         const scopes = res.locals['apiKeyScopes'];
 
@@ -43,6 +30,28 @@ export function withAnyScope(...requiredScopes: ApiKeyScope[]) {
             }
         }
 
-        res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required one of: ${requiredScopes.join(' or ')}` } });
+        const required = requiredScopes.length > 1 ? `one of: ${requiredScopes.join(' or ')}` : requiredScopes[0];
+        res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required: ${required}` } });
     };
+}
+
+export function withScope(requiredScope: ApiKeyScope) {
+    return guard([requiredScope]);
+}
+
+export function withAnyScope(...requiredScopes: ApiKeyScope[]) {
+    return guard(requiredScopes);
+}
+
+/**
+ * For environment routes whose required scope isn't known at mount time — the `/v1/*splat` catch-all and
+ * the control-plane MCP endpoints resolve their own scopes inside the handler.
+ */
+export function withEnvironment(_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
+    if (!res.locals['environment']) {
+        res.status(403).json({ error: { code: 'forbidden', message: 'This endpoint requires an environment-scoped API key' } });
+        return;
+    }
+
+    next();
 }

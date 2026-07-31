@@ -6,6 +6,7 @@ import authMiddleware from './middleware/access.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { withEnvironment } from './middleware/scope.middleware.js';
 
 import type { Request, RequestHandler } from 'express';
 
@@ -23,8 +24,8 @@ controlPlaneMcpRouter.use(
     }),
     jsonContentTypeMiddleware
 );
-controlPlaneMcpRouter.route('/mcp').post(apiAuth, postControlPlaneMcp);
-controlPlaneMcpRouter.route('/mcp').get(apiAuth, getControlPlaneMcp);
+controlPlaneMcpRouter.route('/mcp').post(apiAuth, withEnvironment, postControlPlaneMcp);
+controlPlaneMcpRouter.route('/mcp').get(apiAuth, withEnvironment, getControlPlaneMcp);
 controlPlaneMcpRouter.use((_, res) => {
     res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
 });
