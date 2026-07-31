@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { multipleMigrations } from '@nangohq/database';
+import db, { multipleMigrations } from '@nangohq/database';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { Err, Ok, wait } from '@nangohq/utils';
 
@@ -118,6 +118,48 @@ describe('refreshOrTestCredentials', () => {
             throw new Error('Failed to decrypt updated connection');
         }
         expect(refreshed).toStrictEqual(decryptedUpdatedConnection);
+    });
+
+    it('should return unknown_connection instead of crashing if the connection is deleted mid-refresh', async () => {
+        const { env, account } = await seedAccountEnvAndUser();
+        const integration = await createConfigSeed(env, 'algolia', 'algolia');
+        const connection = await createConnectionSeed({ env, provider: 'algolia', rawCredentials: { type: 'API_KEY', apiKey: 'foobar' } });
+        const decryptedConnection = encryptionManager.decryptConnection(connection);
+        if (!decryptedConnection) {
+            throw new Error('Failed to decrypt connection');
+        }
+
+        await wait(2);
+        const onFailed = vi.fn();
+        const onSuccess = vi.fn();
+        const onTest = vi.fn(async () => {
+            await db.knex.from('_nango_connections').where({ id: connection.id }).update({ deleted: true, deleted_at: new Date() });
+            return Ok({ tested: true });
+        }) as any;
+
+        const res = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: decryptedConnection,
+            onRefreshFailed: onFailed,
+            onRefreshSuccess: onSuccess,
+            connectionTestHook: onTest,
+            logContextGetter: logContextGetter
+        });
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.type).toBe('unknown_connection');
+        }
+
+        expect(onSuccess).not.toHaveBeenCalled();
+        expect(onFailed).not.toHaveBeenCalled();
+
+        const rows = await db.knex.from('_nango_connections').where({ id: connection.id });
+        expect(rows).toHaveLength(1);
+        expect(rows[0].deleted).toBe(true);
     });
 
     it('should test if api key and fail', async () => {
@@ -309,6 +351,9 @@ describe('refreshOrTestCredentials', () => {
 
         // upsertConnection always resets refresh_exhausted, so set it explicitly after creation
         const exhaustedConnection = await connectionService.updateConnection({ ...decryptedConnection, refresh_exhausted: true });
+        if (!exhaustedConnection) {
+            throw new Error('Failed to update connection');
+        }
 
         await wait(2);
         const onFailed = vi.fn();
