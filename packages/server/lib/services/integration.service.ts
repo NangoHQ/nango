@@ -2,9 +2,7 @@ import db from '@nangohq/database';
 import { configService, getProviders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { integrationToPublicApi } from '../formatters/integration.js';
-
-import type { ApiPublicIntegration, GetPublicListIntegrations } from '@nangohq/types';
+import type { IntegrationConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 type IntegrationServiceErrorCode = 'list_failed';
@@ -19,6 +17,11 @@ export class IntegrationServiceError extends Error {
     }
 }
 
+export interface ListedIntegration {
+    integration: IntegrationConfig;
+    provider: Provider;
+}
+
 class IntegrationService {
     async list({
         environmentId,
@@ -26,7 +29,7 @@ class IntegrationService {
     }: {
         environmentId: number;
         allowedIntegrations?: string[] | null;
-    }): Promise<Result<GetPublicListIntegrations['Success'], IntegrationServiceError>> {
+    }): Promise<Result<ListedIntegration[], IntegrationServiceError>> {
         try {
             let configs = await configService.listProviderConfigs(db.knex, environmentId);
 
@@ -44,7 +47,7 @@ class IntegrationService {
                 configs = configs.filter((config) => allowedIntegrations.includes(config.unique_key));
             }
 
-            const data: ApiPublicIntegration[] = [];
+            const integrations: ListedIntegration[] = [];
             for (const config of configs) {
                 const provider = providers[config.provider];
                 if (!provider) {
@@ -56,10 +59,10 @@ class IntegrationService {
                         })
                     );
                 }
-                data.push(integrationToPublicApi({ integration: config, provider }));
+                integrations.push({ integration: config, provider });
             }
 
-            return Ok({ data });
+            return Ok(integrations);
         } catch (err) {
             return Err(
                 new IntegrationServiceError({

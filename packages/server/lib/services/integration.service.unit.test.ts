@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as shared from '@nangohq/shared';
-import { basePublicUrl } from '@nangohq/utils';
 
 import integrationService from './integration.service.js';
 
@@ -16,46 +15,46 @@ describe('integrationService', () => {
         vi.restoreAllMocks();
     });
 
-    it('lists and formats integrations for an environment', async () => {
-        vi.spyOn(shared.configService, 'listProviderConfigs').mockResolvedValue([
-            integrationFixture({ uniqueKey: 'github', provider: 'github' }),
-            integrationFixture({ uniqueKey: 'slack', provider: 'slack' })
-        ]);
+    it('lists integrations with their providers for an environment', async () => {
+        const githubIntegration = integrationFixture({ uniqueKey: 'github', provider: 'github' });
+        const slackIntegration = integrationFixture({ uniqueKey: 'slack', provider: 'slack' });
+        const githubProvider = providerFixture('GitHub');
+        const slackProvider = providerFixture('Slack');
+
+        vi.spyOn(shared.configService, 'listProviderConfigs').mockResolvedValue([githubIntegration, slackIntegration]);
         vi.spyOn(shared, 'getProviders').mockReturnValue({
-            github: providerFixture('GitHub'),
-            slack: providerFixture('Slack')
+            github: githubProvider,
+            slack: slackProvider
         });
 
         const result = await integrationService.list({ environmentId: 42 });
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toStrictEqual({
-                data: [
-                    publicIntegrationFixture({ uniqueKey: 'github', provider: 'github', displayName: 'GitHub' }),
-                    publicIntegrationFixture({ uniqueKey: 'slack', provider: 'slack', displayName: 'Slack' })
-                ]
-            });
+            expect(result.value).toStrictEqual([
+                { integration: githubIntegration, provider: githubProvider },
+                { integration: slackIntegration, provider: slackProvider }
+            ]);
         }
     });
 
     it('filters integrations to those allowed by a Connect Session', async () => {
-        vi.spyOn(shared.configService, 'listProviderConfigs').mockResolvedValue([
-            integrationFixture({ uniqueKey: 'github', provider: 'github' }),
-            integrationFixture({ uniqueKey: 'slack', provider: 'slack' })
-        ]);
+        const githubIntegration = integrationFixture({ uniqueKey: 'github', provider: 'github' });
+        const slackIntegration = integrationFixture({ uniqueKey: 'slack', provider: 'slack' });
+        const githubProvider = providerFixture('GitHub');
+        const slackProvider = providerFixture('Slack');
+
+        vi.spyOn(shared.configService, 'listProviderConfigs').mockResolvedValue([githubIntegration, slackIntegration]);
         vi.spyOn(shared, 'getProviders').mockReturnValue({
-            github: providerFixture('GitHub'),
-            slack: providerFixture('Slack')
+            github: githubProvider,
+            slack: slackProvider
         });
 
         const result = await integrationService.list({ environmentId: 42, allowedIntegrations: ['slack'] });
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toStrictEqual({
-                data: [publicIntegrationFixture({ uniqueKey: 'slack', provider: 'slack', displayName: 'Slack' })]
-            });
+            expect(result.value).toStrictEqual([{ integration: slackIntegration, provider: slackProvider }]);
         }
     });
 
@@ -128,17 +127,5 @@ function providerFixture(displayName: string): Provider {
         display_name: displayName,
         auth_mode: 'OAUTH2',
         docs: ''
-    };
-}
-
-function publicIntegrationFixture({ uniqueKey, provider, displayName }: { uniqueKey: string; provider: string; displayName: string }) {
-    return {
-        unique_key: uniqueKey,
-        provider,
-        display_name: displayName,
-        logo: `${basePublicUrl}/images/template-logos/${provider}.svg`,
-        forward_webhooks: true,
-        created_at: createdAt.toISOString(),
-        updated_at: updatedAt.toISOString()
     };
 }

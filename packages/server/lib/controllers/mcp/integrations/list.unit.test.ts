@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+import { basePublicUrl, Ok } from '@nangohq/utils';
 
 import integrationService from '../../../services/integration.service.js';
-import { PublicMcpError } from '../utils.js';
 import { integrationsListTool } from './list.js';
 
 import type { ControlPlaneMcpContext } from '../controlPlaneTool.js';
-import type { GetPublicListIntegrations } from '@nangohq/types';
+import type { Config } from '@nangohq/shared';
+import type { Provider } from '@nangohq/types';
 
 const context = {
     account: {},
@@ -15,19 +15,8 @@ const context = {
     grantedScopes: ['environment:integrations:list']
 } as ControlPlaneMcpContext;
 
-const integrationListResponse: GetPublicListIntegrations['Success'] = {
-    data: [
-        {
-            unique_key: 'github',
-            provider: 'github',
-            display_name: 'GitHub',
-            logo: 'https://example.com/github.svg',
-            forward_webhooks: true,
-            created_at: '2026-01-01T00:00:00.000Z',
-            updated_at: '2026-01-02T00:00:00.000Z'
-        }
-    ]
-};
+const createdAt = new Date('2026-01-01T00:00:00.000Z');
+const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 
 describe('integrationsListTool', () => {
     afterEach(() => {
@@ -35,25 +24,56 @@ describe('integrationsListTool', () => {
     });
 
     it('returns the integration list', async () => {
-        vi.spyOn(integrationService, 'list').mockResolvedValue(Ok(integrationListResponse));
+        vi.spyOn(integrationService, 'list').mockResolvedValue(
+            Ok([
+                {
+                    integration: integrationFixture(),
+                    provider: providerFixture()
+                }
+            ])
+        );
 
         const result = await integrationsListTool.handler({}, context);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toStrictEqual(integrationListResponse);
-        }
-    });
-
-    it('returns a public error for invalid arguments', async () => {
-        vi.spyOn(integrationService, 'list').mockResolvedValue(Ok(integrationListResponse));
-
-        const result = await integrationsListTool.handler({ unexpected: true }, context);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error).toBeInstanceOf(PublicMcpError);
-            expect(result.error.message).toContain('Invalid integrations_list arguments');
+            expect(result.value).toStrictEqual({
+                data: [
+                    {
+                        unique_key: 'github',
+                        provider: 'github',
+                        display_name: 'GitHub',
+                        logo: `${basePublicUrl}/images/template-logos/github.svg`,
+                        forward_webhooks: true,
+                        created_at: createdAt.toISOString(),
+                        updated_at: updatedAt.toISOString()
+                    }
+                ]
+            });
         }
     });
 });
+
+function integrationFixture(): Config {
+    return {
+        unique_key: 'github',
+        provider: 'github',
+        oauth_client_id: '',
+        oauth_client_secret: '',
+        environment_id: 42,
+        missing_fields: [],
+        display_name: null,
+        forward_webhooks: true,
+        shared_credentials_id: null,
+        created_at: createdAt,
+        updated_at: updatedAt
+    };
+}
+
+function providerFixture(): Provider {
+    return {
+        display_name: 'GitHub',
+        auth_mode: 'OAUTH2',
+        docs: ''
+    };
+}

@@ -1,5 +1,6 @@
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { integrationToPublicApi } from '../../formatters/integration.js';
 import integrationService from '../../services/integration.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
@@ -18,10 +19,11 @@ export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>
         allowedIntegrations: connectSession?.allowedIntegrations
     });
     if (result.isErr()) {
-        report(result.error);
         res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
         return;
     }
 
-    res.status(200).send(result.value);
+    res.status(200).send({
+        data: result.value.map(({ integration, provider }) => integrationToPublicApi({ integration, provider }))
+    });
 });
