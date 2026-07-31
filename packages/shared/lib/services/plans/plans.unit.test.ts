@@ -22,20 +22,6 @@ describe('mergeFlags', () => {
     });
 
     describe.each([
-        { from: 'growth-v2', to: 'enterprise' },
-        { from: 'enterprise', to: 'free' }
-    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when changing plan from $from to $to', ({ from, to }) => {
-        it('should leave audit trail entitlements untouched, so a manually enabled account keeps them', () => {
-            const currentPlan = makePlan({ code: from, flagOverrides: { has_audit_trail_control_plane: true, has_audit_trail_ui: true } });
-            const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition(to)! });
-
-            // mergeFlags output is spread into the plans UPDATE, so an absent key leaves the column as stored.
-            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
-            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
-        });
-    });
-
-    describe.each([
         { from: 'starter-v2', to: 'free' },
         { from: 'growth-v2', to: 'starter-v2' },
         { from: 'enterprise-cloud-hosted', to: 'free' },
@@ -61,7 +47,9 @@ describe('mergeFlags', () => {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
                     has_otel: true,
-                    proxy_max: 99_999_999
+                    proxy_max: 99_999_999,
+                    has_audit_trail_control_plane: true,
+                    has_audit_trail_ui: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -71,6 +59,10 @@ describe('mergeFlags', () => {
             });
 
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
+            // No plan declares the audit trail columns, so they are absent from the merge and the
+            // plans UPDATE leaves them as stored — an account switched on by hand keeps it.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
+            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
 
@@ -100,7 +92,9 @@ describe('mergeFlags', () => {
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
                     auto_idle: true,
-                    can_disable_connect_ui_watermark: false
+                    can_disable_connect_ui_watermark: false,
+                    has_audit_trail_control_plane: true,
+                    has_audit_trail_ui: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -118,6 +112,8 @@ describe('mergeFlags', () => {
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
+            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
+            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
 });
