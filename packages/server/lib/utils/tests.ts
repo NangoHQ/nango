@@ -2,7 +2,6 @@ import { createServer } from 'node:http';
 import { inspect } from 'node:util';
 
 import express from 'express';
-import getPort from 'get-port';
 import { expect } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
@@ -14,6 +13,7 @@ import { tasks } from '../tasks/index.js';
 
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, DBUser } from '@nangohq/types';
 import type { Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 
 function uriParamsReplacer(tpl: string, data: Record<string, any>) {
     let res = tpl;
@@ -163,9 +163,11 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
     app.set('query parser', 'extended');
     app.use(router);
     const server = createServer(app);
-    const port = await getPort();
+    // listen(0) lets the OS pick the port atomically — get-port's check-then-listen window
+    // can race across concurrent test forks (fileParallelism).
     return new Promise((resolve) => {
-        server.listen(port, () => {
+        server.listen(0, () => {
+            const { port } = server.address() as AddressInfo;
             const url = `http://localhost:${port}`;
             resolve({ server, url, fetch: apiFetch(url) });
         });

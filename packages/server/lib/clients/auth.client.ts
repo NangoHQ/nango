@@ -20,6 +20,8 @@ const SESSION_TABLE = '_nango_sessions';
 // @ts-expect-error types are wrong
 const KnexSessionStore = connectSessionKnex(session) as StoreFactory;
 
+// tests/setup.ts pre-creates this table in globalSetup with the same knex/tablename/sidfieldname
+// so concurrent test forks don't race the store's check-then-create — keep them in sync.
 const sessionStore = new KnexSessionStore({
     knex: database.knex,
     tablename: SESSION_TABLE,
@@ -106,22 +108,22 @@ export function setupAuth(app: express.Router) {
                 const user = await userService.getUserById(0);
 
                 if (!isBasicAuthEnabled) {
-                    return done(null, user);
+                    return void done(null, user);
                 }
 
                 if (username !== process.env['NANGO_DASHBOARD_USERNAME']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (password !== process.env['NANGO_DASHBOARD_PASSWORD']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (!user) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
-                return done(null, user);
+                return void done(null, user);
             })
         );
     }
@@ -134,7 +136,7 @@ export function setupAuth(app: express.Router) {
 
     passport.deserializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            return cb(null, user);
+            return void cb(null, user);
         });
     });
 }

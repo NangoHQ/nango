@@ -2222,7 +2222,7 @@ describe('PostgresStore', () => {
             const date = new Date('2025-01-18T00:00:00Z');
             const next = new Date('2025-01-19T00:00:00Z');
             await db.raw(
-                `CREATE TABLE IF NOT EXISTS nango_records.records_seen_20250118 PARTITION OF nango_records.records_seen FOR VALUES FROM ('${date.toISOString()}') TO ('${next.toISOString()}')`
+                `CREATE TABLE IF NOT EXISTS records_seen_20250118 PARTITION OF records_seen FOR VALUES FROM ('${date.toISOString()}') TO ('${next.toISOString()}')`
             );
             const indexName = 'records_seen_20250118_connection_model_generation';
             const before = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [indexName]);
@@ -2266,10 +2266,10 @@ describe('PostgresStore', () => {
             const syncJobId = rnd.number();
             await upsertRecords({ records: [{ id: '1', name: 'a' }], connectionId, environmentId, model, syncId, syncJobId });
 
-            const { rows } = await db.raw<{ rows: { generation: string }[] }>(
-                `SELECT generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
-                [connectionId, model]
-            );
+            const { rows } = await db.raw<{ rows: { generation: string }[] }>(`SELECT generation FROM records_seen WHERE connection_id = ? AND model = ?`, [
+                connectionId,
+                model
+            ]);
             expect(rows).toHaveLength(1);
             // node-pg returns bigint as string; coerce for the compare.
             expect(Number(rows[0]?.generation)).toBe(syncJobId);

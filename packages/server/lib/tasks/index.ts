@@ -9,6 +9,8 @@ import { exampleTask } from './handlers/example.js';
 
 const logger = getLogger('Server.Tasks');
 
+// tests/setup.ts's tasks pre-migration duplicates this URL/schema wiring (it can't import this
+// module without constructing the whole Tasks instance) — keep them in sync.
 const databaseUrl =
     envs.NANGO_DATABASE_URL ||
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;

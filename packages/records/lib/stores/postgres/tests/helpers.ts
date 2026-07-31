@@ -1,9 +1,10 @@
-import knex from 'knex';
-
 import { envs } from '../../../env.js';
 import { makePostgresConfig } from '../config.js';
 
-const schema = envs.RECORDS_DATABASE_SCHEMA;
+// Dedicated schema, distinct from envs.RECORDS_DATABASE_SCHEMA: this suite truncates its
+// tables between tests, which would corrupt other integration test files (e.g. sync.integration.test.ts
+// in packages/jobs) sharing the default schema if run concurrently (fileParallelism).
+const schema = 'nango_records_postgres_store_test';
 export const testConfig = makePostgresConfig({
     databaseUrl: envs.RECORDS_DATABASE_URL!,
     schema,
@@ -15,9 +16,3 @@ export const testConfig = makePostgresConfig({
         max: envs.RECORDS_DATABASE_POOL_MAX
     }
 });
-const db = knex(testConfig);
-
-// WARNING: to use only in tests
-export async function clearDb(): Promise<void> {
-    await db.raw(`DROP SCHEMA ${schema} CASCADE`);
-}
