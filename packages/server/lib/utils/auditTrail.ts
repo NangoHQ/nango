@@ -10,18 +10,15 @@ async function isEntitled(
     plan: Partial<Pick<DBPlan, AuditTrailEntitlement>> | null | undefined,
     entitlement: AuditTrailEntitlement
 ): Promise<boolean> {
-    // Opt-in for deployments with no flag provider to roll out from, local above all. Bypasses the
-    // rollout flag and the plan, so it is never set in cloud, where the flag is the kill switch.
-    if (flags.hasAuditTrail) {
-        return true;
+    // Without the plans layer there is no entitlement to read and nothing for the rollout to target,
+    // so an explicit deployment opt-in is the only way in — that is how local development enables the
+    // trail, and why self-hosted stays off. Deliberately the opposite of `hasRbac`, which treats a
+    // plan-less deployment as unrestricted. Scoping it here also means the env var cannot weaken the
+    // rollout flag or the entitlement anywhere they apply.
+    if (!flagHasPlan) {
+        return flags.hasAuditTrail;
     }
     if (!(await getFlags().isAuditTrailEnabled(accountUuid))) {
-        return false;
-    }
-    // A deployment without the plans layer has no entitlement to read, so there is nothing to grant.
-    // Self-hosted lands here and stays off once the interim rollout flag is retired. Deliberately the
-    // opposite of `hasRbac`, which treats a plan-less deployment as unrestricted.
-    if (!flagHasPlan) {
         return false;
     }
     return plan?.[entitlement] === true;

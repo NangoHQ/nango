@@ -47,11 +47,11 @@ describe('audit trail entitlement', () => {
             await expect(canViewAuditTrail(UUID, null)).resolves.toBe(true);
         });
 
-        it('bypasses the rollout flag and the plan, which is why it is never set in cloud', async () => {
+        it('cannot weaken the rollout flag or the entitlement where plans exist', async () => {
             setup({ optIn: true, hasPlan: true, unleash: false });
 
-            await expect(canRecordAuditTrail(UUID, notEntitled)).resolves.toBe(true);
-            await expect(canViewAuditTrail(UUID, notEntitled)).resolves.toBe(true);
+            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
+            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
         });
     });
 
