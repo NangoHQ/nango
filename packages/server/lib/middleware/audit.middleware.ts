@@ -179,6 +179,7 @@ async function emit(policy: AuditPolicy, req: Request, res: Response, resolved: 
         }
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
+        metrics.increment(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
     }
 }
 
@@ -192,6 +193,7 @@ interface ResolvedAudit {
 export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<TEndpoint>): RequestHandler {
     return (req, res, next) => {
         void (async () => {
+            let listening = false;
             try {
                 const locals = res.locals as RequestLocals;
                 if (locals.account && (await getFlags().isAuditTrailEnabled(locals.account.uuid))) {
@@ -202,6 +204,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     res.on('finish', () => {
                         void emit(spec.policy, req, res, resolved);
                     });
+                    listening = true;
                     // Resolve target and metadata before the handler runs — some handlers move or overwrite
                     // the pre-mutation state (a removed member, an old role).
                     resolved = {
@@ -211,6 +214,9 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                 }
             } catch (err) {
                 logger.error(`failed to resolve audit target`, err);
+                // Throwing before the listener is registered loses the event outright; after it, the event
+                // still emits with whatever resolved.
+                metrics.increment(listening ? metrics.Types.AUDIT_RESOLVE_FAILED : metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
             } finally {
                 next();
             }
