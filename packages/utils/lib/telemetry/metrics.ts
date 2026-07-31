@@ -161,6 +161,8 @@ export enum Types {
 
     AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED = 'nango.audit.target.display_resolution_failed',
     AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
+    AUDIT_CONSUMER_BATCH_SIZE = 'nango.audit.consumer.batch.size',
+    AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
 
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',

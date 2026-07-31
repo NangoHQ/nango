@@ -1,5 +1,5 @@
 import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
-import type { auditPolicies } from '../../audit-trail/event.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 import type {
     ApiKeyCredentials,
     ApiPublicAllAuthCredentials,
@@ -84,7 +84,7 @@ export type GetPublicConnections = ApiEndpoint<{
 }>;
 
 export type PostPublicConnection = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'connection', 'created', 'environment'>;
     Method: 'POST';
     Path: '/connections';
     Body: {
@@ -166,7 +166,7 @@ export type GetPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchPublicConnection = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'connection', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/connections/:connectionId';
     Params: {
@@ -185,7 +185,7 @@ export type PatchPublicConnection = ApiEndpoint<{
 }>;
 
 export type PatchConnection = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'connection', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/connections/:connectionId';
     Params: {
@@ -205,7 +205,7 @@ export type PatchConnection = ApiEndpoint<{
 }>;
 
 export type PostConnectionRefresh = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'connection', 'refreshed', 'environment'>;
     Method: 'POST';
     Params: {
         connectionId: string;
@@ -224,7 +224,7 @@ export type PostConnectionRefresh = ApiEndpoint<{
 }>;
 
 export type DeletePublicConnection = ApiEndpoint<{
-    Audit: typeof auditPolicies.connectionDeleted;
+    Audit: AuditPolicy<'connection', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/connection/:connectionId';
     Params: { connectionId: string };
@@ -240,5 +240,5 @@ export type DeleteConnection = ApiEndpoint<{
     Querystring: { provider_config_key: string; env: string };
     Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;
     Success: { success: boolean };
-    Audit: typeof auditPolicies.connectionDeleted;
+    Audit: AuditPolicy<'connection', 'deleted', 'environment'>;
 }>;

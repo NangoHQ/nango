@@ -1,8 +1,9 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
 export type PutUpgradePreBuiltFlow = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'function', 'upgraded', 'environment'>;
     Method: 'PUT';
     Path: '/api/v1/flows/pre-built/upgrade';
     Querystring: { env: string };
@@ -22,7 +23,7 @@ export type PutUpgradePreBuiltFlow = ApiEndpoint<{
 }>;
 
 export type PostPreBuiltDeploy = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/flows/pre-built/deploy';
     Querystring: { env: string };
@@ -40,7 +41,7 @@ export type PostPreBuiltDeploy = ApiEndpoint<{
 }>;
 
 export type PatchFlowEnable = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'sync', 'enabled', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/enable';
     Querystring: { env: string };
@@ -60,7 +61,7 @@ export type PatchFlowEnable = ApiEndpoint<{
 }>;
 
 export type PatchFlowDisable = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'sync', 'disabled', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/disable';
     Querystring: { env: string };
@@ -80,7 +81,7 @@ export type PatchFlowDisable = ApiEndpoint<{
 }>;
 
 export type PatchFlowFrequency = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'sync', 'frequency_changed', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/frequency';
     Querystring: { env: string };
