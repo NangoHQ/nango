@@ -23,10 +23,7 @@ const UUID = 'acc-uuid';
 const entitled = { has_audit_trail_control_plane: true, has_audit_trail_ui: true };
 const notEntitled = { has_audit_trail_control_plane: false, has_audit_trail_ui: false };
 
-/**
- * `hasPlan` toggles FLAG_PLAN_ENABLED. `unleash: null` leaves the noop provider in place so the flag
- * resolves to its default, which is how a deployment without Unleash and an Unleash outage behave.
- */
+/** `unleash: null` leaves the noop provider in place, so the flag resolves to its default. */
 function setup({ deployment, hasPlan, unleash }: { deployment: boolean; hasPlan: boolean; unleash: boolean | null }) {
     flags.hasAuditTrail = deployment;
     planFlag.enabled = hasPlan;
@@ -42,9 +39,7 @@ describe('audit trail entitlement', () => {
         vi.restoreAllMocks();
     });
 
-    // The flag cannot be evaluated when no Unleash is configured (local, self-hosted) or it is down.
-    // It then resolves to its default, which is `true` so audit events are never silently dropped.
-    describe('when the flag cannot be evaluated', () => {
+    describe('when the flag cannot be evaluated (no Unleash configured, or an outage)', () => {
         it('records nothing when the deployment switch is off (self-hosted)', async () => {
             setup({ deployment: false, hasPlan: true, unleash: null });
 
