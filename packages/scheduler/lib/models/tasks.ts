@@ -5,7 +5,7 @@ import { Err, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 import { defaultSchedulerConfig } from '../config.js';
 import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
-import * as concurrencyOverrides from './concurrencyOverrides.js';
+import * as groupOverrides from './groupOverrides.js';
 import { SCHEDULES_TABLE } from './schedules.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
@@ -150,8 +150,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
             return Err(sizes.error);
         }
 
-        // Stamp any per-group concurrency override onto the task at create time so the hot dequeue query stays untouched.
-        const overrides = await concurrencyOverrides.getByGroupKeys(db, groupKeys);
+        const overrides = await groupOverrides.getByGroupKeys(db, groupKeys);
         if (overrides.isErr()) {
             return Err(overrides.error);
         }
