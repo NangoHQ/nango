@@ -14,6 +14,19 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createControlPlaneMcpServer', () => {
+    it('exposes the integrations list tool when its scope is granted', async () => {
+        const { client, server } = await createTestClient(['environment:integrations:list']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('disables tools when required scopes are missing', async () => {
         const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
