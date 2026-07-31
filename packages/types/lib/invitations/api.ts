@@ -1,10 +1,11 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiInvitation, ApiTeam } from '../team/api.js';
 import type { ApiUser } from '../user/api.js';
 import type { Role } from '../user/db.js';
 
 export type PostInvite = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'member', 'invited', 'account'>;
     Method: 'POST';
     Path: '/api/v1/invite';
     Querystring: { env: string };
@@ -15,7 +16,7 @@ export type PostInvite = ApiEndpoint<{
 }>;
 
 export type DeleteInvite = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'member', 'invite_revoked', 'account'>;
     Method: 'DELETE';
     Path: '/api/v1/invite';
     Querystring: { env: string };
@@ -42,7 +43,7 @@ export type GetInvite = ApiEndpoint<{
 }>;
 
 export type AcceptInvite = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'member', 'invite_accepted', 'account'>;
     Method: 'POST';
     Path: '/api/v1/invite/:id';
     Params: { id: string };
@@ -52,7 +53,7 @@ export type AcceptInvite = ApiEndpoint<{
 }>;
 
 export type DeclineInvite = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'member', 'invite_declined', 'account'>;
     Method: 'DELETE';
     Path: '/api/v1/invite/:id';
     Params: { id: string };

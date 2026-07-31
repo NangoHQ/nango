@@ -77,14 +77,21 @@ import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
+    auditConnectionCreated,
+    auditFunctionDeployed,
+    auditFunctionDeployedCli,
     auditPublicConnectionDeleted,
     auditPublicConnectionMetadataSet,
     auditPublicConnectionMetadataUpdated,
     auditPublicConnectionUpdated,
     auditPublicFunctionDeleted,
+    auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
     auditPublicIntegrationUpdated,
+    auditPublicQuickstartIntegrationCreated,
     auditPublicSyncFrequencyChanged,
+    auditSyncPaused,
+    auditSyncStarted,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit.middleware.js';
@@ -219,8 +226,10 @@ publicAPI.use('/integrations', jsonContentTypeMiddleware);
 publicAPI
     .route('/integrations')
     .get(connectSessionOrApiAuth, withAnyScope('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
-publicAPI.route('/integrations').post(apiAuth, withScope('environment:integrations:create'), postPublicIntegration);
-publicAPI.route('/integrations/quickstart').post(apiAuth, withScope('environment:integrations:create'), postPublicQuickstartIntegration);
+publicAPI.route('/integrations').post(apiAuth, auditPublicIntegrationCreated, withScope('environment:integrations:create'), postPublicIntegration);
+publicAPI
+    .route('/integrations/quickstart')
+    .post(apiAuth, auditPublicQuickstartIntegrationCreated, withScope('environment:integrations:create'), postPublicQuickstartIntegration);
 publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, auditPublicIntegrationUpdated, withScope('environment:integrations:update'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
@@ -273,7 +282,7 @@ publicAPI.route('/connection').post(apiAuth, withScope('environment:connections:
 
 // Connections
 publicAPI.use('/connections', jsonContentTypeMiddleware);
-publicAPI.route('/connections').post(apiAuth, withScope('environment:connections:create'), postPublicConnection);
+publicAPI.route('/connections').post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 publicAPI.route('/connections/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
 publicAPI.route('/connections/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
@@ -291,7 +300,7 @@ publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:va
 
 // Deploy
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/deploy').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeploy);
+publicAPI.route('/sync/deploy').post(apiAuth, auditFunctionDeployedCli, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeploy);
 publicAPI.route('/sync/deploy/confirmation').post(apiAuth, withScope('environment:deploy'), cliMinVersion('0.39.25'), postDeployConfirmation);
 publicAPI.route('/sync/deploy/internal').post(apiAuth, withScope('environment:deploy'), postDeployInternal);
 
@@ -312,8 +321,8 @@ publicAPI.route('/records/prune').patch(apiAuth, withScope('environment:records:
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
 publicAPI.route('/sync/trigger').post(apiAuth, withScope('environment:syncs:execute'), postPublicTrigger);
-publicAPI.route('/sync/pause').post(apiAuth, withScope('environment:syncs:execute'), postPublicSyncPause);
-publicAPI.route('/sync/start').post(apiAuth, withScope('environment:syncs:execute'), postPublicSyncStart);
+publicAPI.route('/sync/pause').post(apiAuth, auditSyncPaused, withScope('environment:syncs:execute'), postPublicSyncPause);
+publicAPI.route('/sync/start').post(apiAuth, auditSyncStarted, withScope('environment:syncs:execute'), postPublicSyncStart);
 publicAPI.route('/sync/status').get(apiAuth, withScope('environment:syncs:read'), getPublicSyncStatus);
 publicAPI.route('/sync/:name/variant/:variant').post(apiAuth, auditSyncVariantCreated, withScope('environment:syncs:variant:create'), postSyncVariant);
 publicAPI.route('/sync/:name/variant/:variant').delete(apiAuth, auditSyncVariantDeleted, withScope('environment:syncs:variant:delete'), deleteSyncVariant);
@@ -333,7 +342,7 @@ publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionComp
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
-publicAPI.route('/functions/deployments').post(functionDeployAuth, postFunctionDeployment);
+publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeployment);
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 

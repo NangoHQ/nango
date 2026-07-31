@@ -52,7 +52,7 @@ export type GetPublicListIntegrations = ApiEndpoint<{
 }>;
 
 export type PostPublicIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
     Path: '/integrations';
     Body: {
@@ -69,7 +69,7 @@ export type PostPublicIntegration = ApiEndpoint<{
 }>;
 
 export type PostPublicQuickstartIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
     Path: '/integrations/quickstart';
     Body: {
@@ -244,7 +244,7 @@ export type IntegrationAuthBody =
     | InstallPluginAuthBody;
 
 export type PostIntegration = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
