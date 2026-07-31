@@ -15,6 +15,7 @@ export type AuditResource =
     | 'user'
     | 'environment'
     | 'app_auth'
+    | 'mfa'
     | 'billing'
     | 'audit_log';
 
@@ -27,6 +28,7 @@ export type AuditAction =
     | 'deleted'
     | 'paused'
     | 'started'
+    | 'cancelled'
     | 'enabled'
     | 'disabled'
     | 'frequency_changed'
@@ -48,9 +50,14 @@ export type AuditAction =
     | 'signup'
     | 'password_changed'
     | 'password_reset'
+    | 'enrolled'
+    | 'recovery_regenerated'
+    | 'verified'
     | 'plan_changed'
     | 'trial_extended'
     | 'details_changed'
+    | 'payment_method_added'
+    | 'payment_method_removed'
     | 'exported';
 
 export type AuditScope = 'account' | 'environment';

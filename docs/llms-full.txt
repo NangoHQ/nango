@@ -2514,7 +2514,7 @@ Pull the source of a function that is already deployed to an environment so you 
 nango pull github list-repos --env dev
 ```
 
-This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
+This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 
@@ -8636,6 +8636,21 @@ If you encounter any issues during migration, our support team is ready to help.
 - [Functions CLI](/reference/functions/functions-cli) - deploy and dry-run migrated functions.
 - [Testing](/guides/functions/testing) - verify migrated integrations before rollout.
 
+## Contributing to Nango
+
+Source: https://nango.dev/docs/contributing.md
+Description: Learn which external contributions Nango reviews
+
+Thanks for your interest in contributing to Nango. We keep our review capacity focused on two types of external contributions:
+
+- **Security fixes.** Please don't open a public issue or pull request. Report the vulnerability privately as described in our [security policy](https://nango.dev/security).
+- **New API support.** Please follow the [new API contribution guide](/integrations/contribute-or-request-api) and we'll take it from there.
+
+For everything else, including bug fixes, new features, and improvements to existing features and APIs, we don't review external pull requests. We'd still love to hear from you:
+
+- Found something broken? [Report it](https://github.com/NangoHQ/nango/issues) and we'll take a look.
+- Questions, ideas, or feedback? Join us in the [community Slack](https://nango.dev/slack).
+
 ## Frontend SDK
 
 Source: https://nango.dev/docs/reference/frontend/frontend-sdk.md
@@ -9590,13 +9605,23 @@ Returns the status and result of an asynchronous function dry run.
 
 ## Create a function deployment
 
-Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.md
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments-create.md
 
 <Info>
   Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 Deploys a function to an existing integration: either submitted TypeScript source code (`type: function`) or a template from the provider catalog (`type: template`).
+
+## Get a function deployment
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments-get.md
+
+<Info>
+  Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the status and result of an asynchronous function deployment.
 
 ## Get integration functions config
 
@@ -14627,7 +14652,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `apify` | Apify | API_KEY | [docs](https://nango.dev/docs/integrations/all/apify.md) | [connect](https://nango.dev/docs/integrations/all/apify/connect.md) |  | dev-tools, analytics, productivity |
 | `apollo` | Apollo (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/apollo.md) | [connect](https://nango.dev/docs/api-integrations/apollo/connect.md) |  | marketing |
 | `apollo-oauth` | Apollo (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/apollo-oauth.md) |  |  | marketing |
-| `apple-app-store` | Apple App Store | APP_STORE | [docs](https://nango.dev/docs/api-integrations/apple-app-store.md) | [connect](https://nango.dev/docs/api-integrations/apple-app-store/connect.md) |  | e-commerce |
+| `apple-app-store` | Apple App Store | JWT | [docs](https://nango.dev/docs/api-integrations/apple-app-store.md) | [connect](https://nango.dev/docs/api-integrations/apple-app-store/connect.md) |  | e-commerce |
 | `apple-business-manager` | Apple Business Manager | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/apple-business-manager.md) | [connect](https://nango.dev/docs/api-integrations/apple-business-manager/connect.md) |  | productivity |
 | `appstle-subscriptions` | Appstle Subscriptions | API_KEY | [docs](https://nango.dev/docs/integrations/all/appstle-subscriptions.md) | [connect](https://nango.dev/docs/integrations/all/appstle-subscriptions/connect.md) |  | productivity |
 | `asana` | Asana | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/asana.md) |  | [setup](https://nango.dev/docs/api-integrations/asana/how-to-register-your-own-asana-api-oauth-app.md) | productivity, ticketing |
@@ -14975,6 +15000,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
 | `immybot` | ImmyBot | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/immybot.md) | [connect](https://nango.dev/docs/api-integrations/immybot/connect.md) |  | dev-tools, support |
 | `incident-io` | Incident.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/incident-io.md) | [connect](https://nango.dev/docs/integrations/all/incident-io/connect.md) |  | ticketing |
+| `ingenious-build` | INGENIOUS.BUILD | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/ingenious-build.md) | [connect](https://nango.dev/docs/api-integrations/ingenious-build/connect.md) |  | erp, accounting |
+| `ingenious-build-pat` | INGENIOUS.BUILD (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/ingenious-build-pat.md) | [connect](https://nango.dev/docs/api-integrations/ingenious-build-pat/connect.md) |  | erp, accounting |
 | `insightly` | Insightly | BASIC | [docs](https://nango.dev/docs/integrations/all/insightly.md) |  |  | crm |
 | `instagram` | Instagram | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/instagram.md) |  | [setup](https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app.md) | marketing, social |
 | `instantly` | Instantly | API_KEY | [docs](https://nango.dev/docs/integrations/all/instantly.md) | [connect](https://nango.dev/docs/integrations/all/instantly/connect.md) |  | marketing, communication |
@@ -15361,6 +15388,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `surecontact` | SureContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/surecontact.md) | [connect](https://nango.dev/docs/api-integrations/surecontact/connect.md) |  | crm |
 | `survey-monkey` | SurveyMonkey | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/survey-monkey.md) |  |  | surveys |
 | `swoogo` | Swoogo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/swoogo.md) | [connect](https://nango.dev/docs/api-integrations/swoogo/connect.md) |  | marketing |
+| `syncore` | Syncore | API_KEY | [docs](https://nango.dev/docs/api-integrations/syncore.md) | [connect](https://nango.dev/docs/api-integrations/syncore/connect.md) |  | crm |
 | `tableau` | Tableau (PAT) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tableau.md) | [connect](https://nango.dev/docs/integrations/all/tableau/connect.md) |  | analytics |
 | `tailscale` | Tailscale (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tailscale.md) | [connect](https://nango.dev/docs/integrations/all/tailscale/connect.md) |  | dev-tools, productivity |
 | `tailscale-api-key` | Tailscale (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/tailscale-api-key.md) | [connect](https://nango.dev/docs/integrations/all/tailscale-api-key/connect.md) |  | dev-tools, productivity |
@@ -15395,6 +15423,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `trading-economics` | Trading Economics | API_KEY | [docs](https://nango.dev/docs/api-integrations/trading-economics.md) | [connect](https://nango.dev/docs/api-integrations/trading-economics/connect.md) |  | analytics |
 | `trafft` | Trafft | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/trafft.md) | [connect](https://nango.dev/docs/integrations/all/trafft/connect.md) |  | productivity |
 | `trakstar-hire` | Trakstar Hire | BASIC | [docs](https://nango.dev/docs/integrations/all/trakstar-hire.md) | [connect](https://nango.dev/docs/integrations/all/trakstar-hire/connect.md) |  | ats |
+| `transporeon-oauth2-cc` | Transporeon Appointment Scheduling (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/transporeon-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/transporeon-oauth2-cc/connect.md) |  | other |
 | `trello` | Trello | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/trello.md) |  |  | productivity, ticketing |
 | `trello-scim` | Trello (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/trello-scim.md) | [connect](https://nango.dev/docs/integrations/all/trello-scim/connect.md) |  | productivity, ticketing |
 | `tremendous` | Tremendous | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tremendous.md) |  |  | payment |

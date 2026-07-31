@@ -13,6 +13,7 @@ import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
 import {
+    confirmEmail,
     getEmailByExpiredToken,
     getEmailByUuid,
     getOnboardingHearAboutUs,
@@ -21,7 +22,6 @@ import {
     resendVerificationEmailByUuid,
     signin,
     signup,
-    validateEmailAndLogin,
     validateSigninRequest
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
@@ -125,6 +125,8 @@ import {
     auditApiKeyUpdated,
     auditAppAuthPasswordChanged,
     auditBillingDetailsChanged,
+    auditBillingPaymentMethodAdded,
+    auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
     auditBillingTrialExtended,
     auditConnectionDeleted,
@@ -140,12 +142,18 @@ import {
     auditIntegrationUpdated,
     auditMemberRemoved,
     auditMemberRoleChanged,
+    auditMfaDisabled,
+    auditMfaEnabled,
+    auditMfaEnrolled,
+    auditMfaRecoveryRegenerated,
+    auditMfaVerified,
     auditSyncDisabled,
     auditSyncEnabled,
     auditSyncFrequencyChanged,
     auditTeamUpdated,
     auditUserUpdated
 } from './middleware/audit.middleware.js';
+import { auditSyncCommand } from './middleware/auditSyncCommand.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -206,7 +214,7 @@ if (flagHasAuth) {
     web.route('/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
     web.route('/account/email/expired-token/:token').get(rateLimiterMiddleware, getEmailByExpiredToken);
-    web.route('/account/verify/code').post(rateLimiterMiddleware, validateEmailAndLogin);
+    web.route('/account/verify/code').post(rateLimiterMiddleware, confirmEmail);
 }
 
 if (flagHasManagedAuth) {
@@ -222,11 +230,11 @@ if (flagHasManagedAuth) {
 web.route('/meta').get(webAuth, getMeta);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
-web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, deleteMFA);
-web.route('/account/mfa/enroll').post(webAuth, postMFAEnrollment);
-web.route('/account/mfa/activate').post(webAuth, postMFAActivation);
-web.route('/account/mfa/recovery-codes').post(webAuth, postMFARecoveryCodes);
-web.route('/account/mfa/login/verify').post(rateLimiterMiddleware, postMFALoginVerification);
+web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, auditMfaDisabled, deleteMFA);
+web.route('/account/mfa/enroll').post(webAuth, auditMfaEnrolled, postMFAEnrollment);
+web.route('/account/mfa/activate').post(webAuth, auditMfaEnabled, postMFAActivation);
+web.route('/account/mfa/recovery-codes').post(webAuth, auditMfaRecoveryRegenerated, postMFARecoveryCodes);
+web.route('/account/mfa/login/verify').post(rateLimiterMiddleware, auditMfaVerified, postMFALoginVerification);
 
 // Team
 web.route('/team').get(webAuth, getTeam);
@@ -385,6 +393,7 @@ web.route('/plain').get(webAuth, getPlainHmac);
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(
     webAuth,
+    auditSyncCommand,
     can({ action: 'update', resource: 'sync_command', scopedBy: envScope }),
     syncController.syncCommand.bind(syncController)
 );
@@ -418,8 +427,8 @@ web.route('/logs/insights').post(webAuth, can({ action: 'read', resource: 'log',
 // Stripe / Billing
 if (flagHasUsage) {
     web.route('/stripe/payment_methods').get(webAuth, can(p.canManageBilling), getStripePaymentMethods);
-    web.route('/stripe/payment_methods').post(webAuth, can(p.canManageBilling), postStripeCollectPayment);
-    web.route('/stripe/payment_methods').delete(webAuth, can(p.canManageBilling), deleteStripePaymentMethod);
+    web.route('/stripe/payment_methods').post(webAuth, auditBillingPaymentMethodAdded, can(p.canManageBilling), postStripeCollectPayment);
+    web.route('/stripe/payment_methods').delete(webAuth, auditBillingPaymentMethodRemoved, can(p.canManageBilling), deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
     web.route('/orb/webhooks').post((_req, _res, next) => {
