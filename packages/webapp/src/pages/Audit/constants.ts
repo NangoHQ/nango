@@ -1,44 +1,44 @@
 import { formatKeyToLabel } from '@/utils/utils';
 
 import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
-import type { AuditAction, AuditResource } from '@nangohq/types';
+import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
 
 /**
- * The actions each resource can be recorded with. Hand-maintained against the emit side's
- * `AuditResourceAction` union, which lives in a server package the dashboard can't import — so a new
- * audited event has to be added here too, or it stays unfilterable. `Record<AuditResource, …>` at least
- * makes a new *resource* a compile error. An empty list means nothing is emitted for that resource yet.
+ * Runtime twin of the audit event vocabulary: `@nangohq/types` emits no JavaScript, so the table can't
+ * cross the package boundary as a value. Kept in step by the checks below, as `apiKeyScopes` does in
+ * `@nangohq/utils`.
  */
-const actionsByResource: Record<AuditResource, readonly AuditAction[]> = {
-    connection: ['updated', 'metadata_updated', 'refreshed', 'deleted'],
-    integration: ['updated', 'deleted'],
-    function: ['deleted'],
-    api_key: ['updated', 'deleted'],
+const actionsByResource = {
+    connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
     sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
-    member: ['role_changed', 'removed'],
+    function: ['deployed', 'upgraded', 'deleted'],
+    integration: ['created', 'updated', 'deleted'],
+    api_key: ['created', 'updated', 'deleted'],
+    member: ['invited', 'invite_accepted', 'invite_declined', 'invite_revoked', 'role_changed', 'removed'],
     team: ['updated'],
     user: ['updated'],
-    environment: ['updated', 'variables_changed', 'webhook_urls_changed', 'deleted'],
-    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed'],
-    app_auth: ['password_changed'],
+    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'deleted'],
+    app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
     mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
-    audit_log: []
-};
+    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed']
+} as const satisfies { [R in AuditResource]: readonly AuditActionOf<R>[] };
+
+type ListedEvent = { [R in AuditResource]: `${R}.${(typeof actionsByResource)[R][number]}` }[AuditResource];
+true satisfies [Exclude<AuditEventKey, ListedEvent>] extends [never] ? true : never;
 
 const resourceLabels: Record<AuditResource, string> = {
     connection: 'Connection',
-    integration: 'Integration',
-    function: 'Function',
-    api_key: 'API key',
     sync: 'Sync',
+    function: 'Function',
+    integration: 'Integration',
+    api_key: 'API key',
     member: 'Member',
     team: 'Team',
     user: 'User',
     environment: 'Environment',
-    billing: 'Billing',
     app_auth: 'Authentication',
     mfa: 'MFA',
-    audit_log: 'Audit log'
+    billing: 'Billing'
 };
 
 export const ALL = 'all';
@@ -46,12 +46,9 @@ export const ALL = 'all';
 export type ResourceFilter = AuditResource | typeof ALL;
 export type ActionFilter = AuditAction | typeof ALL;
 
-// Resources with nothing to record are left out rather than offered as a filter that matches nothing.
 export const resourceOptions: FilterOption<ResourceFilter>[] = [
     { value: ALL, label: 'All' },
-    ...(Object.keys(actionsByResource) as AuditResource[]).flatMap((resource) =>
-        actionsByResource[resource].length > 0 ? [{ value: resource, label: resourceLabels[resource] }] : []
-    )
+    ...(Object.keys(actionsByResource) as AuditResource[]).map((resource) => ({ value: resource, label: resourceLabels[resource] }))
 ];
 
 export function actionOptionsFor(resource: AuditResource): FilterOption<ActionFilter>[] {
