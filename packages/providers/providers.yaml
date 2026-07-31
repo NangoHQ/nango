@@ -22418,6 +22418,35 @@ trafft:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+transporeon-oauth2-cc:
+    display_name: Transporeon Appointment Scheduling (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://id.eu.trimble-transportation.com/api/identity/v2/oauth2/token
+    token_request_auth_method: basic
+    body_format: query
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://yard-management-planning-api.dev.eu.trimble-transportation.com
+    docs: https://nango.dev/docs/api-integrations/transporeon-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your API client ID.
+            example: username@companyId
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your API client secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+
 tremendous:
     display_name: Tremendous
     categories:

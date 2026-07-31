@@ -28,6 +28,7 @@ export type AuditAction =
     | 'deleted'
     | 'paused'
     | 'started'
+    | 'cancelled'
     | 'enabled'
     | 'disabled'
     | 'frequency_changed'
@@ -56,6 +57,8 @@ export type AuditAction =
     | 'plan_changed'
     | 'trial_extended'
     | 'details_changed'
+    | 'payment_method_added'
+    | 'payment_method_removed'
     | 'exported';
 
 export type AuditScope = 'account' | 'environment';

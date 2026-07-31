@@ -126,6 +126,8 @@ import {
     auditApiKeyUpdated,
     auditAppAuthPasswordChanged,
     auditBillingDetailsChanged,
+    auditBillingPaymentMethodAdded,
+    auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
     auditBillingTrialExtended,
     auditConnectionDeleted,
@@ -160,6 +162,7 @@ import {
     auditTeamUpdated,
     auditUserUpdated
 } from './middleware/audit.middleware.js';
+import { auditSyncCommand } from './middleware/auditSyncCommand.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -399,6 +402,7 @@ web.route('/plain').get(webAuth, getPlainHmac);
 web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
 web.route('/sync/command').post(
     webAuth,
+    auditSyncCommand,
     can({ action: 'update', resource: 'sync_command', scopedBy: envScope }),
     syncController.syncCommand.bind(syncController)
 );
@@ -432,8 +436,8 @@ web.route('/logs/insights').post(webAuth, can({ action: 'read', resource: 'log',
 // Stripe / Billing
 if (flagHasUsage) {
     web.route('/stripe/payment_methods').get(webAuth, can(p.canManageBilling), getStripePaymentMethods);
-    web.route('/stripe/payment_methods').post(webAuth, can(p.canManageBilling), postStripeCollectPayment);
-    web.route('/stripe/payment_methods').delete(webAuth, can(p.canManageBilling), deleteStripePaymentMethod);
+    web.route('/stripe/payment_methods').post(webAuth, auditBillingPaymentMethodAdded, can(p.canManageBilling), postStripeCollectPayment);
+    web.route('/stripe/payment_methods').delete(webAuth, auditBillingPaymentMethodRemoved, can(p.canManageBilling), deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
     web.route('/orb/webhooks').post((_req, _res, next) => {

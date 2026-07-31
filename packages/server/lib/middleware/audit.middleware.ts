@@ -25,6 +25,7 @@ import type {
     DeletePublicConnection,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
+    DeleteStripePayment,
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
@@ -60,6 +61,7 @@ import type {
     PostPublicQuickstartIntegration,
     PostPublicSyncPause,
     PostPublicSyncStart,
+    PostStripeCollectPayment,
     PostSyncVariant,
     PutBillingInvoicingDetails,
     PutPublicSyncConnectionFrequency,
@@ -126,7 +128,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-function resolveActor(locals: RequestLocals): AuditActor {
+export function resolveActor(locals: RequestLocals): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
@@ -143,7 +145,7 @@ function resolveActor(locals: RequestLocals): AuditActor {
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
 
-function contextFromRequest(req: Request): AuditContext {
+export function contextFromRequest(req: Request): AuditContext {
     const context: AuditContext = {};
     if (req.ip) {
         context.ip = req.ip;
@@ -155,7 +157,7 @@ function contextFromRequest(req: Request): AuditContext {
     return context;
 }
 
-function outcomeFromStatus(status: number): AuditOutcome {
+export function outcomeFromStatus(status: number): AuditOutcome {
     if (status < 300) {
         return 'success';
     }
@@ -592,6 +594,17 @@ export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
 });
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
     policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
+});
+// SetupIntent only — pm id isn't known yet (arrives via webhook); response is just a client secret, so nothing to record.
+export const auditBillingPaymentMethodAdded = auditable<PostStripeCollectPayment>({
+    policy: Audit.auditable({ resource: 'billing', action: 'payment_method_added', scope: 'account' })
+});
+export const auditBillingPaymentMethodRemoved = auditable<DeleteStripePayment>({
+    policy: Audit.auditable({ resource: 'billing', action: 'payment_method_removed', scope: 'account' }),
+    metadata: (req) =>
+        typeof req.query.payment_id === 'string' && req.query.payment_id.length > 0 && req.query.payment_id.length <= 255
+            ? { paymentMethodId: req.query.payment_id }
+            : undefined
 });
 
 export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
