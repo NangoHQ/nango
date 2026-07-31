@@ -1340,6 +1340,8 @@
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "integrations/all/incident-io",
+              "api-integrations/ingenious-build",
+              "api-integrations/ingenious-build-pat",
               "integrations/all/insightly",
               "api-integrations/instagram",
               "integrations/all/instantly",
