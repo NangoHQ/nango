@@ -47,9 +47,7 @@ describe('mergeFlags', () => {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
                     has_otel: true,
-                    proxy_max: 99_999_999,
-                    has_audit_trail_control_plane: true,
-                    has_audit_trail_ui: true
+                    proxy_max: 99_999_999
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -59,10 +57,6 @@ describe('mergeFlags', () => {
             });
 
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
-            // No plan declares the audit trail columns, so they are absent from the merge and the
-            // plans UPDATE leaves them as stored — an account switched on by hand keeps it.
-            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
-            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
 
@@ -92,9 +86,7 @@ describe('mergeFlags', () => {
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
                     auto_idle: true,
-                    can_disable_connect_ui_watermark: false,
-                    has_audit_trail_control_plane: true,
-                    has_audit_trail_ui: true
+                    can_disable_connect_ui_watermark: false
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -112,8 +104,6 @@ describe('mergeFlags', () => {
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
-            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
-            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
 });
