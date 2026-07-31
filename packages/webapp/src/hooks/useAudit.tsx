@@ -26,7 +26,6 @@ export function useApiGetAuditTrail(filters: AuditTrailFilters, options?: { enab
             if (filters.to) {
                 params.append('to', filters.to);
             }
-            // Typed vocabulary in, comma-separated on the wire.
             if (filters.resources?.length) {
                 params.append('resources', filters.resources.join(','));
             }

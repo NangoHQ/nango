@@ -110,6 +110,18 @@ describe('GET /api/v1/audit-trail', () => {
         expect(event.action).toBe('deleted');
     });
 
+    // The cap bounds the cross product the store builds, so it has to count values rather than characters.
+    it('caps how many values one filter param can carry', async () => {
+        const { session } = await authAdmin();
+        const values = (n: number) => Array.from({ length: n }, (_, i) => `resource_${i}`).join(',');
+
+        const atCap = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: values(50) } });
+        expect(atCap.res.status).toBe(200);
+
+        const overCap = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: values(51) } });
+        expect(overCap.res.status).toBe(400);
+    });
+
     it('rejects `actions` sent without `resources` with 400', async () => {
         const { session } = await authAdmin();
         const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { actions: 'deleted' } });
