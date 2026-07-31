@@ -33,7 +33,7 @@ export interface DBFunctionConfigVersion extends TimestampsAndDeletedAt {
 }
 
 export interface DBFunctionInstance extends TimestampsAndDeletedAt {
-    id: string;
+    id: number;
     nango_connection_id: number;
     function_config_id: number;
     name: string;

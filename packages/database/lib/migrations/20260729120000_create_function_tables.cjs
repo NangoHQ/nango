@@ -72,7 +72,7 @@ exports.up = async function (knex) {
             ON DELETE SET NULL (current_version_id) DEFERRABLE INITIALLY DEFERRED;
 
         CREATE TABLE IF NOT EXISTS function_instances (
-            id                    UUID PRIMARY KEY,
+            id                    INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             nango_connection_id   INTEGER NOT NULL REFERENCES _nango_connections(id) ON DELETE CASCADE,
             function_config_id    INTEGER NOT NULL REFERENCES function_configs(id) ON DELETE CASCADE,
             name                  TEXT NOT NULL,
