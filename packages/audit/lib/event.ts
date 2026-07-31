@@ -37,7 +37,15 @@ export interface SyncFrequencyChangedMetadata {
     providerConfigKey?: string;
     frequency?: string;
 }
+export interface SyncStateMetadata {
+    providerConfigKey?: string;
+}
 export interface SyncVariantMetadata {
+    variant?: string;
+}
+export interface SyncTriggeredMetadata {
+    full?: boolean;
+    deleteRecords?: boolean;
     variant?: string;
 }
 export interface MemberRoleChangedMetadata {
@@ -93,6 +101,9 @@ export type AuditResourceAction =
     | { resource: 'sync'; action: 'enabled' | 'disabled' }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
+    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncStateMetadata }
+    | { resource: 'sync'; action: 'triggered'; metadata?: SyncTriggeredMetadata }
+    | { resource: 'sync'; action: 'cancelled' }
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
