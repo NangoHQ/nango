@@ -77,7 +77,7 @@ function subscribeConcurrency(concurrency: number | undefined): number {
     return Math.max(1, Math.min(10, Math.floor(n)));
 }
 
-function unwrapSqsBody(body: string): string {
+export function unwrapSqsBody(body: string): string {
     let parsed: unknown;
     try {
         parsed = JSON.parse(body);
@@ -91,7 +91,7 @@ function unwrapSqsBody(body: string): string {
     return body;
 }
 
-function getSubjectMessageAttribute(body: string, messageAttributes?: unknown): string | undefined {
+export function getSubjectMessageAttribute(body: string, messageAttributes?: unknown): string | undefined {
     const attrs = sqsMessageAttributesSchema.safeParse(messageAttributes);
     if (attrs.success) {
         const fromSqsAttr = attrs.data['subject']?.StringValue;
@@ -136,7 +136,7 @@ export class SnsSqs implements Transport {
         this.sns = props?.snsClient ?? new SNSClient({});
         this.sqs = props?.sqsClient ?? new SQSClient({});
         this.queueUrls = props?.queueUrls ?? {};
-        this.topicArns = { ...(props?.topicArns ?? {}) };
+        this.topicArns = { ...props?.topicArns };
     }
 
     public async connect(_props?: { timeoutMs: number }): Promise<Result<void>> {

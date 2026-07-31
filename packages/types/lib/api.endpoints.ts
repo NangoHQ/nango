@@ -1,4 +1,5 @@
 import type {
+    ConfirmEmail,
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
@@ -189,6 +190,7 @@ export type PublicApiEndpoints =
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | ConfirmEmail
     | PostSignup
     | PostSignin
     | PostLogout
