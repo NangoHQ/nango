@@ -1,14 +1,7 @@
-// Non-throwing extracts, unlike the ORDER BY keys: a blob these can't read is still a storable event,
-// so it must not be rejected at insert.
-//
-// `resource_action` is a separate column because two `set` indexes AND-ed prune per column, not per
-// pair — a granule holding `connection.created` and `api_key.deleted` passes both `resource='connection'`
-// and `action='deleted'` while containing no `connection.deleted`. There is no standalone `action`
-// column: filtering by action alone isn't offered, so it would index nothing anyone queries.
-//
-// ALTER only fills new parts; older ones evaluate the expression on read (correct, just unpruned) and
-// pick up the column when they next merge. No MATERIALIZE step: the table is empty at this migration,
-// and on a large one it would be a blocking mutation at metering boot.
+// Non-throwing extracts, unlike the ORDER BY keys: a blob these can't read is still a storable event.
+// `resource_action` is its own column because two `set` indexes AND-ed prune per column, not per pair.
+// No MATERIALIZE: old parts evaluate on read and pick the column up when they next merge, and on a
+// large table it would be a blocking mutation at metering boot.
 export const sql = [
     `
     ALTER TABLE {database:Identifier}.audit_trail_events
