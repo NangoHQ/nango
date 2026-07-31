@@ -5,5 +5,5 @@ import { globalEnv } from './env';
 import type { StripeError } from '@stripe/stripe-js';
 
 const stripePublishableKey = globalEnv.publicStripeKey;
-export const stripePromise = loadStripe(stripePublishableKey);
+export const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : Promise.resolve(null);
 export type { StripeError };
