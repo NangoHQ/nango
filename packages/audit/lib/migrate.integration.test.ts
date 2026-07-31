@@ -55,7 +55,7 @@ describe('audit migrate', () => {
         expect(Number((await res.json<{ count: string }>())[0]!.count)).toBe(2);
     });
 
-    it('rejects an event whose accountId is missing or malformed, but accepts account 0', async () => {
+    it('rejects an accountId that is missing, malformed or negative, and accepts account 0', async () => {
         const insert = async (id: string, accountId?: unknown): Promise<'accepted' | 'rejected'> => {
             const event = { id, occurredAt: '2026-07-29T10:00:00.000Z', ...(accountId === undefined ? {} : { accountId }) };
             try {
@@ -74,12 +74,12 @@ describe('audit migrate', () => {
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000002', 1)).toBe('accepted');
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000003', 'not-a-number')).toBe('rejected');
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000004')).toBe('rejected');
-        expect(await insert('aaaaaaaa-0000-0000-0000-000000000006', -5)).toBe('rejected');
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000005', -5)).toBe('rejected');
 
         // The self-hosted account every deployment is seeded with, and the one a no-auth request runs as.
-        expect(await insert('aaaaaaaa-0000-0000-0000-000000000005', 0)).toBe('accepted');
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000006', 0)).toBe('accepted');
         const stored = await admin.query({
-            query: `SELECT account_id FROM ${database}.audit_trail_events WHERE id = 'aaaaaaaa-0000-0000-0000-000000000005'`,
+            query: `SELECT account_id FROM ${database}.audit_trail_events WHERE id = 'aaaaaaaa-0000-0000-0000-000000000006'`,
             format: 'JSONEachRow'
         });
         expect((await stored.json<{ account_id: string }>()).map((r) => Number(r.account_id))).toEqual([0]);
