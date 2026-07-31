@@ -125,8 +125,6 @@ describe('mergeFlags', () => {
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
-            // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
-            // whatever was set by hand.
             expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
