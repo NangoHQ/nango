@@ -94,12 +94,12 @@ describe('audit trail entitlement', () => {
             await expect(canViewAuditTrail(UUID, undefined)).resolves.toBe(false);
         });
 
-        // Self-hosted has no plans, so the flag alone decides — the convention `hasRbac` already uses.
-        it('skips the entitlement where there are no plans to read one from', async () => {
+        // Self-hosted has no plans layer, so it stays off even once the interim flag is retired.
+        it('stays off where there are no plans to read an entitlement from', async () => {
             setup({ optIn: false, hasPlan: false, unleash: true });
 
-            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(true);
-            await expect(canViewAuditTrail(UUID, null)).resolves.toBe(true);
+            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
+            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
         });
     });
 });

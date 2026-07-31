@@ -18,9 +18,11 @@ async function isEntitled(
     if (!(await getFlags().isAuditTrailEnabled(accountUuid))) {
         return false;
     }
-    // No plans to read an entitlement from, as on self-host. Same convention as `hasRbac`.
+    // A deployment without the plans layer has no entitlement to read, so there is nothing to grant.
+    // Self-hosted lands here and stays off once the interim rollout flag is retired. Deliberately the
+    // opposite of `hasRbac`, which treats a plan-less deployment as unrestricted.
     if (!flagHasPlan) {
-        return true;
+        return false;
     }
     return plan?.[entitlement] === true;
 }
