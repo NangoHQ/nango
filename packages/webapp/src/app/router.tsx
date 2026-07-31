@@ -189,7 +189,7 @@ export const router = sentryCreateBrowserRouter([
             {
                 path: '/team/audit',
                 element: <AuditShow />,
-                handle: { breadcrumb: 'Audit log' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Audit trail' } as BreadcrumbHandle
             },
             {
                 path: '/:env',

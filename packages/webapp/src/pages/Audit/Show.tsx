@@ -65,13 +65,13 @@ export const AuditShow: React.FC = () => {
     // Menu entry + route are gated on the flag and the permission, but guard direct navigation too.
     if (meta && !meta.auditTrail) {
         return (
-            <DashboardLayout fullWidth title="Audit log">
+            <DashboardLayout fullWidth title="Audit trail">
                 <Helmet>
-                    <title>Audit log - Nango</title>
+                    <title>Audit trail - Nango</title>
                 </Helmet>
                 <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
-                    <h2 className="text-xl text-center">Audit log not enabled</h2>
-                    <div className="text-sm text-text-muted">The audit log is not enabled for this account.</div>
+                    <h2 className="text-xl text-center">Audit trail not enabled</h2>
+                    <div className="text-sm text-text-muted">The audit trail is not enabled for this account.</div>
                 </div>
             </DashboardLayout>
         );
@@ -79,22 +79,22 @@ export const AuditShow: React.FC = () => {
 
     if (user && !canReadAuditTrail) {
         return (
-            <DashboardLayout fullWidth title="Audit log">
+            <DashboardLayout fullWidth title="Audit trail">
                 <Helmet>
-                    <title>Audit log - Nango</title>
+                    <title>Audit trail - Nango</title>
                 </Helmet>
                 <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
                     <h2 className="text-xl text-center">Access denied</h2>
-                    <div className="text-sm text-text-muted">Your role does not have access to the audit log.</div>
+                    <div className="text-sm text-text-muted">Your role does not have access to the audit trail.</div>
                 </div>
             </DashboardLayout>
         );
     }
 
     return (
-        <DashboardLayout fullWidth title="Audit log">
+        <DashboardLayout fullWidth title="Audit trail">
             <Helmet>
-                <title>Audit log - Nango</title>
+                <title>Audit trail - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-3">
