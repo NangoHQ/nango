@@ -21,6 +21,7 @@ import type {
     DeletePublicConnection,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
+    DeleteStripePayment,
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
@@ -45,6 +46,7 @@ import type {
     PostMFARecoveryCodes,
     PostPlanChange,
     PostPlanExtendTrial,
+    PostStripeCollectPayment,
     PostSyncVariant,
     PutBillingInvoicingDetails,
     PutPublicSyncConnectionFrequency,
@@ -533,6 +535,17 @@ export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
 });
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
     policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
+});
+// SetupIntent only — pm id isn't known yet (arrives via webhook); response is just a client secret, so nothing to record.
+export const auditBillingPaymentMethodAdded = auditable<PostStripeCollectPayment>({
+    policy: Audit.auditable({ resource: 'billing', action: 'payment_method_added', scope: 'account' })
+});
+export const auditBillingPaymentMethodRemoved = auditable<DeleteStripePayment>({
+    policy: Audit.auditable({ resource: 'billing', action: 'payment_method_removed', scope: 'account' }),
+    metadata: (req) =>
+        typeof req.query.payment_id === 'string' && req.query.payment_id.length > 0 && req.query.payment_id.length <= 255
+            ? { paymentMethodId: req.query.payment_id }
+            : undefined
 });
 
 export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({

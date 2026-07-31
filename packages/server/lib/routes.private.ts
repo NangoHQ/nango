@@ -125,6 +125,8 @@ import {
     auditApiKeyUpdated,
     auditAppAuthPasswordChanged,
     auditBillingDetailsChanged,
+    auditBillingPaymentMethodAdded,
+    auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
     auditBillingTrialExtended,
     auditConnectionDeleted,
@@ -431,8 +433,8 @@ web.route('/logs/insights').post(webAuth, can({ action: 'read', resource: 'log',
 // Stripe / Billing
 if (flagHasUsage) {
     web.route('/stripe/payment_methods').get(webAuth, can(p.canManageBilling), getStripePaymentMethods);
-    web.route('/stripe/payment_methods').post(webAuth, can(p.canManageBilling), postStripeCollectPayment);
-    web.route('/stripe/payment_methods').delete(webAuth, can(p.canManageBilling), deleteStripePaymentMethod);
+    web.route('/stripe/payment_methods').post(webAuth, auditBillingPaymentMethodAdded, can(p.canManageBilling), postStripeCollectPayment);
+    web.route('/stripe/payment_methods').delete(webAuth, auditBillingPaymentMethodRemoved, can(p.canManageBilling), deleteStripePaymentMethod);
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
     web.route('/orb/webhooks').post((_req, _res, next) => {
