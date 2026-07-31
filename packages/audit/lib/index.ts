@@ -1,5 +1,5 @@
 export type * from './event.js';
-export type { AuditReader, AuditWriter } from './store.js';
+export type { AuditBatchWriter, AuditReader, AuditWriter } from './store.js';
 export { ClickhouseAuditStore, DropAuditStore } from './store.js';
 export { PubSubAuditWriter } from './pubsub.js';
 export { AUDIT_DATABASE, auditClickhouseClient } from './clickhouse.js';

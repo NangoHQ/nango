@@ -839,7 +839,8 @@
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
-                          "reference/backend/http-api/functions/deployments",
+                          "reference/backend/http-api/functions/deployments-create",
+                          "reference/backend/http-api/functions/deployments-get",
                           "reference/backend/http-api/scripts/config"
                         ]
                       },
@@ -1688,6 +1689,7 @@
               "api-integrations/slack",
               "api-integrations/slack-mcp",
               "api-integrations/swoogo",
+              "api-integrations/syncore",
               "api-integrations/talentlms",
               "api-integrations/tally",
               "api-integrations/telegram",
@@ -1761,6 +1763,7 @@
               "integrations/all/tailscale",
               "integrations/all/tailscale-api-key",
               "integrations/all/trakstar-hire",
+              "api-integrations/transporeon-oauth2-cc",
               "integrations/all/trello",
               "integrations/all/tldv",
               "integrations/all/trello-scim",
