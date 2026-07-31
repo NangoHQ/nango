@@ -3,7 +3,6 @@ import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
-import { flags } from '@nangohq/utils';
 
 import {
     auditConnectionUpdated,
@@ -56,12 +55,10 @@ async function runAudit(handler: RequestHandler, req: any, res: any) {
 describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
-        flags.hasAuditTrail = true;
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterEach(() => {
-        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -166,8 +163,8 @@ describe('auditable() middleware behavior (unit)', () => {
     });
 
     // The per-account entitlement branch needs plans enabled, so it lives in audit.integration.test.ts.
-    it('records nothing when the audit trail is disabled for the deployment', async () => {
-        flags.hasAuditTrail = false;
+    it('records nothing when the rollout flag is off for the account', async () => {
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
         const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
         const res = fakeRes(locals);
 

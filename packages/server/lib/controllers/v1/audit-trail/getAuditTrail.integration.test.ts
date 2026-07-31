@@ -4,7 +4,6 @@ import { auditClickhouseClient, AuditClient, ClickhouseAuditStore } from '@nango
 import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 import { migrate } from '@nangohq/usage';
-import { flags } from '@nangohq/utils';
 
 import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
 
@@ -43,13 +42,11 @@ describe('GET /api/v1/audit-trail', () => {
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
-        flags.hasAuditTrail = true;
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(async () => {
         api.server.close();
-        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
         await auditClient.close();
     });

@@ -10,14 +10,15 @@ async function isEntitled(
     plan: Partial<Pick<DBPlan, AuditTrailEntitlement>> | null | undefined,
     entitlement: AuditTrailEntitlement
 ): Promise<boolean> {
-    // Deployment gate first, so a deployment that never opted in cannot be switched on from Unleash.
-    if (!flags.hasAuditTrail) {
-        return false;
+    // Opt-in for deployments with no flag provider to roll out from, local above all. Bypasses the
+    // rollout flag and the plan, so it is never set in cloud, where the flag is the kill switch.
+    if (flags.hasAuditTrail) {
+        return true;
     }
     if (!(await getFlags().isAuditTrailEnabled(accountUuid))) {
         return false;
     }
-    // Deployments without plans have nothing to read an entitlement from.
+    // No plans to read an entitlement from, as on self-host. Same convention as `hasRbac`.
     if (!flagHasPlan) {
         return true;
     }

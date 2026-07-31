@@ -3,7 +3,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
-import { flags } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
@@ -29,14 +28,12 @@ describe('audit middleware — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // Enable the audit trail for this deployment; each account still has to be entitled on its plan.
-        flags.hasAuditTrail = true;
+        // Roll the flag out to every account here; each one still has to be entitled on its plan.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
         api.server.close();
-        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 

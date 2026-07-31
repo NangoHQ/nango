@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
 import { mfaService, updatePlanByTeam, userService } from '@nangohq/shared';
-import { flags, nanoid } from '@nangohq/utils';
+import { nanoid } from '@nangohq/utils';
 
 import { audit } from '../../../../audit.js';
 import { isSuccess, runServer } from '../../../../utils/tests.js';
@@ -63,12 +63,10 @@ describe('MFA verify audit — pending-login session (private API)', () => {
         // getFlags() returns the stable noop facade in tests; force the MFA feature on.
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
-        flags.hasAuditTrail = true;
     });
 
     afterAll(() => {
         api.server.close();
-        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
