@@ -10,6 +10,7 @@ import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput 
 
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
 import { apiFetch } from '../../../utils/api';
@@ -340,10 +341,10 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         <tbody>
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
-                                    <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
+                                    <EmptyCard className="text-center text-text-strong">
                                         <div className="text-center">No logs found</div>
                                         <div className="text-text-muted">Note that logs older than 15 days are automatically cleared.</div>
-                                    </div>
+                                    </EmptyCard>
                                 </td>
                             </tr>
                         </tbody>

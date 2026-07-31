@@ -2,6 +2,7 @@ import { useQueryState } from 'nuqs';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
+import { EmptyCard } from '../../components/ui/EmptyCard';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
@@ -23,7 +24,7 @@ export const LogsShow: React.FC = () => {
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
-                <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-strong text-center p-10 py-20">
+                <EmptyCard className="text-center text-text-strong">
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-text-muted">
                         Follow{' '}
@@ -32,7 +33,7 @@ export const LogsShow: React.FC = () => {
                         </Link>{' '}
                         to configure logs.
                     </div>
-                </div>
+                </EmptyCard>
             </DashboardLayout>
         );
     }

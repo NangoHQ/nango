@@ -3,7 +3,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, FieldLabel, Input } from '@nangohq/design-system';
+import { Button, Card, CardContent, CardHeader, CardTitle, FieldLabel, Input } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
@@ -38,56 +38,62 @@ export const ImpersonateForm: React.FC = () => {
     };
 
     return (
-        <div className="w-100 flex flex-col gap-3 p-6 border border-border-default rounded-md relative">
-            <h3 className="text-heading-sm text-text-strong absolute top-[-12px] left-3 bg-surface-canvas px-1">Nango admin</h3>
-            <h3 className="text-heading-sm text-text-strong">Impersonate account</h3>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="account_uuid">Account UUID</FieldLabel>
-                        <FormField
-                            control={form.control}
-                            name="account_uuid"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <Input placeholder="Account UUID" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
+        <div className="relative w-100">
+            <h3 className="text-heading-sm text-text-strong absolute top-[-12px] left-3 z-10 bg-surface-canvas px-1">Nango admin</h3>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Impersonate account</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-2">
+                                <FieldLabel htmlFor="account_uuid">Account UUID</FieldLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="account_uuid"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <Input placeholder="Account UUID" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="login_reason">Login reason</FieldLabel>
-                        <FormField
-                            control={form.control}
-                            name="login_reason"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <Input placeholder="Login reason" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    <Alert variant="warning">
-                        <TriangleAlert />
-                        <AlertDescription>
-                            <span>Impersonating an account will allow you to login as that account and perform actions on their behalf.</span>
-                        </AlertDescription>
-                    </Alert>
-                    <div className="self-end">
-                        <Button type="submit" variant="danger">
-                            Impersonate
-                        </Button>
-                    </div>
-                    {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
-                </form>
-            </Form>
+                            <div className="flex flex-col gap-2">
+                                <FieldLabel htmlFor="login_reason">Login reason</FieldLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="login_reason"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormControl>
+                                                <Input placeholder="Login reason" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <Alert variant="warning">
+                                <TriangleAlert />
+                                <AlertDescription>
+                                    <span>Impersonating an account will allow you to login as that account and perform actions on their behalf.</span>
+                                </AlertDescription>
+                            </Alert>
+                            <div className="self-end">
+                                <Button type="submit" variant="danger">
+                                    Impersonate
+                                </Button>
+                            </div>
+                            {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
         </div>
     );
 };
