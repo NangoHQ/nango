@@ -2514,7 +2514,7 @@ Pull the source of a function that is already deployed to an environment so you 
 nango pull github list-repos --env dev
 ```
 
-This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
+This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
 
 ## Related guides
 
@@ -6857,6 +6857,16 @@ The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
 If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
 </Note>
 
+### Management MCP server
+
+The [Management MCP server](/reference/backend/management-mcp) runs as part of the main Nango server. To enable it, configure a dedicated hostname and route traffic for that hostname to the Nango server:
+
+```sh
+NANGO_MANAGEMENT_MCP_SERVER_URL=https://mcp.example.com
+```
+
+The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango uses the request hostname to distinguish Management MCP traffic from the public API. Restart the Nango server after setting the environment variable; the Management MCP endpoint is then available at `https://mcp.example.com/mcp`.
+
 ### Connect UI
 
 Nango Connect is available for self-hosted deployments in the main Docker image.
@@ -8626,6 +8636,21 @@ If you encounter any issues during migration, our support team is ready to help.
 - [Functions CLI](/reference/functions/functions-cli) - deploy and dry-run migrated functions.
 - [Testing](/guides/functions/testing) - verify migrated integrations before rollout.
 
+## Contributing to Nango
+
+Source: https://nango.dev/docs/contributing.md
+Description: Learn which external contributions Nango reviews
+
+Thanks for your interest in contributing to Nango. We keep our review capacity focused on two types of external contributions:
+
+- **Security fixes.** Please don't open a public issue or pull request. Report the vulnerability privately as described in our [security policy](https://nango.dev/security).
+- **New API support.** Please follow the [new API contribution guide](/integrations/contribute-or-request-api) and we'll take it from there.
+
+For everything else, including bug fixes, new features, and improvements to existing features and APIs, we don't review external pull requests. We'd still love to hear from you:
+
+- Found something broken? [Report it](https://github.com/NangoHQ/nango/issues) and we'll take a look.
+- Questions, ideas, or feedback? Join us in the [community Slack](https://nango.dev/slack).
+
 ## Frontend SDK
 
 Source: https://nango.dev/docs/reference/frontend/frontend-sdk.md
@@ -9580,13 +9605,23 @@ Returns the status and result of an asynchronous function dry run.
 
 ## Create a function deployment
 
-Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.md
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments-create.md
 
 <Info>
   Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 Deploys a function to an existing integration: either submitted TypeScript source code (`type: function`) or a template from the provider catalog (`type: template`).
+
+## Get a function deployment
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments-get.md
+
+<Info>
+  Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the status and result of an asynchronous function deployment.
 
 ## Get integration functions config
 
@@ -14581,6 +14616,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `adobe-commerce` | Adobe Commerce | API_KEY | [docs](https://nango.dev/docs/api-integrations/adobe-commerce.md) | [connect](https://nango.dev/docs/api-integrations/adobe-commerce/connect.md) |  | e-commerce |
 | `adobe-umapi` | UMAPI (Adobe User Management API) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adobe-umapi.md) | [connect](https://nango.dev/docs/integrations/all/adobe-umapi/connect.md) |  | other |
 | `adobe-workfront` | Adobe Workfront | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/adobe-workfront.md) | [connect](https://nango.dev/docs/integrations/all/adobe-workfront/connect.md) |  | productivity |
+| `adoxx-cc` | ADOXX (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/adoxx-cc.md) | [connect](https://nango.dev/docs/api-integrations/adoxx-cc/connect.md) |  | dev-tools |
 | `adp` | ADP | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp.md) | [connect](https://nango.dev/docs/integrations/all/adp/connect.md) |  | hr |
 | `adp-lyric` | ADP Lyric | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-lyric.md) | [connect](https://nango.dev/docs/integrations/all/adp-lyric/connect.md) |  | hr |
 | `adp-run` | RUN Powered by ADP | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/adp-run.md) | [connect](https://nango.dev/docs/integrations/all/adp-run/connect.md) |  | hr |
@@ -15286,7 +15322,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `sentry` | Sentry | API_KEY | [docs](https://nango.dev/docs/integrations/all/sentry.md) | [connect](https://nango.dev/docs/integrations/all/sentry/connect.md) |  | dev-tools, analytics |
 | `sentry-oauth` | Sentry (Public Integrations) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/sentry-oauth.md) | [connect](https://nango.dev/docs/integrations/all/sentry-oauth/connect.md) |  | dev-tools, analytics |
 | `servicem8` | ServiceM8 | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/servicem8.md) |  |  | productivity |
-| `servicenow` | ServiceNow | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/servicenow.md) |  |  | productivity, popular |
+| `servicenow` | ServiceNow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/servicenow.md) | [connect](https://nango.dev/docs/api-integrations/servicenow/connect.md) | [setup](https://nango.dev/docs/api-integrations/servicenow/how-to-register-your-own-servicenow-oauth-app.md) | productivity, popular |
 | `servicenow-oauth2-cc` | ServiceNow (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc/connect.md) |  | productivity, ticketing |
 | `setmore` | Setmore | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/setmore.md) | [connect](https://nango.dev/docs/integrations/all/setmore/connect.md) |  | productivity |
 | `sharepoint-online` | SharePoint Online (v2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sharepoint-online.md) |  | [setup](https://nango.dev/docs/api-integrations/sharepoint-online/how-to-register-your-own-sharepoint-online-api-oauth-app.md) | storage, communication, popular |
@@ -15350,6 +15386,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `surecontact` | SureContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/surecontact.md) | [connect](https://nango.dev/docs/api-integrations/surecontact/connect.md) |  | crm |
 | `survey-monkey` | SurveyMonkey | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/survey-monkey.md) |  |  | surveys |
 | `swoogo` | Swoogo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/swoogo.md) | [connect](https://nango.dev/docs/api-integrations/swoogo/connect.md) |  | marketing |
+| `syncore` | Syncore | API_KEY | [docs](https://nango.dev/docs/api-integrations/syncore.md) | [connect](https://nango.dev/docs/api-integrations/syncore/connect.md) |  | crm |
 | `tableau` | Tableau (PAT) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tableau.md) | [connect](https://nango.dev/docs/integrations/all/tableau/connect.md) |  | analytics |
 | `tailscale` | Tailscale (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tailscale.md) | [connect](https://nango.dev/docs/integrations/all/tailscale/connect.md) |  | dev-tools, productivity |
 | `tailscale-api-key` | Tailscale (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/tailscale-api-key.md) | [connect](https://nango.dev/docs/integrations/all/tailscale-api-key/connect.md) |  | dev-tools, productivity |
@@ -15384,6 +15421,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `trading-economics` | Trading Economics | API_KEY | [docs](https://nango.dev/docs/api-integrations/trading-economics.md) | [connect](https://nango.dev/docs/api-integrations/trading-economics/connect.md) |  | analytics |
 | `trafft` | Trafft | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/trafft.md) | [connect](https://nango.dev/docs/integrations/all/trafft/connect.md) |  | productivity |
 | `trakstar-hire` | Trakstar Hire | BASIC | [docs](https://nango.dev/docs/integrations/all/trakstar-hire.md) | [connect](https://nango.dev/docs/integrations/all/trakstar-hire/connect.md) |  | ats |
+| `transporeon-oauth2-cc` | Transporeon Appointment Scheduling (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/transporeon-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/transporeon-oauth2-cc/connect.md) |  | other |
 | `trello` | Trello | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/trello.md) |  |  | productivity, ticketing |
 | `trello-scim` | Trello (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/trello-scim.md) | [connect](https://nango.dev/docs/integrations/all/trello-scim/connect.md) |  | productivity, ticketing |
 | `tremendous` | Tremendous | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tremendous.md) |  |  | payment |

@@ -1,7 +1,8 @@
 import type { ApiEndpoint } from '../../api.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 
 export type PatchWebhook = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'environment', 'webhook_urls_changed', 'environment'>;
     Method: 'PATCH';
     Querystring: {
         env: string;

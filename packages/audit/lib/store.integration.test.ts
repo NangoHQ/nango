@@ -1,32 +1,14 @@
 import { createClient } from '@clickhouse/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { AuditClient } from './audit.js';
+import { migrate } from './migrate.js';
 import { ClickhouseAuditStore } from './store.js';
 
 import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 
-// `audit_trail_events` currently lives in the `usage` ClickHouse DB, created by the usage migration
-// (a future change will move it to a dedicated audit DB + migration owned here). To keep this package's
-// tests self-contained, the test owns a throwaway DB and mirrors that migration's DDL rather than depending
-// on @nangohq/usage. Keep in sync with:
-//   packages/usage/lib/clickhouse/migrations/20260715000009_create_audit_trail_events.ts
 const database = 'audit_store_test';
-const createTable = `
-    CREATE TABLE IF NOT EXISTS ${database}.audit_trail_events
-    (
-        event          String CODEC(ZSTD(3)),
-        retention_days UInt16,
-        id             UUID          MATERIALIZED toUUID(JSONExtractString(event, 'id')),
-        account_id     Int64         MATERIALIZED JSONExtractInt(event, 'accountId'),
-        occurred_at    DateTime64(3) MATERIALIZED parseDateTime64BestEffort(JSONExtractString(event, 'occurredAt'), 3)
-    )
-    ENGINE = ReplacingMergeTree
-    PARTITION BY (retention_days, toYYYYMM(occurred_at))
-    ORDER BY (account_id, occurred_at, id)
-    TTL toDateTime(occurred_at) + INTERVAL retention_days DAY
-    SETTINGS ttl_only_drop_parts = 1
-`;
 
 // Recent base time so rows aren't born-expired by the retention TTL.
 const base = new Date('2026-07-16T10:00:00.000Z').getTime();
@@ -35,7 +17,7 @@ const at = (offsetMs: number) => new Date(base + offsetMs).toISOString();
 let client: ClickHouseClient;
 let store: ClickhouseAuditStore;
 
-// Raw insert with a known id so read assertions are deterministic (record() stamps a random id).
+// Known ids so the read assertions below are deterministic.
 async function insertEvent({ id, accountId, occurredAt }: { id: string; accountId: number; occurredAt: string }) {
     const event = {
         id,
@@ -61,9 +43,9 @@ beforeAll(async () => {
     const url = process.env['CLICKHOUSE_URL']!;
     const admin = createClient({ url });
     await admin.command({ query: `DROP DATABASE IF EXISTS ${database}` });
-    await admin.command({ query: `CREATE DATABASE ${database}` });
-    await admin.command({ query: createTable });
     await admin.close();
+
+    (await migrate({ clickhouseUrl: url, database })).unwrap();
 
     client = createClient({ url, database });
     store = new ClickhouseAuditStore(client);
@@ -112,8 +94,8 @@ describe('ClickhouseAuditStore.list', () => {
     });
 });
 
-describe('ClickhouseAuditStore.record', () => {
-    it('writes an event that reads back with a stamped id + version', async () => {
+describe('AuditClient.record through ClickhouseAuditStore', () => {
+    it('writes an emitted event that reads back with the id + version stamped at emit', async () => {
         const event: AuditEvent = {
             occurredAt: at(5000),
             accountId: 7,
@@ -125,7 +107,7 @@ describe('ClickhouseAuditStore.record', () => {
             context: {},
             outcome: 'success'
         };
-        expect((await store.record(event)).isOk()).toBe(true);
+        expect((await new AuditClient(store, store).record(event)).isOk()).toBe(true);
 
         const { events } = (await store.list({ accountId: 7, limit: 10 })).unwrap();
         expect(events).toHaveLength(1);
@@ -133,5 +115,33 @@ describe('ClickhouseAuditStore.record', () => {
         expect(events[0]!.version).toBe('2026-07-16');
         expect(events[0]!.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         expect(events[0]!.resource).toBe('connection');
+    });
+});
+
+describe('ClickhouseAuditStore.list deduplication', () => {
+    it('returns one row for an event that was stored twice', async () => {
+        const id = '44444444-4444-4444-4444-444444444444';
+        // Merges are what eventually collapse a ReplacingMergeTree duplicate, and on a table this small one
+        // fires almost immediately — stopping them is what makes this test the read path rather than a merge.
+        await client.command({ query: `SYSTEM STOP MERGES ${database}.audit_trail_events` });
+        try {
+            // At-least-once delivery: the same event, same ORDER BY key, written by two separate attempts.
+            await insertEvent({ id, accountId: 9, occurredAt: at(3000) });
+            await insertEvent({ id, accountId: 9, occurredAt: at(3000) });
+
+            const raw = await client.query({
+                query: `SELECT count() AS c FROM ${database}.audit_trail_events WHERE account_id = 9`,
+                format: 'JSONEachRow'
+            });
+            expect(Number((await raw.json<{ c: string | number }>())[0]!.c)).toBe(2);
+
+            // Both rows are in storage, yet the read returns one — so a redelivered event never shows up
+            // twice in the dashboard while it waits for a merge.
+            const { events } = (await store.list({ accountId: 9, limit: 10 })).unwrap();
+            expect(events).toHaveLength(1);
+            expect(events[0]!.id).toBe(id);
+        } finally {
+            await client.command({ query: `SYSTEM START MERGES ${database}.audit_trail_events` });
+        }
     });
 });

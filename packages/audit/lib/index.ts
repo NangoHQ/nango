@@ -1,5 +1,7 @@
 export type * from './event.js';
-export type { AuditStore } from './store.js';
+export type { AuditBatchWriter, AuditReader, AuditWriter } from './store.js';
 export { ClickhouseAuditStore, DropAuditStore } from './store.js';
-export { auditClickhouseClient } from './clickhouse.js';
-export { Audit, InvalidAuditCursorError } from './audit.js';
+export { PubSubAuditWriter } from './pubsub.js';
+export { AUDIT_DATABASE, auditClickhouseClient } from './clickhouse.js';
+export { migrate } from './migrate.js';
+export { AuditClient, InvalidAuditCursorError } from './audit.js';
