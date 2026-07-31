@@ -1,6 +1,7 @@
 import tracer from 'dd-trace';
 
 import * as metrics from '../telemetry/metrics.js';
+import { withInternalTls } from '../tls/internal.js';
 
 import type { Endpoint } from '@nangohq/types';
 import type { Express, NextFunction, Request, Response } from 'express';
@@ -78,12 +79,15 @@ export const routeFetch = <E extends Endpoint<any>>(
         const url = `${baseUrl}${path}${search.toString()}`;
         try {
             const headers = body ? { 'content-type': 'application/json' } : {};
-            const res = await fetch(url, {
-                method: route.method,
-                headers,
-                body: body ? JSON.stringify(body) : null,
-                signal: AbortSignal.timeout(config?.timeoutMs || 120_000)
-            });
+            const res = await fetch(
+                url,
+                withInternalTls({
+                    method: route.method,
+                    headers,
+                    body: body ? JSON.stringify(body) : null,
+                    signal: AbortSignal.timeout(config?.timeoutMs || 120_000)
+                })
+            );
             let json: Endpoint<E>['Reply'] = {};
             if (res.headers.get('content-type')?.includes('application/json')) {
                 json = (await res.json()) as Endpoint<E>['Reply'];

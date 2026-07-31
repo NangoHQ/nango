@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getRedis } from '@nangohq/kvstore';
 import { Ok } from '@nangohq/utils';
@@ -18,9 +18,9 @@ describe('Usage', () => {
         usageTracker = new UsageTracker(redis);
     });
 
-    afterAll(async () => {
-        await redis.disconnect();
-    });
+    // No teardown: `getRedis` hands back a process-wide cached client, so disconnecting it
+    // here closes it for every later test file too. RedisKVStore.destroy() is a no-op for the
+    // same reason. The container is torn down by the global teardown.
 
     beforeEach(async () => {
         await redis.flushAll(); // Clear all usage data before each test
