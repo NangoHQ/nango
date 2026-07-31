@@ -10,7 +10,6 @@ import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
-import { postPublicAppStoreAuthorization } from './controllers/auth/postAppStore.js';
 import { postPublicAwsSigV4Authorization } from './controllers/auth/postAwsSigV4.js';
 import { postPublicBasicAuthorization } from './controllers/auth/postBasic.js';
 import { postPublicBillAuthorization } from './controllers/auth/postBill.js';
@@ -190,8 +189,6 @@ publicAPI.route('/auth/oauth-outbound/:providerConfigKey').post(connectSessionOr
 publicAPI.use('/api-auth', jsonContentTypeMiddleware);
 publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicApiKeyAuthorization);
 publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBasicAuthorization);
-publicAPI.use('/app-store-auth', jsonContentTypeMiddleware);
-publicAPI.route('/app-store-auth/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAppStoreAuthorization);
 publicAPI.use('/auth', jsonContentTypeMiddleware);
 publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
 publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
