@@ -97,39 +97,6 @@ exports.up = async function (knex) {
 
         CREATE UNIQUE INDEX IF NOT EXISTS function_instances_id_config_unique_idx
             ON function_instances (id, function_config_id);
-
-        CREATE TABLE IF NOT EXISTS function_runs (
-            id                          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-            function_instance_id        UUID NOT NULL,
-            function_config_version_id  INTEGER NOT NULL,
-            function_config_id          INTEGER NOT NULL,
-            task_id                     TEXT NOT NULL,
-            log_id                      TEXT NOT NULL,
-            status                      TEXT NOT NULL CONSTRAINT function_runs_status_check CHECK (status IN ('RUNNING', 'SUCCESS', 'ERROR', 'CANCELLED')),
-            result                      JSONB,
-            created_at                  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at                  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            deleted_at                  TIMESTAMPTZ,
-            CONSTRAINT function_runs_instance_config_fkey
-                FOREIGN KEY (function_instance_id, function_config_id)
-                REFERENCES function_instances(id, function_config_id) ON DELETE CASCADE,
-            CONSTRAINT function_runs_config_version_config_fkey
-                FOREIGN KEY (function_config_version_id, function_config_id)
-                REFERENCES function_config_versions(id, function_config_id) ON DELETE CASCADE
-        );
-
-        CREATE INDEX IF NOT EXISTS function_runs_config_version_id_idx
-            ON function_runs (function_config_version_id);
-
-        CREATE INDEX IF NOT EXISTS function_runs_task_id_idx
-            ON function_runs (task_id);
-
-        CREATE INDEX IF NOT EXISTS function_runs_instance_running_created_at_idx
-            ON function_runs (function_instance_id, created_at DESC)
-            WHERE status = 'RUNNING';
-
-        CREATE INDEX IF NOT EXISTS function_runs_instance_created_at_idx
-            ON function_runs (function_instance_id, created_at DESC);
     `);
 };
 
