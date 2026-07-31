@@ -31,15 +31,15 @@ describe('asyncWrapperWithEnvironment', () => {
         expect(spies.status).not.toHaveBeenCalled();
     });
 
-    it('does NOT run the handler and returns 500 when the environment is missing', async () => {
+    it('does NOT run the handler and returns 403 when the environment is missing', async () => {
         const { req, res, spies } = mockReqRes({});
         const handler = vi.fn();
 
         await asyncWrapperWithEnvironment<AnyEndpoint>(handler)(req, res, (() => undefined) as NextFunction);
 
         expect(handler).not.toHaveBeenCalled();
-        expect(spies.status).toHaveBeenCalledWith(500);
-        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'server_error' } });
+        expect(spies.status).toHaveBeenCalledWith(403);
+        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'forbidden', message: 'This endpoint requires an environment-scoped API key' } });
     });
 
     it('routes a rejecting handler to next() rather than an unhandled rejection', async () => {
@@ -61,11 +61,11 @@ describe('requireEnvironment', () => {
         expect(spies.status).not.toHaveBeenCalled();
     });
 
-    it('responds 500 and returns null when absent', () => {
+    it('responds 403 and returns null when absent', () => {
         const { req, res, spies } = mockReqRes({});
 
         expect(requireEnvironment(req, res)).toBeNull();
-        expect(spies.status).toHaveBeenCalledWith(500);
-        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'server_error' } });
+        expect(spies.status).toHaveBeenCalledWith(403);
+        expect(spies.send).toHaveBeenCalledWith({ error: { code: 'forbidden', message: 'This endpoint requires an environment-scoped API key' } });
     });
 });

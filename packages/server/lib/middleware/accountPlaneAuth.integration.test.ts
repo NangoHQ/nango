@@ -1,6 +1,9 @@
+import { randomUUID } from 'crypto';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { runServer } from '../utils/tests.js';
 
@@ -40,9 +43,8 @@ describe('account-plane key isolation', () => {
     });
 
     /**
-     * These two are environment surfaces with no `withScope` guard of their own — `/v1/*` is a catch-all
-     * and the control-plane MCP authorizes per tool — so `withEnvironment` is what makes them 403 rather
-     * than reaching the handler and hitting the 500 backstop.
+     * `/v1/*` is a catch-all with no `withScope` guard of its own, so nothing refuses the key before the
+     * handler. `asyncWrapperWithEnvironment` is what turns that into a 403 instead of a 500.
      */
     it('should refuse an account key on /v1/* with 403 rather than 500', async () => {
         const { accountApiKey } = await seeders.seedAccountEnvAndUser();
@@ -54,6 +56,31 @@ describe('account-plane key isolation', () => {
             headers: { 'provider-config-key': 'unused', 'connection-id': 'unused' },
             token: accountApiKey.secret
         });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toMatchObject({ error: { code: 'forbidden' } });
+    });
+
+    /**
+     * A key naming no environment is the account plane by construction, so one carrying environment
+     * scopes is self-contradictory: its scopes satisfy the route guard, but there is no environment for
+     * the handler to act on. No service path produces this — the relation is deleted directly here — and
+     * the contract is that it is refused rather than surfacing as a 500.
+     */
+    it('should refuse an environment-scoped key bound to no environment', async () => {
+        const { account, env } = await seeders.seedAccountEnvAndUser();
+        const key = (
+            await customerKeyService.createApiKey(db.knex, {
+                accountId: account.id,
+                target: { type: 'environment', environmentId: env.id },
+                displayName: `orphan-${randomUUID()}`,
+                scopes: ['environment:*'],
+                withSandboxSigningSecret: false
+            })
+        ).unwrap();
+        await db.knex('customer_keys_relations').where({ customer_key_id: key.id }).delete();
+
+        const res = await api.fetch('/connection', { method: 'GET', query: {}, token: key.secret });
 
         expect(res.res.status).toBe(403);
         expect(res.json).toMatchObject({ error: { code: 'forbidden' } });

@@ -42,16 +42,3 @@ export function withScope(requiredScope: ApiKeyScope) {
 export function withAnyScope(...requiredScopes: ApiKeyScope[]) {
     return guard(requiredScopes);
 }
-
-/**
- * For environment routes whose required scope isn't known at mount time — the `/v1/*splat` catch-all and
- * the control-plane MCP endpoints resolve their own scopes inside the handler.
- */
-export function withEnvironment(_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-    if (!res.locals['environment']) {
-        res.status(403).json({ error: { code: 'forbidden', message: 'This endpoint requires an environment-scoped API key' } });
-        return;
-    }
-
-    next();
-}

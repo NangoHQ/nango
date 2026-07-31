@@ -59,16 +59,18 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
 }
 
 /**
- * Returns the request's environment, or null *after having responded* 500 if it has none.
+ * Returns the request's environment, or null *after having responded* 403 if it has none.
  *
- * No environment means an environment-scoped handler was wired to a route that resolves none, which
- * is a wiring mistake rather than a client error.
+ * 403 because the likely cause is a credential that is bound to no environment — an account-level API
+ * key aimed at an environment endpoint. Ideally that is refused by the route's scope guard before ever
+ * reaching a handler, so this still reports: it is either a route missing its guard, or a key whose
+ * scopes and reach disagree. Both are ours to fix, but neither is worth a 500 to the caller.
  */
 export function requireEnvironment(req: Request, res: Response<any, RequestLocals>): DBEnvironment | null {
     const { environment } = res.locals;
     if (!environment) {
         report(new Error('handler_requires_environment'), { route: req.route?.path ?? req.originalUrl });
-        res.status(500).send({ error: { code: 'server_error' } });
+        res.status(403).send({ error: { code: 'forbidden', message: 'This endpoint requires an environment-scoped API key' } });
         return null;
     }
 
