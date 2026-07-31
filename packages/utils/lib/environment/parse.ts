@@ -536,6 +536,8 @@ export const ENVS = z.object({
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
+    // Breakglass only: set to false to let admins impersonate without passing their own MFA challenge
+    NANGO_IMPERSONATION_MFA_REQUIRED: z.stringbool().optional().default(true),
 
     // Stripe
     PUBLIC_STRIPE_KEY: z.string().optional(),
