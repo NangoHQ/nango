@@ -73,7 +73,7 @@ export const ConnectionCreate: React.FC = () => {
             testUserEmail: user!.email,
             testUserName: user!.name,
             testUserTags: {},
-            overrideAuthParams: Object.fromEntries(Object.entries(integration?.meta.authorizationParams ?? {}).map(([k, v]) => [k, String(v)])),
+            overrideAuthParams: {},
             overrideOauthScopes: integration?.oauth_scopes || undefined,
             overrideDevAppCredentials: false,
             overrideDocUrl: '',

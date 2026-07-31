@@ -1,0 +1,48 @@
+---
+title: 'How to register your own BigCommerce OAuth app'
+sidebarTitle: 'BigCommerce Setup'
+description: 'Register an OAuth app with BigCommerce and connect it to Nango'
+---
+
+This guide shows you how to register your own app with BigCommerce to obtain your OAuth credentials (client ID, client secret, and account UUID). These are required to let your users grant your app access to their BigCommerce store.
+
+<Steps>
+  <Step title="Create a developer account">
+    Go to the [BigCommerce Developer Portal](https://devtools.bigcommerce.com/) and sign up for a developer account.
+  </Step>
+  <Step title="Create a new app">
+    Click **+ Create App**, then enter a name for your app. BigCommerce apps can be single-store (private, no review required) or listed on the App Marketplace, which requires going through BigCommerce's [marketplace approval process](https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/approval-requirements). If you only need to connect your own store, a single-store app avoids that process entirely.
+  </Step>
+  <Step title="Copy your generated credentials">
+    Once the app is created, BigCommerce generates your **Client ID**, **Client Secret**, and **Account UUID** together. Copy all three — you'll need them when configuring the BigCommerce integration in Nango.
+
+    <Note>The Account UUID belongs to your developer app, not to any single merchant's store. It's the same value for every connection made through this integration — see the last step below for how to apply it automatically without asking each user for it.</Note>
+  </Step>
+  <Step title="Configure the callback URL">
+    In your app's **App Information** tab, set the auth callback URL to `https://api.nango.dev/oauth/callback`. Then, in the **Scopes** tab, select the OAuth scopes your integration needs — these should match the ones you select in Nango.
+  </Step>
+  <Step title="Apply the Account UUID to every connection">
+    Since the Account UUID is fixed for your app, set it once as a [connection config default](/reference/backend/http-api/connect/sessions/create) instead of collecting it from each user. Pass it under `integrations_config_defaults` when creating a connect session:
+
+    ```json
+    {
+        "integrations_config_defaults": {
+            "<INTEGRATION-ID>": {
+                "connection_config": {
+                    "accountUuid": "<YOUR-ACCOUNT-UUID>"
+                }
+            }
+        }
+    }
+    ```
+
+    Every connection created from that session will use this value automatically — your users only need to provide their **Store Hash** (see [how to link a BigCommerce account](/api-integrations/bigcommerce/connect)).
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [BigCommerce's OAuth documentation](https://docs.bigcommerce.com/developer/docs/integrations/apps/guide/auth).
+
+---

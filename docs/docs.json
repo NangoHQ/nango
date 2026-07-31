@@ -111,6 +111,10 @@
       "destination": "/api-integrations/servicenow"
     },
     {
+      "source": "/integrations/all/bigcommerce",
+      "destination": "/api-integrations/bigcommerce"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1040,7 +1044,7 @@
               "api-integrations/bettercontact",
               "api-integrations/bigchange",
               "api-integrations/bliro",
-              "integrations/all/bigcommerce",
+              "api-integrations/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
               "integrations/all/bitbucket",
