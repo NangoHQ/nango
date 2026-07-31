@@ -31,10 +31,12 @@ export type GetAuditTrail = ApiEndpoint<{
         cursor?: string;
         from?: string;
         to?: string;
-        // Repeated params (`?resources=connection&resources=sync`). `actions` narrows `resources` and is
-        // rejected without it: the pair is matched as a single `resource.action` value, which needs both.
-        resources?: AuditResource[];
-        actions?: AuditAction[];
+        // Comma-separated `AuditResource` / `AuditAction` values (`?resources=connection,sync`). Typed as
+        // the string that goes on the wire rather than the array it denotes, so the contract can't drift
+        // from the encoding. `actions` narrows `resources` and is rejected without it: the pair is matched
+        // as a single `resource.action` value, which needs both halves.
+        resources?: string;
+        actions?: string;
     };
     Success: {
         data: ApiAuditTrailEvent[];

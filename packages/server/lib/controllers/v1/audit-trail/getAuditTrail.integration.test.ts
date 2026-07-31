@@ -112,7 +112,7 @@ describe('GET /api/v1/audit-trail', () => {
 
     it('rejects `actions` sent without `resources` with 400', async () => {
         const { session } = await authAdmin();
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { actions: ['deleted'] } });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { actions: 'deleted' } });
         expect(res.res.status).toBe(400);
     });
 
@@ -122,12 +122,12 @@ describe('GET /api/v1/audit-trail', () => {
         (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z', { resource: 'connection', action: 'updated' }))).unwrap();
         (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:02.000Z', { resource: 'api_key', action: 'deleted' }))).unwrap();
 
-        const byResource = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: ['connection'] } });
+        const byResource = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection' } });
         expect(byResource.res.status).toBe(200);
         isSuccess(byResource.json);
         expect(byResource.json.data.map((e) => `${e.resource}.${e.action}`).sort()).toEqual(['connection.deleted', 'connection.updated']);
 
-        const byPair = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: ['connection'], actions: ['deleted'] } });
+        const byPair = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection', actions: 'deleted' } });
         expect(byPair.res.status).toBe(200);
         isSuccess(byPair.json);
         expect(byPair.json.data.map((e) => `${e.resource}.${e.action}`)).toEqual(['connection.deleted']);
@@ -139,7 +139,7 @@ describe('GET /api/v1/audit-trail', () => {
         (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z', { resource: 'api_key', action: 'deleted' }))).unwrap();
         (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:02.000Z', { resource: 'team', action: 'updated' }))).unwrap();
 
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: ['connection', 'api_key'] } });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection,api_key' } });
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json.data.map((e) => e.resource).sort()).toEqual(['api_key', 'connection']);

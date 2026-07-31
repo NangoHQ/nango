@@ -14,20 +14,21 @@ const PAGE_SIZE = 25;
 // this squared.
 const MAX_FILTER_VALUES = 50;
 
-// Repeated param (`?resources=a&resources=b`); Express hands over a bare string when it appears once.
-// Unlike the enum-valued query params elsewhere these aren't checked against a vocabulary — the audit
-// one has no runtime form — so an unknown value simply matches nothing.
-const repeatedParam = z
-    .union([z.string().min(1), z.array(z.string().min(1)).max(MAX_FILTER_VALUES)])
-    .transform((value) => (Array.isArray(value) ? value : [value]));
+// Comma-separated list (`?resources=a,b`). Safe to split on a comma because both vocabularies are
+// snake_case identifiers. Unlike the enum-valued query params elsewhere the values aren't checked
+// against a vocabulary — the audit one has no runtime form — so an unknown value matches nothing.
+const csvParam = z
+    .string()
+    .transform((value) => value.split(','))
+    .pipe(z.array(z.string().min(1)).max(MAX_FILTER_VALUES));
 
 const queryStringValidation = z
     .object({
         cursor: z.string().optional(),
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional(),
-        resources: repeatedParam.optional(),
-        actions: repeatedParam.optional()
+        resources: csvParam.optional(),
+        actions: csvParam.optional()
     })
     // Account-scoped endpoint (no `env`). Not strict: any stray query param is stripped rather than 400'd, so a read never fails over an extra key.
     // Surface an inverted range as a 400 rather than a silently empty result.

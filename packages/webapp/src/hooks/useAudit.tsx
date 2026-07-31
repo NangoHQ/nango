@@ -26,11 +26,12 @@ export function useApiGetAuditTrail(filters: AuditTrailFilters, options?: { enab
             if (filters.to) {
                 params.append('to', filters.to);
             }
-            for (const resource of filters.resources ?? []) {
-                params.append('resources', resource);
+            // Typed vocabulary in, comma-separated on the wire.
+            if (filters.resources?.length) {
+                params.append('resources', filters.resources.join(','));
             }
-            for (const action of filters.actions ?? []) {
-                params.append('actions', action);
+            if (filters.actions?.length) {
+                params.append('actions', filters.actions.join(','));
             }
 
             const qs = params.toString();
