@@ -5,7 +5,6 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { ApiKeyCredentialsComponent } from './ApiKeyCredentials';
 import { AppCredentialsComponent } from './AppCredentials';
-import { AppStoreCredentialsComponent } from './AppStoreCredentials';
 import { BasicCredentialsComponent } from './BasicCredentials';
 import { BillCredentialsComponent } from './BillCredentials';
 import { CustomCredentialsComponent } from './CustomCredentials';
@@ -61,7 +60,6 @@ export const AuthCredentials: React.FC<AuthCredentialsProps> = ({ connection, pr
 
             {credentials.type === 'API_KEY' && <ApiKeyCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
             {credentials.type === 'APP' && <AppCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
-            {credentials.type === 'APP_STORE' && <AppStoreCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
             {credentials.type === 'TBA' && <TbaCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
             {credentials.type === 'JWT' && (
                 <JwtCredentialsComponent

@@ -558,7 +558,7 @@
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": ["WSSE", "RSA", "HMAC"]
+                            "enum": ["WSSE", "RSA", "HMAC", "EC"]
                         },
                         "hmac_secret_encoding": {
                             "type": "string",

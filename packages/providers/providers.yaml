@@ -1656,14 +1656,32 @@ apple-app-store:
     display_name: Apple App Store
     categories:
         - e-commerce
-    auth_mode: APP_STORE
-    token_url: https://api.appstoreconnect.apple.com/v1/apps
-    authorization_params:
-        audience: appstoreconnect-v1
+    auth_mode: JWT
+    signature:
+        protocol: EC
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 900000
+        header:
+            alg: ES256
+            kid: ${credentials.privateKeyId}
+            typ: JWT
+        payload:
+            iss: ${credentials.issuerId}
+            aud: appstoreconnect-v1
+            scope:
+                - ${connectionConfig.scope}
     proxy:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://nango.dev/docs/api-integrations/apple-app-store
     docs_connect: https://nango.dev/docs/api-integrations/apple-app-store/connect
+    connection_config:
+        scope:
+            type: string
+            title: Scope
+            description: Restricts the token to specific API requests.
+            example: GET /v1/apps
+            optional: true
     credentials:
         issuerId:
             type: string
@@ -10843,6 +10861,85 @@ incident-io:
             example: 'inc_************************************f2c5e6a7b3d4**********'
             pattern: 'inc_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
+
+ingenious-build:
+    display_name: INGENIOUS.BUILD
+    categories:
+        - erp
+        - accounting
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.ingenious.build/api/v2/pub/oauth/token
+    body_format: json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ingenious.build
+    docs: https://nango.dev/docs/api-integrations/ingenious-build
+    docs_connect: https://nango.dev/docs/api-integrations/ingenious-build/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: INGENIOUS.BUILD Domain
+            description: The subdomain of your INGENIOUS.BUILD account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .ingenious.build
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your OAuth Application.
+            example: '6a6b88**************719a'
+            pattern: '^[a-f0-9]{24}$'
+            doc_section: '#step-2-creating-an-oauth-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your OAuth Application.
+            secret: true
+            example: 'Grt1********************************tL5Z'
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-2-creating-an-oauth-application'
+
+ingenious-build-pat:
+    display_name: INGENIOUS.BUILD (Personal Access Token)
+    categories:
+        - erp
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ingenious.build
+        headers:
+            accesstoken: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/pub/contacts?page=1&limit=1
+    docs: https://nango.dev/docs/api-integrations/ingenious-build-pat
+    docs_connect: https://nango.dev/docs/api-integrations/ingenious-build-pat/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: INGENIOUS.BUILD Domain
+            description: The subdomain of your INGENIOUS.BUILD account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .ingenious.build
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The Access Token for your INGENIOUS.BUILD account
+            secret: true
+            example: 'rczP********************************fT42'
+            pattern: '^[A-Za-z0-9]{40}$'
+            doc_section: '#step-2-creating-an-access-token'
 
 insightly:
     display_name: Insightly
@@ -22417,6 +22514,35 @@ trafft:
             description: Your Trafft OAuth2 Client Secret.
             secret: true
             doc_section: '#step-2-get-your-credentials'
+
+transporeon-oauth2-cc:
+    display_name: Transporeon Appointment Scheduling (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://id.eu.trimble-transportation.com/api/identity/v2/oauth2/token
+    token_request_auth_method: basic
+    body_format: query
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://yard-management-planning-api.dev.eu.trimble-transportation.com
+    docs: https://nango.dev/docs/api-integrations/transporeon-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your API client ID.
+            example: username@companyId
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your API client secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
 
 tremendous:
     display_name: Tremendous

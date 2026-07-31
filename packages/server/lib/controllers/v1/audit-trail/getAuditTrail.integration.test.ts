@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { auditClickhouseClient, AuditClient, ClickhouseAuditStore } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
 import { seeders } from '@nangohq/shared';
-import { migrate } from '@nangohq/usage';
 
 import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
 
@@ -36,8 +35,8 @@ function auditEvent(accountId: number, occurredAt: string): AuditEvent {
 describe('GET /api/v1/audit-trail', () => {
     beforeAll(async () => {
         api = await runServer();
-        // The endpoint reads from usage.audit_trail_events; create it in the shared ClickHouse container.
-        (await migrate({ database: 'usage' })).unwrap();
+        // Create the audit database the endpoint reads from in the shared ClickHouse container.
+        (await migrate({ clickhouseUrl: process.env['CLICKHOUSE_URL']! })).unwrap();
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
