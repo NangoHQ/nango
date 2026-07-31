@@ -1,7 +1,5 @@
 // Non-throwing extracts, unlike the ORDER BY keys: a blob these can't read is still a storable event.
 // `resource_action` is its own column because two `set` indexes AND-ed prune per column, not per pair.
-// No MATERIALIZE: old parts evaluate on read and pick the column up when they next merge, and on a
-// large table it would be a blocking mutation at metering boot.
 export const sql = [
     `
     ALTER TABLE {database:Identifier}.audit_trail_events
