@@ -55,13 +55,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          * Whether the audit trail is enabled for this account, on top of its plan entitlement:
          * percentage rollout plus a kill switch.
          *
-         * Unlike the other flags this one takes its default from the caller, because losing an audit
-         * event is worse than recording one the rollout had not reached yet — the server passes `true`
-         * so a missing flag or an Unleash outage keeps recording. See `canRecordAuditTrail`.
+         * Defaults `true`, unlike every other flag here: losing an audit event is worse than recording
+         * one the rollout had not reached yet, so a missing flag or an Unleash outage keeps recording.
+         * Callers gate on the deployment switch first, so this is only reached where the trail is on.
          */
-        isAuditTrailEnabled(accountUuid: string, defaultValue: boolean) {
+        isAuditTrailEnabled(accountUuid: string) {
             // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
-            return client.isEnabled('audit-trail', { targetingKey: accountUuid, accountUuid }, defaultValue);
+            return client.isEnabled('audit-trail', { targetingKey: accountUuid, accountUuid }, true);
         }
     };
 }

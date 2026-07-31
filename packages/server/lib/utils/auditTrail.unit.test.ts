@@ -24,14 +24,13 @@ const entitled = { has_audit_trail_control_plane: true, has_audit_trail_ui: true
 const notEntitled = { has_audit_trail_control_plane: false, has_audit_trail_ui: false };
 
 /**
- * `hasPlan` toggles FLAG_PLAN_ENABLED. `unleash` is what the flag resolves to: `null` leaves the noop
- * provider in place so the call falls back to its default (the deployment switch), which is how
- * deployments without Unleash and Unleash outages behave.
+ * `hasPlan` toggles FLAG_PLAN_ENABLED. `unleash: null` leaves the noop provider in place so the flag
+ * resolves to its default, which is how a deployment without Unleash and an Unleash outage behave.
  */
-function setup({ deployment, hasPlan, unleash }: { deployment: boolean; hasPlan: boolean; unleash?: boolean | null }) {
+function setup({ deployment, hasPlan, unleash }: { deployment: boolean; hasPlan: boolean; unleash: boolean | null }) {
     flags.hasAuditTrail = deployment;
     planFlag.enabled = hasPlan;
-    if (unleash !== null && unleash !== undefined) {
+    if (unleash != null) {
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(unleash);
     }
 }
@@ -43,8 +42,10 @@ describe('audit trail entitlement', () => {
         vi.restoreAllMocks();
     });
 
-    describe('without Unleash, so the flag resolves to the deployment switch', () => {
-        it('records nothing when the switch is off, whatever the plan says (self-hosted)', async () => {
+    // The flag cannot be evaluated when no Unleash is configured (local, self-hosted) or it is down.
+    // It then resolves to its default, which is `true` so audit events are never silently dropped.
+    describe('when the flag cannot be evaluated', () => {
+        it('records nothing when the deployment switch is off (self-hosted)', async () => {
             setup({ deployment: false, hasPlan: true, unleash: null });
 
             await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
@@ -58,7 +59,7 @@ describe('audit trail entitlement', () => {
             await expect(canViewAuditTrail(UUID, null)).resolves.toBe(true);
         });
 
-        it('still applies the plan entitlement when the switch is on and plans exist', async () => {
+        it('keeps recording an entitled account rather than dropping its events', async () => {
             setup({ deployment: true, hasPlan: true, unleash: null });
 
             await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(true);
@@ -109,14 +110,5 @@ describe('audit trail entitlement', () => {
             await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(false);
             await expect(canViewAuditTrail(UUID, undefined)).resolves.toBe(false);
         });
-    });
-
-    it('passes the deployment switch as the flag default, so an Unleash outage falls back to it', async () => {
-        setup({ deployment: true, hasPlan: false, unleash: null });
-        const spy = vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled');
-
-        await canRecordAuditTrail(UUID, null);
-
-        expect(spy).toHaveBeenCalledWith(UUID, true);
     });
 });

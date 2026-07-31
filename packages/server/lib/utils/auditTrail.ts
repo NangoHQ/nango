@@ -14,9 +14,7 @@ async function isEntitled(
     if (!flags.hasAuditTrail) {
         return false;
     }
-    // Defaulting to true keeps recording when the flag cannot be evaluated — no Unleash configured
-    // (local) or an Unleash outage — rather than silently dropping audit events.
-    if (!(await getFlags().isAuditTrailEnabled(accountUuid, true))) {
+    if (!(await getFlags().isAuditTrailEnabled(accountUuid))) {
         return false;
     }
     // Deployments without plans have nothing to read an entitlement from.
