@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { nanoid } from '@nangohq/utils';
 
@@ -27,7 +27,7 @@ const props = {
 };
 
 describe('Task', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_tasks');
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();
@@ -35,6 +35,12 @@ describe('Task', () => {
 
     afterEach(async () => {
         await dbClient.clearDatabase();
+    });
+
+    // Close the knex pool. Nine of these suites leak one otherwise, which exhausts Postgres
+    // once they share a process with the rest of the suite.
+    afterAll(async () => {
+        await dbClient.destroy();
     });
 
     it('should be successfully created', async () => {
