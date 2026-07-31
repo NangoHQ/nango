@@ -1,17 +1,24 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
-import { mfaService, updatePlanByTeam, userService } from '@nangohq/shared';
+import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { audit } from '../../../../audit.js';
 import { isSuccess, runServer } from '../../../../utils/tests.js';
 
 import type { AuditAction } from '@nangohq/audit';
+import type * as NangoShared from '@nangohq/shared';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
+
+// The account is created by the signup route, so it is always on the free plan and not entitled to
+// ingestion. Entitle the lookup instead; the gate itself is covered in utils/auditTrail.unit.test.ts.
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return { ...actual, getPlanSafe: () => Promise.resolve({ has_audit_trail_control_plane: true }) };
+});
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -36,8 +43,6 @@ async function startPendingMfaLogin(): Promise<{ user: DBUser; totp: OTPAuth.TOT
     const created = await userService.getUserByEmail(email);
     expect(created).toBeTruthy();
     await userService.verifyUserEmail(created!.id);
-    // Signup lands on the free plan, which is not entitled to ingestion.
-    (await updatePlanByTeam(db.knex, { account_id: created!.account_id, has_audit_trail_control_plane: true })).unwrap();
 
     const enrollment = (await mfaService.startEnrollment(created!.id, email)).unwrap();
     const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
