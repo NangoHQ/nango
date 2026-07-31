@@ -10,8 +10,6 @@ import type { GetAuditTrail } from '@nangohq/types';
 
 const PAGE_SIZE = 25;
 
-// Caps `resources` and `actions` separately. The store pairs them off, so the query sees at most
-// this squared.
 const MAX_FILTER_VALUES = 50;
 
 // Comma-separated list (`?resources=a,b`). Safe to split on a comma because both vocabularies are
