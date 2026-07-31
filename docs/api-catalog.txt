@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 927
+Provider count: 929
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -732,7 +732,7 @@ URL patterns:
 | `sentry` | Sentry | API_KEY | [docs](https://nango.dev/docs/integrations/all/sentry.md) | [connect](https://nango.dev/docs/integrations/all/sentry/connect.md) |  | dev-tools, analytics |
 | `sentry-oauth` | Sentry (Public Integrations) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/sentry-oauth.md) | [connect](https://nango.dev/docs/integrations/all/sentry-oauth/connect.md) |  | dev-tools, analytics |
 | `servicem8` | ServiceM8 | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/servicem8.md) |  |  | productivity |
-| `servicenow` | ServiceNow | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/servicenow.md) |  |  | productivity, popular |
+| `servicenow` | ServiceNow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/servicenow.md) | [connect](https://nango.dev/docs/api-integrations/servicenow/connect.md) | [setup](https://nango.dev/docs/api-integrations/servicenow/how-to-register-your-own-servicenow-oauth-app.md) | productivity, popular |
 | `servicenow-oauth2-cc` | ServiceNow (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/servicenow-oauth2-cc/connect.md) |  | productivity, ticketing |
 | `setmore` | Setmore | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/setmore.md) | [connect](https://nango.dev/docs/integrations/all/setmore/connect.md) |  | productivity |
 | `sharepoint-online` | SharePoint Online (v2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/sharepoint-online.md) |  | [setup](https://nango.dev/docs/api-integrations/sharepoint-online/how-to-register-your-own-sharepoint-online-api-oauth-app.md) | storage, communication, popular |
@@ -796,6 +796,7 @@ URL patterns:
 | `surecontact` | SureContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/surecontact.md) | [connect](https://nango.dev/docs/api-integrations/surecontact/connect.md) |  | crm |
 | `survey-monkey` | SurveyMonkey | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/survey-monkey.md) |  |  | surveys |
 | `swoogo` | Swoogo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/swoogo.md) | [connect](https://nango.dev/docs/api-integrations/swoogo/connect.md) |  | marketing |
+| `syncore` | Syncore | API_KEY | [docs](https://nango.dev/docs/api-integrations/syncore.md) | [connect](https://nango.dev/docs/api-integrations/syncore/connect.md) |  | crm |
 | `tableau` | Tableau (PAT) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tableau.md) | [connect](https://nango.dev/docs/integrations/all/tableau/connect.md) |  | analytics |
 | `tailscale` | Tailscale (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tailscale.md) | [connect](https://nango.dev/docs/integrations/all/tailscale/connect.md) |  | dev-tools, productivity |
 | `tailscale-api-key` | Tailscale (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/tailscale-api-key.md) | [connect](https://nango.dev/docs/integrations/all/tailscale-api-key/connect.md) |  | dev-tools, productivity |
@@ -830,6 +831,7 @@ URL patterns:
 | `trading-economics` | Trading Economics | API_KEY | [docs](https://nango.dev/docs/api-integrations/trading-economics.md) | [connect](https://nango.dev/docs/api-integrations/trading-economics/connect.md) |  | analytics |
 | `trafft` | Trafft | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/trafft.md) | [connect](https://nango.dev/docs/integrations/all/trafft/connect.md) |  | productivity |
 | `trakstar-hire` | Trakstar Hire | BASIC | [docs](https://nango.dev/docs/integrations/all/trakstar-hire.md) | [connect](https://nango.dev/docs/integrations/all/trakstar-hire/connect.md) |  | ats |
+| `transporeon-oauth2-cc` | Transporeon Appointment Scheduling (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/transporeon-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/transporeon-oauth2-cc/connect.md) |  | other |
 | `trello` | Trello | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/trello.md) |  |  | productivity, ticketing |
 | `trello-scim` | Trello (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/trello-scim.md) | [connect](https://nango.dev/docs/integrations/all/trello-scim/connect.md) |  | productivity, ticketing |
 | `tremendous` | Tremendous | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tremendous.md) |  |  | payment |

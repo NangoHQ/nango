@@ -152,7 +152,7 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             newConnection.credentials_expires_at.getTime() < Date.now() ||
             (!newConnection.last_refresh_success && !newConnection.last_refresh_failure)
         ) {
-            newConnection = await connectionService.updateConnection({
+            const updatedConnection = await connectionService.updateConnection({
                 ...newConnection,
                 last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(newConnection.credentials),
@@ -162,6 +162,15 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 refresh_exhausted: false,
                 updated_at: new Date()
             });
+            if (!updatedConnection) {
+                return Err(
+                    new NangoError('unknown_connection', {
+                        connectionId: newConnection.connection_id,
+                        providerConfigKey: newConnection.provider_config_key
+                    })
+                );
+            }
+            newConnection = updatedConnection;
         }
 
         return Ok(newConnection);
@@ -309,13 +318,6 @@ async function testCredentials(
     }
 
     if (result.value.tested) {
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
-        await onRefreshSuccess({
-            connection: oldConnection,
-            environment,
-            config: integration as ProviderConfig
-        });
-
         const connection = await connectionService.updateConnection({
             ...oldConnection,
             last_fetched_at: new Date(),
@@ -326,6 +328,22 @@ async function testCredentials(
             refresh_exhausted: false,
             updated_at: new Date()
         });
+        if (!connection) {
+            return Err(
+                new NangoError('unknown_connection', {
+                    connectionId: oldConnection.connection_id,
+                    providerConfigKey: oldConnection.provider_config_key
+                })
+            );
+        }
+
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
+        await onRefreshSuccess({
+            connection: oldConnection,
+            environment,
+            config: integration as ProviderConfig
+        });
+
         return Ok(connection);
     } else {
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
@@ -502,7 +520,7 @@ export async function refreshCredentialsIfNeeded({
                 delete newCredentials.raw['botFrameworkAccessToken'];
             }
 
-            connectionToRefresh = await connectionService.updateConnection({
+            const updatedConnection = await connectionService.updateConnection({
                 ...connectionToRefresh,
                 last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
@@ -512,6 +530,15 @@ export async function refreshCredentialsIfNeeded({
                 refresh_exhausted: false,
                 updated_at: new Date()
             });
+            if (!updatedConnection) {
+                return Err(
+                    new NangoError('unknown_connection', {
+                        connectionId: connectionToRefresh.connection_id,
+                        providerConfigKey: connectionToRefresh.provider_config_key
+                    })
+                );
+            }
+            connectionToRefresh = updatedConnection;
 
             return Ok({
                 connection: connectionToRefresh,

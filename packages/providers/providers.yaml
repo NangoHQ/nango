@@ -5513,6 +5513,7 @@ confluence:
         - knowledge-base
         - popular
     alias: jira
+    webhook_routing_script: ''
     docs: https://nango.dev/docs/api-integrations/confluence
     setup_guide_url: https://nango.dev/docs/api-integrations/confluence/how-to-register-your-own-confluence-api-oauth-app
 
@@ -5641,7 +5642,7 @@ contentstack:
             type: string
             title: API Domain
             description: The domain to where you will access your API
-            pattern: '^[a-z0-9_-]+$'
+            pattern: '^[a-z0-9.-]+$'
             example: eu-api.contentstack.com
             prefix: https://
             order: 3
@@ -11353,6 +11354,7 @@ jira:
             link_path_in_response_body: _links.next
     post_connection_script: jiraPostConnection
     webhook_routing_script: jiraWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/jira
     setup_guide_url: https://nango.dev/docs/api-integrations/jira/how-to-register-your-own-jira-api-oauth-app
     connection_config:
@@ -20017,8 +20019,8 @@ servicenow:
         - productivity
         - popular
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
-    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    authorization_url: https://${connectionConfig.hostname}/oauth_auth.do || https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
+    token_url: https://${connectionConfig.hostname}/oauth_token.do || https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
     authorization_params:
         response_type: code
     token_params:
@@ -20026,17 +20028,23 @@ servicenow:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.subdomain}.service-now.com
-    docs: https://nango.dev/docs/integrations/all/servicenow
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.service-now.com
+    docs: https://nango.dev/docs/api-integrations/servicenow
+    docs_connect: https://nango.dev/docs/api-integrations/servicenow/connect
     connection_config:
-        subdomain:
+        hostname:
             type: string
             title: ServiceNow Domain
-            description: The subdomain of your ServiceNow account
-            pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .service-now.com
+            description: The full hostname of your ServiceNow instance
+            format: hostname
+            example: domain.service-now.com
             prefix: https://
+            doc_section: '#step-1-finding-your-domain'
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of hostname
 
 servicenow-oauth2-cc:
     display_name: ServiceNow (Client Credentials)
@@ -20044,23 +20052,27 @@ servicenow-oauth2-cc:
         - productivity
         - ticketing
     auth_mode: OAUTH2_CC
-    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    token_url: https://${connectionConfig.hostname}/oauth_token.do || https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://${connectionConfig.subdomain}.service-now.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.service-now.com
     docs: https://nango.dev/docs/api-integrations/servicenow-oauth2-cc
     docs_connect: https://nango.dev/docs/api-integrations/servicenow-oauth2-cc/connect
     connection_config:
-        subdomain:
+        hostname:
             type: string
             title: ServiceNow Domain
-            description: The subdomain of your ServiceNow account
-            doc_section: '#step-5-enter-credentials-in-the-connect-ui'
-            pattern: '^[a-z0-9_-]+$'
-            example: dev12345
-            suffix: .service-now.com
+            description: The full hostname of your ServiceNow instance
+            format: hostname
+            example: dev12345.service-now.com
             prefix: https://
+            doc_section: '#step-5-enter-credentials-in-the-connect-ui'
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            hidden: true # deprecating this in favor of hostname
     credentials:
         client_id:
             type: string
@@ -21617,6 +21629,30 @@ swoogo:
             secret: true
             doc_section: '#step-1-generate-your-api-credentials'
 
+syncore:
+    display_name: Syncore
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.syncore.app
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/orders/product-indices
+    docs: https://nango.dev/docs/api-integrations/syncore
+    docs_connect: https://nango.dev/docs/api-integrations/syncore/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key generated by Syncore.
+            format: uuid
+            example: a1b2c3d4-****-****-****-************
+            doc_section: '#step-1-generate-your-api-key'
+
 tailscale:
     display_name: Tailscale (OAuth)
     auth_mode: TWO_STEP
@@ -22399,6 +22435,35 @@ trafft:
             description: Your Trafft OAuth2 Client Secret.
             secret: true
             doc_section: '#step-2-get-your-credentials'
+
+transporeon-oauth2-cc:
+    display_name: Transporeon Appointment Scheduling (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://id.eu.trimble-transportation.com/api/identity/v2/oauth2/token
+    token_request_auth_method: basic
+    body_format: query
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://yard-management-planning-api.dev.eu.trimble-transportation.com
+    docs: https://nango.dev/docs/api-integrations/transporeon-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your API client ID.
+            example: username@companyId
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your API client secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
 
 tremendous:
     display_name: Tremendous
