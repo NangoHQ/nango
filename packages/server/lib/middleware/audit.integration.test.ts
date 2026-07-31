@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
@@ -30,6 +31,7 @@ describe('audit middleware — live-stack contract', () => {
         auditSpy = vi.spyOn(audit, 'record');
         // Enable the audit trail for this deployment; each account still has to be entitled on its plan.
         flags.hasAuditTrail = true;
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

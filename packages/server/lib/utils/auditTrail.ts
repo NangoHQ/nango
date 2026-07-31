@@ -10,7 +10,7 @@ async function isEntitled(
     plan: Partial<Pick<DBPlan, AuditTrailEntitlement>> | null | undefined,
     entitlement: AuditTrailEntitlement
 ): Promise<boolean> {
-    // Hard deployment gate, so self-hosted is off structurally rather than by relying on a flag default.
+    // Deployment gate first, so a deployment that never opted in cannot be switched on from Unleash.
     if (!flags.hasAuditTrail) {
         return false;
     }

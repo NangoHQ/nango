@@ -1,6 +1,7 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import * as featureFlags from '@nangohq/feature-flags';
 import { seeders, userService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
@@ -16,10 +17,12 @@ describe('authz integration', () => {
         flags.hasAuthRoles = true;
         // The audit-trail route is entitlement-gated too; keep it on so these cases exercise authz, not the gate.
         flags.hasAuditTrail = true;
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
     afterAll(() => {
         api.server.close();
         flags.hasAuditTrail = false;
+        vi.restoreAllMocks();
     });
     afterEach(() => {
         flags.hasAuthRoles = true;

@@ -39,71 +39,60 @@ describe('audit trail entitlement', () => {
         vi.restoreAllMocks();
     });
 
-    describe('when the flag cannot be evaluated (no Unleash configured, or an outage)', () => {
-        it('records nothing when the deployment switch is off (self-hosted)', async () => {
-            setup({ deployment: false, hasPlan: true, unleash: null });
+    it('is off when the deployment never opted in, even if the flag and the plan both say yes', async () => {
+        setup({ deployment: false, hasPlan: true, unleash: true });
 
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
-        });
-
-        it('records and shows everything when the switch is on and there are no plans (local dev)', async () => {
-            setup({ deployment: true, hasPlan: false, unleash: null });
-
-            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(true);
-            await expect(canViewAuditTrail(UUID, null)).resolves.toBe(true);
-        });
-
-        it('keeps recording an entitled account rather than dropping its events', async () => {
-            setup({ deployment: true, hasPlan: true, unleash: null });
-
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(true);
-            await expect(canRecordAuditTrail(UUID, notEntitled)).resolves.toBe(false);
-        });
+        await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
+        await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
     });
 
-    describe('with Unleash answering', () => {
-        it('is off when the deployment switch is off, even if the flag says yes', async () => {
-            setup({ deployment: false, hasPlan: true, unleash: true });
+    it('is off when the flag cannot be evaluated, so the rollout only advances explicitly', async () => {
+        setup({ deployment: true, hasPlan: true, unleash: null });
 
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
-        });
+        await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
+        await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
+    });
 
-        it('is off when the flag is off, even for an entitled account (kill switch)', async () => {
-            setup({ deployment: true, hasPlan: true, unleash: false });
+    it('is off when the flag is off, even for an entitled account (kill switch)', async () => {
+        setup({ deployment: true, hasPlan: true, unleash: false });
 
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
-        });
+        await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
+        await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
+    });
 
-        it('is off when the flag is on but the account is not entitled', async () => {
-            setup({ deployment: true, hasPlan: true, unleash: true });
+    it('is off when the flag is on but the account is not entitled', async () => {
+        setup({ deployment: true, hasPlan: true, unleash: true });
 
-            await expect(canRecordAuditTrail(UUID, notEntitled)).resolves.toBe(false);
-            await expect(canViewAuditTrail(UUID, notEntitled)).resolves.toBe(false);
-        });
+        await expect(canRecordAuditTrail(UUID, notEntitled)).resolves.toBe(false);
+        await expect(canViewAuditTrail(UUID, notEntitled)).resolves.toBe(false);
+    });
 
-        it('is on only when the flag and the entitlement agree', async () => {
-            setup({ deployment: true, hasPlan: true, unleash: true });
+    it('is on only when the deployment, the flag and the entitlement all agree', async () => {
+        setup({ deployment: true, hasPlan: true, unleash: true });
 
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(true);
-            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(true);
-        });
+        await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(true);
+        await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(true);
+    });
 
-        it('gates recording and visibility independently, so an account can be recorded without seeing it', async () => {
-            setup({ deployment: true, hasPlan: true, unleash: true });
-            const recordedOnly = { has_audit_trail_control_plane: true, has_audit_trail_ui: false };
+    it('gates recording and visibility independently, so an account can be recorded without seeing it', async () => {
+        setup({ deployment: true, hasPlan: true, unleash: true });
+        const recordedOnly = { has_audit_trail_control_plane: true, has_audit_trail_ui: false };
 
-            await expect(canRecordAuditTrail(UUID, recordedOnly)).resolves.toBe(true);
-            await expect(canViewAuditTrail(UUID, recordedOnly)).resolves.toBe(false);
-        });
+        await expect(canRecordAuditTrail(UUID, recordedOnly)).resolves.toBe(true);
+        await expect(canViewAuditTrail(UUID, recordedOnly)).resolves.toBe(false);
+    });
 
-        it('denies a missing plan rather than falling open', async () => {
-            setup({ deployment: true, hasPlan: true, unleash: true });
+    it('denies a missing plan rather than falling open', async () => {
+        setup({ deployment: true, hasPlan: true, unleash: true });
 
-            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(false);
-            await expect(canViewAuditTrail(UUID, undefined)).resolves.toBe(false);
-        });
+        await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(false);
+        await expect(canViewAuditTrail(UUID, undefined)).resolves.toBe(false);
+    });
+
+    it('skips the entitlement where there are no plans to read one from', async () => {
+        setup({ deployment: true, hasPlan: false, unleash: true });
+
+        await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(true);
+        await expect(canViewAuditTrail(UUID, null)).resolves.toBe(true);
     });
 });

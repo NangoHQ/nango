@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import * as featureFlags from '@nangohq/feature-flags';
 import { flags } from '@nangohq/utils';
 
 import {
@@ -56,10 +57,12 @@ describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
         flags.hasAuditTrail = true;
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterEach(() => {
         flags.hasAuditTrail = false;
+        vi.restoreAllMocks();
     });
 
     it('builds the event and records variable names but never their values', async () => {

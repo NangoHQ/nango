@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore } from '@nangohq/audit';
+import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 import { migrate } from '@nangohq/usage';
 import { flags } from '@nangohq/utils';
@@ -43,11 +44,13 @@ describe('GET /api/v1/audit-trail', () => {
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
         flags.hasAuditTrail = true;
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(async () => {
         api.server.close();
         flags.hasAuditTrail = false;
+        vi.restoreAllMocks();
         await auditClient.close();
     });
 
