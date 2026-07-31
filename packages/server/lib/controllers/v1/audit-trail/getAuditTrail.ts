@@ -10,12 +10,13 @@ import type { GetAuditTrail } from '@nangohq/types';
 
 const PAGE_SIZE = 25;
 
-// Resources and actions are combined into a cross product downstream, so the two caps multiply.
+// Caps `resources` and `actions` separately. The store pairs them off, so the query sees at most
+// this squared.
 const MAX_FILTER_VALUES = 50;
 
-// A repeated query param (`?resources=a&resources=b`), which Express hands over as a string when it
-// appears once. Values aren't checked against the audit vocabulary — it has no runtime form to check
-// against — so an unknown one simply matches nothing.
+// Repeated param (`?resources=a&resources=b`); Express hands over a bare string when it appears once.
+// Unlike the enum-valued query params elsewhere these aren't checked against a vocabulary — the audit
+// one has no runtime form — so an unknown value simply matches nothing.
 const repeatedParam = z
     .union([z.string().min(1), z.array(z.string().min(1)).max(MAX_FILTER_VALUES)])
     .transform((value) => (Array.isArray(value) ? value : [value]));
