@@ -38,7 +38,6 @@ export interface DBFunctionInstance extends TimestampsAndDeletedAt {
     function_config_id: number;
     name: string;
     variant: string;
-    last_run_date: Date | null;
-    last_fetched_at: Date | null;
+    last_run_at: Date | null;
     frequency: string | null;
 }
