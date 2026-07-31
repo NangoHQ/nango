@@ -15,11 +15,13 @@ import type { Result } from '@nangohq/utils';
 export function createCredentials({
     config,
     provider,
-    dynamicCredentials
+    dynamicCredentials,
+    connectionConfig = {}
 }: {
     config: string;
     provider: ProviderJwt | ProviderTwoStep;
     dynamicCredentials: Record<string, any>;
+    connectionConfig?: Record<string, any>;
 }): Result<JwtCredentials, AuthCredentialsError> {
     try {
         if (!provider.token) {
@@ -36,17 +38,48 @@ export function createCredentials({
             dynamicCredentials['privateKey'] = { id, secret };
         }
         const now = Math.floor(Date.now() / 1000);
+        const mergedConnectionConfig = { ...(dynamicCredentials['connectionConfig'] as Record<string, any> | undefined), ...connectionConfig };
+        const replacers = { ...dynamicCredentials, connectionConfig: mergedConnectionConfig };
+        const isUnresolved = (value: string) => /\$\{[^{}]*\}/.test(value);
+        const resolvePayloadArray = (values: any[]): { value: string[]; hasContent: boolean } => {
+            const resolved = values.flatMap((item) => {
+                if (typeof item !== 'string') {
+                    return [];
+                }
+                const strippedItem = stripCredential(item);
+                const interpolatedItem = interpolateString(strippedItem, replacers);
+                if (isUnresolved(interpolatedItem)) {
+                    return [];
+                }
+                return interpolatedItem
+                    .split(',')
+                    .map((v) => v.trim())
+                    .filter(Boolean);
+            });
+            return { value: resolved, hasContent: resolved.length > 0 };
+        };
         const payload: Record<string, any> = {};
 
         for (const [key, value] of Object.entries(provider.token.payload)) {
+            if (Array.isArray(value)) {
+                const { value: resolved, hasContent } = resolvePayloadArray(value);
+                if (hasContent) {
+                    payload[key] = resolved;
+                }
+                continue;
+            }
+
             const strippedValue = stripCredential(value);
 
             if (strippedValue === null) {
                 payload[key] = null;
             } else if (typeof strippedValue === 'object') {
-                payload[key] = interpolateObject(strippedValue, dynamicCredentials);
+                payload[key] = interpolateObject(strippedValue, replacers);
             } else if (typeof strippedValue === 'string') {
-                payload[key] = interpolateString(strippedValue, dynamicCredentials);
+                const interpolated = interpolateString(strippedValue, replacers);
+                if (!isUnresolved(interpolated)) {
+                    payload[key] = interpolated;
+                }
             } else {
                 payload[key] = strippedValue;
             }
@@ -63,20 +96,25 @@ export function createCredentials({
             if (strippedValue === null) {
                 header[key] = null;
             } else if (typeof strippedValue === 'object') {
-                header[key] = interpolateObject(strippedValue, dynamicCredentials);
+                header[key] = interpolateObject(strippedValue, replacers);
             } else if (typeof strippedValue === 'string') {
-                header[key] = interpolateString(strippedValue, dynamicCredentials);
+                const interpolated = interpolateString(strippedValue, replacers);
+                if (!isUnresolved(interpolated)) {
+                    header[key] = interpolated;
+                }
             } else {
                 header[key] = strippedValue;
             }
         }
 
         const signingKey = stripCredential(provider.token.signing_key);
-        const interpolatedSigningKey = typeof signingKey === 'string' ? interpolateString(signingKey, dynamicCredentials) : signingKey;
+        const interpolatedSigningKey = typeof signingKey === 'string' ? interpolateString(signingKey, replacers) : signingKey;
 
         const pKey = (() => {
-            if (provider.signature.protocol === 'RSA') {
-                return formatPem(interpolatedSigningKey, 'PRIVATE KEY');
+            if (provider.signature.protocol !== 'HMAC') {
+                const headerMatch = /-----BEGIN ([A-Z0-9 ]+)-----/.exec(interpolatedSigningKey);
+                const keyType = (headerMatch?.[1] as 'PRIVATE KEY' | 'RSA PRIVATE KEY' | 'EC PRIVATE KEY' | undefined) ?? 'PRIVATE KEY';
+                return formatPem(interpolatedSigningKey, keyType);
             }
             const hmacEncoding = provider.signature.hmac_secret_encoding ?? 'hex';
             if (hmacEncoding === 'utf8') {
@@ -109,19 +147,14 @@ export function fetchJwtToken({
     payload: Record<string, string | number>;
     options: object;
 }): Result<{ jwtToken: string }, AuthCredentialsError> {
-    const hasLineBreak = privateKey.startsWith('-----BEGIN RSA PRIVATE KEY-----\n');
-
-    if (!hasLineBreak) {
-        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-    }
-
     try {
-        const token = signJWT({ payload, secretOrPrivateKey: privateKey, options });
+        const headerMatch = /-----BEGIN ([A-Z0-9 ]+)-----/.exec(privateKey);
+        const keyType = (headerMatch?.[1] as 'PRIVATE KEY' | 'RSA PRIVATE KEY' | 'EC PRIVATE KEY' | undefined) ?? 'PRIVATE KEY';
+        const formattedPrivateKey = formatPem(privateKey, keyType);
+        const token = signJWT({ payload, secretOrPrivateKey: formattedPrivateKey, options });
         return Ok({ jwtToken: token });
     } catch (err) {
-        const error = new AuthCredentialsError('refresh_token_external_error', { cause: err });
-        return Err(error);
+        return Err(err instanceof AuthCredentialsError ? err : new AuthCredentialsError('failed_to_sign', { cause: err }));
     }
 }
 
