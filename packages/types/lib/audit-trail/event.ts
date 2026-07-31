@@ -4,8 +4,8 @@ export type AuditTrailVersion = '2026-07-16';
 export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 
-// Not exported: this package emits no JavaScript, so a const here is unusable at runtime. Code needing
-// the list at runtime keeps a twin checked against `AuditEventKey`, as `apiKeyScopes` does for scopes.
+// Not exported: this package emits no JavaScript, so a const here is unusable at runtime — code needing
+// the list keeps a twin checked against `AuditEventKey`, as `apiKeyScopes` does for scopes.
 const AUDIT_EVENTS = {
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
     sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
@@ -22,10 +22,10 @@ const AUDIT_EVENTS = {
 } as const;
 
 export type AuditResource = keyof typeof AUDIT_EVENTS;
-export type AuditAction = (typeof AUDIT_EVENTS)[AuditResource][number];
 export type AuditActionOf<R extends AuditResource> = (typeof AUDIT_EVENTS)[R][number];
+export type AuditAction = AuditActionOf<AuditResource>;
 
-export type AuditEventKey = { [R in AuditResource]: `${R}.${(typeof AUDIT_EVENTS)[R][number]}` }[AuditResource];
+export type AuditEventKey = { [R in AuditResource]: `${R}.${AuditActionOf<R>}` }[AuditResource];
 
 export type AuditScope = 'account' | 'environment';
 
