@@ -2,8 +2,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { SyncCommand } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
-import { contextFromRequest, outcomeFromStatus, resolveActor } from './audit.middleware.js';
+import { contextFromRequest, outcomeFromStatus, recordEvent, resolveActor } from './audit.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
@@ -83,23 +82,21 @@ async function emit(req: Request, res: Response): Promise<void> {
         if (!account || !(await getFlags().isAuditTrailEnabled(account.uuid))) {
             return;
         }
-        const target = syncTarget(body);
-        const event = {
-            occurredAt,
-            accountId: account.id,
-            environment: environment ? { id: environment.id, display: environment.name } : null,
-            actor: resolveActor(locals),
-            resource: 'sync',
-            action: mapped.action,
-            targets: target ? [target] : [],
-            context: contextFromRequest(req),
-            outcome: outcomeFromStatus(res.statusCode),
-            ...('metadata' in mapped ? { metadata: mapped.metadata } : {})
-        } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
+        await recordEvent(() => {
+            const target = syncTarget(body);
+            return {
+                occurredAt,
+                accountId: account.id,
+                environment: environment ? { id: environment.id, display: environment.name } : null,
+                actor: resolveActor(locals),
+                resource: 'sync',
+                action: mapped.action,
+                targets: target ? [target] : [],
+                context: contextFromRequest(req),
+                outcome: outcomeFromStatus(res.statusCode),
+                ...('metadata' in mapped ? { metadata: mapped.metadata } : {})
+            } as AuditEvent;
+        }, 'sync_command');
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
     }

@@ -160,6 +160,7 @@ export enum Types {
     AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
 
     AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED = 'nango.audit.target.display_resolution_failed',
+    AUDIT_EMIT_DROPPED = 'nango.audit.emit.dropped',
     AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
     AUDIT_CONSUMER_BATCH_SIZE = 'nango.audit.consumer.batch.size',
     AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
