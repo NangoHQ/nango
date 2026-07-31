@@ -4,28 +4,26 @@ export type AuditTrailVersion = '2026-07-16';
 export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 
-// Not exported: this package emits no JavaScript, so a const here is unusable at runtime — code needing
-// the list keeps a twin checked against `AuditEventKey`, as `apiKeyScopes` does for scopes.
-const AUDIT_EVENTS = {
-    connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
-    sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
-    function: ['deployed', 'upgraded', 'deleted'],
-    integration: ['created', 'updated', 'deleted'],
-    api_key: ['created', 'updated', 'deleted'],
-    member: ['invited', 'invite_accepted', 'invite_declined', 'invite_revoked', 'role_changed', 'removed'],
-    team: ['updated'],
-    user: ['updated'],
-    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'deleted'],
-    app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
-    mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
-    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed']
-} as const;
+interface AuditEventTable {
+    connection: 'created' | 'updated' | 'metadata_updated' | 'refreshed' | 'deleted';
+    sync: 'enabled' | 'disabled' | 'paused' | 'started' | 'triggered' | 'cancelled' | 'frequency_changed' | 'variant_created' | 'variant_deleted';
+    function: 'deployed' | 'upgraded' | 'deleted';
+    integration: 'created' | 'updated' | 'deleted';
+    api_key: 'created' | 'updated' | 'deleted';
+    member: 'invited' | 'invite_accepted' | 'invite_declined' | 'invite_revoked' | 'role_changed' | 'removed';
+    team: 'updated';
+    user: 'updated';
+    environment: 'created' | 'updated' | 'variables_changed' | 'webhook_urls_changed' | 'deleted';
+    app_auth: 'login' | 'logout' | 'signup' | 'password_changed' | 'password_reset';
+    mfa: 'enrolled' | 'enabled' | 'disabled' | 'verified' | 'recovery_regenerated';
+    billing: 'plan_changed' | 'trial_extended' | 'details_changed' | 'payment_method_added' | 'payment_method_removed';
+}
 
-export type AuditResource = keyof typeof AUDIT_EVENTS;
-export type AuditActionOf<R extends AuditResource> = (typeof AUDIT_EVENTS)[R][number];
+export type AuditResource = keyof AuditEventTable;
+export type AuditActionOf<R extends AuditResource> = AuditEventTable[R];
 export type AuditAction = AuditActionOf<AuditResource>;
 
-export type AuditEventKey = { [R in AuditResource]: `${R}.${AuditActionOf<R>}` }[AuditResource];
+export type AuditEventKey = { [R in AuditResource]: `${R}.${AuditEventTable[R]}` }[AuditResource];
 
 export type AuditScope = 'account' | 'environment';
 

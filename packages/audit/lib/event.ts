@@ -158,8 +158,7 @@ type EmittedKey<T extends { resource: string; action: string }> = T extends unkn
 type EmittedButNotInVocabulary = Exclude<EmittedKey<AuditResourceAction>, AuditEventKey>;
 type InVocabularyButNotEmitted = Exclude<AuditEventKey, EmittedKey<AuditResourceAction>>;
 
-true satisfies [EmittedButNotInVocabulary] extends [never] ? true : never;
-true satisfies [InVocabularyButNotEmitted] extends [never] ? true : never;
+true satisfies [EmittedButNotInVocabulary, InVocabularyButNotEmitted] extends [never, never] ? true : never;
 
 export type AuditEvent = AuditEventCommon & AuditResourceAction;
 
