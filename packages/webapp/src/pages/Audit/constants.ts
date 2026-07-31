@@ -4,9 +4,8 @@ import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
 import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
 
 /**
- * Runtime twin of the audit event vocabulary: `@nangohq/types` emits no JavaScript, so the table can't
- * cross the package boundary as a value. Kept in step by the checks below, as `apiKeyScopes` does in
- * `@nangohq/utils`.
+ * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
+ * step by the checks below, as `apiKeyScopes` does in `@nangohq/utils`.
  */
 const actionsByResource = {
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
