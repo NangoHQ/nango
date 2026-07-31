@@ -1761,6 +1761,7 @@
               "integrations/all/tailscale",
               "integrations/all/tailscale-api-key",
               "integrations/all/trakstar-hire",
+              "api-integrations/transporeon-oauth2-cc",
               "integrations/all/trello",
               "integrations/all/tldv",
               "integrations/all/trello-scim",
