@@ -28,6 +28,7 @@ export type AuditAction =
     | 'deleted'
     | 'paused'
     | 'started'
+    | 'cancelled'
     | 'enabled'
     | 'disabled'
     | 'frequency_changed'
