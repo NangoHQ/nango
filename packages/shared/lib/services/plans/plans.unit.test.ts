@@ -35,27 +35,6 @@ describe('mergeFlags', () => {
     });
 
     describe.each([
-        { from: 'free', to: 'growth-v2' },
-        { from: 'starter-v2', to: 'enterprise' }
-    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when upgrading from $from to $to', ({ from, to }) => {
-        it('should turn on control-plane ingestion, and leave a hand-set UI entitlement untouched', () => {
-            const currentPlan = makePlan({ code: from, flagOverrides: { has_audit_trail_control_plane: false, has_audit_trail_ui: true } });
-            const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition(to)! });
-
-            expect(newFlags.has_audit_trail_control_plane).toBe(true);
-            // mergeFlags output is spread into the plans UPDATE, so an absent key leaves the column as stored.
-            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
-        });
-    });
-
-    it('should turn control-plane ingestion back off when downgrading to free', () => {
-        const currentPlan = makePlan({ code: 'enterprise', flagOverrides: { has_audit_trail_control_plane: true } });
-        const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('free')! });
-
-        expect(newFlags.has_audit_trail_control_plane).toBe(false);
-    });
-
-    describe.each([
         { from: 'starter-v2', to: 'free' },
         { from: 'growth-v2', to: 'starter-v2' },
         { from: 'enterprise-cloud-hosted', to: 'free' },
@@ -81,7 +60,9 @@ describe('mergeFlags', () => {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
                     has_otel: true,
-                    proxy_max: 99_999_999
+                    proxy_max: 99_999_999,
+                    has_audit_trail_control_plane: true,
+                    has_audit_trail_ui: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -91,6 +72,9 @@ describe('mergeFlags', () => {
             });
 
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
+            // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
+            // whatever was set by hand — unlike every other flag, a downgrade does not revoke it.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
 
@@ -120,7 +104,9 @@ describe('mergeFlags', () => {
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
                     auto_idle: true,
-                    can_disable_connect_ui_watermark: false
+                    can_disable_connect_ui_watermark: false,
+                    has_audit_trail_control_plane: false,
+                    has_audit_trail_ui: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -133,11 +119,15 @@ describe('mergeFlags', () => {
                 ...newPlanDefinition.flags,
                 environments_max: 50, // Keep override
                 has_otel: true, // Keep override
-                api_rate_limit_size: '2xl' // Keep override
+                api_rate_limit_size: '2xl', // Keep override
+                has_audit_trail_control_plane: true // New plan grants it, so a paid plan always ends up recording
                 // proxy_max: new plan more generous default (null)
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
+            // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
+            // whatever was set by hand.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
     });
 });
