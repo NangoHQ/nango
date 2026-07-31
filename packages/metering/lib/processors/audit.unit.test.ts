@@ -1,72 +1,142 @@
-import { describe, expect, it, vi } from 'vitest';
+import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { serde } from '@nangohq/pubsub';
 import { Err, Ok } from '@nangohq/utils';
 
-import { logger } from '../utils.js';
 import { AuditProcessor } from './audit.js';
 
-import type { AuditWriter } from '@nangohq/audit';
-import type { SubscribeProps, Transport } from '@nangohq/pubsub';
+import type { SQSClient } from '@aws-sdk/client-sqs';
+import type { AuditBatchWriter } from '@nangohq/audit';
 import type { AuditRecordedEvent } from '@nangohq/types';
 
-const record = { event: '{"id":"11111111-1111-1111-1111-111111111111","accountId":42}' };
+const QUEUE_URL = 'https://sqs.us-west-2.amazonaws.com/1/audit-test-audit-test';
 
-const message = {
-    idempotencyKey: 'key-1',
-    subject: 'audit',
-    type: 'audit.recorded',
-    payload: record,
-    createdAt: new Date('2026-07-16T10:00:00.000Z')
-} satisfies AuditRecordedEvent;
+function auditMessage(eventId: string) {
+    const event = {
+        idempotencyKey: `key-${eventId}`,
+        subject: 'audit',
+        type: 'audit.recorded',
+        payload: { event: JSON.stringify({ id: eventId, resource: 'connection', action: 'deleted', accountId: 42 }) },
+        createdAt: new Date('2026-07-30T10:00:00.000Z')
+    } satisfies AuditRecordedEvent;
 
-function start(store: AuditWriter) {
-    let props: SubscribeProps<'audit'> | undefined;
-    const transport = {
-        subscribe: (p: SubscribeProps<'audit'>) => {
-            props = p;
+    return {
+        MessageId: `sqs-${eventId}`,
+        ReceiptHandle: `handle-${eventId}`,
+        Body: serde.serialize(event).unwrap().toString('base64'),
+        MessageAttributes: { subject: { DataType: 'String', StringValue: 'audit' } },
+        Attributes: { ApproximateReceiveCount: '2' }
+    };
+}
+
+// Serves one poll then nothing, so a loop makes exactly one pass over the messages under test.
+function sqsServing(messages: unknown[]) {
+    const deleted: string[] = [];
+    let served = false;
+    const send = vi.fn().mockImplementation((command: unknown) => {
+        if (command instanceof ReceiveMessageCommand) {
+            if (served) {
+                // Stands in for long polling: without a macrotask the loop would spin on microtasks and
+                // starve the test's timers.
+                return new Promise((resolve) => setTimeout(() => resolve({}), 5));
+            }
+            served = true;
+            return Promise.resolve({ Messages: messages });
         }
-    } as unknown as Transport;
+        if (command instanceof DeleteMessageCommand) {
+            deleted.push(String(command.input.ReceiptHandle));
+            return Promise.resolve({});
+        }
+        return Promise.resolve({});
+    });
+    return { sqs: { send, destroy: vi.fn() } as unknown as SQSClient, deleted, send };
+}
 
-    new AuditProcessor({ transport, store }).start();
-
-    return props!;
+async function run(messages: unknown[], store: AuditBatchWriter) {
+    const { sqs, deleted, send } = sqsServing(messages);
+    const proc = new AuditProcessor({
+        queueUrl: QUEUE_URL,
+        store,
+        concurrency: 1,
+        maxMessages: 10,
+        waitTimeSeconds: 0,
+        visibilityTimeoutSeconds: 30,
+        sqs
+    });
+    proc.start();
+    // The second receive only happens once the first batch has been handled.
+    await vi.waitFor(() => expect(send.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand).length).toBeGreaterThan(1));
+    await proc.stop();
+    return { deleted };
 }
 
 describe('AuditProcessor', () => {
-    it('subscribes to the audit subject under the audit consumer group', () => {
-        const props = start({ record: () => Promise.resolve(Ok(undefined)) });
-        expect(props.subject).toBe('audit');
-        expect(props.consumerGroup).toBe('audit');
+    afterEach(() => vi.restoreAllMocks());
+
+    it('collapses a received batch into one write and deletes every message', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const { deleted } = await run([auditMessage('a'), auditMessage('b'), auditMessage('c')], { recordMany });
+
+        expect(recordMany).toHaveBeenCalledTimes(1);
+        const [records, opts] = recordMany.mock.calls[0] as [{ event: string }[], { dedupToken: string }];
+        expect(records.map((r) => (JSON.parse(r.event) as { id: string }).id)).toEqual(['a', 'b', 'c']);
+        expect(opts.dedupToken).toMatch(/^[0-9a-f]{64}$/);
+        expect(deleted.sort()).toEqual(['handle-a', 'handle-b', 'handle-c']);
     });
 
-    it('stores the payload as received', async () => {
-        const write = vi.fn().mockResolvedValue(Ok(undefined));
-        const props = start({ record: write });
+    it('deletes nothing when the write fails, so the batch redelivers and reaches the DLQ', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Err(new Error('clickhouse unavailable')));
+        const { deleted } = await run([auditMessage('a'), auditMessage('b')], { recordMany });
 
-        await props.callback(message);
-
-        expect(write).toHaveBeenCalledWith(record);
+        expect(recordMany).toHaveBeenCalledTimes(1);
+        expect(deleted).toEqual([]);
     });
 
-    it('logs and acknowledges when the write returns Err', async () => {
-        const error = vi.spyOn(logger, 'error');
-        const props = start({ record: () => Promise.resolve(Err(new Error('clickhouse unavailable'))) });
+    it('excludes an undecodable message from the batch and leaves it for the DLQ', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const undecodable = { ...auditMessage('bad'), Body: 'not-base64-v8' };
+        const { deleted } = await run([auditMessage('good'), undecodable], { recordMany });
 
-        await expect(props.callback(message)).resolves.toBeUndefined();
-        expect(error).toHaveBeenCalledWith(expect.stringContaining('clickhouse unavailable'));
+        const [records] = recordMany.mock.calls[0] as [{ event: string }[]];
+        expect(records).toHaveLength(1);
+        expect((JSON.parse(records[0]!.event) as { id: string }).id).toBe('good');
+        expect(deleted).toEqual(['handle-good']);
     });
 
-    // A throw and an Err must share one fate, or the same failure is dropped or retried depending on
-    // whether the writer happened to catch it.
-    it('logs and acknowledges when the write throws', async () => {
-        const error = vi.spyOn(logger, 'error');
-        const props = start({
-            record: () => {
-                throw new Error('unexpected');
-            }
-        });
+    it('skips a message published under another subject', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const wrongSubject = { ...auditMessage('x'), MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } } };
+        const { deleted } = await run([wrongSubject], { recordMany });
 
-        await expect(props.callback(message)).resolves.toBeUndefined();
-        expect(error).toHaveBeenCalledWith('Failed to store audit event', expect.any(Error));
+        expect(recordMany).not.toHaveBeenCalled();
+        expect(deleted).toEqual([]);
+    });
+
+    it('gives a batch the same dedup token every time it is delivered, so a re-sent insert is discarded', async () => {
+        const first = vi.fn().mockResolvedValue(Ok(undefined));
+        await run([auditMessage('a'), auditMessage('b')], { recordMany: first });
+
+        // Same messages, redelivered in a different order — SQS makes no ordering promise.
+        const second = vi.fn().mockResolvedValue(Ok(undefined));
+        await run([auditMessage('b'), auditMessage('a')], { recordMany: second });
+
+        const tokenOf = (m: ReturnType<typeof vi.fn>) => (m.mock.calls[0] as [unknown, { dedupToken: string }])[1].dedupToken;
+        expect(tokenOf(first)).toBe(tokenOf(second));
+    });
+
+    it('rejects an envelope whose payload carries no event blob', async () => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const notAnEnvelope = {
+            ...auditMessage('x'),
+            Body: serde
+                .serialize({ idempotencyKey: 'k', subject: 'audit', type: 'audit.recorded', payload: {}, createdAt: new Date() })
+                .unwrap()
+                .toString('base64')
+        };
+        const { deleted } = await run([notAnEnvelope], { recordMany });
+
+        expect(recordMany).not.toHaveBeenCalled();
+        expect(deleted).toEqual([]);
     });
 });
