@@ -63,6 +63,10 @@ export interface BillingPlanChangedMetadata {
     fromPlan?: string;
     toPlan?: string;
 }
+export interface BillingPaymentMethodRemovedMetadata {
+    // Opaque Stripe payment method id (`pm_...`); never card number, brand, or last4.
+    paymentMethodId?: string;
+}
 export interface MfaVerifiedMetadata {
     method?: 'totp' | 'recovery_code';
 }
@@ -97,8 +101,9 @@ export type AuditResourceAction =
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }
     | { resource: 'environment'; action: 'updated'; metadata?: EnvironmentUpdatedMetadata }
     | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
-    | { resource: 'billing'; action: 'trial_extended' | 'details_changed' }
+    | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
+    | { resource: 'billing'; action: 'payment_method_removed'; metadata?: BillingPaymentMethodRemovedMetadata }
     | { resource: 'app_auth'; action: 'password_changed' }
     | { resource: 'mfa'; action: 'enrolled' | 'enabled' | 'disabled' | 'recovery_regenerated' }
     | { resource: 'mfa'; action: 'verified'; metadata?: MfaVerifiedMetadata };
