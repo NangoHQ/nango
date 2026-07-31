@@ -51,7 +51,9 @@ const { getInternalTlsEnvMock, k8sMock } = vi.hoisted(() => ({
     getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
     k8sMock: {
         calls: [] as { method: string; body?: any; name?: string }[],
-        errors: new Map<string, { reason: string }>()
+        errors: new Map<string, { reason: string }>(),
+        /** Fail replaceNamespacedSecret only when setting ownerReferences (the link step). */
+        failLink: false
     }
 }));
 
@@ -76,6 +78,9 @@ vi.mock('@kubernetes/client-node', () => {
         const err = k8sMock.errors.get(method);
         if (err) {
             throw new ApiError(JSON.stringify(err));
+        }
+        if (method === 'replaceNamespacedSecret' && k8sMock.failLink && param?.body?.metadata?.ownerReferences) {
+            throw new ApiError(JSON.stringify({ reason: 'Forbidden' }));
         }
         if (method === 'readNamespacedSecret') {
             return Promise.resolve({
@@ -154,6 +159,7 @@ describe('runner TLS secret lifecycle', () => {
     beforeEach(() => {
         k8sMock.calls = [];
         k8sMock.errors.clear();
+        k8sMock.failLink = false;
         getInternalTlsEnvMock.mockReturnValue(tlsEnv);
     });
 
@@ -224,10 +230,34 @@ describe('runner TLS secret lifecycle', () => {
 
     it('should delete the secret if the deployment cannot be created', async () => {
         k8sMock.errors.set('createNamespacedDeployment', { reason: 'Forbidden' });
+        k8sMock.errors.set('readNamespacedDeployment', { reason: 'NotFound' });
 
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isErr()).toBe(true);
         expect(k8sMock.calls.find((call) => call.method === 'deleteNamespacedSecret')?.name).toBe(secretName);
+        expect(methodsCalled()).toContain('readNamespacedDeployment');
+    });
+
+    it('should keep the secret when create fails but the deployment exists', async () => {
+        k8sMock.errors.set('createNamespacedDeployment', { reason: 'Timeout' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+        expect(methodsCalled()).not.toContain('deleteNamespacedSecret');
+        expect(methodsCalled()).toContain('readNamespacedDeployment');
+
+        const linked = k8sMock.calls.find((call) => call.method === 'replaceNamespacedSecret')?.body;
+        expect(linked.metadata.ownerReferences?.[0]?.uid).toBe('deploy-uid-1');
+    });
+
+    it('should roll back deployment and secret when ownership linking fails', async () => {
+        k8sMock.failLink = true;
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        expect(k8sMock.calls.find((call) => call.method === 'deleteNamespacedSecret')?.name).toBe(secretName);
+        expect(k8sMock.calls.find((call) => call.method === 'deleteNamespacedDeployment')?.name).toBe('account-7-1');
+        expect(methodsCalled()).not.toContain('createNamespacedService');
     });
 
     it('should delete the secret on termination', async () => {

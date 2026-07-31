@@ -94,13 +94,20 @@ class Kubernetes {
         // Create deployment
         const deploymentResult = await this.createDeployment(node, name, namespace, runnerUrl);
         if (deploymentResult.isErr()) {
-            // Avoid leaving a private-key Secret behind if we never get a Deployment to own it
+            // createDeployment only fails once it has confirmed the Deployment is absent, so the
+            // Secret is safe to remove — a transient create error that left the Deployment in place
+            // is reconciled inside createDeployment instead.
             await this.deleteTlsSecret(name, namespace);
             return Err(deploymentResult.error);
         }
 
         const linkResult = await this.linkTlsSecretToDeployment(name, namespace, deploymentResult.value);
         if (linkResult.isErr()) {
+            // Roll back both: without an ownerReference the Secret would leak if the Deployment is
+            // later deleted outside terminate(), and a Deployment without a resolvable secretKeyRef
+            // cannot run.
+            await this.deleteTlsSecret(name, namespace);
+            await this.deleteDeployment(name, namespace);
             return linkResult;
         }
 
@@ -319,6 +326,20 @@ class Kubernetes {
         return Ok(undefined);
     }
 
+    private async deleteDeployment(name: string, namespace: string): Promise<Result<void>> {
+        try {
+            await this.appsApi.deleteNamespacedDeployment({
+                name,
+                namespace
+            });
+        } catch (err: any) {
+            if (!this.notFound(err)) {
+                return Err(new Error('Failed to delete deployment', { cause: err }));
+            }
+        }
+        return Ok(undefined);
+    }
+
     private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<k8s.V1Deployment>> {
         let noDisruptSpec = {};
         if (envs.RUNNER_DO_NOT_DISRUPT) {
@@ -378,20 +399,18 @@ class Kubernetes {
                 body: deploymentManifest
             });
             return Ok(created);
-        } catch (err: any) {
-            if (!this.alreadyExists(err)) {
-                return Err(new Error('Failed to create deployment', { cause: err }));
+        } catch (createErr: any) {
+            // Create may have succeeded despite the error (timeout after admission, connection drop).
+            // Only fail once a read confirms the Deployment is absent.
+            try {
+                const existing = await this.appsApi.readNamespacedDeployment({
+                    name,
+                    namespace
+                });
+                return Ok(existing);
+            } catch {
+                return Err(new Error('Failed to create deployment', { cause: createErr }));
             }
-        }
-
-        try {
-            const existing = await this.appsApi.readNamespacedDeployment({
-                name,
-                namespace
-            });
-            return Ok(existing);
-        } catch (err: any) {
-            return Err(new Error('Failed to read existing deployment', { cause: err }));
         }
     }
 
