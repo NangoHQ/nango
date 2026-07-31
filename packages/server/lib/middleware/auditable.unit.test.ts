@@ -3,8 +3,10 @@ import { EventEmitter } from 'node:events';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
+import { metrics } from '@nangohq/utils';
 
 import {
+    auditable,
     auditConnectionCreated,
     auditConnectionUpdated,
     auditEnvironmentVariablesChanged,
@@ -86,6 +88,8 @@ async function runAudit(handler: RequestHandler, req: any, res: any) {
 
 describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
+        // The metrics spy persists across tests; without clearing, negative assertions depend on order.
+        vi.clearAllMocks();
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
         // getFlags() returns the stable noop facade in tests; force the audit trail on.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
@@ -457,6 +461,41 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             targets: [{ type: 'function', id: 'my-prebuilt-sync' }],
             metadata: { providerConfigKey: 'algolia', type: 'sync' }
+        });
+    });
+
+    describe('a failure before the event can be emitted', () => {
+        const dropped = [metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' }] as const;
+
+        it('is not counted when resolution fails after the listener is registered — the event still emits', async () => {
+            const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+            const handler = auditable({
+                policy: { resource: 'environment', action: 'variables_changed', scope: 'environment' },
+                target: () => {
+                    throw new Error('resolver exploded');
+                }
+            } as any);
+            const res = fakeRes(locals);
+
+            await new Promise<void>((resolve) => handler(fakeReq(), res, () => resolve()));
+            res.emit('finish');
+
+            await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
+            expect(inc).not.toHaveBeenCalledWith(...dropped);
+            expect(recordMock.mock.calls[0]?.[0]).toMatchObject({ accountId: 42, outcome: 'success', targets: [] });
+        });
+
+        it('is counted when the gate fails before the listener is registered — nothing emits', async () => {
+            const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+            vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockRejectedValue(new Error('unleash unreachable'));
+            const res = fakeRes(locals);
+
+            await new Promise<void>((resolve) => auditEnvironmentVariablesChanged(fakeReq(), res, () => resolve()));
+            res.emit('finish');
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(inc).toHaveBeenCalledWith(...dropped);
+            expect(recordMock).not.toHaveBeenCalled();
         });
     });
 });

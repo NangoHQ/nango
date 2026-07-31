@@ -180,8 +180,9 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
 
 type AuditEmitSource = 'auditable' | 'auth' | 'mfa_verified' | 'sync_command';
 
-// Takes a builder rather than a built event so a failure while building counts as a drop too. A
-// caller's own catch covers only the lookups deciding whether to record at all, which are not drops.
+// emit() serves only auditable(); the auth, MFA-verify and sync-command middlewares build and record
+// their own events, so this is the single point they share and the only place a drop can be counted
+// once. Takes a builder rather than a built event so a failure while building counts as a drop too.
 export async function recordEvent(build: () => AuditEvent, source: AuditEmitSource): Promise<void> {
     let dropped = true;
     try {
@@ -240,6 +241,7 @@ interface ResolvedAudit {
 export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<TEndpoint>): RequestHandler {
     return (req, res, next) => {
         void (async () => {
+            let willEmit = false;
             try {
                 const locals = res.locals as RequestLocals;
                 // Resolve the audited account before the flag gate: a spec may attribute the event to an
@@ -262,6 +264,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
                     // whatever we managed to resolve (even nothing, if resolution threw).
                     let resolved: ResolvedAudit | undefined;
+                    willEmit = true;
                     res.on('finish', () => {
                         void (async () => {
                             if (
@@ -288,9 +291,12 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     };
                 }
             } catch (err) {
-                // spec.account reads the database before the gate, so a throw here loses the event outright.
                 logger.error(`failed to resolve audit target`, err);
-                metrics.increment(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
+                // Nothing emits until the finish listener is registered, so a throw before that loses the
+                // event; after it the event still emits, without whatever failed to resolve, which is not.
+                if (!willEmit) {
+                    metrics.increment(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
+                }
             } finally {
                 next();
             }
