@@ -55,9 +55,9 @@ export function buildFlags(client: FeatureFlagsClient) {
          * Whether the audit trail is enabled for this account, on top of its plan entitlement:
          * percentage rollout plus a kill switch.
          *
-         * Unlike the other flags this one takes its default from the caller, because deployments
-         * without Unleash (self-hosted, local) and Unleash outages both resolve to it — see
-         * `canRecordAuditTrail` in the server.
+         * Unlike the other flags this one takes its default from the caller, because losing an audit
+         * event is worse than recording one the rollout had not reached yet — the server passes `true`
+         * so a missing flag or an Unleash outage keeps recording. See `canRecordAuditTrail`.
          */
         isAuditTrailEnabled(accountUuid: string, defaultValue: boolean) {
             // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.

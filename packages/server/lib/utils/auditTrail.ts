@@ -10,9 +10,13 @@ async function isEntitled(
     plan: Partial<Pick<DBPlan, AuditTrailEntitlement>> | null | undefined,
     entitlement: AuditTrailEntitlement
 ): Promise<boolean> {
-    // The deployment switch is passed as the flag's default, so it is what a deployment without Unleash
-    // (self-hosted, local) resolves to, and what an Unleash outage falls back to.
-    if (!(await getFlags().isAuditTrailEnabled(accountUuid, flags.hasAuditTrail))) {
+    // Hard deployment gate, so self-hosted is off structurally rather than by relying on a flag default.
+    if (!flags.hasAuditTrail) {
+        return false;
+    }
+    // Defaulting to true keeps recording when the flag cannot be evaluated — no Unleash configured
+    // (local) or an Unleash outage — rather than silently dropping audit events.
+    if (!(await getFlags().isAuditTrailEnabled(accountUuid, true))) {
         return false;
     }
     // Deployments without plans have nothing to read an entitlement from.

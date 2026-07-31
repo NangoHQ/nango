@@ -67,6 +67,13 @@ describe('audit trail entitlement', () => {
     });
 
     describe('with Unleash answering', () => {
+        it('is off when the deployment switch is off, even if the flag says yes', async () => {
+            setup({ deployment: false, hasPlan: true, unleash: true });
+
+            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
+            await expect(canViewAuditTrail(UUID, entitled)).resolves.toBe(false);
+        });
+
         it('is off when the flag is off, even for an entitled account (kill switch)', async () => {
             setup({ deployment: true, hasPlan: true, unleash: false });
 
