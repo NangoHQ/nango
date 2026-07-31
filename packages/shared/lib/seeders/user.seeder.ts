@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { promisify } from 'node:util';
 
-import { nanoid } from '@nangohq/utils';
+import { nanoid, PBKDF2_ITERATIONS } from '@nangohq/utils';
 
 import userService from '../services/user.service.js';
 
@@ -14,7 +14,7 @@ export async function seedUser(accountId: number): Promise<DBUser> {
     const uniqueId = nanoid();
 
     const salt = crypto.randomBytes(16).toString('base64');
-    const hashedPassword = (await promisePdkdf2(password, salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await promisePdkdf2(password, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 
     const user = await userService.createUser({
         email: `${uniqueId}@example.com`,

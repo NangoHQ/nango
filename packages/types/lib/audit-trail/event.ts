@@ -1,7 +1,7 @@
 // Canonical audit event vocabulary — the single source of truth shared by the emit side
 // (@nangohq/audit's AuditEvent) and the read/API side (ApiAuditTrailEvent).
 export type AuditTrailVersion = '2026-07-16';
-export type AuditActorType = 'user' | 'api_key' | 'system';
+export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 
 export type AuditResource =
@@ -28,6 +28,7 @@ export type AuditAction =
     | 'deleted'
     | 'paused'
     | 'started'
+    | 'cancelled'
     | 'enabled'
     | 'disabled'
     | 'frequency_changed'
@@ -38,13 +39,13 @@ export type AuditAction =
     | 'deployed'
     | 'invited'
     | 'invite_accepted'
+    | 'invite_declined'
     | 'invite_revoked'
     | 'removed'
     | 'role_changed'
     | 'variables_changed'
     | 'webhook_urls_changed'
     | 'login'
-    | 'login_failed'
     | 'logout'
     | 'signup'
     | 'password_changed'
@@ -55,6 +56,8 @@ export type AuditAction =
     | 'plan_changed'
     | 'trial_extended'
     | 'details_changed'
+    | 'payment_method_added'
+    | 'payment_method_removed'
     | 'exported';
 
 export type AuditScope = 'account' | 'environment';

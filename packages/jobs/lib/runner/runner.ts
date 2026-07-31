@@ -1,4 +1,4 @@
-import { env, Err, isProd, Ok, retryWithBackoff } from '@nangohq/utils';
+import { env, Err, isProd, Ok, retryWithBackoff, withInternalTls } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { getDefaultFleet } from '../runtime/runtimes.js';
@@ -89,7 +89,7 @@ export async function idle(nodeId: number): Promise<Result<void>> {
 export async function notifyOnIdle(node: Node): Promise<Result<void>> {
     const res = await retryWithBackoff(
         async () => {
-            return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+            return await fetch(`${node.url}/notifyWhenIdle`, withInternalTls({ method: 'POST', body: JSON.stringify({ nodeId: node.id }) }));
         },
         {
             numOfAttempts: 5
