@@ -250,6 +250,16 @@ describe('runner TLS secret lifecycle', () => {
         expect(linked.metadata.ownerReferences?.[0]?.uid).toBe('deploy-uid-1');
     });
 
+    it('should keep the secret when create and the follow-up read both fail ambiguously', async () => {
+        k8sMock.errors.set('createNamespacedDeployment', { reason: 'Timeout' });
+        k8sMock.errors.set('readNamespacedDeployment', { reason: 'Timeout' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        expect(res.isErr() && res.error.message).toMatch(/Failed to verify deployment after create/);
+        expect(methodsCalled()).not.toContain('deleteNamespacedSecret');
+    });
+
     it('should roll back deployment and secret when ownership linking fails', async () => {
         k8sMock.failLink = true;
 

@@ -27,6 +27,14 @@ export function getTlsEnvVars(serviceName: string, tlsEnv: Record<string, string
     }));
 }
 
+/** Create failed and a follow-up read confirmed the Deployment is gone — Secret cleanup is safe. */
+class DeploymentAbsentError extends Error {
+    override name = 'DeploymentAbsentError';
+    constructor(cause: unknown) {
+        super('Failed to create deployment', { cause });
+    }
+}
+
 class Kubernetes {
     private static instance: Kubernetes | null = null;
     private readonly kc: k8s.KubeConfig;
@@ -94,10 +102,12 @@ class Kubernetes {
         // Create deployment
         const deploymentResult = await this.createDeployment(node, name, namespace, runnerUrl);
         if (deploymentResult.isErr()) {
-            // createDeployment only fails once it has confirmed the Deployment is absent, so the
-            // Secret is safe to remove — a transient create error that left the Deployment in place
-            // is reconciled inside createDeployment instead.
-            await this.deleteTlsSecret(name, namespace);
+            // Only delete the Secret when a read confirmed the Deployment is gone. A transient read
+            // failure after an ambiguous create must leave the Secret — the Deployment may still be
+            // alive and referencing it.
+            if (deploymentResult.error instanceof DeploymentAbsentError) {
+                await this.deleteTlsSecret(name, namespace);
+            }
             return Err(deploymentResult.error);
         }
 
@@ -401,15 +411,19 @@ class Kubernetes {
             return Ok(created);
         } catch (createErr: any) {
             // Create may have succeeded despite the error (timeout after admission, connection drop).
-            // Only fail once a read confirms the Deployment is absent.
+            // Only treat the Deployment as absent on an explicit NotFound; any other read failure
+            // leaves presence uncertain.
             try {
                 const existing = await this.appsApi.readNamespacedDeployment({
                     name,
                     namespace
                 });
                 return Ok(existing);
-            } catch {
-                return Err(new Error('Failed to create deployment', { cause: createErr }));
+            } catch (readErr: any) {
+                if (this.notFound(readErr)) {
+                    return Err(new DeploymentAbsentError(createErr));
+                }
+                return Err(new Error('Failed to verify deployment after create', { cause: readErr }));
             }
         }
     }
