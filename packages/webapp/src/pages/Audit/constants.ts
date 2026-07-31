@@ -14,7 +14,7 @@ const actionsByResource: Record<AuditResource, readonly AuditAction[]> = {
     integration: ['updated', 'deleted'],
     function: ['deleted'],
     api_key: ['updated', 'deleted'],
-    sync: ['enabled', 'disabled', 'frequency_changed', 'variant_created', 'variant_deleted'],
+    sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
     member: ['role_changed', 'removed'],
     team: ['updated'],
     user: ['updated'],
