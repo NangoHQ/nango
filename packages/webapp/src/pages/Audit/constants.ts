@@ -4,10 +4,9 @@ import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
 import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
 
 /**
- * Runtime twin of the audit event vocabulary, which `@nangohq/types` can only hand over as types — it
- * emits no JavaScript, so the table itself can't cross the package boundary. Same arrangement as
- * `apiKeyScopes` in `@nangohq/utils`, kept in step the same way: the `satisfies` rejects an action its
- * resource doesn't record, and the assertion below rejects a recorded event missing from here.
+ * Runtime twin of the audit event vocabulary: `@nangohq/types` emits no JavaScript, so the table can't
+ * cross the package boundary as a value. Kept in step by the checks below, as `apiKeyScopes` does in
+ * `@nangohq/utils`.
  */
 const actionsByResource = {
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
