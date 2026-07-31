@@ -10,15 +10,30 @@ import type { GetAuditTrail } from '@nangohq/types';
 
 const PAGE_SIZE = 25;
 
+// Resources and actions are combined into a cross product downstream, so the two caps multiply.
+const MAX_FILTER_VALUES = 50;
+
+// A repeated query param (`?resources=a&resources=b`), which Express hands over as a string when it
+// appears once. Values aren't checked against the audit vocabulary — it has no runtime form to check
+// against — so an unknown one simply matches nothing.
+const repeatedParam = z
+    .union([z.string().min(1), z.array(z.string().min(1)).max(MAX_FILTER_VALUES)])
+    .transform((value) => (Array.isArray(value) ? value : [value]));
+
 const queryStringValidation = z
     .object({
         cursor: z.string().optional(),
         from: z.iso.datetime().optional(),
-        to: z.iso.datetime().optional()
+        to: z.iso.datetime().optional(),
+        resources: repeatedParam.optional(),
+        actions: repeatedParam.optional()
     })
     // Account-scoped endpoint (no `env`). Not strict: any stray query param is stripped rather than 400'd, so a read never fails over an extra key.
     // Surface an inverted range as a 400 rather than a silently empty result.
-    .refine((q) => !q.from || !q.to || new Date(q.from) <= new Date(q.to), { message: '`from` must be before or equal to `to`', path: ['from'] });
+    .refine((q) => !q.from || !q.to || new Date(q.from) <= new Date(q.to), { message: '`from` must be before or equal to `to`', path: ['from'] })
+    // An action is only meaningful attached to a resource, so reject the pairless form rather than
+    // dropping it and returning a wider result set than the caller asked for.
+    .refine((q) => !q.actions?.length || Boolean(q.resources?.length), { message: '`actions` requires `resources`', path: ['actions'] });
 
 export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     const query = queryStringValidation.safeParse(req.query);
@@ -28,9 +43,9 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     }
 
     const { account } = res.locals;
-    const { cursor, from, to } = query.data;
+    const { cursor, from, to, resources, actions } = query.data;
 
-    const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to });
+    const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions });
     if (result.isErr()) {
         if (result.error instanceof InvalidAuditCursorError) {
             res.status(400).send({ error: { code: 'invalid_query_params', message: 'Invalid cursor' } });

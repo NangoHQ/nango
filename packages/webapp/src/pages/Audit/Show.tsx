@@ -5,6 +5,8 @@ import { Helmet } from 'react-helmet';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tag } from '@/components/ui/Tag';
@@ -16,9 +18,11 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { last14dPreset, logsPresets } from '@/utils/logs';
 import { formatDateToLogFormat } from '@/utils/utils';
 import { AuditEventDrawer } from './components/AuditEventDrawer';
+import { actionOptionsFor, ALL, resourceOptions } from './constants';
 
+import type { ActionFilter, ResourceFilter } from './constants';
 import type { Period } from '@/utils/dates';
-import type { ApiAuditTrailEvent, AuditOutcome } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditAction, AuditOutcome, AuditResource } from '@nangohq/types';
 
 const outcomeVariant: Record<AuditOutcome, React.ComponentProps<typeof Tag>['variant']> = {
     success: 'success',
@@ -33,14 +37,26 @@ export const AuditShow: React.FC = () => {
     const { can } = usePermissions();
     const canReadAuditTrail = can(permissions.canReadAuditTrail);
     const [period, setPeriod] = useState<Period | null>(() => last14dPreset.toPeriod());
+    const [resources, setResources] = useState<ResourceFilter[]>([ALL]);
+    const [actions, setActions] = useState<ActionFilter[]>([ALL]);
     const [selected, setSelected] = useState<ApiAuditTrailEvent | null>(null);
 
     const from = period?.from ? period.from.toISOString() : undefined;
     const to = period?.to ? period.to.toISOString() : undefined;
 
+    // Actions are matched as `resource.action` pairs, so they're only offered once the resource half is unambiguous.
+    const singleResource: AuditResource | null = resources.length === 1 && resources[0] !== ALL ? resources[0] : null;
+    const onResourcesChange = (next: ResourceFilter[]) => {
+        setResources(next);
+        setActions([ALL]);
+    };
+
+    const resourceFilter = useMemo(() => resources.filter((resource): resource is AuditResource => resource !== ALL), [resources]);
+    const actionFilter = useMemo(() => (singleResource ? actions.filter((action): action is AuditAction => action !== ALL) : []), [actions, singleResource]);
+
     // Only read audit data once the flag and the caller's permission are confirmed; stays idle otherwise.
     const { data, isLoading, isError, refetch, isFetchingNextPage, hasNextPage, fetchNextPage } = useApiGetAuditTrail(
-        { from, to },
+        { from, to, resources: resourceFilter, actions: actionFilter },
         { enabled: meta?.auditTrail === true && canReadAuditTrail }
     );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
@@ -83,9 +99,22 @@ export const AuditShow: React.FC = () => {
 
             <div className="flex flex-col gap-3">
                 <div className="flex gap-2 justify-between">
-                    {/* Left side is reserved for search + filters (status, actor, resource, …) added later. */}
+                    {/* Left side is reserved for search + filters (status, actor, …) added later. */}
                     <div className="flex-1 min-w-0" />
                     <div className="flex gap-2">
+                        <FilterMultiSelect label="Resource" options={resourceOptions} selected={resources} defaultSelect={[ALL]} onChange={onResourcesChange} />
+                        <ConditionalTooltip condition={!singleResource} content="Select a single resource to filter by action" asChild>
+                            <span>
+                                <FilterMultiSelect
+                                    label="Action"
+                                    options={singleResource ? actionOptionsFor(singleResource) : []}
+                                    selected={actions}
+                                    defaultSelect={[ALL]}
+                                    onChange={setActions}
+                                    disabled={!singleResource}
+                                />
+                            </span>
+                        </ConditionalTooltip>
                         <PeriodSelector
                             isLive={false}
                             period={period}

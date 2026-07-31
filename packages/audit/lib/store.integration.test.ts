@@ -18,7 +18,19 @@ let client: ClickHouseClient;
 let store: ClickhouseAuditStore;
 
 // Known ids so the read assertions below are deterministic.
-async function insertEvent({ id, accountId, occurredAt }: { id: string; accountId: number; occurredAt: string }) {
+async function insertEvent({
+    id,
+    accountId,
+    occurredAt,
+    resource = 'connection',
+    action = 'deleted'
+}: {
+    id: string;
+    accountId: number;
+    occurredAt: string;
+    resource?: string;
+    action?: string;
+}) {
     const event = {
         id,
         version: '2026-07-16',
@@ -26,8 +38,8 @@ async function insertEvent({ id, accountId, occurredAt }: { id: string; accountI
         accountId,
         environment: null,
         actor: { type: 'user', id: '5', display: 'a@b.co' },
-        resource: 'connection',
-        action: 'deleted',
+        resource,
+        action,
         targets: [{ type: 'connection', id: '10' }],
         context: {},
         outcome: 'success'
@@ -55,6 +67,12 @@ beforeAll(async () => {
     await insertEvent({ id: '22222222-2222-2222-2222-222222222222', accountId: 1, occurredAt: at(1000) });
     await insertEvent({ id: '33333333-3333-3333-3333-333333333333', accountId: 1, occurredAt: at(2000) });
     await insertEvent({ id: '99999999-9999-9999-9999-999999999999', accountId: 2, occurredAt: at(1500) });
+
+    // account 3: one event per resource/action pair the filter tests select on
+    await insertEvent({ id: 'aaaaaaaa-0000-0000-0000-000000000001', accountId: 3, occurredAt: at(0), resource: 'connection', action: 'deleted' });
+    await insertEvent({ id: 'aaaaaaaa-0000-0000-0000-000000000002', accountId: 3, occurredAt: at(1000), resource: 'connection', action: 'updated' });
+    await insertEvent({ id: 'aaaaaaaa-0000-0000-0000-000000000003', accountId: 3, occurredAt: at(2000), resource: 'api_key', action: 'deleted' });
+    await insertEvent({ id: 'aaaaaaaa-0000-0000-0000-000000000004', accountId: 3, occurredAt: at(3000), resource: 'sync', action: 'enabled' });
 });
 
 afterAll(async () => {
@@ -91,6 +109,56 @@ describe('ClickhouseAuditStore.list', () => {
     it('filters by from/to date', async () => {
         const { events } = (await store.list({ accountId: 1, limit: 10, from: at(1000), to: at(2000) })).unwrap();
         expect(events.map((e) => e.id)).toEqual(['33333333-3333-3333-3333-333333333333', '22222222-2222-2222-2222-222222222222']);
+    });
+});
+
+describe('ClickhouseAuditStore.list resource filters', () => {
+    const resourceActionOf = (events: { resource: string; action: string }[]) => events.map((e) => `${e.resource}.${e.action}`).sort();
+
+    it('filters by resource', async () => {
+        const { events } = (await store.list({ accountId: 3, limit: 10, resources: ['connection'] })).unwrap();
+        expect(resourceActionOf(events)).toEqual(['connection.deleted', 'connection.updated']);
+        expect(events.every((e) => e.accountId === 3)).toBe(true);
+    });
+
+    it('filters by several resources at once', async () => {
+        const { events } = (await store.list({ accountId: 3, limit: 10, resources: ['api_key', 'sync'] })).unwrap();
+        expect(resourceActionOf(events)).toEqual(['api_key.deleted', 'sync.enabled']);
+    });
+
+    it('narrows a resource to a single action', async () => {
+        const { events } = (await store.list({ accountId: 3, limit: 10, resources: ['connection'], actions: ['deleted'] })).unwrap();
+        expect(resourceActionOf(events)).toEqual(['connection.deleted']);
+    });
+
+    // The pairs are the cross product, so an action belonging to another resource must not widen the match.
+    it('matches actions against their own resource only', async () => {
+        const onSync = (await store.list({ accountId: 3, limit: 10, resources: ['sync'], actions: ['enabled'] })).unwrap();
+        expect(resourceActionOf(onSync.events)).toEqual(['sync.enabled']);
+
+        // Same action, a resource that never records it: the pair matches nothing rather than falling
+        // back to either half.
+        const onConnection = (await store.list({ accountId: 3, limit: 10, resources: ['connection'], actions: ['enabled'] })).unwrap();
+        expect(onConnection.events).toHaveLength(0);
+    });
+
+    it('ignores actions given without a resource, since a pair needs both halves', async () => {
+        const { events } = (await store.list({ accountId: 3, limit: 10, actions: ['deleted'] })).unwrap();
+        expect(resourceActionOf(events)).toEqual(['api_key.deleted', 'connection.deleted', 'connection.updated', 'sync.enabled']);
+    });
+
+    it('combines with the date window and paginates', async () => {
+        const page1 = (await store.list({ accountId: 3, limit: 1, resources: ['connection'], from: at(0), to: at(1000) })).unwrap();
+        expect(resourceActionOf(page1.events)).toEqual(['connection.updated']);
+        expect(page1.nextCursor).not.toBeNull();
+
+        const page2 = (await store.list({ accountId: 3, limit: 1, resources: ['connection'], from: at(0), to: at(1000), before: page1.nextCursor! })).unwrap();
+        expect(resourceActionOf(page2.events)).toEqual(['connection.deleted']);
+    });
+
+    it('returns nothing for a resource that was never recorded', async () => {
+        const { events } = (await store.list({ accountId: 3, limit: 10, resources: ['team'] })).unwrap();
+        expect(events).toHaveLength(0);
     });
 });
 
