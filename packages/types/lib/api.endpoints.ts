@@ -18,7 +18,6 @@ import type { EndpointMethod } from './api.js';
 import type { GetAuditTrail } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
-    PostPublicAppStoreAuthorization,
     PostPublicAwsSigV4Authorization,
     PostPublicBasicAuthorization,
     PostPublicBillAuthorization,
@@ -135,7 +134,6 @@ export type PublicApiEndpoints =
     | PostPublicUnauthenticatedAuthorization
     | PostPublicApiKeyAuthorization
     | PostPublicBasicAuthorization
-    | PostPublicAppStoreAuthorization
     | GetPublicProviders
     | GetPublicProvider
     | GetPublicListIntegrations
