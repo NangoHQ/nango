@@ -3,7 +3,7 @@ import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
@@ -51,6 +51,7 @@ export const Signin: React.FC = () => {
     const { mutateAsync: resendVerificationEmailMutation, isPending: isResendingEmail } = useResendVerificationEmail();
     const signin = useSignin();
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast } = useToast();
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -77,7 +78,7 @@ export const Signin: React.FC = () => {
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
         defaultValues: {
-            email: '',
+            email: typeof location.state?.email === 'string' ? location.state.email : '',
             password: ''
         },
         mode: 'onSubmit'

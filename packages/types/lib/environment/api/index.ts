@@ -20,7 +20,7 @@ export type GetEnvironments = ApiEndpoint<{
 }>;
 
 export type PostEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';
     Path: '/api/v1/environments';
     Body: { name: string };
@@ -101,7 +101,7 @@ export type ListApiKeys = ApiEndpoint<{
 }>;
 
 export type CreateApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'api_key', 'created', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/environment/api-keys';
     Body: {

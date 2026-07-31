@@ -3,6 +3,7 @@ import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nango
 import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest, resolvePolicyForRunner } from '@nangohq/shared';
 import {
     getCheckpointKey,
+    getInternalHttpsAgent,
     isBaseUrlOverrideDenied,
     isTest,
     MAX_LOG_PAYLOAD,
@@ -39,6 +40,9 @@ import type { AxiosResponse } from 'axios';
 interface TrackDeletesCheckpoint {
     syncJobId: number;
 }
+
+const internalHttpsAgent = getInternalHttpsAgent();
+const internalAxiosProps = internalHttpsAgent ? { httpsAgent: internalHttpsAgent } : {};
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -85,6 +89,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 ...props
             },
             {
+                ...internalAxiosProps,
                 interceptors: {
                     request: (config) => {
                         // @ts-expect-error yes it's internal
@@ -464,6 +469,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 ...props
             },
             {
+                ...internalAxiosProps,
                 interceptors: {
                     request: (config) => {
                         // @ts-expect-error yes it's internal
