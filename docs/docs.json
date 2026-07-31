@@ -1553,6 +1553,7 @@
               "api-integrations/pipedrive",
               "integrations/all/pipedream",
               "integrations/all/pipedream-oauth2-cc",
+              "api-integrations/pipelinecrm",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
               "api-integrations/planning-center-online",

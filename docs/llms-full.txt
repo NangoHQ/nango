@@ -15264,6 +15264,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `pipedream` | Pipedream (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/pipedream.md) | [connect](https://nango.dev/docs/integrations/all/pipedream/connect.md) |  | dev-tools, productivity |
 | `pipedream-oauth2-cc` | Pipedream (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/pipedream-oauth2-cc.md) | [connect](https://nango.dev/docs/integrations/all/pipedream-oauth2-cc/connect.md) |  | dev-tools, productivity |
 | `pipedrive` | Pipedrive | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/pipedrive.md) |  | [setup](https://nango.dev/docs/api-integrations/pipedrive/how-to-register-your-own-pipedrive-oauth-app.md) | crm |
+| `pipelinecrm` | Pipeline CRM | API_KEY | [docs](https://nango.dev/docs/api-integrations/pipelinecrm.md) | [connect](https://nango.dev/docs/api-integrations/pipelinecrm/connect.md) |  | crm |
 | `pivotaltracker` | Pivotal Tracker | API_KEY | [docs](https://nango.dev/docs/integrations/all/pivotaltracker.md) |  |  | productivity |
 | `plain` | Plain | API_KEY | [docs](https://nango.dev/docs/integrations/all/plain.md) | [connect](https://nango.dev/docs/integrations/all/plain/connect.md) |  | support |
 | `planning-center-online` | Planning Center Online (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/planning-center-online.md) |  | [setup](https://nango.dev/docs/api-integrations/planning-center-online/how-to-register-your-own-planning-center-oauth-app.md) | crm, productivity |
