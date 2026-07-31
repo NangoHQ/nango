@@ -63,10 +63,13 @@ export interface BillingPlanChangedMetadata {
     fromPlan?: string;
     toPlan?: string;
 }
-export type AppAuthLoginMethod = 'local' | 'sso' | 'managed' | 'email_code';
+export type AppAuthLoginMethod = 'local' | 'sso' | 'managed';
 export interface AppAuthLoginMetadata {
     mfaRequired?: boolean;
     method?: AppAuthLoginMethod;
+}
+export interface MfaVerifiedMetadata {
+    method?: 'totp' | 'recovery_code';
 }
 
 interface AuditEventCommon {
@@ -102,7 +105,9 @@ export type AuditResourceAction =
     | { resource: 'billing'; action: 'trial_extended' | 'details_changed' }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
     | { resource: 'app_auth'; action: 'login'; metadata?: AppAuthLoginMetadata }
-    | { resource: 'app_auth'; action: 'password_changed' | 'logout' | 'signup' | 'password_reset' };
+    | { resource: 'app_auth'; action: 'password_changed' | 'logout' | 'signup' | 'password_reset' }
+    | { resource: 'mfa'; action: 'enrolled' | 'enabled' | 'disabled' | 'recovery_regenerated' }
+    | { resource: 'mfa'; action: 'verified'; metadata?: MfaVerifiedMetadata };
 
 export type AuditEvent = AuditEventCommon & AuditResourceAction;
 

@@ -18,8 +18,7 @@ import type {
     PostManagedEmailVerification,
     PostSignin,
     PostSignup,
-    PutResetPassword,
-    ValidateEmailAndLogin
+    PutResetPassword
 } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -169,8 +168,6 @@ function auditAuth<TEndpoint extends Endpoint<any>>(
 export const auditAuthLogin = auditAuth<PostSignin>('login', principalFromBodyEmail, { recordNonSuccess: true, method: 'local' });
 
 // Session-establishing routes: the controller authenticates then req.login, so the actor is the session user and success comes from sessionOutcome.
-export const auditAuthEmailCodeLogin = auditAuth<ValidateEmailAndLogin>('login', principalFromSessionUser, { sessionOutcome: true, method: 'email_code' });
-
 export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.auditManagedSignup ? 'signup' : 'login'), principalFromSessionUser, {
     sessionOutcome: true,
     method: 'sso'

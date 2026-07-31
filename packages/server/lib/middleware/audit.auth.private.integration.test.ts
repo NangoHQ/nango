@@ -51,7 +51,6 @@ const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
 const logoutRoute = '/api/v1/account/logout';
 const resetPasswordRoute = '/api/v1/account/reset-password';
-const verifyCodeRoute = '/api/v1/account/verify/code';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
@@ -381,30 +380,6 @@ describe('audit — auth flows', () => {
             // Fire-and-forget finish hook: give it a tick, then confirm nothing was recorded despite req.user.
             await new Promise((resolve) => setTimeout(resolve, 200));
             expect(auditSpy).not.toHaveBeenCalled();
-        });
-
-        it('records app_auth/login (method email_code) on a successful verify-code login', async () => {
-            const user = await signupUser({ verified: false });
-            const token = user.email_verification_token;
-            expect(token).toBeTruthy();
-            auditSpy.mockClear();
-
-            const { res } = await api.fetch(verifyCodeRoute, { method: 'POST', body: { token: token! } });
-            expect(res.status).toBe(200);
-
-            await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
-            });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
-                resource: 'app_auth',
-                action: 'login',
-                outcome: 'success',
-                accountId: user.account_id,
-                environment: null,
-                actor: { type: 'user', id: String(user.id), display: user.email },
-                targets: [{ type: 'user', id: String(user.id), display: user.email }],
-                metadata: { mfaRequired: false, method: 'email_code' }
-            });
         });
 
         it('records app_auth/login (method managed) on a successful email-verification login', async () => {

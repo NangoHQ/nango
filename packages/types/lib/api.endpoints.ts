@@ -1,4 +1,5 @@
 import type {
+    ConfirmEmail,
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
@@ -9,8 +10,7 @@ import type {
     PostManagedSignup,
     PostSignin,
     PostSignup,
-    PutResetPassword,
-    ValidateEmailAndLogin
+    PutResetPassword
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
@@ -190,10 +190,10 @@ export type PublicApiEndpoints =
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | ConfirmEmail
     | PostSignup
     | PostSignin
     | PostLogout
-    | ValidateEmailAndLogin
     | GetTeam
     | PutTeam
     | PostPlanExtendTrial
