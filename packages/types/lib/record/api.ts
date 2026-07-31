@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 
 export type RecordLastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 export type CombinedFilterAction = `${RecordLastAction},${RecordLastAction}`;
@@ -22,7 +22,8 @@ export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_
 
 export type CursorOffset = 'first' | 'last';
 
-export type GetPublicRecords = Endpoint<{
+export type GetPublicRecords = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/records`;
     Headers: {
@@ -46,7 +47,8 @@ export type GetPublicRecords = Endpoint<{
     };
 }>;
 
-export type PatchPublicPruneRecords = Endpoint<{
+export type PatchPublicPruneRecords = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: `/records/prune`;
     Headers: {
@@ -74,7 +76,8 @@ export interface ConnectionRecordModel {
     updated_at: string;
 }
 
-export type GetConnectionRecordModels = Endpoint<{
+export type GetConnectionRecordModels = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/connections/:connectionId/records/models';
     Params: {
@@ -89,7 +92,8 @@ export type GetConnectionRecordModels = Endpoint<{
     };
 }>;
 
-export type GetConnectionRecords = Endpoint<{
+export type GetConnectionRecords = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/connections/:connectionId/records';
     Params: {

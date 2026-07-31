@@ -1,4 +1,5 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
@@ -6,7 +7,8 @@ import type { DBPlan } from './db.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
-export type PostPlanExtendTrial = Endpoint<{
+export type PostPlanExtendTrial = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'trial_extended', 'account'>;
     Method: 'POST';
     Path: '/api/v1/plans/trial/extension';
     Querystring: { env: string };
@@ -32,7 +34,8 @@ export interface PlanDefinition {
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id' | 'name'>;
 }
 
-export type GetPlans = Endpoint<{
+export type GetPlans = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans';
     Querystring: { env: string };
@@ -41,7 +44,8 @@ export type GetPlans = Endpoint<{
     };
 }>;
 
-export type GetPlan = Endpoint<{
+export type GetPlan = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/current';
     Querystring: { env: string };
@@ -50,7 +54,8 @@ export type GetPlan = Endpoint<{
     };
 }>;
 
-export type GetUsage = Endpoint<{
+export type GetUsage = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/usage';
     Querystring: { env: string };
@@ -68,7 +73,8 @@ export type GetUsage = Endpoint<{
 // Querystring is a per-metric discriminated union so the `dimension` field is
 // constrained to the metric's whitelist at compile time; the controller's zod
 // schema enforces the same shape at runtime.
-export type GetBillingUsageTopDimensionValues = Endpoint<{
+export type GetBillingUsageTopDimensionValues = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage/top-dimension-values';
     Querystring: {
@@ -100,7 +106,8 @@ export type GetBillingUsageTopDimensionValues = Endpoint<{
     };
 }>;
 
-export type GetBillingUsage = Endpoint<{
+export type GetBillingUsage = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
     Querystring: {
@@ -139,7 +146,8 @@ export type GetBillingUsage = Endpoint<{
     };
 }>;
 
-export type PutBillingInvoicingDetails = Endpoint<{
+export type PutBillingInvoicingDetails = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'details_changed', 'account'>;
     Method: 'PUT';
     Path: '/api/v1/plans/billing/invoicing';
     Querystring: { env: string };
@@ -149,7 +157,8 @@ export type PutBillingInvoicingDetails = Endpoint<{
     };
 }>;
 
-export type PostPlanChange = Endpoint<{
+export type PostPlanChange = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'plan_changed', 'account'>;
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };

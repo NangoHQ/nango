@@ -558,7 +558,7 @@
                     "properties": {
                         "protocol": {
                             "type": "string",
-                            "enum": ["WSSE", "RSA", "HMAC"]
+                            "enum": ["WSSE", "RSA", "HMAC", "EC"]
                         },
                         "hmac_secret_encoding": {
                             "type": "string",
@@ -583,6 +583,7 @@
                             "enum": [
                                 "authorization_code",
                                 "client_credentials",
+                                "account_credentials",
                                 "urn:ietf:params:oauth:grant-type:saml2-bearer",
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
                                 "password",
@@ -785,6 +786,9 @@
                                         "type": "string"
                                     },
                                     "minItems": 1
+                                },
+                                "order": {
+                                    "type": "number"
                                 },
                                 "default_value": {
                                     "type": "string"

@@ -13,11 +13,14 @@ let api: Awaited<ReturnType<typeof runServer>>;
 const endpoint = '/sync/deploy';
 
 describe(`POST ${endpoint}`, () => {
+    const logsEnabled = envs.NANGO_LOGS_ENABLED;
+
     beforeAll(async () => {
         api = await runServer();
         envs.NANGO_LOGS_ENABLED = false;
     });
     afterAll(() => {
+        envs.NANGO_LOGS_ENABLED = logsEnabled;
         api.server.close();
     });
 

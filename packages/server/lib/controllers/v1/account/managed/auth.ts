@@ -4,9 +4,10 @@ import { basePublicUrl, flagHasUsage, nanoid, normalizeEmail, report } from '@na
 
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { loginOrStartPendingMfa } from '../mfa/login.js';
 
 import type { InviteAccountState } from './postSignup.js';
-import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
+import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
@@ -89,19 +90,6 @@ export async function setManagedAuthEmailVerification(req: Request, verification
         state
     };
     await saveSession(req);
-}
-
-async function loginManagedAuthUser(req: Request, user: DBUser): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-        req.login(user, (err) => {
-            if (err) {
-                reject(err instanceof Error ? err : new Error(String(err)));
-                return;
-            }
-
-            resolve();
-        });
-    });
 }
 
 export function getManagedAuthRequestMetadata(req: Request) {
@@ -210,31 +198,37 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
+    let destination = '/';
     try {
-        await loginManagedAuthUser(req, user);
+        if (invitation && isNewUser) {
+            // New user: created directly in the invited team, auto-accept and proceed
+            await acceptInvitation(invitation.token);
+        } else if (invitation) {
+            // Existing user: let them explicitly accept or decline on the invite page
+            destination = `/signup/${invitation.token}`;
+        } else if (isNewUser) {
+            destination = '/onboarding/hear-about-us';
+        }
+    } catch (err) {
+        report(err);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to finalize login' } });
+        return;
+    }
+
+    try {
+        if (await loginOrStartPendingMfa(req, user, destination)) {
+            respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
+            return;
+        }
     } catch (err) {
         report(err);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
         return;
     }
 
-    try {
-        if (invitation && isNewUser) {
-            // New user: created directly in the invited team, auto-accept and proceed
-            await acceptInvitation(invitation.token);
-            respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
-        } else if (invitation) {
-            // Existing user: log them in and let them explicitly accept or decline on the invite page
-            respondWithSuccess(res, `${basePublicUrl}/signup/${invitation.token}`, responseMode);
-        } else if (isNewUser) {
-            respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
-        } else {
-            respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
-        }
-    } catch (err) {
-        report(err);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to finalize login' } });
-    }
+    req.auditManagedSignup = isNewUser;
+
+    respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }
 
 function respondWithSuccess(res: Response, url: string, responseMode: 'json' | 'redirect') {

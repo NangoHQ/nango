@@ -11,7 +11,7 @@ import type { ApiKeyScope } from '@nangohq/types';
 type AuthenticateUser = typeof authenticateUserType;
 type RunServer = typeof runServerType;
 
-let originalControlPlaneMcpServerUrl: string | undefined;
+let originalManagementMcpServerUrl: string | undefined;
 let authenticateUser: AuthenticateUser;
 let runServer: RunServer;
 let api: Awaited<ReturnType<RunServer>>;
@@ -136,8 +136,8 @@ function parseToolText(res: any) {
 
 describe('POST /mcp control-plane server', () => {
     beforeAll(async () => {
-        originalControlPlaneMcpServerUrl = process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'];
-        process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'] = 'https://mcp-development.nango.dev';
+        originalManagementMcpServerUrl = process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'];
+        process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'] = 'https://mcp-development.nango.dev';
 
         vi.resetModules();
         ({ authenticateUser, runServer } = await import('../../utils/tests.js'));
@@ -146,10 +146,48 @@ describe('POST /mcp control-plane server', () => {
 
     afterAll(() => {
         api.server.close();
-        if (originalControlPlaneMcpServerUrl === undefined) {
-            delete process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'];
+        if (originalManagementMcpServerUrl === undefined) {
+            delete process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'];
         } else {
-            process.env['NANGO_CONTROL_PLANE_MCP_SERVER_URL'] = originalControlPlaneMcpServerUrl;
+            process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'] = originalManagementMcpServerUrl;
+        }
+    });
+
+    it('lists all tools with environment:* scope', async () => {
+        const { secret } = await createKeyWithScopes(['environment:*']);
+        const res = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual([
+            'integrations_list',
+            'logs_list_operations',
+            'logs_get_operation'
+        ]);
+    });
+
+    it('rejects each management tool when its required scope is missing', async () => {
+        const { secret } = await createKeyWithScopes(['environment:mcp']);
+        const toolNames = ['integrations_list', 'logs_list_operations', 'logs_get_operation'];
+
+        for (const toolName of toolNames) {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: { name: toolName, arguments: {} }
+                }
+            });
+
+            expect(res.status).toBe(200);
+            expect(res.json.result).toStrictEqual({
+                content: [{ type: 'text', text: `MCP error -32602: Tool ${toolName} disabled` }],
+                isError: true
+            });
         }
     });
 
@@ -162,6 +200,17 @@ describe('POST /mcp control-plane server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['logs_list_operations', 'logs_get_operation']);
+    });
+
+    it('lists integration tools with integrations:list scope', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:list']);
+        const res = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {
@@ -179,7 +228,7 @@ describe('POST /mcp control-plane server', () => {
         });
     });
 
-    it('does not grant logs tools with only the legacy mcp scope', async () => {
+    it('does not grant management tools with only the legacy mcp scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
         const res = await mcpPost({
             token: secret,
@@ -202,6 +251,34 @@ describe('POST /mcp control-plane server', () => {
         expect(res.json.error).toMatchObject({
             code: 'forbidden',
             message: 'Insufficient scope. Required: environment:mcp'
+        });
+    });
+
+    it('lists integrations for the authenticated environment', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:list']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_list',
+                    arguments: {}
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload.data).toHaveLength(1);
+        expect(payload.data[0]).toMatchObject({
+            provider: 'github',
+            unique_key: 'github',
+            display_name: 'GitHub (User OAuth)',
+            forward_webhooks: true
         });
     });
 

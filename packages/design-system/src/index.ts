@@ -1,3 +1,19 @@
+export {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    type AlertDialogContentProps,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    type AlertDialogHeaderProps,
+    AlertDialogMedia,
+    AlertDialogOverlay,
+    AlertDialogPortal,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from './components/ui/alert-dialog';
 export { Badge, type BadgeProps, badgeVariants } from './components/ui/badge';
 export { Button, type ButtonProps, IconButton, type IconButtonProps, buttonVariants } from './components/ui/button';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './components/ui/card';

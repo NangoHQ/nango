@@ -1,7 +1,8 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { GettingStartedOutput as GettingStartedProgressOutput, PatchGettingStartedInput as PatchGettingStartedProgressInput } from './dto.js';
 
-export type GetGettingStarted = Endpoint<{
+export type GetGettingStarted = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/getting-started';
     Querystring: { env: string };
@@ -11,7 +12,8 @@ export type GetGettingStarted = Endpoint<{
     Error: ApiError<'failed_to_get_or_create_getting_started_progress'>;
 }>;
 
-export type PatchGettingStarted = Endpoint<{
+export type PatchGettingStarted = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'PATCH';
     Path: '/api/v1/getting-started';
     Querystring: { env: string };

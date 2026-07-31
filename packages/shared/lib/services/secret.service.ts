@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, PBKDF2_ITERATIONS } from '@nangohq/utils';
 
 import { getEncryptionManager, pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -184,7 +184,7 @@ class SecretService {
                 return Ok(plainText);
             }
             const key = getEncryptionManager().getKey();
-            const hash = (await pbkdf2(plainText, key, 310000, 32, 'sha256')).toString('base64');
+            const hash = (await pbkdf2(plainText, key, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
             return Ok(hash);
         } catch (err) {
             return Err(err);

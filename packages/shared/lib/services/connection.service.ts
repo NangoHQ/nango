@@ -2,13 +2,11 @@ import { createPrivateKey } from 'crypto';
 
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
-import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
 import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
@@ -43,6 +41,13 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
+import {
+    assertSafeOAuthUrl,
+    findOutboundUrlError,
+    getOAuthAxiosRequestConfig,
+    getOAuthRedirectPolicy,
+    getOAuthSafeUndiciDispatcher
+} from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
@@ -56,7 +61,6 @@ import type {
     AllAuthCredentials,
     ApiKeyCredentials,
     AppCredentials,
-    AppStoreCredentials,
     AuthModeType,
     AwsSigV4Credentials,
     BasicApiCredentials,
@@ -78,7 +82,6 @@ import type {
     OAuth2ClientCredentials,
     OAuth2Credentials,
     Provider,
-    ProviderAppleAppStore,
     ProviderBill,
     ProviderCustom,
     ProviderGithubApp,
@@ -92,6 +95,7 @@ import type {
     TwoStepCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
@@ -492,7 +496,7 @@ class ConnectionService {
         return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
-    public async updateConnection(connection: DBConnectionDecrypted) {
+    public async updateConnection(connection: DBConnectionDecrypted): Promise<DBConnectionDecrypted | undefined> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({
@@ -503,7 +507,12 @@ class ConnectionService {
             })
             .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return getEncryptionManager().decryptConnection(res[0]!);
+
+        if (!res[0]) {
+            return undefined;
+        }
+
+        return getEncryptionManager().decryptConnection(res[0]);
     }
 
     public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
@@ -1311,6 +1320,21 @@ class ConnectionService {
         }
         const url = makeUrl(tokenUrl, connectionConfig);
 
+        try {
+            await assertSafeOAuthUrl(url.href);
+        } catch (err) {
+            const outboundErr = findOutboundUrlError(err);
+            const reasonCode = outboundErr?.code ?? 'blocked';
+            const errorMessage = outboundErr?.message ?? (err instanceof Error ? err.message : String(err));
+            logger.error(`OAuth client credentials token URL blocked by outbound policy (host: ${url.host}, code: ${reasonCode})`);
+            void logCtx.error('Token URL blocked by outbound policy', { host: url.host, code: reasonCode, error: errorMessage });
+            return {
+                success: false,
+                error: new NangoError('client_credentials_fetch_error', { host: url.host, code: reasonCode, message: errorMessage }),
+                response: null
+            };
+        }
+
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
             interpolatedParams = interpolateObjectValues(provider.token_params, connectionConfig);
@@ -1397,7 +1421,7 @@ class ConnectionService {
             }
         }
 
-        let agent: Agent | undefined;
+        let agent: Agent = getOAuthSafeUndiciDispatcher();
 
         if (client_certificate && client_private_key) {
             try {
@@ -1411,9 +1435,7 @@ class ConnectionService {
                     throw new NangoError('invalid_certificate_or_key_format');
                 }
 
-                agent = new Agent({
-                    connect: { cert, key, rejectUnauthorized: false }
-                });
+                agent = getOAuthSafeUndiciDispatcher({ cert, key, rejectUnauthorized: false });
             } catch (err) {
                 throw new NangoError('invalid_certificate_or_key_format', { err });
             }
@@ -1431,7 +1453,8 @@ class ConnectionService {
                 method: 'POST',
                 headers,
                 body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                agent
+                agent,
+                redirect: getOAuthRedirectPolicy()
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
@@ -1466,7 +1489,8 @@ class ConnectionService {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
                 provider,
-                dynamicCredentials: { ...dynamicCredentials, connectionConfig }
+                dynamicCredentials,
+                connectionConfig
             });
 
             if (create.isErr()) {
@@ -1559,7 +1583,9 @@ class ConnectionService {
         }
 
         try {
-            const requestOptions = { headers };
+            await assertSafeOAuthUrl(url);
+
+            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
 
             const bodyContent =
                 bodyFormat === 'xml'
@@ -1645,6 +1671,7 @@ class ConnectionService {
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
                     const strippedTokenUrl = stripStepResponse(step.token_url);
                     const stepUrl = new URL(interpolateString(strippedTokenUrl, { connectionConfig, ...stepResponsesObjForURL })).toString();
+                    await assertSafeOAuthUrl(stepUrl);
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
@@ -1655,7 +1682,7 @@ class ConnectionService {
                         }
                     }
 
-                    const stepRequestOptions = { headers: stepHeaders };
+                    const stepRequestOptions = { headers: stepHeaders, ...getOAuthAxiosRequestConfig() };
 
                     let stepResponse: any;
 
@@ -1738,7 +1765,6 @@ class ConnectionService {
             | OAuth2Credentials
             | OAuth2ClientCredentials
             | AppCredentials
-            | AppStoreCredentials
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
@@ -1788,26 +1814,14 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'APP_STORE') {
-            const { private_key } = connection.credentials as AppStoreCredentials;
-            const create = await appleAppStoreClient.createCredentials({
-                provider: provider as ProviderAppleAppStore,
-                connectionConfig: connection.connection_config,
-                private_key
-            });
-
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
-            }
-
-            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
             const create = jwtClient.createCredentials({
                 config: providerConfig.unique_key,
                 provider: provider as ProviderJwt,
-                dynamicCredentials: cleanDynamicCredentials
+                dynamicCredentials: cleanDynamicCredentials,
+                connectionConfig: connection.connection_config
             });
 
             if (create.isErr()) {
